@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.undercover
 
-import kotlinx.coroutines.runBlocking
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
@@ -622,10 +621,13 @@ fun getUndercoverWordPairs(languageSetting: LanguageSetting): List<UndercoverWor
         LanguageSetting.ENGLISH, LanguageSetting.ITALIAN -> UNDERCOVER_WORD_PAIRS_EN
         LanguageSetting.GERMAN, LanguageSetting.VORI -> UNDERCOVER_WORD_PAIRS_DE
         LanguageSetting.SYSTEM -> {
-            runBlocking {
-                val languageService = KoinPlatform.getKoin().get<LanguageService>()
-                val systemLanguage = languageService.getCurrentLanguage()
-                getUndercoverWordPairs(systemLanguage) // Recursive call
+            val languageService = KoinPlatform.getKoin().get<LanguageService>()
+            // getSystemLanguageSetting() falls back to SYSTEM itself for an unmapped device
+            // locale (e.g. French), so default to English instead of recursing back into
+            // this same branch and overflowing the stack.
+            when (val systemLanguage = languageService.getSystemLanguageSetting()) {
+                LanguageSetting.SYSTEM -> UNDERCOVER_WORD_PAIRS_EN
+                else -> getUndercoverWordPairs(systemLanguage)
             }
         }
     }
