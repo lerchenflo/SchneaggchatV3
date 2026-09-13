@@ -27,50 +27,44 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DateChip
-import org.lerchenflo.schneaggchatv3mp.utilities.startOfWeek
 import org.lerchenflo.schneaggchatv3mp.utilities.toFormattedString
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.events_week_empty
+import schneaggchatv3mp.composeapp.generated.resources.events_upcoming_empty
 
+/** How many days (today included) the "Upcoming" tab shows. */
+private const val UPCOMING_WINDOW_DAYS = 10
+
+/**
+ * A rolling window of the next [UPCOMING_WINDOW_DAYS] days (today included), unlike the Month
+ * view this never pages into the past or an arbitrary future range - it always reflects "what's
+ * coming up" as of [today].
+ */
 @Composable
-fun EventsWeekView(
-    anchorDate: LocalDate,
+fun EventsUpcomingView(
     today: LocalDate,
     eventsByDate: Map<LocalDate, List<Event>>,
     birthdaysByMonthDay: Map<Int, List<CalendarBirthday>>,
     friendsById: Map<String, User>,
     ownId: String?,
-    onNavigate: (forward: Boolean) -> Unit,
-    onJumpToToday: () -> Unit,
     onEventClick: (String) -> Unit,
     onBirthdayClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val weekStart = startOfWeek(anchorDate)
-    val weekDays = (0..6).map { weekStart.plus(DatePeriod(days = it)) }
-    val isWeekEmpty = weekDays.all { eventsByDate[it].orEmpty().isEmpty() && birthdaysOn(birthdaysByMonthDay, it).isEmpty() }
+    val upcomingDays = (0 until UPCOMING_WINDOW_DAYS).map { today.plus(DatePeriod(days = it)) }
+    val isEmpty = upcomingDays.all { eventsByDate[it].orEmpty().isEmpty() && birthdaysOn(birthdaysByMonthDay, it).isEmpty() }
 
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        item(key = "week_header") {
-            CalendarNavHeader(
-                label = "${weekStart.toFormattedString()} - ${weekDays.last().toFormattedString()}",
-                onPrev = { onNavigate(false) },
-                onNext = { onNavigate(true) },
-                onToday = onJumpToToday
-            )
-        }
-
-        if (isWeekEmpty) {
-            item(key = "week_empty") {
+        if (isEmpty) {
+            item(key = "upcoming_empty") {
                 Box(
                     modifier = Modifier.fillMaxSize().padding(top = 32.dp),
                     contentAlignment = Alignment.TopCenter
                 ) {
                     Text(
-                        text = stringResource(Res.string.events_week_empty),
+                        text = stringResource(Res.string.events_upcoming_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -79,8 +73,8 @@ fun EventsWeekView(
             return@LazyColumn
         }
 
-        weekDays.forEach { day ->
-            item(key = "weekday_$day") {
+        upcomingDays.forEach { day ->
+            item(key = "upcomingday_$day") {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     horizontalArrangement = Arrangement.Center,

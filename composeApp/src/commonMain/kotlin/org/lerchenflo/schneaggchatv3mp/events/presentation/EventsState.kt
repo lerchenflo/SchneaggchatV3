@@ -12,7 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import kotlin.time.Clock
 
 enum class EventsViewMode {
-    LIST, WEEK, MONTH
+    LIST, UPCOMING, MONTH
 }
 
 @Stable
@@ -28,10 +28,11 @@ data class EventsState(
     val isSavingEvent: Boolean = false,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
     val isMobile: Boolean = true,
-    val viewMode: EventsViewMode = EventsViewMode.WEEK,
+    val viewMode: EventsViewMode = EventsViewMode.UPCOMING,
     val calendarAnchorDate: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
     val selectedCalendarDay: LocalDate? = null,
     val birthdaysByMonthDay: Map<Int, List<CalendarBirthday>> = emptyMap(),
+    val hasUnseenEvents: Boolean = false,
 )
 
 /**

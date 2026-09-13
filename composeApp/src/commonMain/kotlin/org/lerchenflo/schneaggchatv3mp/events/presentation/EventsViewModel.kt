@@ -34,6 +34,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.events.domain.hasEnded
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -122,6 +123,9 @@ class EventsViewModel(
                     selected.creatorId == ownUserId -> selected.copy(participations = live.participations)
                     else -> live
                 }
+            },
+            hasUnseenEvents = ownUserId != null && currentState.events.any {
+                it.isUnseenBy(ownUserId) && !it.hasEnded(Clock.System.now().toEpochMilliseconds())
             }
         )
     }.stateIn(
@@ -313,9 +317,8 @@ class EventsViewModel(
                 _state.update { current ->
                     val step = if (action.forward) 1 else -1
                     val newAnchor = when (current.viewMode) {
-                        EventsViewMode.WEEK -> current.calendarAnchorDate.plus(DatePeriod(days = 7 * step))
                         EventsViewMode.MONTH -> current.calendarAnchorDate.plus(DatePeriod(months = step))
-                        EventsViewMode.LIST -> current.calendarAnchorDate
+                        EventsViewMode.LIST, EventsViewMode.UPCOMING -> current.calendarAnchorDate
                     }
                     current.copy(calendarAnchorDate = newAnchor)
                 }

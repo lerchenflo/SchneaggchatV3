@@ -39,7 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventJoinP
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsCalendarDayDetailSheet
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsMonthView
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsViewModeSwitch
-import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsWeekView
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsUpcomingView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DateChip
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.rememberToday
@@ -100,6 +100,7 @@ fun EventsScreen(
             EventsViewModeSwitch(
                 selected = state.viewMode,
                 onSelect = { onAction(EventsAction.OnViewModeChange(it)) },
+                hasUnseenEvents = state.hasUnseenEvents,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
@@ -159,16 +160,13 @@ fun EventsScreen(
                     }
                 }
 
-                EventsViewMode.WEEK -> {
-                    EventsWeekView(
-                        anchorDate = state.calendarAnchorDate,
+                EventsViewMode.UPCOMING -> {
+                    EventsUpcomingView(
                         today = today,
                         eventsByDate = state.eventsByDate,
                         birthdaysByMonthDay = state.birthdaysByMonthDay,
                         friendsById = state.friendsById,
                         ownId = ownId,
-                        onNavigate = { forward -> onAction(EventsAction.OnCalendarNavigate(forward)) },
-                        onJumpToToday = { onAction(EventsAction.OnCalendarJumpToToday) },
                         onEventClick = { onAction(EventsAction.OnEventClick(it)) },
                         onBirthdayClick = { onAction(EventsAction.OnBirthdayClick(it)) },
                         modifier = Modifier

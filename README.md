@@ -23,6 +23,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Android Auto Support
+- Events: Woche-Tab zum rollierenden 'Upcoming'-View mit den nächsten 10 Tagen geändert
+- Events: Ungesehene-Event-Indikator im List-Tab hinzugefügt
 
 #### Bugfixes
 - Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
