@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Reply
@@ -37,9 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -51,6 +46,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ReaderUi
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.horizontalScrollWithMouseWheel
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -70,11 +66,6 @@ import schneaggchatv3mp.composeapp.generated.resources.readers
 import schneaggchatv3mp.composeapp.generated.resources.reply
 import schneaggchatv3mp.composeapp.generated.resources.sent_at
 import schneaggchatv3mp.composeapp.generated.resources.yes
-
-// Desktop mouse wheels only report scroll input on the y axis, but horizontalScroll only
-// reacts to its own (x) axis — so without this, the quick-reactions row can't be scrolled
-// with a mouse wheel on desktop, only by dragging.
-private val MOUSE_WHEEL_SCROLL_STEP = 48.dp
 
 @Composable
 fun MessageOptionPopup(
@@ -119,28 +110,9 @@ fun MessageOptionPopup(
                 text = {
 
                     //Quick reactions
-                    val quickReactionsScrollState = rememberScrollState()
-                    val density = LocalDensity.current
-                    val mouseWheelScrollStepPx = with(density) { MOUSE_WHEEL_SCROLL_STEP.toPx() }
-
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier
-                            .horizontalScroll(quickReactionsScrollState)
-                            .pointerInput(Unit) {
-                                awaitPointerEventScope {
-                                    while (true) {
-                                        val event = awaitPointerEvent()
-                                        if (event.type == PointerEventType.Scroll) {
-                                            val scrollDelta = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
-                                            if (scrollDelta != 0f) {
-                                                quickReactionsScrollState.dispatchRawDelta(scrollDelta * mouseWheelScrollStepPx)
-                                                event.changes.forEach { it.consume() }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                        modifier = Modifier.horizontalScrollWithMouseWheel()
                     ) {
 
                         /* Default heart is with double tap
