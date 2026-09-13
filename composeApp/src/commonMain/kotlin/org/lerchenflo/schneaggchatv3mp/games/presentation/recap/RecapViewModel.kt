@@ -13,15 +13,14 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToUiText
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onSuccess
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.games.domain.BetaTesterRowUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.EmojiCountUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameRecapUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.GroupActivityUi
-import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardRowUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.LongestMessageUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.MessageTypeCountUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.MonthCountUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.MostReactedMessageUi
+import org.lerchenflo.schneaggchatv3mp.games.domain.RankedRowUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapPartnerUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
@@ -178,10 +177,10 @@ class RecapViewModel(
             topPartners = partners,
 
             leaderboardTop = globalLeaderboard.top.take(5).map {
-                LeaderboardRowUi(
+                RankedRowUi(
                     rank = it.rank,
                     username = it.username,
-                    messageCount = it.messageCount,
+                    count = it.messageCount,
                     isMe = it.userId == account.userId
                 )
             },
@@ -197,6 +196,16 @@ class RecapViewModel(
             mapEntriesCreated = map.entriesCreatedThisYear,
             mapEntriesEdited = map.entriesEditedThisYear,
             mapEntriesCreatedAllTime = map.entriesCreatedAllTime,
+            mapLeaderboardTop = map.leaderboard.top.take(5).map {
+                RankedRowUi(
+                    rank = it.rank,
+                    username = it.username,
+                    count = it.contributionCount,
+                    isMe = it.userId == account.userId
+                )
+            },
+            myMapRank = map.leaderboard.myRank,
+            myMapContributions = map.leaderboard.myContributionCount,
 
             games = games
                 .sortedBy { it.rank }
@@ -210,10 +219,10 @@ class RecapViewModel(
                 },
 
             betaTesterRows = betaTester.all.map {
-                BetaTesterRowUi(
+                RankedRowUi(
                     rank = it.rank,
                     username = it.username,
-                    exceptionCount = it.exceptionCount,
+                    count = it.exceptionCount,
                     isMe = it.userId == account.userId
                 )
             },

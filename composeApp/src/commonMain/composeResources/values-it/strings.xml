@@ -126,6 +126,7 @@
 
     <string name="error_access_not_permitted">La tua sessione salvata non è più valida. Effettua di nuovo l'accesso.</string>
     <string name="error_access_expired">La tua sessione salvata è scaduta dopo 30 giorni. Effettua di nuovo l'accesso</string>
+    <string name="error_server_unreachable">Impossibile raggiungere questo server. Controlla l'URL del server nelle impostazioni.</string>
     <string name="error_invalid_credentials">Hai inserito credenziali errate</string>
     <string name="error_login_too_many_requests">Troppi tentativi di accesso. Attendi un momento e riprova.</string>
     <string name="error_login_server_error">Il server ha riscontrato un problema. Riprova più tardi.</string>
@@ -331,6 +332,7 @@
     <string name="events_screen_title">eventi</string>
     <string name="events_empty">Nessun evento ancora. Creane uno tu stesso!</string>
     <string name="events_view_list">Lista</string>
+    <string name="events_view_day">Giorno</string>
     <string name="events_view_week">Settimana</string>
     <string name="events_view_month">Mese</string>
     <string name="weekday_monday_short">Lun</string>
@@ -342,6 +344,7 @@
     <string name="weekday_sunday_short">Dom</string>
     <string name="events_calendar_previous_period">Precedente</string>
     <string name="events_calendar_next_period">Successivo</string>
+    <string name="events_day_empty">Nessun evento in questo giorno</string>
     <string name="events_week_empty">Nessun evento questa settimana</string>
     <string name="events_month_empty">Nessun evento questo mese</string>
     <string name="birthday_label">Compleanno</string>
@@ -937,6 +940,15 @@
     <string name="recap_outro_rank_messages">classifica messaggi</string>
     <string name="recap_outro_rank_errors">classifica errori</string>
     <string name="recap_tap_hint">Tocca per continuare</string>
+    <string name="recap_close">Chiudi il riepilogo</string>
+    <string name="recap_hold_hint">Tieni premuto per mettere in pausa · tocca a sinistra per tornare indietro</string>
+    <string name="recap_map_leaderboard_title">Migliori contributori della mappa</string>
+    <string name="recap_map_your_rank">Tra tutti quelli che modellano la Schneaggmap, sei al posto</string>
+    <string name="recap_map_contributions">%1$s modifiche alla mappa quest'anno</string>
+    <string name="recap_map_not_ranked">Quest'anno non hai toccato la mappa. Le chiocciole aspettano.</string>
+    <string name="recap_leaderboard_not_ranked">Nessun messaggio da parte tua quest'anno. Allora l'anno prossimo.</string>
+    <string name="recap_outro_rank_map">classifica mappa</string>
+    <string name="recap_top_partner_intro">Nessuno ha sentito da te più di</string>
 
     <!-- Month names -->
     <string name="month_january">Gennaio</string>

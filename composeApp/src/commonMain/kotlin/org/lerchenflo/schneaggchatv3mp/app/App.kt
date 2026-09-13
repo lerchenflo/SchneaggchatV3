@@ -64,8 +64,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.MessageCha
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.RefreshResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
@@ -122,7 +120,6 @@ fun App() {
     val languageService = koinInject<LanguageService>()
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
-    val tokenManager = koinInject<TokenManager>()
     val loggingRepository = koinInject<LoggingRepository>()
 
     val globalViewModel = koinInject<GlobalViewModel>() //Init instantly for flow collections to start correctly
@@ -372,32 +369,6 @@ fun App() {
         ) { action ->
             scope.launch {
                 when (action) {
-                    AppRepository.ActionChannel.ActionEvent.Login -> {
-                        // Login action handled automatically by HTTP client refresh
-                        val storedTokens = preferenceManager.getTokens()
-                        val refreshToken = storedTokens.refreshToken
-                        // A stored session that is still valid only has to be put back into
-                        // SessionCache - it needs no network call. Refreshing unconditionally here
-                        // meant every Login action spent a POST /auth/refresh, and the connectivity
-                        // loop raises one every 5 seconds for as long as the cache says logged out:
-                        // that alone kept the server's auth rate limit permanently tripped, which
-                        // in turn kept the session from ever coming back.
-                        if (refreshToken.isNotBlank() && !SessionCache.loginIfValid(storedTokens)) {
-                            when (tokenManager.refreshTokens(refreshToken)) {
-                                RefreshResult.Invalidated -> {
-                                    AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
-                                }
-                                RefreshResult.Success, is RefreshResult.Retryable -> {
-                                    // Retryable failures (offline, rate limited, server error) are not
-                                    // an invalidated session - do nothing, the next attempt may succeed.
-                                }
-                            }
-                        }
-                        // Blank token: no session exists (fresh install, or a logout raced this
-                        // action) - "session invalidated" toast + forced navigation would be
-                        // wrong here; the logout flow already brings the user to the login screen.
-                    }
-
                     AppRepository.ActionChannel.ActionEvent.AuthInvalidated -> {
                         //Throwing an error message for the user
                         AppRepository.ErrorChannel.trySendError(
