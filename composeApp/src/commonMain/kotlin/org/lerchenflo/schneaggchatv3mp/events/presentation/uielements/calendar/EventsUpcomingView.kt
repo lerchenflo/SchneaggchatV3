@@ -95,7 +95,8 @@ fun EventsUpcomingView(
             }
             items(
                 items = eventsByDate[day].orEmpty(),
-                key = { it.id }
+                // Multi-day events sit in several day buckets, so a bare id would repeat.
+                key = { "event_${day}_${it.id}" }
             ) { event ->
                 val creatorFriend = friendsById[event.creatorId]
                 EventItem(
