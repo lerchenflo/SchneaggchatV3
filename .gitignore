@@ -26,3 +26,6 @@ captures
 mapping.txt
 **/mapping.txt
 **/schemas/**/*.json
+
+# Scratch/temp working files
+.scratch

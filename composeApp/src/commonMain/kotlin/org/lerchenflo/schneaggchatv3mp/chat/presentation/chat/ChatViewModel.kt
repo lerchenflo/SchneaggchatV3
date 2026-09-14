@@ -698,7 +698,7 @@ class ChatViewModel(
                     loggingRepository.logWarning("ChatViewModel: Problem getting draft: ${exception.message}")
                 }
                 .collect { value ->
-                    if(value != null && (state.value.sendContent as TextContent).textMessage.text.isNotEmpty()){
+                    if(value != null && (state.value.sendContent as? TextContent)?.textMessage?.text.isNullOrEmpty()){
                         updateSendContent(TextContent(TextFieldValue(value)))
                     }
                 }
