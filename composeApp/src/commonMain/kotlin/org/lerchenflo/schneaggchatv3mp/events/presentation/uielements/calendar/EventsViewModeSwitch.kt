@@ -40,9 +40,12 @@ fun EventsViewModeSwitch(
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size)
             ) {
                 Box {
-                    Text(text = stringResource(mode.labelRes()))
+                    Text(
+                        text = stringResource(mode.labelRes()),
+                        maxLines = 1
+                    )
                     if (mode == EventsViewMode.LIST && hasUnseenEvents) {
-                        Badge(modifier = Modifier.align(Alignment.TopStart).offset(x = (-4).dp, y = (-4).dp))
+                        Badge()
                     }
                 }
             }

@@ -22,7 +22,7 @@ fun main() = application {
 
     ) {
         window.setSize(1600, 1000)
-        window.minimumSize = Dimension(400, 400)
+        window.minimumSize = Dimension(200, 400)
 
         //Every AWT window owns its own GPU context, so the map needs this window's host to render
         ProvideMapPresentationHost(host = rememberAwtComposeMapPresentationHost(window)) {
