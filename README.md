@@ -32,6 +32,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
 - Undercover Crash + Logs viewer
 - Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt
+- Events: Crash bei mehrtägigen Events behoben
 
 
 ### 3.0.17
