@@ -5,6 +5,10 @@ sealed interface GridRushAction {
     data object StopGame : GridRushAction
     data object RestartGame : GridRushAction
     data object TogglePause : GridRushAction
+    /** Screen is leaving (back, rotation, tab switch): pause and keep the run for the next visit. */
+    data object LeaveGame : GridRushAction
+    /** The screen noticed a possible day change (midnight passed or app resumed). */
+    data object CheckDayChanged : GridRushAction
     data class OnDragStart(val cell: Cell) : GridRushAction
     data class OnDragMove(val cell: Cell) : GridRushAction
     data object OnDragEnd : GridRushAction

@@ -2,20 +2,26 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
+@Serializable
 data class Platform(
     val x: Float,
     val y: Float,
@@ -25,9 +31,30 @@ data class Platform(
     val direction: Float = 1f // 1f for right, -1f for left
 )
 
+/** How long a schneagg that hopped off its placed bar stays visible while falling. */
+internal const val SNAIL_JUMP_MS = 1000L
+
+/**
+ * A schneagg that rode the moving bar and jumped off when the bar was placed.
+ * Purely visual: the screen animates it from [atElapsedMillis], the loop drops it
+ * after [SNAIL_JUMP_MS], and it is not persisted.
+ */
+data class SnailJump(
+    /** Horizontal center of the bar at take-off (game units). */
+    val x: Float,
+    /** Top edge of the bar at take-off (game units). */
+    val y: Float,
+    /** 1 when the bar was heading right, -1 when heading left. */
+    val direction: Float,
+    /** Index of the bar it rode, so the screen can paint it in the same rainbow color. */
+    val colorIndex: Int,
+    val atElapsedMillis: Long,
+)
+
 data class GameState(
     val platforms: List<Platform> = emptyList(),
     val currentPlatform: Platform? = null,
+    val snailJumps: List<SnailJump> = emptyList(),
     val score: Int = 0,
     val isGameOver: Boolean = false,
     val isGameStarted: Boolean = false,
@@ -42,16 +69,29 @@ sealed class GameAction {
     object PlacePlatform : GameAction()
     object ResetGame : GameAction()
     object TogglePause : GameAction()
+    /** Screen is leaving (back, rotation, tab switch): pause and keep the run for the next visit. */
+    object LeaveGame : GameAction()
 }
 
 class TowerstackViewModel(
     private val gameHighscoreRepository: GameHighscoreRepository,
+    gameSaveRepository: GameSaveRepository,
 ) : ViewModel() {
 
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
 
-    private var gameLoopJob: kotlinx.coroutines.Job? = null
+    private val saveSession = GameSaveSession(
+        game = GameId.TOWERSTACK,
+        serializer = TowerstackSnapshot.serializer(),
+        schemaVersion = TOWERSTACK_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+    /** The screen waits for this before auto-starting a run, so a restored one is never overwritten. */
+    val restoreChecked = saveSession.restoreChecked
+
+    private var gameLoopJob: Job? = null
     private var gameStartTime = 0L
     private var currentDifficulty = GameDifficulty.MEDIUM
     
@@ -63,7 +103,7 @@ class TowerstackViewModel(
     }
     
     init {
-        resetGame()
+        saveSession.start(onRestore = ::restore, onAppBackgrounded = ::pauseAndPersist)
     }
     
     fun onAction(action: GameAction) {
@@ -72,7 +112,53 @@ class TowerstackViewModel(
             is GameAction.PlacePlatform -> placePlatform()
             is GameAction.ResetGame -> resetGame()
             is GameAction.TogglePause -> togglePause()
+            is GameAction.LeaveGame -> pauseAndPersist()
         }
+    }
+
+    /** Leaving the screen or backgrounding the app: freeze the run and keep it for the next visit. */
+    private fun pauseAndPersist() {
+        val current = _gameState.value
+        if (current.isGameStarted && !current.isGameOver) {
+            _gameState.value = current.copy(isPaused = true)
+        }
+        persist()
+    }
+
+    private fun persist() = saveSession.persist(currentDifficulty, snapshotOrNull())
+
+    /** Null when there is no run worth keeping (not started or already over). */
+    private fun snapshotOrNull(): TowerstackSnapshot? {
+        val current = _gameState.value
+        if (!current.isGameStarted || current.isGameOver) return null
+        return TowerstackSnapshot(
+            platforms = current.platforms,
+            currentPlatform = current.currentPlatform,
+            score = current.score,
+            gameSpeed = current.gameSpeed,
+            elapsedMillis = current.elapsedMillis,
+            perfectStreak = current.perfectStreak,
+        )
+    }
+
+    /** Brings a saved run back paused; the game loop parks in awaitResume until the user resumes. */
+    private fun restore(save: GameSave<TowerstackSnapshot>) {
+        val data = save.data
+        currentDifficulty = save.difficulty
+        gameLoopJob?.cancel()
+        gameStartTime = Clock.System.now().toEpochMilliseconds() - data.elapsedMillis
+        _gameState.value = GameState(
+            platforms = data.platforms,
+            currentPlatform = data.currentPlatform,
+            score = data.score,
+            isGameOver = false,
+            isGameStarted = true,
+            gameSpeed = data.gameSpeed,
+            elapsedMillis = data.elapsedMillis,
+            perfectStreak = data.perfectStreak,
+            isPaused = true,
+        )
+        startGameLoop()
     }
 
     private fun togglePause() {
@@ -127,9 +213,13 @@ class TowerstackViewModel(
                 if (drift > 0) gameStartTime += drift
 
                 updateMovingPlatform()
-                _gameState.value = _gameState.value.copy(
-                    elapsedMillis = Clock.System.now().toEpochMilliseconds() - gameStartTime
-                )
+                val elapsedMillis = Clock.System.now().toEpochMilliseconds() - gameStartTime
+                _gameState.value = _gameState.value.let { state ->
+                    state.copy(
+                        elapsedMillis = elapsedMillis,
+                        snailJumps = state.snailJumps.filter { elapsedMillis - it.atElapsedMillis < SNAIL_JUMP_MS },
+                    )
+                }
                 delay(16.milliseconds) // ~60 FPS
             }
         }
@@ -219,10 +309,20 @@ class TowerstackViewModel(
         } else {
             currentState.gameSpeed
         }
+
+        // The schneagg riding the bar hops off where the bar was when it landed
+        val snailJump = SnailJump(
+            x = current.x + current.width / 2f,
+            y = current.y,
+            direction = current.direction,
+            colorIndex = platforms.size,
+            atElapsedMillis = currentState.elapsedMillis,
+        )
         
         _gameState.value = currentState.copy(
             platforms = newPlatforms,
             currentPlatform = newMovingPlatform,
+            snailJumps = currentState.snailJumps + snailJump,
             score = newScore,
             gameSpeed = newSpeed,
             perfectStreak = remainingStreak
@@ -231,6 +331,7 @@ class TowerstackViewModel(
     
     private fun gameOver() {
         gameLoopJob?.cancel()
+        saveSession.clear()
         _gameState.value = _gameState.value.copy(isGameOver = true)
         submitScore()
     }
@@ -251,12 +352,15 @@ class TowerstackViewModel(
     
     private fun resetGame() {
         gameLoopJob?.cancel()
+        saveSession.clear()
         _gameState.value = GameState()
     }
     
     override fun onCleared() {
         super.onCleared()
         gameLoopJob?.cancel()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }
 

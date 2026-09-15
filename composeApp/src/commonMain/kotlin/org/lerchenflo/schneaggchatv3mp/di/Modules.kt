@@ -39,6 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectio
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.data.CrosswordRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
@@ -139,6 +140,7 @@ val sharedmodule = module{
     singleOf(::EventRepository)
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
+    singleOf(::GameSaveRepository)
     // External puzzle archive fetch — no app auth, plain client
     single { CrosswordRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))) }
 

@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.domain
 
+import kotlinx.serialization.Serializable
+
 enum class CrosswordLanguage {
     ENGLISH,
     GERMAN
@@ -10,6 +12,7 @@ enum class CrosswordDirection {
     DOWN
 }
 
+@Serializable
 data class CrosswordClue(
     val number: Int,
     val direction: CrosswordDirection,
@@ -23,6 +26,7 @@ data class CrosswordClue(
  * NYT archive (dense grid, every white cell is checked), German puzzles are
  * generated locally in criss-cross style (unused cells stay null like blocks).
  */
+@Serializable
 data class CrosswordPuzzle(
     val rows: Int,
     val cols: Int,

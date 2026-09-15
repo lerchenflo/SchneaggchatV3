@@ -72,6 +72,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordDirection
 import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordLanguage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.formatGameTime
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.utilities.rememberToday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_check
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_instructions
@@ -92,10 +93,17 @@ fun CrosswordScreenRoot(
 ) {
     val viewmodel = koinViewModel<CrosswordViewmodel>()
     val state by viewmodel.state.collectAsStateWithLifecycle()
+    val restoreChecked by viewmodel.restoreChecked.collectAsStateWithLifecycle()
 
-    // Leaving the game stops the timer so nothing keeps ticking in the background
+    // Leaving the screen persists the progress so it can be picked up again later
     DisposableEffect(Unit) {
-        onDispose { viewmodel.onAction(CrosswordAction.StopGame) }
+        onDispose { viewmodel.onAction(CrosswordAction.LeaveGame) }
+    }
+
+    // The daily puzzle rolls over at local midnight, also while this screen stays open
+    val today = rememberToday()
+    LaunchedEffect(today) {
+        viewmodel.onAction(CrosswordAction.CheckDayChanged)
     }
 
     Column(
@@ -107,16 +115,17 @@ fun CrosswordScreenRoot(
         )
 
         when {
-            state.language == null -> LanguageSelection(
-                onSelect = { viewmodel.onAction(CrosswordAction.SelectLanguage(it)) }
-            )
-
-            state.isLoading -> Box(
+            // Checked first so a restored puzzle is not preceded by a flash of the language chooser
+            !restoreChecked || state.isLoading -> Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
             }
+
+            state.language == null -> LanguageSelection(
+                onSelect = { viewmodel.onAction(CrosswordAction.SelectLanguage(it)) }
+            )
 
             state.loadFailed -> LoadFailed(
                 onRetry = { viewmodel.onAction(CrosswordAction.RetryLoad) },

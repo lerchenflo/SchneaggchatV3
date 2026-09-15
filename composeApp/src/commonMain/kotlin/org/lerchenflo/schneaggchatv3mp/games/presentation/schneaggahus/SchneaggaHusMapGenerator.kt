@@ -8,12 +8,12 @@ data class SchneaggaHusMap(
     val gridWidth: Int,
     val gridHeight: Int,
     val spawn: Position,
-    val firstTrack: Position,
     val trackList: List<TrackTile>,
     val houseList: List<Schneaggahus>,
 )
 
-private val HOUSE_COLORS = listOf(
+/** Identity colors shared by houses and schneaggs; the theme has no eight distinguishable hues. */
+internal val HOUSE_COLORS = listOf(
     Color(0xFFEF5350), // red
     Color(0xFF42A5F5), // blue
     Color(0xFF66BB6A), // green
@@ -24,39 +24,63 @@ private val HOUSE_COLORS = listOf(
     Color(0xFFEC407A), // pink
 )
 
+/** Portrait grids (width × height): phones are tall, and the tree grows downwards from the tunnel. */
+internal fun gridSize(difficulty: GameDifficulty): Pair<Int, Int> = when (difficulty) {
+    GameDifficulty.LOW -> 6 to 9
+    GameDifficulty.MEDIUM -> 7 to 11
+    GameDifficulty.HIGH -> 8 to 13
+}
+
+internal fun baseHouseCount(difficulty: GameDifficulty): Int = when (difficulty) {
+    GameDifficulty.LOW -> 3
+    GameDifficulty.MEDIUM -> 4
+    GameDifficulty.HIGH -> 6
+}
+
+/** Denser trees stop fitting these grids; above this the generator would mostly fail. */
+internal fun maxHouseCount(difficulty: GameDifficulty): Int = when (difficulty) {
+    GameDifficulty.LOW -> 5
+    GameDifficulty.MEDIUM -> 6
+    GameDifficulty.HIGH -> 7
+}
+
+private const val ATTEMPTS_PER_HOUSE_COUNT = 20
+private const val CARVE_BUDGET = 3000
+private const val STRAIGHT_WEIGHT = 2f
+private const val SOUTH_WEIGHT = 1.5f
+/** Cells next to other track are still allowed, just rarely picked, so layouts stay readable. */
+private const val CROWDED_WEIGHT = 0.25f
+
 /**
- * Generates a random track tree for one run. Higher difficulty means a bigger
- * grid with more houses (and therefore more switches to keep an eye on).
+ * Generates a random track tree with [houseCount] houses for one wave. The tunnel
+ * sits in the top row, every branch heads east, south or west, and each leaf is a
+ * house. Should a tree that dense not fit, the house count is stepped down.
  */
 fun generateSchneaggaHusMap(
     difficulty: GameDifficulty,
+    houseCount: Int = baseHouseCount(difficulty),
     random: Random = Random.Default,
 ): SchneaggaHusMap {
-    val (width, height, houseCount) = when (difficulty) {
-        GameDifficulty.LOW -> Triple(8, 6, 3)
-        GameDifficulty.MEDIUM -> Triple(11, 8, 4)
-        GameDifficulty.HIGH -> Triple(14, 10, 6)
-    }
-
-    // Random walks can dead-end; retry until a full tree fits (practically instant)
-    repeat(200) {
-        val map = MapBuilder(width, height, houseCount, random).build()
-        if (map != null) return map
+    val (width, height) = gridSize(difficulty)
+    val requested = houseCount.coerceIn(2, HOUSE_COLORS.size)
+    for (houses in requested downTo 2) {
+        repeat(ATTEMPTS_PER_HOUSE_COUNT) {
+            MapBuilder(width, height, houses, random).build()?.let { return it }
+        }
     }
     return fallbackMap(width, height)
 }
 
-/** Straight spawn-to-house line — only used if generation somehow never succeeds. */
+/** Straight tunnel-to-house line — only used if generation somehow never succeeds. */
 private fun fallbackMap(width: Int, height: Int): SchneaggaHusMap {
     val spawn = Position(width / 2, 0)
-    val tracks = (1 until height - 1).map { y ->
+    val tracks = (0 until height - 1).map { y ->
         TrackTile(Position(spawn.x, y), DIRECTION.NORTH, listOf(DIRECTION.SOUTH))
     }
     return SchneaggaHusMap(
         gridWidth = width,
         gridHeight = height,
         spawn = spawn,
-        firstTrack = Position(spawn.x, 1),
         trackList = tracks,
         houseList = listOf(Schneaggahus(Position(spawn.x, height - 1), HOUSE_COLORS.first())),
     )
@@ -69,22 +93,24 @@ private class MapBuilder(
     private val random: Random,
 ) {
     private val occupied = HashSet<Position>()
-    private val tracks = mutableListOf<TrackTile>()
+    private val tracks = LinkedHashMap<Position, TrackTile>()
     private val housePositions = mutableListOf<Position>()
+    private var carveCalls = 0
 
     fun build(): SchneaggaHusMap? {
+        // The top row belongs to the tunnel and the next-up preview, nothing else is carved there
+        for (x in 0 until width) occupied += Position(x, 0)
         val spawn = Position(random.nextInt(1, width - 1), 0)
-        occupied += spawn
+        tracks[spawn] = TrackTile(spawn, DIRECTION.NORTH, listOf(DIRECTION.SOUTH))
 
-        if (!carve(spawn, DIRECTION.SOUTH, houseCount, remainingSteps = random.nextInt(2, 4))) return null
+        carve(spawn, DIRECTION.SOUTH, houseCount, remainingSteps = random.nextInt(2, 4)) ?: return null
 
         val colors = HOUSE_COLORS.shuffled(random)
         return SchneaggaHusMap(
             gridWidth = width,
             gridHeight = height,
             spawn = spawn,
-            firstTrack = spawn.step(DIRECTION.SOUTH),
-            trackList = tracks,
+            trackList = tracks.values.toList(),
             houseList = housePositions.mapIndexed { index, position ->
                 Schneaggahus(position, colors[index])
             },
@@ -95,45 +121,109 @@ private class MapBuilder(
      * Claims the cell next to [from] in [heading] and continues the walk:
      * plain track while [remainingSteps] is left, then either a house (subtree
      * done) or a switch splitting [housesToPlace] onto two branches.
-     * Returns false when the walk got stuck; the whole attempt is retried then.
+     * Returns the cells of the finished subtree, or null after releasing them
+     * again so the caller can try another direction (backtracking).
      */
-    private fun carve(from: Position, heading: DIRECTION, housesToPlace: Int, remainingSteps: Int): Boolean {
+    private fun carve(from: Position, heading: DIRECTION, housesToPlace: Int, remainingSteps: Int): List<Position>? {
+        if (++carveCalls > CARVE_BUDGET) return null
         val cell = from.step(heading)
-        if (!isFree(cell)) return false
-        occupied += cell
+        if (!isFree(cell)) return null
         val entry = heading.opposite()
+        occupied += cell
 
         if (remainingSteps > 0) {
-            val nextHeading = chooseHeading(cell, heading) ?: return false
-            tracks += TrackTile(cell, entry, listOf(nextHeading))
-            return carve(cell, nextHeading, housesToPlace, remainingSteps - 1)
+            for (next in weightedOrder(headingOptions(cell, heading), cell, straight = heading)) {
+                val subtree = carve(cell, next, housesToPlace, remainingSteps - 1) ?: continue
+                tracks[cell] = TrackTile(cell, entry, listOf(next))
+                return subtree + cell
+            }
+            occupied -= cell
+            return null
         }
 
         if (housesToPlace == 1) {
+            // A house stands clear of everything except its own rail
+            if (occupiedNeighbours(cell, except = from) > 0) {
+                occupied -= cell
+                return null
+            }
             housePositions += cell
-            return true
+            return listOf(cell)
         }
 
         // Switch: split the remaining houses roughly in half onto two free directions
-        val options = DIRECTION.entries.filter { it != entry && isFree(cell.step(it)) }.shuffled(random)
-        if (options.size < 2) return false
-        tracks += TrackTile(cell, entry, listOf(options[0], options[1]))
-
-        val firstHouses = (housesToPlace + random.nextInt(0, 2)) / 2
-        return carve(cell, options[0], firstHouses, newSegmentLength()) &&
-                carve(cell, options[1], housesToPlace - firstHouses, newSegmentLength())
+        val exits = weightedOrder(exitOptions(cell, entry), cell, straight = null)
+        for (i in exits.indices) {
+            for (j in i + 1 until exits.size) {
+                val firstHouses = (housesToPlace + random.nextInt(0, 2)) / 2
+                val first = carve(cell, exits[i], firstHouses, newSegmentLength()) ?: continue
+                val second = carve(cell, exits[j], housesToPlace - firstHouses, newSegmentLength())
+                if (second == null) {
+                    release(first)
+                    continue
+                }
+                tracks[cell] = TrackTile(cell, entry, listOf(exits[i], exits[j]))
+                return first + second + cell
+            }
+        }
+        occupied -= cell
+        return null
     }
 
     /** Track tiles between a branch start and the next switch or house. */
     private fun newSegmentLength(): Int = random.nextInt(1, 4)
 
-    /** Mostly keeps going straight so tracks do not zigzag wildly. */
-    private fun chooseHeading(cell: Position, heading: DIRECTION): DIRECTION? {
-        val candidates = listOf(heading, heading.turnLeft(), heading.turnRight())
-            .filter { isFree(cell.step(it)) }
-        if (candidates.isEmpty()) return null
-        return if (heading in candidates && random.nextFloat() < 0.6f) heading else candidates.random(random)
+    /** Straight on or a turn, never back up towards the tunnel. */
+    private fun headingOptions(cell: Position, heading: DIRECTION): List<DIRECTION> =
+        listOf(heading, heading.turnLeft(), heading.turnRight())
+            .filter { it != DIRECTION.NORTH && isFree(cell.step(it)) }
+
+    private fun exitOptions(cell: Position, entry: DIRECTION): List<DIRECTION> =
+        DIRECTION.entries.filter { it != entry && it != DIRECTION.NORTH && isFree(cell.step(it)) }
+
+    /**
+     * Random order of [options], drawn without replacement by weight: going
+     * straight and going south are preferred so tracks read as a tree flowing
+     * downwards, crowded cells are avoided when possible.
+     */
+    private fun weightedOrder(options: List<DIRECTION>, cell: Position, straight: DIRECTION?): List<DIRECTION> {
+        val remaining = options.toMutableList()
+        val weights = remaining.map { direction ->
+            var weight = 1f
+            if (direction == straight) weight *= STRAIGHT_WEIGHT
+            if (direction == DIRECTION.SOUTH) weight *= SOUTH_WEIGHT
+            if (occupiedNeighbours(cell.step(direction), except = cell) > 0) weight *= CROWDED_WEIGHT
+            weight
+        }.toMutableList()
+
+        val ordered = ArrayList<DIRECTION>(remaining.size)
+        while (remaining.isNotEmpty()) {
+            var pick = random.nextFloat() * weights.sum()
+            var index = 0
+            while (index < weights.size - 1 && pick >= weights[index]) {
+                pick -= weights[index]
+                index++
+            }
+            ordered += remaining.removeAt(index)
+            weights.removeAt(index)
+        }
+        return ordered
     }
+
+    private fun release(cells: List<Position>) {
+        occupied -= cells.toSet()
+        cells.forEach {
+            tracks.remove(it)
+            housePositions.remove(it)
+        }
+    }
+
+    /** Occupied 4-neighbours of [cell] other than [except]; the reserved top row does not count. */
+    private fun occupiedNeighbours(cell: Position, except: Position?): Int =
+        DIRECTION.entries.count { direction ->
+            val neighbour = cell.step(direction)
+            neighbour != except && neighbour.y > 0 && neighbour in occupied
+        }
 
     private fun isFree(position: Position): Boolean {
         return position.x in 0 until width &&

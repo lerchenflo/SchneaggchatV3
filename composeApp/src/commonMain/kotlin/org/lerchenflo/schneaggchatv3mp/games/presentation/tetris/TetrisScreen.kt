@@ -46,18 +46,19 @@ fun TetrisScreen(
     viewModel: TetrisViewModel
 ) {
     val state by viewModel.state.collectAsState()
+    val restoreChecked by viewModel.restoreChecked.collectAsState()
     var explanationDismissed by rememberSaveable { mutableStateOf(false) }
     val isStarted = state.isPlaying || state.isGameOver
 
-    // After process death the dismissed flag is restored but the ViewModel run
-    // is lost — start a fresh run instead of showing the explanation again.
-    LaunchedEffect(Unit) {
-        if (explanationDismissed && !isStarted) viewModel.startGame()
+    // After process death the dismissed flag is restored but the ViewModel is new. Wait for the
+    // saved-run check first, otherwise this would start a fresh run over the restored one.
+    LaunchedEffect(restoreChecked) {
+        if (restoreChecked && explanationDismissed && !isStarted) viewModel.startGame()
     }
 
-    // Leaving the game ends the run so no loop/counter keeps running in the background
+    // Leaving the screen pauses and persists the run so it can be picked up again later
     DisposableEffect(Unit) {
-        onDispose { viewModel.stopGame() }
+        onDispose { viewModel.leaveGame() }
     }
 
     Column(
@@ -112,7 +113,7 @@ fun TetrisScreen(
                 )
             }
 
-            if (!explanationDismissed && !isStarted) {
+            if (restoreChecked && !explanationDismissed && !isStarted) {
                 GameStartOverlay(
                     title = stringResource(Res.string.games_tetris_title),
                     explanation = stringResource(Res.string.games_tetris_instructions),

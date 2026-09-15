@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.tetris
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -10,9 +11,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
@@ -103,16 +107,28 @@ private const val LOOP_RESOLUTION = 25L
 
 class TetrisViewModel(
     private val gameHighscoreRepository: GameHighscoreRepository,
+    gameSaveRepository: GameSaveRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TetrisState())
     val state = _state.asStateFlow()
+
+    private val saveSession = GameSaveSession(
+        game = GameId.TETRIS,
+        serializer = TetrisSnapshot.serializer(),
+        schemaVersion = TETRIS_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+    /** The screen waits for this before auto-starting a run, so a restored one is never overwritten. */
+    val restoreChecked = saveSession.restoreChecked
 
     private var gameLoopJob: Job? = null
     private var baseTickRate = 500L // ms, set from the selected difficulty on game start
     private val softDropMultiplier = 0.1f // 10x faster when soft dropping
     private var gameStartTime = 0L
     private var currentDifficulty = GameDifficulty.MEDIUM
+    private var ignoreSoftDropUntilReset = false
     
     private fun getCurrentTickRate(): Long {
         val currentState = _state.value
@@ -134,16 +150,72 @@ class TetrisViewModel(
         return (1f + speedIncrease).coerceAtMost(maxSpeedMultiplier)
     }
 
-    fun startGame() {
-        currentDifficulty = GameDifficultySelection.selected
-        baseTickRate = when (currentDifficulty) {
+    init {
+        saveSession.start(onRestore = ::restore, onAppBackgrounded = ::leaveGame)
+    }
+
+    private fun applyDifficulty(difficulty: GameDifficulty) {
+        currentDifficulty = difficulty
+        baseTickRate = when (difficulty) {
             GameDifficulty.LOW -> 650L
             GameDifficulty.MEDIUM -> 500L
             GameDifficulty.HIGH -> 350L
         }
+    }
+
+    fun startGame() {
+        applyDifficulty(GameDifficultySelection.selected)
         gameStartTime = Clock.System.now().toEpochMilliseconds()
         _state.value = TetrisState(isPlaying = true)
         spawnPiece()
+        startGameLoop()
+    }
+
+    /** Leaving the screen or backgrounding the app: freeze the run and keep it for the next visit. */
+    fun leaveGame() {
+        val current = _state.value
+        if (current.isPlaying && !current.isGameOver) {
+            _state.update { it.copy(isPaused = true, isSoftDropping = false) }
+        }
+        persist()
+    }
+
+    private fun persist() = saveSession.persist(currentDifficulty, snapshotOrNull())
+
+    /** Null when there is no run worth keeping (not started or already over). */
+    private fun snapshotOrNull(): TetrisSnapshot? {
+        val current = _state.value
+        if (!current.isPlaying || current.isGameOver) return null
+        return TetrisSnapshot(
+            board = current.board.map { row -> row.map { it?.toArgb() } },
+            currentPiece = current.currentPiece?.toSnapshot(),
+            nextPiece = current.nextPiece?.toSnapshot(),
+            pieceRow = current.piecePosition.first,
+            pieceCol = current.piecePosition.second,
+            score = current.score,
+            gameTime = current.gameTime,
+        )
+    }
+
+    /** Brings a saved run back paused; the game loop parks in awaitResume until the user resumes. */
+    private fun restore(save: GameSave<TetrisSnapshot>) {
+        val data = save.data
+        applyDifficulty(save.difficulty)
+        gameLoopJob?.cancel()
+        ignoreSoftDropUntilReset = false
+        gameStartTime = Clock.System.now().toEpochMilliseconds() - data.gameTime
+        _state.value = TetrisState(
+            board = data.board.map { row -> row.map { argb -> argb?.let { Color(it) } } },
+            currentPiece = data.currentPiece?.toTetromino(),
+            nextPiece = data.nextPiece?.toTetromino(),
+            piecePosition = data.pieceRow to data.pieceCol,
+            score = data.score,
+            isGameOver = false,
+            isPlaying = true,
+            gameTime = data.gameTime,
+            isSoftDropping = false,
+            isPaused = true,
+        )
         startGameLoop()
     }
 
@@ -175,6 +247,7 @@ class TetrisViewModel(
     /** Ends the current run without submitting a score and returns to the start screen. */
     fun stopGame() {
         gameLoopJob?.cancel()
+        saveSession.clear()
         _state.value = TetrisState()
     }
 
@@ -213,6 +286,7 @@ class TetrisViewModel(
         if (!isValidMove(piece, startRow, startCol)) {
              _state.update { it.copy(isGameOver = true, isPlaying = false, nextPiece = null) }
              gameLoopJob?.cancel()
+             saveSession.clear()
              submitScore()
         } else {
              _state.update {
@@ -290,8 +364,6 @@ class TetrisViewModel(
     private fun isValidMove(piece: Tetromino, row: Int, col: Int): Boolean {
         return _state.value.canPlace(piece, row, col)
     }
-
-    private var ignoreSoftDropUntilReset = false
 
     fun setSoftDropping(isSoftDropping: Boolean) {
         if (_state.value.isPaused) return
@@ -372,5 +444,12 @@ class TetrisViewModel(
                 timeMillis = finalTime,
             )
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        gameLoopJob?.cancel()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }
