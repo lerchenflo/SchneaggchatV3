@@ -144,7 +144,7 @@ fun EventsScreen(
                                 }
                                 items(
                                     items = group.events,
-                                    key = { it.id }
+                                    key = { "event_${group.dayId}_${it.id}" }
                                 ) { event ->
                                     val creatorFriend = state.friendsById[event.creatorId]
                                     EventItem(

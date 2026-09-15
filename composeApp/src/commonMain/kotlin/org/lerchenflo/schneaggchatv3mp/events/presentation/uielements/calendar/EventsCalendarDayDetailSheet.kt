@@ -55,7 +55,7 @@ fun EventsCalendarDayDetailSheet(
             item(key = "date_chip") {
                 DateChip(date.toFormattedString())
             }
-            items(items = birthdays, key = { "birthday_${it.userId}" }) { birthday ->
+            items(items = birthdays, key = { "birthday_${date}_${it.userId}" }) { birthday ->
                 CalendarBirthdayRow(
                     birthday = birthday,
                     date = date,
@@ -63,7 +63,7 @@ fun EventsCalendarDayDetailSheet(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            items(items = events, key = { it.id }) { event ->
+            items(items = events, key = { "event_${date}_${it.id}" }) { event ->
                 val creatorFriend = friendsById[event.creatorId]
                 EventItem(
                     event = event,

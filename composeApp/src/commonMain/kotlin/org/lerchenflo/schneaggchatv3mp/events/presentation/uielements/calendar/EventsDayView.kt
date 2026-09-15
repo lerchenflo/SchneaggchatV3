@@ -101,7 +101,7 @@ fun EventsDayView(
         }
         items(
             items = dayEvents,
-            key = { it.id }
+            key = { "event_${anchorDate}_${it.id}" }
         ) { event ->
             val creatorFriend = friendsById[event.creatorId]
             EventItem(
