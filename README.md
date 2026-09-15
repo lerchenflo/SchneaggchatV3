@@ -24,6 +24,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Features
 - Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
 - Android Auto Support
+- Doppelte Nachrichten (Ungesendete) Behoben
 
 
 #### Bugfixes
