@@ -15,9 +15,12 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import kotlin.time.Clock
@@ -57,11 +60,22 @@ private const val CHALLENGE_POINTS_PER_CHAR = 10
 class MorseViewModel(
     private val gameHighscoreRepository: GameHighscoreRepository,
     private val loggingRepository: LoggingRepository,
-    private val languageService: LanguageService
+    private val languageService: LanguageService,
+    gameSaveRepository: GameSaveRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MorseState())
     val state: StateFlow<MorseState> = _state.asStateFlow()
+
+    private val saveSession = GameSaveSession(
+        game = GameId.MORSE,
+        serializer = MorseSnapshot.serializer(),
+        schemaVersion = MORSE_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+    /** The screen waits for this before showing the start overlay, so a restored run is never hidden. */
+    val restoreChecked = saveSession.restoreChecked
 
     private var autoCommitJob: Job? = null
     private var challengeTimerJob: Job? = null
@@ -74,7 +88,58 @@ class MorseViewModel(
     init {
         viewModelScope.launch { // Language
             selectedLanguage = languageService.getSystemLanguageSetting()
+            // Only after the language lookup, so it cannot overwrite a restored run's language
+            saveSession.start(onRestore = ::restore, onAppBackgrounded = ::leaveGame)
         }
+    }
+
+    /** Leaving the screen or backgrounding the app: freeze the challenge and keep it for the next visit. */
+    fun leaveGame() {
+        val challenge = _state.value.challenge
+        if (challenge != null && !challenge.isGameOver && !challenge.isPaused) togglePause()
+        persist()
+    }
+
+    private fun persist() = saveSession.persist(challengeDifficulty, snapshotOrNull())
+
+    /** Null when there is no challenge worth keeping (none running or already over). */
+    private fun snapshotOrNull(): MorseSnapshot? {
+        val challenge = _state.value.challenge ?: return null
+        if (challenge.isGameOver) return null
+        return MorseSnapshot(
+            targetText = challenge.targetText,
+            currentIndex = challenge.currentIndex,
+            errors = challenge.errors,
+            score = challenge.score,
+            elapsedMillis = challenge.elapsedMillis,
+            charTimeLimitMs = challenge.charTimeLimitMs,
+            charTimeRemainingMs = challenge.charTimeRemainingMs,
+            language = selectedLanguage,
+        )
+    }
+
+    /** Brings a saved challenge back paused; the timer parks in awaitResume until the user resumes. */
+    private fun restore(save: GameSave<MorseSnapshot>) {
+        val data = save.data
+        autoCommitJob?.cancel()
+        challengeTimerJob?.cancel()
+        challengeDifficulty = save.difficulty
+        selectedLanguage = data.language
+        challengeStartTime = Clock.System.now().toEpochMilliseconds() - data.elapsedMillis
+        _state.value = MorseState(
+            challenge = MorseChallengeState(
+                targetText = data.targetText,
+                currentIndex = data.currentIndex,
+                errors = data.errors,
+                score = data.score,
+                isGameOver = false,
+                isPaused = true,
+                elapsedMillis = data.elapsedMillis,
+                charTimeLimitMs = data.charTimeLimitMs,
+                charTimeRemainingMs = data.charTimeRemainingMs,
+            )
+        )
+        startChallengeTimer()
     }
 
     val wordsList: List<String>
@@ -301,6 +366,7 @@ class MorseViewModel(
 
                 if (submitScoreNeeded) {
                     challengeTimerJob?.cancel()
+                    saveSession.clear()
                     submitChallengeScore(scoreToSubmit)
                     break
                 }
@@ -311,6 +377,7 @@ class MorseViewModel(
     fun exitChallenge() {
         autoCommitJob?.cancel()
         challengeTimerJob?.cancel()
+        saveSession.clear()
         _state.update { it.copy(currentCode = "", currentChar = null, invalid = false, challenge = null) }
     }
 
@@ -350,6 +417,7 @@ class MorseViewModel(
             triggerInvalid()
             if (failed) {
                 challengeTimerJob?.cancel()
+                saveSession.clear()
                 submitChallengeScore(updated.score)
             }
             _state.update { it.copy(challenge = updated) }
@@ -374,5 +442,13 @@ class MorseViewModel(
             delay(INVALID_CLEAR_DELAY_MS.milliseconds)
             _state.update { it.copy(invalid = false) }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        autoCommitJob?.cancel()
+        challengeTimerJob?.cancel()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }

@@ -12,7 +12,7 @@ enum class GameId(val daily: Boolean = false, val indev: Boolean = false) {
     TETRIS,
     TOWERSTACK,
     MORSE,
-    SCHNEAGGAHUS(indev = true),
+    SCHNEAGGAHUS,
     GRIDRUSH(daily = true),
     ODDONEOUT,
     GAME_2048,

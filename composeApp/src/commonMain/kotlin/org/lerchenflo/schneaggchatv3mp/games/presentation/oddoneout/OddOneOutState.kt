@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout
 
+import kotlinx.serialization.Serializable
+
 const val ODDONEOUT_STARTING_LIVES = 3
 
 sealed interface OddOneOutAction {
@@ -7,6 +9,8 @@ sealed interface OddOneOutAction {
     data object StopGame : OddOneOutAction
     data object RestartGame : OddOneOutAction
     data object TogglePause : OddOneOutAction
+    /** Screen is leaving (back, rotation, tab switch): pause and keep the run for the next visit. */
+    data object LeaveGame : OddOneOutAction
     data class OnTileTapped(val index: Int) : OddOneOutAction
 }
 
@@ -16,6 +20,7 @@ enum class OddTileVariant { COLOR, SHAPE }
 /** Logical tile palette; the screen maps these to actual render colors. */
 enum class TilePalette { A, B, C, D, E }
 
+@Serializable
 data class OddOneOutTile(
     val palette: TilePalette,
     val isOdd: Boolean,

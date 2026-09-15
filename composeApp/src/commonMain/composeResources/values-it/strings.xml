@@ -817,7 +817,11 @@
 
     <!-- Games: Schneaggahus -->
     <string name="games_schneaggahus_title">Schneaggahus</string>
-    <string name="games_schneaggahus_instructions">Gli Schneagg strisciano fuori dal punto di partenza e seguono i binari. Tocca gli scambi per cambiare dove portano i binari e guida ogni Schneagg fino alla casa del suo colore.\n\nOgni consegna corretta assegna punti — dopo 3 Schneagg finiti nella casa sbagliata, la partita finisce. Le nascite diventano più veloci più a lungo sopravvivi!</string>
+    <string name="games_schneaggahus_instructions">Gli Schneagg strisciano fuori dal tunnel e seguono i binari. Tocca uno scambio per cambiare dove porta il suo binario: conta solo se lo azioni prima che lo Schneagg raggiunga lo scambio. Guida ogni Schneagg alla casa del suo colore; i prossimi colori sono mostrati accanto al tunnel.\n\nIl gioco procede a ondate: ogni ondata manda un numero fisso di Schneagg, diventa più veloce e più grande, e ogni seconda ondata aggiunge una casa. Consegna correttamente e gli Schneagg arrivano più in fretta; gli errori ti danno un attimo di respiro. Ogni consegna corretta vale 10 punti per il numero dell'ondata: dopo 3 Schneagg finiti nella casa sbagliata, la partita finisce.</string>
+    <string name="games_schneaggahus_wave">Ondata %1$d</string>
+    <string name="games_schneaggahus_next_up">Prossimi</string>
+    <string name="games_schneaggahus_wave_progress">%1$d di %2$d Schneagg consegnati</string>
+    <string name="games_schneaggahus_lives_remaining">%1$d vite rimaste</string>
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Cruciverba</string>
@@ -835,6 +839,7 @@
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Sfida giornaliera (%1$s)</string>
+    <string name="games_daily_reset">È disponibile una nuova sfida giornaliera: i tuoi progressi sono stati azzerati.</string>
     <string name="games_gridrush_title">Grid Rush</string>
     <string name="games_gridrush_instructions">Trascina una linea attraverso caselle adiacenti dello stesso colore — rilasciando su 2 o più caselle le elimini e le caselle sopra cadono giù. Svuota l'intera griglia per vincere!\n\nCatene più lunghe danno più punti e finire sotto il par guadagna un bonus. Se due caselle uguali non si toccano più, la partita finisce. Tutti giocano la stessa griglia ogni giorno — il timer parte solo con la tua prima mossa, quindi pianifica in anticipo!</string>
     <string name="games_gridrush_moves">Mosse: %1$d / Par %2$d</string>

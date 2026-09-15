@@ -69,18 +69,22 @@ fun Game2048ScreenRoot(
 ) {
     val viewModel = koinViewModel<Game2048ViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val restoreChecked by viewModel.restoreChecked.collectAsStateWithLifecycle()
 
     var explanationDismissed by rememberSaveable { mutableStateOf(false) }
     val isStarted = state.isGameStarted || state.isGameOver
 
-    LaunchedEffect(Unit) {
-        if (explanationDismissed && !isStarted) {
+    // After process death the dismissed flag is restored but the ViewModel is new. Wait for the
+    // saved-run check first, otherwise this would start a fresh run over the restored one.
+    LaunchedEffect(restoreChecked) {
+        if (restoreChecked && explanationDismissed && !isStarted) {
             viewModel.onAction(Game2048Action.StartGame)
         }
     }
 
+    // Leaving the screen pauses and persists the run so it can be picked up again later
     DisposableEffect(Unit) {
-        onDispose { viewModel.onAction(Game2048Action.StopGame) }
+        onDispose { viewModel.onAction(Game2048Action.LeaveGame) }
     }
 
     val focusRequester = remember { FocusRequester() }
@@ -145,7 +149,7 @@ fun Game2048ScreenRoot(
                 onTogglePause = { viewModel.onAction(Game2048Action.TogglePause) }
             )
 
-            if (!explanationDismissed && !isStarted) {
+            if (restoreChecked && !explanationDismissed && !isStarted) {
                 GameStartOverlay(
                     title = stringResource(Res.string.games_2048_title),
                     explanation = stringResource(Res.string.games_2048_instructions),

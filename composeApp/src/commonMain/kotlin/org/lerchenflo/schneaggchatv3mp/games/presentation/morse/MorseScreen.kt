@@ -67,11 +67,12 @@ fun MorseScreen(
     viewModel: MorseViewModel
 ) {
     val state by viewModel.state.collectAsState()
+    val restoreChecked by viewModel.restoreChecked.collectAsState()
     var explanationDismissed by rememberSaveable { mutableStateOf(false) }
 
-    // Leaving the game ends the challenge so no timer keeps running in the background
+    // Leaving the screen pauses and persists a running challenge so it can be picked up again later
     DisposableEffect(Unit) {
-        onDispose { viewModel.exitChallenge() }
+        onDispose { viewModel.leaveGame() }
     }
 
     Column(
@@ -172,7 +173,8 @@ fun MorseScreen(
                 )
             }
 
-            if (!explanationDismissed && state.challenge == null) {
+            // Wait for the saved-run check so a restored challenge is not covered by the explanation
+            if (restoreChecked && !explanationDismissed && state.challenge == null) {
                 GameStartOverlay(
                     title = stringResource(Res.string.games_morse_title),
                     explanation = stringResource(Res.string.games_morse_instructions),

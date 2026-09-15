@@ -10,8 +10,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import kotlin.random.Random
 import kotlin.time.Clock
@@ -21,10 +25,21 @@ private const val CORRECT_HIGHLIGHT_MILLIS = 500L
 
 class OddOneOutViewmodel(
     private val gameHighscoreRepository: GameHighscoreRepository,
+    gameSaveRepository: GameSaveRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(OddOneOutState())
     val state = _state.asStateFlow()
+
+    private val saveSession = GameSaveSession(
+        game = GameId.ODDONEOUT,
+        serializer = OddOneOutSnapshot.serializer(),
+        schemaVersion = ODDONEOUT_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+    /** The screen waits for this before auto-starting a run, so a restored one is never overwritten. */
+    val restoreChecked = saveSession.restoreChecked
 
     private var timerJob: Job? = null
     private var runStartTime = 0L
@@ -36,14 +51,91 @@ class OddOneOutViewmodel(
     /** False while a life is being lost and the miss is briefly shown, so timeouts/taps don't double-count. */
     private var roundActive = false
 
+    init {
+        saveSession.start(onRestore = ::restore, onAppBackgrounded = ::pauseAndPersist)
+    }
+
     fun onAction(action: OddOneOutAction) {
         when (action) {
             OddOneOutAction.StartGame -> startGame()
             OddOneOutAction.StopGame -> stopGame()
             OddOneOutAction.RestartGame -> startGame()
             OddOneOutAction.TogglePause -> togglePause()
+            OddOneOutAction.LeaveGame -> pauseAndPersist()
             is OddOneOutAction.OnTileTapped -> onTileTapped(action.index)
         }
+    }
+
+    /** Leaving the screen or backgrounding the app: freeze the run and keep it for the next visit. */
+    private fun pauseAndPersist() {
+        val current = _state.value
+        if (current.isPlaying && !current.isGameOver) {
+            _state.update { it.copy(isPaused = true) }
+        }
+        persist()
+    }
+
+    private fun persist() = saveSession.persist(currentDifficulty, snapshotOrNull())
+
+    /** Null when there is no run worth keeping (not started or already over). */
+    private fun snapshotOrNull(): OddOneOutSnapshot? {
+        val current = _state.value
+        if (!current.isPlaying || current.isGameOver) return null
+        return OddOneOutSnapshot(
+            score = current.score,
+            lives = current.lives,
+            round = current.round,
+            gridSize = current.gridSize,
+            tiles = current.tiles,
+            oddIndex = current.oddIndex,
+            variant = current.variant,
+            oddLighten = current.oddLighten,
+            oddDelta = current.oddDelta,
+            roundTimeMillis = current.roundTimeMillis,
+            roundTimeRemainingMillis = current.roundTimeRemainingMillis,
+            elapsedMillis = current.elapsedMillis,
+            awaitingNextRound = !roundActive,
+        )
+    }
+
+    /** Brings a saved run back paused; the timer parks in awaitResume until the user resumes. */
+    private fun restore(save: GameSave<OddOneOutSnapshot>) {
+        val data = save.data
+        applyDifficulty(save.difficulty)
+        timerJob?.cancel()
+        val now = Clock.System.now().toEpochMilliseconds()
+        runStartTime = now - data.elapsedMillis
+        _state.value = OddOneOutState(
+            isPlaying = true,
+            isGameOver = false,
+            isPaused = true,
+            score = data.score,
+            lives = data.lives,
+            round = data.round,
+            gridSize = data.gridSize,
+            tiles = data.tiles,
+            oddIndex = data.oddIndex,
+            variant = data.variant,
+            oddLighten = data.oddLighten,
+            oddDelta = data.oddDelta,
+            roundTimeMillis = data.roundTimeMillis,
+            roundTimeRemainingMillis = data.roundTimeRemainingMillis,
+            elapsedMillis = data.elapsedMillis,
+        )
+        if (data.awaitingNextRound) {
+            // The "show the miss, then next round" delay died with the old ViewModel
+            startRound(data.round + 1)
+        } else {
+            roundDeadline = now + data.roundTimeRemainingMillis
+            roundStartTime = roundDeadline - data.roundTimeMillis
+            roundActive = true
+        }
+        startTimer()
+    }
+
+    private fun applyDifficulty(difficulty: GameDifficulty) {
+        currentDifficulty = difficulty
+        config = difficultyConfig(difficulty)
     }
 
     private fun togglePause() {
@@ -53,8 +145,7 @@ class OddOneOutViewmodel(
     }
 
     private fun startGame() {
-        currentDifficulty = GameDifficultySelection.selected
-        config = difficultyConfig(currentDifficulty)
+        applyDifficulty(GameDifficultySelection.selected)
         timerJob?.cancel()
         runStartTime = Clock.System.now().toEpochMilliseconds()
         _state.value = OddOneOutState(gridSize = config.gridSize, isPlaying = true)
@@ -66,6 +157,7 @@ class OddOneOutViewmodel(
     private fun stopGame() {
         timerJob?.cancel()
         roundActive = false
+        saveSession.clear()
         _state.value = OddOneOutState()
     }
 
@@ -135,6 +227,7 @@ class OddOneOutViewmodel(
         val lives = current.lives - 1
         if (lives <= 0) {
             timerJob?.cancel()
+            saveSession.clear()
             val elapsed = Clock.System.now().toEpochMilliseconds() - runStartTime
             _state.update {
                 it.copy(
@@ -172,5 +265,12 @@ class OddOneOutViewmodel(
                 timeMillis = timeMillis,
             )
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        timerJob?.cancel()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }

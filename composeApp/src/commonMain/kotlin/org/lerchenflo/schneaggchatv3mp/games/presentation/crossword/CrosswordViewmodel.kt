@@ -9,32 +9,63 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.games.data.CrosswordRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordDirection
 import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordLanguage
 import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordPuzzle
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
-import kotlin.time.Clock
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.today
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.games_daily_reset
 
 class CrosswordViewmodel(
     private val crosswordRepository: CrosswordRepository,
     private val gameHighscoreRepository: GameHighscoreRepository,
+    gameSaveRepository: GameSaveRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CrosswordState())
     val state = _state.asStateFlow()
 
+    private val saveSession = GameSaveSession(
+        game = GameId.CROSSWORD,
+        serializer = CrosswordSnapshot.serializer(),
+        schemaVersion = CROSSWORD_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+    /** The screen shows the loading state until this is true, so a restored puzzle is not preceded by the language chooser. */
+    val restoreChecked = saveSession.restoreChecked
+
     private var timerJob: Job? = null
+    /** Local day the loaded puzzle belongs to; null while nothing is loaded. */
+    private var puzzleEpochDay: Long? = null
+
+    init {
+        saveSession.start(onRestore = ::restore, onAppBackgrounded = ::onAppBackgrounded)
+        viewModelScope.launch {
+            AppLifecycleManager.appResumedEvent.collect {
+                // Coming back from the background may be on a new day; otherwise just resume counting
+                checkDayChanged()
+                resumeTimerIfNeeded()
+            }
+        }
+    }
 
     fun onAction(action: CrosswordAction) {
         when (action) {
             is CrosswordAction.SelectLanguage -> loadPuzzle(action.language)
             CrosswordAction.RetryLoad -> _state.value.language?.let { loadPuzzle(it) }
-            CrosswordAction.StopGame -> stopGame()
+            CrosswordAction.LeaveGame -> persist()
+            CrosswordAction.CheckDayChanged -> checkDayChanged()
             CrosswordAction.RestartGame -> restartGame()
             is CrosswordAction.CellTapped -> onCellTapped(action.index)
             is CrosswordAction.KeyPressed -> onKeyPressed(action.letter)
@@ -48,23 +79,26 @@ class CrosswordViewmodel(
     /** Today's local daily puzzle — restarting on the same day reproduces it. */
     private fun loadPuzzle(language: CrosswordLanguage) {
         timerJob?.cancel()
-        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        timerJob = null
+        saveSession.clear()
+        val loadDate = today()
         _state.value = CrosswordState(language = language, isLoading = true)
 
         viewModelScope.launch {
             val puzzle = when (language) {
-                CrosswordLanguage.GERMAN -> generateGermanDailyPuzzle(today.toEpochDays())
-                CrosswordLanguage.ENGLISH -> crosswordRepository.getEnglishDailyPuzzle(today)
+                CrosswordLanguage.GERMAN -> generateGermanDailyPuzzle(loadDate.toEpochDays())
+                CrosswordLanguage.ENGLISH -> crosswordRepository.getEnglishDailyPuzzle(loadDate)
             }
             if (puzzle == null) {
                 _state.update { it.copy(isLoading = false, loadFailed = true) }
                 return@launch
             }
-            startWithPuzzle(language, puzzle)
+            startWithPuzzle(language, puzzle, loadDate.toEpochDays())
         }
     }
 
-    private fun startWithPuzzle(language: CrosswordLanguage, puzzle: CrosswordPuzzle) {
+    private fun startWithPuzzle(language: CrosswordLanguage, puzzle: CrosswordPuzzle, epochDay: Long) {
+        puzzleEpochDay = epochDay
         val firstClue = puzzle.clues.minByOrNull { (if (it.direction == CrosswordDirection.DOWN) 1_000_000 else 0) + it.number }
         _state.value = CrosswordState(
             language = language,
@@ -92,12 +126,77 @@ class CrosswordViewmodel(
         val current = _state.value
         val puzzle = current.puzzle ?: return
         val language = current.language ?: return
-        startWithPuzzle(language, puzzle)
+        val epochDay = puzzleEpochDay ?: return
+        // A restart after midnight must play today's puzzle, not the one loaded yesterday
+        if (epochDay != today().toEpochDays()) {
+            loadPuzzle(language)
+            return
+        }
+        saveSession.clear()
+        startWithPuzzle(language, puzzle, epochDay)
     }
 
-    private fun stopGame() {
+    /** The app went to background: stop counting time and keep the progress for a possible process kill. */
+    private fun onAppBackgrounded() {
         timerJob?.cancel()
         timerJob = null
+        persist()
+    }
+
+    private fun resumeTimerIfNeeded() {
+        val current = _state.value
+        if (current.puzzle != null && !current.isSolved && timerJob == null) startTimer()
+    }
+
+    /** The daily puzzle changed underneath the one on screen: load today's and tell the user. */
+    private fun checkDayChanged() {
+        val epochDay = puzzleEpochDay ?: return
+        if (epochDay == today().toEpochDays()) return
+        val language = _state.value.language ?: return
+        loadPuzzle(language)
+        viewModelScope.launch { SnackbarManager.showMessage(getString(Res.string.games_daily_reset)) }
+    }
+
+    private fun persist() = saveSession.persist(difficultyFor(_state.value.language), snapshotOrNull())
+
+    /** Null until a puzzle is loaded; solved puzzles are kept so today's result stays visible. */
+    private fun snapshotOrNull(): CrosswordSnapshot? {
+        val current = _state.value
+        val puzzle = current.puzzle ?: return null
+        val language = current.language ?: return null
+        return CrosswordSnapshot(
+            language = language,
+            puzzle = puzzle,
+            entries = current.entries,
+            selectedCell = current.selectedCell,
+            direction = current.direction,
+            isSolved = current.isSolved,
+            elapsedMillis = current.elapsedMillis,
+        )
+    }
+
+    /** Brings today's saved progress back; an unsolved puzzle starts counting again right away. */
+    private fun restore(save: GameSave<CrosswordSnapshot>) {
+        val data = save.data
+        timerJob?.cancel()
+        timerJob = null
+        puzzleEpochDay = save.epochDay
+        _state.value = CrosswordState(
+            language = data.language,
+            puzzle = data.puzzle,
+            entries = data.entries,
+            selectedCell = data.selectedCell,
+            direction = data.direction,
+            isSolved = data.isSolved,
+            elapsedMillis = data.elapsedMillis,
+        )
+        if (!data.isSolved) startTimer()
+    }
+
+    /** The leaderboard difficulty encodes the puzzle language (LOW = German, HIGH = English). */
+    private fun difficultyFor(language: CrosswordLanguage?): GameDifficulty = when (language) {
+        CrosswordLanguage.GERMAN -> GameDifficulty.LOW
+        else -> GameDifficulty.HIGH
     }
 
     private fun onCellTapped(index: Int) {
@@ -146,21 +245,18 @@ class CrosswordViewmodel(
         if (solved) {
             timerJob?.cancel()
             submitSolveTime()
+            // Daily game: keep the solved puzzle so coming back shows the result
+            persist()
         }
     }
 
     private fun submitSolveTime() {
         val current = _state.value
         // The leaderboard is a race: score stays 0, ranking falls to the time tiebreaker.
-        // Difficulty encodes the puzzle language (LOW = German, HIGH = English).
-        val difficulty = when (current.language) {
-            CrosswordLanguage.GERMAN -> GameDifficulty.LOW
-            else -> GameDifficulty.HIGH
-        }
         viewModelScope.launch {
             gameHighscoreRepository.submitScore(
                 game = GameId.CROSSWORD,
-                difficulty = difficulty,
+                difficulty = difficultyFor(current.language),
                 score = 0L,
                 timeMillis = current.elapsedMillis,
             )
@@ -214,5 +310,7 @@ class CrosswordViewmodel(
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }

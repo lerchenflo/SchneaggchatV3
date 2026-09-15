@@ -58,19 +58,20 @@ fun OddOneOutScreenRoot(
 ) {
     val viewmodel = koinViewModel<OddOneOutViewmodel>()
     val state by viewmodel.state.collectAsStateWithLifecycle()
+    val restoreChecked by viewmodel.restoreChecked.collectAsStateWithLifecycle()
 
     var explanationDismissed by rememberSaveable { mutableStateOf(false) }
     val isStarted = state.isPlaying || state.isGameOver
 
-    // After process death the dismissed flag is restored but the ViewModel run
-    // is lost — start a fresh run instead of showing the explanation again.
-    LaunchedEffect(Unit) {
-        if (explanationDismissed && !isStarted) viewmodel.onAction(OddOneOutAction.StartGame)
+    // After process death the dismissed flag is restored but the ViewModel is new. Wait for the
+    // saved-run check first, otherwise this would start a fresh run over the restored one.
+    LaunchedEffect(restoreChecked) {
+        if (restoreChecked && explanationDismissed && !isStarted) viewmodel.onAction(OddOneOutAction.StartGame)
     }
 
-    // Leaving the game ends the run so no timer keeps running in the background
+    // Leaving the screen pauses and persists the run so it can be picked up again later
     DisposableEffect(Unit) {
-        onDispose { viewmodel.onAction(OddOneOutAction.StopGame) }
+        onDispose { viewmodel.onAction(OddOneOutAction.LeaveGame) }
     }
 
     Column(
@@ -143,7 +144,7 @@ fun OddOneOutScreenRoot(
                 )
             }
 
-            if (!explanationDismissed && !isStarted) {
+            if (restoreChecked && !explanationDismissed && !isStarted) {
                 GameStartOverlay(
                     title = stringResource(Res.string.games_oddoneout_title),
                     explanation = stringResource(Res.string.games_oddoneout_instructions),

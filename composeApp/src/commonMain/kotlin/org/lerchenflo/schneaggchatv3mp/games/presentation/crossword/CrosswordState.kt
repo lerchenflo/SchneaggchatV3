@@ -8,7 +8,10 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordPuzzle
 sealed interface CrosswordAction {
     data class SelectLanguage(val language: CrosswordLanguage) : CrosswordAction
     data object RetryLoad : CrosswordAction
-    data object StopGame : CrosswordAction
+    /** Screen is leaving (back, rotation, tab switch): keep the progress for the next visit. */
+    data object LeaveGame : CrosswordAction
+    /** The screen noticed a possible day change (midnight passed or app resumed). */
+    data object CheckDayChanged : CrosswordAction
     data object RestartGame : CrosswordAction
     data class CellTapped(val index: Int) : CrosswordAction
     data class KeyPressed(val letter: Char) : CrosswordAction

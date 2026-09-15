@@ -350,6 +350,9 @@ fun rememberToday(): LocalDate {
     return today
 }
 
+/** Today's local date — the non-composable twin of [rememberToday]. */
+fun today(): LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+
 /** month * 100 + day - a yearly-recurring key for a birthday, independent of year. */
 fun LocalDate.monthDayKey(): Int = month.number * 100 + day
 

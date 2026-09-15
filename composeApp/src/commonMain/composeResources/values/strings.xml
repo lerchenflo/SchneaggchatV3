@@ -823,7 +823,11 @@
 
     <!-- Games: Schneaggahus -->
     <string name="games_schneaggahus_title">Schneaggahus</string>
-    <string name="games_schneaggahus_instructions">Schneaggs crawl out of the spawn point and follow the tracks. Tap the switches to change where the tracks lead and guide every Schneagg to the house of its color.\n\nEach correct delivery scores points — after 3 Schneaggs end up in a wrong house, the game is over. Spawns get faster the longer you survive!</string>
+    <string name="games_schneaggahus_instructions">Schneaggs crawl out of the tunnel and follow the tracks. Tap a switch to change where its track leads — it only counts if you flip it before the Schneagg reaches the switch. Guide every Schneagg to the house of its color; the next colors are shown beside the tunnel.\n\nThe game runs in waves: each wave sends a fixed number of Schneaggs, gets faster and bigger, and every second wave adds a house. Deliver correctly and the Schneaggs come quicker; mistakes give you a breather. Each correct delivery scores 10 points times the wave number — after 3 Schneaggs end up in a wrong house, the game is over.</string>
+    <string name="games_schneaggahus_wave">Wave %1$d</string>
+    <string name="games_schneaggahus_next_up">Next</string>
+    <string name="games_schneaggahus_wave_progress">%1$d of %2$d Schneaggs delivered</string>
+    <string name="games_schneaggahus_lives_remaining">%1$d lives remaining</string>
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Crossword</string>
@@ -841,6 +845,7 @@
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Daily challenge (%1$s)</string>
+    <string name="games_daily_reset">A new daily challenge is available – your progress was reset.</string>
     <string name="games_gridrush_title">Grid Rush</string>
     <string name="games_gridrush_instructions">Drag a line through neighboring tiles of the same color — releasing on 2 or more tiles clears them and the tiles above fall down. Clear the whole board to win!\n\nLonger chains score more points and finishing under par earns a bonus. If no two matching tiles touch anymore, the run is over. Everyone plays the same board each day — the timer only starts with your first move, so plan ahead!</string>
     <string name="games_gridrush_moves">Moves: %1$d / Par %2$d</string>

@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus
 
 import androidx.compose.ui.graphics.Color
+import kotlinx.serialization.Serializable
 
 const val SCHNEAGGHUS_MAX_LIVES = 3
 
@@ -9,6 +10,8 @@ sealed interface SchneaggaHusAction {
     data object StopGame : SchneaggaHusAction
     data object RestartGame : SchneaggaHusAction
     data object TogglePause : SchneaggaHusAction
+    /** Screen is leaving (back, rotation, tab switch): pause and keep the run for the next visit. */
+    data object LeaveGame : SchneaggaHusAction
     data class OnSwitchClick(val position: Position) : SchneaggaHusAction
 }
 
@@ -19,50 +22,73 @@ data class SchneaggaHusState(
     val score: Int = 0,
     val lives: Int = SCHNEAGGHUS_MAX_LIVES,
     val elapsedMillis: Long = 0L,
-    val gridWidth: Int = 11,
-    val gridHeight: Int = 8,
-    val spawn: Position = Position(5, 0),
-    val firstTrack: Position = Position(5, 1),
+    val gridWidth: Int = 7,
+    val gridHeight: Int = 11,
+    val spawn: Position = Position(3, 0),
     val schneaggList: List<Schneagg> = emptyList(),
     val schneagghusList: List<Schneaggahus> = emptyList(),
     val trackList: List<TrackTile> = emptyList(),
-)
+    /** Current wave, starting at 1. */
+    val wave: Int = 1,
+    /** How many schneaggs this wave sends in total. */
+    val waveSnailTotal: Int = 0,
+    /** How many of them already arrived somewhere, right or wrong. */
+    val waveDelivered: Int = 0,
+    /** Pre-rolled colors still to spawn this wave; the head is the next one. */
+    val upcoming: List<Color> = emptyList(),
+    /** Run time (ms) the current wave started at; drives the wave banner fade. */
+    val waveStartedAtElapsed: Long = 0L,
+    /** Run time (ms) the next wave starts at; non-null only during the break between waves. */
+    val intermissionUntilElapsed: Long? = null,
+    /** Recent deliveries for the house pulse / floating points; pruned by the game loop. */
+    val feedback: List<DeliveryFeedback> = emptyList(),
+) {
+    val isIntermission: Boolean get() = intermissionUntilElapsed != null
+}
 
+@Serializable
 data class Position(
     val x: Int,
     val y: Int
 ) {
-    fun step(direction: DIRECTION): Position = when (direction) {
-        DIRECTION.NORTH -> copy(y = y - 1)
-        DIRECTION.EAST -> copy(x = x + 1)
-        DIRECTION.SOUTH -> copy(y = y + 1)
-        DIRECTION.WEST -> copy(x = x - 1)
-    }
+    fun step(direction: DIRECTION): Position = Position(x + direction.dx, y + direction.dy)
 }
 
-/** A schneagg travelling from the center of [fromTile] to the center of [toTile]. */
+/**
+ * One schneagg sitting on exactly one tile. [progress] runs from 0 at the middle
+ * of the [entry] side to 1 at the middle of the [exit] side. The exit is locked
+ * the moment the schneagg enters the tile, so a switch only counts when it was
+ * set before the schneagg reached it.
+ */
 data class Schneagg(
     val id: Int,
     val color: Color,
-    val fromTile: Position,
-    val toTile: Position,
-    /** Progress between the two tile centers, 0..1 */
+    val tile: Position,
+    val entry: DIRECTION,
+    val exit: DIRECTION,
     val progress: Float,
-) {
-    val renderX: Float get() = fromTile.x + (toTile.x - fromTile.x) * progress
-    val renderY: Float get() = fromTile.y + (toTile.y - fromTile.y) * progress
-}
+)
 
 data class Schneaggahus(
     val position: Position,
     val color: Color
 )
 
+/** A schneagg just arrived at the house on [position]; shown briefly as a pulse. */
+data class DeliveryFeedback(
+    val position: Position,
+    val correct: Boolean,
+    /** Points awarded, 0 for a wrong delivery. */
+    val points: Int,
+    val atElapsedMillis: Long,
+)
+
 /**
- * One track tile. [entry] is only used for drawing the incoming rail —
- * movement always leaves through the active exit. Tiles with more than
- * one exit are switches the player can toggle.
+ * One track tile. [entry] is the side the rail comes in from; movement always
+ * leaves through the active exit. Tiles with more than one exit are switches
+ * the player can toggle.
  */
+@Serializable
 data class TrackTile(
     val position: Position,
     val entry: DIRECTION,
@@ -73,11 +99,12 @@ data class TrackTile(
     val exit: DIRECTION get() = exits[activeExit]
 }
 
-enum class DIRECTION {
-    NORTH,
-    EAST,
-    SOUTH,
-    WEST;
+/** Screen directions: y grows downwards, angles are clockwise with 0° pointing east. */
+enum class DIRECTION(val dx: Int, val dy: Int, val angleDeg: Float) {
+    NORTH(0, -1, -90f),
+    EAST(1, 0, 0f),
+    SOUTH(0, 1, 90f),
+    WEST(-1, 0, 180f);
 
     fun opposite(): DIRECTION = when (this) {
         NORTH -> SOUTH

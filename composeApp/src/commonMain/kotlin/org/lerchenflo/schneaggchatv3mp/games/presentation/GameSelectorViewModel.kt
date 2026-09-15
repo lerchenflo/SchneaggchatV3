@@ -4,6 +4,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Blind
+import androidx.compose.material.icons.filled.Castle
+import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.House
@@ -35,36 +37,8 @@ class GameSelectorViewModel : ViewModel() {
 
     val gamesList = listOf(
         GameScreenElement(
-            title = Res.string.games_tetris_title,
-            icon = Icons.Default.Menu, // Placeholder
-            route = Route.Tetris,
-            inDev = GameId.TETRIS.indev,
-            gameId = GameId.TETRIS
-        ),
-        GameScreenElement(
-            title = Res.string.games_stack_tower,
-            icon = Icons.Default.Menu,
-            route = Route.TowerStack,
-            inDev = GameId.TOWERSTACK.indev,
-            gameId = GameId.TOWERSTACK
-        ),
-        GameScreenElement(
-            title = Res.string.games_morse_title,
-            icon = Icons.Default.GraphicEq,
-            route = Route.Morse,
-            inDev = GameId.MORSE.indev,
-            gameId = GameId.MORSE
-        ),
-        GameScreenElement(
-            title = Res.string.games_schneaggahus_title,
-            icon = Icons.Default.House,
-            route = Route.SchneaggaHus,
-            inDev = GameId.SCHNEAGGAHUS.indev,
-            gameId = GameId.SCHNEAGGAHUS
-        ),
-        GameScreenElement(
             title = Res.string.games_gridrush_title,
-            icon = Icons.Default.GridOn,
+            icon = Icons.Default.Dataset,
             route = Route.GridRush,
             inDev = GameId.GRIDRUSH.indev,
             gameId = GameId.GRIDRUSH,
@@ -78,12 +52,31 @@ class GameSelectorViewModel : ViewModel() {
             gameId = GameId.CROSSWORD,
             daily = true
         ),
+
+
+
+
+
         GameScreenElement(
-            title = Res.string.games_oddoneout_title,
-            icon = Icons.Default.Search,
-            route = Route.OddOneOut,
-            inDev = GameId.ODDONEOUT.indev,
-            gameId = GameId.ODDONEOUT
+            title = Res.string.games_schneaggahus_title,
+            icon = Icons.Default.House,
+            route = Route.SchneaggaHus,
+            inDev = GameId.SCHNEAGGAHUS.indev,
+            gameId = GameId.SCHNEAGGAHUS
+        ),
+        GameScreenElement(
+            title = Res.string.games_tetris_title,
+            icon = Icons.Default.GridOn,
+            route = Route.Tetris,
+            inDev = GameId.TETRIS.indev,
+            gameId = GameId.TETRIS
+        ),
+        GameScreenElement(
+            title = Res.string.games_stack_tower,
+            icon = Icons.Default.Castle,
+            route = Route.TowerStack,
+            inDev = GameId.TOWERSTACK.indev,
+            gameId = GameId.TOWERSTACK
         ),
         GameScreenElement(
             title = Res.string.games_2048_title,
@@ -92,6 +85,24 @@ class GameSelectorViewModel : ViewModel() {
             inDev = GameId.GAME_2048.indev,
             gameId = GameId.GAME_2048
         ),
+        GameScreenElement(
+            title = Res.string.games_morse_title,
+            icon = Icons.Default.GraphicEq,
+            route = Route.Morse,
+            inDev = GameId.MORSE.indev,
+            gameId = GameId.MORSE
+        ),
+        GameScreenElement(
+            title = Res.string.games_oddoneout_title,
+            icon = Icons.Default.Search,
+            route = Route.OddOneOut,
+            inDev = GameId.ODDONEOUT.indev,
+            gameId = GameId.ODDONEOUT
+        ),
+
+
+
+
         GameScreenElement(
             title = Res.string.games_coinflip_title,
             icon = Icons.Default.MonetizationOn,
