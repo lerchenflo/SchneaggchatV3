@@ -89,6 +89,9 @@ interface MessageDao {
     @Query("SELECT * FROM messages WHERE id IN (:ids)")
     suspend fun getMessageDtosByIds(ids: List<String>): List<MessageDto>
 
+    @Query("SELECT * FROM messages WHERE clientMessageId IN (:clientMessageIds)")
+    suspend fun getMessageDtosByClientMessageIds(clientMessageIds: List<String>): List<MessageDto>
+
     @Upsert
     suspend fun upsertReaders(readers: List<MessageReaderDto>): List<Long>
 

@@ -29,6 +29,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
         Index(value = ["sent"]),
         // MAX(version) on every sync, an index seek instead of a table scan.
         Index(value = ["version"]),
+        // Lets sync/socket reconciliation find a still-pending row by clientMessageId when no
+        // row has the server id yet. Safe as unique despite being nullable - SQLite treats every
+        // NULL as distinct from every other NULL in a unique index.
+        Index(value = ["clientMessageId"], unique = true),
     ]
 )
 data class MessageDto(

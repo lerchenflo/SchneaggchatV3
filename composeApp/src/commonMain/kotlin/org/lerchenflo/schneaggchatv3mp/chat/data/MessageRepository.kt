@@ -49,6 +49,19 @@ class MessageRepository(
         }
     }
 
+    suspend fun getMessageDtosByClientMessageIds(clientMessageIds: List<String>): List<MessageDto> {
+        return clientMessageIds.chunked(SQL_ID_CHUNK_SIZE).flatMap { chunk ->
+            database.messageDao().getMessageDtosByClientMessageIds(chunk)
+        }
+    }
+
+    /** Single-item convenience for the socket handler - see [getMessageDtosByClientMessageIds]. */
+    suspend fun getMessageByClientMessageId(clientMessageId: String): Message? {
+        return database.messageDao().getMessageDtosByClientMessageIds(listOf(clientMessageId))
+            .firstOrNull()
+            ?.toMessage()
+    }
+
     suspend fun deleteMessage(id: String){
         deleteReadersForMessage(id)
         deleteMessageDto(id)
