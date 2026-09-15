@@ -53,6 +53,8 @@ import schneaggchatv3mp.composeapp.generated.resources.undercover_minus
 import schneaggchatv3mp.composeapp.generated.resources.undercover_mr_white_cannot_start
 import schneaggchatv3mp.composeapp.generated.resources.undercover_mr_white_guess_instructions
 import schneaggchatv3mp.composeapp.generated.resources.undercover_mr_white_guess_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_mr_white_tip_format
+import schneaggchatv3mp.composeapp.generated.resources.undercover_mr_white_tip_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_new_game
 import schneaggchatv3mp.composeapp.generated.resources.undercover_no_player
 import schneaggchatv3mp.composeapp.generated.resources.undercover_no_valid_starter
@@ -61,6 +63,7 @@ import schneaggchatv3mp.composeapp.generated.resources.undercover_players_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_plus
 import schneaggchatv3mp.composeapp.generated.resources.undercover_remove
 import schneaggchatv3mp.composeapp.generated.resources.undercover_reset
+import schneaggchatv3mp.composeapp.generated.resources.undercover_restart_same_players
 import schneaggchatv3mp.composeapp.generated.resources.undercover_reveal_mr_white
 import schneaggchatv3mp.composeapp.generated.resources.undercover_reveal_word_format
 import schneaggchatv3mp.composeapp.generated.resources.undercover_role_civilian
@@ -230,6 +233,28 @@ fun Undercover(
 
                 Spacer(Modifier.height(12.dp))
 
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.undercover_mr_white_tip_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Switch(
+                            checked = state.mrWhiteTipEnabled,
+                            onCheckedChange = viewModel::toggleMrWhiteTip
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -285,6 +310,7 @@ fun Undercover(
                     Button(onClick = viewModel::resetGame) { Text(stringResource(Res.string.undercover_reset)) }
                 } else {
                     val word = viewModel.getWordForPlayer(player)
+                    val mrWhiteTip = viewModel.getMrWhiteTipForPlayer(player)
 
                     Spacer(Modifier.weight(1f))
 
@@ -313,6 +339,14 @@ fun Undercover(
                                 style = MaterialTheme.typography.titleLarge,
                                 textAlign = TextAlign.Center
                             )
+                            if (mrWhiteTip != null) {
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    text = stringResource(Res.string.undercover_mr_white_tip_format, mrWhiteTip),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                             Spacer(Modifier.height(18.dp))
                             Button(
                                 onClick = viewModel::onHideAndPassPhone,
@@ -567,6 +601,15 @@ fun Undercover(
                 }
 
                 Spacer(Modifier.height(16.dp))
+
+                Button(
+                    onClick = viewModel::restartWithSamePlayers,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(Res.string.undercover_restart_same_players))
+                }
+
+                Spacer(Modifier.height(8.dp))
 
                 Button(
                     onClick = viewModel::resetGame,

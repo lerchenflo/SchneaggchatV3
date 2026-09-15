@@ -592,6 +592,9 @@
     <string name="undercover_role_mr_white">Mr. White</string>
     <string name="undercover_role_undercover">Undercover</string>
     <string name="undercover_autohide_title">Auto-Verstecken</string>
+    <string name="undercover_mr_white_tip_title">Mr. White Tipp</string>
+    <string name="undercover_mr_white_tip_format">Tipp: %1$s</string>
+    <string name="undercover_restart_same_players">Neustart mit gleichen Spielern</string>
     <string name="undercover_seconds_format">Sekunden: %1$d</string>
     <string name="undercover_minus">-</string>
     <string name="undercover_plus">+</string>

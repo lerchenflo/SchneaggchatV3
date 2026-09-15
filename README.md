@@ -28,6 +28,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
 - Android Auto Support
 - Doppelte Nachrichten (Ungesendete) Behoben
+- Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare
 
 
 #### Bugfixes
