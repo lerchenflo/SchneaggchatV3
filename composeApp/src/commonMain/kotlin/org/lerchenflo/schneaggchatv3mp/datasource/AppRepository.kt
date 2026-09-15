@@ -1888,10 +1888,9 @@ class AppRepository(
                 is NetworkResult.Error<NetworkingError> -> {
 
                     val error = serverrequest.error
-                    if (error !is NetworkingError.NetworkTimeout) {
-                        if (error is NetworkingError.BadRequest) { //Message was not accepted by the server, delete locals
-                            database.messageDao().deleteMessageDtoByPk(localpkintern)
-                        }
+                    //If badrequest (not met servers specifications (should not happen)) or conflict (duplicate message) delete locally
+                    if (error is NetworkingError.BadRequest || error is NetworkingError.Conflict) {
+                        database.messageDao().deleteMessageDtoByPk(localpkintern)
                     }
 
                     println("Message senden error: ${serverrequest.error}")
@@ -2124,9 +2123,23 @@ class AppRepository(
                         .getMessageDtosByIds(sortedUpdates.map { it.messageId })
                         .associateBy { it.id }
 
+                    // A message of our own can arrive here before our own sendMessage() call for
+                    // it has processed its response (dataSync runs fully in parallel with sends -
+                    // nothing serializes them). Falling back to the pending row's clientMessageId
+                    // (only ever populated on our own sends, and only ever echoed back to us by
+                    // the server for our own messages) merges onto that row instead of creating a
+                    // second, permanently-orphaned one.
+                    val unmatchedClientMessageIds = sortedUpdates
+                        .filter { existingById[it.messageId] == null }
+                        .mapNotNull { it.clientMessageId }
+                    val existingByClientMessageId = messageRepository
+                        .getMessageDtosByClientMessageIds(unmatchedClientMessageIds)
+                        .associateBy { it.clientMessageId }
+
                     messageRepository.upsertMessages(
                         sortedUpdates.map { messageResponse ->
                             val existing = existingById[messageResponse.messageId]
+                                ?: messageResponse.clientMessageId?.let { existingByClientMessageId[it] }
                             messageResponse.toDomainMessage(
                                 ownId = ownId,
                                 existingLocalPK = existing?.localPK ?: 0L,

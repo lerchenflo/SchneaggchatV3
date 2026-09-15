@@ -337,6 +337,8 @@ compose.desktop {
                 // Pro-tip: If you target macOS, set a bundleID without spaces here.
                 // Otherwise, macOS might try to generate one from the spaced packageName and fail.
                 bundleID = "org.lerchenflo.schneaggchatv3"
+
+                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_v3.icns"))
             }
         }
         buildTypes.release.proguard {

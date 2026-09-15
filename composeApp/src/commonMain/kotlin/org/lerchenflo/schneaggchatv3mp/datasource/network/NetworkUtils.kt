@@ -928,7 +928,10 @@ class NetworkUtils(
         val deleted: Boolean,
         val readers: List<ReaderResponse>,
         val reactions: List<ReactionResponse> = emptyList(),
-        val version: Long = 0L
+        val version: Long = 0L,
+        // Only non-null when this response is about our own sent message - lets sync/socket
+        // reconciliation find a still-pending local row before the send's own response arrives.
+        val clientMessageId: String? = null,
     )
 
     @Serializable
