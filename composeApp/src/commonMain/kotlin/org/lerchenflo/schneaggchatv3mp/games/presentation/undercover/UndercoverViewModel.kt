@@ -61,6 +61,7 @@ class UndercoverViewModel(
 
         val autoHideEnabled: Boolean = false,
         val autoHideSeconds: Int = 5,
+        val mrWhiteTipEnabled: Boolean = false,
 
         val selectedWordPair: UndercoverWordPair? = null,
         val players: List<Player> = emptyList(),
@@ -136,6 +137,10 @@ class UndercoverViewModel(
 
     fun decrementAutoHideSeconds() {
         state = state.copy(autoHideSeconds = (state.autoHideSeconds - 1).coerceAtLeast(1))
+    }
+
+    fun toggleMrWhiteTip(enabled: Boolean) {
+        state = state.copy(mrWhiteTipEnabled = enabled)
     }
 
     fun showRulesDialog() {
@@ -250,6 +255,12 @@ class UndercoverViewModel(
             ActualRole.CIVILIAN -> pair.civilianWord
             ActualRole.UNDERCOVER -> pair.undercoverWord
         }
+    }
+
+    fun getMrWhiteTipForPlayer(player: Player): String? {
+        if (!state.mrWhiteTipEnabled) return null
+        if (player.actualRole != ActualRole.MR_WHITE) return null
+        return state.selectedWordPair?.mrWhiteTip?.takeIf { it.isNotBlank() }
     }
 
     fun starterCandidates(): List<Player> {
@@ -384,9 +395,15 @@ class UndercoverViewModel(
             setupMrWhiteCount = state.setupMrWhiteCount,
             setupUndercoverCount = state.setupUndercoverCount,
             autoHideEnabled = state.autoHideEnabled,
-            autoHideSeconds = state.autoHideSeconds
+            autoHideSeconds = state.autoHideSeconds,
+            mrWhiteTipEnabled = state.mrWhiteTipEnabled
         )
         coerceRoleCountsToValidRange()
+    }
+
+    fun restartWithSamePlayers() {
+        if (state.phase != Phase.GAME_OVER) return
+        startGame()
     }
 
     private fun evaluateWinner(players: List<Player>): UiText? {
