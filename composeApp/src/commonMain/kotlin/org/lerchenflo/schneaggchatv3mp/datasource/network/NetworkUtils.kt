@@ -25,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GlobalRankingResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.HighscoresResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoresBatchRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventParticipationRequest
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
@@ -1327,6 +1328,14 @@ class NetworkUtils(
     ): NetworkResult<GameScoreResponse, NetworkingError> {
         return safePost(
             endpoint = "/games/upsert",
+            body = request)
+    }
+
+    suspend fun submitGameScoresBatch(
+        request: SubmitGameScoresBatchRequest,
+    ): NetworkResult<List<GameScoreResponse>, NetworkingError> {
+        return safePost(
+            endpoint = "/games/upsertbatch",
             body = request)
     }
 

@@ -948,6 +948,7 @@
     <string name="recap_games_title">Zertifizierter Zocker.</string>
     <string name="recap_games_rank">Rang #%1$d</string>
     <string name="recap_games_score">Bester Punktestand: %1$s</string>
+    <string name="recap_games_wins">Siege: %1$s</string>
 
     <string name="recap_betatester_title">Zertifizierter Beta-Tester.</string>
     <string name="recap_betatester_your_rank">Von allen, die Schneaggchat je fast zum Absturz gebracht haben, liegst du auf Platz</string>
@@ -1069,6 +1070,20 @@
 
     <!-- Game highscores -->
     <string name="highscores_title">Bestenliste</string>
+    <string name="highscore_upload_title">Highscores hochladen?</string>
+    <string name="game_reset_title">Spiel zurücksetzen?</string>
+    <string name="game_reset_message">Das laufende Spiel und sein gespeicherter Fortschritt werden verworfen. Spieler und Einstellungen bleiben erhalten.</string>
+    <string name="game_reset_confirm">Zurücksetzen</string>
+    <string name="game_reset_cancel">Abbrechen</string>
+    <string name="highscore_upload_message">Sollen die Ergebnisse all dieser Spieler in die Bestenliste hochgeladen werden? Lade nur echte Spiele hoch - Testspiele würden die Bestenliste verfälschen.</string>
+    <string name="highscore_upload_wins_message">Soll jedem dieser Gewinner ein Sieg in der Bestenliste gutgeschrieben werden? Lade nur echte Spiele hoch - Testspiele würden die Bestenliste verfälschen.</string>
+    <string name="highscore_upload_confirm">Hochladen</string>
+    <string name="highscore_upload_decline">Nicht hochladen</string>
+    <string name="highscore_upload_retry">Erneut versuchen</string>
+    <string name="highscore_upload_uploading">Wird hochgeladen…</string>
+    <string name="highscore_upload_failed">Hochladen fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.</string>
+    <string name="highscore_upload_done">Highscores hochgeladen</string>
+    <string name="highscore_upload_skipped_players">%1$d Spieler ohne Konto werden nicht hochgeladen.</string>
     <string name="highscores_error">Bestenliste konnte nicht geladen werden</string>
     <string name="highscores_empty">Noch keine Bestenliste</string>
     <string name="highscores_period_daily">Heute</string>

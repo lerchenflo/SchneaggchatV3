@@ -39,6 +39,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameResetButton
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadDialog
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadDoneText
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -122,6 +127,7 @@ fun Undercover(
         onDispose { viewModel.persist() }
     }
     val state = viewModel.state
+    val highscoreUploadState by viewModel.highscoreUploadState.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
@@ -130,7 +136,11 @@ fun Undercover(
     ) {
         ActivityTitle(
             title = stringResource(Res.string.games_undercover_title),
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            // Back to setup with the same players and settings; also drops the saved game
+            actions = {
+                if (state.phase != UndercoverViewModel.Phase.SETUP) GameResetButton(onReset = viewModel::resetGame)
+            }
         )
         when (state.phase) {
             UndercoverViewModel.Phase.SETUP -> {
@@ -614,6 +624,10 @@ fun Undercover(
                             style = MaterialTheme.typography.titleLarge,
                             textAlign = TextAlign.Center
                         )
+                        HighscoreUploadDoneText(
+                            state = highscoreUploadState,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
                     }
                 }
 
@@ -653,6 +667,13 @@ fun Undercover(
     }
 
     SniffDialogs(viewModel = viewModel)
+
+    // Asked once the game is decided - wins only reach the leaderboard on explicit confirmation
+    HighscoreUploadDialog(
+        state = highscoreUploadState,
+        onUpload = viewModel::uploadHighscores,
+        onDecline = viewModel::declineHighscoreUpload,
+    )
     
     // Rules Dialog
     if (state.showRulesDialog) {

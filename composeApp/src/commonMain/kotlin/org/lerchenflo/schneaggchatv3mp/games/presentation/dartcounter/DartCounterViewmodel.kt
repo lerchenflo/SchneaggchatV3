@@ -5,14 +5,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
 import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartSegment
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadController
+import kotlin.math.roundToLong
 
 class DartCounterViewModel(
     gameSaveRepository: GameSaveRepository,
+    gameHighscoreRepository: GameHighscoreRepository,
 ) : ViewModel() {
     enum class OutMode {
         SINGLE_OUT,
@@ -229,15 +236,16 @@ class DartCounterViewModel(
         fun getWinners(): List<Player> = playerList.filter { it.isFinished }
 
         /** The turn display counters live in the ViewModel, so it passes them in. */
-        fun toSnapshot(currentThrow: Int, throwCount: Int, totalThrowsCount: Int) = DartCounterSnapshot(
+        fun toSnapshot(currentThrow: Int, throwCount: Int, totalThrowsCount: Int, userIds: List<String?>) = DartCounterSnapshot(
             doubleOut = doubleOut,
             countdown = countdown,
-            players = playerList.map {
+            players = playerList.mapIndexed { index, it ->
                 DartPlayerSnapshot(
                     name = it.name,
                     score = it.score,
                     totalDartsThrown = it.totalDartsThrown,
                     isFinished = it.isFinished,
+                    userId = userIds.getOrNull(index),
                 )
             },
             currentPlayerIndex = currentPlayerIndex,
@@ -330,22 +338,27 @@ class DartCounterViewModel(
     var gameRevision by mutableStateOf(0)
         private set
 
-    fun setPlayers(names: List<String>) {
-        playerNames = names
+    // Same order as playerNames; keeps the user ids of platform users for the leaderboard upload
+    private var gamePlayers: List<GamePlayer> = emptyList()
+
+    fun setPlayers(players: List<GamePlayer>) {
+        gamePlayers = players
+        playerNames = players.map { it.name }
     }
 
     fun addPlayerName(name: String) {
         if (name.isNotBlank() && name !in playerNames) {
-            playerNames = playerNames + name
+            setPlayers(gamePlayers + GamePlayer(name = name))
         }
     }
     
     fun removePlayerName(name: String) {
-        playerNames = playerNames - name
+        setPlayers(gamePlayers.filterNot { it.name == name })
     }
     
     fun startGame() {
         if (playerNames.isNotEmpty()) {
+            highscoreUpload.reset()
             gameManager = GameManager(
                 doubleOut = selectedOutMode == OutMode.DOUBLE_OUT,
                 countdown = selectedCountdown,
@@ -421,6 +434,8 @@ class DartCounterViewModel(
                     updateCurrentPlayerName()
                 }
             }
+
+            if (game.gameOver) offerHighscoreUpload(game)
         }
         gameRevision++
     }
@@ -440,6 +455,8 @@ class DartCounterViewModel(
                 currentThrow = currentTurnDarts.sumOf { it.actualScore }
                 throwCount = currentTurnDarts.size
                 updateCurrentPlayerName()
+                // The finish was taken back, so there is no final result to upload anymore
+                if (!game.gameOver) highscoreUpload.reset()
             }
         }
         gameRevision++
@@ -458,6 +475,7 @@ class DartCounterViewModel(
     
     fun resetGame() {
         saveSession.clear()
+        highscoreUpload.reset()
         gameManager = null
         playerNames = emptyList()
         resetThrow()
@@ -505,6 +523,7 @@ class DartCounterViewModel(
             currentThrow = currentThrow,
             throwCount = throwCount,
             totalThrowsCount = totalThrowsCount,
+            userIds = gamePlayers.map { it.userId },
         )
     }
 
@@ -521,6 +540,7 @@ class DartCounterViewModel(
         game.restoreFrom(data)
         if (game.gameOver) return
 
+        gamePlayers = data.players.map { GamePlayer(name = it.name, userId = it.userId) }
         playerNames = names
         selectedCountdown = data.countdown
         selectedOutMode = if (data.doubleOut) OutMode.DOUBLE_OUT else OutMode.SINGLE_OUT
@@ -530,6 +550,32 @@ class DartCounterViewModel(
         gameManager = game
         updateCurrentPlayerName()
         gameStarted = true
+    }
+
+    private val highscoreUpload = HighscoreUploadController(
+        game = GameId.DART_COUNTER,
+        repository = gameHighscoreRepository,
+        scope = viewModelScope,
+    )
+    /** Leaderboard upload offer once every player finished; never uploads without confirmation. */
+    val highscoreUploadState = highscoreUpload.state
+
+    fun uploadHighscores() = highscoreUpload.upload()
+
+    fun declineHighscoreUpload() = highscoreUpload.decline()
+
+    /**
+     * Only a finished game counts: each player's three-dart average over the whole game (x100),
+     * on the board of the game's countdown. Averages during a running game are never offered.
+     */
+    private fun offerHighscoreUpload(game: GameManager) {
+        val results = game.playerList.mapIndexedNotNull { index, player ->
+            if (player.totalDartsThrown == 0) return@mapIndexedNotNull null
+            val average = game.countdown * 300.0 / player.totalDartsThrown
+            val gamePlayer = gamePlayers.getOrNull(index) ?: GamePlayer(name = player.name)
+            gamePlayer to average.roundToLong()
+        }
+        highscoreUpload.offer(dartCounterDifficulty(game.countdown), results)
     }
 
     override fun onCleared() {

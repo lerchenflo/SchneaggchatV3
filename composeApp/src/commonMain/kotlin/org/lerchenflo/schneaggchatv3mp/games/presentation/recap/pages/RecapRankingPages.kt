@@ -33,6 +33,7 @@ import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_title
 import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_your_rank
 import schneaggchatv3mp.composeapp.generated.resources.recap_games_rank
 import schneaggchatv3mp.composeapp.generated.resources.recap_games_score
+import schneaggchatv3mp.composeapp.generated.resources.recap_games_wins
 import schneaggchatv3mp.composeapp.generated.resources.recap_games_title
 import schneaggchatv3mp.composeapp.generated.resources.recap_leaderboard_messages
 import schneaggchatv3mp.composeapp.generated.resources.recap_leaderboard_not_ranked
@@ -239,7 +240,10 @@ fun RecapGamesPage(recap: RecapUi, visible: Boolean) {
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = stringResource(Res.string.recap_games_score, formatCount(game.bestScore)),
+                                text = stringResource(
+                                    if (game.countsWins) Res.string.recap_games_wins else Res.string.recap_games_score,
+                                    game.bestScoreText ?: formatCount(game.bestScore)
+                                ),
                                 color = theme.onBackground.copy(alpha = 0.7f),
                                 fontSize = 14.sp
                             )

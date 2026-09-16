@@ -34,7 +34,9 @@ data class YatziDie(
 
 data class YatziPlayer(
     val name: String,
-    val scores: Map<YatziCategory, Int> = emptyMap()
+    val scores: Map<YatziCategory, Int> = emptyMap(),
+    // Set for platform users, whose final score can be uploaded to the leaderboard
+    val userId: String? = null,
 ) {
     val upperScore: Int get() = scores.filterKeys { it.isUpper }.values.sum()
     val bonus: Int get() = if (upperScore >= 63) 35 else 0

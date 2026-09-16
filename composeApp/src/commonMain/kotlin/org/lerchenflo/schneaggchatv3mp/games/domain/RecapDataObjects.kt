@@ -320,4 +320,8 @@ data class GameRecapUi(
     val difficulty: String,
     val bestScore: Long,
     val rank: Int,
+    // Preformatted score for games that don't store a plain count (Dart Counter average x100)
+    val bestScoreText: String? = null,
+    // Win-counting game (Undercover): bestScore is the number of wins
+    val countsWins: Boolean = false,
 )

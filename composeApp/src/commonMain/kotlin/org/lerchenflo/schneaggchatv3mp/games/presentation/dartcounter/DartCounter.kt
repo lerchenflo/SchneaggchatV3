@@ -45,6 +45,12 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartSegment
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.findCheckouts
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadDialog
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadDoneText
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresDialog
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -166,6 +172,14 @@ fun DartCounter(
     if (viewmodel.showStopGameDialog) {
         StopGameConfirmationDialog(viewmodel = viewmodel)
     }
+
+    // Asked once every player finished - averages only reach the leaderboard on explicit confirmation
+    val highscoreUploadState by viewmodel.highscoreUploadState.collectAsStateWithLifecycle()
+    HighscoreUploadDialog(
+        state = highscoreUploadState,
+        onUpload = viewmodel::uploadHighscores,
+        onDecline = viewmodel::declineHighscoreUpload,
+    )
 }
 
 enum class Multiplier {
@@ -232,12 +246,21 @@ private fun TopActionRow(viewmodel: DartCounterViewModel) {
             }
         }
 
+        var showHighscores by remember { mutableStateOf(false) }
         OutlinedButton(
-            onClick = { /* Highscores - leave as is */ },
+            onClick = { showHighscores = true },
             modifier = buttonModifier,
             contentPadding = CompactButtonPadding
         ) {
             FittingButtonText(stringResource(Res.string.dartcounter_highscores))
+        }
+
+        if (showHighscores) {
+            HighscoresDialog(
+                game = GameId.DART_COUNTER,
+                initialDifficulty = dartCounterDifficulty(viewmodel.selectedCountdown),
+                onDismiss = { showHighscores = false }
+            )
         }
     }
 }
@@ -489,6 +512,8 @@ fun GameStatusDisplay(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
+                val highscoreUploadState by viewmodel.highscoreUploadState.collectAsStateWithLifecycle()
+                HighscoreUploadDoneText(state = highscoreUploadState)
             } else {
                 CurrentTurnHeader(
                     playerName = currentPlayer.name,

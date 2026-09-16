@@ -119,19 +119,22 @@ class GameSelectorViewModel : ViewModel() {
             title = Res.string.games_dartcounter_title,
             icon = Icons.Default.AdsClick, // ma darf sich gern was besseres usdenka
             route = Route.DartCounter,
-            inDev = false
+            inDev = GameId.DART_COUNTER.indev,
+            gameId = GameId.DART_COUNTER
         ),
         GameScreenElement(
             title = Res.string.games_undercover_title,
             icon = Icons.Default.Blind,
             route = Route.Undercover,
-            inDev = false
+            inDev = GameId.UNDERCOVER.indev,
+            gameId = GameId.UNDERCOVER
         ),
         GameScreenElement(
             title = Res.string.games_yahtzee_title,
             icon = Icons.Default.Star,
             route = Route.Yatzi,
-            inDev = false
+            inDev = GameId.YATZI.indev,
+            gameId = GameId.YATZI
         ),
     )
 }

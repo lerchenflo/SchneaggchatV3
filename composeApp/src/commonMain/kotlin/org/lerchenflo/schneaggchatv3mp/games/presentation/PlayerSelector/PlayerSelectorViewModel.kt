@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 
 class PlayerSelectorViewModel(
     private val playerRepository: PlayerRepository,
@@ -83,12 +84,13 @@ class PlayerSelectorViewModel(
         _selectedPlayers.clear()
     }
 
-    fun getSelectedPlayerNames(): List<String> {
-        return _selectedPlayers.map { player ->
+    /** Selected players in selection order; platform users keep their id for leaderboard uploads. */
+    fun getSelectedGamePlayers(): List<GamePlayer> {
+        return _selectedPlayers.mapNotNull { player ->
             when (player) {
-                is PlayerEntity -> player.name
-                is User -> player.name
-                else -> ""
+                is PlayerEntity -> GamePlayer(name = player.name)
+                is User -> GamePlayer(name = player.name, userId = player.id)
+                else -> null
             }
         }
     }

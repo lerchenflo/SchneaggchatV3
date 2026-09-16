@@ -17,6 +17,7 @@ data class UndercoverPlayerSnapshot(
     val name: String,
     val actualRole: UndercoverViewModel.ActualRole,
     val isAlive: Boolean,
+    val userId: String? = null,
 )
 
 @Serializable
@@ -31,6 +32,7 @@ data class UndercoverVotingResultSnapshot(
 data class UndercoverSnapshot(
     val phase: UndercoverViewModel.Phase,
     val setupPlayers: List<String>,
+    val setupPlayerUserIds: Map<String, String> = emptyMap(),
     val setupMrWhiteCount: Int,
     val setupUndercoverCount: Int,
     val autoHideEnabled: Boolean,

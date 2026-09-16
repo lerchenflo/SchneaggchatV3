@@ -43,7 +43,11 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterCountdown
 import org.lerchenflo.schneaggchatv3mp.games.domain.defaultLeaderboardPeriod
+import org.lerchenflo.schneaggchatv3mp.games.domain.formatScore
+import org.lerchenflo.schneaggchatv3mp.games.domain.hasTimedScores
+import org.lerchenflo.schneaggchatv3mp.games.domain.leaderboardDifficulties
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.highscores_empty
@@ -74,7 +78,10 @@ fun HighscoresDialog(
     onDismiss: () -> Unit,
 ) {
     val repository = koinInject<GameHighscoreRepository>()
-    var selectedDifficulty by remember { mutableStateOf(initialDifficulty) }
+    val boards = game.leaderboardDifficulties
+    var selectedDifficulty by remember {
+        mutableStateOf(initialDifficulty.takeIf { it in boards } ?: boards.first())
+    }
     var selectedPeriod by remember { mutableStateOf(game.defaultLeaderboardPeriod) }
     var state by remember { mutableStateOf(HighscoreUiState(isLoading = true)) }
 
@@ -95,12 +102,25 @@ fun HighscoresDialog(
         },
         text = {
             Column {
-                DifficultySelector(
-                    selected = selectedDifficulty,
-                    onSelect = { selectedDifficulty = it },
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
+                if (game == GameId.DART_COUNTER) {
+                    // Dart boards are split by countdown, not by difficulty
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        boards.forEach { board ->
+                            FilterChip(
+                                selected = board == selectedDifficulty,
+                                onClick = { selectedDifficulty = board },
+                                label = { Text(dartCounterCountdown(board).toString()) },
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                } else if (boards.size > 1) {
+                    DifficultySelector(
+                        selected = selectedDifficulty,
+                        onSelect = { selectedDifficulty = it },
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
                 PeriodSelector(
                     selected = selectedPeriod,
@@ -111,7 +131,9 @@ fun HighscoresDialog(
 
                 GameHighscores(
                     state = state,
-                    modifier = Modifier.heightIn(max = 400.dp)
+                    modifier = Modifier.heightIn(max = 400.dp),
+                    formatScore = game::formatScore,
+                    showTime = game.hasTimedScores,
                 )
             }
         }
@@ -157,6 +179,8 @@ internal fun PeriodSelector(
 fun GameHighscores(
     state: HighscoreUiState,
     modifier: Modifier = Modifier,
+    formatScore: (Long) -> String = { it.toString() },
+    showTime: Boolean = true,
 ) {
     val ownUserId = SessionCache.requireLoggedIn()?.userId
 
@@ -198,6 +222,8 @@ fun GameHighscores(
                         HighscoreRow(
                             entry = entry,
                             isOwn = entry.userId == ownUserId,
+                            scoreText = formatScore(entry.score),
+                            showTime = showTime,
                         )
                     }
                 }
@@ -210,6 +236,8 @@ fun GameHighscores(
 private fun HighscoreRow(
     entry: HighscoreEntry,
     isOwn: Boolean,
+    scoreText: String,
+    showTime: Boolean,
 ) {
     val contentColor = if (isOwn) MaterialTheme.colorScheme.onPrimaryContainer else Color.Unspecified
 
@@ -242,16 +270,18 @@ private fun HighscoreRow(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = entry.score.toString(),
+            text = scoreText,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = contentColor,
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = formatGameTime(entry.timeMillis),
-            style = MaterialTheme.typography.bodySmall,
-            color = if (isOwn) contentColor else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        if (showTime) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = formatGameTime(entry.timeMillis),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isOwn) contentColor else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }

@@ -10,10 +10,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
 import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadController
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -25,6 +30,7 @@ import kotlin.random.Random
 class UndercoverViewModel(
     private val languageService: LanguageService,
     gameSaveRepository: GameSaveRepository,
+    gameHighscoreRepository: GameHighscoreRepository,
 ) : ViewModel() {
 
     @Serializable
@@ -50,7 +56,9 @@ class UndercoverViewModel(
         val id: String,
         val name: String,
         val actualRole: ActualRole,
-        val isAlive: Boolean
+        val isAlive: Boolean,
+        // Set for platform users; wins are uploaded to this account, never to the device owner's
+        val userId: String? = null,
     )
 
     /** Steps of re-checking one's own word mid-game; never persisted, so a restored game never shows a word. */
@@ -72,6 +80,8 @@ class UndercoverViewModel(
 
         val setupPlayerNameInput: String = "",
         val setupPlayers: List<String> = emptyList(),
+        // Setup player name -> platform user id, for players picked from friends / yourself
+        val setupPlayerUserIds: Map<String, String> = emptyMap(),
         val setupMrWhiteCount: Int = 1,
         val setupUndercoverCount: Int = 1,
 
@@ -106,6 +116,18 @@ class UndercoverViewModel(
 
     private var revealAutoHideJob: Job? = null
 
+    private val highscoreUpload = HighscoreUploadController(
+        game = GameId.UNDERCOVER,
+        repository = gameHighscoreRepository,
+        scope = viewModelScope,
+    )
+    /** Offer to add a win for every registered winner; never uploads without confirmation. */
+    val highscoreUploadState = highscoreUpload.state
+
+    fun uploadHighscores() = highscoreUpload.upload()
+
+    fun declineHighscoreUpload() = highscoreUpload.decline()
+
     private val saveSession = GameSaveSession(
         game = LocalGameSaveSlot.UNDERCOVER,
         serializer = UndercoverSnapshot.serializer(),
@@ -136,6 +158,7 @@ class UndercoverViewModel(
         return UndercoverSnapshot(
             phase = current.phase,
             setupPlayers = current.setupPlayers,
+            setupPlayerUserIds = current.setupPlayerUserIds,
             setupMrWhiteCount = current.setupMrWhiteCount,
             setupUndercoverCount = current.setupUndercoverCount,
             autoHideEnabled = current.autoHideEnabled,
@@ -147,7 +170,7 @@ class UndercoverViewModel(
                 mrWhiteTip = wordPair.mrWhiteTip,
             ),
             players = current.players.map {
-                UndercoverPlayerSnapshot(id = it.id, name = it.name, actualRole = it.actualRole, isAlive = it.isAlive)
+                UndercoverPlayerSnapshot(id = it.id, name = it.name, actualRole = it.actualRole, isAlive = it.isAlive, userId = it.userId)
             },
             currentRevealIndex = current.currentRevealIndex,
             selectedStarterPlayerId = current.selectedStarterPlayerId,
@@ -172,6 +195,7 @@ class UndercoverViewModel(
             // so the player has to confirm their identity again first
             phase = if (data.phase == Phase.REVEAL) Phase.PASS_PHONE else data.phase,
             setupPlayers = data.setupPlayers,
+            setupPlayerUserIds = data.setupPlayerUserIds,
             setupMrWhiteCount = data.setupMrWhiteCount,
             setupUndercoverCount = data.setupUndercoverCount,
             autoHideEnabled = data.autoHideEnabled,
@@ -183,7 +207,7 @@ class UndercoverViewModel(
                 mrWhiteTip = data.wordPair.mrWhiteTip,
             ),
             players = data.players.map {
-                Player(id = it.id, name = it.name, actualRole = it.actualRole, isAlive = it.isAlive)
+                Player(id = it.id, name = it.name, actualRole = it.actualRole, isAlive = it.isAlive, userId = it.userId)
             },
             currentRevealIndex = data.currentRevealIndex.coerceIn(0, data.players.lastIndex),
             selectedStarterPlayerId = data.selectedStarterPlayerId,
@@ -216,7 +240,10 @@ class UndercoverViewModel(
     }
 
     fun removeSetupPlayer(name: String) {
-        state = state.copy(setupPlayers = state.setupPlayers - name)
+        state = state.copy(
+            setupPlayers = state.setupPlayers - name,
+            setupPlayerUserIds = state.setupPlayerUserIds - name
+        )
         coerceRoleCountsToValidRange()
     }
 
@@ -272,8 +299,11 @@ class UndercoverViewModel(
         state = state.copy(showPlayerSelector = false)
     }
 
-    fun setSetupPlayers(names: List<String>) {
-        state = state.copy(setupPlayers = names)
+    fun setSetupPlayers(players: List<GamePlayer>) {
+        state = state.copy(
+            setupPlayers = players.map { it.name },
+            setupPlayerUserIds = players.mapNotNull { player -> player.userId?.let { player.name to it } }.toMap()
+        )
         coerceRoleCountsToValidRange()
     }
 
@@ -294,6 +324,7 @@ class UndercoverViewModel(
 
     fun startGame() {
         if (!canStartGame()) return
+        highscoreUpload.reset()
 
         // Get the appropriate word list based on current language
         val currentLanguage = runBlocking { languageService.getCurrentLanguage() }
@@ -312,7 +343,8 @@ class UndercoverViewModel(
                 id = "p$index",
                 name = name,
                 actualRole = roles[index],
-                isAlive = true
+                isAlive = true,
+                userId = state.setupPlayerUserIds[name]
             )
         }
 
@@ -467,6 +499,7 @@ class UndercoverViewModel(
                 phase = Phase.GAME_OVER,
                 winnerText = winner
             )
+            offerWinsForWinningSide()
             return
         }
 
@@ -490,6 +523,9 @@ class UndercoverViewModel(
                 mrWhiteGuessWasCorrect = true,
                 winnerText = UiText.StringResourceText(Res.string.undercover_winner_mr_white)
             )
+            // Only the Mr. White who guessed wins
+            val guesser = state.players.firstOrNull { it.id == state.votingResult?.eliminatedPlayerId }
+            offerWins(listOfNotNull(guesser))
             return
         }
 
@@ -499,6 +535,7 @@ class UndercoverViewModel(
             mrWhiteGuessWasCorrect = false,
             winnerText = winnerAfterWrongGuess
         )
+        if (winnerAfterWrongGuess != null) offerWinsForWinningSide()
     }
 
     /** Sniffing is possible once everyone got their word, until the game is decided. */
@@ -538,6 +575,7 @@ class UndercoverViewModel(
 
     fun resetGame() {
         cancelAutoHide()
+        highscoreUpload.reset()
         saveSession.clear()
         state = UiState(
             setupPlayers = state.setupPlayers,
@@ -556,20 +594,47 @@ class UndercoverViewModel(
     }
 
     private fun evaluateWinner(players: List<Player>): UiText? {
+        val roles = winningRoles(players) ?: return null
+        return if (ActualRole.CIVILIAN in roles) {
+            UiText.StringResourceText(Res.string.undercover_winner_civilians)
+        } else {
+            UiText.StringResourceText(Res.string.undercover_winner_undercover)
+        }
+    }
+
+    /** Roles of the side that won by elimination, or null while the game is still open. */
+    private fun winningRoles(players: List<Player>): Set<ActualRole>? {
         val alive = players.filter { it.isAlive }
         val aliveCivilians = alive.count { it.actualRole == ActualRole.CIVILIAN }
         val aliveUndercovers = alive.count { it.actualRole == ActualRole.UNDERCOVER }
         val aliveMrWhites = alive.count { it.actualRole == ActualRole.MR_WHITE }
 
         if (aliveUndercovers == 0 && aliveMrWhites == 0) {
-            return UiText.StringResourceText(Res.string.undercover_winner_civilians)
+            return setOf(ActualRole.CIVILIAN)
         }
 
         if (aliveCivilians <= 1 && (aliveUndercovers + aliveMrWhites) > 0) {
-            return UiText.StringResourceText(Res.string.undercover_winner_undercover)
+            return setOf(ActualRole.UNDERCOVER, ActualRole.MR_WHITE)
         }
 
         return null
+    }
+
+    /** The whole winning side gets a win, including teammates that were voted out earlier. */
+    private fun offerWinsForWinningSide() {
+        val roles = winningRoles(state.players) ?: return
+        offerWins(state.players.filter { it.actualRole in roles })
+    }
+
+    /**
+     * Asks whether one win should be added for each winner. Wins go to each winner's own account;
+     * players without an account are skipped by the controller.
+     */
+    private fun offerWins(winners: List<Player>) {
+        highscoreUpload.offer(
+            difficulty = GameDifficulty.MEDIUM,
+            results = winners.map { GamePlayer(name = it.name, userId = it.userId) to 1L },
+        )
     }
 
     private fun scheduleAutoHideIfEnabled() {

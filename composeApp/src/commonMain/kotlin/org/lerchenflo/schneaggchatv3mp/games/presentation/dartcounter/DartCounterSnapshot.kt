@@ -10,6 +10,7 @@ data class DartPlayerSnapshot(
     val score: Int,
     val totalDartsThrown: Int,
     val isFinished: Boolean,
+    val userId: String? = null,
 )
 
 @Serializable

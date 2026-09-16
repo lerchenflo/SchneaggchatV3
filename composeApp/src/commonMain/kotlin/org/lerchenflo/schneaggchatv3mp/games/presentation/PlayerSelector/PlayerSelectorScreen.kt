@@ -45,11 +45,12 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
+import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 
 @Composable
 fun PlayerSelector(
     onDismiss: () -> Unit,
-    onFinish: (List<String>) -> Unit
+    onFinish: (List<GamePlayer>) -> Unit
 ) {
     val viewModel = koinInject<PlayerSelectorViewModel>()
     val localPlayers = viewModel.localPlayers
@@ -238,7 +239,7 @@ fun PlayerSelector(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            onFinish(viewModel.getSelectedPlayerNames())
+                            onFinish(viewModel.getSelectedGamePlayers())
                             viewModel.clearSelection()
                             onDismiss()
                         },

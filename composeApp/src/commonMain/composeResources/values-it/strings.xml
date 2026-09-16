@@ -940,6 +940,7 @@
     <string name="recap_games_title">Giocatore certificato.</string>
     <string name="recap_games_rank">Posizione #%1$d</string>
     <string name="recap_games_score">Miglior punteggio: %1$s</string>
+    <string name="recap_games_wins">Vittorie: %1$s</string>
 
     <string name="recap_betatester_title">Beta tester certificato.</string>
     <string name="recap_betatester_your_rank">Tra tutti quelli che hanno mai rotto Schneaggchat, ti classifichi</string>
@@ -1061,6 +1062,20 @@
 
     <!-- Game highscores -->
     <string name="highscores_title">Classifiche</string>
+    <string name="highscore_upload_title">Caricare i punteggi?</string>
+    <string name="game_reset_title">Ricominciare la partita?</string>
+    <string name="game_reset_message">La partita in corso e i suoi progressi salvati verranno eliminati. Giocatori e impostazioni restano invariati.</string>
+    <string name="game_reset_confirm">Ricomincia</string>
+    <string name="game_reset_cancel">Annulla</string>
+    <string name="highscore_upload_message">Vuoi caricare nella classifica i risultati di tutti questi giocatori? Carica solo partite vere - le partite di prova falserebbero la classifica.</string>
+    <string name="highscore_upload_wins_message">Vuoi aggiungere una vittoria in classifica per ciascuno di questi vincitori? Carica solo partite vere - le partite di prova falserebbero la classifica.</string>
+    <string name="highscore_upload_confirm">Carica</string>
+    <string name="highscore_upload_decline">Non caricare</string>
+    <string name="highscore_upload_retry">Riprova</string>
+    <string name="highscore_upload_uploading">Caricamento…</string>
+    <string name="highscore_upload_failed">Caricamento non riuscito. Controlla la connessione e riprova.</string>
+    <string name="highscore_upload_done">Punteggi caricati</string>
+    <string name="highscore_upload_skipped_players">%1$d giocatori senza account non vengono caricati.</string>
     <string name="highscores_error">Impossibile caricare le classifiche</string>
     <string name="highscores_empty">Ancora nessuna classifica</string>
     <string name="highscores_period_daily">Oggi</string>

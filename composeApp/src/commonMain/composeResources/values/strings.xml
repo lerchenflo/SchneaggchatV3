@@ -946,6 +946,7 @@
     <string name="recap_games_title">Certified gamer.</string>
     <string name="recap_games_rank">Rank #%1$d</string>
     <string name="recap_games_score">Best score: %1$s</string>
+    <string name="recap_games_wins">Wins: %1$s</string>
 
     <string name="recap_betatester_title">Certified beta tester.</string>
     <string name="recap_betatester_your_rank">Out of everyone who ever broke Schneaggchat, you rank</string>
@@ -1067,6 +1068,20 @@
 
     <!-- Game highscores -->
     <string name="highscores_title">Highscores</string>
+    <string name="highscore_upload_title">Upload highscores?</string>
+    <string name="game_reset_title">Reset game?</string>
+    <string name="game_reset_message">The current game and its saved progress will be discarded. Players and settings are kept.</string>
+    <string name="game_reset_confirm">Reset</string>
+    <string name="game_reset_cancel">Cancel</string>
+    <string name="highscore_upload_message">Should the results of all these players be uploaded to the leaderboard? Only upload real games - test games would spoil the leaderboard.</string>
+    <string name="highscore_upload_wins_message">Should a win be added to the leaderboard for each of these winners? Only upload real games - test games would spoil the leaderboard.</string>
+    <string name="highscore_upload_confirm">Upload</string>
+    <string name="highscore_upload_decline">Don't upload</string>
+    <string name="highscore_upload_retry">Retry</string>
+    <string name="highscore_upload_uploading">Uploading…</string>
+    <string name="highscore_upload_failed">Upload failed. Check your connection and try again.</string>
+    <string name="highscore_upload_done">Highscores uploaded</string>
+    <string name="highscore_upload_skipped_players">%1$d player(s) without an account are not uploaded.</string>
     <string name="highscores_error">Could not load highscores</string>
     <string name="highscores_empty">No highscores yet</string>
     <string name="highscores_period_daily">Today</string>

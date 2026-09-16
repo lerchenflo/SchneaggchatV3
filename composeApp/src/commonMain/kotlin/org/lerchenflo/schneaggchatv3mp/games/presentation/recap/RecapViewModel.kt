@@ -27,6 +27,11 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.countsWins
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterCountdown
+import org.lerchenflo.schneaggchatv3mp.games.domain.formatScore
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.month_april
 import schneaggchatv3mp.composeapp.generated.resources.month_august
@@ -210,11 +215,18 @@ class RecapViewModel(
             games = games
                 .sortedBy { it.rank }
                 .map {
+                    val isDartCounter = it.game == GameId.DART_COUNTER.name
                     GameRecapUi(
                         gameName = it.game.lowercase().replaceFirstChar { c -> c.uppercase() },
-                        difficulty = it.difficulty,
+                        // Dart Counter boards are the countdown, not a difficulty
+                        difficulty = GameDifficulty.entries.find { d -> d.name == it.difficulty }
+                            ?.takeIf { isDartCounter }
+                            ?.let { d -> dartCounterCountdown(d).toString() }
+                            ?: it.difficulty,
                         bestScore = it.bestScore,
-                        rank = it.rank
+                        rank = it.rank,
+                        bestScoreText = if (isDartCounter) GameId.DART_COUNTER.formatScore(it.bestScore) else null,
+                        countsWins = GameId.entries.find { g -> g.name == it.game }?.countsWins == true,
                     )
                 },
 

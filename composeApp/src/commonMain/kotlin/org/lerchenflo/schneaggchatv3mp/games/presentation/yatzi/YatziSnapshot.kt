@@ -8,6 +8,7 @@ const val YATZI_SNAPSHOT_VERSION = 1
 data class YatziPlayerSnapshot(
     val name: String,
     val scores: Map<YatziCategory, Int>,
+    val userId: String? = null,
 )
 
 @Serializable
