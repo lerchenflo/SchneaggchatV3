@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -85,6 +86,17 @@ fun YatziScreenRoot(
 
     //Setup and game share the same nav entry (and viewmodel), switching is plain UI state
     var showGame by rememberSaveable { mutableStateOf(false) }
+    val restoreChecked by viewModel.restoreChecked.collectAsState()
+
+    // A game restored from the last visit opens directly instead of on the setup screen
+    LaunchedEffect(restoreChecked) {
+        if (restoreChecked && viewModel.consumeRestoredGame()) showGame = true
+    }
+
+    // Leaving the screen (e.g. opening a chat from a notification) keeps the running game
+    DisposableEffect(Unit) {
+        onDispose { viewModel.persist() }
+    }
 
     if (showGame) {
         YatziGameScreen(

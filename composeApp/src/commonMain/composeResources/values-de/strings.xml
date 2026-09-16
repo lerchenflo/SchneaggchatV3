@@ -557,7 +557,6 @@
     <string name="dartcounter_undo">Rückgängig</string>
     <string name="dartcounter_list_separator">, </string>
     <string name="dartcounter_winners_format">Gewinner: %1$s</string>
-    <string name="dartcounter_current_player_format">Aktueller Spieler: %1$s, (Dart %2$d/3)</string>
     <string name="dartcounter_avg_format">Schnitt: %1$s</string>
     <string name="dartcounter_finished_suffix"> ✓</string>
     <string name="dartcounter_player_name_label">Spielername</string>
@@ -576,12 +575,12 @@
     <string name="dartcounter_checkout_title">Checkout</string>
     <string name="dartcounter_darts_left_format">%1$d Darts übrig</string>
     <string name="dartcounter_checkout_alt_format">Alt.:</string>
-    <string name="dartcounter_no_checkout">Kein Checkout</string>
     <string name="dartcounter_segment_double_format">D%1$d</string>
     <string name="dartcounter_segment_triple_format">T%1$d</string>
     <string name="dartcounter_segment_bull">Bull</string>
     <string name="dartcounter_darts_format">%1$d Darts</string>
     <string name="dartcounter_turn_total_format">= %1$d</string>
+    <string name="dartcounter_dart_slot_empty">–</string>
 
     <!-- Games: Undercover -->
     <string name="undercover_title">Undercover</string>
@@ -659,6 +658,13 @@
     
     <string name="undercover_rules_button">Regeln</string>
     <string name="undercover_rules_close">Schließen</string>
+    <string name="undercover_cancel">Abbrechen</string>
+    <string name="undercover_sniff_button">Schnüffeln - mein Wort nochmal zeigen</string>
+    <string name="undercover_sniff_select_title">Wer will sein Wort sehen?</string>
+    <string name="undercover_sniff_confirm_title">Bist du %1$s?</string>
+    <string name="undercover_sniff_confirm_message">Nur %1$s darf jetzt auf den Bildschirm schauen. Falls du den falschen Namen angetippt hast, brich ab - sonst wird das Wort eines anderen Spielers angezeigt.</string>
+    <string name="undercover_sniff_confirm_yes">Ja, mein Wort zeigen</string>
+    <string name="undercover_sniff_hide">Verstecken</string>
 
     <string name="your_friends_wrote_this">~ Deine Freunde</string>
     <string name="show_logs">Logs anzeigen</string>

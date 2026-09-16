@@ -8,7 +8,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
  * [daily] marks games with a new board every day. [indev] marks games still under development -
  * their scores are never submitted to the server (see GameHighscoreRepository.submitScore).
  */
-enum class GameId(val daily: Boolean = false, val indev: Boolean = false) {
+enum class GameId(override val daily: Boolean = false, val indev: Boolean = false) : GameSaveSlot {
     TETRIS,
     TOWERSTACK,
     MORSE,
@@ -16,7 +16,9 @@ enum class GameId(val daily: Boolean = false, val indev: Boolean = false) {
     GRIDRUSH(daily = true),
     ODDONEOUT,
     GAME_2048,
-    CROSSWORD(daily = true),
+    CROSSWORD(daily = true);
+
+    override val saveKey: String get() = name.lowercase()
 }
 
 /**

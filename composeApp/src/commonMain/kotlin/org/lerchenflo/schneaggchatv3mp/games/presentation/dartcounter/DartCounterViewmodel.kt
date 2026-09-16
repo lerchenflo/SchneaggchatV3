@@ -4,9 +4,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
+import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartSegment
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 
-class DartCounterViewModel() : ViewModel() {
+class DartCounterViewModel(
+    gameSaveRepository: GameSaveRepository,
+) : ViewModel() {
     enum class OutMode {
         SINGLE_OUT,
         DOUBLE_OUT
@@ -220,6 +227,62 @@ class DartCounterViewModel() : ViewModel() {
         fun getCurrentPlayer(): Player = playerList[currentPlayerIndex]
         
         fun getWinners(): List<Player> = playerList.filter { it.isFinished }
+
+        /** The turn display counters live in the ViewModel, so it passes them in. */
+        fun toSnapshot(currentThrow: Int, throwCount: Int, totalThrowsCount: Int) = DartCounterSnapshot(
+            doubleOut = doubleOut,
+            countdown = countdown,
+            players = playerList.map {
+                DartPlayerSnapshot(
+                    name = it.name,
+                    score = it.score,
+                    totalDartsThrown = it.totalDartsThrown,
+                    isFinished = it.isFinished,
+                )
+            },
+            currentPlayerIndex = currentPlayerIndex,
+            turnStartScore = turnStartScore,
+            turnHistory = turnHistory.map { turn ->
+                DartTurnSnapshot(
+                    playerIndex = turn.playerIndex,
+                    playerName = turn.playerName,
+                    scoreAtStart = turn.scoreAtStart,
+                    dartsThrown = turn.dartsThrown.map { it.toSnapshot() },
+                )
+            },
+            currentTurnDarts = currentTurnDarts.map { it.toSnapshot() },
+            allThrows = allThrowsHistory.map { it.toSnapshot() },
+            currentThrow = currentThrow,
+            throwCount = throwCount,
+            totalThrowsCount = totalThrowsCount,
+        )
+
+        /** Overwrites the freshly created manager (same players and settings) with a saved game. */
+        fun restoreFrom(snapshot: DartCounterSnapshot) {
+            snapshot.players.forEachIndexed { index, saved ->
+                playerList.getOrNull(index)?.apply {
+                    score = saved.score
+                    totalDartsThrown = saved.totalDartsThrown
+                    isFinished = saved.isFinished
+                }
+            }
+            currentPlayerIndex = snapshot.currentPlayerIndex.coerceIn(0, playerList.lastIndex)
+            turnStartScore = snapshot.turnStartScore
+            turnHistory.clear()
+            turnHistory.addAll(snapshot.turnHistory.map { turn ->
+                Turn(
+                    playerIndex = turn.playerIndex,
+                    playerName = turn.playerName,
+                    scoreAtStart = turn.scoreAtStart,
+                    dartsThrown = turn.dartsThrown.map { it.toDartThrow() },
+                )
+            })
+            currentTurnDarts = snapshot.currentTurnDarts.map { it.toDartThrow() }.toMutableList()
+            allThrowsHistory.clear()
+            allThrowsHistory.addAll(snapshot.allThrows.map { it.toDartThrow() })
+            gameStarted = true
+            checkIfAllPlayersFinished()
+        }
     }
 
     var gameManager by mutableStateOf<GameManager?>(null)
@@ -257,6 +320,14 @@ class DartCounterViewModel() : ViewModel() {
         private set
     
     var totalThrowsCount by mutableStateOf(0)
+        private set
+
+    /**
+     * Bumped after every change to [gameManager]'s internals. Scores and turn darts live in plain
+     * mutable fields, so the UI reads this to reliably recompose (e.g. a bust on the first dart
+     * changes nothing else that is observable).
+     */
+    var gameRevision by mutableStateOf(0)
         private set
 
     fun setPlayers(names: List<String>) {
@@ -351,6 +422,7 @@ class DartCounterViewModel() : ViewModel() {
                 }
             }
         }
+        gameRevision++
     }
     
     fun canUndoThrow(): Boolean {
@@ -370,6 +442,7 @@ class DartCounterViewModel() : ViewModel() {
                 updateCurrentPlayerName()
             }
         }
+        gameRevision++
     }
     
     private fun updateCurrentPlayerName() {
@@ -384,6 +457,7 @@ class DartCounterViewModel() : ViewModel() {
     }
     
     fun resetGame() {
+        saveSession.clear()
         gameManager = null
         playerNames = emptyList()
         resetThrow()
@@ -405,5 +479,62 @@ class DartCounterViewModel() : ViewModel() {
     
     fun canUndo(): Boolean {
         return gameManager?.canUndo() ?: false
+    }
+
+    // Declared after all state properties so a restore never sees them uninitialized
+    private val saveSession = GameSaveSession(
+        game = LocalGameSaveSlot.DART_COUNTER,
+        serializer = DartCounterSnapshot.serializer(),
+        schemaVersion = DART_COUNTER_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+
+    init {
+        saveSession.start(onRestore = ::restore, onAppBackgrounded = ::persist)
+    }
+
+    /** Leaving the screen or backgrounding the app keeps the running game for the next visit. */
+    fun persist() = saveSession.persist(snapshotOrNull())
+
+    /** Null when there is no game worth keeping (not started or already over). */
+    private fun snapshotOrNull(): DartCounterSnapshot? {
+        val game = gameManager ?: return null
+        if (!gameStarted || game.gameOver || game.playerList.isEmpty()) return null
+        return game.toSnapshot(
+            currentThrow = currentThrow,
+            throwCount = throwCount,
+            totalThrowsCount = totalThrowsCount,
+        )
+    }
+
+    private fun restore(save: GameSave<DartCounterSnapshot>) {
+        val data = save.data
+        if (data.players.isEmpty()) return
+        val names = data.players.map { it.name }
+        val game = GameManager(
+            doubleOut = data.doubleOut,
+            countdown = data.countdown,
+            playerNames = names,
+            onThrowAdded = { totalThrowsCount++ }
+        )
+        game.restoreFrom(data)
+        if (game.gameOver) return
+
+        playerNames = names
+        selectedCountdown = data.countdown
+        selectedOutMode = if (data.doubleOut) OutMode.DOUBLE_OUT else OutMode.SINGLE_OUT
+        currentThrow = data.currentThrow
+        throwCount = data.throwCount
+        totalThrowsCount = data.totalThrowsCount
+        gameManager = game
+        updateCurrentPlayerName()
+        gameStarted = true
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }

@@ -1,15 +1,79 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
+import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import kotlin.random.Random
 
-class YatziViewModel : ViewModel() {
+class YatziViewModel(
+    gameSaveRepository: GameSaveRepository,
+) : ViewModel() {
     private val _state = MutableStateFlow(YatziState())
     val state: StateFlow<YatziState> = _state.asStateFlow()
+
+    private val saveSession = GameSaveSession(
+        game = LocalGameSaveSlot.YATZI,
+        serializer = YatziSnapshot.serializer(),
+        schemaVersion = YATZI_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+    /** True once the stored game was looked at; the screen uses it to jump straight back into a restored game. */
+    val restoreChecked = saveSession.restoreChecked
+
+    private var restoredGamePending = false
+
+    init {
+        saveSession.start(onRestore = ::restore, onAppBackgrounded = ::persist)
+    }
+
+    /** True exactly once after a saved game was restored, so the screen can open it directly. */
+    fun consumeRestoredGame(): Boolean {
+        val pending = restoredGamePending
+        restoredGamePending = false
+        return pending
+    }
+
+    /** Leaving the screen or backgrounding the app keeps the running game for the next visit. */
+    fun persist() = saveSession.persist(snapshotOrNull())
+
+    /** Null when there is no game worth keeping (not started or already decided). */
+    private fun snapshotOrNull(): YatziSnapshot? {
+        val current = _state.value
+        if (!current.gameStarted || current.winner != null || current.players.isEmpty()) return null
+        return YatziSnapshot(
+            players = current.players.map { YatziPlayerSnapshot(name = it.name, scores = it.scores) },
+            currentPlayerIndex = current.currentPlayerIndex,
+            currentRollCount = current.currentRollCount,
+            dice = current.dice.map { YatziDieSnapshot(value = it.value, isKept = it.isKept) },
+        )
+    }
+
+    private fun restore(save: GameSave<YatziSnapshot>) {
+        val data = save.data
+        if (data.players.isEmpty()) return
+        val dice = data.dice.map { YatziDie(value = it.value, isKept = it.isKept) }
+        _state.value = YatziState(
+            players = data.players.map { YatziPlayer(name = it.name, scores = it.scores) },
+            currentPlayerIndex = data.currentPlayerIndex.coerceIn(0, data.players.lastIndex),
+            currentRollCount = data.currentRollCount,
+            dice = dice,
+            gameStarted = true,
+            potentialScores = if (data.currentRollCount > 0) {
+                YatziCategory.entries.associateWith { calculateScore(it, dice) }
+            } else {
+                emptyMap()
+            },
+        )
+        restoredGamePending = true
+    }
 
     fun setPlayers(names: List<String>) {
         _state.update {
@@ -34,11 +98,13 @@ class YatziViewModel : ViewModel() {
 
     fun resetAll() {
         _state.value = YatziState()
+        saveSession.clear()
     }
 
     fun endGameToSetup() {
         val clearedPlayers = _state.value.players.map { it.copy(scores = emptyMap()) }
         _state.value = YatziState(players = clearedPlayers)
+        saveSession.clear()
     }
 
     fun restartGame() {
@@ -206,5 +272,11 @@ class YatziViewModel : ViewModel() {
                  if (counts.any { it.value == 5 }) 50 + values.sum() else 0
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }

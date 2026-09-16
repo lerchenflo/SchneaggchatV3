@@ -9,6 +9,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
+import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -18,15 +23,18 @@ import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_underco
 import kotlin.random.Random
 
 class UndercoverViewModel(
-    private val languageService: LanguageService
+    private val languageService: LanguageService,
+    gameSaveRepository: GameSaveRepository,
 ) : ViewModel() {
 
+    @Serializable
     enum class ActualRole {
         CIVILIAN,
         UNDERCOVER,
         MR_WHITE
     }
 
+    @Serializable
     enum class Phase {
         SETUP,
         PASS_PHONE,
@@ -44,6 +52,14 @@ class UndercoverViewModel(
         val actualRole: ActualRole,
         val isAlive: Boolean
     )
+
+    /** Steps of re-checking one's own word mid-game; never persisted, so a restored game never shows a word. */
+    enum class SniffStep {
+        CLOSED,
+        SELECT_PLAYER,
+        CONFIRM_IDENTITY,
+        REVEAL
+    }
 
     data class VotingResult(
         val eliminatedPlayerId: String,
@@ -79,13 +95,110 @@ class UndercoverViewModel(
         val winnerText: UiText? = null,
         
         val showRulesDialog: Boolean = false,
-        val showPlayerSelector: Boolean = false
+        val showPlayerSelector: Boolean = false,
+
+        val sniffStep: SniffStep = SniffStep.CLOSED,
+        val sniffPlayerId: String? = null
     )
 
     var state by mutableStateOf(UiState())
         private set
 
     private var revealAutoHideJob: Job? = null
+
+    private val saveSession = GameSaveSession(
+        game = LocalGameSaveSlot.UNDERCOVER,
+        serializer = UndercoverSnapshot.serializer(),
+        schemaVersion = UNDERCOVER_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+
+    init {
+        saveSession.start(
+            onRestore = ::restore,
+            onAppBackgrounded = {
+                // Whoever picks the phone up next must not see a word that was left open
+                closeSniff()
+                persist()
+            }
+        )
+    }
+
+    /** Leaving the screen or backgrounding the app keeps the running game for the next visit. */
+    fun persist() = saveSession.persist(snapshotOrNull())
+
+    /** Null when there is no game worth keeping (still in setup or already over). */
+    private fun snapshotOrNull(): UndercoverSnapshot? {
+        val current = state
+        if (current.phase == Phase.SETUP || current.phase == Phase.GAME_OVER) return null
+        val wordPair = current.selectedWordPair ?: return null
+        return UndercoverSnapshot(
+            phase = current.phase,
+            setupPlayers = current.setupPlayers,
+            setupMrWhiteCount = current.setupMrWhiteCount,
+            setupUndercoverCount = current.setupUndercoverCount,
+            autoHideEnabled = current.autoHideEnabled,
+            autoHideSeconds = current.autoHideSeconds,
+            mrWhiteTipEnabled = current.mrWhiteTipEnabled,
+            wordPair = UndercoverWordPairSnapshot(
+                civilianWord = wordPair.civilianWord,
+                undercoverWord = wordPair.undercoverWord,
+                mrWhiteTip = wordPair.mrWhiteTip,
+            ),
+            players = current.players.map {
+                UndercoverPlayerSnapshot(id = it.id, name = it.name, actualRole = it.actualRole, isAlive = it.isAlive)
+            },
+            currentRevealIndex = current.currentRevealIndex,
+            selectedStarterPlayerId = current.selectedStarterPlayerId,
+            votingSelectedPlayerId = current.votingSelectedPlayerId,
+            votingResult = current.votingResult?.let {
+                UndercoverVotingResultSnapshot(
+                    eliminatedPlayerId = it.eliminatedPlayerId,
+                    eliminatedPlayerName = it.eliminatedPlayerName,
+                    revealedRole = it.revealedRole,
+                )
+            },
+            mrWhiteGuessInput = current.mrWhiteGuessInput,
+            mrWhiteGuessWasCorrect = current.mrWhiteGuessWasCorrect,
+        )
+    }
+
+    private fun restore(save: GameSave<UndercoverSnapshot>) {
+        val data = save.data
+        if (data.players.isEmpty()) return
+        state = UiState(
+            // A word that was on screen must not show up again for whoever reopens the app,
+            // so the player has to confirm their identity again first
+            phase = if (data.phase == Phase.REVEAL) Phase.PASS_PHONE else data.phase,
+            setupPlayers = data.setupPlayers,
+            setupMrWhiteCount = data.setupMrWhiteCount,
+            setupUndercoverCount = data.setupUndercoverCount,
+            autoHideEnabled = data.autoHideEnabled,
+            autoHideSeconds = data.autoHideSeconds,
+            mrWhiteTipEnabled = data.mrWhiteTipEnabled,
+            selectedWordPair = UndercoverWordPair(
+                civilianWord = data.wordPair.civilianWord,
+                undercoverWord = data.wordPair.undercoverWord,
+                mrWhiteTip = data.wordPair.mrWhiteTip,
+            ),
+            players = data.players.map {
+                Player(id = it.id, name = it.name, actualRole = it.actualRole, isAlive = it.isAlive)
+            },
+            currentRevealIndex = data.currentRevealIndex.coerceIn(0, data.players.lastIndex),
+            selectedStarterPlayerId = data.selectedStarterPlayerId,
+            votingSelectedPlayerId = data.votingSelectedPlayerId,
+            votingResult = data.votingResult?.let {
+                VotingResult(
+                    eliminatedPlayerId = it.eliminatedPlayerId,
+                    eliminatedPlayerName = it.eliminatedPlayerName,
+                    revealedRole = it.revealedRole,
+                )
+            },
+            mrWhiteGuessInput = data.mrWhiteGuessInput,
+            mrWhiteGuessWasCorrect = data.mrWhiteGuessWasCorrect,
+        )
+    }
 
     fun updateSetupPlayerNameInput(newValue: String) {
         state = state.copy(setupPlayerNameInput = newValue)
@@ -388,8 +501,44 @@ class UndercoverViewModel(
         )
     }
 
+    /** Sniffing is possible once everyone got their word, until the game is decided. */
+    fun canSniff(): Boolean = when (state.phase) {
+        Phase.CHOOSE_STARTER, Phase.DISCUSSION -> true
+        Phase.VOTING -> state.votingResult == null
+        else -> false
+    }
+
+    fun sniffCandidates(): List<Player> = state.players.filter { it.isAlive }
+
+    fun sniffPlayerOrNull(): Player? = state.players.firstOrNull { it.id == state.sniffPlayerId }
+
+    fun openSniff() {
+        if (!canSniff()) return
+        state = state.copy(sniffStep = SniffStep.SELECT_PLAYER, sniffPlayerId = null)
+    }
+
+    /** Picking a name only asks for confirmation - the word stays hidden until the player confirms it is them. */
+    fun selectSniffPlayer(playerId: String) {
+        if (state.sniffStep != SniffStep.SELECT_PLAYER) return
+        if (sniffCandidates().none { it.id == playerId }) return
+        state = state.copy(sniffStep = SniffStep.CONFIRM_IDENTITY, sniffPlayerId = playerId)
+    }
+
+    fun confirmSniffIdentity() {
+        if (state.sniffStep != SniffStep.CONFIRM_IDENTITY || sniffPlayerOrNull() == null) return
+        state = state.copy(sniffStep = SniffStep.REVEAL)
+        scheduleAutoHideIfEnabled()
+    }
+
+    fun closeSniff() {
+        if (state.sniffStep == SniffStep.CLOSED) return
+        cancelAutoHide()
+        state = state.copy(sniffStep = SniffStep.CLOSED, sniffPlayerId = null)
+    }
+
     fun resetGame() {
         cancelAutoHide()
+        saveSession.clear()
         state = UiState(
             setupPlayers = state.setupPlayers,
             setupMrWhiteCount = state.setupMrWhiteCount,
@@ -429,7 +578,9 @@ class UndercoverViewModel(
 
         revealAutoHideJob = viewModelScope.launch {
             delay(state.autoHideSeconds.toLong() * 1000L)
-            if (state.phase == Phase.REVEAL) {
+            if (state.sniffStep == SniffStep.REVEAL) {
+                closeSniff()
+            } else if (state.phase == Phase.REVEAL) {
                 onHideAndPassPhone()
             }
         }
@@ -457,5 +608,11 @@ class UndercoverViewModel(
             setupMrWhiteCount = mr,
             setupUndercoverCount = under
         )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }

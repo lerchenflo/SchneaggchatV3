@@ -1,5 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.undercover
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +30,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,12 +38,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_add
+import schneaggchatv3mp.composeapp.generated.resources.undercover_cancel
+import schneaggchatv3mp.composeapp.generated.resources.undercover_sniff_button
+import schneaggchatv3mp.composeapp.generated.resources.undercover_sniff_confirm_message
+import schneaggchatv3mp.composeapp.generated.resources.undercover_sniff_confirm_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_sniff_confirm_yes
+import schneaggchatv3mp.composeapp.generated.resources.undercover_sniff_hide
+import schneaggchatv3mp.composeapp.generated.resources.undercover_sniff_select_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_autohide_enabled
 import schneaggchatv3mp.composeapp.generated.resources.undercover_autohide_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_continue
@@ -103,7 +115,12 @@ fun Undercover(
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val viewModel = koinInject<UndercoverViewModel>()
+    val viewModel = koinViewModel<UndercoverViewModel>()
+
+    // Leaving the screen (e.g. opening a chat from a notification) keeps the running game
+    DisposableEffect(Unit) {
+        onDispose { viewModel.persist() }
+    }
     val state = viewModel.state
 
     Column(
@@ -621,7 +638,21 @@ fun Undercover(
                 Spacer(Modifier.weight(1f))
             }
         }
+
+        if (viewModel.canSniff()) {
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = viewModel::openSniff,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(imageVector = Icons.Default.Visibility, contentDescription = null)
+                Spacer(Modifier.size(8.dp))
+                Text(stringResource(Res.string.undercover_sniff_button))
+            }
+        }
     }
+
+    SniffDialogs(viewModel = viewModel)
     
     // Rules Dialog
     if (state.showRulesDialog) {
@@ -785,6 +816,133 @@ private fun RoleCounterRow(
             Button(onClick = onMinus) { Text(stringResource(Res.string.undercover_minus)) }
             Text(text = value.toString(), fontWeight = FontWeight.SemiBold)
             Button(onClick = onPlus) { Text(stringResource(Res.string.undercover_plus)) }
+        }
+    }
+}
+
+/**
+ * Lets a player look at their own word again mid-game: pick your name, confirm it is really you
+ * (so a mis-tap never exposes someone else's word), then only that player's word is shown.
+ */
+@Composable
+private fun SniffDialogs(viewModel: UndercoverViewModel) {
+    val state = viewModel.state
+    when (state.sniffStep) {
+        UndercoverViewModel.SniffStep.CLOSED -> Unit
+
+        UndercoverViewModel.SniffStep.SELECT_PLAYER -> {
+            AlertDialog(
+                onDismissRequest = viewModel::closeSniff,
+                icon = { Icon(imageVector = Icons.Default.Visibility, contentDescription = null) },
+                title = { Text(stringResource(Res.string.undercover_sniff_select_title)) },
+                text = {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(viewModel.sniffCandidates(), key = { it.id }) { player ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.selectSniffPlayer(player.id) },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Text(
+                                    text = player.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = viewModel::closeSniff) {
+                        Text(stringResource(Res.string.undercover_cancel))
+                    }
+                }
+            )
+        }
+
+        UndercoverViewModel.SniffStep.CONFIRM_IDENTITY -> {
+            val player = viewModel.sniffPlayerOrNull() ?: return
+            AlertDialog(
+                onDismissRequest = viewModel::closeSniff,
+                title = {
+                    Text(
+                        text = stringResource(Res.string.undercover_sniff_confirm_title, player.name),
+                        textAlign = TextAlign.Center
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(Res.string.undercover_sniff_confirm_message, player.name),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                confirmButton = {
+                    Button(onClick = viewModel::confirmSniffIdentity) {
+                        Text(stringResource(Res.string.undercover_sniff_confirm_yes))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = viewModel::closeSniff) {
+                        Text(stringResource(Res.string.undercover_cancel))
+                    }
+                }
+            )
+        }
+
+        UndercoverViewModel.SniffStep.REVEAL -> {
+            val player = viewModel.sniffPlayerOrNull() ?: return
+            val word = viewModel.getWordForPlayer(player)
+            val mrWhiteTip = viewModel.getMrWhiteTipForPlayer(player)
+            AlertDialog(
+                onDismissRequest = viewModel::closeSniff,
+                title = {
+                    Text(
+                        text = player.name,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = word?.let { stringResource(Res.string.undercover_reveal_word_format, it) }
+                                ?: stringResource(Res.string.undercover_reveal_mr_white),
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Center
+                        )
+                        if (mrWhiteTip != null) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(Res.string.undercover_mr_white_tip_format, mrWhiteTip),
+                                style = MaterialTheme.typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        if (state.autoHideEnabled) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(Res.string.undercover_autohide_enabled),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = viewModel::closeSniff) {
+                        Text(stringResource(Res.string.undercover_sniff_hide))
+                    }
+                }
+            )
         }
     }
 }

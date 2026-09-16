@@ -557,7 +557,6 @@
     <string name="dartcounter_undo">Undo</string>
     <string name="dartcounter_list_separator">, </string>
     <string name="dartcounter_winners_format">Winners: %1$s</string>
-    <string name="dartcounter_current_player_format">Current Player: %1$s, (Dart %2$d/3)</string>
     <string name="dartcounter_avg_format">Avg: %1$s</string>
     <string name="dartcounter_finished_suffix"> ✓</string>
     <string name="dartcounter_player_name_label">Player Name</string>
@@ -576,12 +575,12 @@
     <string name="dartcounter_checkout_title">Checkout</string>
     <string name="dartcounter_darts_left_format">%1$d darts left</string>
     <string name="dartcounter_checkout_alt_format">Alt:</string>
-    <string name="dartcounter_no_checkout">No checkout</string>
     <string name="dartcounter_segment_double_format">D%1$d</string>
     <string name="dartcounter_segment_triple_format">T%1$d</string>
     <string name="dartcounter_segment_bull">Bull</string>
     <string name="dartcounter_darts_format">%1$d darts</string>
     <string name="dartcounter_turn_total_format">= %1$d</string>
+    <string name="dartcounter_dart_slot_empty">–</string>
 
     <!-- Games: Undercover -->
     <string name="undercover_title">Undercover</string>
@@ -657,6 +656,13 @@
     
     <string name="undercover_rules_button">Rules</string>
     <string name="undercover_rules_close">Close</string>
+    <string name="undercover_cancel">Cancel</string>
+    <string name="undercover_sniff_button">Sniff - show my word again</string>
+    <string name="undercover_sniff_select_title">Who wants to see their word?</string>
+    <string name="undercover_sniff_confirm_title">Are you %1$s?</string>
+    <string name="undercover_sniff_confirm_message">Only %1$s may look at the screen now. If you tapped the wrong name, cancel - otherwise another player's word would be revealed.</string>
+    <string name="undercover_sniff_confirm_yes">Yes, show my word</string>
+    <string name="undercover_sniff_hide">Hide</string>
 
     <string name="your_friends_wrote_this">~ Your friends</string>
     <string name="show_logs">Show logs</string>

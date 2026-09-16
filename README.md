@@ -22,13 +22,14 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.18
 
 #### Features
-- Spiele: Spielstand wird gespeichert und beim Zurückkehren wiederhergestellt (Tetris, Tower Stack, 2048, SchneaggaHus, Grid Rush, Odd One Out, Morse Challenge, Kreuzworträtsel)
+- Spiele: Spielstand wird gespeichert und beim Zurückkehren wiederhergestellt (Tetris, Tower Stack, 2048, SchneaggaHus, Grid Rush, Odd One Out, Morse Challenge, Kreuzworträtsel, Yatzi, Dart Counter, Undercover), Undercover zeigt beim Fortsetzen nie ein geheimes Wort erneut
 - SchneaggaHus: Wellen-Spielmechanik mit Farb-Vorschau und Wellenfortschritt, gleitende Schneaggs auf gekrümmten Schienen, Porträt-Spielfeld mit größeren Tiles, neues visuelles Design im Train-of-Thought-Stil, Spawn-Tempo passt sich der Leistung an (schneller bei richtigen Zustellungen, langsamer nach Fehlern)
 - Tower Stack: Schneagg reitet auf jedem neuen sich bewegenden Balken, farblich dem Balken angepasst, schaut in Fahrtrichtung und springt ab (mit Hop, Fall und Fade-out), wenn der Balken platziert wird
+- Dartcounter: Checkout-Karte entfernt, Player-Anzeige mit Score/Darts/Checkout-Pfad, Scoreboard kompakt, Text-Clipping behoben
 - Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
 - Android Auto Support
 - Doppelte Nachrichten (Ungesendete) Behoben
-- Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare
+- Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare, "Sniff"-Knopf um sein eigenes Wort bei Auswahl, Diskussion und Abstimmung anzusehen
 
 
 #### Bugfixes
