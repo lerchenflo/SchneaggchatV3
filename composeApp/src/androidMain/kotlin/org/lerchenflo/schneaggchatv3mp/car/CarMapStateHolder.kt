@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.car
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -53,6 +54,7 @@ class CarMapStateHolder(
 
     private data class FriendData(val friends: List<User>, val ownUser: User?)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val friendDataFlow: Flow<FriendData> = SessionCache.authState.flatMapLatest { auth ->
         val ownId = (auth as? SessionCache.AuthState.LoggedIn)?.userId
         if (ownId == null) {

@@ -37,7 +37,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Anmeldung: Token-Refresh rebuild (5. mol??)
 - Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
 - Undercover Crash + Logs viewer
-- Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt
+- Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe
 - Events: Crash bei mehrtägigen Events behoben
 
 
