@@ -1121,6 +1121,7 @@
     <string name="location_type_food_ice">Gelato</string>
     <string name="location_type_food_asian">Cucina asiatica</string>
     <string name="location_type_food_greek">Cucina greca</string>
+    <string name="location_type_food_austrian">Cucina austriaca</string>
     <string name="location_type_food_cafe_bakery">Bar / Panetteria</string>
     <string name="location_type_food_other">Altro cibo</string>
 
@@ -1140,32 +1141,45 @@
     <!-- Wheelie Spot -->
     <string name="location_wheeliespot_only_on_weekends">Solo nei weekend</string>
     <string name="location_legal">Legale</string>
-    <string name="location_offroad_motocross">Motocross</string>
-    <string name="location_offroad_enduro">Enduro</string>
     <string name="location_bicycle_difficulty">Difficoltà (1-10)</string>
     <string name="location_bicycle_underground_type">Tipo di fondo</string>
+    <string name="location_bicycle_underground_type_asphalt">Asfalto</string>
+    <string name="location_bicycle_underground_type_gravel">Ghiaia</string>
+    <string name="location_bicycle_underground_type_dirt">Sterrato</string>
+    <string name="location_bicycle_underground_type_trail">Sentiero</string>
+    <string name="location_bicycle_underground_type_other">Altro</string>
+    <string name="location_camping_kind">Tipo</string>
+    <string name="location_swimming_setting">Al coperto / all'aperto</string>
+    <string name="location_climbingspot_setting">Al coperto / all'aperto</string>
+    <string name="location_volleyball_setting">Al coperto / all'aperto</string>
+    <string name="location_offroad_discipline">Disciplina</string>
+    <string name="location_option_venue_setting_indoor">Al coperto</string>
+    <string name="location_option_venue_setting_outdoor">All'aperto</string>
+    <string name="location_option_venue_setting_both">Al coperto e all'aperto</string>
+    <string name="location_option_offroad_discipline_motocross">Motocross</string>
+    <string name="location_option_offroad_discipline_enduro">Enduro</string>
+    <string name="location_option_offroad_discipline_both">Motocross ed Enduro</string>
+    <string name="location_option_camping_kind_official_site">Campeggio ufficiale</string>
+    <string name="location_option_camping_kind_wild_camping">Campeggio libero</string>
+    <string name="location_option_camping_kind_tolerated">Tollerato</string>
     <string name="location_lie_down_friendly">Adatto per sdraiarsi</string>
 
     <!-- Camping -->
-    <string name="location_camping_official">Ufficiale</string>
     <string name="location_camping_water_distance">Distanza dall'acqua (m)</string>
     <string name="location_camping_sitting_possibility">Posti a sedere disponibili</string>
     <string name="location_camping_grill_possibility">Grigliate consentite</string>
 
     <!-- Swimming -->
-    <string name="location_swimming_indoor">Al coperto</string>
     <string name="location_swimming_jump_spot">Punto per tuffi</string>
     <string name="location_swimming_price">Prezzo</string>
 
     <!-- Climbingspot -->
     <string name="location_climbingspot_via_ferrata">Via ferrata</string>
-    <string name="location_climbingspot_outdoor">All'aperto</string>
     <string name="location_climbingspot_price">Prezzo</string>
 
     <!-- Volleyball -->
     <string name="location_volleyball_good_net">Rete buona</string>
     <string name="location_volleyball_good_field">Campo buono</string>
-    <string name="location_volleyball_outdoor">All'aperto</string>
 
     <!-- Outdoor Fitness -->
     <string name="location_outdoor_fitness_shadow">Ombra</string>
