@@ -31,7 +31,6 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare
 - Freundschaftsanfragen: Tippen auf Profilbilder öffnet Bildvorschau
 - Schneaggmap: Daten Picker update, neue Types, neu sortiert
-ƒ
 
 #### Bugfixes
 - Spiele: extrem viele Bugfixes in fast allen Spielen
