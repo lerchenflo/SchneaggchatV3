@@ -63,6 +63,8 @@
     <string name="create_account_subtitle">Join now</string>
     <string name="acc_not_exist">Account does not exist</string>
     <string name="offline">Lost connection to the server</string>
+    <string name="test_mode_banner">Test mode - connected to test server</string>
+    <string name="test_mode_banner_tooltip">You can change the server on the login screen by long-pressing the globe icon. Feel free to do anything on the test server.</string>
     <string name="unknown_error">An unknown error occurred</string>
     <string name="network_error_bad_request">Bad request</string>
     <string name="network_error_unauthorized">Access denied (invalid credentials)</string>

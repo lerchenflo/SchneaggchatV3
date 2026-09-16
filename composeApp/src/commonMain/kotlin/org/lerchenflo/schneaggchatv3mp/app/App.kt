@@ -39,6 +39,8 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.BottomAppBar
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
@@ -104,6 +106,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.SnackbarPopup
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TestModeBar
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -523,6 +526,16 @@ fun App() {
                         //Show offline bar when offline
                         if (!online) {
                             OfflineBar(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            )
+                        }
+
+                        val serverUrl by preferenceManager.getServerUrlFlow().collectAsStateWithLifecycle(initialValue = BASE_SERVER_URL)
+
+                        //Show a persistent indicator while pinned to the test server (e.g. after logging in with the test account)
+                        if (serverUrl == BASE_SERVER_URL_TEST) {
+                            TestModeBar(
                                 modifier = Modifier
                                     .fillMaxWidth()
                             )

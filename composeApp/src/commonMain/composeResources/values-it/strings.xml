@@ -62,6 +62,8 @@
     <string name="create_account_subtitle">Iscriviti ora</string>
     <string name="acc_not_exist">L'account non esiste</string>
     <string name="offline">Connessione al server persa</string>
+    <string name="test_mode_banner">Modalità test - connesso al server di test</string>
+    <string name="test_mode_banner_tooltip">Puoi cambiare il server nella schermata di accesso tenendo premuta a lungo l'icona del globo. Sul server di test puoi fare tutto quello che vuoi.</string>
     <string name="unknown_error">Si è verificato un errore sconosciuto</string>
     <string name="network_error_bad_request">Richiesta non valida</string>
     <string name="network_error_unauthorized">Accesso negato (credenziali non valide)</string>

@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,51 +38,53 @@ fun ReplyPreview(
 ){
 
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(max = 480.dp) //Max height for all reply popups
-            .padding(8.dp),
-        verticalAlignment = Alignment.Bottom
-    ) {
-        Column(
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val maxPreviewHeight = maxHeight * 0.3f //Reply preview may use at most 30% of the available screen height, so it can't push the keyboard/input off screen
+
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState()) //COntent can be scrolled if height is too high
+                .fillMaxWidth()
+                .heightIn(max = maxPreviewHeight)
+                .padding(8.dp),
+            verticalAlignment = Alignment.Bottom
         ) {
-            val alphaValue = 0.8f
-            MessageContent(
+            Column(
                 modifier = Modifier
-                    //.wrapContentSize()
-                    .background(
-                        color = if (message.myMessage) {
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alphaValue)
-                        },
-                        shape = RoundedCornerShape(15.dp)
-                    )
-                    .padding(6.dp),
-                message = message,
-                useMD = useMD,
-                mymessage = message.myMessage,
-                selectedChatId = selectedChatId,
-                sender = sender,
-                ownId = ownId,
-            )
-        }
-        Column {
-            IconButton(
-                onClick = onDismiss,
-                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()) //Content can be scrolled if height is too high
             ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(Res.string.close)
+                val alphaValue = 0.8f
+                MessageContent(
+                    modifier = Modifier
+                        //.wrapContentSize()
+                        .background(
+                            color = if (message.myMessage) {
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alphaValue)
+                            },
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .padding(6.dp),
+                    message = message,
+                    useMD = useMD,
+                    mymessage = message.myMessage,
+                    selectedChatId = selectedChatId,
+                    sender = sender,
+                    ownId = ownId,
                 )
             }
+            Column {
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(Res.string.close)
+                    )
+                }
+            }
         }
-
-
     }
 }
