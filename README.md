@@ -29,6 +29,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Android Auto Support
 - Doppelte Nachrichten (Ungesendete) Behoben
 - Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare
+- Freundschaftsanfragen: Tippen auf Profilbilder öffnet Bildvorschau
 
 
 #### Bugfixes
