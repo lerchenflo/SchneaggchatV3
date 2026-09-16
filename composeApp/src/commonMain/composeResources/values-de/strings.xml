@@ -1095,10 +1095,11 @@
 
     <!-- Location Groups -->
     <string name="location_group_driving">Fahren</string>
-    <string name="location_group_nature_activities">Natur &amp; Aktivitäten</string>
+    <string name="location_group_nature_activities">Natur &amp; Sehenswürdigkeiten</string>
     <string name="location_group_sport">Sport</string>
-    <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
+    <string name="location_group_social_entertainment">Ausgehen</string>
     <string name="location_group_food">Essen</string>
+    <string name="location_group_useful">Nützliches</string>
 
     <!-- Location Types -->
     <string name="location_type_user">Freunde</string>

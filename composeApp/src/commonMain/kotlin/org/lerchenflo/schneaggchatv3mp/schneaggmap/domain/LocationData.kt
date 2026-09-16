@@ -1,10 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.*
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.*
@@ -97,12 +99,17 @@ enum class LocationType {
 }
 
 
+/**
+ * Group order is fixed here. The order of types inside a group is not - menus use [sortedTypes],
+ * which sorts them A-Z by their localized name.
+ */
 enum class LocationGroup(val types: List<LocationType>) {
     DRIVING(listOf(RADAR, POLICE, MOUNTAIN_STREET, WHEELIESPOT, OFFROAD_MOTORCYCLE)),
-    NATURE_ACTIVITIES(listOf(SIGHTSEEING, VIEWPOINT, CAMPING, SWIMMING, CLIMBINGSPOT)),
-    SPORT(listOf(VOLLEYBALL, BICYCLE, OUTDOOR_FITNESS, TABLE_TENNIS, TENNIS, HORSE_RIDING, BIKE_SERVICE_STATION)),
-    SOCIAL_ENTERTAINMENT(listOf(PARTY, WIFI)),
-    FOOD(listOf(FOOD_KEBAB, FOOD_PIZZA, FOOD_BURGER, FOOD_BEER, FOOD_ICE, FOOD_ASIAN, FOOD_GREEK, FOOD_AUSTRIAN, FOOD_CAFE_BAKERY, FOOD_OTHER)),
+    FOOD(listOf(FOOD_KEBAB, FOOD_PIZZA, FOOD_BURGER, FOOD_ICE, FOOD_ASIAN, FOOD_GREEK, FOOD_CAFE_BAKERY, FOOD_OTHER)),
+    GOING_OUT(listOf(FOOD_BEER, PARTY)),
+    NATURE_SIGHTS(listOf(SIGHTSEEING, VIEWPOINT, CAMPING, SWIMMING)),
+    SPORT(listOf(VOLLEYBALL, BICYCLE, OUTDOOR_FITNESS, TABLE_TENNIS, TENNIS, HORSE_RIDING, CLIMBINGSPOT)),
+    USEFUL(listOf(BIKE_SERVICE_STATION, WIFI)),
 }
 
 
@@ -795,9 +802,32 @@ fun LocationType.drawableRes(): DrawableResource = when (this) {
 
 @Composable
 fun LocationGroup.stringRes(): StringResource = when (this) {
-    LocationGroup.DRIVING              -> Res.string.location_group_driving
-    LocationGroup.NATURE_ACTIVITIES    -> Res.string.location_group_nature_activities
-    LocationGroup.SPORT                -> Res.string.location_group_sport
-    LocationGroup.SOCIAL_ENTERTAINMENT -> Res.string.location_group_social_entertainment
-    LocationGroup.FOOD                 -> Res.string.location_group_food
+    LocationGroup.DRIVING       -> Res.string.location_group_driving
+    LocationGroup.FOOD          -> Res.string.location_group_food
+    LocationGroup.GOING_OUT     -> Res.string.location_group_social_entertainment
+    LocationGroup.NATURE_SIGHTS -> Res.string.location_group_nature_activities
+    LocationGroup.SPORT         -> Res.string.location_group_sport
+    LocationGroup.USEFUL        -> Res.string.location_group_useful
 }
+
+/**
+ * The group's types sorted A-Z by their localized name, so the menu order follows the user's
+ * language and new types land in the right place automatically. [FOOD_OTHER] is the catch-all
+ * and always stays last.
+ */
+@Composable
+fun LocationGroup.sortedTypes(): List<LocationType> {
+    val labels = types.associateWith { stringResource(it.stringRes()) }
+    return remember(this, labels) {
+        types.sortedWith(
+            compareBy<LocationType> { it == FOOD_OTHER }
+                .thenBy { labels.getValue(it).toSortKey() }
+        )
+    }
+}
+
+//Folds accents and umlauts so e.g. "Ä" sorts next to "A" instead of after "Z"
+private fun String.toSortKey(): String = lowercase()
+    .replace("ä", "a").replace("ö", "o").replace("ü", "u").replace("ß", "ss")
+    .replace("à", "a").replace("è", "e").replace("é", "e")
+    .replace("ì", "i").replace("ò", "o").replace("ù", "u")

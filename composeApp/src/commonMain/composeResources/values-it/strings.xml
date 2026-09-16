@@ -1087,10 +1087,11 @@
 
     <!-- Location Groups -->
     <string name="location_group_driving">Guida</string>
-    <string name="location_group_nature_activities">Natura &amp; Attività</string>
+    <string name="location_group_nature_activities">Natura &amp; Attrazioni</string>
     <string name="location_group_sport">Sport</string>
-    <string name="location_group_social_entertainment">Social &amp; Intrattenimento</string>
+    <string name="location_group_social_entertainment">Uscire</string>
     <string name="location_group_food">Cibo</string>
+    <string name="location_group_useful">Utili</string>
 
     <!-- Location Types -->
     <string name="location_type_user">Amici</string>

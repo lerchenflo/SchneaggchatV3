@@ -41,6 +41,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.sortedTypes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
@@ -157,9 +158,10 @@ fun MapSearchBar(
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val sortedTypesByGroup = LocationGroup.entries.associateWith { it.sortedTypes() }
                     LocationGroup.entries
                         .filter { it in state.searchSelectedGroups }
-                        .flatMap { it.types }
+                        .flatMap { sortedTypesByGroup.getValue(it) }
                         .forEach { type ->
                             FilterChip(
                                 selected = type in state.searchSelectedTypes,

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.sortedTypes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
@@ -160,7 +161,7 @@ fun LocationDropdownContent(
 
             AnimatedVisibility(visible = expanded) {
                 Column {
-                    group.types.forEach { type ->
+                    group.sortedTypes().forEach { type ->
                         DropdownMenuItem(
                             text = { Text(stringResource(type.stringRes())) },
                             onClick = { onTypeClick(type) },

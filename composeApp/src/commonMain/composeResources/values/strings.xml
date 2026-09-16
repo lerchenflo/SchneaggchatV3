@@ -1093,10 +1093,11 @@
 
     <!-- Location Groups -->
     <string name="location_group_driving">Driving</string>
-    <string name="location_group_nature_activities">Nature &amp; Activities</string>
+    <string name="location_group_nature_activities">Nature &amp; Sights</string>
     <string name="location_group_sport">Sport</string>
-    <string name="location_group_social_entertainment">Social &amp; Entertainment</string>
+    <string name="location_group_social_entertainment">Going Out</string>
     <string name="location_group_food">Food</string>
+    <string name="location_group_useful">Useful</string>
 
     <!-- Location Types -->
     <string name="location_type_user">Friends</string>
