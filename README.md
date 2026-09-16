@@ -35,7 +35,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Bugfixes
 - Spiele: Geräterotation führt nicht mehr zu einem Reset beim Spielen, Tower Stack Lifecycle-Fehler behoben
 - Tower Stack: Balken-Platzierung wird jetzt beim Tippen ausgelöst statt beim Loslassen, wahrgenommene Input-Verzögerung behoben
-- Anmeldung: Token-Refresh rebuild (5. mol??)
+- Anmeldung: Token-Refresh rebuild (5. mol??), Leerer Bildschirm nach Hintergrundbeendigung behoben (Session wird wiederhergestellt)
 - Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
 - Undercover Crash + Logs viewer
 - Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe

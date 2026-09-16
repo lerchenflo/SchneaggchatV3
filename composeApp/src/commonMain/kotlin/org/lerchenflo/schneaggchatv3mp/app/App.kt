@@ -34,6 +34,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
@@ -52,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.decoratedEntriesMap
 import org.lerchenflo.schneaggchatv3mp.app.navigation.getVisibleTopLevelDestinations
 import org.lerchenflo.schneaggchatv3mp.app.navigation.rememberNavigationState
 import org.lerchenflo.schneaggchatv3mp.app.navigation.resetTabRoot
+import org.lerchenflo.schneaggchatv3mp.app.navigation.restartAuthFlow
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
@@ -153,6 +155,33 @@ fun App() {
             homeRoute = Route.ChatSelector,
             topLevelRoutes = TOP_LEVEL_DESTINATIONS.keys
         )
+
+        // After process death the saved backstack (e.g. an open chat) is restored, but the
+        // in-memory session is not - and AutoLoginCredChecker, which would hydrate it and mark
+        // startup routing as done, is no longer on that stack. Screens and their ViewModels read
+        // SessionCache when they are created, so they are only composed once this has run.
+        var sessionRestored by remember {
+            mutableStateOf(navigationState.isOnAuthFlow || SessionCache.isLoggedIn())
+        }
+        LaunchedEffect(Unit) {
+            if (sessionRestored) return@LaunchedEffect
+            try {
+                val savedCreds = appRepository.loadSavedLoginConfig()
+                if (savedCreds.credsSaved && savedCreds.emailVerified) {
+                    AppLifecycleManager.notifyStartupRoutingDone()
+                } else {
+                    // Session expired or email not verified - let the auth flow decide where to go
+                    navigationState.restartAuthFlow()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                loggingRepository.logError("Session restore after process death failed: ${e.message}")
+                navigationState.restartAuthFlow()
+            } finally {
+                sessionRestored = true
+            }
+        }
 
         val isMobile = remember { appRepository.appVersion.isMobile() }
         val visibleTopLevelRoutes = remember(isMobile, isDeveloper, navigationState.topLevelRoute) {
@@ -808,25 +837,27 @@ fun App() {
                                 }
                             )
 
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier.fillMaxSize(),
-                            userScrollEnabled = navigationState.enableSwipeNavigation,
-                            key = { pageIndex ->
-                                visibleTopLevelRoutes.getOrNull(pageIndex)?.let { it::class.simpleName ?: it.toString() } ?: pageIndex.toString()
-                            }
-                        ) { pageIndex ->
-                            val tabKey = visibleTopLevelRoutes.getOrNull(pageIndex)
-                            val entries = entriesMap[tabKey]
-                            if (!entries.isNullOrEmpty()) {
-                                NavDisplay(
-                                    entries = entries,
-                                    onBack = { scope.launch { navigator.navigateBack() } },
-                                    // HorizontalPager centers pages vertically by default; without an explicit
-                                    // fillMaxSize, screens shorter than the viewport wrap-size and get centered,
-                                    // showing a top gap instead of just filling down to the bottom nav bar.
-                                    modifier = Modifier.fillMaxSize()
-                                )
+                        if (sessionRestored) {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.fillMaxSize(),
+                                userScrollEnabled = navigationState.enableSwipeNavigation,
+                                key = { pageIndex ->
+                                    visibleTopLevelRoutes.getOrNull(pageIndex)?.let { it::class.simpleName ?: it.toString() } ?: pageIndex.toString()
+                                }
+                            ) { pageIndex ->
+                                val tabKey = visibleTopLevelRoutes.getOrNull(pageIndex)
+                                val entries = entriesMap[tabKey]
+                                if (!entries.isNullOrEmpty()) {
+                                    NavDisplay(
+                                        entries = entries,
+                                        onBack = { scope.launch { navigator.navigateBack() } },
+                                        // HorizontalPager centers pages vertically by default; without an explicit
+                                        // fillMaxSize, screens shorter than the viewport wrap-size and get centered,
+                                        // showing a top gap instead of just filling down to the bottom nav bar.
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
                             }
                         }
 
