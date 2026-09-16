@@ -63,6 +63,8 @@
     <string name="create_account_subtitle">jetzt beitreten</string>
     <string name="acc_not_exist">Account existiert nicht</string>
     <string name="offline">Verbindung zum Server verloren</string>
+    <string name="test_mode_banner">Testmodus - mit Testserver verbunden</string>
+    <string name="test_mode_banner_tooltip">Du kannst den Server auf dem Login-Bildschirm ändern, indem du lange auf das Globus-Symbol drückst. Auf dem Testserver darfst du alles ausprobieren.</string>
     <string name="unknown_error">Ein unbekannter Fehler ist aufgetreten</string>
     <string name="network_error_bad_request">Ungültige Anfrage</string>
     <string name="network_error_unauthorized">Zugriff verweigert (ungültige Anmeldedaten)</string>
