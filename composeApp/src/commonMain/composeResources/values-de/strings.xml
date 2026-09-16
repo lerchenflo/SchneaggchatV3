@@ -1117,6 +1117,8 @@
     <string name="location_type_outdoor_fitness">Outdoor-Fitness</string>
     <string name="location_type_table_tennis">Tischtennis</string>
     <string name="location_type_tennis">Tennis</string>
+    <string name="location_type_horse_riding">Reitplatz</string>
+    <string name="location_type_bike_service_station">Fahrrad-Servicestation</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
     <string name="location_type_wifi">WLAN</string>
@@ -1181,6 +1183,12 @@
 
     <!-- Tennis -->
     <string name="location_tennis_paddle">Paddle</string>
+
+    <!-- Horse Riding -->
+    <string name="location_horse_riding_next_tournament">Nächstes Turnier</string>
+
+    <!-- Bike Service Station -->
+    <string name="location_bike_service_station_mostly_working">Funktioniert meistens</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Eintrittspreis</string>

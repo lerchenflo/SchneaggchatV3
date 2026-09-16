@@ -190,7 +190,8 @@ fun KeyValueView(
 
             is AttributeDefinition.LongDef -> {
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                val endOfCurrentYear = LocalDate(now.year, 12, 31)
+                // A few years ahead so upcoming dates (e.g. the next horse riding tournament) can be picked
+                val maxPickableDate = LocalDate(now.year + 5, 12, 31)
 
                 val currentMillis = (value as? AttributeValue.LongValue)?.value
                 val initialDateTime = currentMillis
@@ -262,7 +263,7 @@ fun KeyValueView(
                                     modifier = Modifier.fillMaxWidth(),
                                     startDate = dialogDate,
                                     minDate = LocalDate(1900, 1, 1),
-                                    maxDate = endOfCurrentYear,
+                                    maxDate = maxPickableDate,
                                     dateFormatter = germanNumericDateFormatter(),
                                     rowCount = 5,
                                     textColor = MaterialTheme.colorScheme.onSurface,
@@ -272,7 +273,7 @@ fun KeyValueView(
                                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                                     ),
                                     onSnappedDate = { snappedDate ->
-                                        if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= endOfCurrentYear) {
+                                        if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= maxPickableDate) {
                                             dialogDate = snappedDate
                                         }
                                     }

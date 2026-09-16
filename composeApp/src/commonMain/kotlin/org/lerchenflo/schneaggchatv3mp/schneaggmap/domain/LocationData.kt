@@ -76,6 +76,8 @@ enum class LocationType {
     OUTDOOR_FITNESS,
     TABLE_TENNIS,
     TENNIS,
+    HORSE_RIDING,
+    BIKE_SERVICE_STATION,
 
     // Social & Entertainment
     PARTY,
@@ -97,7 +99,7 @@ enum class LocationType {
 enum class LocationGroup(val types: List<LocationType>) {
     DRIVING(listOf(RADAR, POLICE, MOUNTAIN_STREET, WHEELIESPOT, OFFROAD_MOTORCYCLE)),
     NATURE_ACTIVITIES(listOf(SIGHTSEEING, VIEWPOINT, CAMPING, SWIMMING, CLIMBINGSPOT)),
-    SPORT(listOf(VOLLEYBALL, BICYCLE, OUTDOOR_FITNESS, TABLE_TENNIS, TENNIS)),
+    SPORT(listOf(VOLLEYBALL, BICYCLE, OUTDOOR_FITNESS, TABLE_TENNIS, TENNIS, HORSE_RIDING, BIKE_SERVICE_STATION)),
     SOCIAL_ENTERTAINMENT(listOf(PARTY, WIFI)),
     FOOD(listOf(FOOD_KEBAB, FOOD_PIZZA, FOOD_BURGER, FOOD_BEER, FOOD_ICE, FOOD_ASIAN, FOOD_GREEK, FOOD_CAFE_BAKERY, FOOD_OTHER)),
 }
@@ -372,6 +374,37 @@ sealed class LocationData {
         )
     }
 
+    @Serializable
+    @SerialName("horse_riding")
+    data class HorseRiding(
+        val horseRidingNextTournament: AttributeValue? = null,
+        val horseRidingPrivate: AttributeValue? = null,
+    ) : LocationData() {
+        override val locationtype = HORSE_RIDING
+
+        val horseRidingNextTournamentValue get() = horseRidingNextTournament?.asLong
+        val horseRidingPrivateValue        get() = horseRidingPrivate?.asBool
+
+        override fun schema() = listOf(
+            AttributeDefinition.LongDef(key = AttributeKey.HORSE_RIDING_NEXT_TOURNAMENT, required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.HORSE_RIDING_PRIVATE,         required = false),
+        )
+    }
+
+    @Serializable
+    @SerialName("bike_service_station")
+    data class BikeServiceStation(
+        val bikeServiceStationMostlyWorking: AttributeValue? = null,
+    ) : LocationData() {
+        override val locationtype = BIKE_SERVICE_STATION
+
+        val bikeServiceStationMostlyWorkingValue get() = bikeServiceStationMostlyWorking?.asBool
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = AttributeKey.BIKE_SERVICE_STATION_MOSTLY_WORKING, required = false),
+        )
+    }
+
 
     // Social & Entertainment
 
@@ -573,6 +606,8 @@ fun LocationType.toSimpleLocationData(): LocationData = when (this) {
     OUTDOOR_FITNESS -> LocationData.OutdoorFitness(outdoorFitnessShadow = null)
     TABLE_TENNIS    -> LocationData.TableTennis(tableTennisPrivate = null)
     TENNIS          -> LocationData.Tennis(tennisPaddle = null)
+    HORSE_RIDING    -> LocationData.HorseRiding(horseRidingNextTournament = null, horseRidingPrivate = null)
+    BIKE_SERVICE_STATION -> LocationData.BikeServiceStation(bikeServiceStationMostlyWorking = null)
     SIGHTSEEING     -> LocationData.SightSeeing(sightseeingEntryFee = null)
     PARTY           -> LocationData.PartyLocation(partyEntryFee = null)
     WIFI            -> LocationData.Wifi(wifiSsid = null, wifiPassword = null)
@@ -655,6 +690,13 @@ fun AttributeKey.labelRes(): StringResource = when (this) {
     // Tennis
     AttributeKey.TENNIS_PADDLE -> Res.string.location_tennis_paddle
 
+    // Horse Riding
+    AttributeKey.HORSE_RIDING_NEXT_TOURNAMENT -> Res.string.location_horse_riding_next_tournament
+    AttributeKey.HORSE_RIDING_PRIVATE         -> Res.string.location_table_tennis_private
+
+    // Bike Service Station
+    AttributeKey.BIKE_SERVICE_STATION_MOSTLY_WORKING -> Res.string.location_bike_service_station_mostly_working
+
     // Sightseeing & Party
     AttributeKey.SIGHTSEEING_ENTRY_FEE -> Res.string.location_sightseeing_entry_fee
     AttributeKey.PARTY_ENTRY_FEE       -> Res.string.location_sightseeing_entry_fee
@@ -693,6 +735,8 @@ fun LocationType.stringRes(): StringResource = when (this) {
     OUTDOOR_FITNESS -> Res.string.location_type_outdoor_fitness
     TABLE_TENNIS    -> Res.string.location_type_table_tennis
     TENNIS          -> Res.string.location_type_tennis
+    HORSE_RIDING    -> Res.string.location_type_horse_riding
+    BIKE_SERVICE_STATION -> Res.string.location_type_bike_service_station
     SIGHTSEEING     -> Res.string.location_type_sightseeing
     PARTY           -> Res.string.location_type_party
     WIFI            -> Res.string.location_type_wifi
@@ -737,6 +781,8 @@ fun LocationType.drawableRes(): DrawableResource = when (this) {
     OUTDOOR_FITNESS -> Res.drawable.icon_outdoor_fitness
     TABLE_TENNIS -> Res.drawable.icon_table_tennis
     TENNIS -> Res.drawable.icon_tennis
+    HORSE_RIDING -> Res.drawable.icon_horse_riding
+    BIKE_SERVICE_STATION -> Res.drawable.icon_bike_service_station
 }
 
 @Composable

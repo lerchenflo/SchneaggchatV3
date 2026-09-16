@@ -30,6 +30,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Doppelte Nachrichten (Ungesendete) Behoben
 - Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare
 - Freundschaftsanfragen: Tippen auf Profilbilder öffnet Bildvorschau
+- Schneaggmap: Neue Standorttypen Reitplatz und Fahrrad-Servicestation mit optionalen Attributen, Zeitstempel-Datepicker auf 5 Jahre in der Zukunft erweitert
 
 
 #### Bugfixes

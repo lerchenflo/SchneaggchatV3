@@ -84,6 +84,15 @@ fun LocationData.getValueByKey(key: AttributeKey): AttributeValue? = when (this)
         AttributeKey.TENNIS_PADDLE -> tennisPaddle
         else                        -> null
     }
+    is LocationData.HorseRiding -> when (key) {
+        AttributeKey.HORSE_RIDING_NEXT_TOURNAMENT -> horseRidingNextTournament
+        AttributeKey.HORSE_RIDING_PRIVATE         -> horseRidingPrivate
+        else                                       -> null
+    }
+    is LocationData.BikeServiceStation -> when (key) {
+        AttributeKey.BIKE_SERVICE_STATION_MOSTLY_WORKING -> bikeServiceStationMostlyWorking
+        else                                              -> null
+    }
 
     // Social & Entertainment
     is LocationData.SightSeeing -> when (key) {
@@ -224,6 +233,15 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): Loca
     is LocationData.Tennis -> when (key) {
         AttributeKey.TENNIS_PADDLE -> copy(tennisPaddle = value)
         else                        -> this
+    }
+    is LocationData.HorseRiding -> when (key) {
+        AttributeKey.HORSE_RIDING_NEXT_TOURNAMENT -> copy(horseRidingNextTournament = value)
+        AttributeKey.HORSE_RIDING_PRIVATE         -> copy(horseRidingPrivate = value)
+        else                                       -> this
+    }
+    is LocationData.BikeServiceStation -> when (key) {
+        AttributeKey.BIKE_SERVICE_STATION_MOSTLY_WORKING -> copy(bikeServiceStationMostlyWorking = value)
+        else                                              -> this
     }
 
     // Social & Entertainment

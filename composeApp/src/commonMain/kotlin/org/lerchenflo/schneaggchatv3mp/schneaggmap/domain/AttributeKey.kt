@@ -52,6 +52,12 @@ enum class AttributeKey {
     // Tennis
     TENNIS_PADDLE,
 
+    // Horse riding
+    HORSE_RIDING_NEXT_TOURNAMENT, HORSE_RIDING_PRIVATE,
+
+    // Bike service station
+    BIKE_SERVICE_STATION_MOSTLY_WORKING,
+
     // Sightseeing / party
     SIGHTSEEING_ENTRY_FEE, PARTY_ENTRY_FEE,
 
