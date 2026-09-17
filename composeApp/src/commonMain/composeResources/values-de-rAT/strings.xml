@@ -63,6 +63,8 @@
     <string name="create_account_subtitle">beitreata</string>
     <string name="acc_not_exist">Dean Account gits ned</string>
     <string name="offline">Dine App erreicht da Server ned</string>
+    <string name="test_mode_banner">Testmodus - mitam Testserver verbunda</string>
+    <string name="test_mode_banner_tooltip">Du kannsch da Server usam Login-Bildschirm ändra, indeam du lang ufs Globus-Symbol drucksch. Ufam Testserver darfsch alles usprobiera.</string>
     <string name="unknown_error">Irgend an Fehler isch uftreatta</string>
     <string name="network_error_bad_request">Ungültige Afrog</string>
     <string name="network_error_unauthorized">Zugriff verweigert (ungültige Anmeldedata)</string>
@@ -592,6 +594,9 @@
     <string name="undercover_role_mr_white">Mr. White</string>
     <string name="undercover_role_undercover">Undercover</string>
     <string name="undercover_autohide_title">Automatisch fastecka</string>
+    <string name="undercover_mr_white_tip_title">Mr- White Tipp</string>
+    <string name="undercover_mr_white_tip_format">Tipp: %1$s</string>
+    <string name="undercover_restart_same_players">Neu starta mit da glicha Spieler</string>
     <string name="undercover_seconds_format">Sekunden: %1$d</string>
     <string name="undercover_minus">-</string>
     <string name="undercover_plus">+</string>
@@ -824,6 +829,10 @@
     <!-- Games: Schneaggahus -->
     <string name="games_schneaggahus_title">Schneaggahus</string>
     <string name="games_schneaggahus_instructions">Schneagga krabbeln us am Startpunkt und folgen dam Weag. Tipp uf die Weichen, um die Gleise umleiten, und lenke jeden Schneagg zu sinem Hus.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneagga im falscha Hus glandet sind, ischas Spiel vorbei. Je länger du überleabsch, desto schneller kumman neue Schneagga!</string>
+    <string name="games_schneaggahus_wave">Welle %1$d</string>
+    <string name="games_schneaggahus_next_up">Nächste</string>
+    <string name="games_schneaggahus_wave_progress">%1$d von %2$d Schneagga zuagestellt</string>
+    <string name="games_schneaggahus_lives_remaining">%1$d Leba übrig</string>
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Krützworträtsel</string>
@@ -841,6 +850,7 @@
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Tägliche Challenge (%1$s)</string>
+    <string name="games_daily_reset">Es git a neue tägliche Challenge, din Fortschritt isch zruck gsetzt worra.</string>
     <string name="games_gridrush_title">Grid Rush</string>
     <string name="games_gridrush_instructions">Züh a Linie durch benachbarte Felder mit da glicha Farb — wenn  du loslosch verschwindand die Fealda und die drübat rutschand abe.\n\nDin Highscore zellt nur wenn du alle Blöck wekkriagsch. Jeden Tag ändert sich s Spielfeld, jeder kriagt s gliche.</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
