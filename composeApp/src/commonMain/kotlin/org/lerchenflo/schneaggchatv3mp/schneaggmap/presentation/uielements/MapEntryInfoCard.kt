@@ -3,7 +3,9 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +30,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,7 +42,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.stevdza_san.swipeable.Swipeable
@@ -472,42 +482,75 @@ fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
             LocationGroup.entries.forEach { group ->
                 val expanded = group in expandedAddGroups
 
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = stringResource(group.stringRes())
-                        )
-                    },
-                    trailingIcon = {
-                        val arrowRotation by animateFloatAsState(if (expanded) 180f else 0f)
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = null,
-                            modifier = Modifier.rotate(arrowRotation)
-                        )
-                    },
-                    onClick = {
-                        expandedAddGroups = if (expanded) expandedAddGroups - group else expandedAddGroups + group
-                    },
+                //Expanded groups get a tinted card, a highlighted header and an accent line next to their types
+                val sectionBackground by animateColorAsState(
+                    if (expanded) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent
                 )
+                val headerColor by animateColorAsState(
+                    if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                )
+                val accentColor = MaterialTheme.colorScheme.primary
 
-                AnimatedVisibility(visible = expanded) {
-                    Column {
-                        group.sortedTypes().forEach { type ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = stringResource(type.stringRes())
-                                    )
-                                },
-                                onClick = {
-                                    onChange(entry.copy(
-                                        locationData = entry.locationData + type.toSimpleLocationData()
-                                    ))
-                                    showLocationAddDropdown = false
-                                },
-                                modifier = Modifier.padding(start = 16.dp)
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(sectionBackground)
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = stringResource(group.stringRes()),
+                                fontWeight = if (expanded) FontWeight.Bold else FontWeight.Normal,
                             )
+                        },
+                        trailingIcon = {
+                            val arrowRotation by animateFloatAsState(if (expanded) 180f else 0f)
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                modifier = Modifier.rotate(arrowRotation)
+                            )
+                        },
+                        onClick = {
+                            expandedAddGroups = if (expanded) expandedAddGroups - group else expandedAddGroups + group
+                        },
+                        colors = MenuDefaults.itemColors(
+                            textColor = headerColor,
+                            trailingIconColor = headerColor,
+                        ),
+                    )
+
+                    AnimatedVisibility(visible = expanded) {
+                        Column(
+                            modifier = Modifier
+                                .padding(bottom = 4.dp)
+                                .drawBehind {
+                                    val lineWidth = 3.dp.toPx()
+                                    drawRoundRect(
+                                        color = accentColor,
+                                        topLeft = Offset(16.dp.toPx(), 0f),
+                                        size = Size(lineWidth, size.height),
+                                        cornerRadius = CornerRadius(lineWidth / 2),
+                                    )
+                                }
+                        ) {
+                            group.sortedTypes().forEach { type ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = stringResource(type.stringRes())
+                                        )
+                                    },
+                                    onClick = {
+                                        onChange(entry.copy(
+                                            locationData = entry.locationData + type.toSimpleLocationData()
+                                        ))
+                                        showLocationAddDropdown = false
+                                    },
+                                    modifier = Modifier.padding(start = 20.dp)
+                                )
+                            }
                         }
                     }
                 }
