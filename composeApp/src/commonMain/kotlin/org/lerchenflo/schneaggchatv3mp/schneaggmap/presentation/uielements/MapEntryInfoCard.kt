@@ -54,6 +54,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.getValueByKey
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.sortedTypes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.toSimpleLocationData
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.withValueForKey
@@ -492,7 +493,7 @@ fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
 
                 AnimatedVisibility(visible = expanded) {
                     Column {
-                        group.types.forEach { type ->
+                        group.sortedTypes().forEach { type ->
                             DropdownMenuItem(
                                 text = {
                                     Text(

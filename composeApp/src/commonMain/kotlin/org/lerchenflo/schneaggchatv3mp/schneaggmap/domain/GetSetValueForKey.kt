@@ -28,8 +28,7 @@ fun LocationData.getValueByKey(key: AttributeKey): AttributeValue? = when (this)
     }
     is LocationData.OffroadMotorcycle -> when (key) {
         AttributeKey.OFFROAD_MOTORCYCLE_LEGAL     -> offroadMotorcycleLegal
-        AttributeKey.OFFROAD_MOTORCYCLE_MOTOCROSS -> offroadMotorcycleMotocross
-        AttributeKey.OFFROAD_MOTORCYCLE_ENDURO    -> offroadMotorcycleEnduro
+        AttributeKey.OFFROAD_MOTORCYCLE_DISCIPLINE -> offroadMotorcycleDiscipline
         else                                       -> null
     }
     is LocationData.Viewpoint -> when (key) {
@@ -39,14 +38,14 @@ fun LocationData.getValueByKey(key: AttributeKey): AttributeValue? = when (this)
 
     // Nature & Activities
     is LocationData.Camping -> when (key) {
-        AttributeKey.CAMPING_OFFICIAL            -> campingOfficial
+        AttributeKey.CAMPING_KIND            -> campingKind
         AttributeKey.CAMPING_WATER_DISTANCE       -> campingWaterDistance
         AttributeKey.CAMPING_SITTING_POSSIBILITY  -> campingSittingPossibility
         AttributeKey.CAMPING_GRILL_POSSIBILITY    -> campingGrillPossibility
         else                                      -> null
     }
     is LocationData.SwimmingLocation -> when (key) {
-        AttributeKey.SWIMMING_INDOOR            -> swimmingIndoor
+        AttributeKey.SWIMMING_SETTING            -> swimmingSetting
         AttributeKey.SWIMMING_JUMP_SPOT         -> swimmingJumpSpot
         AttributeKey.SWIMMING_LIE_DOWN_FRIENDLY -> swimmingLieDownFriendly
         AttributeKey.SWIMMING_PRICE             -> swimmingPrice
@@ -54,7 +53,7 @@ fun LocationData.getValueByKey(key: AttributeKey): AttributeValue? = when (this)
     }
     is LocationData.Climbingspot -> when (key) {
         AttributeKey.CLIMBINGSPOT_VIA_FERRATA -> climbingspotViaFerrata
-        AttributeKey.CLIMBINGSPOT_OUTDOOR     -> climbingspotOutdoor
+        AttributeKey.CLIMBINGSPOT_SETTING     -> climbingspotSetting
         AttributeKey.CLIMBINGSPOT_PRICE       -> climbingspotPrice
         else                                   -> null
     }
@@ -63,7 +62,7 @@ fun LocationData.getValueByKey(key: AttributeKey): AttributeValue? = when (this)
     is LocationData.Volleyball -> when (key) {
         AttributeKey.VOLLEYBALL_GOOD_NET   -> volleyballGoodNet
         AttributeKey.VOLLEYBALL_GOOD_FIELD -> volleyballGoodField
-        AttributeKey.VOLLEYBALL_OUTDOOR    -> volleyballOutdoor
+        AttributeKey.VOLLEYBALL_SETTING    -> volleyballSetting
         else                                -> null
     }
     is LocationData.Bicycle -> when (key) {
@@ -83,6 +82,15 @@ fun LocationData.getValueByKey(key: AttributeKey): AttributeValue? = when (this)
     is LocationData.Tennis -> when (key) {
         AttributeKey.TENNIS_PADDLE -> tennisPaddle
         else                        -> null
+    }
+    is LocationData.HorseRiding -> when (key) {
+        AttributeKey.HORSE_RIDING_NEXT_TOURNAMENT -> horseRidingNextTournament
+        AttributeKey.HORSE_RIDING_PRIVATE         -> horseRidingPrivate
+        else                                       -> null
+    }
+    is LocationData.BikeServiceStation -> when (key) {
+        AttributeKey.BIKE_SERVICE_STATION_MOSTLY_WORKING -> bikeServiceStationMostlyWorking
+        else                                              -> null
     }
 
     // Social & Entertainment
@@ -135,6 +143,7 @@ fun LocationData.getValueByKey(key: AttributeKey): AttributeValue? = when (this)
         else                                     -> null
     }
     is LocationData.FoodGreek -> null
+    is LocationData.FoodAustrian -> null
     is LocationData.FoodOther -> when (key) {
         AttributeKey.FOOD_OTHER_CUISINE -> foodOtherCuisine
         else                             -> null
@@ -169,8 +178,7 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): Loca
     }
     is LocationData.OffroadMotorcycle -> when (key) {
         AttributeKey.OFFROAD_MOTORCYCLE_LEGAL     -> copy(offroadMotorcycleLegal = value)
-        AttributeKey.OFFROAD_MOTORCYCLE_MOTOCROSS -> copy(offroadMotorcycleMotocross = value)
-        AttributeKey.OFFROAD_MOTORCYCLE_ENDURO    -> copy(offroadMotorcycleEnduro = value)
+        AttributeKey.OFFROAD_MOTORCYCLE_DISCIPLINE -> copy(offroadMotorcycleDiscipline = value)
         else                                       -> this
     }
     is LocationData.Viewpoint -> when (key) {
@@ -180,14 +188,14 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): Loca
 
     // Nature & Activities
     is LocationData.Camping -> when (key) {
-        AttributeKey.CAMPING_OFFICIAL            -> copy(campingOfficial = value)
+        AttributeKey.CAMPING_KIND            -> copy(campingKind = value)
         AttributeKey.CAMPING_WATER_DISTANCE       -> copy(campingWaterDistance = value)
         AttributeKey.CAMPING_SITTING_POSSIBILITY  -> copy(campingSittingPossibility = value)
         AttributeKey.CAMPING_GRILL_POSSIBILITY    -> copy(campingGrillPossibility = value)
         else                                      -> this
     }
     is LocationData.SwimmingLocation -> when (key) {
-        AttributeKey.SWIMMING_INDOOR            -> copy(swimmingIndoor = value)
+        AttributeKey.SWIMMING_SETTING            -> copy(swimmingSetting = value)
         AttributeKey.SWIMMING_JUMP_SPOT         -> copy(swimmingJumpSpot = value)
         AttributeKey.SWIMMING_LIE_DOWN_FRIENDLY -> copy(swimmingLieDownFriendly = value)
         AttributeKey.SWIMMING_PRICE             -> copy(swimmingPrice = value)
@@ -195,7 +203,7 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): Loca
     }
     is LocationData.Climbingspot -> when (key) {
         AttributeKey.CLIMBINGSPOT_VIA_FERRATA -> copy(climbingspotViaFerrata = value)
-        AttributeKey.CLIMBINGSPOT_OUTDOOR     -> copy(climbingspotOutdoor = value)
+        AttributeKey.CLIMBINGSPOT_SETTING     -> copy(climbingspotSetting = value)
         AttributeKey.CLIMBINGSPOT_PRICE       -> copy(climbingspotPrice = value)
         else                                   -> this
     }
@@ -204,7 +212,7 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): Loca
     is LocationData.Volleyball -> when (key) {
         AttributeKey.VOLLEYBALL_GOOD_NET   -> copy(volleyballGoodNet = value)
         AttributeKey.VOLLEYBALL_GOOD_FIELD -> copy(volleyballGoodField = value)
-        AttributeKey.VOLLEYBALL_OUTDOOR    -> copy(volleyballOutdoor = value)
+        AttributeKey.VOLLEYBALL_SETTING    -> copy(volleyballSetting = value)
         else                                -> this
     }
     is LocationData.Bicycle -> when (key) {
@@ -224,6 +232,15 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): Loca
     is LocationData.Tennis -> when (key) {
         AttributeKey.TENNIS_PADDLE -> copy(tennisPaddle = value)
         else                        -> this
+    }
+    is LocationData.HorseRiding -> when (key) {
+        AttributeKey.HORSE_RIDING_NEXT_TOURNAMENT -> copy(horseRidingNextTournament = value)
+        AttributeKey.HORSE_RIDING_PRIVATE         -> copy(horseRidingPrivate = value)
+        else                                       -> this
+    }
+    is LocationData.BikeServiceStation -> when (key) {
+        AttributeKey.BIKE_SERVICE_STATION_MOSTLY_WORKING -> copy(bikeServiceStationMostlyWorking = value)
+        else                                              -> this
     }
 
     // Social & Entertainment
@@ -276,6 +293,7 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): Loca
         else                                     -> this
     }
     is LocationData.FoodGreek -> this
+    is LocationData.FoodAustrian -> this
     is LocationData.FoodOther -> when (key) {
         AttributeKey.FOOD_OTHER_CUISINE -> copy(foodOtherCuisine = value)
         else                             -> this

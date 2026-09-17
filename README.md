@@ -22,21 +22,19 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.18
 
 #### Features
-- Spiele: Spielstand wird gespeichert und beim Zurückkehren wiederhergestellt (Tetris, Tower Stack, 2048, SchneaggaHus, Grid Rush, Odd One Out, Morse Challenge, Kreuzworträtsel)
-- SchneaggaHus: Wellen-Spielmechanik mit Farb-Vorschau und Wellenfortschritt, gleitende Schneaggs auf gekrümmten Schienen, Porträt-Spielfeld mit größeren Tiles, neues visuelles Design im Train-of-Thought-Stil, Spawn-Tempo passt sich der Leistung an (schneller bei richtigen Zustellungen, langsamer nach Fehlern)
-- Tower Stack: Schneagg reitet auf jedem neuen sich bewegenden Balken, farblich dem Balken angepasst, schaut in Fahrtrichtung und springt ab (mit Hop, Fall und Fade-out), wenn der Balken platziert wird
+- Spiele: Spielstand beim Zurückkehren wiederherstellen
+- SchneaggaHus Spiel
+- Tower Stack: Schneagg reitet mit
 - Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
 - Android Auto Support
 - Doppelte Nachrichten (Ungesendete) Behoben
 - Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare
-
+- Freundschaftsanfragen: Tippen auf Profilbilder öffnet Bildvorschau
+- Schneaggmap: Daten Picker update, neue Types, neu sortiert
 
 #### Bugfixes
-- Spiele: Geräterotation führt nicht mehr zu einem Reset beim Spielen, Tower Stack Lifecycle-Fehler behoben
-- Tower Stack: Balken-Platzierung wird jetzt beim Tippen ausgelöst statt beim Loslassen, wahrgenommene Input-Verzögerung behoben
-- Anmeldung: Token-Refresh rebuild (5. mol??)
-- Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
-- Undercover Crash + Logs viewer
+- Spiele: extrem viele Bugfixes in fast allen Spielen
+- Anmeldung: Token-Refresh rebuild (5. mol??), Leerer Bildschirm nach Hintergrundbeendigung behoben (Session wird wiederhergestellt)
 - Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe
 - Events: Crash bei mehrtägigen Events behoben
 

@@ -4,16 +4,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.BackButton
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.call
 import schneaggchatv3mp.composeapp.generated.resources.chat_last_seen_status
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 
@@ -55,7 +62,22 @@ fun ChatTopBar(
                 bottomTextOverride = presenceText,
                 onClickGes = onPartnerClick,
                 ownId = ownId,
+                modifier = Modifier.weight(1f)
             )
+
+            if (!partner.isGroup && !partner.phoneNumber.isNullOrBlank()) {
+                // Only show the call button if the friend shared their phone number
+                val shareUtils = koinInject<ShareUtils>()
+                val phoneNumber = partner.phoneNumber
+                IconButton(
+                    onClick = { shareUtils.openPhoneDialer(phoneNumber) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Call,
+                        contentDescription = stringResource(Res.string.call)
+                    )
+                }
+            }
         }
     }
 }

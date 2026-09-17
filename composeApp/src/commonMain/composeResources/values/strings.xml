@@ -1093,10 +1093,11 @@
 
     <!-- Location Groups -->
     <string name="location_group_driving">Driving</string>
-    <string name="location_group_nature_activities">Nature &amp; Activities</string>
+    <string name="location_group_nature_activities">Nature &amp; Sights</string>
     <string name="location_group_sport">Sport</string>
-    <string name="location_group_social_entertainment">Social &amp; Entertainment</string>
+    <string name="location_group_social_entertainment">Going Out</string>
     <string name="location_group_food">Food</string>
+    <string name="location_group_useful">Useful</string>
 
     <!-- Location Types -->
     <string name="location_type_user">Friends</string>
@@ -1115,6 +1116,8 @@
     <string name="location_type_outdoor_fitness">Outdoor Fitness</string>
     <string name="location_type_table_tennis">Table Tennis</string>
     <string name="location_type_tennis">Tennis</string>
+    <string name="location_type_horse_riding">Horse Riding</string>
+    <string name="location_type_bike_service_station">Bike Service Station</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
     <string name="location_type_wifi">WiFi</string>
@@ -1125,6 +1128,7 @@
     <string name="location_type_food_ice">Ice Cream</string>
     <string name="location_type_food_asian">Asian Food</string>
     <string name="location_type_food_greek">Greek Food</string>
+    <string name="location_type_food_austrian">Austrian Food</string>
     <string name="location_type_food_cafe_bakery">Cafe / Bakery</string>
     <string name="location_type_food_other">Other Food</string>
 
@@ -1144,32 +1148,45 @@
     <!-- Wheelie Spot -->
     <string name="location_wheeliespot_only_on_weekends">Only on Weekends</string>
     <string name="location_legal">Legal</string>
-    <string name="location_offroad_motocross">Motocross</string>
-    <string name="location_offroad_enduro">Enduro</string>
     <string name="location_bicycle_difficulty">Difficulty (1-10)</string>
     <string name="location_bicycle_underground_type">Underground Type</string>
+    <string name="location_bicycle_underground_type_asphalt">Asphalt</string>
+    <string name="location_bicycle_underground_type_gravel">Gravel</string>
+    <string name="location_bicycle_underground_type_dirt">Dirt</string>
+    <string name="location_bicycle_underground_type_trail">Trail</string>
+    <string name="location_bicycle_underground_type_other">Other</string>
+    <string name="location_camping_kind">Type</string>
+    <string name="location_swimming_setting">Indoor / outdoor</string>
+    <string name="location_climbingspot_setting">Indoor / outdoor</string>
+    <string name="location_volleyball_setting">Indoor / outdoor</string>
+    <string name="location_offroad_discipline">Discipline</string>
+    <string name="location_option_venue_setting_indoor">Indoor</string>
+    <string name="location_option_venue_setting_outdoor">Outdoor</string>
+    <string name="location_option_venue_setting_both">Indoor &amp; outdoor</string>
+    <string name="location_option_offroad_discipline_motocross">Motocross</string>
+    <string name="location_option_offroad_discipline_enduro">Enduro</string>
+    <string name="location_option_offroad_discipline_both">Motocross &amp; Enduro</string>
+    <string name="location_option_camping_kind_official_site">Official campsite</string>
+    <string name="location_option_camping_kind_wild_camping">Wild camping</string>
+    <string name="location_option_camping_kind_tolerated">Tolerated</string>
     <string name="location_lie_down_friendly">Good for Lying Down</string>
 
     <!-- Camping -->
-    <string name="location_camping_official">Official</string>
     <string name="location_camping_water_distance">Distance to Water (m)</string>
     <string name="location_camping_sitting_possibility">Seating Available</string>
     <string name="location_camping_grill_possibility">Grilling Allowed</string>
 
     <!-- Swimming -->
-    <string name="location_swimming_indoor">Indoor</string>
     <string name="location_swimming_jump_spot">Jump Spot</string>
     <string name="location_swimming_price">Price</string>
 
     <!-- Climbingspot -->
     <string name="location_climbingspot_via_ferrata">Via Ferrata</string>
-    <string name="location_climbingspot_outdoor">Outdoor</string>
     <string name="location_climbingspot_price">Price</string>
 
     <!-- Volleyball -->
     <string name="location_volleyball_good_net">Good Net</string>
     <string name="location_volleyball_good_field">Good Field</string>
-    <string name="location_volleyball_outdoor">Outdoor</string>
 
     <!-- Outdoor Fitness -->
     <string name="location_outdoor_fitness_shadow">Shadow</string>
@@ -1179,6 +1196,12 @@
 
     <!-- Tennis -->
     <string name="location_tennis_paddle">Paddle</string>
+
+    <!-- Horse Riding -->
+    <string name="location_horse_riding_next_tournament">Next Tournament</string>
+
+    <!-- Bike Service Station -->
+    <string name="location_bike_service_station_mostly_working">Mostly Working</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Entry Fee</string>

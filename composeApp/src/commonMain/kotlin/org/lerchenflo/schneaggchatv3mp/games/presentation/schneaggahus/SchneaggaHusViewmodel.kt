@@ -416,8 +416,6 @@ class SchneaggaHusViewmodel(
     private fun toggleSwitch(position: Position) {
         val current = _state.value
         if (current.isPaused) return
-        // A schneagg on the tile already committed to its exit; flipping the rails under it would look wrong
-        if (current.schneaggList.any { it.tile == position }) return
         _state.update { state ->
             state.copy(
                 trackList = state.trackList.map { tile ->

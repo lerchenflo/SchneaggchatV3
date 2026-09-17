@@ -601,15 +601,12 @@ private fun DrawScope.drawSchneaggaHus(
 
     segments.forEach { if (it.kind == RailKind.PLAIN) drawTrack(it, style.rail) }
 
-    // 3. Switches: a disc with the inactive branch faint and the active one lit,
-    //    dimmed while a schneagg is on the tile because its exit is locked.
-    val occupiedTiles = state.schneaggList.mapTo(HashSet()) { it.tile }
+    // 3. Switches: a disc with the inactive branch faint and the active one lit.
     state.trackList.forEach { track ->
         if (!track.isSwitch) return@forEach
         val at = center(track.position)
         val discRadius = tile * 0.4f
-        val disc = if (track.position in occupiedTiles) style.switchDisc.copy(alpha = 0.55f) else style.switchDisc
-        drawCircle(disc, radius = discRadius, center = at)
+        drawCircle(style.switchDisc, radius = discRadius, center = at)
         val discClip = Path().apply { addOval(Rect(at, discRadius)) }
         segments.forEach { segment ->
             if (segment.tile != track.position) return@forEach

@@ -53,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -88,6 +89,9 @@ fun NewChat(
 
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
+    var profilePictureDialogShown by remember { mutableStateOf(false) }
+    var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
     Scaffold {
         Column(
@@ -196,9 +200,13 @@ fun NewChat(
                 ) { friend ->
                     UserButton(
                         chat = friend,
-                        useOnClickGes = true,
-                        onClickGes = {
+                        useOnClickGes = false,
+                        onClickText = {
                             viewModel.onPendingFriendRequestClick(friend)
+                        },
+                        onClickImage = {
+                            profilePictureDialogShown = true
+                            profilePictureFilePathTemp = friend.profilePictureUrl
                         },
                         ownId = ownId
                     )
@@ -246,6 +254,16 @@ fun NewChat(
                 }
             }
 
+        }
+
+        if (profilePictureDialogShown) {
+            ProfilePictureBigDialog(
+                filepath = profilePictureFilePathTemp,
+                onDismiss = {
+                    profilePictureDialogShown = false
+                    profilePictureFilePathTemp = ""
+                }
+            )
         }
 
         pendingFriendPopup?.let { selectedChat->

@@ -1095,10 +1095,11 @@
 
     <!-- Location Groups -->
     <string name="location_group_driving">Fahren</string>
-    <string name="location_group_nature_activities">Natur &amp; Aktivitäten</string>
+    <string name="location_group_nature_activities">Natur &amp; Sehenswürdigkeiten</string>
     <string name="location_group_sport">Sport</string>
-    <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
+    <string name="location_group_social_entertainment">Ausgehen</string>
     <string name="location_group_food">Essen</string>
+    <string name="location_group_useful">Nützliches</string>
 
     <!-- Location Types -->
     <string name="location_type_user">Freunde</string>
@@ -1117,6 +1118,8 @@
     <string name="location_type_outdoor_fitness">Outdoor-Fitness</string>
     <string name="location_type_table_tennis">Tischtennis</string>
     <string name="location_type_tennis">Tennis</string>
+    <string name="location_type_horse_riding">Reitplatz</string>
+    <string name="location_type_bike_service_station">Fahrrad-Servicestation</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
     <string name="location_type_wifi">WLAN</string>
@@ -1127,6 +1130,7 @@
     <string name="location_type_food_ice">Eis</string>
     <string name="location_type_food_asian">Asiatisch</string>
     <string name="location_type_food_greek">Griechisch</string>
+    <string name="location_type_food_austrian">Österreichisch</string>
     <string name="location_type_food_cafe_bakery">Cafe / Bäckerei</string>
     <string name="location_type_food_other">Anderes Essen</string>
 
@@ -1146,32 +1150,45 @@
     <!-- Wheelie Spot -->
     <string name="location_wheeliespot_only_on_weekends">Nur am Wochenende</string>
     <string name="location_legal">Legal</string>
-    <string name="location_offroad_motocross">Motocross</string>
-    <string name="location_offroad_enduro">Enduro</string>
     <string name="location_bicycle_difficulty">Schwierigkeit (1-10)</string>
     <string name="location_bicycle_underground_type">Untergrund</string>
+    <string name="location_bicycle_underground_type_asphalt">Asphalt</string>
+    <string name="location_bicycle_underground_type_gravel">Schotter</string>
+    <string name="location_bicycle_underground_type_dirt">Erde</string>
+    <string name="location_bicycle_underground_type_trail">Trail</string>
+    <string name="location_bicycle_underground_type_other">Sonstiges</string>
+    <string name="location_camping_kind">Art</string>
+    <string name="location_swimming_setting">Indoor / Outdoor</string>
+    <string name="location_climbingspot_setting">Indoor / Outdoor</string>
+    <string name="location_volleyball_setting">Indoor / Outdoor</string>
+    <string name="location_offroad_discipline">Disziplin</string>
+    <string name="location_option_venue_setting_indoor">Indoor</string>
+    <string name="location_option_venue_setting_outdoor">Outdoor</string>
+    <string name="location_option_venue_setting_both">Indoor &amp; Outdoor</string>
+    <string name="location_option_offroad_discipline_motocross">Motocross</string>
+    <string name="location_option_offroad_discipline_enduro">Enduro</string>
+    <string name="location_option_offroad_discipline_both">Motocross &amp; Enduro</string>
+    <string name="location_option_camping_kind_official_site">Offizieller Campingplatz</string>
+    <string name="location_option_camping_kind_wild_camping">Wildcampen</string>
+    <string name="location_option_camping_kind_tolerated">Geduldet</string>
     <string name="location_lie_down_friendly">Zum Liegen geeignet</string>
 
     <!-- Camping -->
-    <string name="location_camping_official">Offiziell</string>
     <string name="location_camping_water_distance">Entfernung zum Wasser (m)</string>
     <string name="location_camping_sitting_possibility">Sitzmöglichkeit</string>
     <string name="location_camping_grill_possibility">Grillmöglichkeit</string>
 
     <!-- Swimming -->
-    <string name="location_swimming_indoor">Indoor</string>
     <string name="location_swimming_jump_spot">Sprungstelle</string>
     <string name="location_swimming_price">Preis</string>
 
     <!-- Climbingspot -->
     <string name="location_climbingspot_via_ferrata">Klettersteig</string>
-    <string name="location_climbingspot_outdoor">Outdoor</string>
     <string name="location_climbingspot_price">Preis</string>
 
     <!-- Volleyball -->
     <string name="location_volleyball_good_net">Gutes Netz</string>
     <string name="location_volleyball_good_field">Gutes Feld</string>
-    <string name="location_volleyball_outdoor">Outdoor</string>
 
     <!-- Outdoor Fitness -->
     <string name="location_outdoor_fitness_shadow">Schatten</string>
@@ -1181,6 +1198,12 @@
 
     <!-- Tennis -->
     <string name="location_tennis_paddle">Paddle</string>
+
+    <!-- Horse Riding -->
+    <string name="location_horse_riding_next_tournament">Nächstes Turnier</string>
+
+    <!-- Bike Service Station -->
+    <string name="location_bike_service_station_mostly_working">Funktioniert meistens</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Eintrittspreis</string>
