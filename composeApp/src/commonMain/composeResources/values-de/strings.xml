@@ -1203,7 +1203,7 @@
     <string name="location_horse_riding_next_tournament">Nächstes Turnier</string>
 
     <!-- Bike Service Station -->
-    <string name="location_bike_service_station_mostly_working">Funktioniert meistens</string>
+    <string name="location_bike_service_station_mostly_working">Funktioniert größtenteils</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Eintrittspreis</string>
