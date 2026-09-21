@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
@@ -106,10 +108,20 @@ class ChatViewModel(
     private var newMessagesBoundaryComputed = false
     private val newMessagesBoundaryId = MutableStateFlow<String?>(null)
 
-    // Guards setAllMessagesRead(): without this it re-runs (and writes to the DB) on every
+    // Guards setAllMessagesRead(): without this it re-runs (and hits the network) on every
     // single messageDisplayItemsFlow emission, including ones with nothing unread - which then
     // re-emits the messages flow and reprocesses the whole list again.
+    //
+    // Only set once the server has actually accepted the read. A failed or lost attempt leaves it
+    // null so the next emission retries - the read state itself lives on the server now, so a
+    // chat can legitimately come back unread after we already asked once.
     private var lastMarkedReadMessageId: String? = null
+
+    // Serialises the requests instead of dropping overlapping ones: a message arriving while a
+    // request is in flight would otherwise be swallowed by the guard and then left unread, because
+    // the in-flight run finishes by advancing lastMarkedReadMessageId past it. Queued callers
+    // re-check under the lock, so the redundant ones cost nothing.
+    private val markReadMutex = Mutex()
 
     /**
      * Centralized action handler for all chat-screen user interactions.
@@ -154,23 +166,46 @@ class ChatViewModel(
         _state.update { it.copy(editMessage = newValue) }
     }
 
+    /**
+     * Asks the server to mark this chat read. Nothing is written locally - the repository pulls
+     * the server's answer back in, which is what finally flips `readByMe` (see
+     * [AppRepository.setAllChatMessagesRead]).
+     */
     fun setAllMessagesRead() {
 
-        val userId = SessionCache.requireLoggedIn()?.userId ?: return
+        SessionCache.requireLoggedIn() ?: return
 
         //One notification per chat (keyed by chatId, see Message.toNotificationContent), so a
         //single cancel by chatId clears it - no need to enumerate individual message ids.
         NotificationManager.removeMessageNotifications(listOf(NotificationManager.NotiId.HexString(chatId).asInt))
 
-        CoroutineScope(Dispatchers.IO).launch {
-            appRepository.setAllChatMessagesRead(
-                ownId = userId,
-                chatId,
-                isGroup,
-                getCurrentTimeMillisString()
-            )
+        //applicationScope, not viewModelScope: leaving the chat must not cancel the request or
+        //the sync that pulls the server's read receipt back in.
+        applicationScope.launch {
+            markReadMutex.withLock {
+                val newestMessageId = newestMessageId()
+                //Whoever held the lock before us may already have covered this exact state.
+                if (newestMessageId != null && newestMessageId == lastMarkedReadMessageId) {
+                    return@withLock
+                }
+
+                val accepted = appRepository.setAllChatMessagesRead(
+                    chatid = chatId,
+                    gruppe = isGroup,
+                    timestamp = getCurrentTimeMillisString()
+                )
+                lastMarkedReadMessageId = if (accepted) newestMessageId else null
+            }
         }
     }
+
+    /** Newest message currently on screen - the list is newest-first (ORDER BY sendDate DESC). */
+    private fun newestMessageId(): String? = _state.value.displayItems
+        .filterIsInstance<MessageDisplayItem.MessageItem>()
+        .firstOrNull()?.message?.id
+
+    private fun hasUnreadMessages(): Boolean = _state.value.displayItems
+        .any { it is MessageDisplayItem.MessageItem && !it.message.readByMe }
 
     private fun saveDraft(){
         CoroutineScope(Dispatchers.IO).launch {
@@ -688,6 +723,16 @@ class ChatViewModel(
                 }
         }
 
+        viewModelScope.launch {
+            settingsRepository.getQuickReactions()
+                .catch { exception ->
+                    loggingRepository.logWarning("ChatViewModel: Problem getting quick reactions: ${exception.message}")
+                }
+                .collect { value ->
+                    _state.update { it.copy(quickReactions = value) }
+                }
+        }
+
         // load draft
         viewModelScope.launch {
             settingsRepository.getDraft(
@@ -708,10 +753,12 @@ class ChatViewModel(
         //Set messages read on start
         //setAllMessagesRead() Automatically on list change
 
-        //Set all messages read on app resumed
+        //Set all messages read on app resumed. Also the retry hook for a read the server never
+        //accepted: nothing is written locally any more, so a failed attempt leaves the list
+        //unchanged and the messages collector below has no new emission to react to.
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent.collectLatest {
-                if (SessionCache.isLoggedIn()) {
+                if (SessionCache.isLoggedIn() && hasUnreadMessages()) {
                     setAllMessagesRead()
                 }
             }
@@ -728,8 +775,10 @@ class ChatViewModel(
                     // the first MessageItem, not the last.
                     val newestMessageId = messageItems.firstOrNull()?.message?.id
                     val hasUnread = messageItems.any { !it.message.readByMe }
+                    // lastMarkedReadMessageId is advanced by setAllMessagesRead() itself, and only
+                    // if the server accepted - so a sync that brings this chat back unread retries
+                    // instead of being swallowed by the guard.
                     if (hasUnread && newestMessageId != lastMarkedReadMessageId) {
-                        lastMarkedReadMessageId = newestMessageId
                         setAllMessagesRead()
                     }
                 }

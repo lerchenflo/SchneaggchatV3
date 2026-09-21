@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.input.TextFieldValue
 import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
@@ -20,6 +21,7 @@ data class ChatState(
     val replyMessageSender: SenderInfo? = null,
     val editMessage: Message? = null,
     val markdownEnabled: Boolean = false,
+    val quickReactions: List<String> = DEFAULT_QUICK_REACTIONS,
     val isDesktop: Boolean = false,
     val maxVoiceMsgTime: Long = 0L,
 )

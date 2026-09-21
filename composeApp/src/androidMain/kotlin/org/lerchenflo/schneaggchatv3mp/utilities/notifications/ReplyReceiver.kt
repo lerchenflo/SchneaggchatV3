@@ -58,7 +58,6 @@ class ReplyReceiver : BroadcastReceiver() {
                 )
 
                 appRepository.setAllChatMessagesRead(
-                    ownId = ownId,
                     chatid = chatId,
                     gruppe = groupChat,
                     timestamp = getCurrentTimeMillisString()

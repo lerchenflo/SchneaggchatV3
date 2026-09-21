@@ -206,12 +206,4 @@ class MessageRepository(
 
 
 
-    @Transaction
-    suspend fun setAllChatMessagesRead(ownId: String, chatid: String, gruppe: Boolean, timestamp: String) {
-
-        // Use efficient bulk updates instead of loading individual messages
-        database.messageDao().markAllChatMessagesRead(chatid, gruppe, timestamp)
-        database.messageDao().addMessageReadersForChat(chatid, gruppe, ownId, timestamp)
-    }
-
 }

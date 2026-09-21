@@ -1,7 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,23 +12,26 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
@@ -72,18 +74,23 @@ fun EventJoinPopup(
     friendsById: Map<String, User> = emptyMap(),
     modifier: Modifier = Modifier
 ) {
-    ModalBottomSheet(
+    // A plain Dialog rather than a ModalBottomSheet: the sheet's anchored-drag machinery could end
+    // up swallowing pointer-down events after the popup was rebuilt on a fast navigation, leaving
+    // it visible but inert. Everything here is read-only, so an outside tap can still dismiss it.
+    Dialog(
         onDismissRequest = onDismiss,
-        properties = ModalBottomSheetProperties(
-            shouldDismissOnBackPress = false,
-            shouldDismissOnClickOutside = true
-        ),
-        containerColor = MaterialTheme.colorScheme.background
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = true
+        )
     ) {
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
 
             // Header: creator avatar + "<creator> wants to <event title> at <start date>"

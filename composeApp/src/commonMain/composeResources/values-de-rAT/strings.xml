@@ -1135,32 +1135,26 @@ Mealds, egal wie klenn.</string>
     <!-- Wheelie Spot -->
     <string name="location_wheeliespot_only_on_weekends">Nur am Wochenende</string>
     <string name="location_legal">Legal</string>
-    <string name="location_offroad_motocross">Motocross</string>
-    <string name="location_offroad_enduro">Enduro</string>
     <string name="location_bicycle_difficulty">Schwierigkeit (1-10)</string>
     <string name="location_bicycle_underground_type">Untergrund</string>
     <string name="location_lie_down_friendly">Kama aneliega</string>
 
     <!-- Camping -->
-    <string name="location_camping_official">Ned Illegal</string>
     <string name="location_camping_water_distance">Entfernung zum Wasser (m)</string>
     <string name="location_camping_sitting_possibility">Sitzmöglichkeit</string>
     <string name="location_camping_grill_possibility">Grillmöglichkeit</string>
 
     <!-- Swimming -->
-    <string name="location_swimming_indoor">Dinna</string>
     <string name="location_swimming_jump_spot">Kama Springa</string>
     <string name="location_swimming_price">Preis</string>
 
     <!-- Climbingspot -->
     <string name="location_climbingspot_via_ferrata">Kleattasteig</string>
-    <string name="location_climbingspot_outdoor">dussa</string>
     <string name="location_climbingspot_price">Preis</string>
 
     <!-- Volleyball -->
     <string name="location_volleyball_good_net">Guats Netz</string>
     <string name="location_volleyball_good_field">Guats Feald</string>
-    <string name="location_volleyball_outdoor">Dussa</string>
 
     <!-- Outdoor Fitness -->
     <string name="location_outdoor_fitness_shadow">Schatta</string>

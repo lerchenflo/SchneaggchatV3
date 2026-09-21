@@ -34,6 +34,7 @@ fun ChatMessageItem(
     ownId: String,
     chatId: String,
     useMarkdown: Boolean,
+    quickReactions: List<String>,
     playbackProgress: StateFlow<PlaybackProgress>,
     onReplyPreviewClick: () -> Unit,
     onAction: (MessageAction) -> Unit,
@@ -72,6 +73,7 @@ fun ChatMessageItem(
         MessageOptionPopup(
             expanded = showMessageOptionPopup,
             message = message,
+            quickReactions = quickReactions,
             onDismissRequest = { showMessageOptionPopup = false },
             onReply = { onAction(MessageAction.ReplyToMessage(message, item.sender)) },
             onCopy = {

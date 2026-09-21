@@ -20,6 +20,10 @@ class SettingsRepository(
         preferencemanager.saveHighlightTodaysMessageTimestamp(value)
     }
 
+    fun getQuickReactions() : Flow<List<String>> {
+        return preferencemanager.getQuickReactionsFlow()
+    }
+
     fun getDraft(chatId: String, group: Boolean) : Flow<String?> {
         return preferencemanager.getDraftsFlow(
             chatId = chatId,

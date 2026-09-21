@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -52,6 +52,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.stevdza_san.swipeable.Swipeable
 import com.stevdza_san.swipeable.domain.ActionCustomization
 import com.stevdza_san.swipeable.domain.SwipeAction
@@ -97,12 +99,29 @@ fun MapEntryInfoCard(
         mutableStateOf(entry)
     }
 
+    var showDeleteConfirmationPopup by remember { mutableStateOf(false) }
 
-    ModalBottomSheet(
+    // A plain Dialog rather than a ModalBottomSheet: the sheet's anchored-drag machinery could end
+    // up swallowing pointer-down events after the card was rebuilt on a fast navigation, leaving it
+    // visible but inert - clicks and text-field focus dead. Outside taps don't dismiss either, so
+    // an accidental tap can't silently discard in-progress edits.
+    Dialog(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.background
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false
+        )
     ) {
-        Column(modifier = modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp)) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .imePadding()
+                .padding(12.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(MaterialTheme.colorScheme.background)
+                .padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 12.dp)
+        ) {
 
             //Scrollable column to be able to hoist multiple attributevalues
             Column(
@@ -173,43 +192,13 @@ fun MapEntryInfoCard(
 
                 //Delete on the far left, only shown when nothing has been edited yet
                 if (!changed) {
-
-                    var showDeleteConfirmationPopup by remember { mutableStateOf(false) }
                     IconButton(
-                        onClick = {showDeleteConfirmationPopup = true}
+                        onClick = { showDeleteConfirmationPopup = true }
                     ) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-
-                    if (showDeleteConfirmationPopup) {
-                        AlertDialog(
-                            onDismissRequest = { showDeleteConfirmationPopup = false },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    onDelete(entry.id)
-                                    showDeleteConfirmationPopup = false
-
-                                }) {
-                                    Text(stringResource(Res.string.delete))
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = {
-                                    // Handle confirm action
-                                    showDeleteConfirmationPopup = false
-                                }) {
-                                    Text(stringResource(Res.string.cancel))
-                                }
-                            },
-                            text = {
-                                Text(
-                                    text = stringResource(Res.string.schneaggmap_entry_delete)
-                                )
-                            }
                         )
                     }
                 }
@@ -259,7 +248,33 @@ fun MapEntryInfoCard(
         }
     }
 
+    //Kept outside the Dialog above - a dialog nested inside another one isn't reliable on all targets
+    if (showDeleteConfirmationPopup) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmationPopup = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDelete(entry.id)
+                    showDeleteConfirmationPopup = false
 
+                }) {
+                    Text(stringResource(Res.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDeleteConfirmationPopup = false
+                }) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            },
+            text = {
+                Text(
+                    text = stringResource(Res.string.schneaggmap_entry_delete)
+                )
+            }
+        )
+    }
 }
 
 

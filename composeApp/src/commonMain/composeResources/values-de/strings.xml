@@ -114,6 +114,12 @@
     <string name="markdownInfo">Damit wird die Markdown-formatierung von Nachrichten aktiviert. Dies kann jedoch das Scrollen im Chat verlangsamen</string>
     <string name="highlight_todays_message_timestamp">Heutigen Zeitstempel hervorheben</string>
     <string name="highlight_todays_message_timestamp_info">Hebt den Zeitstempel von heute empfangenen Nachrichten in der Chat-Auswahl grün hervor.</string>
+    <string name="quick_reactions">Schnellreaktionen</string>
+    <string name="quick_reactions_info">Emojis, die beim langen Drücken einer Nachricht angeboten werden. Zum Umsortieren ziehen, auf allen Geräten synchronisiert.</string>
+    <string name="quick_reactions_empty">Keine Schnellreaktionen - du kannst trotzdem bei jeder Nachricht eine eigene hinzufügen.</string>
+    <string name="quick_reactions_reorder">Schnellreaktion umsortieren</string>
+    <string name="add_quick_reaction">Schnellreaktion hinzufügen</string>
+    <string name="restore_defaults">Standard wiederherstellen</string>
     <string name="something_wrong_message">Bei dieser Nachricht stimmt etwas nicht.</string>
     <string name="message_too_long">Nachricht ist zu lang!</string>
     <string name="log_out_successfully">Erfolgreich ausgeloggt</string>

@@ -546,7 +546,6 @@ fun SchneaggmapScreen(
         )
 
         if (!state.pickLocationMode) {
-            //Popup cards from the bottom
             state.selectedEntry?.let { entry ->
                 MapEntryInfoCard(
                     entry = entry,
@@ -560,11 +559,11 @@ fun SchneaggmapScreen(
                     },
                     onDelete = {
                         onAction(SchneaggmapAction.OnEntryPopupDelete(it))
-                    },
-                    modifier = Modifier.align(Alignment.BottomCenter)
+                    }
                 )
             }
 
+            //Popup card from the bottom
             state.selectedUser?.let { user ->
                 val isOwnUser = user.id == SessionCache.requireLoggedIn()?.userId
                 val batteryService = koinInject<BatteryService>()

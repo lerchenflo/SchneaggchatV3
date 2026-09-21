@@ -244,12 +244,24 @@ class GlobalViewModel(
                 SessionCache.authState,
                 AppLifecycleManager.startupRoutingDone,
             ) { pending, authState, routingDone -> Triple(pending, authState, routingDone) }
-                .collectLatest { (pending, authState, routingDone) ->
-                    if (pending == null || !routingDone) return@collectLatest
-                    val ownId = (authState as? SessionCache.AuthState.LoggedIn)?.userId ?: return@collectLatest
+                // Plain collect (not collectLatest): consuming the request below writes null back
+                // into pendingNotificationOpen, which re-emits through the combine - collectLatest
+                // took that as "newer value" and cancelled this very block at its next suspension
+                // point, so the navigation could be dropped halfway and the sync never ran at all.
+                .collect { (pending, authState, routingDone) ->
+                    if (pending == null || !routingDone) return@collect
+                    val ownId = (authState as? SessionCache.AuthState.LoggedIn)?.userId ?: return@collect
 
-                    val data = AppLifecycleManager.consumePendingNotificationOpen() ?: return@collectLatest
+                    val data = AppLifecycleManager.consumePendingNotificationOpen() ?: return@collect
                     println("App started from notification, synching data")
+
+                    // Its own coroutine: the navigate() calls below park until the app is STARTED
+                    // again (ObserveAsEvents only collects from then on), and the sync that brings
+                    // the chat up to date must not queue behind that.
+                    viewModelScope.launch {
+                        appRepository.sendOfflineMessages(ownId)
+                        appRepository.dataSync(reason = "notificationOpened")
+                    }
 
                     // Navigate to the chat that the notification belongs to. Switch to the chat
                     // tab first - a bare Route.Chat push lands on whichever tab is currently
@@ -258,9 +270,6 @@ class GlobalViewModel(
                         navigator.navigate(Route.ChatSelector)
                         navigator.navigate(Route.Chat(chatId = chatId, isGroup = data.isGroup))
                     }
-
-                    appRepository.sendOfflineMessages(ownId)
-                    appRepository.dataSync(reason = "notificationOpened")
                 }
         }
 
