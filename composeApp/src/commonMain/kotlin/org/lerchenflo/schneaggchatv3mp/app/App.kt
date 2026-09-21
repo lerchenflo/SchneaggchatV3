@@ -87,6 +87,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
+import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckScreenRoot
@@ -831,6 +832,12 @@ fun App() {
 
                                     entry<Route.Crossword> {
                                         CrosswordScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Wordle> {
+                                        WordleScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

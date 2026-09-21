@@ -850,6 +850,21 @@
     <string name="games_crossword_previous_clue">Vorherige Frage</string>
     <string name="games_crossword_next_clue">Nächste Frage</string>
 
+    <!-- Games: Wordle -->
+    <string name="games_wordle_title">Wordle</string>
+    <string name="games_wordle_instructions">Errate das Wort des Tages aus fünf Buchstaben in sechs Versuchen! Sobald eine Reihe voll ist, wird sie automatisch geprüft: Grün heißt, der Buchstabe steht an der richtigen Stelle, Orange heißt, er kommt im Wort vor, aber woanders, und Grau heißt, er kommt gar nicht vor.\n\nDas englische Wort ist das offizielle der New York Times, das deutsche kommt aus unserer eigenen Liste. Alle bekommen am selben Tag dasselbe Wort – je schneller und je weniger Versuche, desto besser dein Platz in der Rangliste.</string>
+    <string name="games_wordle_language_question">Wähle deine Wortsprache</string>
+    <string name="games_wordle_language_english">Englisch (NYT Wordle)</string>
+    <string name="games_wordle_language_german">Deutsch</string>
+    <string name="games_wordle_load_failed">Das Wort von heute konnte nicht geladen werden. Prüfe deine Internetverbindung und versuche es erneut.</string>
+    <string name="games_wordle_retry">Erneut versuchen</string>
+    <string name="games_wordle_guess_counter">Versuche %1$d / %2$d</string>
+    <string name="games_wordle_too_short">Zu wenige Buchstaben</string>
+    <string name="games_wordle_unknown_word">%1$s steht nicht in der Wortliste</string>
+    <string name="games_wordle_delete">Buchstabe löschen</string>
+    <string name="games_wordle_solved">Gelöst in %1$d von %2$d Versuchen · %3$s</string>
+    <string name="games_wordle_failed">Keine Versuche mehr! Das Wort war %1$s</string>
+
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Tägliche Challenge (%1$s)</string>
     <string name="games_daily_reset">Eine neue tägliche Challenge ist verfügbar – dein Fortschritt wurde zurückgesetzt.</string>

@@ -25,6 +25,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Spiele: Spielstand beim Zurückkehren wiederherstellen
 - SchneaggaHus Spiel
 - Tower Stack: Schneagg reitet mit
+- Wordle-Daily-Challenge
 - Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
 - Android Auto Support
 - Doppelte Nachrichten (Ungesendete) Behoben
@@ -37,6 +38,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Anmeldung: Token-Refresh rebuild (5. mol??), Leerer Bildschirm nach Hintergrundbeendigung behoben (Session wird wiederhergestellt)
 - Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe
 - Events: Crash bei mehrtägigen Events behoben
+- Wordle: Unlesbare Kachel-Farben behoben (grün/orange/grau statt Theme-Farben), automatische Zeilen-Überprüfung beim fünften Buchstaben
 
 
 ### 3.0.17

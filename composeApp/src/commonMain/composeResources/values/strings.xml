@@ -848,6 +848,21 @@
     <string name="games_crossword_previous_clue">Previous clue</string>
     <string name="games_crossword_next_clue">Next clue</string>
 
+    <!-- Games: Wordle -->
+    <string name="games_wordle_title">Wordle</string>
+    <string name="games_wordle_instructions">Guess the five-letter word of the day in six tries! As soon as a row is full it is checked automatically: green means the letter is in the right spot, orange means it is in the word but somewhere else, and grey means it is not in the word at all.\n\nThe English word is the official one from the New York Times, the German one comes from our own list. Everyone gets the same word on the same day — the faster and the fewer tries, the better your place on the leaderboard.</string>
+    <string name="games_wordle_language_question">Choose your word language</string>
+    <string name="games_wordle_language_english">English (NYT Wordle)</string>
+    <string name="games_wordle_language_german">German</string>
+    <string name="games_wordle_load_failed">Today\'s word could not be loaded. Check your internet connection and try again.</string>
+    <string name="games_wordle_retry">Retry</string>
+    <string name="games_wordle_guess_counter">Tries %1$d / %2$d</string>
+    <string name="games_wordle_too_short">Not enough letters</string>
+    <string name="games_wordle_unknown_word">%1$s is not in the word list</string>
+    <string name="games_wordle_delete">Delete letter</string>
+    <string name="games_wordle_solved">Solved in %1$d of %2$d tries · %3$s</string>
+    <string name="games_wordle_failed">Out of tries! The word was %1$s</string>
+
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Daily challenge (%1$s)</string>
     <string name="games_daily_reset">A new daily challenge is available – your progress was reset.</string>

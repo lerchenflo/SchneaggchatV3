@@ -1,0 +1,70 @@
+package org.lerchenflo.schneaggchatv3mp.games.presentation.wordle
+
+/**
+ * Solution pool for the German daily Wordle. Every entry is exactly five A-Z
+ * letters — umlauts and ß are avoided instead of expanded, because AE/OE/UE/SS
+ * would change the word length. Content lives in code like the other game word
+ * lists (Morse, Undercover, German crossword), not in string resources.
+ *
+ * This is a solution pool, not a dictionary: German guesses are only checked for
+ * length, so a valid word missing here is still accepted as a guess.
+ */
+val germanWordleWords: List<String> = listOf(
+    "ABEND", "ADLER", "AKTEN", "ALARM", "ALBUM", "AMPEL", "ANKER", "APFEL",
+    "ARENA", "ATLAS", "BAUCH", "BAUER", "BERGE", "BERUF", "BESEN", "BIBEL",
+    "BIENE", "BIRNE", "BLATT", "BLECH", "BLICK", "BLITZ", "BLUME", "BLUSE",
+    "BODEN", "BOGEN", "BOHNE", "BRAUN", "BRIEF", "BUCHE", "CHAOS", "CHINA",
+    "CREME", "CURRY", "DACHS", "DAMEN", "DANKE", "DATEN", "DATUM", "DAUER",
+    "DECKE", "DEGEN", "DIELE", "DINGE", "DONAU", "DOSEN", "DRAHT", "DRAMA",
+    "DROGE", "DUELL", "DURST", "EBENE", "ECKEN", "EIMER", "EISEN", "EMAIL",
+    "ENGEL", "ENKEL", "ERBSE", "ERNTE", "ESSEN", "ESSIG", "EULEN", "EUROS",
+    "EXTRA", "FABEL", "FADEN", "FAHNE", "FALKE", "FALLE", "FARBE", "FASAN",
+    "FAUST", "FEDER", "FEIER", "FERNE", "FEUER", "FIBEL", "FILME", "FIRMA",
+    "FISCH", "FLUSS", "FOLIE", "FORUM", "FOTOS", "FRAGE", "FUCHS", "FUNKE",
+    "GABEL", "GASSE", "GEBET", "GEIGE", "GEIST", "GENIE", "GLANZ", "GLEIS",
+    "GNADE", "GRAMM", "GRIFF", "GRILL", "GRUBE", "GRUND", "GURKE", "HAFEN",
+    "HAFER", "HAGEL", "HAKEN", "HALLE", "HALLO", "HANDY", "HASEN", "HAUPT",
+    "HEBEL", "HECKE", "HEIDE", "HERDE", "HEUTE", "HOBBY", "HONIG", "HORDE",
+    "HOTEL", "HUMOR", "HUNDE", "IDEEN", "IMKER", "INDEX", "INSEL", "JACKE",
+    "JAHRE", "JEANS", "JOKER", "JUBEL", "JUNGE", "JUWEL", "KABEL", "KAKAO",
+    "KAMEL", "KAMIN", "KAMPF", "KANAL", "KANNE", "KANTE", "KARTE", "KASSE",
+    "KATZE", "KEGEL", "KEHLE", "KELCH", "KERZE", "KETTE", "KINOS", "KISTE",
+    "KLANG", "KLEID", "KLIMA", "KNOPF", "KOHLE", "KOMET", "KONTO", "KOPIE",
+    "KRAFT", "KRANZ", "KRAUT", "KREBS", "KREIS", "KREUZ", "KRIEG", "KRONE",
+    "KUGEL", "KUNDE", "KUNST", "KURVE", "LADEN", "LAGER", "LAMPE", "LANZE",
+    "LASER", "LAUBE", "LAUNE", "LEBEN", "LEDER", "LESEN", "LEUTE", "LICHT",
+    "LIEBE", "LILIE", "LINDE", "LINIE", "LINSE", "LIPPE", "LISTE", "LITER",
+    "LOBBY", "LOCKE", "LOGIK", "LUNGE", "LUXUS", "MAGEN", "MAGIE", "MALER",
+    "MANGO", "MARKE", "MARKT", "MASSE", "MAUER", "MEILE", "MEISE", "MENGE",
+    "MESSE", "METER", "MIETE", "MILCH", "MITTE", "MODUS", "MOLCH", "MONAT",
+    "MONDE", "MOPED", "MORAL", "MOTOR", "MOTTE", "MUMIE", "MUSIK", "NABEL",
+    "NACHT", "NADEL", "NAGEL", "NAMEN", "NASEN", "NATUR", "NEBEL", "NEFFE",
+    "NETZE", "NIERE", "NOTIZ", "NUDEL", "OASEN", "OCHSE", "OFFEN", "OHREN",
+    "OLIVE", "ONKEL", "OPERN", "OPFER", "ORDEN", "ORGEL", "ORKAN", "OSTEN",
+    "OZEAN", "PAKET", "PALME", "PANDA", "PANIK", "PARTY", "PASTA", "PAUKE",
+    "PAUSE", "PEDAL", "PERLE", "PFAND", "PFEIL", "PFERD", "PFLUG", "PHASE",
+    "PIANO", "PILOT", "PILZE", "PIRAT", "PIZZA", "POKAL", "PREIS", "PRIMA",
+    "PRINZ", "PRISE", "PROBE", "PUDEL", "PULLI", "PUMPE", "PUNKT", "PUPPE",
+    "QUARK", "QUOTE", "RABEN", "RADAR", "RADIO", "RASEN", "RATTE", "RAUCH",
+    "RAUPE", "REGAL", "REGEL", "REGEN", "REGIE", "REIFE", "REIHE", "REISE",
+    "REVUE", "RIESE", "RINDE", "RINGE", "RIPPE", "ROBBE", "ROLLE", "ROMAN",
+    "ROSEN", "ROUTE", "RUBIN", "RUDEL", "RUDER", "RUINE", "RUMPF", "RUNDE",
+    "SAGEN", "SAHNE", "SAITE", "SALAT", "SALBE", "SALON", "SALZE", "SAMEN",
+    "SAUCE", "SAUNA", "SCHAF", "SCHAL", "SCHUH", "SEGEL", "SEIFE", "SEILE",
+    "SEKTE", "SIEBE", "SIEGE", "SILBE", "SIRUP", "SITTE", "SKALA", "SOCKE",
+    "SOFAS", "SOHLE", "SONNE", "SORGE", "SOSSE", "SPALT", "SPECK", "SPIEL",
+    "SPORT", "SPULE", "STAAT", "STADT", "STAHL", "STALL", "STAMM", "STAND",
+    "STAUB", "STEIN", "STERN", "STIEL", "STIER", "STIFT", "STIRN", "STOCK",
+    "STOFF", "STOLZ", "STROM", "STUBE", "STUFE", "STUHL", "STURM", "SUCHE",
+    "SUPPE", "TABAK", "TAFEL", "TALER", "TANNE", "TANTE", "TASSE", "TASTE",
+    "TAUBE", "TEICH", "TEMPO", "TEXTE", "THEMA", "THRON", "TIERE", "TIGER",
+    "TINTE", "TISCH", "TITEL", "TOAST", "TONNE", "TORTE", "TRAUM", "TREUE",
+    "TRICK", "TRIEB", "TRUHE", "TULPE", "TURBO", "UHREN", "UNTEN", "VASEN",
+    "VATER", "VENUS", "VERSE", "VIDEO", "VIOLA", "VOGEL", "VORNE", "WAAGE",
+    "WACHE", "WAFFE", "WAGEN", "WALZE", "WANGE", "WANNE", "WANZE", "WAREN",
+    "WARTE", "WATTE", "WEGEN", "WEINE", "WEISE", "WELLE", "WENDE", "WERFT",
+    "WERKE", "WERTE", "WESPE", "WESTE", "WETTE", "WIESE", "WINDE", "WIPPE",
+    "WITWE", "WITZE", "WOCHE", "WOLKE", "WOLLE", "WONNE", "WORTE", "WUNDE",
+    "WURST", "ZANGE", "ZEBRA", "ZEHEN", "ZEILE", "ZELLE", "ZELTE", "ZEUGE",
+    "ZIEGE", "ZIELE", "ZITAT", "ZUNGE", "ZWERG", "ZWEIG",
+)

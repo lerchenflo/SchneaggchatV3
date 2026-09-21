@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.AdsClick
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.Castle
 import androidx.compose.material.icons.filled.Dataset
@@ -30,6 +31,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
+import schneaggchatv3mp.composeapp.generated.resources.games_wordle_title
 import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
 
 //Shared over the whole games nav graph, owns the list of selectable games
@@ -50,6 +52,14 @@ class GameSelectorViewModel : ViewModel() {
             route = Route.Crossword,
             inDev = GameId.CROSSWORD.indev,
             gameId = GameId.CROSSWORD,
+            daily = true
+        ),
+        GameScreenElement(
+            title = Res.string.games_wordle_title,
+            icon = Icons.Default.Apps,
+            route = Route.Wordle,
+            inDev = GameId.WORDLE.indev,
+            gameId = GameId.WORDLE,
             daily = true
         ),
 
