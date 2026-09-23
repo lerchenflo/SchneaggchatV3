@@ -51,16 +51,14 @@ class GameSelectorViewModel : ViewModel() {
             icon = Icons.Default.Abc,
             route = Route.Crossword,
             inDev = GameId.CROSSWORD.indev,
-            gameId = GameId.CROSSWORD,
-            daily = true
+            gameId = GameId.CROSSWORD
         ),
         GameScreenElement(
             title = Res.string.games_wordle_title,
             icon = Icons.Default.Apps,
             route = Route.Wordle,
             inDev = GameId.WORDLE.indev,
-            gameId = GameId.WORDLE,
-            daily = true
+            gameId = GameId.WORDLE
         ),
 
 

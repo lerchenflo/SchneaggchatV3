@@ -24,11 +24,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -65,12 +67,12 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.WordleLanguage
 import org.lerchenflo.schneaggchatv3mp.games.domain.WordleLetterState
 import org.lerchenflo.schneaggchatv3mp.games.presentation.formatGameTime
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.utilities.rememberToday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_delete
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_failed
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_guess_counter
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_instructions
+import schneaggchatv3mp.composeapp.generated.resources.games_wordle_new_word
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_language_english
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_language_german
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_language_question
@@ -93,12 +95,6 @@ fun WordleScreenRoot(
     // Leaving the screen persists the progress so it can be picked up again later
     DisposableEffect(Unit) {
         onDispose { viewmodel.onAction(WordleAction.LeaveGame) }
-    }
-
-    // The daily word rolls over at local midnight, also while this screen stays open
-    val today = rememberToday()
-    LaunchedEffect(today) {
-        viewmodel.onAction(WordleAction.CheckDayChanged)
     }
 
     Column(
@@ -308,9 +304,16 @@ private fun WordleContent(
                     WORDLE_MAX_GUESSES
                 ),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(end = 8.dp)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            IconButton(onClick = { onAction(WordleAction.NewWord) }) {
+                Icon(
+                    imageVector = Icons.Default.SkipNext,
+                    contentDescription = stringResource(Res.string.games_wordle_new_word),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
 
         // Fixed slot so the board does not jump when a message appears

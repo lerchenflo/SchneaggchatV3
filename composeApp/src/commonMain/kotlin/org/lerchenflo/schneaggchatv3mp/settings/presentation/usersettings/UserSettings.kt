@@ -83,6 +83,8 @@ import schneaggchatv3mp.composeapp.generated.resources.edit_profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
 import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.invalid_phone_number
+import schneaggchatv3mp.composeapp.generated.resources.image_picker_error
+import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.phone_number_infotext
 import schneaggchatv3mp.composeapp.generated.resources.phone_number_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.status_infotext
@@ -155,9 +157,7 @@ fun UserSettings(
                     showImagePickerDialog = false
                 }
 
-                else -> {
-                    Unit
-                }
+                else -> {}
             }
         }
 
@@ -187,7 +187,10 @@ fun UserSettings(
 
                         is ImagePickerResult.Error -> {
                             Text(
-                                text = "Error: ${result.exception.message}",
+                                text = stringResource(
+                                    Res.string.image_picker_error,
+                                    result.exception.message ?: stringResource(Res.string.unknown_error)
+                                ),
                                 color = MaterialTheme.colorScheme.error
                             )
                         }

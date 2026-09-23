@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
@@ -17,7 +16,6 @@ import org.lerchenflo.schneaggchatv3mp.games.data.WordleRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
-import org.lerchenflo.schneaggchatv3mp.games.domain.SplitMix64
 import org.lerchenflo.schneaggchatv3mp.games.domain.WORDLE_MAX_GUESSES
 import org.lerchenflo.schneaggchatv3mp.games.domain.WORDLE_WORD_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.domain.WordleGuess
@@ -26,10 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.WordlePuzzle
 import org.lerchenflo.schneaggchatv3mp.games.domain.evaluateWordleGuess
 import org.lerchenflo.schneaggchatv3mp.games.domain.wordleScoreFor
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.today
-import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.games_daily_reset
+import kotlin.random.Random
 
 class WordleViewModel(
     private val wordleRepository: WordleRepository,
@@ -51,19 +46,13 @@ class WordleViewModel(
     val restoreChecked = saveSession.restoreChecked
 
     private var timerJob: Job? = null
-    /** Local day the loaded word belongs to; null while nothing is loaded. */
-    private var puzzleEpochDay: Long? = null
     /** Accepted English guesses; null means "not available", then any five letters pass. */
     private var englishGuessList: Set<String>? = null
 
     init {
         saveSession.start(onRestore = ::restore, onAppBackgrounded = ::onAppBackgrounded)
         viewModelScope.launch {
-            AppLifecycleManager.appResumedEvent.collect {
-                // Coming back from the background may be on a new day; otherwise just resume counting
-                checkDayChanged()
-                resumeTimerIfNeeded()
-            }
+            AppLifecycleManager.appResumedEvent.collect { resumeTimerIfNeeded() }
         }
     }
 
@@ -71,46 +60,40 @@ class WordleViewModel(
         when (action) {
             is WordleAction.SelectLanguage -> loadPuzzle(action.language)
             WordleAction.RetryLoad -> _state.value.language?.let { loadPuzzle(it) }
+            WordleAction.NewWord -> _state.value.language?.let { loadPuzzle(it) }
             WordleAction.LeaveGame -> persist()
-            WordleAction.CheckDayChanged -> checkDayChanged()
             is WordleAction.KeyPressed -> onKeyPressed(action.letter)
             WordleAction.Backspace -> onBackspace()
             WordleAction.SubmitGuess -> submitGuess()
         }
     }
 
-    /** Today's daily word — the same one for everybody playing that language. */
+    /** A fresh random word — there is no limit on how many can be played. */
     private fun loadPuzzle(language: WordleLanguage) {
         timerJob?.cancel()
         timerJob = null
         saveSession.clear()
-        val loadDate = today()
         _state.value = WordleState(language = language, isLoading = true)
 
         viewModelScope.launch {
             val puzzle = when (language) {
-                WordleLanguage.GERMAN -> germanDailyPuzzle(loadDate.toEpochDays())
-                WordleLanguage.ENGLISH -> wordleRepository.getEnglishDailyPuzzle(loadDate)
+                WordleLanguage.GERMAN -> randomGermanPuzzle()
+                WordleLanguage.ENGLISH -> wordleRepository.getRandomEnglishPuzzle()
             }
             if (puzzle == null) {
                 _state.update { it.copy(isLoading = false, loadFailed = true) }
                 return@launch
             }
-            startWithPuzzle(puzzle, loadDate.toEpochDays())
+            startWithPuzzle(puzzle)
         }
     }
 
-    /** Deterministic pick so the German word is identical on every platform. */
-    private fun germanDailyPuzzle(epochDay: Long): WordlePuzzle {
-        val random = SplitMix64(epochDay * 6_364_136_223_846_793L + 71L)
-        return WordlePuzzle(
-            language = WordleLanguage.GERMAN,
-            solution = germanWordleWords[random.nextInt(germanWordleWords.size)],
-        )
-    }
+    private fun randomGermanPuzzle(): WordlePuzzle = WordlePuzzle(
+        language = WordleLanguage.GERMAN,
+        solution = germanWordleWords[Random.nextInt(germanWordleWords.size)],
+    )
 
-    private fun startWithPuzzle(puzzle: WordlePuzzle, epochDay: Long) {
-        puzzleEpochDay = epochDay
+    private fun startWithPuzzle(puzzle: WordlePuzzle) {
         _state.value = WordleState(language = puzzle.language, puzzle = puzzle)
         startTimer()
         if (puzzle.language == WordleLanguage.ENGLISH) loadEnglishGuessList()
@@ -148,18 +131,9 @@ class WordleViewModel(
         if (current.puzzle != null && !current.isFinished && timerJob == null) startTimer()
     }
 
-    /** The daily word changed underneath the one on screen: load today's and tell the user. */
-    private fun checkDayChanged() {
-        val epochDay = puzzleEpochDay ?: return
-        if (epochDay == today().toEpochDays()) return
-        val language = _state.value.language ?: return
-        loadPuzzle(language)
-        viewModelScope.launch { SnackbarManager.showMessage(getString(Res.string.games_daily_reset)) }
-    }
-
     private fun persist() = saveSession.persist(difficultyFor(_state.value.language), snapshotOrNull())
 
-    /** Null until a word is loaded; finished games are kept so today's result stays visible. */
+    /** Null until a word is loaded; finished games are kept so the result survives leaving the screen. */
     private fun snapshotOrNull(): WordleSnapshot? {
         val current = _state.value
         val puzzle = current.puzzle ?: return null
@@ -172,12 +146,11 @@ class WordleViewModel(
         )
     }
 
-    /** Brings today's saved progress back; an unfinished game starts counting again right away. */
+    /** Brings the saved progress back; an unfinished game starts counting again right away. */
     private fun restore(save: GameSave<WordleSnapshot>) {
         val data = save.data
         timerJob?.cancel()
         timerJob = null
-        puzzleEpochDay = save.epochDay
         _state.value = WordleState(
             language = data.puzzle.language,
             puzzle = data.puzzle,
@@ -264,7 +237,7 @@ class WordleViewModel(
             timerJob?.cancel()
             timerJob = null
             if (solved) submitScore(guesses.size)
-            // Daily game: keep the finished game so coming back shows the result
+            // Keep the finished game so coming back shows the result until a new word is started
             persist()
         }
     }

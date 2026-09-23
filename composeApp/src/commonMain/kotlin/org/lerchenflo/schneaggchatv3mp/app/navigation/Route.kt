@@ -31,6 +31,14 @@ sealed interface Route : NavKey {
     @Serializable
     data class ChatDetails(val chatId: String, val isGroup: Boolean): Route
 
+    /** Images and links shared in one chat. [showLinks] picks which of the two tabs opens first. */
+    @Serializable
+    data class ChatSharedContent(
+        val chatId: String,
+        val isGroup: Boolean,
+        val showLinks: Boolean = false
+    ): Route
+
     @Serializable
     data object Birthdays: Route
 

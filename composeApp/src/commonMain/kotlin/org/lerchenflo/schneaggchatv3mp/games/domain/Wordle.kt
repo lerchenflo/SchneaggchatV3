@@ -28,9 +28,9 @@ data class WordleGuess(
 )
 
 /**
- * Language-independent daily word. English words come from the public NYT
- * Wordle endpoint (the real solution of the day), German ones are picked
- * deterministically from a local list so everyone gets the same word offline.
+ * Language-independent puzzle word. English words are real NYT solutions pulled
+ * from the public Wordle endpoint for a random past date, German ones are picked
+ * at random from a local list so the game also works offline.
  */
 @Serializable
 data class WordlePuzzle(
@@ -72,8 +72,10 @@ fun evaluateWordleGuess(guess: String, solution: String): List<WordleLetterState
 }
 
 /**
- * Leaderboard score: solving on the first try is worth [WORDLE_MAX_GUESSES]
- * points, the last try is worth 1. The elapsed time breaks ties.
+ * Leaderboard score: the number of letters typed to get there, so solving on the
+ * first try scores [WORDLE_WORD_LENGTH] and the sixth try scores six times that.
+ * Fewer is better here (the server ranks WORDLE ascending), the elapsed time
+ * breaks ties.
  */
 fun wordleScoreFor(guessesUsed: Int): Long =
-    (WORDLE_MAX_GUESSES - guessesUsed + 1).coerceAtLeast(0).toLong()
+    (guessesUsed.coerceAtLeast(1) * WORDLE_WORD_LENGTH).toLong()

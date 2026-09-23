@@ -13,12 +13,20 @@ import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.games.domain.WORDLE_WORD_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.domain.WordleLanguage
 import org.lerchenflo.schneaggchatv3mp.games.domain.WordlePuzzle
+import org.lerchenflo.schneaggchatv3mp.utilities.today
+import kotlin.random.Random
 
-/** Public daily-solution endpoint, no API key: .../v2/2026-09-21.json */
+/** Public solution endpoint, no API key: .../v2/2026-09-21.json */
 private const val NYT_WORDLE_URL = "https://www.nytimes.com/svc/wordle/v2"
 
 /** Public list of words Wordle accepts as a guess (one per line, lowercase). */
 private const val GUESS_LIST_URL = "https://raw.githubusercontent.com/tabatkins/wordle-list/main/words"
+
+/** Wordle #1, the first date the endpoint answers for. Everything up to today is fair game. */
+private val WORDLE_FIRST_DATE = LocalDate(2021, 6, 19)
+
+/** A date can come back empty or malformed; try a few before giving up. */
+private const val MAX_FETCH_ATTEMPTS = 4
 
 @Serializable
 private data class NytWordleDto(
@@ -28,8 +36,8 @@ private data class NytWordleDto(
 )
 
 /**
- * Fetches the English daily word from the public New York Times Wordle endpoint
- * and, separately, the public list of accepted guesses. Both are plain HTTP GETs
+ * Fetches English words from the public New York Times Wordle endpoint and,
+ * separately, the public list of accepted guesses. Both are plain HTTP GETs
  * without authentication, like the crossword archive in [CrosswordRepository].
  */
 class WordleRepository(
@@ -42,8 +50,25 @@ class WordleRepository(
     /** In-memory only: ~15k words, cheap to re-fetch once per app start. */
     private var cachedGuessList: Set<String>? = null
 
-    /** null on failure (offline / unexpected payload) — caller shows retry. */
-    suspend fun getEnglishDailyPuzzle(date: LocalDate): WordlePuzzle? {
+    /**
+     * A real Wordle solution from a random past date — the endpoint answers for
+     * every day since [WORDLE_FIRST_DATE], which is a pool of ~1900 words that
+     * grows by one a day. null on failure (offline) — caller shows retry.
+     */
+    suspend fun getRandomEnglishPuzzle(): WordlePuzzle? {
+        val firstDay = WORDLE_FIRST_DATE.toEpochDays()
+        val lastDay = today().toEpochDays()
+        if (lastDay < firstDay) return null
+
+        repeat(MAX_FETCH_ATTEMPTS) {
+            val day = Random.nextLong(firstDay, lastDay + 1)
+            fetchPuzzle(LocalDate.fromEpochDays(day))?.let { return it }
+        }
+        return null
+    }
+
+    /** null when that date is missing or the payload is not a plain five-letter word. */
+    private suspend fun fetchPuzzle(date: LocalDate): WordlePuzzle? {
         val dto = try {
             val response = httpClient.get("$NYT_WORDLE_URL/$date.json")
             if (!response.status.isSuccess()) return null

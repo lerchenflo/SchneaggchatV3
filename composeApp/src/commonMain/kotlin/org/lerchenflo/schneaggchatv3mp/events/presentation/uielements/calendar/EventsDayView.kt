@@ -39,7 +39,7 @@ fun EventsDayView(
     today: LocalDate,
     eventsByDate: Map<LocalDate, List<Event>>,
     birthdaysByMonthDay: Map<Int, List<CalendarBirthday>>,
-    friendsById: Map<String, User>,
+    usersById: Map<String, User>,
     ownId: String?,
     onNavigate: (forward: Boolean) -> Unit,
     onJumpToToday: () -> Unit,
@@ -103,10 +103,10 @@ fun EventsDayView(
             items = dayEvents,
             key = { "event_${anchorDate}_${it.id}" }
         ) { event ->
-            val creatorFriend = friendsById[event.creatorId]
+            val creatorUser = usersById[event.creatorId]
             EventItem(
                 event = event,
-                creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
+                creatorProfilePictureUrl = creatorUser?.profilePictureUrl,
                 isOwnEvent = event.creatorId == ownId,
                 onClick = { onEventClick(event.id) },
                 ownStatus = ownId?.let { event.statusOf(it) },

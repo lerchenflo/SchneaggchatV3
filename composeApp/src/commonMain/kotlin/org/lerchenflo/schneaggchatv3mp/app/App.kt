@@ -63,6 +63,7 @@ import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays.BirthdaysScreenRoot
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.MessageChatSelector
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScreenRoot
@@ -610,6 +611,13 @@ fun App() {
                                         ChatDetails(
                                             chatId = route.chatId,
                                             isGroup = route.isGroup
+                                        )
+                                    }
+                                    entry<Route.ChatSharedContent> { route ->
+                                        SharedContentScreenRoot(
+                                            chatId = route.chatId,
+                                            isGroup = route.isGroup,
+                                            showLinks = route.showLinks
                                         )
                                     }
                                     entry<Route.Birthdays> {

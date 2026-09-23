@@ -199,7 +199,7 @@ class ChatViewModel(
         }
     }
 
-    /** Newest message currently on screen - the list is newest-first (ORDER BY sendDate DESC). */
+    /** Newest message currently on screen - the list is newest-first (see MessageDao.getMessagesByUserIdFlow). */
     private fun newestMessageId(): String? = _state.value.displayItems
         .filterIsInstance<MessageDisplayItem.MessageItem>()
         .firstOrNull()?.message?.id
@@ -771,8 +771,8 @@ class ChatViewModel(
 
                 if (AppLifecycleManager.isAppInForeground) {
                     val messageItems = displayItems.filterIsInstance<MessageDisplayItem.MessageItem>()
-                    // Messages come back newest-first (ORDER BY sendDate DESC), so the newest is
-                    // the first MessageItem, not the last.
+                    // Messages come back newest-first (see MessageDao.getMessagesByUserIdFlow),
+                    // so the newest is the first MessageItem, not the last.
                     val newestMessageId = messageItems.firstOrNull()?.message?.id
                     val hasUnread = messageItems.any { !it.message.readByMe }
                     // lastMarkedReadMessageId is advanced by setAllMessagesRead() itself, and only

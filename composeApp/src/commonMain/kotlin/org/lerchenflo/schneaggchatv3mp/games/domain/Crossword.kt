@@ -22,9 +22,10 @@ data class CrosswordClue(
 )
 
 /**
- * Language-independent crossword puzzle. English puzzles come from the public
- * NYT archive (dense grid, every white cell is checked), German puzzles are
- * generated locally in criss-cross style (unused cells stay null like blocks).
+ * Language-independent crossword puzzle. English puzzles are picked at random
+ * from the public NYT archive (dense grid, every white cell is checked), German
+ * puzzles are generated locally in criss-cross style (unused cells stay null
+ * like blocks).
  */
 @Serializable
 data class CrosswordPuzzle(
@@ -38,3 +39,11 @@ data class CrosswordPuzzle(
     /** e.g. "NYT 1994-05-10 · Jane Doe" — shown as attribution under the grid. */
     val sourceInfo: String? = null,
 )
+
+/**
+ * Leaderboard score: how many letters the grid takes to fill. Puzzles are drawn
+ * at random and differ in size, so a denser grid is worth more; the solve time
+ * breaks ties between equally sized ones.
+ */
+val CrosswordPuzzle.letterCellCount: Int
+    get() = solution.count { it != null }

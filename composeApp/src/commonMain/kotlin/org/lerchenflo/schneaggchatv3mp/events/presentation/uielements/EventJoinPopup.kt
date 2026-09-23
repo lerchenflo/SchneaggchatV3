@@ -71,7 +71,7 @@ fun EventJoinPopup(
     ownStatus: EventParticipationStatus? = null,
     isJoined: Boolean = false,
     isJoining: Boolean = false,
-    friendsById: Map<String, User> = emptyMap(),
+    usersById: Map<String, User> = emptyMap(),
     modifier: Modifier = Modifier
 ) {
     // A plain Dialog rather than a ModalBottomSheet: the sheet's anchored-drag machinery could end
@@ -100,7 +100,7 @@ fun EventJoinPopup(
             ) {
                 EventUserAvatar(
                     userId = event.creatorId,
-                    friendsById = friendsById,
+                    usersById = usersById,
                     size = 72.dp
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -188,7 +188,7 @@ fun EventJoinPopup(
                 EventUserAvatarRow(
                     label = stringResource(Res.string.event_invited_users),
                     userIds = event.invitedUsers,
-                    friendsById = friendsById
+                    usersById = usersById
                 )
             }
 
@@ -196,7 +196,7 @@ fun EventJoinPopup(
 
             EventParticipationOverview(
                 event = event,
-                friendsById = friendsById
+                usersById = usersById
             )
 
             HorizontalDivider(thickness = 2.dp)

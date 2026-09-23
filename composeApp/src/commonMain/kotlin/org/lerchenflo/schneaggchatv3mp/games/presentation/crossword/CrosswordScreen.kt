@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Spellcheck
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -72,7 +73,6 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordDirection
 import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordLanguage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.formatGameTime
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.utilities.rememberToday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_check
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_instructions
@@ -80,6 +80,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_crossword_language_
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_language_german
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_language_question
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_load_failed
+import schneaggchatv3mp.composeapp.generated.resources.games_crossword_new_puzzle
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_next_clue
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_previous_clue
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_restart
@@ -98,12 +99,6 @@ fun CrosswordScreenRoot(
     // Leaving the screen persists the progress so it can be picked up again later
     DisposableEffect(Unit) {
         onDispose { viewmodel.onAction(CrosswordAction.LeaveGame) }
-    }
-
-    // The daily puzzle rolls over at local midnight, also while this screen stays open
-    val today = rememberToday()
-    LaunchedEffect(today) {
-        viewmodel.onAction(CrosswordAction.CheckDayChanged)
     }
 
     Column(
@@ -289,6 +284,14 @@ private fun CrosswordContent(
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = stringResource(Res.string.games_crossword_restart),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            IconButton(onClick = { onAction(CrosswordAction.NewPuzzle) }) {
+                Icon(
+                    imageVector = Icons.Default.SkipNext,
+                    contentDescription = stringResource(Res.string.games_crossword_new_puzzle),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }

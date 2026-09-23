@@ -209,13 +209,64 @@ interface MessageDao {
     """)
     fun getLastMessagePerChatFlow(ownId: String): Flow<List<MessageDto>>
 
+    /**
+     * Every message of one chat, newest first - the order the chat screen renders and relies on
+     * (see ChatViewModel.newestMessageId and MessageDisplayMapper, which read the newest message
+     * off the front and group consecutive messages by walking the list in this order).
+     *
+     * sendDate is epoch millis stored as TEXT, so it has to be compared numerically: a plain text
+     * sort orders by digit, which only agrees with time while every value has the same length, and
+     * silently misplaces any row that does not (an empty or zeroed sendDate, say).
+     */
     @Transaction
-    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ORDER BY sendDate DESC")
+    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ORDER BY CAST(sendDate AS INTEGER) DESC")
     fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>>
 
+    /** One-shot counterpart of [getMessagesByUserIdFlow], same order. */
     @Transaction
-    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ORDER BY sendDate DESC")
+    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ORDER BY CAST(sendDate AS INTEGER) DESC")
     suspend fun getMessagesByUserId(userId: String, gruppe: Boolean): List<MessageWithReadersDto>
+
+    /**
+     * Every image ever shared in one chat, newest first, for the chat's shared content screen.
+     *
+     * Readers are deliberately not joined: the grid never reads them. sendDate is epoch millis
+     * stored as TEXT, so it has to be sorted numerically - as text "9999" would rank above "10000".
+     */
+    @Query("""
+        SELECT * FROM messages
+        WHERE (senderId = :userId OR receiverId = :userId)
+          AND groupMessage = :gruppe
+          AND msgType = :imageType
+          AND deleted = 0
+        ORDER BY CAST(sendDate AS INTEGER) DESC
+    """)
+    fun getImageMessagesForChatFlow(
+        userId: String,
+        gruppe: Boolean,
+        imageType: String = MessageType.IMAGE.name,
+    ): Flow<List<MessageDto>>
+
+    /**
+     * Messages of one chat whose text might carry a url, newest first, for the shared content
+     * screen's link list. The two LIKEs are only a cheap prefilter and have to stay as wide as the
+     * regex in extractLinks, which is what decides whether a row really counts - 'www.' is in there
+     * because a link typed without a scheme carries no 'http' to match on.
+     *
+     * Image captions are included on purpose: a link pasted under a picture is still a shared link.
+     */
+    @Query("""
+        SELECT * FROM messages
+        WHERE (senderId = :userId OR receiverId = :userId)
+          AND groupMessage = :gruppe
+          AND deleted = 0
+          AND (content LIKE '%http%' OR content LIKE '%www.%')
+        ORDER BY CAST(sendDate AS INTEGER) DESC
+    """)
+    fun getLinkCandidateMessagesForChatFlow(
+        userId: String,
+        gruppe: Boolean,
+    ): Flow<List<MessageDto>>
 
     @Transaction
     @Query("SELECT * FROM messages WHERE id = :msgid")

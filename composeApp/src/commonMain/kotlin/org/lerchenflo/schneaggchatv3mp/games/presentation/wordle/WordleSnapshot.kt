@@ -7,10 +7,10 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.WordlePuzzle
 const val WORDLE_SNAPSHOT_VERSION = 1
 
 /**
- * Persisted daily Wordle progress. The puzzle is stored too, so the English word
- * (downloaded) is not fetched again; the envelope's day check drops everything at
- * midnight. Finished games are kept so today's result stays visible — and so a
- * failed day cannot be retried.
+ * Persisted Wordle progress. The puzzle is stored too, so the English word
+ * (downloaded) is not fetched again after leaving the screen. Finished games are
+ * kept so the result stays visible — starting a new word is an explicit choice,
+ * not something a lost game does on its own.
  */
 @Serializable
 data class WordleSnapshot(

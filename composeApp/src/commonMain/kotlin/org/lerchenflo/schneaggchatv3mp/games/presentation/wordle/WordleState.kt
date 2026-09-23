@@ -10,8 +10,8 @@ sealed interface WordleAction {
     data object RetryLoad : WordleAction
     /** Screen is leaving (back, rotation, tab switch): keep the progress for the next visit. */
     data object LeaveGame : WordleAction
-    /** The screen noticed a possible day change (midnight passed or app resumed). */
-    data object CheckDayChanged : WordleAction
+    /** Throw the current word away and start a fresh random one. */
+    data object NewWord : WordleAction
     data class KeyPressed(val letter: Char) : WordleAction
     data object Backspace : WordleAction
     data object SubmitGuess : WordleAction

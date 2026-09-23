@@ -33,6 +33,7 @@ import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.image_picker_error
+import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 
 /**
  * Camera/gallery source picker for attaching images to a message.
@@ -109,7 +110,10 @@ fun ImageSourcePickerDialog(
 
                         is ImagePickerResult.Error -> {
                             Text(
-                                text = stringResource(Res.string.image_picker_error, result.exception.message ?: "Unknown error"),
+                                text = stringResource(
+                                    Res.string.image_picker_error,
+                                    result.exception.message ?: stringResource(Res.string.unknown_error)
+                                ),
                                 color = MaterialTheme.colorScheme.error
                             )
                         }

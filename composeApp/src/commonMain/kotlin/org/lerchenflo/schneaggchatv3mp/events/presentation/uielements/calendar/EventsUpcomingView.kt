@@ -44,7 +44,7 @@ fun EventsUpcomingView(
     today: LocalDate,
     eventsByDate: Map<LocalDate, List<Event>>,
     birthdaysByMonthDay: Map<Int, List<CalendarBirthday>>,
-    friendsById: Map<String, User>,
+    usersById: Map<String, User>,
     ownId: String?,
     onEventClick: (String) -> Unit,
     onBirthdayClick: (String) -> Unit,
@@ -98,10 +98,10 @@ fun EventsUpcomingView(
                 // Multi-day events sit in several day buckets, so a bare id would repeat.
                 key = { "event_${day}_${it.id}" }
             ) { event ->
-                val creatorFriend = friendsById[event.creatorId]
+                val creatorUser = usersById[event.creatorId]
                 EventItem(
                     event = event,
-                    creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
+                    creatorProfilePictureUrl = creatorUser?.profilePictureUrl,
                     isOwnEvent = event.creatorId == ownId,
                     onClick = { onEventClick(event.id) },
                     ownStatus = ownId?.let { event.statusOf(it) },

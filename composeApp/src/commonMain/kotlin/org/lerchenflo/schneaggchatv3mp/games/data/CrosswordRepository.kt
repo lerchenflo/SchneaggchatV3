@@ -4,14 +4,12 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.number
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordClue
 import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordDirection
 import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordPuzzle
-import org.lerchenflo.schneaggchatv3mp.games.domain.SplitMix64
+import kotlin.random.Random
 
 /** The archive holds every NYT puzzle 1977–2017; stay one year clear of the end. */
 private const val ARCHIVE_FIRST_YEAR = 1977
@@ -20,6 +18,7 @@ private const val ARCHIVE_LAST_YEAR = 2016
 /** Sunday puzzles are 21x21 — too big for a phone grid, so those dates are skipped. */
 private const val MAX_GRID_SIZE = 15
 
+/** Drawn dates can be missing from the archive or land on a Sunday — retry a few. */
 private const val MAX_FETCH_ATTEMPTS = 8
 
 @Serializable
@@ -45,10 +44,9 @@ private data class NytCrosswordDto(
 )
 
 /**
- * Fetches the daily English crossword from the public NYT archive mirror
- * (github.com/doshea/nyt_crosswords, raw JSON, no API key). The puzzle for a
- * given day is picked deterministically: everyone gets the same historic
- * puzzle (same month/day, seeded year) on the same date.
+ * Fetches English crosswords from the public NYT archive mirror
+ * (github.com/doshea/nyt_crosswords, raw JSON, no API key). A puzzle is drawn at
+ * random from the whole archive, so players can keep going as long as they like.
  */
 class CrosswordRepository(
     private val httpClient: HttpClient,
@@ -56,20 +54,17 @@ class CrosswordRepository(
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    /** null on failure (offline / all candidate dates missing) — caller shows retry. */
-    suspend fun getEnglishDailyPuzzle(date: LocalDate): CrosswordPuzzle? {
-        val random = SplitMix64(date.toEpochDays() * 912_367L + 17L)
-        val years = (ARCHIVE_FIRST_YEAR..ARCHIVE_LAST_YEAR).toMutableList()
-        random.shuffle(years)
-
-        val candidates = years.filter { year ->
-            // Feb 29 only exists in leap years of the archive
-            !(date.month.number == 2 && date.day == 29 && !isLeapYear(year))
-        }.take(MAX_FETCH_ATTEMPTS)
-
-        for (year in candidates) {
-            val puzzle = fetchPuzzle(year, date.month.number, date.day) ?: continue
-            return puzzle
+    /**
+     * A random puzzle out of the ~14k in the archive. Individual dates are
+     * missing and Sunday grids are too big, so several are tried; null once the
+     * attempts run out (offline / unlucky) — caller shows retry.
+     */
+    suspend fun getRandomEnglishPuzzle(): CrosswordPuzzle? {
+        repeat(MAX_FETCH_ATTEMPTS) {
+            val year = Random.nextInt(ARCHIVE_FIRST_YEAR, ARCHIVE_LAST_YEAR + 1)
+            val month = Random.nextInt(1, 13)
+            val day = Random.nextInt(1, daysInMonth(year, month) + 1)
+            fetchPuzzle(year, month, day)?.let { return it }
         }
         return null
     }
@@ -91,6 +86,12 @@ class CrosswordRepository(
 
 private fun isLeapYear(year: Int): Boolean =
     (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+
+private fun daysInMonth(year: Int, month: Int): Int = when (month) {
+    2 -> if (isLeapYear(year)) 29 else 28
+    4, 6, 9, 11 -> 30
+    else -> 31
+}
 
 private fun NytCrosswordDto.toPuzzle(): CrosswordPuzzle? {
     val rows = size.rows
