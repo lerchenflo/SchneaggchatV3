@@ -115,7 +115,7 @@
     <string name="highlight_todays_message_timestamp">Highlight today's timestamp</string>
     <string name="highlight_todays_message_timestamp_info">Highlight the timestamp of messages received today in green in the chat selector.</string>
     <string name="quick_reactions">Quick reactions</string>
-    <string name="quick_reactions_info">Emojis offered when you long press a message. Drag to reorder, synced across your devices.</string>
+    <string name="quick_reactions_info">Emojis offered when you long press a message. Drag to reorder.</string>
     <string name="quick_reactions_empty">No quick reactions - you can still add a custom one on any message.</string>
     <string name="quick_reactions_reorder">Reorder quick reaction</string>
     <string name="add_quick_reaction">Add quick reaction</string>
