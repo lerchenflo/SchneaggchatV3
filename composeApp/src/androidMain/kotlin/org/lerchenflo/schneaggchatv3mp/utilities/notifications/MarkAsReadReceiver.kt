@@ -44,11 +44,10 @@ class MarkAsReadReceiver : BroadcastReceiver() {
                 if (SessionCache.authState.value !is SessionCache.AuthState.LoggedIn) {
                     SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)
                 }
-                val ownId = (SessionCache.authState.value as? SessionCache.AuthState.LoggedIn)
-                    ?.userId ?: return@runCatching
+                //Bail rather than fire an unauthenticated request the server would reject
+                if (SessionCache.authState.value !is SessionCache.AuthState.LoggedIn) return@runCatching
 
                 appRepository.setAllChatMessagesRead(
-                    ownId = ownId,
                     chatid = chatId,
                     gruppe = groupChat,
                     timestamp = getCurrentTimeMillisString()

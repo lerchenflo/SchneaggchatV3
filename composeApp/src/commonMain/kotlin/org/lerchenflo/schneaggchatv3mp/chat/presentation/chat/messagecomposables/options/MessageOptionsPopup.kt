@@ -24,7 +24,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,11 +34,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ReaderUi
@@ -47,15 +46,14 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.horizontalScrollWithMouseWheel
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ReactionInputDialog
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.copy
 import schneaggchatv3mp.composeapp.generated.resources.custom_reaction
 import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.edit
-import schneaggchatv3mp.composeapp.generated.resources.enter_reaction
 import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
 import schneaggchatv3mp.composeapp.generated.resources.message_details
 import schneaggchatv3mp.composeapp.generated.resources.no_reactions
@@ -71,6 +69,9 @@ import schneaggchatv3mp.composeapp.generated.resources.yes
 fun MessageOptionPopup(
     expanded: Boolean,
     message: Message,
+    /** The user's own quick reactions, synced across devices. Empty is a valid choice - the
+     *  custom-reaction button stays available either way. */
+    quickReactions: List<String> = DEFAULT_QUICK_REACTIONS,
     onDismissRequest: () -> Unit,
     onReply: () -> Unit,
     onCopy: () -> Unit,
@@ -124,35 +125,17 @@ fun MessageOptionPopup(
 
                          */
 
-                        NormalButton(
-                            text = "👍",
-                            onClick = { onReact("👍"); onDismissRequest() },
-                            primary = false
-                        )
-
-                        NormalButton(
-                            text = "👎",
-                            onClick = { onReact("👎"); onDismissRequest() },
-                            primary = false
-                        )
-
-                        NormalButton(
-                            text = "\uD83D\uDE02",
-                            onClick = { onReact("\uD83D\uDE02"); onDismissRequest() },
-                            primary = false
-                        )
-
-                        NormalButton(
-                            text = "🍻",
-                            onClick = { onReact("🍻"); onDismissRequest() },
-                            primary = false
-                        )
+                        quickReactions.forEach { reaction ->
+                            NormalButton(
+                                text = reaction,
+                                onClick = { onReact(reaction); onDismissRequest() },
+                                primary = false
+                            )
+                        }
 
                         var showCustomReactionDialog by remember { mutableStateOf(false) }
-                        var customReactionInput by remember { mutableStateOf("") }
-                        val maxChars = 10
 
-                        // Show custom input dialog with max 10 chars
+                        // Always offered, so an emptied quick reaction list still leaves a way to react
                         NormalButton(
                             text = "✏️",
                             onClick = { showCustomReactionDialog = true },
@@ -160,53 +143,13 @@ fun MessageOptionPopup(
                         )
 
                         if (showCustomReactionDialog) {
-                            AlertDialog(
-                                onDismissRequest = {
+                            ReactionInputDialog(
+                                title = stringResource(Res.string.custom_reaction),
+                                onDismiss = { showCustomReactionDialog = false },
+                                onConfirm = { reaction ->
+                                    onReact(reaction)
+                                    onDismissRequest()
                                     showCustomReactionDialog = false
-                                    customReactionInput = ""
-                                },
-                                title = { Text(stringResource(Res.string.custom_reaction)) },
-                                text = {
-                                    Column {
-                                        OutlinedTextField(
-                                            value = customReactionInput,
-                                            onValueChange = { if (it.length <= maxChars) customReactionInput = it },
-                                            label = { Text(stringResource(Res.string.enter_reaction)) },
-                                            singleLine = true,
-                                            supportingText = {
-                                                Text(
-                                                    text = "${customReactionInput.length} / $maxChars",
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    textAlign = TextAlign.End
-                                                )
-                                            },
-                                            isError = customReactionInput.length == maxChars
-                                        )
-                                    }
-                                },
-                                confirmButton = {
-                                    NormalButton(
-                                        text = stringResource(Res.string.add),
-                                        onClick = {
-                                            if (customReactionInput.isNotBlank()) {
-                                                onReact(customReactionInput)
-                                                onDismissRequest()
-                                                showCustomReactionDialog = false
-                                                customReactionInput = ""
-                                            }
-                                        },
-                                        primary = true
-                                    )
-                                },
-                                dismissButton = {
-                                    NormalButton(
-                                        text = stringResource(Res.string.cancel),
-                                        onClick = {
-                                            showCustomReactionDialog = false
-                                            customReactionInput = ""
-                                        },
-                                        primary = false
-                                    )
                                 }
                             )
                         }

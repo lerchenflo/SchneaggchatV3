@@ -87,6 +87,20 @@ class MessageRepository(
         }
     }
 
+    /** Every image shared in one chat, newest first, without readers. */
+    fun getImageMessagesForChatFlow(chatId: String, gruppe: Boolean): Flow<List<Message>> {
+        return database.messageDao().getImageMessagesForChatFlow(chatId, gruppe).map { messages ->
+            messages.map { it.toMessage() }
+        }
+    }
+
+    /** Messages of one chat that might carry a url, newest first, without readers. */
+    fun getLinkCandidateMessagesForChatFlow(chatId: String, gruppe: Boolean): Flow<List<Message>> {
+        return database.messageDao().getLinkCandidateMessagesForChatFlow(chatId, gruppe).map { messages ->
+            messages.map { it.toMessage() }
+        }
+    }
+
     suspend fun getUnsentMessages() : List<Message> {
         return database.messageDao().getUnsentMessages().map {
             it.toMessage()
@@ -205,13 +219,5 @@ class MessageRepository(
 
 
 
-
-    @Transaction
-    suspend fun setAllChatMessagesRead(ownId: String, chatid: String, gruppe: Boolean, timestamp: String) {
-
-        // Use efficient bulk updates instead of loading individual messages
-        database.messageDao().markAllChatMessagesRead(chatid, gruppe, timestamp)
-        database.messageDao().addMessageReadersForChat(chatid, gruppe, ownId, timestamp)
-    }
 
 }

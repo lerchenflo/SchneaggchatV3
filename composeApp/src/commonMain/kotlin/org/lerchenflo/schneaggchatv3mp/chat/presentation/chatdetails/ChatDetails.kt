@@ -23,6 +23,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -121,12 +123,16 @@ import schneaggchatv3mp.composeapp.generated.resources.group_expired
 import schneaggchatv3mp.composeapp.generated.resources.group_expires_at
 import schneaggchatv3mp.composeapp.generated.resources.group_expires_in
 import schneaggchatv3mp.composeapp.generated.resources.group_name
+import schneaggchatv3mp.composeapp.generated.resources.image_picker_error
+import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
 import schneaggchatv3mp.composeapp.generated.resources.remove
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status_info
+import schneaggchatv3mp.composeapp.generated.resources.shared_images
+import schneaggchatv3mp.composeapp.generated.resources.shared_links
 import schneaggchatv3mp.composeapp.generated.resources.today
 import schneaggchatv3mp.composeapp.generated.resources.wake_button
 import schneaggchatv3mp.composeapp.generated.resources.wake_reason_placeholder
@@ -148,6 +154,8 @@ fun ChatDetails(
     val availableMembers by chatdetailsViewmodel.availableNewMembers.collectAsStateWithLifecycle()
     val searchTerm by chatdetailsViewmodel.searchterm.collectAsStateWithLifecycle()
     val connectedEvent by chatdetailsViewmodel.connectedEvent.collectAsStateWithLifecycle()
+    val sharedImageCount by chatdetailsViewmodel.sharedImageCount.collectAsStateWithLifecycle()
+    val sharedLinkCount by chatdetailsViewmodel.sharedLinkCount.collectAsStateWithLifecycle()
 
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
@@ -637,6 +645,39 @@ fun ChatDetails(
 
             HorizontalDivider()
 
+            // Everything ever shared in this chat, one row per tab of the shared content screen
+            ListItem(
+                headlineContent = { Text(text = stringResource(Res.string.shared_images)) },
+                trailingContent = { Text(text = sharedImageCount.toString()) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Default.PhotoLibrary,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                modifier = Modifier.clickable {
+                    chatdetailsViewmodel.navigateToSharedContent(showLinks = false)
+                }
+            )
+
+            ListItem(
+                headlineContent = { Text(text = stringResource(Res.string.shared_links)) },
+                trailingContent = { Text(text = sharedLinkCount.toString()) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Default.Link,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                modifier = Modifier.clickable {
+                    chatdetailsViewmodel.navigateToSharedContent(showLinks = true)
+                }
+            )
+
+            HorizontalDivider()
+
             //Common groups / Common friends
             if (isGroup) {
                 (selectedChat as? ChatDetailsState.GroupDetails)?.let { groupDetails ->
@@ -807,9 +848,7 @@ fun ChatDetails(
                     showImagePickerDialog = false
                 }
 
-                else -> {
-                    Unit
-                }
+                else -> {}
             }
         }
 
@@ -839,7 +878,10 @@ fun ChatDetails(
 
                         is ImagePickerResult.Error -> {
                             Text(
-                                text = "Error: ${result.exception.message}",
+                                text = stringResource(
+                                    Res.string.image_picker_error,
+                                    result.exception.message ?: stringResource(Res.string.unknown_error)
+                                ),
                                 color = MaterialTheme.colorScheme.error
                             )
                         }

@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MAX_REACTION_LENGTH
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -32,6 +34,10 @@ class AppearanceSettingsViewModel(
         private set
 
     var selectedLanguage by mutableStateOf(LanguageSetting.SYSTEM)
+        private set
+
+    /** The user's quick reactions, or DEFAULT_QUICK_REACTIONS while the list was never customised. */
+    var quickReactions by mutableStateOf(DEFAULT_QUICK_REACTIONS)
         private set
 
     init {
@@ -63,6 +69,15 @@ class AppearanceSettingsViewModel(
                     selectedTheme = value
                 }
         }
+        viewModelScope.launch { // Quick reactions
+            preferenceManager.getQuickReactionsFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting quick reactions: ${exception.message}")
+                }
+                .collect { value ->
+                    quickReactions = value
+                }
+        }
         viewModelScope.launch { // Language
             languageService.getCurrentLanguageFlow()
                 .catch { exception ->
@@ -85,6 +100,29 @@ class AppearanceSettingsViewModel(
     fun updateHighlightTodaysMessageTimestamp(newValue: Boolean){
         viewModelScope.launch {
             appRepository.setHighlightTodaysMessageTimestamp(newValue)
+        }
+    }
+
+
+    /**
+     * Stores the edited list. Blanks, over-long entries and duplicates are dropped here as a last
+     * guard - the server rejects all three, and the request is fire-and-forget.
+     */
+    fun saveQuickReactions(reactions: List<String>){
+        val sanitized = reactions
+            .map { it.trim() }
+            .filter { it.isNotEmpty() && it.length <= MAX_REACTION_LENGTH }
+            .distinct()
+
+        viewModelScope.launch {
+            appRepository.setQuickReactions(sanitized)
+        }
+    }
+
+    /** Back to DEFAULT_QUICK_REACTIONS, and keeps following that set if it changes in a later version. */
+    fun restoreDefaultQuickReactions(){
+        viewModelScope.launch {
+            appRepository.resetQuickReactions()
         }
     }
 

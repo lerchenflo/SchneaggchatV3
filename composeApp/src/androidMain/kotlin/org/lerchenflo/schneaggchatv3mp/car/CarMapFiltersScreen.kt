@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.car
 import androidx.car.app.CarContext
 import androidx.car.app.Screen
 import androidx.car.app.model.Action
+import androidx.car.app.model.Header
 import androidx.car.app.model.ItemList
 import androidx.car.app.model.ListTemplate
 import androidx.car.app.model.Row
@@ -62,8 +63,12 @@ class CarMapFiltersScreen(
             .build()
 
         return ListTemplate.Builder()
-            .setTitle(filtersTitle)
-            .setHeaderAction(Action.BACK)
+            .setHeader(
+                Header.Builder()
+                    .setTitle(filtersTitle)
+                    .setStartHeaderAction(Action.BACK)
+                    .build()
+            )
             .setSingleList(itemList)
             .build()
     }

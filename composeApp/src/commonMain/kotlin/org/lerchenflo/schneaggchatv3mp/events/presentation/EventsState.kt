@@ -19,7 +19,12 @@ data class EventsState(
     val eventsByDate: Map<LocalDate, List<Event>> = emptyMap(),
     val selectedEvent: Event? = null,
     val ownUserId: String? = null,
+    // Only ACCEPTED friendships - this is who may be invited to an event.
     val friendsById: Map<String, User> = emptyMap(),
+    // The friends plus the logged-in user, for looking up an avatar or a name to display. The own
+    // user has to be in here or their own picture and name fall back to the generic placeholder
+    // wherever they show up as a creator or a participant.
+    val usersById: Map<String, User> = emptyMap(),
     val groups: List<Group> = emptyList(),
     val isJoiningEvent: Boolean = false,
     val isSavingEvent: Boolean = false,

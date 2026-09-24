@@ -15,16 +15,17 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 
-// Friend's picture when known, else app's generic default avatar (never guess a URL for a non-friend)
+// Known user's picture (a friend, or the logged-in user themselves), else the app's generic
+// default avatar - never guess a URL for a user we have no record of.
 @Composable
 fun EventUserAvatar(
     userId: String,
-    friendsById: Map<String, User>,
+    usersById: Map<String, User>,
     size: Dp,
     modifier: Modifier = Modifier,
     contentDescription: String? = null
 ) {
-    val pictureUrl = friendsById[userId]?.profilePictureUrl
+    val pictureUrl = usersById[userId]?.profilePictureUrl
 
     if (!pictureUrl.isNullOrBlank()) {
         ProfilePictureView(

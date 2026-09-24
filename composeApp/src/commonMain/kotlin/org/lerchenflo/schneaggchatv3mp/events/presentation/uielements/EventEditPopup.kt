@@ -115,7 +115,8 @@ fun EventEditPopup(
     event: Event,
     onSave: (Event, ImageBitmap?, createGroup: Boolean) -> Unit,
     onDismiss: () -> Unit,
-    friendsById: Map<String, User> = emptyMap(),
+    friendsById: Map<String, User> = emptyMap(), // invitable users
+    usersById: Map<String, User> = emptyMap(),   // avatar/name lookup, includes the own user
     groups: List<Group> = emptyList(),
     onPickLocation: (Event) -> Unit = {},
     onDelete: (deleteGroup: Boolean, deleteEvent: Boolean) -> Unit = { _, _ -> },
@@ -609,7 +610,7 @@ fun EventEditPopup(
                 EventUserAvatarRow(
                     label = stringResource(Res.string.event_invited_users),
                     userIds = currentEvent.invitedUsers,
-                    friendsById = friendsById
+                    usersById = usersById
                 )
             }
 
@@ -618,7 +619,7 @@ fun EventEditPopup(
             // Read-only: the creator sees how everyone responded, but never answers their own event
             EventParticipationOverview(
                 event = event,
-                friendsById = friendsById
+                usersById = usersById
             )
 
             HorizontalDivider(thickness = 2.dp)

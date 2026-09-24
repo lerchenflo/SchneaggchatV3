@@ -3,7 +3,9 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,7 +31,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -39,9 +42,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.stevdza_san.swipeable.Swipeable
 import com.stevdza_san.swipeable.domain.ActionCustomization
 import com.stevdza_san.swipeable.domain.SwipeAction
@@ -87,12 +99,29 @@ fun MapEntryInfoCard(
         mutableStateOf(entry)
     }
 
+    var showDeleteConfirmationPopup by remember { mutableStateOf(false) }
 
-    ModalBottomSheet(
+    // A plain Dialog rather than a ModalBottomSheet: the sheet's anchored-drag machinery could end
+    // up swallowing pointer-down events after the card was rebuilt on a fast navigation, leaving it
+    // visible but inert - clicks and text-field focus dead. Outside taps don't dismiss either, so
+    // an accidental tap can't silently discard in-progress edits.
+    Dialog(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.background
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false
+        )
     ) {
-        Column(modifier = modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp)) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .imePadding()
+                .padding(12.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(MaterialTheme.colorScheme.background)
+                .padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 12.dp)
+        ) {
 
             //Scrollable column to be able to hoist multiple attributevalues
             Column(
@@ -163,43 +192,13 @@ fun MapEntryInfoCard(
 
                 //Delete on the far left, only shown when nothing has been edited yet
                 if (!changed) {
-
-                    var showDeleteConfirmationPopup by remember { mutableStateOf(false) }
                     IconButton(
-                        onClick = {showDeleteConfirmationPopup = true}
+                        onClick = { showDeleteConfirmationPopup = true }
                     ) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-
-                    if (showDeleteConfirmationPopup) {
-                        AlertDialog(
-                            onDismissRequest = { showDeleteConfirmationPopup = false },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    onDelete(entry.id)
-                                    showDeleteConfirmationPopup = false
-
-                                }) {
-                                    Text(stringResource(Res.string.delete))
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = {
-                                    // Handle confirm action
-                                    showDeleteConfirmationPopup = false
-                                }) {
-                                    Text(stringResource(Res.string.cancel))
-                                }
-                            },
-                            text = {
-                                Text(
-                                    text = stringResource(Res.string.schneaggmap_entry_delete)
-                                )
-                            }
                         )
                     }
                 }
@@ -249,7 +248,33 @@ fun MapEntryInfoCard(
         }
     }
 
+    //Kept outside the Dialog above - a dialog nested inside another one isn't reliable on all targets
+    if (showDeleteConfirmationPopup) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmationPopup = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDelete(entry.id)
+                    showDeleteConfirmationPopup = false
 
+                }) {
+                    Text(stringResource(Res.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDeleteConfirmationPopup = false
+                }) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            },
+            text = {
+                Text(
+                    text = stringResource(Res.string.schneaggmap_entry_delete)
+                )
+            }
+        )
+    }
 }
 
 
@@ -472,42 +497,75 @@ fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
             LocationGroup.entries.forEach { group ->
                 val expanded = group in expandedAddGroups
 
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = stringResource(group.stringRes())
-                        )
-                    },
-                    trailingIcon = {
-                        val arrowRotation by animateFloatAsState(if (expanded) 180f else 0f)
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = null,
-                            modifier = Modifier.rotate(arrowRotation)
-                        )
-                    },
-                    onClick = {
-                        expandedAddGroups = if (expanded) expandedAddGroups - group else expandedAddGroups + group
-                    },
+                //Expanded groups get a tinted card, a highlighted header and an accent line next to their types
+                val sectionBackground by animateColorAsState(
+                    if (expanded) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent
                 )
+                val headerColor by animateColorAsState(
+                    if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                )
+                val accentColor = MaterialTheme.colorScheme.primary
 
-                AnimatedVisibility(visible = expanded) {
-                    Column {
-                        group.sortedTypes().forEach { type ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = stringResource(type.stringRes())
-                                    )
-                                },
-                                onClick = {
-                                    onChange(entry.copy(
-                                        locationData = entry.locationData + type.toSimpleLocationData()
-                                    ))
-                                    showLocationAddDropdown = false
-                                },
-                                modifier = Modifier.padding(start = 16.dp)
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(sectionBackground)
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = stringResource(group.stringRes()),
+                                fontWeight = if (expanded) FontWeight.Bold else FontWeight.Normal,
                             )
+                        },
+                        trailingIcon = {
+                            val arrowRotation by animateFloatAsState(if (expanded) 180f else 0f)
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                modifier = Modifier.rotate(arrowRotation)
+                            )
+                        },
+                        onClick = {
+                            expandedAddGroups = if (expanded) expandedAddGroups - group else expandedAddGroups + group
+                        },
+                        colors = MenuDefaults.itemColors(
+                            textColor = headerColor,
+                            trailingIconColor = headerColor,
+                        ),
+                    )
+
+                    AnimatedVisibility(visible = expanded) {
+                        Column(
+                            modifier = Modifier
+                                .padding(bottom = 4.dp)
+                                .drawBehind {
+                                    val lineWidth = 3.dp.toPx()
+                                    drawRoundRect(
+                                        color = accentColor,
+                                        topLeft = Offset(16.dp.toPx(), 0f),
+                                        size = Size(lineWidth, size.height),
+                                        cornerRadius = CornerRadius(lineWidth / 2),
+                                    )
+                                }
+                        ) {
+                            group.sortedTypes().forEach { type ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = stringResource(type.stringRes())
+                                        )
+                                    },
+                                    onClick = {
+                                        onChange(entry.copy(
+                                            locationData = entry.locationData + type.toSimpleLocationData()
+                                        ))
+                                        showLocationAddDropdown = false
+                                    },
+                                    modifier = Modifier.padding(start = 20.dp)
+                                )
+                            }
                         }
                     }
                 }

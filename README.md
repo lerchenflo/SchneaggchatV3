@@ -25,18 +25,27 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Spiele: Spielstand beim Zurückkehren wiederherstellen
 - SchneaggaHus Spiel
 - Tower Stack: Schneagg reitet mit
+- Wordle-Spiel
+- Wordle und Kreuzworträtsel: unbegrenzt spielbar statt eine Runde pro Tag, "Neues Wort"/"Neues Rätsel" Buttons, neues Scoring (Buchstaben + Zeit)
 - Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
 - Android Auto Support
 - Doppelte Nachrichten (Ungesendete) Behoben
 - Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare
 - Freundschaftsanfragen: Tippen auf Profilbilder öffnet Bildvorschau
 - Schneaggmap: Daten Picker update, neue Types, neu sortiert
+- Einstellungen: Schnelle Reaktionen anpassbar (hinzufügen, löschen, umordnen, Standardwerte wiederherstellen)
+- Chat: Geteilte Inhalte (Bilder und Links) in Chat-Details
 
 #### Bugfixes
 - Spiele: extrem viele Bugfixes in fast allen Spielen
 - Anmeldung: Token-Refresh rebuild (5. mol??), Leerer Bildschirm nach Hintergrundbeendigung behoben (Session wird wiederhergestellt)
-- Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe
-- Events: Crash bei mehrtägigen Events behoben
+- Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe, Nachrichten werden korrekt als gelesen markiert, wenn der Chat über eine Benachrichtigung geöffnet wird, Race Condition bei Lesevorgängen behoben, Medien werden beim Markieren als gelesen heruntergeladen
+- Events: Crash bei mehrtägigen Events behoben, Eigenes Profilbild und Name werden überall als Event-Ersteller/-teilnehmer angezeigt
+- Wordle: Unlesbare Kachel-Farben behoben (grün/orange/grau statt Theme-Farben), automatische Zeilen-Überprüfung beim fünften Buchstaben
+- Benachrichtigungen: Android Push-Fehler behoben (fehlten wenn die Session noch nicht wiederhergestellt war)
+- Dialog-Popups: ModalBottomSheet zu Dialog konvertiert um Fehler bei schneller Navigation zu beheben
+- Bildauswahl: Fehlermeldungen in allen Dialogen (Registrierung, Gruppe erstellen, Chat, Profilbild) lokalisiert (DE/IT/AT)
+- Android Auto: Filter-Ansicht auf aktuelle androidx.car.app 1.7.0 API aktualisiert, Compiler-Warnungen behoben
 
 
 ### 3.0.17

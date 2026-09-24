@@ -114,6 +114,12 @@
     <string name="markdownInfo">Damit wird die Markdown-formatierung von Nachrichten aktiviert. Dies kann jedoch das Scrollen im Chat verlangsamen</string>
     <string name="highlight_todays_message_timestamp">Heutigen Zeitstempel hervorheben</string>
     <string name="highlight_todays_message_timestamp_info">Hebt den Zeitstempel von heute empfangenen Nachrichten in der Chat-Auswahl grün hervor.</string>
+    <string name="quick_reactions">Schnellreaktionen</string>
+    <string name="quick_reactions_info">Emojis, die beim langen Drücken einer Nachricht angeboten werden. Zum Umsortieren ziehen, auf allen Geräten synchronisiert.</string>
+    <string name="quick_reactions_empty">Keine Schnellreaktionen - du kannst trotzdem bei jeder Nachricht eine eigene hinzufügen.</string>
+    <string name="quick_reactions_reorder">Schnellreaktion umsortieren</string>
+    <string name="add_quick_reaction">Schnellreaktion hinzufügen</string>
+    <string name="restore_defaults">Standard wiederherstellen</string>
     <string name="something_wrong_message">Bei dieser Nachricht stimmt etwas nicht.</string>
     <string name="message_too_long">Nachricht ist zu lang!</string>
     <string name="log_out_successfully">Erfolgreich ausgeloggt</string>
@@ -838,17 +844,34 @@
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Kreuzworträtsel</string>
-    <string name="games_crossword_instructions">Löse das tägliche Kreuzworträtsel! Tippe auf ein Feld, um es auszuwählen, tippe erneut, um zwischen waagrecht und senkrecht zu wechseln, und schreibe mit der Tastatur unten. Das englische Rätsel stammt aus dem öffentlichen NYT-Archiv, das deutsche wird jeden Tag neu generiert. Alle bekommen am selben Tag dasselbe Rätsel.</string>
+    <string name="games_crossword_instructions">Löse so viele Kreuzworträtsel, wie du willst! Tippe auf ein Feld, um es auszuwählen, tippe erneut, um zwischen waagrecht und senkrecht zu wechseln, und schreibe mit der Tastatur unten. Die englischen Rätsel werden zufällig aus dem öffentlichen NYT-Archiv gezogen, die deutschen werden jedes Mal neu generiert. Je größer das gelöste Gitter und je schneller du bist, desto besser dein Platz in der Rangliste.</string>
     <string name="games_crossword_language_question">Wähle deine Rätselsprache</string>
     <string name="games_crossword_language_english">Englisch (NYT-Archiv)</string>
     <string name="games_crossword_language_german">Deutsch</string>
-    <string name="games_crossword_load_failed">Das tägliche Rätsel konnte nicht geladen werden. Prüfe deine Internetverbindung und versuche es erneut.</string>
+    <string name="games_crossword_load_failed">Das Rätsel konnte nicht geladen werden. Prüfe deine Internetverbindung und versuche es erneut.</string>
     <string name="games_crossword_retry">Erneut versuchen</string>
     <string name="games_crossword_check">Antworten prüfen</string>
     <string name="games_crossword_restart">Neu starten</string>
     <string name="games_crossword_solved">Gelöst in %1$s!</string>
     <string name="games_crossword_previous_clue">Vorherige Frage</string>
     <string name="games_crossword_next_clue">Nächste Frage</string>
+    <string name="games_crossword_new_puzzle">Neues Rätsel</string>
+
+    <!-- Games: Wordle -->
+    <string name="games_wordle_title">Wordle</string>
+    <string name="games_wordle_instructions">Errate das Wort aus fünf Buchstaben in sechs Versuchen – so oft du willst! Sobald eine Reihe voll ist, wird sie automatisch geprüft: Grün heißt, der Buchstabe steht an der richtigen Stelle, Orange heißt, er kommt im Wort vor, aber woanders, und Grau heißt, er kommt gar nicht vor.\n\nDie englischen Wörter sind echte Lösungen der New York Times, zufällig gezogen, die deutschen kommen aus unserer eigenen Liste. Je weniger Buchstaben du brauchst und je schneller du bist, desto besser dein Platz in der Rangliste.</string>
+    <string name="games_wordle_language_question">Wähle deine Wortsprache</string>
+    <string name="games_wordle_language_english">Englisch (NYT Wordle)</string>
+    <string name="games_wordle_language_german">Deutsch</string>
+    <string name="games_wordle_load_failed">Das Wort konnte nicht geladen werden. Prüfe deine Internetverbindung und versuche es erneut.</string>
+    <string name="games_wordle_retry">Erneut versuchen</string>
+    <string name="games_wordle_guess_counter">Versuche %1$d / %2$d</string>
+    <string name="games_wordle_new_word">Neues Wort</string>
+    <string name="games_wordle_too_short">Zu wenige Buchstaben</string>
+    <string name="games_wordle_unknown_word">%1$s steht nicht in der Wortliste</string>
+    <string name="games_wordle_delete">Buchstabe löschen</string>
+    <string name="games_wordle_solved">Gelöst in %1$d von %2$d Versuchen · %3$s</string>
+    <string name="games_wordle_failed">Keine Versuche mehr! Das Wort war %1$s</string>
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Tägliche Challenge (%1$s)</string>
@@ -1456,4 +1479,13 @@
     <string name="event_participation_count">%1$s (%2$d)</string>
     <string name="event_participation_at">%1$s, %2$s</string>
     <string name="event_participation_failed">Deine Antwort konnte nicht gespeichert werden</string>
+
+    <!-- Shared content (images and links of a chat) -->
+    <string name="shared_content_title">Geteilte Inhalte</string>
+    <string name="shared_images">Bilder</string>
+    <string name="shared_links">Links</string>
+    <string name="no_shared_images">In diesem Chat wurden noch keine Bilder geteilt</string>
+    <string name="no_shared_links">In diesem Chat wurden noch keine Links geteilt</string>
+    <string name="go_to_message">Zur Nachricht springen</string>
+    <string name="copy_link">Link kopieren</string>
 </resources>

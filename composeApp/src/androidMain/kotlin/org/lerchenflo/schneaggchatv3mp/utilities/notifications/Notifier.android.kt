@@ -23,6 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.mark_as_read
 import schneaggchatv3mp.composeapp.generated.resources.reply
+import schneaggchatv3mp.composeapp.generated.resources.you_sender
 import kotlin.coroutines.resume
 
 private const val CHANNEL_ID = "schneaggchat_messages"
@@ -244,6 +245,12 @@ actual class Notifier(private val context: Context, private val permissionManage
         }
     }
 
+    /**
+     * Name MessagingStyle attributes our own messages to. Must never be blank: MessagingStyle
+     * rejects a [Person] with an empty name, and a push arriving in a fresh process (app killed)
+     * runs before the session is restored, so the real name isn't resolvable yet. Only a real
+     * name is cached - a fallback stays uncached so the next notification retries.
+     */
     private fun ownDisplayName(): String {
         cachedOwnDisplayName?.let { return it }
         val resolved = runCatching {
@@ -251,9 +258,15 @@ actual class Notifier(private val context: Context, private val permissionManage
                 val ownId = SessionCache.requireLoggedIn()?.userId ?: return@runBlocking null
                 KoinPlatform.getKoin().get<UserRepository>().getUserFlow(ownId).first()?.displayName
             }
-        }.getOrNull() ?: ""
-        cachedOwnDisplayName = resolved
-        return resolved
+        }.getOrNull()?.takeIf { it.isNotBlank() }
+
+        if (resolved != null) {
+            cachedOwnDisplayName = resolved
+            return resolved
+        }
+        return runCatching { runBlocking { getString(Res.string.you_sender) } }.getOrNull()
+            ?.takeIf { it.isNotBlank() }
+            ?: "You"
     }
 
     actual fun cancelNotification(id: Int) {

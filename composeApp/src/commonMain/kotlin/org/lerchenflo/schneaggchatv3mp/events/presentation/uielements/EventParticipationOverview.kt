@@ -40,7 +40,7 @@ import schneaggchatv3mp.composeapp.generated.resources.event_participation_count
 @Composable
 fun EventParticipationOverview(
     event: Event,
-    friendsById: Map<String, User>,
+    usersById: Map<String, User>,
     modifier: Modifier = Modifier
 ) {
     val buckets = listOf(
@@ -56,7 +56,7 @@ fun EventParticipationOverview(
             ParticipationBucket(
                 status = status,
                 userIds = userIds,
-                friendsById = friendsById,
+                usersById = usersById,
                 respondedAtOf = { userId -> event.participationOf(userId)?.updatedAt }
             )
         }
@@ -67,7 +67,7 @@ fun EventParticipationOverview(
 private fun ParticipationBucket(
     status: EventParticipationStatus,
     userIds: List<String>,
-    friendsById: Map<String, User>,
+    usersById: Map<String, User>,
     respondedAtOf: (String) -> Long?,
 ) {
     // Going starts open - it is the one people look for; the other two are noise until asked for
@@ -99,9 +99,9 @@ private fun ParticipationBucket(
             EventUserAvatarRow(
                 label = null,
                 userIds = userIds,
-                friendsById = friendsById,
+                usersById = usersById,
                 contentDescriptionFor = { userId ->
-                    val name = friendsById[userId]?.displayName ?: userId
+                    val name = usersById[userId]?.displayName ?: userId
                     respondedAtOf(userId)?.let { at ->
                         stringResource(Res.string.event_participation_at, name, millisToString(at, "dd.MM.yyyy HH:mm"))
                     } ?: name

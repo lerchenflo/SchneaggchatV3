@@ -4,7 +4,6 @@ import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
-import platform.EventKit.EKEntityType
 import platform.EventKit.EKEvent
 import platform.EventKit.EKEventStore
 import platform.EventKitUI.EKEventEditViewAction
@@ -196,42 +195,32 @@ actual class ShareUtils {
         }
     }
 
+    /**
+     * Opens Apple's event editor pre-filled with the event. Deliberately no calendar permission
+     * request: since iOS 17 the editor runs out of process and saves without any calendar access,
+     * while the old requestAccessToEntityType asks for *full* access - which needs a usage
+     * description this app doesn't declare, so it was denied and the editor never opened.
+     */
     actual fun addEventToCalendar(title: String, description: String, location: String, startDateMillis: Long, endDateMillis: Long?) {
-        val eventStore = EKEventStore()
-        eventStore.requestAccessToEntityType(EKEntityType.EKEntityTypeEvent) { granted, _ ->
-            dispatch_async(dispatch_get_main_queue()) {
-                val topVC = getTopViewController()
-                if (!granted) {
-                    val alert = UIAlertController.alertControllerWithTitle(
-                        title = "No Calendar Access",
-                        message = "Please allow calendar access in Settings to add this event.",
-                        preferredStyle = UIAlertControllerStyleAlert
-                    )
-                    alert.addAction(
-                        UIAlertAction.actionWithTitle("OK", style = UIAlertActionStyleDefault, handler = null)
-                    )
-                    topVC?.presentViewController(alert, animated = true, completion = null)
-                    return@dispatch_async
-                }
+        dispatch_async(dispatch_get_main_queue()) {
+            val eventStore = EKEventStore()
+            val event = EKEvent.eventWithEventStore(eventStore)
+            event.title = title
+            event.notes = description.ifEmpty { null }
+            event.location = location.ifEmpty { null }
+            event.startDate = NSDate.dateWithTimeIntervalSince1970(startDateMillis / 1000.0)
+            event.endDate = NSDate.dateWithTimeIntervalSince1970((endDateMillis ?: (startDateMillis + 3_600_000L)) / 1000.0)
+            //No calendar set: without access there's none to read, the editor uses the default one
 
-                val event = EKEvent.eventWithEventStore(eventStore)
-                event.title = title
-                event.notes = description.ifEmpty { null }
-                event.location = location.ifEmpty { null }
-                event.startDate = NSDate.dateWithTimeIntervalSince1970(startDateMillis / 1000.0)
-                event.endDate = NSDate.dateWithTimeIntervalSince1970((endDateMillis ?: (startDateMillis + 3_600_000L)) / 1000.0)
-                event.calendar = eventStore.defaultCalendarForNewEvents
+            val editViewController = EKEventEditViewController()
+            editViewController.eventStore = eventStore
+            editViewController.event = event
 
-                val editViewController = EKEventEditViewController()
-                editViewController.eventStore = eventStore
-                editViewController.event = event
+            val delegate = EventEditDelegate { activeEventEditDelegate = null }
+            activeEventEditDelegate = delegate
+            editViewController.editViewDelegate = delegate
 
-                val delegate = EventEditDelegate { activeEventEditDelegate = null }
-                activeEventEditDelegate = delegate
-                editViewController.editViewDelegate = delegate
-
-                topVC?.presentViewController(editViewController, animated = true, completion = null)
-            }
+            getTopViewController()?.presentViewController(editViewController, animated = true, completion = null)
         }
     }
 }
