@@ -72,21 +72,32 @@ actual class ShareUtils {
      * RFC 3986 compliant percent-encoding for mailto URI parameter values.
      * Only unreserved characters (letters, digits, - . _ ~) are left unencoded.
      */
+    /**
+     * RFC 3986 compliant percent-encoding for mailto URI parameter values.
+     * Only unreserved characters (letters, digits, - . _ ~) are left unencoded.
+     * Encodes the whole string to UTF-8 at once rather than char-by-char, since encoding
+     * individual Chars breaks for surrogate pairs (each half isn't valid UTF-8 alone,
+     * producing garbled %EF%BF%BD replacement-character sequences).
+     */
     private fun percentEncode(value: String): String {
-        return buildString {
-            for (char in value) {
-                when {
-                    char.isLetterOrDigit() || char in "-._~" -> append(char)
-                    else -> {
-                        val bytes = char.toString().encodeToByteArray()
-                        for (byte in bytes) {
-                            append('%')
-                            append(byte.toInt().and(0xFF).toString(16).uppercase().padStart(2, '0'))
-                        }
-                    }
+        val builder = StringBuilder()
+        var i = 0
+        while (i < value.length) {
+            val char = value[i]
+            if (char.isLetterOrDigit() && char.code < 128 || char in "-._~") {
+                builder.append(char)
+                i += 1
+            } else {
+                val charLen = if (char.isHighSurrogate() && i + 1 < value.length && value[i + 1].isLowSurrogate()) 2 else 1
+                val bytes = value.substring(i, i + charLen).encodeToByteArray()
+                for (byte in bytes) {
+                    builder.append('%')
+                    builder.append(byte.toInt().and(0xFF).toString(16).uppercase().padStart(2, '0'))
                 }
+                i += charLen
             }
         }
+        return builder.toString()
     }
 
     @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)

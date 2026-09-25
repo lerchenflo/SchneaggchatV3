@@ -282,7 +282,7 @@ private fun formatReport(
     priority: Priority
 ): String = buildString {
     if (reportType == ReportType.BUG) {
-        appendLine("🐛 BUG REPORT")
+        appendLine("BUG REPORT")
         appendLine("=============")
         appendLine("Severity: ${severity.name}")
         appendLine()
@@ -304,7 +304,7 @@ private fun formatReport(
             appendLine(actualBehavior)
         }
     } else {
-        appendLine("💡 FEATURE REQUEST")
+        appendLine("FEATURE REQUEST")
         appendLine("==================")
         appendLine("Title: $title")
         appendLine("Priority: ${priority.name}")
