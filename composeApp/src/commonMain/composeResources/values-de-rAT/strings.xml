@@ -114,6 +114,12 @@
     <string name="markdownInfo">Des aktiviert Markdown im Chat, es kann aber si dassas denn kle laggt</string>
     <string name="highlight_todays_message_timestamp">Hütige Zeitstempel hervorheba</string>
     <string name="highlight_todays_message_timestamp_info">Markiert da Zitstempel vo hüt empfangana Nochrichta in da Chat-Uswahl grün</string>
+    <string name="quick_reactions">Schneallreaktion</string>
+    <string name="quick_reactions_info">Emojis, dia bem langa Drucka vo na Nachricht abota werrand. Zum Umsortiera züha.</string>
+    <string name="quick_reactions_empty">Kua Schnellreaktiona - du kannsch trotzdem bei jeda Nochricht a eigene Reaktion hinzufüga.</string>
+    <string name="quick_reactions_reorder">Schneallreaktiona umsortiera</string>
+    <string name="add_quick_reaction">Schneallreaktiona dazuatua</string>
+    <string name="restore_defaults">Standard wiederherstella</string>
     <string name="something_wrong_message">Irgendwas isch falsch glofa</string>
     <string name="message_too_long">Nachricht zlang!</string>
     <string name="log_out_successfully">Usgloggt</string>
@@ -847,6 +853,23 @@
     <string name="games_crossword_solved">Glöst in %1$s!</string>
     <string name="games_crossword_previous_clue">Vorherige Frog</string>
     <string name="games_crossword_next_clue">Nächste Frog</string>
+    <string name="games_crossword_new_puzzle">Neus Rätsel</string>
+
+    <!-- Games: Wordle -->
+    <string name="games_wordle_title">Wordle</string>
+    <string name="games_wordle_instructions">Errot s Wort us füf Buchstaba in sechs versuach, so oft du willsch! Wenn a Reihe voll isch wird automatisch prüft, Grün hoast richtiger Buchstab an da richtiga Stell, Orange richtiger Buchstab an da falscha Stell, Grau falscher Buchstab.</string>
+    <string name="games_wordle_language_question">Wähl a Sproch</string>
+    <string name="games_wordle_language_english">Englisch (NYT Wordle)</string>
+    <string name="games_wordle_language_german">Dütsch</string>
+    <string name="games_wordle_load_failed">Des Wort hot ned glada werra kümma. Prüf dine Internetverbindung und versuachs nomml.</string>
+    <string name="games_wordle_retry">Nomml versuacha</string>
+    <string name="games_wordle_guess_counter">Versuche %1$d / %2$d</string>
+    <string name="games_wordle_new_word">Neus Wort</string>
+    <string name="games_wordle_too_short">Zwenig Buchstaba</string>
+    <string name="games_wordle_unknown_word">%1$s stoht ned in da Wortliste</string>
+    <string name="games_wordle_delete">Buchstab löscha</string>
+    <string name="games_wordle_solved">Glöst in %1$d vo %2$d Versuchen · %3$s</string>
+    <string name="games_wordle_failed">Kua Versuche mehr! S Wort war %1$s</string>
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Tägliche Challenge (%1$s)</string>
@@ -1455,4 +1478,13 @@ Mealds, egal wie klenn.</string>
     <string name="event_participation_count">%1$s (%2$d)</string>
     <string name="event_participation_at">%1$s, %2$s</string>
     <string name="event_participation_failed">Dine Antwort hot ned gspeichert werra künna</string>
+
+    <!-- Shared content (images and links of a chat) -->
+    <string name="shared_content_title">Toalte Inhalte</string>
+    <string name="shared_images">Bilder</string>
+    <string name="shared_links">Links</string>
+    <string name="no_shared_images">In deam Chat sind no kua Bilder teilt worra</string>
+    <string name="no_shared_links">In deam Chat sind no kua Links teilt worra</string>
+    <string name="go_to_message">Zur Nochricht springa</string>
+    <string name="copy_link">Link kopiera</string>
 </resources>

@@ -127,10 +127,11 @@ class TowerstackViewModel(
 
     private fun persist() = saveSession.persist(currentDifficulty, snapshotOrNull())
 
-    /** Null when there is no run worth keeping (not started or already over). */
+    /** Null when there is no run worth keeping (not started, already over, or score is 0). */
     private fun snapshotOrNull(): TowerstackSnapshot? {
         val current = _gameState.value
         if (!current.isGameStarted || current.isGameOver) return null
+        if (current.score == 0) return null
         return TowerstackSnapshot(
             platforms = current.platforms,
             currentPlatform = current.currentPlatform,
