@@ -134,11 +134,16 @@ class CrosswordViewmodel(
 
     private fun persist() = saveSession.persist(difficultyFor(_state.value.language), snapshotOrNull())
 
-    /** Null until a puzzle is loaded; solved puzzles are kept so the result survives leaving the screen. */
+    /**
+     * Null until a puzzle is loaded or while no letter was entered (only the clock ran), so an untouched
+     * puzzle is dropped and the next visit starts at the language chooser. Solved puzzles are kept so the
+     * result survives leaving the screen.
+     */
     private fun snapshotOrNull(): CrosswordSnapshot? {
         val current = _state.value
         val puzzle = current.puzzle ?: return null
         val language = current.language ?: return null
+        if (current.entries.all { it == null }) return null
         return CrosswordSnapshot(
             language = language,
             puzzle = puzzle,

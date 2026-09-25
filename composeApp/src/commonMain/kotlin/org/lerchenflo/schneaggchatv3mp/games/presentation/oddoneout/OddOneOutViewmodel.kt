@@ -77,10 +77,11 @@ class OddOneOutViewmodel(
 
     private fun persist() = saveSession.persist(currentDifficulty, snapshotOrNull())
 
-    /** Null when there is no run worth keeping (not started or already over). */
+    /** Null when there is no run worth keeping (not started, already over, or score is 0). */
     private fun snapshotOrNull(): OddOneOutSnapshot? {
         val current = _state.value
         if (!current.isPlaying || current.isGameOver) return null
+        if (current.score == 0) return null
         return OddOneOutSnapshot(
             score = current.score,
             lives = current.lives,

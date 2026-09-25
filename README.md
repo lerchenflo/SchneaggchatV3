@@ -36,7 +36,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Chat: Geteilte Inhalte (Bilder und Links) in Chat-Details
 
 #### Bugfixes
-- Spiele: extrem viele Bugfixes in fast allen Spielen
+- Spiele: extrem viele Bugfixes in fast allen Spielen, Spielstände für ungespielte Durchläufe werden nicht mehr gespeichert
 - Anmeldung: Token-Refresh rebuild (5. mol??), Leerer Bildschirm nach Hintergrundbeendigung behoben (Session wird wiederhergestellt)
 - Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe, Nachrichten werden korrekt als gelesen markiert, wenn der Chat über eine Benachrichtigung geöffnet wird
 - Events: Crash bei mehrtägigen Events behoben, Eigenes Profilbild und Name werden überall als Event-Ersteller/-teilnehmer angezeigt

@@ -102,10 +102,11 @@ class MorseViewModel(
 
     private fun persist() = saveSession.persist(challengeDifficulty, snapshotOrNull())
 
-    /** Null when there is no challenge worth keeping (none running or already over). */
+    /** Null when there is no challenge worth keeping (none running, already over, or score is 0). */
     private fun snapshotOrNull(): MorseSnapshot? {
         val challenge = _state.value.challenge ?: return null
         if (challenge.isGameOver) return null
+        if (challenge.score == 0) return null
         return MorseSnapshot(
             targetText = challenge.targetText,
             currentIndex = challenge.currentIndex,

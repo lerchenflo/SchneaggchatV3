@@ -133,10 +133,15 @@ class WordleViewModel(
 
     private fun persist() = saveSession.persist(difficultyFor(_state.value.language), snapshotOrNull())
 
-    /** Null until a word is loaded; finished games are kept so the result survives leaving the screen. */
+    /**
+     * Null until a word is loaded or while no guess was submitted (only the clock ran), so an untouched
+     * game is dropped and the next visit starts at the language chooser. Finished games are kept so the
+     * result survives leaving the screen.
+     */
     private fun snapshotOrNull(): WordleSnapshot? {
         val current = _state.value
         val puzzle = current.puzzle ?: return null
+        if (current.guesses.isEmpty()) return null
         return WordleSnapshot(
             puzzle = puzzle,
             guesses = current.guesses,
