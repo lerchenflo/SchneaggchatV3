@@ -15,7 +15,7 @@ data class UndercoverWordPairSnapshot(
 data class UndercoverPlayerSnapshot(
     val id: String,
     val name: String,
-    val actualRole: UndercoverViewModel.ActualRole,
+    val actualRole: UndercoverRole,
     val isAlive: Boolean,
     val userId: String? = null,
 )
@@ -24,13 +24,13 @@ data class UndercoverPlayerSnapshot(
 data class UndercoverVotingResultSnapshot(
     val eliminatedPlayerId: String,
     val eliminatedPlayerName: String,
-    val revealedRole: UndercoverViewModel.ActualRole,
+    val revealedRole: UndercoverRole,
 )
 
 /** Persisted mid-game Undercover state; the winner text only exists once the game is over, which is never saved. */
 @Serializable
 data class UndercoverSnapshot(
-    val phase: UndercoverViewModel.Phase,
+    val phase: UndercoverPhase,
     val setupPlayers: List<String>,
     val setupPlayerUserIds: Map<String, String> = emptyMap(),
     val setupMrWhiteCount: Int,

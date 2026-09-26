@@ -1,8 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -10,44 +12,52 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartSegment
-import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.findCheckouts
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartOutMode
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartSegment
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartThrow
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.toSegment
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadDialog
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadDoneText
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresDialog
@@ -59,9 +69,9 @@ import schneaggchatv3mp.composeapp.generated.resources.dartcounter_avg_format
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_cancel
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_checkout_alt_format
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_checkout_title
-import schneaggchatv3mp.composeapp.generated.resources.dartcounter_dart_slot_empty
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_configure_game_hint
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_countdown_label
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_dart_slot_empty
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_darts_format
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_darts_left_format
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_finished_suffix
@@ -87,39 +97,35 @@ import schneaggchatv3mp.composeapp.generated.resources.dartcounter_turn_total_fo
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_undo
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_winners_format
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
-import kotlin.math.round
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.material3.Surface
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Box
-
-@Preview(
-    showBackground = true,
-    showSystemUi = true
-)
 
 @Composable
-fun DartCounter(
-    onBackClick: () -> Unit = {}
+fun DartCounterRoot(
+    onBackClick: () -> Unit = {},
+    viewModel: DartCounterViewModel = koinViewModel(),
 ) {
-    val viewmodel = koinViewModel<DartCounterViewModel>()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     // Leaving the screen (e.g. opening a chat from a notification) keeps the running game
     DisposableEffect(Unit) {
-        onDispose { viewmodel.persist() }
+        onDispose { viewModel.persist() }
     }
 
-    // todo: he manu du musch noch an backbutton ine tua sunsch sind die Iphone user stuck
+    DartCounterScreen(
+        state = state,
+        onAction = viewModel::onAction,
+        onBackClick = onBackClick,
+    )
+}
 
+@Composable
+fun DartCounterScreen(
+    state: DartCounterState,
+    onAction: (DartCounterAction) -> Unit,
+    onBackClick: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
             .padding(bottom = 16.dp)
@@ -129,7 +135,7 @@ fun DartCounter(
             onBackClick = onBackClick
         )
 
-        TopActionRow(viewmodel = viewmodel)
+        TopActionRow(state = state, onAction = onAction)
 
         // Board and player card share the remaining space so the card can never be pushed off screen
         BoxWithConstraints(modifier = Modifier.weight(1f)) {
@@ -139,53 +145,55 @@ fun DartCounter(
                     modifier = Modifier.fillMaxSize(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    GameStatusOrHint(viewmodel = viewmodel, modifier = Modifier.weight(1f).fillMaxHeight())
-                    DartBoard(viewmodel = viewmodel, modifier = Modifier.weight(1.2f).fillMaxHeight())
+                    GameStatusOrHint(state = state, modifier = Modifier.weight(1f).fillMaxHeight())
+                    DartBoard(
+                        state = state,
+                        onAction = onAction,
+                        modifier = Modifier.weight(1.2f).fillMaxHeight()
+                    )
                 }
             } else {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    DartBoard(viewmodel = viewmodel, modifier = Modifier.weight(1.3f))
-                    GameStatusOrHint(viewmodel = viewmodel, modifier = Modifier.weight(1f))
+                    DartBoard(state = state, onAction = onAction, modifier = Modifier.weight(1.3f))
+                    GameStatusOrHint(state = state, modifier = Modifier.weight(1f))
                 }
             }
         }
     }
 
     // Dialogs
-    if (viewmodel.showPlayerSetup) {
+    if (state.showPlayerSetup) {
         PlayerSelector(
-            onDismiss = { viewmodel.hidePlayerSetupDialog() },
-            onFinish = { selectedPlayers ->
-                viewmodel.setPlayers(selectedPlayers)
-                viewmodel.hidePlayerSetupDialog()
-            }
+            onDismiss = { onAction(DartCounterAction.OnPlayerSetupDismiss) },
+            onFinish = { selectedPlayers -> onAction(DartCounterAction.OnPlayersSelected(selectedPlayers)) }
         )
     }
 
-    if (viewmodel.showGameConfig) {
-        GameConfigDialog(viewmodel = viewmodel)
+    if (state.showGameConfig) {
+        GameConfigDialog(state = state, onAction = onAction)
     }
 
-    if (viewmodel.showStopGameDialog) {
-        StopGameConfirmationDialog(viewmodel = viewmodel)
+    if (state.showStopGameDialog) {
+        StopGameConfirmationDialog(onAction = onAction)
+    }
+
+    if (state.showHighscores) {
+        HighscoresDialog(
+            game = GameId.DART_COUNTER,
+            initialDifficulty = dartCounterDifficulty(state.selectedCountdown),
+            onDismiss = { onAction(DartCounterAction.OnHighscoresDismiss) }
+        )
     }
 
     // Asked once every player finished - averages only reach the leaderboard on explicit confirmation
-    val highscoreUploadState by viewmodel.highscoreUploadState.collectAsStateWithLifecycle()
     HighscoreUploadDialog(
-        state = highscoreUploadState,
-        onUpload = viewmodel::uploadHighscores,
-        onDecline = viewmodel::declineHighscoreUpload,
+        state = state.highscoreUpload,
+        onUpload = { onAction(DartCounterAction.OnUploadHighscores) },
+        onDecline = { onAction(DartCounterAction.OnDeclineHighscoreUpload) },
     )
-}
-
-enum class Multiplier {
-    SINGLE,
-    DOUBLE,
-    TRIPLE
 }
 
 /** Button label that shrinks (and wraps to a second line if needed) instead of clipping on narrow buttons. */
@@ -203,7 +211,7 @@ private fun FittingButtonText(text: String, maxFontSize: TextUnit = 14.sp) {
 private val CompactButtonPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
 
 @Composable
-private fun TopActionRow(viewmodel: DartCounterViewModel) {
+private fun TopActionRow(state: DartCounterState, onAction: (DartCounterAction) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -216,17 +224,17 @@ private fun TopActionRow(viewmodel: DartCounterViewModel) {
             .height(52.dp)
 
         FilledTonalButton(
-            onClick = { viewmodel.showPlayerSetupDialog() },
+            onClick = { onAction(DartCounterAction.OnAddPlayersClick) },
             modifier = buttonModifier,
-            enabled = !viewmodel.gameStarted,
+            enabled = !state.gameStarted,
             contentPadding = CompactButtonPadding
         ) {
             FittingButtonText(stringResource(Res.string.dartcounter_add_players))
         }
 
-        if (viewmodel.gameStarted) {
+        if (state.gameStarted) {
             Button(
-                onClick = { viewmodel.showStopGameConfirmation() },
+                onClick = { onAction(DartCounterAction.OnStopGameClick) },
                 modifier = buttonModifier,
                 contentPadding = CompactButtonPadding,
                 colors = ButtonDefaults.buttonColors(
@@ -238,7 +246,7 @@ private fun TopActionRow(viewmodel: DartCounterViewModel) {
             }
         } else {
             Button(
-                onClick = { viewmodel.showGameConfigDialog() },
+                onClick = { onAction(DartCounterAction.OnConfigureGameClick) },
                 modifier = buttonModifier,
                 contentPadding = CompactButtonPadding
             ) {
@@ -246,30 +254,20 @@ private fun TopActionRow(viewmodel: DartCounterViewModel) {
             }
         }
 
-        var showHighscores by remember { mutableStateOf(false) }
         OutlinedButton(
-            onClick = { showHighscores = true },
+            onClick = { onAction(DartCounterAction.OnHighscoresClick) },
             modifier = buttonModifier,
             contentPadding = CompactButtonPadding
         ) {
             FittingButtonText(stringResource(Res.string.dartcounter_highscores))
         }
-
-        if (showHighscores) {
-            HighscoresDialog(
-                game = GameId.DART_COUNTER,
-                initialDifficulty = dartCounterDifficulty(viewmodel.selectedCountdown),
-                onDismiss = { showHighscores = false }
-            )
-        }
     }
 }
 
 @Composable
-private fun GameStatusOrHint(viewmodel: DartCounterViewModel, modifier: Modifier = Modifier) {
-    val game = viewmodel.gameManager
-    if (game != null) {
-        GameStatusDisplay(game = game, viewmodel = viewmodel, modifier = modifier)
+private fun GameStatusOrHint(state: DartCounterState, modifier: Modifier = Modifier) {
+    if (state.gameStarted) {
+        GameStatusDisplay(state = state, modifier = modifier)
     } else {
         Card(modifier = modifier.fillMaxWidth()) {
             Box(
@@ -298,19 +296,25 @@ private fun formatSegment(segment: DartSegment): String = when {
     else -> segment.base.toString()
 }
 
-private fun DartCounterViewModel.DartThrow.toSegment(): DartSegment {
-    val multiplier = if (isTriple) 3 else if (isDouble) 2 else 1
-    return DartSegment(score, multiplier, isDouble, isTriple)
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DartBoard(viewmodel: DartCounterViewModel, modifier: Modifier = Modifier) {
-
-    var selectedMultiplier by remember { mutableStateOf(Multiplier.SINGLE) }
-    val padEnabled = viewmodel.gameManager?.let { !it.gameOver } ?: false
-    val padColor = if (selectedMultiplier == Multiplier.SINGLE) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-    val padContentColor = if (selectedMultiplier == Multiplier.SINGLE) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onTertiary
+private fun DartBoard(
+    state: DartCounterState,
+    onAction: (DartCounterAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val selectedMultiplier = state.selectedMultiplier
+    val padEnabled = state.padEnabled
+    val padColor = if (selectedMultiplier == DartMultiplier.SINGLE) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.tertiary
+    }
+    val padContentColor = if (selectedMultiplier == DartMultiplier.SINGLE) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onTertiary
+    }
 
     Column(modifier = modifier) {
         // Multiplier buttons - the active one is highlighted and relabels the whole pad below
@@ -319,19 +323,19 @@ fun DartBoard(viewmodel: DartCounterViewModel, modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .padding(bottom = 8.dp)
         ) {
-            val multipliers = listOf(Multiplier.SINGLE, Multiplier.DOUBLE, Multiplier.TRIPLE)
+            val multipliers = DartMultiplier.entries
             multipliers.forEachIndexed { index, multiplier ->
                 SegmentedButton(
                     selected = selectedMultiplier == multiplier,
-                    onClick = { selectedMultiplier = multiplier },
+                    onClick = { onAction(DartCounterAction.OnMultiplierSelect(multiplier)) },
                     shape = SegmentedButtonDefaults.itemShape(index = index, count = multipliers.size),
                     // No checkmark: the highlight is enough and the icon steals width from the label
                     icon = {}
                 ) {
                     val multiplierText = when (multiplier) {
-                        Multiplier.SINGLE -> stringResource(Res.string.dartcounter_multiplier_single)
-                        Multiplier.DOUBLE -> stringResource(Res.string.dartcounter_multiplier_double)
-                        Multiplier.TRIPLE -> stringResource(Res.string.dartcounter_multiplier_triple)
+                        DartMultiplier.SINGLE -> stringResource(Res.string.dartcounter_multiplier_single)
+                        DartMultiplier.DOUBLE -> stringResource(Res.string.dartcounter_multiplier_double)
+                        DartMultiplier.TRIPLE -> stringResource(Res.string.dartcounter_multiplier_triple)
                     }
                     Text(
                         text = multiplierText,
@@ -363,9 +367,9 @@ fun DartBoard(viewmodel: DartCounterViewModel, modifier: Modifier = Modifier) {
                 items(20) { index ->
                     val base = index + 1
                     val segment = when (selectedMultiplier) {
-                        Multiplier.SINGLE -> DartSegment.single(base)
-                        Multiplier.DOUBLE -> DartSegment.double(base)
-                        Multiplier.TRIPLE -> DartSegment.triple(base)
+                        DartMultiplier.SINGLE -> DartSegment.single(base)
+                        DartMultiplier.DOUBLE -> DartSegment.double(base)
+                        DartMultiplier.TRIPLE -> DartSegment.triple(base)
                     }
                     DartPadButton(
                         label = formatSegment(segment),
@@ -373,10 +377,7 @@ fun DartBoard(viewmodel: DartCounterViewModel, modifier: Modifier = Modifier) {
                         containerColor = padColor,
                         contentColor = padContentColor,
                         enabled = padEnabled,
-                        onClick = {
-                            viewmodel.throwDart(segment)
-                            selectedMultiplier = Multiplier.SINGLE
-                        }
+                        onClick = { onAction(DartCounterAction.OnDartThrow(segment)) }
                     )
                 }
 
@@ -389,10 +390,7 @@ fun DartBoard(viewmodel: DartCounterViewModel, modifier: Modifier = Modifier) {
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary,
                             enabled = padEnabled,
-                            onClick = {
-                                viewmodel.throwDart(segment)
-                                selectedMultiplier = Multiplier.SINGLE
-                            }
+                            onClick = { onAction(DartCounterAction.OnDartThrow(segment)) }
                         )
                     }
                 }
@@ -404,8 +402,8 @@ fun DartBoard(viewmodel: DartCounterViewModel, modifier: Modifier = Modifier) {
                         height = cellHeight,
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError,
-                        enabled = viewmodel.canUndoThrow(),
-                        onClick = { viewmodel.undoLastThrow() }
+                        enabled = state.canUndo,
+                        onClick = { onAction(DartCounterAction.OnUndoThrow) }
                     )
                 }
             }
@@ -446,55 +444,12 @@ private fun DartPadButton(
     }
 }
 
-
-private fun threeDartAverage(player: DartCounterViewModel.Player, game: DartCounterViewModel.GameManager): String {
-    val totalScore = game.countdown - player.score
-    return if (player.totalDartsThrown > 0) {
-        val value = totalScore.toDouble() / player.totalDartsThrown * 3
-        (round(value * 10) / 10).toString()
-    } else {
-        "0.0"
-    }
-}
-
-/** Immutable copy of one scoreboard row, so rows recompose from values instead of mutable game fields. */
-private data class DartPlayerRowUi(
-    val name: String,
-    val score: Int,
-    val average: String,
-    val dartsThrown: Int,
-    val isFinished: Boolean,
-    val isCurrent: Boolean,
-)
-
 /**
  * The bottom card: the active player's turn (remaining score, darts of this turn and the best
  * checkout path, see DartCheckout.findCheckouts) above the scoreboard of all players.
  */
 @Composable
-fun GameStatusDisplay(
-    game: DartCounterViewModel.GameManager,
-    viewmodel: DartCounterViewModel,
-    modifier: Modifier = Modifier
-) {
-    // Game internals are not observable - reading the revision recomposes this card after every throw
-    val revision = viewmodel.gameRevision
-    val currentPlayer = game.getCurrentPlayer()
-    val dartsLeft = viewmodel.dartsLeft
-    val turnDarts = remember(revision, currentPlayer) { game.getCurrentTurnDarts() }
-    val rows = remember(revision, game) {
-        game.playerList.map { player ->
-            DartPlayerRowUi(
-                name = player.name,
-                score = player.score,
-                average = threeDartAverage(player, game),
-                dartsThrown = player.totalDartsThrown,
-                isFinished = player.isFinished,
-                isCurrent = player === currentPlayer && !game.gameOver,
-            )
-        }
-    }
-
+private fun GameStatusDisplay(state: DartCounterState, modifier: Modifier = Modifier) {
     Card(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
@@ -502,25 +457,26 @@ fun GameStatusDisplay(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (game.gameOver) {
-                val names = game.getWinners().joinToString(
+            if (state.gameOver) {
+                val names = state.winnerNames.joinToString(
                     separator = stringResource(Res.string.dartcounter_list_separator)
-                ) { it.name }
+                )
                 Text(
                     text = stringResource(Res.string.dartcounter_winners_format, names),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                val highscoreUploadState by viewmodel.highscoreUploadState.collectAsStateWithLifecycle()
-                HighscoreUploadDoneText(state = highscoreUploadState)
+                HighscoreUploadDoneText(state = state.highscoreUpload)
             } else {
                 CurrentTurnHeader(
-                    playerName = currentPlayer.name,
-                    remainingScore = currentPlayer.score,
-                    dartsLeft = dartsLeft,
-                    turnDarts = turnDarts,
-                    doubleOut = game.doubleOut
+                    playerName = state.currentPlayerName,
+                    remainingScore = state.currentPlayerScore,
+                    dartsLeft = state.dartsLeft,
+                    turnDarts = state.turnDarts,
+                    turnTotal = state.turnTotal,
+                    checkout = state.checkout,
+                    alternativeCheckout = state.alternativeCheckout,
                 )
             }
 
@@ -528,8 +484,8 @@ fun GameStatusDisplay(
 
             val listState = rememberLazyListState()
             // Keep the active player in view
-            LaunchedEffect(game.currentPlayerIndex) {
-                listState.animateScrollToItem(game.currentPlayerIndex)
+            LaunchedEffect(state.currentPlayerIndex) {
+                listState.animateScrollToItem(state.currentPlayerIndex)
             }
 
             LazyColumn(
@@ -537,8 +493,8 @@ fun GameStatusDisplay(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                items(rows.size) { index ->
-                    PlayerScoreRow(row = rows[index])
+                items(state.players.size) { index ->
+                    PlayerScoreRow(row = state.players[index])
                 }
             }
         }
@@ -550,13 +506,11 @@ private fun CurrentTurnHeader(
     playerName: String,
     remainingScore: Int,
     dartsLeft: Int,
-    turnDarts: List<DartCounterViewModel.DartThrow>,
-    doubleOut: Boolean,
+    turnDarts: List<DartThrow>,
+    turnTotal: Int,
+    checkout: List<DartSegment>,
+    alternativeCheckout: List<DartSegment>,
 ) {
-    val checkouts = remember(remainingScore, dartsLeft, doubleOut) {
-        if (dartsLeft > 0) findCheckouts(remainingScore, dartsLeft, doubleOut) else emptyList()
-    }
-
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
@@ -597,7 +551,7 @@ private fun CurrentTurnHeader(
                 )
             }
             Text(
-                text = stringResource(Res.string.dartcounter_turn_total_format, turnDarts.sumOf { it.actualScore }),
+                text = stringResource(Res.string.dartcounter_turn_total_format, turnTotal),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
@@ -607,7 +561,7 @@ private fun CurrentTurnHeader(
         }
 
         // Checkout path, only once a finish is within reach this turn (at most 3 short labels per line)
-        if (checkouts.isNotEmpty()) {
+        if (checkout.isNotEmpty()) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -618,7 +572,7 @@ private fun CurrentTurnHeader(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1
                 )
-                checkouts.first().forEach { segment ->
+                checkout.forEach { segment ->
                     Text(
                         text = formatSegment(segment),
                         style = MaterialTheme.typography.titleSmall,
@@ -628,8 +582,8 @@ private fun CurrentTurnHeader(
                     )
                 }
             }
-            if (checkouts.size > 1) {
-                val alternative = checkouts[1].map { formatSegment(it) }.joinToString(" ")
+            if (alternativeCheckout.isNotEmpty()) {
+                val alternative = alternativeCheckout.map { formatSegment(it) }.joinToString(" ")
                 Text(
                     text = stringResource(Res.string.dartcounter_checkout_alt_format) + " " + alternative,
                     style = MaterialTheme.typography.bodySmall,
@@ -664,7 +618,7 @@ private fun DartSlot(label: String?, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PlayerScoreRow(row: DartPlayerRowUi) {
+private fun PlayerScoreRow(row: DartPlayerUi) {
     // Non-current rows blend into the surrounding card
     val containerColor = if (row.isCurrent) {
         MaterialTheme.colorScheme.secondaryContainer
@@ -698,7 +652,7 @@ private fun PlayerScoreRow(row: DartPlayerRowUi) {
             )
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = stringResource(Res.string.dartcounter_avg_format, row.average),
+                    text = stringResource(Res.string.dartcounter_avg_format, row.averageText),
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 1
                 )
@@ -721,8 +675,8 @@ private fun PlayerScoreRow(row: DartPlayerRowUi) {
 }
 
 @Composable
-fun GameConfigDialog(viewmodel: DartCounterViewModel) {
-    Dialog(onDismissRequest = { viewmodel.hideGameConfigDialog() }) {
+private fun GameConfigDialog(state: DartCounterState, onAction: (DartCounterAction) -> Unit) {
+    Dialog(onDismissRequest = { onAction(DartCounterAction.OnGameConfigDismiss) }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -736,102 +690,98 @@ fun GameConfigDialog(viewmodel: DartCounterViewModel) {
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text(
                     text = stringResource(Res.string.dartcounter_countdown_label),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     listOf(301, 501).forEach { countdown ->
                         Button(
-                            onClick = { viewmodel.setCountdown(countdown) },
+                            onClick = { onAction(DartCounterAction.OnCountdownSelect(countdown)) },
                             modifier = Modifier.weight(1f),
                             contentPadding = CompactButtonPadding,
-                            colors = selectableButtonColors(viewmodel.selectedCountdown == countdown)
+                            colors = selectableButtonColors(state.selectedCountdown == countdown)
                         ) {
                             FittingButtonText(countdown.toString())
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text(
                     text = stringResource(Res.string.dartcounter_out_mode_label),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    val modes = listOf(
-                        DartCounterViewModel.OutMode.SINGLE_OUT,
-                        DartCounterViewModel.OutMode.DOUBLE_OUT
-                    )
-                    modes.forEach { mode ->
+                    DartOutMode.entries.forEach { mode ->
                         Button(
-                            onClick = { viewmodel.setOutMode(mode) },
+                            onClick = { onAction(DartCounterAction.OnOutModeSelect(mode)) },
                             modifier = Modifier.weight(1f),
                             contentPadding = CompactButtonPadding,
-                            colors = selectableButtonColors(viewmodel.selectedOutMode == mode)
+                            colors = selectableButtonColors(state.selectedOutMode == mode)
                         ) {
                             val modeText = when (mode) {
-                                DartCounterViewModel.OutMode.SINGLE_OUT -> stringResource(Res.string.dartcounter_out_mode_single_out)
-                                DartCounterViewModel.OutMode.DOUBLE_OUT -> stringResource(Res.string.dartcounter_out_mode_double_out)
+                                DartOutMode.SINGLE_OUT -> stringResource(Res.string.dartcounter_out_mode_single_out)
+                                DartOutMode.DOUBLE_OUT -> stringResource(Res.string.dartcounter_out_mode_double_out)
                             }
                             FittingButtonText(modeText)
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text(
                     text = stringResource(
                         Res.string.dartcounter_players_format,
-                        viewmodel.playerNames.joinToString(
+                        state.playerNames.joinToString(
                             separator = stringResource(Res.string.dartcounter_list_separator)
-                        ) { it }
+                        )
                     ),
                     style = MaterialTheme.typography.bodyMedium
                 )
-                
-                if (viewmodel.playerNames.isEmpty()) {
+
+                if (state.playerNames.isEmpty()) {
                     Text(
                         text = stringResource(Res.string.dartcounter_please_add_players_first),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     TextButton(
-                        onClick = { viewmodel.hideGameConfigDialog() },
+                        onClick = { onAction(DartCounterAction.OnGameConfigDismiss) },
                         modifier = Modifier.weight(1f),
                         contentPadding = CompactButtonPadding
                     ) {
                         FittingButtonText(stringResource(Res.string.dartcounter_cancel))
                     }
-                    
+
                     Button(
-                        onClick = { viewmodel.startGame() },
+                        onClick = { onAction(DartCounterAction.OnConfirmStartGame) },
                         modifier = Modifier.weight(1f),
                         contentPadding = CompactButtonPadding,
-                        enabled = viewmodel.playerNames.isNotEmpty()
+                        enabled = state.canStartGame
                     ) {
                         FittingButtonText(stringResource(Res.string.dartcounter_start_game))
                     }
@@ -842,8 +792,8 @@ fun GameConfigDialog(viewmodel: DartCounterViewModel) {
 }
 
 @Composable
-fun StopGameConfirmationDialog(viewmodel: DartCounterViewModel) {
-    Dialog(onDismissRequest = { viewmodel.hideStopGameConfirmation() }) {
+private fun StopGameConfirmationDialog(onAction: (DartCounterAction) -> Unit) {
+    Dialog(onDismissRequest = { onAction(DartCounterAction.OnStopGameDismiss) }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -857,30 +807,30 @@ fun StopGameConfirmationDialog(viewmodel: DartCounterViewModel) {
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text(
                     text = stringResource(Res.string.dartcounter_stop_game_confirmation_message),
                     style = MaterialTheme.typography.bodyMedium
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     TextButton(
-                        onClick = { viewmodel.hideStopGameConfirmation() },
+                        onClick = { onAction(DartCounterAction.OnStopGameDismiss) },
                         modifier = Modifier.weight(1f),
                         contentPadding = CompactButtonPadding
                     ) {
                         FittingButtonText(stringResource(Res.string.dartcounter_cancel))
                     }
-                    
+
                     Button(
-                        onClick = { viewmodel.stopGame() },
+                        onClick = { onAction(DartCounterAction.OnConfirmStopGame) },
                         modifier = Modifier.weight(1f),
                         contentPadding = CompactButtonPadding,
                         colors = ButtonDefaults.buttonColors(
@@ -902,3 +852,21 @@ private fun selectableButtonColors(selected: Boolean) = ButtonDefaults.buttonCol
     containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
     contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
 )
+
+@Preview
+@Composable
+private fun DartCounterScreenPreview() {
+    DartCounterScreen(
+        state = DartCounterState(
+            gameStarted = true,
+            currentPlayerName = "Flo",
+            currentPlayerScore = 141,
+            dartsLeft = 3,
+            players = listOf(
+                DartPlayerUi("Flo", 141, "62.4", 18, isFinished = false, isCurrent = true),
+                DartPlayerUi("Manu", 220, "48.1", 18, isFinished = false, isCurrent = false),
+            ),
+        ),
+        onAction = {},
+    )
+}

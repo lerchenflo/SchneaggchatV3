@@ -25,7 +25,7 @@ fun ActivityTitle(
     modifier: Modifier = Modifier,
     backButtonModifier: Modifier = Modifier,
     // Optional icon buttons at the end of the title row
-    actions: (@Composable RowScope.() -> Unit)? = null
+    actions: @Composable RowScope.() -> Unit = {}
 ){
     Row(
         modifier = modifier
@@ -59,7 +59,7 @@ fun ActivityTitle(
             )
         }
 
-        actions?.invoke(this)
+        actions()
 
     }
 }

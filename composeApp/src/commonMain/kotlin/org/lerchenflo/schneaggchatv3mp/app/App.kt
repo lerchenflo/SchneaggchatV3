@@ -71,7 +71,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
+import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordScreenRoot
@@ -84,7 +84,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.Schneagga
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
+import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckScreenRoot
@@ -719,13 +719,13 @@ fun App() {
                                     }
 
                                     entry<Route.DartCounter> {
-                                        DartCounter(
+                                        DartCounterRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.Undercover> {
-                                        Undercover(
+                                        UndercoverRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

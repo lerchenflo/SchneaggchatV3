@@ -1,97 +1,90 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
-import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 
 class PlayerSelectorViewModel(
     private val playerRepository: PlayerRepository,
     private val appRepository: AppRepository
 ) : ViewModel() {
 
-    private val _localPlayers = mutableStateListOf<PlayerEntity>()
-    val localPlayers: List<PlayerEntity> get() = _localPlayers
-
-    private val _friends = mutableStateListOf<User>()
-    val friends: List<User> get() = _friends
-
-    // Combined list of both local players and friends
-    val allPlayers: List<Any> get() = _localPlayers + _friends
-
-    private val _selectedPlayers = mutableStateListOf<Any>()
-    val selectedPlayers: List<Any> get() = _selectedPlayers
+    private val _state = MutableStateFlow(PlayerSelectorState())
+    val state = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
-            // Load local players
             playerRepository.getAllPlayersFlow().collectLatest { playerList ->
-                _localPlayers.clear()
-                _localPlayers.addAll(playerList)
+                _state.update { current ->
+                    current.copy(localPlayers = playerList.map { SelectablePlayer.Local(it) })
+                }
             }
         }
 
         viewModelScope.launch {
-            // Load friends and current user
+            // Yourself first, then the friends you can pick from
             val ownId = SessionCache.requireLoggedIn()?.userId
             val ownUserFlow = if (ownId != null) appRepository.getUserByIdFlow(ownId) else flowOf(null)
             val friendsFlow = appRepository.getFriendsFlow("")
 
             ownUserFlow.combine(friendsFlow) { ownUser, friendsList ->
-                val list = mutableListOf<User>()
-                ownUser?.let { list.add(it) }
-                list.addAll(friendsList)
-                list
+                buildList {
+                    ownUser?.let { add(it) }
+                    addAll(friendsList)
+                }
             }.collectLatest { combinedList ->
-                _friends.clear()
-                _friends.addAll(combinedList)
+                _state.update { current ->
+                    current.copy(friends = combinedList.map { SelectablePlayer.Friend(it) })
+                }
             }
         }
     }
 
-    fun addPlayer(name: String) {
+    fun onAction(action: PlayerSelectorAction) {
+        when (action) {
+            is PlayerSelectorAction.OnNewPlayerNameChange ->
+                _state.update { it.copy(newPlayerName = action.name) }
+            PlayerSelectorAction.OnAddLocalPlayer -> addLocalPlayer()
+            is PlayerSelectorAction.OnDeleteLocalPlayer -> deleteLocalPlayer(action.player)
+            is PlayerSelectorAction.OnToggleSelection -> toggleSelection(action.player)
+            PlayerSelectorAction.OnClearSelection -> _state.update { it.copy(selectedKeys = emptyList()) }
+        }
+    }
+
+    private fun addLocalPlayer() {
+        val name = _state.value.newPlayerName.trim()
         if (name.isBlank()) return
+        _state.update { it.copy(newPlayerName = "") }
         viewModelScope.launch {
-            playerRepository.upsertPlayer(PlayerEntity(name = name.trim()))
+            playerRepository.upsertPlayer(PlayerEntity(name = name))
         }
     }
 
-    fun deletePlayer(player: PlayerEntity) {
+    private fun deleteLocalPlayer(player: SelectablePlayer.Local) {
         viewModelScope.launch {
-            playerRepository.deletePlayer(player.id)
-            _selectedPlayers.remove(player)
+            playerRepository.deletePlayer(player.entity.id)
+            _state.update { it.copy(selectedKeys = it.selectedKeys - player.key) }
         }
     }
 
-    fun toggleSelection(player: Any) {
-        if (_selectedPlayers.contains(player)) {
-            _selectedPlayers.remove(player)
-        } else {
-            _selectedPlayers.add(player)
-        }
-    }
-    
-    fun clearSelection() {
-        _selectedPlayers.clear()
-    }
-
-    /** Selected players in selection order; platform users keep their id for leaderboard uploads. */
-    fun getSelectedGamePlayers(): List<GamePlayer> {
-        return _selectedPlayers.mapNotNull { player ->
-            when (player) {
-                is PlayerEntity -> GamePlayer(name = player.name)
-                is User -> GamePlayer(name = player.name, userId = player.id)
-                else -> null
+    private fun toggleSelection(player: SelectablePlayer) {
+        _state.update { current ->
+            val keys = if (player.key in current.selectedKeys) {
+                current.selectedKeys - player.key
+            } else {
+                current.selectedKeys + player.key
             }
+            current.copy(selectedKeys = keys)
         }
     }
 }

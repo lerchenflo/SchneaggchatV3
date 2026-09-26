@@ -1,8 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter
 
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartCounterSnapshotData
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartPlayerSnapshotData
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartThrow
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartTurn
 
-const val DART_COUNTER_SNAPSHOT_VERSION = 1
+// 2: the turn counters were dropped, they are derived from the stored darts
+const val DART_COUNTER_SNAPSHOT_VERSION = 2
 
 @Serializable
 data class DartPlayerSnapshot(
@@ -43,21 +48,70 @@ data class DartCounterSnapshot(
     val turnHistory: List<DartTurnSnapshot>,
     val currentTurnDarts: List<DartThrowSnapshot>,
     val allThrows: List<DartThrowSnapshot>,
-    val currentThrow: Int,
-    val throwCount: Int,
-    val totalThrowsCount: Int,
 )
 
-fun DartCounterViewModel.DartThrow.toSnapshot() = DartThrowSnapshot(
+private fun DartThrow.toSnapshot() = DartThrowSnapshot(
     score = score,
     isDouble = isDouble,
     isTriple = isTriple,
     actualScore = actualScore,
 )
 
-fun DartThrowSnapshot.toDartThrow() = DartCounterViewModel.DartThrow(
+private fun DartThrowSnapshot.toDartThrow() = DartThrow(
     score = score,
     isDouble = isDouble,
     isTriple = isTriple,
     actualScore = actualScore,
+)
+
+fun DartCounterSnapshotData.toSnapshot() = DartCounterSnapshot(
+    doubleOut = doubleOut,
+    countdown = countdown,
+    players = players.map {
+        DartPlayerSnapshot(
+            name = it.name,
+            score = it.score,
+            totalDartsThrown = it.totalDartsThrown,
+            isFinished = it.isFinished,
+            userId = it.userId,
+        )
+    },
+    currentPlayerIndex = currentPlayerIndex,
+    turnStartScore = turnStartScore,
+    turnHistory = turnHistory.map { turn ->
+        DartTurnSnapshot(
+            playerIndex = turn.playerIndex,
+            playerName = turn.playerName,
+            scoreAtStart = turn.scoreAtStart,
+            dartsThrown = turn.dartsThrown.map { it.toSnapshot() },
+        )
+    },
+    currentTurnDarts = currentTurnDarts.map { it.toSnapshot() },
+    allThrows = allThrows.map { it.toSnapshot() },
+)
+
+fun DartCounterSnapshot.toSnapshotData() = DartCounterSnapshotData(
+    doubleOut = doubleOut,
+    countdown = countdown,
+    players = players.map {
+        DartPlayerSnapshotData(
+            name = it.name,
+            score = it.score,
+            totalDartsThrown = it.totalDartsThrown,
+            isFinished = it.isFinished,
+            userId = it.userId,
+        )
+    },
+    currentPlayerIndex = currentPlayerIndex,
+    turnStartScore = turnStartScore,
+    turnHistory = turnHistory.map { turn ->
+        DartTurn(
+            playerIndex = turn.playerIndex,
+            playerName = turn.playerName,
+            scoreAtStart = turn.scoreAtStart,
+            dartsThrown = turn.dartsThrown.map { it.toDartThrow() },
+        )
+    },
+    currentTurnDarts = currentTurnDarts.map { it.toDartThrow() },
+    allThrows = allThrows.map { it.toDartThrow() },
 )
