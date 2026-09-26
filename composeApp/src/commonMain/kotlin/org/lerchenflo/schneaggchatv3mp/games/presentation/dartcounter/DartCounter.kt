@@ -402,7 +402,7 @@ private fun DartBoard(
                         height = cellHeight,
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError,
-                        enabled = state.canUndo,
+                        enabled = state.undoEnabled,
                         onClick = { onAction(DartCounterAction.OnUndoThrow) }
                     )
                 }

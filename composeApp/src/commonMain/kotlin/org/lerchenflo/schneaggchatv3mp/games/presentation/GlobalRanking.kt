@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,6 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.global_ranking_boards
+import schneaggchatv3mp.composeapp.generated.resources.highscores_retry
 import schneaggchatv3mp.composeapp.generated.resources.global_ranking_empty
 import schneaggchatv3mp.composeapp.generated.resources.global_ranking_error
 import schneaggchatv3mp.composeapp.generated.resources.global_ranking_explanation
@@ -67,8 +69,10 @@ fun GlobalRankingDialog(
     val repository = koinInject<GameHighscoreRepository>()
     var selectedPeriod by remember { mutableStateOf(LeaderboardPeriod.YEARLY) }
     var state by remember { mutableStateOf(GlobalRankingUiState(isLoading = true)) }
+    // Bumped by the retry button so the same period is fetched again
+    var reloadCount by remember { mutableStateOf(0) }
 
-    LaunchedEffect(selectedPeriod) {
+    LaunchedEffect(selectedPeriod, reloadCount) {
         state = GlobalRankingUiState(isLoading = true)
         state = when (val result = repository.getGlobalRanking(selectedPeriod)) {
             is NetworkResult.Success -> GlobalRankingUiState(entries = result.data)
@@ -78,6 +82,7 @@ fun GlobalRankingDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.global_ranking_title)) },
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(Res.string.close))
@@ -85,6 +90,13 @@ fun GlobalRankingDialog(
         },
         text = {
             Column {
+                Text(
+                    text = stringResource(Res.string.global_ranking_explanation),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
                 PeriodSelector(
                     selected = selectedPeriod,
                     onSelect = { selectedPeriod = it },
@@ -94,6 +106,7 @@ fun GlobalRankingDialog(
 
                 GlobalRanking(
                     state = state,
+                    onRetry = { reloadCount++ },
                     modifier = Modifier.heightIn(max = 400.dp)
                 )
             }
@@ -107,23 +120,12 @@ fun GlobalRankingDialog(
 @Composable
 fun GlobalRanking(
     state: GlobalRankingUiState,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val ownUserId = SessionCache.requireLoggedIn()?.userId
 
     Column(modifier = modifier) {
-        Text(
-            text = stringResource(Res.string.global_ranking_title),
-            style = MaterialTheme.typography.titleMedium,
-        )
-
-        Text(
-            text = stringResource(Res.string.global_ranking_explanation),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
-        )
-
         when {
             state.isLoading -> {
                 Box(
@@ -134,11 +136,17 @@ fun GlobalRanking(
                 }
             }
             state.hasError -> {
-                Text(
-                    text = stringResource(Res.string.global_ranking_error),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = stringResource(Res.string.global_ranking_error),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    // Without this the only way to retry is closing and reopening the dialog
+                    TextButton(onClick = onRetry) {
+                        Text(stringResource(Res.string.highscores_retry))
+                    }
+                }
             }
             state.entries.isEmpty() -> {
                 Text(

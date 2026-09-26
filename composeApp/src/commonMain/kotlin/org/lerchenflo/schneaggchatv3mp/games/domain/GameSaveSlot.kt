@@ -8,12 +8,3 @@ interface GameSaveSlot {
     /** Daily games only restore saves taken on the same day. */
     val daily: Boolean
 }
-
-/** Games without a server leaderboard that still keep their run when the app is left. */
-enum class LocalGameSaveSlot(override val saveKey: String) : GameSaveSlot {
-    YATZI("yatzi"),
-    DART_COUNTER("dart_counter"),
-    UNDERCOVER("undercover");
-
-    override val daily: Boolean get() = false
-}

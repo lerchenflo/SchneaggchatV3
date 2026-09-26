@@ -182,11 +182,13 @@ class TetrisViewModel(
 
     private fun persist() = saveSession.persist(currentDifficulty, snapshotOrNull())
 
-    /** Null when there is no run worth keeping (not started, already over, or score is 0). */
+    /** Null when there is no run worth keeping: not started, already over, or an untouched board. */
     private fun snapshotOrNull(): TetrisSnapshot? {
         val current = _state.value
         if (!current.isPlaying || current.isGameOver) return null
-        if (current.score == 0) return null
+        // Not "score == 0": the score only moves on a line clear, so minutes of stacking can
+        // legitimately sit at zero and used to be thrown away on every background
+        if (current.score == 0 && current.board.all { row -> row.all { it == null } }) return null
         return TetrisSnapshot(
             board = current.board.map { row -> row.map { it?.toArgb() } },
             currentPiece = current.currentPiece?.toSnapshot(),

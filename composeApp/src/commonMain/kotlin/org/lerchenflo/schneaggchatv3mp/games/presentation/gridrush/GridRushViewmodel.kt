@@ -102,9 +102,12 @@ class GridRushViewmodel(
 
     /** Ends the current run without submitting a score and returns to the start screen. */
     private fun stopGame() {
+        val wasGameOver = _state.value.isGameOver
         timerJob?.cancel()
         runStartTime = 0L
-        saveSession.clear()
+        // A finished run is today's result and is kept on purpose (see snapshotOrNull); clearing it
+        // here handed out a second scoring attempt on the same daily board
+        if (!wasGameOver) saveSession.clear()
         _state.value = baseState(GameDifficultySelection.selected)
     }
 

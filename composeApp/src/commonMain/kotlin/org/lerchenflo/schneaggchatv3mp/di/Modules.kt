@@ -50,6 +50,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerViewModel
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCalculatorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
@@ -303,6 +304,7 @@ val sharedmodule = module{
     viewModelOf(::MorseViewModel)
     viewModelOf(::CoinFlipViewModel)
     viewModelOf(::FingerPickerViewModel)
+    viewModelOf(::FuelCalculatorViewModel)
     viewModelOf(::Game2048ViewModel)
 
     viewModelOf(::SchneaggaHusViewmodel)

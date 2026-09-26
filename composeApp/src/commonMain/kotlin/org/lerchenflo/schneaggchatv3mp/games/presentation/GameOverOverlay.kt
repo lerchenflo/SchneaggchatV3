@@ -49,7 +49,10 @@ fun GameOverOverlay(
     modifier: Modifier = Modifier,
 ) {
     var showHighscores by remember { mutableStateOf(false) }
-    val selectedDifficulty = GameDifficultySelection.selected
+    // The run that just ended was played on whatever was selected when this overlay appeared.
+    // The chips below already pick the difficulty of the NEXT round, so the highscores button
+    // has to keep this one - otherwise it opens a board the finished score never reached.
+    val playedDifficulty = remember { GameDifficultySelection.selected }
 
     Box(
         modifier = modifier
@@ -90,7 +93,7 @@ fun GameOverOverlay(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 DifficultySelector(
-                    selected = selectedDifficulty,
+                    selected = GameDifficultySelection.selected,
                     onSelect = { GameDifficultySelection.selected = it },
                 )
 
@@ -127,7 +130,7 @@ fun GameOverOverlay(
     if (showHighscores) {
         HighscoresDialog(
             game = game,
-            initialDifficulty = selectedDifficulty,
+            initialDifficulty = playedDifficulty,
             onDismiss = { showHighscores = false }
         )
     }

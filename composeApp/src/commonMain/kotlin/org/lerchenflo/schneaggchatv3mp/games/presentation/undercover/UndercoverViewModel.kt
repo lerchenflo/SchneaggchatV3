@@ -16,7 +16,6 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
-import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadController
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
@@ -58,7 +57,7 @@ class UndercoverViewModel(
     private var wordPairs: List<UndercoverWordPair> = emptyList()
 
     private val saveSession = GameSaveSession(
-        game = LocalGameSaveSlot.UNDERCOVER,
+        game = GameId.UNDERCOVER,
         serializer = UndercoverSnapshot.serializer(),
         schemaVersion = UNDERCOVER_SNAPSHOT_VERSION,
         repository = gameSaveRepository,
@@ -75,6 +74,7 @@ class UndercoverViewModel(
             onAppBackgrounded = {
                 // Whoever picks the phone up next must not see a word that was left open
                 closeSniff()
+                hideRevealedWord()
                 persist()
             }
         )
@@ -460,6 +460,24 @@ class UndercoverViewModel(
             )
         }
         scheduleAutoHideIfEnabled()
+    }
+
+    /**
+     * Puts an open reveal back behind the pass-the-phone screen, the same way a restored save does.
+     * Deliberately does not advance: the player whose turn it is may not have read their word yet.
+     * Cancelling the auto-hide matters too - its delay keeps running while backgrounded and would
+     * otherwise skip that player entirely.
+     */
+    private fun hideRevealedWord() {
+        if (_state.value.phase != UndercoverPhase.REVEAL) return
+        cancelAutoHide()
+        _state.update {
+            it.copy(
+                phase = UndercoverPhase.PASS_PHONE,
+                revealWord = null,
+                revealMrWhiteTip = null,
+            )
+        }
     }
 
     private fun closeSniff() {

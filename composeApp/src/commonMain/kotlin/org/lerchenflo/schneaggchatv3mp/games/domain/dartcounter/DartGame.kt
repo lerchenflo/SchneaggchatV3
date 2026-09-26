@@ -72,7 +72,7 @@ class DartGame(
     private val turnHistory: MutableList<DartTurn> = mutableListOf()
     private var currentTurnDarts: MutableList<DartThrow> = mutableListOf()
 
-    /** Only darts that actually counted; a bust is not part of the history (see [undoLastThrow]). */
+    /** Every dart that was thrown, in order and including busts, so [undoLastThrow] can replay it. */
     private val allThrows: MutableList<DartThrow> = mutableListOf()
 
     // ─── Read-only projections ────────────────────────────────────────────────
@@ -112,19 +112,23 @@ class DartGame(
         val player = playerList[currentPlayerIndex]
         if (player.isFinished) return
 
+        val dart = DartThrow(
+            score = segment.base,
+            isDouble = segment.isDouble,
+            isTriple = segment.isTriple,
+            actualScore = segment.points,
+        )
+        // Recorded before it is scored: a bust is still a dart that was thrown, and leaving it out
+        // of the history would make an undo replay a different leg (see rebuildFromHistory)
+        allThrows.add(dart)
         player.totalDartsThrown++
 
         if (applyScore(segment)) {
-            currentTurnDarts.add(
-                DartThrow(
-                    score = segment.base,
-                    isDouble = segment.isDouble,
-                    isTriple = segment.isTriple,
-                    actualScore = segment.points,
-                ).also { allThrows.add(it) }
-            )
+            currentTurnDarts.add(dart)
 
-            if (currentTurnDarts.size >= 3 && !gameOver) {
+            // A checkout ends the turn as surely as a third dart does: without this the leg stays
+            // on a player who can no longer throw, and throwDart rejects every further dart
+            if ((currentTurnDarts.size >= 3 || player.isFinished) && !gameOver) {
                 completeTurn()
                 nextPlayer()
             }
@@ -137,8 +141,9 @@ class DartGame(
     }
 
     /**
-     * Takes back the last counted dart by replaying the remaining history from the start, because
-     * a turn's result cannot be reversed field by field.
+     * Takes back the last dart by replaying the remaining history from the start, because a turn's
+     * result cannot be reversed field by field. The replay is exact: [allThrows] holds every dart
+     * that was thrown, busts included, and the engine re-derives each bust from the same state.
      */
     fun undoLastThrow(): Boolean {
         if (allThrows.isEmpty()) return false
@@ -263,6 +268,12 @@ class DartGame(
         allThrows.clear()
         allThrows.addAll(snapshot.allThrows)
         updateGameOver()
+        // Saves written before a checkout handed over can sit on a player who already finished,
+        // which used to freeze the leg for good. Hand over on restore rather than discard the save.
+        if (!gameOver && playerList[currentPlayerIndex].isFinished) {
+            completeTurn()
+            nextPlayer()
+        }
     }
 }
 

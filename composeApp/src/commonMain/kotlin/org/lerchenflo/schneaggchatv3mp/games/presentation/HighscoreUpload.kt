@@ -29,6 +29,7 @@ import schneaggchatv3mp.composeapp.generated.resources.highscore_upload_decline
 import schneaggchatv3mp.composeapp.generated.resources.highscore_upload_done
 import schneaggchatv3mp.composeapp.generated.resources.highscore_upload_failed
 import schneaggchatv3mp.composeapp.generated.resources.highscore_upload_message
+import schneaggchatv3mp.composeapp.generated.resources.highscore_upload_no_accounts
 import schneaggchatv3mp.composeapp.generated.resources.highscore_upload_retry
 import schneaggchatv3mp.composeapp.generated.resources.highscore_upload_skipped_players
 import schneaggchatv3mp.composeapp.generated.resources.highscore_upload_title
@@ -125,14 +126,23 @@ fun HighscoreUploadDialog(
     )
 }
 
-/** Short confirmation on the end screen once the results were uploaded. */
+/**
+ * The end screen's last word on the leaderboard: either the results went up, or nobody in the
+ * game had an account to put them on.
+ */
 @Composable
 fun HighscoreUploadDoneText(state: HighscoreUploadState, modifier: Modifier = Modifier) {
-    if (state.status != HighscoreUploadStatus.UPLOADED) return
+    val uploaded = state.status == HighscoreUploadStatus.UPLOADED
+    val text = when (state.status) {
+        HighscoreUploadStatus.UPLOADED -> Res.string.highscore_upload_done
+        HighscoreUploadStatus.NO_ACCOUNTS -> Res.string.highscore_upload_no_accounts
+        else -> return
+    }
     Text(
-        text = stringResource(Res.string.highscore_upload_done),
+        text = stringResource(text),
         style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.primary,
+        color = if (uploaded) MaterialTheme.colorScheme.primary
+        else MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier
     )
 }

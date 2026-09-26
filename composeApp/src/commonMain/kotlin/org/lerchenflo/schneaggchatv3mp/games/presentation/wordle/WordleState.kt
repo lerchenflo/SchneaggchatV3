@@ -9,6 +9,9 @@ sealed interface WordleAction {
     data class SelectLanguage(val language: WordleLanguage) : WordleAction
     data object RetryLoad : WordleAction
     /** Screen is leaving (back, rotation, tab switch): keep the progress for the next visit. */
+    /** The screen became visible; the clock only runs while someone is looking at it. */
+    data object EnterGame : WordleAction
+
     data object LeaveGame : WordleAction
     /** Throw the current word away and start a fresh random one. */
     data object NewWord : WordleAction

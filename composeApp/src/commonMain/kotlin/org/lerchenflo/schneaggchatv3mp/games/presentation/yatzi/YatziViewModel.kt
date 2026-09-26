@@ -13,7 +13,6 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
-import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadController
 import kotlin.random.Random
@@ -25,7 +24,7 @@ class YatziViewModel(
     private val _state = MutableStateFlow(YatziState())
 
     private val saveSession = GameSaveSession(
-        game = LocalGameSaveSlot.YATZI,
+        game = GameId.YATZI,
         serializer = YatziSnapshot.serializer(),
         schemaVersion = YATZI_SNAPSHOT_VERSION,
         repository = gameSaveRepository,

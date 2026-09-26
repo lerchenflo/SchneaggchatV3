@@ -13,25 +13,35 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
+import org.lerchenflo.schneaggchatv3mp.games.domain.BoardAxis
+import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardSpec
+import org.lerchenflo.schneaggchatv3mp.games.domain.ScoreKind
 import org.lerchenflo.schneaggchatv3mp.games.domain.defaultLeaderboardPeriod
-import org.lerchenflo.schneaggchatv3mp.games.domain.leaderboardDifficulties
+import org.lerchenflo.schneaggchatv3mp.games.domain.leaderboard
+import org.lerchenflo.schneaggchatv3mp.games.domain.leaderboardPeriods
 
 data class HighscoresState(
     val game: GameId? = null,
-    /** The boards this game actually has, one per difficulty. */
-    val boards: List<GameDifficulty> = emptyList(),
+    /** How this game's boards and scores are to be read; see LeaderboardSpec. */
+    val spec: LeaderboardSpec = LeaderboardSpec(ScoreKind.POINTS, BoardAxis.DIFFICULTY, GameDifficulty.entries),
+    /** Time windows worth offering for this game. */
+    val periods: List<LeaderboardPeriod> = LeaderboardPeriod.entries,
     val selectedDifficulty: GameDifficulty = GameDifficulty.MEDIUM,
     val selectedPeriod: LeaderboardPeriod = LeaderboardPeriod.YEARLY,
     val entries: List<HighscoreEntry> = emptyList(),
     val isLoading: Boolean = false,
     val hasError: Boolean = false,
-)
+) {
+    val boards: List<GameDifficulty> get() = spec.boards
+}
 
 sealed interface HighscoresAction {
     /** Opens the leaderboard of one game; [initialDifficulty] is only a starting point. */
     data class OnOpen(val game: GameId, val initialDifficulty: GameDifficulty) : HighscoresAction
     data class OnSelectDifficulty(val difficulty: GameDifficulty) : HighscoresAction
     data class OnSelectPeriod(val period: LeaderboardPeriod) : HighscoresAction
+    /** Reloads the current board after a failed request. */
+    data object OnRetry : HighscoresAction
 }
 
 /** Loads the server leaderboard of a single game for the highscores dialog. */
@@ -57,18 +67,23 @@ class HighscoresViewModel(
                 _state.update { it.copy(selectedPeriod = action.period) }
                 load()
             }
+            HighscoresAction.OnRetry -> load()
         }
     }
 
     private fun open(game: GameId, initialDifficulty: GameDifficulty) {
-        val boards = game.leaderboardDifficulties
+        val spec = game.leaderboard
+        val periods = game.leaderboardPeriods
         _state.update {
             it.copy(
                 game = game,
-                boards = boards,
-                selectedDifficulty = initialDifficulty.takeIf { difficulty -> difficulty in boards }
-                    ?: boards.first(),
-                selectedPeriod = game.defaultLeaderboardPeriod,
+                spec = spec,
+                periods = periods,
+                // The caller's difficulty is app-wide and may not exist as a board for this game
+                selectedDifficulty = initialDifficulty.takeIf { difficulty -> difficulty in spec.boards }
+                    ?: spec.boards.first(),
+                selectedPeriod = game.defaultLeaderboardPeriod.takeIf { period -> period in periods }
+                    ?: periods.first(),
                 entries = emptyList(),
                 hasError = false,
             )

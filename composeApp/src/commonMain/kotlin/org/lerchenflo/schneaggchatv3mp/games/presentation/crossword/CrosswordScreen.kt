@@ -98,6 +98,7 @@ fun CrosswordScreenRoot(
 
     // Leaving the screen persists the progress so it can be picked up again later
     DisposableEffect(Unit) {
+        viewmodel.onAction(CrosswordAction.EnterGame)
         onDispose { viewmodel.onAction(CrosswordAction.LeaveGame) }
     }
 

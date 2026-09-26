@@ -44,10 +44,16 @@ class CrosswordViewmodel(
 
     private var timerJob: Job? = null
 
+    /**
+     * Whether the game screen is on top. Only the screen knows - the app-wide resume event would
+     * otherwise restart the clock for a game nobody can see.
+     */
+    private var screenVisible = false
+
     init {
         saveSession.start(onRestore = ::restore, onAppBackgrounded = ::onAppBackgrounded)
         viewModelScope.launch {
-            AppLifecycleManager.appResumedEvent.collect { resumeTimerIfNeeded() }
+            AppLifecycleManager.appResumedEvent.collect { if (screenVisible) resumeTimerIfNeeded() }
         }
     }
 
@@ -56,7 +62,15 @@ class CrosswordViewmodel(
             is CrosswordAction.SelectLanguage -> loadPuzzle(action.language)
             CrosswordAction.RetryLoad -> _state.value.language?.let { loadPuzzle(it) }
             CrosswordAction.NewPuzzle -> _state.value.language?.let { loadPuzzle(it) }
-            CrosswordAction.LeaveGame -> persist()
+            CrosswordAction.EnterGame -> {
+                screenVisible = true
+                resumeTimerIfNeeded()
+            }
+            // Leaving has to stop the clock: the elapsed time is this board's leaderboard tiebreaker
+            CrosswordAction.LeaveGame -> {
+                screenVisible = false
+                onAppBackgrounded()
+            }
             CrosswordAction.RestartGame -> restartGame()
             is CrosswordAction.CellTapped -> onCellTapped(action.index)
             is CrosswordAction.KeyPressed -> onKeyPressed(action.letter)
