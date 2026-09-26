@@ -10,8 +10,9 @@ sealed interface CrosswordAction {
     data object RetryLoad : CrosswordAction
     /** Screen is leaving (back, rotation, tab switch): keep the progress for the next visit. */
     data object LeaveGame : CrosswordAction
-    /** The screen noticed a possible day change (midnight passed or app resumed). */
-    data object CheckDayChanged : CrosswordAction
+    /** Throw the current grid away and load a fresh random one. */
+    data object NewPuzzle : CrosswordAction
+    /** Clear the entered letters and the clock, keeping the same grid. */
     data object RestartGame : CrosswordAction
     data class CellTapped(val index: Int) : CrosswordAction
     data class KeyPressed(val letter: Char) : CrosswordAction

@@ -225,16 +225,9 @@ fun SchneaggmapScreen(
             }
     }
 
-    //Compass + attribution now render from inside MaplibreMap's own overlay scope (the new
-    //library API reads the map state implicitly instead of taking cameraState/styleState params),
-    //so this whole bottom chrome column is passed down separately instead of being
-    //drawn as a sibling on top of it. Positioning (BottomCenter of the full map area) is unchanged.
+
     val bottomMapChrome: @Composable MapOverlayScope.() -> Unit = {
-        //Captured once so the MapOverlayScope extensions below (ExpandingAttributionButton,
-        //DisappearingCompassButton) can be called with an explicit receiver from inside the nested
-        //Row/Box further down - Compose's DSL scope markers block resolving them implicitly once a
-        //RowScope/BoxScope becomes the nearer receiver.
-        val overlayScope = this
+
         if (!state.pickLocationMode) {
             //Bottom column
             Column(
@@ -303,7 +296,7 @@ fun SchneaggmapScreen(
                         modifier = Modifier.align(Alignment.CenterStart)
                     ) {
                         // Legally required OSM/OpenFreeMap copyright notice.
-                        overlayScope.ExpandingAttributionButton(
+                        ExpandingAttributionButton(
                             contentAlignment = Alignment.BottomStart,
                             //The library starts this expanded (shows the full popup) rather than
                             //just the collapsed icon - collapse it right away so it only opens
@@ -324,7 +317,7 @@ fun SchneaggmapScreen(
                     }
 
                     //compass
-                    overlayScope.DisappearingCompassButton(
+                    DisappearingCompassButton(
                         size = 32.dp
                     )
 
@@ -380,15 +373,6 @@ fun SchneaggmapScreen(
         MaplibreMap(
             modifier = Modifier.fillMaxSize(),
             state = mapState,
-            //The root Scaffold (App.kt) already insets its content for the system bars/IME and
-            //pads this screen accordingly - without this override, the overlay defaults to
-            //safe-drawing insets of its own on top of that, doubling the gap under the bottom
-            //chrome (FABs, snail-trail toggle, etc.).
-            contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            //The bottom chrome (FABs, friend preview, scale bar, attribution, compass, snail-trail
-            //toggle) is composed here since it needs this MapOverlayScope receiver to draw the
-            //compass and attribution buttons. The map's sources/layers are declared on `mapState`
-            //itself (see its `content` above), not here.
             overlay = bottomMapChrome,
             interactions = MapInteractions {
                 callbacks {
@@ -546,7 +530,6 @@ fun SchneaggmapScreen(
         )
 
         if (!state.pickLocationMode) {
-            //Popup cards from the bottom
             state.selectedEntry?.let { entry ->
                 MapEntryInfoCard(
                     entry = entry,
@@ -560,11 +543,11 @@ fun SchneaggmapScreen(
                     },
                     onDelete = {
                         onAction(SchneaggmapAction.OnEntryPopupDelete(it))
-                    },
-                    modifier = Modifier.align(Alignment.BottomCenter)
+                    }
                 )
             }
 
+            //Popup card from the bottom
             state.selectedUser?.let { user ->
                 val isOwnUser = user.id == SessionCache.requireLoggedIn()?.userId
                 val batteryService = koinInject<BatteryService>()

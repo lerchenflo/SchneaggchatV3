@@ -114,6 +114,12 @@
     <string name="markdownInfo">This will add Markdown formatting to messages, but slow down Message loading in chat.</string>
     <string name="highlight_todays_message_timestamp">Highlight today's timestamp</string>
     <string name="highlight_todays_message_timestamp_info">Highlight the timestamp of messages received today in green in the chat selector.</string>
+    <string name="quick_reactions">Quick reactions</string>
+    <string name="quick_reactions_info">Emojis offered when you long press a message. Drag to reorder.</string>
+    <string name="quick_reactions_empty">No quick reactions - you can still add a custom one on any message.</string>
+    <string name="quick_reactions_reorder">Reorder quick reaction</string>
+    <string name="add_quick_reaction">Add quick reaction</string>
+    <string name="restore_defaults">Restore defaults</string>
     <string name="something_wrong_message">Something went wrong with this message</string>
     <string name="message_too_long">Message is too long!</string>
     <string name="log_out_successfully">Successfully logged out</string>
@@ -842,17 +848,34 @@
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Crossword</string>
-    <string name="games_crossword_instructions">Solve the daily crossword! Tap a cell to select it, tap again to switch between across and down, then type with the keyboard below. The English puzzle comes from the public NYT archive, the German one is generated fresh every day. Everyone gets the same puzzle on the same day.</string>
+    <string name="games_crossword_instructions">Solve as many crosswords as you like! Tap a cell to select it, tap again to switch between across and down, then type with the keyboard below. The English puzzles are drawn at random from the public NYT archive, the German ones are generated fresh every time. The bigger the grid you solve and the faster you are, the better your place on the leaderboard.</string>
     <string name="games_crossword_language_question">Choose your puzzle language</string>
     <string name="games_crossword_language_english">English (NYT archive)</string>
     <string name="games_crossword_language_german">German</string>
-    <string name="games_crossword_load_failed">The daily puzzle could not be loaded. Check your internet connection and try again.</string>
+    <string name="games_crossword_load_failed">The puzzle could not be loaded. Check your internet connection and try again.</string>
     <string name="games_crossword_retry">Retry</string>
     <string name="games_crossword_check">Check answers</string>
     <string name="games_crossword_restart">Restart</string>
     <string name="games_crossword_solved">Solved in %1$s!</string>
     <string name="games_crossword_previous_clue">Previous clue</string>
     <string name="games_crossword_next_clue">Next clue</string>
+    <string name="games_crossword_new_puzzle">New puzzle</string>
+
+    <!-- Games: Wordle -->
+    <string name="games_wordle_title">Wordle</string>
+    <string name="games_wordle_instructions">Guess the five-letter word in six tries, as often as you like! As soon as a row is full it is checked automatically: green means the letter is in the right spot, orange means it is in the word but somewhere else, and grey means it is not in the word at all.\n\nThe English words are real New York Times solutions drawn at random, the German ones come from our own list. The fewer letters you need and the faster you are, the better your place on the leaderboard.</string>
+    <string name="games_wordle_language_question">Choose your word language</string>
+    <string name="games_wordle_language_english">English (NYT Wordle)</string>
+    <string name="games_wordle_language_german">German</string>
+    <string name="games_wordle_load_failed">The word could not be loaded. Check your internet connection and try again.</string>
+    <string name="games_wordle_retry">Retry</string>
+    <string name="games_wordle_guess_counter">Tries %1$d / %2$d</string>
+    <string name="games_wordle_new_word">New word</string>
+    <string name="games_wordle_too_short">Not enough letters</string>
+    <string name="games_wordle_unknown_word">%1$s is not in the word list</string>
+    <string name="games_wordle_delete">Delete letter</string>
+    <string name="games_wordle_solved">Solved in %1$d of %2$d tries · %3$s</string>
+    <string name="games_wordle_failed">Out of tries! The word was %1$s</string>
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Daily challenge (%1$s)</string>
@@ -1114,10 +1137,11 @@
 
     <!-- Location Groups -->
     <string name="location_group_driving">Driving</string>
-    <string name="location_group_nature_activities">Nature &amp; Activities</string>
+    <string name="location_group_nature_activities">Nature &amp; Sights</string>
     <string name="location_group_sport">Sport</string>
-    <string name="location_group_social_entertainment">Social &amp; Entertainment</string>
+    <string name="location_group_social_entertainment">Going Out</string>
     <string name="location_group_food">Food</string>
+    <string name="location_group_useful">Useful</string>
 
     <!-- Location Types -->
     <string name="location_type_user">Friends</string>
@@ -1136,6 +1160,8 @@
     <string name="location_type_outdoor_fitness">Outdoor Fitness</string>
     <string name="location_type_table_tennis">Table Tennis</string>
     <string name="location_type_tennis">Tennis</string>
+    <string name="location_type_horse_riding">Horse Riding</string>
+    <string name="location_type_bike_service_station">Bike Service Station</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
     <string name="location_type_wifi">WiFi</string>
@@ -1146,6 +1172,7 @@
     <string name="location_type_food_ice">Ice Cream</string>
     <string name="location_type_food_asian">Asian Food</string>
     <string name="location_type_food_greek">Greek Food</string>
+    <string name="location_type_food_austrian">Austrian Food</string>
     <string name="location_type_food_cafe_bakery">Cafe / Bakery</string>
     <string name="location_type_food_other">Other Food</string>
 
@@ -1165,32 +1192,45 @@
     <!-- Wheelie Spot -->
     <string name="location_wheeliespot_only_on_weekends">Only on Weekends</string>
     <string name="location_legal">Legal</string>
-    <string name="location_offroad_motocross">Motocross</string>
-    <string name="location_offroad_enduro">Enduro</string>
     <string name="location_bicycle_difficulty">Difficulty (1-10)</string>
     <string name="location_bicycle_underground_type">Underground Type</string>
+    <string name="location_bicycle_underground_type_asphalt">Asphalt</string>
+    <string name="location_bicycle_underground_type_gravel">Gravel</string>
+    <string name="location_bicycle_underground_type_dirt">Dirt</string>
+    <string name="location_bicycle_underground_type_trail">Trail</string>
+    <string name="location_bicycle_underground_type_other">Other</string>
+    <string name="location_camping_kind">Type</string>
+    <string name="location_swimming_setting">Indoor / outdoor</string>
+    <string name="location_climbingspot_setting">Indoor / outdoor</string>
+    <string name="location_volleyball_setting">Indoor / outdoor</string>
+    <string name="location_offroad_discipline">Discipline</string>
+    <string name="location_option_venue_setting_indoor">Indoor</string>
+    <string name="location_option_venue_setting_outdoor">Outdoor</string>
+    <string name="location_option_venue_setting_both">Indoor &amp; outdoor</string>
+    <string name="location_option_offroad_discipline_motocross">Motocross</string>
+    <string name="location_option_offroad_discipline_enduro">Enduro</string>
+    <string name="location_option_offroad_discipline_both">Motocross &amp; Enduro</string>
+    <string name="location_option_camping_kind_official_site">Official campsite</string>
+    <string name="location_option_camping_kind_wild_camping">Wild camping</string>
+    <string name="location_option_camping_kind_tolerated">Tolerated</string>
     <string name="location_lie_down_friendly">Good for Lying Down</string>
 
     <!-- Camping -->
-    <string name="location_camping_official">Official</string>
     <string name="location_camping_water_distance">Distance to Water (m)</string>
     <string name="location_camping_sitting_possibility">Seating Available</string>
     <string name="location_camping_grill_possibility">Grilling Allowed</string>
 
     <!-- Swimming -->
-    <string name="location_swimming_indoor">Indoor</string>
     <string name="location_swimming_jump_spot">Jump Spot</string>
     <string name="location_swimming_price">Price</string>
 
     <!-- Climbingspot -->
     <string name="location_climbingspot_via_ferrata">Via Ferrata</string>
-    <string name="location_climbingspot_outdoor">Outdoor</string>
     <string name="location_climbingspot_price">Price</string>
 
     <!-- Volleyball -->
     <string name="location_volleyball_good_net">Good Net</string>
     <string name="location_volleyball_good_field">Good Field</string>
-    <string name="location_volleyball_outdoor">Outdoor</string>
 
     <!-- Outdoor Fitness -->
     <string name="location_outdoor_fitness_shadow">Shadow</string>
@@ -1200,6 +1240,12 @@
 
     <!-- Tennis -->
     <string name="location_tennis_paddle">Paddle</string>
+
+    <!-- Horse Riding -->
+    <string name="location_horse_riding_next_tournament">Next Tournament</string>
+
+    <!-- Bike Service Station -->
+    <string name="location_bike_service_station_mostly_working">Mostly Working</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Entry Fee</string>
@@ -1452,4 +1498,13 @@
     <string name="event_participation_count">%1$s (%2$d)</string>
     <string name="event_participation_at">%1$s, %2$s</string>
     <string name="event_participation_failed">Could not save your answer</string>
+
+    <!-- Shared content (images and links of a chat) -->
+    <string name="shared_content_title">Shared content</string>
+    <string name="shared_images">Images</string>
+    <string name="shared_links">Links</string>
+    <string name="no_shared_images">No images shared in this chat yet</string>
+    <string name="no_shared_links">No links shared in this chat yet</string>
+    <string name="go_to_message">Go to message</string>
+    <string name="copy_link">Copy link</string>
 </resources>

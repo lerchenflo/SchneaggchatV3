@@ -146,10 +146,10 @@ fun EventsScreen(
                                     items = group.events,
                                     key = { "event_${group.dayId}_${it.id}" }
                                 ) { event ->
-                                    val creatorFriend = state.friendsById[event.creatorId]
+                                    val creatorUser = state.usersById[event.creatorId]
                                     EventItem(
                                         event = event,
-                                        creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
+                                        creatorProfilePictureUrl = creatorUser?.profilePictureUrl,
                                         isOwnEvent = event.creatorId == ownId,
                                         onClick = { onAction(EventsAction.OnEventClick(event.id)) },
                                         ownStatus = ownId?.let { event.statusOf(it) },
@@ -168,7 +168,7 @@ fun EventsScreen(
                         today = today,
                         eventsByDate = state.eventsByDate,
                         birthdaysByMonthDay = state.birthdaysByMonthDay,
-                        friendsById = state.friendsById,
+                        usersById = state.usersById,
                         ownId = ownId,
                         onNavigate = { forward -> onAction(EventsAction.OnCalendarNavigate(forward)) },
                         onJumpToToday = { onAction(EventsAction.OnCalendarJumpToToday) },
@@ -185,7 +185,7 @@ fun EventsScreen(
                         today = today,
                         eventsByDate = state.eventsByDate,
                         birthdaysByMonthDay = state.birthdaysByMonthDay,
-                        friendsById = state.friendsById,
+                        usersById = state.usersById,
                         ownId = ownId,
                         onEventClick = { onAction(EventsAction.OnEventClick(it)) },
                         onBirthdayClick = { onAction(EventsAction.OnBirthdayClick(it)) },
@@ -217,7 +217,7 @@ fun EventsScreen(
                 date = selectedDay,
                 events = state.eventsByDate[selectedDay].orEmpty(),
                 birthdays = birthdaysOn(state.birthdaysByMonthDay, selectedDay),
-                friendsById = state.friendsById,
+                usersById = state.usersById,
                 ownId = ownId,
                 onDismiss = { onAction(EventsAction.OnCalendarDayDetailDismiss) },
                 onEventClick = {
@@ -238,6 +238,7 @@ fun EventsScreen(
                     onSave = { event, typeIcon, createGroup -> onAction(EventsAction.OnSaveEvent(event, typeIcon, createGroup)) },
                     onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
                     friendsById = state.friendsById,
+                    usersById = state.usersById,
                     groups = state.groups,
                     onPickLocation = { onAction(EventsAction.OnPickLocationClick(it)) },
                     onDelete = { deleteGroup, deleteEvent -> onAction(EventsAction.OnDeleteEvent(event = selectedEvent, deleteGroup = deleteGroup, deleteEvent = deleteEvent)) },
@@ -259,7 +260,7 @@ fun EventsScreen(
                     ownStatus = ownId?.let { selectedEvent.statusOf(it) },
                     isJoined = isJoined,
                     isJoining = state.isJoiningEvent,
-                    friendsById = state.friendsById
+                    usersById = state.usersById
                 )
             }
         }

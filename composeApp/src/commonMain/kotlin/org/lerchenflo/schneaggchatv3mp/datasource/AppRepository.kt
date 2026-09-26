@@ -2080,6 +2080,14 @@ class AppRepository(
 
 
     /**
+     * Serialises [messageIdSync]'s paging loop. Two overlapping runs each read `since` from
+     * MAX(version) before the other has written its page, so the slower one can upsert an
+     * already-superseded copy of a message on top of the newer one - which is how a chat marked
+     * read came back unread again. Media downloads stay outside the lock, they only add files.
+     */
+    private val messageSyncLock = Mutex()
+
+    /**
      * Execute a message sync
      *
      * @param fetchMedia whether to immediately download images/audios for newly-synced
@@ -2093,83 +2101,86 @@ class AppRepository(
         val imagesToGet = mutableListOf<String>()
         val audiosToGet = mutableListOf<String>()
 
-        var since = messageRepository.getLastSyncedMessageVersion()
-        var moreMessages = true
+        messageSyncLock.withLock {
 
-        while (moreMessages) {
+            var since = messageRepository.getLastSyncedMessageVersion()
+            var moreMessages = true
 
-            val messageSyncResponse = networkUtils.messageSync(since = since).trackConnectivity()
+            while (moreMessages) {
 
-            when (messageSyncResponse) {
-                is NetworkResult.Error<*> -> {
-                    loggingRepository.logWarning("messageid sync error: ${messageSyncResponse.error}")
-                    break // Stop on error, never advance past a batch we failed to fetch
-                }
+                val messageSyncResponse = networkUtils.messageSync(since = since).trackConnectivity()
 
-                is NetworkResult.Success<MessageSyncResponse> -> {
-                    val updatedMessages = messageSyncResponse.data.updatedMessages
-                    val deletedMessages = messageSyncResponse.data.deletedMessages
-                    moreMessages = messageSyncResponse.data.moreMessages
-
-                    // Deletions can now arrive on any page, not just page 0. Apply them
-                    // before the updates below so a crash mid-batch never leaves MAX(version)
-                    // ahead of what was actually committed.
-                    messageRepository.deleteMessages(deletedMessages)
-
-                    // The whole page goes in as one batch: every separate write would invalidate
-                    // the message table again and re-run the chat selector's query chain.
-                    val sortedUpdates = updatedMessages.sortedBy { it.version }
-                    val existingById = messageRepository
-                        .getMessageDtosByIds(sortedUpdates.map { it.messageId })
-                        .associateBy { it.id }
-
-                    // A message of our own can arrive here before our own sendMessage() call for
-                    // it has processed its response (dataSync runs fully in parallel with sends -
-                    // nothing serializes them). Falling back to the pending row's clientMessageId
-                    // (only ever populated on our own sends, and only ever echoed back to us by
-                    // the server for our own messages) merges onto that row instead of creating a
-                    // second, permanently-orphaned one.
-                    val unmatchedClientMessageIds = sortedUpdates
-                        .filter { existingById[it.messageId] == null }
-                        .mapNotNull { it.clientMessageId }
-                    val existingByClientMessageId = messageRepository
-                        .getMessageDtosByClientMessageIds(unmatchedClientMessageIds)
-                        .associateBy { it.clientMessageId }
-
-                    messageRepository.upsertMessages(
-                        sortedUpdates.map { messageResponse ->
-                            val existing = existingById[messageResponse.messageId]
-                                ?: messageResponse.clientMessageId?.let { existingByClientMessageId[it] }
-                            messageResponse.toDomainMessage(
-                                ownId = ownId,
-                                existingLocalPK = existing?.localPK ?: 0L,
-                                existingPictureUrl = existing?.pictureUrl,
-                                existingAudioPath = existing?.audioPath,
-                                version = messageResponse.version
-                            )
-                        }
-                    )
-
-                    sortedUpdates.forEach { messageResponse ->
-                        when (messageResponse.msgType) {
-                            MessageType.IMAGE -> imagesToGet += messageResponse.messageId
-                            MessageType.AUDIO -> audiosToGet += messageResponse.messageId
-                            else -> {}
-                        }
+                when (messageSyncResponse) {
+                    is NetworkResult.Error<*> -> {
+                        loggingRepository.logWarning("messageid sync error: ${messageSyncResponse.error}")
+                        break // Stop on error, never advance past a batch we failed to fetch
                     }
 
-                    // Always trust the envelope's watermark, never max(updatedMessages) - a
-                    // page can be all deletions, in which case updatedMessages is empty but
-                    // newVersion still advances.
-                    since = messageSyncResponse.data.newVersion
+                    is NetworkResult.Success<MessageSyncResponse> -> {
+                        val updatedMessages = messageSyncResponse.data.updatedMessages
+                        val deletedMessages = messageSyncResponse.data.deletedMessages
+                        moreMessages = messageSyncResponse.data.moreMessages
 
-                    //println("MessageIdSync finished, new messages: ${updatedMessages.size}")
+                        // Deletions can now arrive on any page, not just page 0. Apply them
+                        // before the updates below so a crash mid-batch never leaves MAX(version)
+                        // ahead of what was actually committed.
+                        messageRepository.deleteMessages(deletedMessages)
+
+                        // The whole page goes in as one batch: every separate write would invalidate
+                        // the message table again and re-run the chat selector's query chain.
+                        val sortedUpdates = updatedMessages.sortedBy { it.version }
+                        val existingById = messageRepository
+                            .getMessageDtosByIds(sortedUpdates.map { it.messageId })
+                            .associateBy { it.id }
+
+                        // A message of our own can arrive here before our own sendMessage() call for
+                        // it has processed its response (dataSync runs fully in parallel with sends -
+                        // nothing serializes them). Falling back to the pending row's clientMessageId
+                        // (only ever populated on our own sends, and only ever echoed back to us by
+                        // the server for our own messages) merges onto that row instead of creating a
+                        // second, permanently-orphaned one.
+                        val unmatchedClientMessageIds = sortedUpdates
+                            .filter { existingById[it.messageId] == null }
+                            .mapNotNull { it.clientMessageId }
+                        val existingByClientMessageId = messageRepository
+                            .getMessageDtosByClientMessageIds(unmatchedClientMessageIds)
+                            .associateBy { it.clientMessageId }
+
+                        messageRepository.upsertMessages(
+                            sortedUpdates.map { messageResponse ->
+                                val existing = existingById[messageResponse.messageId]
+                                    ?: messageResponse.clientMessageId?.let { existingByClientMessageId[it] }
+                                messageResponse.toDomainMessage(
+                                    ownId = ownId,
+                                    existingLocalPK = existing?.localPK ?: 0L,
+                                    existingPictureUrl = existing?.pictureUrl,
+                                    existingAudioPath = existing?.audioPath,
+                                    version = messageResponse.version
+                                )
+                            }
+                        )
+
+                        sortedUpdates.forEach { messageResponse ->
+                            when (messageResponse.msgType) {
+                                MessageType.IMAGE -> imagesToGet += messageResponse.messageId
+                                MessageType.AUDIO -> audiosToGet += messageResponse.messageId
+                                else -> {}
+                            }
+                        }
+
+                        // Always trust the envelope's watermark, never max(updatedMessages) - a
+                        // page can be all deletions, in which case updatedMessages is empty but
+                        // newVersion still advances.
+                        since = messageSyncResponse.data.newVersion
+
+                        //println("MessageIdSync finished, new messages: ${updatedMessages.size}")
+                    }
                 }
             }
+
+            //println("Messagesync completed")
+
         }
-
-        //println("Messagesync completed")
-
 
         if (fetchMedia) {
             if (imagesToGet.isNotEmpty()) {
@@ -2284,15 +2295,35 @@ class AppRepository(
     }
 
 
-    suspend fun setAllChatMessagesRead(ownId: String, chatid: String, gruppe: Boolean, timestamp: String){
-        messageRepository.setAllChatMessagesRead(
-            ownId = ownId,
-            chatid = chatid,
-            gruppe = gruppe,
-            timestamp = timestamp
-        )
+    /**
+     * Marks a whole chat read. The server is the single source of truth for read state: nothing
+     * is written to Room here, the call only tells the server and then pulls the result back
+     * through [messageIdSync], which rewrites `readByMe` from the authoritative `readers` list.
+     *
+     * Writing it locally first used to lose a race against a parallel sync - opening a chat from
+     * a notification kicks off a [dataSync] at the same moment, and that sync re-fetched the
+     * message before the server had processed the read, resetting `readByMe` to false again.
+     *
+     * The pull is not optional: the server deliberately excludes the acting user from its own
+     * MessageChange socket fan-out, so this device never hears about its own read receipt.
+     *
+     * @return true when the server accepted the read. False (offline, error) means nothing
+     * changed anywhere and the caller is expected to try again later.
+     */
+    suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String): Boolean {
+        SessionCache.requireLoggedIn() ?: return false
 
-        networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong()).trackConnectivity()
+        val result = networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong()).trackConnectivity()
+        if (result !is NetworkResult.Success) {
+            loggingRepository.logWarning("Setting chat $chatid read failed: ${(result as? NetworkResult.Error<*>)?.error}")
+            return false
+        }
+
+        // With media: unlike the MESSAGES job in [dataSync] there is no MEDIA job behind this
+        // call, so a picture or voice message first seen by this sync would otherwise stay
+        // undownloaded until the next full sync gets around to the missing-media backfill.
+        messageIdSync()
+        return true
     }
 
 
@@ -2817,6 +2848,22 @@ class AppRepository(
             preferencemanager.removePinnedChat(chatId)
         }
         networkUtils.updateSettings(UserSettingsRequest(pinnedChats = preferencemanager.getPinnedChats())).trackConnectivity()
+    }
+
+    /**
+     * Replaces the quick reaction list wholesale (server stores it as one value, like pinned chats).
+     * An empty list is a valid choice and is stored as such - use [resetQuickReactions] to go back
+     * to the app defaults.
+     */
+    suspend fun setQuickReactions(reactions: List<String>) {
+        preferencemanager.saveQuickReactions(reactions)
+        networkUtils.updateSettings(UserSettingsRequest(quickReactions = reactions)).trackConnectivity()
+    }
+
+    /** Clears the customised list so DEFAULT_QUICK_REACTIONS applies again, here and on every device. */
+    suspend fun resetQuickReactions() {
+        preferencemanager.clearQuickReactions()
+        networkUtils.updateSettings(UserSettingsRequest(resetQuickReactions = true)).trackConnectivity()
     }
 
     suspend fun setLastContributePopupShown(epochMillis: Long) {

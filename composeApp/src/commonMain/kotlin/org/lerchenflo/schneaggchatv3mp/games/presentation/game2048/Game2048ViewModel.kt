@@ -138,10 +138,11 @@ class Game2048ViewModel(
 
     private fun persist() = saveSession.persist(currentDifficulty, snapshotOrNull())
 
-    /** Null when there is no run worth keeping (not started or already over). */
+    /** Null when there is no run worth keeping (not started, already over, or score is 0). */
     private fun snapshotOrNull(): Game2048Snapshot? {
         val current = _state.value
         if (!current.isGameStarted || current.isGameOver) return null
+        if (current.score == 0) return null
         return Game2048Snapshot(
             grid = current.grid,
             gridSize = current.gridSize,

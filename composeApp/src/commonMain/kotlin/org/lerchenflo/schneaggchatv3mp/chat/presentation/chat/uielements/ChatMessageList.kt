@@ -58,6 +58,7 @@ fun ChatMessageList(
     ownId: String,
     chatId: String,
     useMarkdown: Boolean,
+    quickReactions: List<String>,
     playbackProgress: StateFlow<PlaybackProgress>,
     onAction: (MessageAction) -> Unit,
     modifier: Modifier = Modifier,
@@ -199,6 +200,7 @@ fun ChatMessageList(
                             ownId = ownId,
                             chatId = chatId,
                             useMarkdown = useMarkdown,
+                            quickReactions = quickReactions,
                             playbackProgress = playbackProgress,
                             onReplyPreviewClick = {
                                 val targetIndex =

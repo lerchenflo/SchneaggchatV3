@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.games.data.CrosswordRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
@@ -20,11 +19,9 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordPuzzle
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
+import org.lerchenflo.schneaggchatv3mp.games.domain.letterCellCount
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.today
-import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.games_daily_reset
+import kotlin.random.Random
 
 class CrosswordViewmodel(
     private val crosswordRepository: CrosswordRepository,
@@ -46,17 +43,11 @@ class CrosswordViewmodel(
     val restoreChecked = saveSession.restoreChecked
 
     private var timerJob: Job? = null
-    /** Local day the loaded puzzle belongs to; null while nothing is loaded. */
-    private var puzzleEpochDay: Long? = null
 
     init {
         saveSession.start(onRestore = ::restore, onAppBackgrounded = ::onAppBackgrounded)
         viewModelScope.launch {
-            AppLifecycleManager.appResumedEvent.collect {
-                // Coming back from the background may be on a new day; otherwise just resume counting
-                checkDayChanged()
-                resumeTimerIfNeeded()
-            }
+            AppLifecycleManager.appResumedEvent.collect { resumeTimerIfNeeded() }
         }
     }
 
@@ -64,8 +55,8 @@ class CrosswordViewmodel(
         when (action) {
             is CrosswordAction.SelectLanguage -> loadPuzzle(action.language)
             CrosswordAction.RetryLoad -> _state.value.language?.let { loadPuzzle(it) }
+            CrosswordAction.NewPuzzle -> _state.value.language?.let { loadPuzzle(it) }
             CrosswordAction.LeaveGame -> persist()
-            CrosswordAction.CheckDayChanged -> checkDayChanged()
             CrosswordAction.RestartGame -> restartGame()
             is CrosswordAction.CellTapped -> onCellTapped(action.index)
             is CrosswordAction.KeyPressed -> onKeyPressed(action.letter)
@@ -76,29 +67,27 @@ class CrosswordViewmodel(
         }
     }
 
-    /** Today's local daily puzzle — restarting on the same day reproduces it. */
+    /** A fresh random puzzle — there is no limit on how many can be played. */
     private fun loadPuzzle(language: CrosswordLanguage) {
         timerJob?.cancel()
         timerJob = null
         saveSession.clear()
-        val loadDate = today()
         _state.value = CrosswordState(language = language, isLoading = true)
 
         viewModelScope.launch {
             val puzzle = when (language) {
-                CrosswordLanguage.GERMAN -> generateGermanDailyPuzzle(loadDate.toEpochDays())
-                CrosswordLanguage.ENGLISH -> crosswordRepository.getEnglishDailyPuzzle(loadDate)
+                CrosswordLanguage.GERMAN -> generateGermanCrosswordPuzzle(Random.nextLong())
+                CrosswordLanguage.ENGLISH -> crosswordRepository.getRandomEnglishPuzzle()
             }
             if (puzzle == null) {
                 _state.update { it.copy(isLoading = false, loadFailed = true) }
                 return@launch
             }
-            startWithPuzzle(language, puzzle, loadDate.toEpochDays())
+            startWithPuzzle(language, puzzle)
         }
     }
 
-    private fun startWithPuzzle(language: CrosswordLanguage, puzzle: CrosswordPuzzle, epochDay: Long) {
-        puzzleEpochDay = epochDay
+    private fun startWithPuzzle(language: CrosswordLanguage, puzzle: CrosswordPuzzle) {
         val firstClue = puzzle.clues.minByOrNull { (if (it.direction == CrosswordDirection.DOWN) 1_000_000 else 0) + it.number }
         _state.value = CrosswordState(
             language = language,
@@ -122,18 +111,13 @@ class CrosswordViewmodel(
         }
     }
 
+    /** Wipes the entered letters and the clock but keeps the grid the player is on. */
     private fun restartGame() {
         val current = _state.value
         val puzzle = current.puzzle ?: return
         val language = current.language ?: return
-        val epochDay = puzzleEpochDay ?: return
-        // A restart after midnight must play today's puzzle, not the one loaded yesterday
-        if (epochDay != today().toEpochDays()) {
-            loadPuzzle(language)
-            return
-        }
         saveSession.clear()
-        startWithPuzzle(language, puzzle, epochDay)
+        startWithPuzzle(language, puzzle)
     }
 
     /** The app went to background: stop counting time and keep the progress for a possible process kill. */
@@ -148,22 +132,18 @@ class CrosswordViewmodel(
         if (current.puzzle != null && !current.isSolved && timerJob == null) startTimer()
     }
 
-    /** The daily puzzle changed underneath the one on screen: load today's and tell the user. */
-    private fun checkDayChanged() {
-        val epochDay = puzzleEpochDay ?: return
-        if (epochDay == today().toEpochDays()) return
-        val language = _state.value.language ?: return
-        loadPuzzle(language)
-        viewModelScope.launch { SnackbarManager.showMessage(getString(Res.string.games_daily_reset)) }
-    }
-
     private fun persist() = saveSession.persist(difficultyFor(_state.value.language), snapshotOrNull())
 
-    /** Null until a puzzle is loaded; solved puzzles are kept so today's result stays visible. */
+    /**
+     * Null until a puzzle is loaded or while no letter was entered (only the clock ran), so an untouched
+     * puzzle is dropped and the next visit starts at the language chooser. Solved puzzles are kept so the
+     * result survives leaving the screen.
+     */
     private fun snapshotOrNull(): CrosswordSnapshot? {
         val current = _state.value
         val puzzle = current.puzzle ?: return null
         val language = current.language ?: return null
+        if (current.entries.all { it == null }) return null
         return CrosswordSnapshot(
             language = language,
             puzzle = puzzle,
@@ -175,12 +155,11 @@ class CrosswordViewmodel(
         )
     }
 
-    /** Brings today's saved progress back; an unsolved puzzle starts counting again right away. */
+    /** Brings the saved progress back; an unsolved puzzle starts counting again right away. */
     private fun restore(save: GameSave<CrosswordSnapshot>) {
         val data = save.data
         timerJob?.cancel()
         timerJob = null
-        puzzleEpochDay = save.epochDay
         _state.value = CrosswordState(
             language = data.language,
             puzzle = data.puzzle,
@@ -244,20 +223,23 @@ class CrosswordViewmodel(
         }
         if (solved) {
             timerJob?.cancel()
-            submitSolveTime()
-            // Daily game: keep the solved puzzle so coming back shows the result
+            submitScore(puzzle)
+            // Keep the solved puzzle so coming back shows the result until a new one is started
             persist()
         }
     }
 
-    private fun submitSolveTime() {
+    /**
+     * Puzzles are drawn at random and vary in size, so the score is the number of
+     * letters the grid took to fill; the solve time ranks equally sized grids.
+     */
+    private fun submitScore(puzzle: CrosswordPuzzle) {
         val current = _state.value
-        // The leaderboard is a race: score stays 0, ranking falls to the time tiebreaker.
         viewModelScope.launch {
             gameHighscoreRepository.submitScore(
                 game = GameId.CROSSWORD,
                 difficulty = difficultyFor(current.language),
-                score = 0L,
+                score = puzzle.letterCellCount.toLong(),
                 timeMillis = current.elapsedMillis,
             )
         }

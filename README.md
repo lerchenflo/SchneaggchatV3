@@ -42,6 +42,26 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe
 - Events: Crash bei mehrtägigen Events behoben
 
+- Spiele: Spielstand beim Zurückkehren wiederherstellen
+- SchneaggaHus Spiel
+- Tower Stack: Schneagg reitet mit
+- Wordle-Spiel, + Kreuzworträtsel update
+- Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
+- Android Auto Support
+- Doppelte Nachrichten (Ungesendete) Behoben
+- Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare
+- Freundschaftsanfragen: Tippen auf Profilbilder öffnet Bildvorschau
+- Schneaggmap: Daten Picker update, neue Types, neu sortiert
+- Quick reactions anpassen in Einstellungen
+- Chat: Geteilte Inhalte (Bilder und Links) in Chat-Details
+
+#### Bugfixes
+- Spiele: extrem viele Bugfixes in fast allen Spielen, Spielstände für ungespielte Durchläufe werden nicht mehr gespeichert
+- Anmeldung: Token-Refresh rebuild (5. mol??), Leerer Bildschirm nach Hintergrundbeendigung behoben (Session wird wiederhergestellt)
+- Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe, Nachrichten werden korrekt als gelesen markiert, wenn der Chat über eine Benachrichtigung geöffnet wird
+- Events: Crash bei mehrtägigen Events behoben, Eigenes Profilbild und Name werden überall als Event-Ersteller/-teilnehmer angezeigt
+- Android Noti-Fehler behoben
+- Dialog-Popups: ModalBottomSheet zu Dialog konvertiert um Fehler bei schneller Navigation zu beheben
 
 ### 3.0.17
 

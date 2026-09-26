@@ -30,15 +30,16 @@ private class Workspace {
 }
 
 /**
- * Generates the German daily crossword for [epochDay] — deterministic, so
- * everyone gets the same puzzle on the same day and restarting reproduces it.
- * Criss-cross style: words interlock on shared letters, remaining cells are
- * unused (rendered like blocks), built from the local word/clue list.
+ * Generates a German crossword from [seed] — the same seed always reproduces the
+ * same puzzle, so a restart replays the grid the player is already on while a
+ * fresh seed hands out a new one. Criss-cross style: words interlock on shared
+ * letters, remaining cells are unused (rendered like blocks), built from the
+ * local word/clue list.
  */
-fun generateGermanDailyPuzzle(epochDay: Long): CrosswordPuzzle {
+fun generateGermanCrosswordPuzzle(seed: Long): CrosswordPuzzle {
     var best: List<Placement> = emptyList()
     repeat(MAX_ATTEMPTS) { attempt ->
-        val random = SplitMix64(epochDay * 1_000_003L + attempt * 7_919L)
+        val random = SplitMix64(seed * 1_000_003L + attempt * 7_919L)
         val placements = buildLayout(random)
         if (placements.size >= TARGET_WORDS) return placementsToPuzzle(placements)
         if (placements.size > best.size) best = placements

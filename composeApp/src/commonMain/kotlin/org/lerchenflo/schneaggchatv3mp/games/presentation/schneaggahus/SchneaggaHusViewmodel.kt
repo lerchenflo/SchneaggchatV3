@@ -126,10 +126,11 @@ class SchneaggaHusViewmodel(
 
     private fun persist() = saveSession.persist(currentDifficulty, snapshotOrNull())
 
-    /** Null when there is no run worth keeping (not started or already over). */
+    /** Null when there is no run worth keeping (not started, already over, or score is 0). */
     private fun snapshotOrNull(): SchneaggaHusSnapshot? {
         val current = _state.value
         if (!current.isPlaying || current.isGameOver) return null
+        if (current.score == 0) return null
         return SchneaggaHusSnapshot(
             gridWidth = current.gridWidth,
             gridHeight = current.gridHeight,
@@ -416,8 +417,6 @@ class SchneaggaHusViewmodel(
     private fun toggleSwitch(position: Position) {
         val current = _state.value
         if (current.isPaused) return
-        // A schneagg on the tile already committed to its exit; flipping the rails under it would look wrong
-        if (current.schneaggList.any { it.tile == position }) return
         _state.update { state ->
             state.copy(
                 trackList = state.trackList.map { tile ->

@@ -152,6 +152,15 @@ fun AppearanceSettings(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+            // Quick reactions offered on a long press of a message
+            QuickReactionsSetting(
+                reactions = appearanceSettingsViewModel.quickReactions,
+                onSave = { appearanceSettingsViewModel.saveQuickReactions(it) },
+                onRestoreDefaults = { appearanceSettingsViewModel.restoreDefaultQuickReactions() }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
 
         }
     }

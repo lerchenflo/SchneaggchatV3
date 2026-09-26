@@ -43,6 +43,11 @@ class NavigationState(
     val currentRoute: NavKey
         get() = backStacks[topLevelRoute]?.lastOrNull() ?: topLevelRoute
 
+    // True while an auth-flow screen (auto-login, login, sign-up, email check) is visible - those
+    // screens establish the session themselves, so nothing has to restore it for them.
+    val isOnAuthFlow: Boolean
+        get() = currentRoute::class in authFlowRoutes
+
     val showNavBar: Boolean
         get() = currentRoute::class !in hiddenNavBarRoutes
 
@@ -111,6 +116,19 @@ fun NavigationState.resetTabRoot(tabKey: NavKey) {
     if (root != tabKey) stack[0] = tabKey
 }
 
+/**
+ * Sends the app back through the startup auth flow: the home tab is reset to
+ * `AutoLoginCredChecker` and selected, which then routes to login, email verification or the
+ * chat selector just like a cold start.
+ */
+fun NavigationState.restartAuthFlow() {
+    backStacks[homeRoute]?.let { stack ->
+        stack.clear()
+        stack.add(Route.AutoLoginCredChecker)
+    }
+    topLevelRoute = homeRoute
+}
+
 @Composable
 fun NavigationState.decoratedEntriesMap(
     entryProvider: (NavKey) -> NavEntry<NavKey>
@@ -150,7 +168,8 @@ private val gameRoutes: Set<KClass<out NavKey>> = setOf(
     Route.CoinFlip::class,
     Route.FingerPicker::class,
     Route.Game2048::class,
-    Route.Crossword::class
+    Route.Crossword::class,
+    Route.Wordle::class
 )
 
 private val chatRoutes: Set<KClass<out NavKey>> = setOf(
@@ -203,6 +222,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.FingerPicker::class, Route.FingerPicker.serializer())
             subclass(Route.Game2048::class, Route.Game2048.serializer())
             subclass(Route.Crossword::class, Route.Crossword.serializer())
+            subclass(Route.Wordle::class, Route.Wordle.serializer())
 
 
             //Settings

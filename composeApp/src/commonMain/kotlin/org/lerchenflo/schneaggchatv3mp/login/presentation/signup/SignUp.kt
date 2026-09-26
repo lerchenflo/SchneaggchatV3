@@ -79,6 +79,7 @@ import schneaggchatv3mp.composeapp.generated.resources.create_account
 import schneaggchatv3mp.composeapp.generated.resources.email
 import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
+import schneaggchatv3mp.composeapp.generated.resources.image_picker_error
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.password_again
 import schneaggchatv3mp.composeapp.generated.resources.phone_number
@@ -93,6 +94,7 @@ import schneaggchatv3mp.composeapp.generated.resources.tooltip_password
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_password_repeat
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_terms
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_username
+import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.username
 
 
@@ -473,7 +475,10 @@ fun SignUpScreen(
 
                             is ImagePickerResult.Error -> {
                                 Text(
-                                    text = "Error: ${result.exception.message}",
+                                    text = stringResource(
+                                        Res.string.image_picker_error,
+                                        result.exception.message ?: stringResource(Res.string.unknown_error)
+                                    ),
                                     color = MaterialTheme.colorScheme.error
                                 )
                             }

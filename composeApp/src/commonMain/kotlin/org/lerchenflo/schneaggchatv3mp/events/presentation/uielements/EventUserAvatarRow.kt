@@ -19,7 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 fun EventUserAvatarRow(
     label: String?,
     userIds: List<String>,
-    friendsById: Map<String, User>,
+    usersById: Map<String, User>,
     modifier: Modifier = Modifier,
     avatarSize: Dp = 40.dp,
     contentDescriptionFor: @Composable (String) -> String? = { null },
@@ -39,7 +39,7 @@ fun EventUserAvatarRow(
         items(userIds, key = { it }) { userId ->
             EventUserAvatar(
                 userId = userId,
-                friendsById = friendsById,
+                usersById = usersById,
                 size = avatarSize,
                 contentDescription = contentDescriptionFor(userId)
             )

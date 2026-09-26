@@ -483,6 +483,11 @@ class NetworkUtils(
 
         val pinnedChats: List<PinnedChat> = emptyList(),
 
+        // Quick reaction emojis for the message long-press popup. Null means "never customised",
+        // so the client falls back to DEFAULT_QUICK_REACTIONS and keeps following that set as it
+        // changes; an empty list is a deliberate "show none" and is stored as such.
+        val quickReactions: List<String>? = null,
+
         val developerSettings: Boolean = false,
 
         // Epoch millis of the last time the contribute popup was shown on any device.
@@ -504,6 +509,10 @@ class NetworkUtils(
         val mergeMapUsers: Boolean? = null,
         val mapStyle: String? = null,
         val pinnedChats: List<PinnedChat>? = null,
+        val quickReactions: List<String>? = null,
+        // Null already means "leave unchanged" here, so resetting the list back to the app
+        // defaults (a stored null) needs its own flag.
+        val resetQuickReactions: Boolean? = null,
         val developerSettings: Boolean? = null,
         val lastContributePopupShown: Long? = null,
     )

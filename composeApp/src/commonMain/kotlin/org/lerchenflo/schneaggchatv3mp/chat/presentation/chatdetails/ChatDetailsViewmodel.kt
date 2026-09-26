@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -30,6 +31,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
@@ -45,6 +47,7 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.extractLinks
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.event_delete_failed
@@ -109,6 +112,7 @@ class ChatDetailsViewmodel(
     private val appRepository: AppRepository,
     private val pictureManager: PictureManager,
     private val eventRepository: EventRepository,
+    private val messageRepository: MessageRepository,
 
     val chatId: String,
     val isGroup: Boolean,
@@ -326,6 +330,40 @@ class ChatDetailsViewmodel(
     fun navigateToConnectedEvent(eventId: String) {
         viewModelScope.launch {
             navigator.navigate(Route.Events(selectedEventId = eventId))
+        }
+    }
+
+    /**
+     * How many images and how many links this chat has shared, for the two rows that open the
+     * shared content screen. Counted here rather than in SQL because a link only counts once the
+     * regex has actually found one in the message text - `content LIKE '%http%'` alone would also
+     * match a message that just happens to contain the word.
+     */
+    val sharedImageCount: StateFlow<Int> = messageRepository
+        .getImageMessagesForChatFlow(chatId, isGroup)
+        .map { messages -> messages.count { !it.pictureUrl.isNullOrEmpty() } }
+        .flowOn(Dispatchers.Default)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+    val sharedLinkCount: StateFlow<Int> = messageRepository
+        .getLinkCandidateMessagesForChatFlow(chatId, isGroup)
+        .map { messages -> messages.sumOf { extractLinks(it.content).size } }
+        .flowOn(Dispatchers.Default)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+    fun navigateToSharedContent(showLinks: Boolean) {
+        viewModelScope.launch {
+            navigator.navigate(
+                Route.ChatSharedContent(chatId = chatId, isGroup = isGroup, showLinks = showLinks)
+            )
         }
     }
 

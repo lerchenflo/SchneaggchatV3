@@ -64,8 +64,9 @@ class EventsViewModel(
     private val initialEntry: Event? = null
 ) : ViewModel() {
 
-    // Own user isn't in friendsById (that map only keeps ACCEPTED friendships), and driven off
-    // authState (not a one-shot read) so it picks up the id once autologin finishes.
+    // Own user isn't in friendsById (that map only keeps ACCEPTED friendships) - it feeds
+    // usersById and the birthday list instead. Driven off authState (not a one-shot read) so it
+    // picks up the id once autologin finishes.
     private val ownUserFlow = SessionCache.authState.flatMapLatest { auth ->
         (auth as? SessionCache.AuthState.LoggedIn)
             ?.let { appRepository.getUserByIdFlow(it.userId) }
@@ -108,6 +109,7 @@ class EventsViewModel(
         )
     }.combine(ownUserFlow) { currentState, ownUser ->
         currentState.copy(
+            usersById = ownUser?.let { currentState.friendsById + (it.id to it) } ?: currentState.friendsById,
             birthdaysByMonthDay = buildBirthdaysByMonthDay(currentState.friendsById.values, ownUser)
         )
     }.combine(preferenceManager.getEventsViewModeFlow()) { currentState, viewMode ->

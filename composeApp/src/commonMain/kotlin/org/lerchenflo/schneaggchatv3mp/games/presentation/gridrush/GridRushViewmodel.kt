@@ -120,10 +120,11 @@ class GridRushViewmodel(
 
     private fun persist() = saveSession.persist(currentDifficulty, snapshotOrNull())
 
-    /** Null before the run started; finished runs are kept so today's result stays visible. */
+    /** Null before the run started or when score is 0; finished runs are kept so today's result stays visible. */
     private fun snapshotOrNull(): GridRushSnapshot? {
         val current = _state.value
         if (!current.isPlaying && !current.isGameOver) return null
+        if (current.score == 0) return null
         return GridRushSnapshot(
             board = current.board,
             rows = current.rows,

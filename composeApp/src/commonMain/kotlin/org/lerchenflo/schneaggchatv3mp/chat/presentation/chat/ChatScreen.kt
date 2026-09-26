@@ -90,6 +90,7 @@ fun ChatScreen(
                 ownId = ownId,
                 chatId = state.chatId,
                 useMarkdown = state.markdownEnabled,
+                quickReactions = state.quickReactions,
                 playbackProgress = playbackProgress,
                 onAction = { onAction(ChatAction.OnMessageAction(it)) },
                 modifier = Modifier.weight(1f)

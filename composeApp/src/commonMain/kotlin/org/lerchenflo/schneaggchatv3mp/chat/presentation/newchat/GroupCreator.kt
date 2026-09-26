@@ -66,10 +66,12 @@ import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.group_name
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
+import schneaggchatv3mp.composeapp.generated.resources.image_picker_error
 import schneaggchatv3mp.composeapp.generated.resources.new_group
 import schneaggchatv3mp.composeapp.generated.resources.profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_group_description
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_group_name
+import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 
 @Composable
 fun GroupCreatorScreenRoot(
@@ -295,7 +297,10 @@ private fun GroupCreatorScreen(
 
                         is ImagePickerResult.Error -> {
                             Text(
-                                text = "Error: ${result.exception.message}",
+                                text = stringResource(
+                                    Res.string.image_picker_error,
+                                    result.exception.message ?: stringResource(Res.string.unknown_error)
+                                ),
                                 color = MaterialTheme.colorScheme.error
                             )
                         }

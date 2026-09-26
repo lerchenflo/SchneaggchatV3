@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
 
@@ -120,6 +121,7 @@ class Preferencemanager(
         val MERGE_MAP_USERS = booleanPreferencesKey("merge_map_users")
         val MAP_STYLE = intPreferencesKey("map_style")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
+        val QUICK_REACTIONS = stringPreferencesKey("quick_reactions")
         val DRAFTS = stringPreferencesKey("drafts")
         val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
         val LAST_CONTRIBUTE_POPUP_SHOWN = longPreferencesKey("last_contribute_popup_shown")
@@ -344,6 +346,39 @@ class Preferencemanager(
         }
     }
 
+    // Quick Reactions - Stored as JSON. A missing key means "never customised" and falls back to
+    // DEFAULT_QUICK_REACTIONS; a stored empty list is a deliberate "show no quick reactions" and
+    // is kept as such, which is why this can't use the `?: ""` + isEmpty() shape the lists above do.
+    suspend fun saveQuickReactions(reactions: List<String>) {
+        prefs.edit {
+            it[PrefsKeys.QUICK_REACTIONS] = json.encodeToString(reactions)
+        }
+    }
+
+    /** Drops the customised list so [getQuickReactionsFlow] falls back to the defaults again. */
+    suspend fun clearQuickReactions() {
+        prefs.edit {
+            it.remove(PrefsKeys.QUICK_REACTIONS)
+        }
+    }
+
+    fun getQuickReactionsFlow(): Flow<List<String>> = prefs.data.map { prefs ->
+        decodeQuickReactions(prefs[PrefsKeys.QUICK_REACTIONS])
+    }
+
+    suspend fun getQuickReactions(): List<String> {
+        return decodeQuickReactions(prefs.data.first()[PrefsKeys.QUICK_REACTIONS])
+    }
+
+    private fun decodeQuickReactions(stored: String?): List<String> {
+        if (stored == null) return DEFAULT_QUICK_REACTIONS
+        return try {
+            json.decodeFromString<List<String>>(stored)
+        } catch (e: Exception) {
+            DEFAULT_QUICK_REACTIONS
+        }
+    }
+
     // ========== SYNCED SETTINGS (applied from the server, overwriting local values) ==========
 
     /**
@@ -364,6 +399,14 @@ class Preferencemanager(
             it[PrefsKeys.MERGE_MAP_USERS] = settings.mergeMapUsers
             it[PrefsKeys.MAP_STYLE] = mapStyle.ordinal
             it[PrefsKeys.PINNED_CHATS] = json.encodeToString(settings.pinnedChats)
+            // A null from the server means "never customised" - drop the key entirely so the
+            // defaults apply again, rather than storing an empty list ("show none").
+            val quickReactions = settings.quickReactions
+            if (quickReactions == null) {
+                it.remove(PrefsKeys.QUICK_REACTIONS)
+            } else {
+                it[PrefsKeys.QUICK_REACTIONS] = json.encodeToString(quickReactions)
+            }
             it[PrefsKeys.DEVELOPER_SETTINGS] = settings.developerSettings
             it[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN] = settings.lastContributePopupShown
         }

@@ -33,7 +33,7 @@ fun EventsCalendarDayDetailSheet(
     date: LocalDate,
     events: List<Event>,
     birthdays: List<CalendarBirthday>,
-    friendsById: Map<String, User>,
+    usersById: Map<String, User>,
     ownId: String?,
     onDismiss: () -> Unit,
     onEventClick: (String) -> Unit,
@@ -64,10 +64,10 @@ fun EventsCalendarDayDetailSheet(
                 )
             }
             items(items = events, key = { "event_${date}_${it.id}" }) { event ->
-                val creatorFriend = friendsById[event.creatorId]
+                val creatorUser = usersById[event.creatorId]
                 EventItem(
                     event = event,
-                    creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
+                    creatorProfilePictureUrl = creatorUser?.profilePictureUrl,
                     isOwnEvent = event.creatorId == ownId,
                     onClick = { onEventClick(event.id) },
                     ownStatus = ownId?.let { event.statusOf(it) },

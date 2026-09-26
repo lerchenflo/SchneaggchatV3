@@ -63,6 +63,8 @@
     <string name="create_account_subtitle">beitreata</string>
     <string name="acc_not_exist">Dean Account gits ned</string>
     <string name="offline">Dine App erreicht da Server ned</string>
+    <string name="test_mode_banner">Testmodus - mitam Testserver verbunda</string>
+    <string name="test_mode_banner_tooltip">Du kannsch da Server usam Login-Bildschirm ändra, indeam du lang ufs Globus-Symbol drucksch. Ufam Testserver darfsch alles usprobiera.</string>
     <string name="unknown_error">Irgend an Fehler isch uftreatta</string>
     <string name="network_error_bad_request">Ungültige Afrog</string>
     <string name="network_error_unauthorized">Zugriff verweigert (ungültige Anmeldedata)</string>
@@ -112,6 +114,12 @@
     <string name="markdownInfo">Des aktiviert Markdown im Chat, es kann aber si dassas denn kle laggt</string>
     <string name="highlight_todays_message_timestamp">Hütige Zeitstempel hervorheba</string>
     <string name="highlight_todays_message_timestamp_info">Markiert da Zitstempel vo hüt empfangana Nochrichta in da Chat-Uswahl grün</string>
+    <string name="quick_reactions">Schneallreaktion</string>
+    <string name="quick_reactions_info">Emojis, dia bem langa Drucka vo na Nachricht abota werrand. Zum Umsortiera züha.</string>
+    <string name="quick_reactions_empty">Kua Schnellreaktiona - du kannsch trotzdem bei jeda Nochricht a eigene Reaktion hinzufüga.</string>
+    <string name="quick_reactions_reorder">Schneallreaktiona umsortiera</string>
+    <string name="add_quick_reaction">Schneallreaktiona dazuatua</string>
+    <string name="restore_defaults">Standard wiederherstella</string>
     <string name="something_wrong_message">Irgendwas isch falsch glofa</string>
     <string name="message_too_long">Nachricht zlang!</string>
     <string name="log_out_successfully">Usgloggt</string>
@@ -590,6 +598,9 @@
     <string name="undercover_role_mr_white">Mr. White</string>
     <string name="undercover_role_undercover">Undercover</string>
     <string name="undercover_autohide_title">Automatisch fastecka</string>
+    <string name="undercover_mr_white_tip_title">Mr- White Tipp</string>
+    <string name="undercover_mr_white_tip_format">Tipp: %1$s</string>
+    <string name="undercover_restart_same_players">Neu starta mit da glicha Spieler</string>
     <string name="undercover_seconds_format">Sekunden: %1$d</string>
     <string name="undercover_minus">-</string>
     <string name="undercover_plus">+</string>
@@ -822,6 +833,10 @@
     <!-- Games: Schneaggahus -->
     <string name="games_schneaggahus_title">Schneaggahus</string>
     <string name="games_schneaggahus_instructions">Schneagga krabbeln us am Startpunkt und folgen dam Weag. Tipp uf die Weichen, um die Gleise umleiten, und lenke jeden Schneagg zu sinem Hus.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneagga im falscha Hus glandet sind, ischas Spiel vorbei. Je länger du überleabsch, desto schneller kumman neue Schneagga!</string>
+    <string name="games_schneaggahus_wave">Welle %1$d</string>
+    <string name="games_schneaggahus_next_up">Nächste</string>
+    <string name="games_schneaggahus_wave_progress">%1$d von %2$d Schneagga zuagestellt</string>
+    <string name="games_schneaggahus_lives_remaining">%1$d Leba übrig</string>
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Krützworträtsel</string>
@@ -836,9 +851,27 @@
     <string name="games_crossword_solved">Glöst in %1$s!</string>
     <string name="games_crossword_previous_clue">Vorherige Frog</string>
     <string name="games_crossword_next_clue">Nächste Frog</string>
+    <string name="games_crossword_new_puzzle">Neus Rätsel</string>
+
+    <!-- Games: Wordle -->
+    <string name="games_wordle_title">Wordle</string>
+    <string name="games_wordle_instructions">Errot s Wort us füf Buchstaba in sechs versuach, so oft du willsch! Wenn a Reihe voll isch wird automatisch prüft, Grün hoast richtiger Buchstab an da richtiga Stell, Orange richtiger Buchstab an da falscha Stell, Grau falscher Buchstab.</string>
+    <string name="games_wordle_language_question">Wähl a Sproch</string>
+    <string name="games_wordle_language_english">Englisch (NYT Wordle)</string>
+    <string name="games_wordle_language_german">Dütsch</string>
+    <string name="games_wordle_load_failed">Des Wort hot ned glada werra kümma. Prüf dine Internetverbindung und versuachs nomml.</string>
+    <string name="games_wordle_retry">Nomml versuacha</string>
+    <string name="games_wordle_guess_counter">Versuche %1$d / %2$d</string>
+    <string name="games_wordle_new_word">Neus Wort</string>
+    <string name="games_wordle_too_short">Zwenig Buchstaba</string>
+    <string name="games_wordle_unknown_word">%1$s stoht ned in da Wortliste</string>
+    <string name="games_wordle_delete">Buchstab löscha</string>
+    <string name="games_wordle_solved">Glöst in %1$d vo %2$d Versuchen · %3$s</string>
+    <string name="games_wordle_failed">Kua Versuche mehr! S Wort war %1$s</string>
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Tägliche Challenge (%1$s)</string>
+    <string name="games_daily_reset">Es git a neue tägliche Challenge, din Fortschritt isch zruck gsetzt worra.</string>
     <string name="games_gridrush_title">Grid Rush</string>
     <string name="games_gridrush_instructions">Züh a Linie durch benachbarte Felder mit da glicha Farb — wenn  du loslosch verschwindand die Fealda und die drübat rutschand abe.\n\nDin Highscore zellt nur wenn du alle Blöck wekkriagsch. Jeden Tag ändert sich s Spielfeld, jeder kriagt s gliche.</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
@@ -1086,6 +1119,7 @@ Mealds, egal wie klenn.</string>
     <string name="location_group_sport">Sport</string>
     <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
     <string name="location_group_food">Essen</string>
+    <string name="location_group_useful">Nützliches</string>
 
     <!-- Location Types -->
     <string name="location_type_user">Freunde</string>
@@ -1104,6 +1138,8 @@ Mealds, egal wie klenn.</string>
     <string name="location_type_outdoor_fitness">Stangen</string>
     <string name="location_type_table_tennis">Tischtennis</string>
     <string name="location_type_tennis">Tennis</string>
+    <string name="location_type_horse_riding">Ritplatz</string>
+    <string name="location_type_bike_service_station">Fahrrad-Servicestation</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
     <string name="location_type_wifi">WLAN</string>
@@ -1114,6 +1150,7 @@ Mealds, egal wie klenn.</string>
     <string name="location_type_food_ice">Eis</string>
     <string name="location_type_food_asian">Asiatisch</string>
     <string name="location_type_food_greek">Griechisch</string>
+    <string name="location_type_food_austrian">Österreichisch</string>
     <string name="location_type_food_cafe_bakery">Cafe / Bäckerei</string>
     <string name="location_type_food_other">Andres Eassa</string>
 
@@ -1133,32 +1170,45 @@ Mealds, egal wie klenn.</string>
     <!-- Wheelie Spot -->
     <string name="location_wheeliespot_only_on_weekends">Nur am Wochenende</string>
     <string name="location_legal">Legal</string>
-    <string name="location_offroad_motocross">Motocross</string>
-    <string name="location_offroad_enduro">Enduro</string>
     <string name="location_bicycle_difficulty">Schwierigkeit (1-10)</string>
     <string name="location_bicycle_underground_type">Untergrund</string>
+    <string name="location_bicycle_underground_type_asphalt">Asphalt</string>
+    <string name="location_bicycle_underground_type_gravel">Schotter</string>
+    <string name="location_bicycle_underground_type_dirt">Dreack</string>
+    <string name="location_bicycle_underground_type_trail">Trail</string>
+    <string name="location_bicycle_underground_type_other">Sunstigs</string>
+    <string name="location_camping_kind">Typ</string>
+    <string name="location_swimming_setting">Indoor / Outdoor</string>
+    <string name="location_climbingspot_setting">Indoor / Outdoor</string>
+    <string name="location_volleyball_setting">Indoor / Outdoor</string>
+    <string name="location_offroad_discipline">Typ</string>
+    <string name="location_option_venue_setting_indoor">Indoor</string>
+    <string name="location_option_venue_setting_outdoor">Outdoor</string>
+    <string name="location_option_venue_setting_both">Indoor &amp; Outdoor</string>
+    <string name="location_option_offroad_discipline_motocross">Motocross</string>
+    <string name="location_option_offroad_discipline_enduro">Enrudo</string>
+    <string name="location_option_offroad_discipline_both">Motocross &amp; Enduro</string>
+    <string name="location_option_camping_kind_official_site">Offizieller Campingplatz</string>
+    <string name="location_option_camping_kind_wild_camping">Wildcampen</string>
+    <string name="location_option_camping_kind_tolerated">Gedultet</string>
     <string name="location_lie_down_friendly">Kama aneliega</string>
 
     <!-- Camping -->
-    <string name="location_camping_official">Ned Illegal</string>
     <string name="location_camping_water_distance">Entfernung zum Wasser (m)</string>
     <string name="location_camping_sitting_possibility">Sitzmöglichkeit</string>
     <string name="location_camping_grill_possibility">Grillmöglichkeit</string>
 
     <!-- Swimming -->
-    <string name="location_swimming_indoor">Dinna</string>
     <string name="location_swimming_jump_spot">Kama Springa</string>
     <string name="location_swimming_price">Preis</string>
 
     <!-- Climbingspot -->
     <string name="location_climbingspot_via_ferrata">Kleattasteig</string>
-    <string name="location_climbingspot_outdoor">dussa</string>
     <string name="location_climbingspot_price">Preis</string>
 
     <!-- Volleyball -->
     <string name="location_volleyball_good_net">Guats Netz</string>
     <string name="location_volleyball_good_field">Guats Feald</string>
-    <string name="location_volleyball_outdoor">Dussa</string>
 
     <!-- Outdoor Fitness -->
     <string name="location_outdoor_fitness_shadow">Schatta</string>
@@ -1168,6 +1218,12 @@ Mealds, egal wie klenn.</string>
 
     <!-- Tennis -->
     <string name="location_tennis_paddle">Paddle</string>
+
+    <!-- Horse Riding -->
+    <string name="location_horse_riding_next_tournament">Nächstes Turnier</string>
+
+    <!-- Bike Service Station -->
+    <string name="location_bike_service_station_mostly_working">Fast alls funktioniert</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Eintrittspreis</string>
@@ -1420,4 +1476,13 @@ Mealds, egal wie klenn.</string>
     <string name="event_participation_count">%1$s (%2$d)</string>
     <string name="event_participation_at">%1$s, %2$s</string>
     <string name="event_participation_failed">Dine Antwort hot ned gspeichert werra künna</string>
+
+    <!-- Shared content (images and links of a chat) -->
+    <string name="shared_content_title">Toalte Inhalte</string>
+    <string name="shared_images">Bilder</string>
+    <string name="shared_links">Links</string>
+    <string name="no_shared_images">In deam Chat sind no kua Bilder teilt worra</string>
+    <string name="no_shared_links">In deam Chat sind no kua Links teilt worra</string>
+    <string name="go_to_message">Zur Nochricht springa</string>
+    <string name="copy_link">Link kopiera</string>
 </resources>
