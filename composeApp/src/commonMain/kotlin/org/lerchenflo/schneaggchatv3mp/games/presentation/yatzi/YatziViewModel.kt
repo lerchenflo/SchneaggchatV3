@@ -1,53 +1,141 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
+import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadController
 import kotlin.random.Random
 
-class YatziViewModel : ViewModel() {
+class YatziViewModel(
+    gameSaveRepository: GameSaveRepository,
+    gameHighscoreRepository: GameHighscoreRepository,
+) : ViewModel() {
     private val _state = MutableStateFlow(YatziState())
-    val state: StateFlow<YatziState> = _state.asStateFlow()
 
-    fun setPlayers(names: List<String>) {
-        _state.update {
-            it.copy(players = names.map { name -> YatziPlayer(name) })
+    private val saveSession = GameSaveSession(
+        game = LocalGameSaveSlot.YATZI,
+        serializer = YatziSnapshot.serializer(),
+        schemaVersion = YATZI_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+    /** True once the stored game was looked at; the screen uses it to jump straight back into a restored game. */
+    val restoreChecked = saveSession.restoreChecked
+
+    private val highscoreUpload = HighscoreUploadController(
+        game = GameId.YATZI,
+        repository = gameHighscoreRepository,
+        scope = viewModelScope,
+    )
+
+    /** The leaderboard offer lives in its own holder, so it is folded into the screen state here. */
+    val state = combine(_state, highscoreUpload.state) { state, upload ->
+        state.copy(highscoreUpload = upload)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = YatziState(),
+    )
+
+    fun onAction(action: YatziAction) {
+        when (action) {
+            YatziAction.OnShowPlayerSelector -> _state.update { it.copy(showPlayerSelector = true) }
+            YatziAction.OnHidePlayerSelector -> _state.update { it.copy(showPlayerSelector = false) }
+            is YatziAction.OnPlayersSelected -> setPlayers(action.players)
+            YatziAction.OnStartGame -> startGame()
+            YatziAction.OnRestartGame -> restartGame()
+            YatziAction.OnResetAll -> resetAll()
+            YatziAction.OnEndGameToSetup -> endGameToSetup()
+            YatziAction.OnRestoredGameOpened -> _state.update { it.copy(openRestoredGame = false) }
+
+            YatziAction.OnRollDice -> rollDice()
+            is YatziAction.OnToggleDie -> toggleDie(action.index)
+            is YatziAction.OnSelectCategory -> selectCategory(action.category)
+
+            YatziAction.OnUploadHighscores -> highscoreUpload.upload()
+            YatziAction.OnDeclineHighscoreUpload -> highscoreUpload.decline()
         }
     }
 
-    fun showPlayerSelector() {
-        _state.update { it.copy(showPlayerSelector = true) }
+    init {
+        saveSession.start(onRestore = ::restore, onAppBackgrounded = ::persist)
     }
 
-    fun hidePlayerSelector() {
-        _state.update { it.copy(showPlayerSelector = false) }
+    /** Leaving the screen or backgrounding the app keeps the running game for the next visit. */
+    fun persist() = saveSession.persist(snapshotOrNull())
+
+    /** Null when there is no game worth keeping (not started or already decided). */
+    private fun snapshotOrNull(): YatziSnapshot? {
+        val current = _state.value
+        if (!current.gameStarted || current.winner != null || current.players.isEmpty()) return null
+        return YatziSnapshot(
+            players = current.players.map { YatziPlayerSnapshot(name = it.name, scores = it.scores, userId = it.userId) },
+            currentPlayerIndex = current.currentPlayerIndex,
+            currentRollCount = current.currentRollCount,
+            dice = current.dice.map { YatziDieSnapshot(value = it.value, isKept = it.isKept) },
+        )
     }
 
-    fun addPlayer(name: String) {
-        if (name.isBlank()) return
+    private fun restore(save: GameSave<YatziSnapshot>) {
+        val data = save.data
+        if (data.players.isEmpty()) return
+        val dice = data.dice.map { YatziDie(value = it.value, isKept = it.isKept) }
+        _state.value = YatziState(
+            players = data.players.map { YatziPlayer(name = it.name, scores = it.scores, userId = it.userId) },
+            currentPlayerIndex = data.currentPlayerIndex.coerceIn(0, data.players.lastIndex),
+            currentRollCount = data.currentRollCount,
+            dice = dice,
+            gameStarted = true,
+            potentialScores = if (data.currentRollCount > 0) {
+                YatziCategory.entries.associateWith { calculateScore(it, dice) }
+            } else {
+                emptyMap()
+            },
+            // A restored game opens directly instead of the setup screen
+            openRestoredGame = true,
+        )
+    }
+
+    private fun setPlayers(players: List<GamePlayer>) {
         _state.update {
-            it.copy(players = it.players + YatziPlayer(name))
+            it.copy(players = players.map { player -> YatziPlayer(name = player.name, userId = player.userId) })
         }
     }
 
-    fun resetAll() {
+    private fun resetAll() {
+        highscoreUpload.reset()
         _state.value = YatziState()
+        saveSession.clear()
     }
 
-    fun endGameToSetup() {
+    private fun endGameToSetup() {
+        highscoreUpload.reset()
         val clearedPlayers = _state.value.players.map { it.copy(scores = emptyMap()) }
         _state.value = YatziState(players = clearedPlayers)
+        saveSession.clear()
     }
 
-    fun restartGame() {
+    private fun restartGame() {
+        highscoreUpload.reset()
         val clearedPlayers = _state.value.players.map { it.copy(scores = emptyMap()) }
         _state.value = YatziState(players = clearedPlayers, gameStarted = true)
     }
 
-    fun startGame() {
+    private fun startGame() {
         if (_state.value.players.isEmpty()) return
+        highscoreUpload.reset()
         _state.update {
             it.copy(
                 gameStarted = true,
@@ -59,7 +147,7 @@ class YatziViewModel : ViewModel() {
         }
     }
 
-    fun rollDice() {
+    private fun rollDice() {
         val currentState = _state.value
         if (!currentState.canRoll) return
 
@@ -85,7 +173,7 @@ class YatziViewModel : ViewModel() {
         }
     }
 
-    fun toggleDie(index: Int) {
+    private fun toggleDie(index: Int) {
         val currentState = _state.value
         // Can only keep dice after first roll and before the turn is over
         if (currentState.currentRollCount == 0 && !currentState.gameStarted) return 
@@ -115,7 +203,7 @@ class YatziViewModel : ViewModel() {
         }
     }
 
-    fun selectCategory(category: YatziCategory) {
+    private fun selectCategory(category: YatziCategory) {
         val currentState = _state.value
         val currentPlayer = currentState.currentPlayer ?: return
         
@@ -152,10 +240,14 @@ class YatziViewModel : ViewModel() {
                 potentialScores = emptyMap() // Reset potential scores for next player
             )
         }
-    }
 
-    fun calculatePotentialScore(category: YatziCategory): Int {
-        return _state.value.potentialScores[category] ?: 0
+        if (winner != null) {
+            // Every player's final score, but only uploaded if the user confirms
+            highscoreUpload.offer(
+                difficulty = GameDifficulty.MEDIUM,
+                results = newPlayers.map { GamePlayer(name = it.name, userId = it.userId) to it.totalScore.toLong() },
+            )
+        }
     }
 
     private fun calculateScore(category: YatziCategory, dice: List<YatziDie>): Int {
@@ -206,5 +298,11 @@ class YatziViewModel : ViewModel() {
                  if (counts.any { it.value == 5 }) 50 + values.sum() else 0
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }

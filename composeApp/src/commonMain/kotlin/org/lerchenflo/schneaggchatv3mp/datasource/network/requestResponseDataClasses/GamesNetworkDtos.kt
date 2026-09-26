@@ -11,6 +11,21 @@ data class SubmitGameScoreRequest(
 )
 
 @Serializable
+data class BatchScoreEntryRequest(
+    val userId: String,
+    val score: Long,
+    val timeMillis: Long = 0,
+)
+
+/** Results of a shared-device game; the server only accepts the requester and their friends. */
+@Serializable
+data class SubmitGameScoresBatchRequest(
+    val gameId: String,
+    val difficulty: String,
+    val scores: List<BatchScoreEntryRequest>,
+)
+
+@Serializable
 data class GameScoreResponse(
     val id: String,
     val gameId: String,

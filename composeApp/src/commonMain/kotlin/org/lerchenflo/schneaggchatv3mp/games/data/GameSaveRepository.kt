@@ -14,8 +14,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSaveSlot
 import org.lerchenflo.schneaggchatv3mp.utilities.today
 import kotlin.time.Clock
 
@@ -44,7 +44,7 @@ class GameSaveRepository(
      * [schemaVersion] differs, or (daily games) it was taken on another day.
      * Unusable saves are removed.
      */
-    suspend fun <T> load(game: GameId, serializer: KSerializer<T>, schemaVersion: Int): GameSave<T>? {
+    suspend fun <T> load(game: GameSaveSlot, serializer: KSerializer<T>, schemaVersion: Int): GameSave<T>? {
         // A ViewModel recreated right after the previous one was cleared must see that write
         lastWrite?.join()
         val raw = prefs.data.first()[key(game)] ?: return null
@@ -60,7 +60,7 @@ class GameSaveRepository(
     }
 
     fun <T> saveAsync(
-        game: GameId,
+        game: GameSaveSlot,
         serializer: KSerializer<T>,
         schemaVersion: Int,
         difficulty: GameDifficulty,
@@ -79,11 +79,11 @@ class GameSaveRepository(
         }
     }
 
-    fun clearAsync(game: GameId) {
+    fun clearAsync(game: GameSaveSlot) {
         lastWrite = applicationScope.launch(writeDispatcher) {
             prefs.edit { it.remove(key(game)) }
         }
     }
 
-    private fun key(game: GameId) = stringPreferencesKey("game_save_${game.name.lowercase()}")
+    private fun key(game: GameSaveSlot) = stringPreferencesKey("game_save_${game.saveKey}")
 }

@@ -10,6 +10,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -23,7 +24,8 @@ fun BackButton(
     modifier: Modifier = Modifier
 ) {
 
-    val appVersion = koinInject<AppVersion>()
+    // Previews and render tests run without Koin, so the platform is only asked for at runtime
+    val isIOS = if (LocalInspectionMode.current) false else koinInject<AppVersion>().isIOS()
 
     IconButton(
         onClick = onBackClick,
@@ -34,7 +36,7 @@ fun BackButton(
         )
     ) {
         Icon(
-            imageVector = if (appVersion.isIOS()) Icons.AutoMirrored.Filled.ArrowBackIos else Icons.AutoMirrored.Filled.ArrowBack,
+            imageVector = if (isIOS) Icons.AutoMirrored.Filled.ArrowBackIos else Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = stringResource(Res.string.go_back),
         )
     }

@@ -32,8 +32,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,20 +40,35 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
+import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 
 @Composable
 fun PlayerSelector(
     onDismiss: () -> Unit,
-    onFinish: (List<String>) -> Unit
+    onFinish: (List<GamePlayer>) -> Unit,
+    viewModel: PlayerSelectorViewModel = koinViewModel(),
 ) {
-    val viewModel = koinInject<PlayerSelectorViewModel>()
-    val localPlayers = viewModel.localPlayers
-    val friends = viewModel.friends
-    val selectedPlayers = viewModel.selectedPlayers
-    var newPlayerName by remember { mutableStateOf("") }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    PlayerSelectorDialog(
+        state = state,
+        onAction = viewModel::onAction,
+        onDismiss = onDismiss,
+        onFinish = onFinish,
+    )
+}
+
+@Composable
+fun PlayerSelectorDialog(
+    state: PlayerSelectorState,
+    onAction: (PlayerSelectorAction) -> Unit,
+    onDismiss: () -> Unit,
+    onFinish: (List<GamePlayer>) -> Unit,
+) {
     val coroutineScope = rememberCoroutineScope()
 
     Dialog(onDismissRequest = onDismiss) {
@@ -84,18 +97,15 @@ fun PlayerSelector(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     OutlinedTextField(
-                        value = newPlayerName,
-                        onValueChange = { newPlayerName = it },
+                        value = state.newPlayerName,
+                        onValueChange = { onAction(PlayerSelectorAction.OnNewPlayerNameChange(it)) },
                         label = { Text("New Player") },
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
                     IconButton(
-                        onClick = {
-                            viewModel.addPlayer(newPlayerName)
-                            newPlayerName = ""
-                        },
-                        enabled = newPlayerName.isNotBlank()
+                        onClick = { onAction(PlayerSelectorAction.OnAddLocalPlayer) },
+                        enabled = state.newPlayerName.isNotBlank()
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
@@ -174,7 +184,7 @@ fun PlayerSelector(
                                 modifier = Modifier.fillMaxSize(),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                if (localPlayers.isEmpty()) {
+                                if (state.localPlayers.isEmpty()) {
                                     item {
                                         Text(
                                             text = "No local players yet. Add some!",
@@ -184,12 +194,12 @@ fun PlayerSelector(
                                         )
                                     }
                                 } else {
-                                    items(localPlayers) { player ->
+                                    items(state.localPlayers, key = { it.key }) { player ->
                                         PlayerItem(
-                                            player = player,
-                                            isSelected = selectedPlayers.contains(player),
-                                            onToggleRequest = { viewModel.toggleSelection(player) },
-                                            onDeleteRequest = { viewModel.deletePlayer(player) }
+                                            player = player.entity,
+                                            isSelected = state.isSelected(player),
+                                            onToggleRequest = { onAction(PlayerSelectorAction.OnToggleSelection(player)) },
+                                            onDeleteRequest = { onAction(PlayerSelectorAction.OnDeleteLocalPlayer(player)) }
                                         )
                                     }
                                 }
@@ -201,7 +211,7 @@ fun PlayerSelector(
                                 modifier = Modifier.fillMaxSize(),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                if (friends.isEmpty()) {
+                                if (state.friends.isEmpty()) {
                                     item {
                                         Text(
                                             text = "No friends available.",
@@ -211,11 +221,11 @@ fun PlayerSelector(
                                         )
                                     }
                                 } else {
-                                    items(friends) { friend ->
+                                    items(state.friends, key = { it.key }) { friend ->
                                         FriendItem(
-                                            friend = friend,
-                                            isSelected = selectedPlayers.contains(friend),
-                                            onToggleRequest = { viewModel.toggleSelection(friend) }
+                                            friend = friend.user,
+                                            isSelected = state.isSelected(friend),
+                                            onToggleRequest = { onAction(PlayerSelectorAction.OnToggleSelection(friend)) }
                                         )
                                     }
                                 }
@@ -238,13 +248,13 @@ fun PlayerSelector(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            onFinish(viewModel.getSelectedPlayerNames())
-                            viewModel.clearSelection()
+                            onFinish(state.selectedGamePlayers)
+                            onAction(PlayerSelectorAction.OnClearSelection)
                             onDismiss()
                         },
-                        enabled = selectedPlayers.isNotEmpty()
+                        enabled = state.selectedCount > 0
                     ) {
-                        Text("Start (${selectedPlayers.size})")
+                        Text("Start (${state.selectedCount})")
                     }
                 }
             }

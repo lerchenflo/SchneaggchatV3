@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.sharedUi.core
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.TextAutoSize
@@ -22,7 +23,9 @@ fun ActivityTitle(
     onBackClick: () -> Unit = {},
     showBackButton: Boolean = true,
     modifier: Modifier = Modifier,
-    backButtonModifier: Modifier = Modifier
+    backButtonModifier: Modifier = Modifier,
+    // Optional icon buttons at the end of the title row
+    actions: @Composable RowScope.() -> Unit = {}
 ){
     Row(
         modifier = modifier
@@ -55,6 +58,8 @@ fun ActivityTitle(
                 overflow = TextOverflow.Ellipsis
             )
         }
+
+        actions()
 
     }
 }

@@ -42,6 +42,7 @@ import org.lerchenflo.schneaggchatv3mp.games.data.CrosswordRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresViewModel
 import org.lerchenflo.schneaggchatv3mp.games.data.WordleRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
@@ -315,6 +316,7 @@ val sharedmodule = module{
     viewModelOf(::WordleViewModel)
 
     viewModelOf(::PlayerSelectorViewModel)
+    viewModelOf(::HighscoresViewModel)
     viewModelOf(::RecapViewModel)
     viewModelOf(::GameSelectorViewModel)
 

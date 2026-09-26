@@ -9,8 +9,8 @@ import kotlinx.serialization.KSerializer
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSaveSlot
 
 /**
  * ViewModel-side plumbing for one game's persisted run: restore once when the
@@ -19,7 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
  * the run can be paused and persisted before a possible process kill.
  */
 class GameSaveSession<T>(
-    private val game: GameId,
+    private val game: GameSaveSlot,
     private val serializer: KSerializer<T>,
     private val schemaVersion: Int,
     private val repository: GameSaveRepository,
@@ -46,6 +46,9 @@ class GameSaveSession<T>(
             repository.saveAsync(game, serializer, schemaVersion, difficulty, snapshot)
         }
     }
+
+    /** For games without a difficulty setting; the envelope still needs one, so the default is stored. */
+    fun persist(snapshot: T?) = persist(GameDifficulty.MEDIUM, snapshot)
 
     fun clear() = repository.clearAsync(game)
 }

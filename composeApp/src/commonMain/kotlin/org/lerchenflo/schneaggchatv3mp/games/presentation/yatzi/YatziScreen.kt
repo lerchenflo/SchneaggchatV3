@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -54,6 +55,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameResetButton
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadDialog
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadDoneText
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadState
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -80,46 +85,70 @@ import schneaggchatv3mp.composeapp.generated.resources.yatzi_winner
 @Composable
 fun YatziScreenRoot(
     onBackClick: () -> Unit,
+    viewModel: YatziViewModel = koinViewModel(),
 ) {
-    val viewModel = koinViewModel<YatziViewModel>()
+    val state by viewModel.state.collectAsState()
+    val onAction = viewModel::onAction
 
     //Setup and game share the same nav entry (and viewmodel), switching is plain UI state
     var showGame by rememberSaveable { mutableStateOf(false) }
 
+    // A game restored from the last visit opens directly instead of on the setup screen
+    LaunchedEffect(state.openRestoredGame) {
+        if (state.openRestoredGame) {
+            showGame = true
+            onAction(YatziAction.OnRestoredGameOpened)
+        }
+    }
+
+    // Leaving the screen (e.g. opening a chat from a notification) keeps the running game
+    DisposableEffect(Unit) {
+        onDispose { viewModel.persist() }
+    }
+
+    // Asked once a game is decided - results only reach the leaderboard on explicit confirmation
+    HighscoreUploadDialog(
+        state = state.highscoreUpload,
+        onUpload = { onAction(YatziAction.OnUploadHighscores) },
+        onDecline = { onAction(YatziAction.OnDeclineHighscoreUpload) },
+    )
+
     if (showGame) {
         YatziGameScreen(
+            state = state,
+            onAction = onAction,
             onBack = { showGame = false },
-            viewModel = viewModel
         )
     } else {
         YatziSetupScreen(
+            state = state,
+            onAction = onAction,
             onBack = onBackClick,
             onStartGame = { showGame = true },
-            viewModel = viewModel
         )
     }
 }
 
 @Composable
 private fun YatziSetupScreen(
+    state: YatziState,
+    onAction: (YatziAction) -> Unit,
     onBack: () -> Unit,
     onStartGame: () -> Unit,
-    viewModel: YatziViewModel
 ) {
-
-    // var newPlayerName by remember { mutableStateOf("") } // Removed local state for player input
-    val state by viewModel.state.collectAsState()
-
     Column(modifier = Modifier.fillMaxSize()) {
         ActivityTitle(
             title = stringResource(Res.string.yatzi_setup_title),
-            onBackClick = onBack
+            onBackClick = onBack,
+            actions = {
+                if (state.gameStarted) GameResetButton(onReset = { onAction(YatziAction.OnEndGameToSetup) })
+            }
         )
 
         Column(modifier = Modifier.weight(1f).padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Button(
-                    onClick = { viewModel.showPlayerSelector() },
+                    onClick = { onAction(YatziAction.OnShowPlayerSelector) },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !state.gameStarted
                 ) {
@@ -148,7 +177,7 @@ private fun YatziSetupScreen(
                 Button(
                     onClick = {
                         if (state.players.isNotEmpty()) {
-                            viewModel.startGame()
+                            onAction(YatziAction.OnStartGame)
                             onStartGame()
                         }
                     },
@@ -167,7 +196,7 @@ private fun YatziSetupScreen(
                     }
                     Button(
                         onClick = {
-                            viewModel.restartGame()
+                            onAction(YatziAction.OnRestartGame)
                             onStartGame()
                         },
                         modifier = Modifier.weight(1f)
@@ -179,7 +208,7 @@ private fun YatziSetupScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { viewModel.resetAll() },
+                    onClick = { onAction(YatziAction.OnResetAll) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(Res.string.yatzi_new_game))
@@ -190,30 +219,35 @@ private fun YatziSetupScreen(
 
     if (state.showPlayerSelector) {
         PlayerSelector(
-            onDismiss = { viewModel.hidePlayerSelector() },
-            onFinish = { selectedPlayers ->
-                viewModel.setPlayers(selectedPlayers)
-                viewModel.hidePlayerSelector()
-            }
+            onDismiss = { onAction(YatziAction.OnHidePlayerSelector) },
+            onFinish = { selectedPlayers -> onAction(YatziAction.OnPlayersSelected(selectedPlayers)) }
         )
     }
 }
 
 @Composable
 private fun YatziGameScreen(
+    state: YatziState,
+    onAction: (YatziAction) -> Unit,
     onBack: () -> Unit,
-    viewModel: YatziViewModel
 ) {
-    val state by viewModel.state.collectAsState()
-
     Column(modifier = Modifier.fillMaxSize()) {
          ActivityTitle(
              title = stringResource(Res.string.yatzi_game_title),
-             onBackClick = onBack
+             onBackClick = onBack,
+             actions = {
+                 if (state.gameStarted) {
+                     // Keeps the players, clears the scores and the saved game, back to setup
+                     GameResetButton(onReset = {
+                         onAction(YatziAction.OnEndGameToSetup)
+                         onBack()
+                     })
+                 }
+             }
          )
 
          if (state.winner != null) {
-             WinnerScreen(state.winner!!, onBack)
+             WinnerScreen(state.winner!!, state.highscoreUpload, onBack)
          } else if (state.players.isEmpty()) {
              Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                  Text(stringResource(Res.string.yatzi_no_active_game))
@@ -225,8 +259,7 @@ private fun YatziGameScreen(
                      modifier = Modifier.weight(1f),
                      players = state.players,
                      currentPlayerIndex = state.currentPlayerIndex,
-                     onCategorySelect = { viewModel.selectCategory(it) },
-                     viewModel = viewModel, // passing VM to calculate potential score
+                     onCategorySelect = { onAction(YatziAction.OnSelectCategory(it)) },
                      canScore = state.canScore,
                      state = state
                  )
@@ -239,9 +272,9 @@ private fun YatziGameScreen(
                  // Dice Area - fixed size at bottom
                  DiceArea(
                      dice = state.dice,
-                     onToggleDie = { viewModel.toggleDie(it) },
+                     onToggleDie = { onAction(YatziAction.OnToggleDie(it)) },
                      canRoll = state.canRoll,
-                     onRoll = { viewModel.rollDice() },
+                     onRoll = { onAction(YatziAction.OnRollDice) },
                      state = state,
                      rollCount = state.currentRollCount
                  )
@@ -251,12 +284,13 @@ private fun YatziGameScreen(
 }
 
 @Composable
-fun WinnerScreen(winner: YatziPlayer, onBack: () -> Unit) {
+fun WinnerScreen(winner: YatziPlayer, highscoreUploadState: HighscoreUploadState, onBack: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(stringResource(Res.string.yatzi_game_over), style = MaterialTheme.typography.headlineLarge)
             Text(stringResource(Res.string.yatzi_winner, winner.name), style = MaterialTheme.typography.headlineMedium)
             Text(stringResource(Res.string.yatzi_score, winner.totalScore.toString()), style = MaterialTheme.typography.headlineMedium)
+            HighscoreUploadDoneText(state = highscoreUploadState, modifier = Modifier.padding(top = 8.dp))
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onBack) {
                 Text(stringResource(Res.string.yatzi_back_to_menu))
@@ -273,7 +307,6 @@ fun Scorecard(
     players: List<YatziPlayer>,
     currentPlayerIndex: Int,
     onCategorySelect: (YatziCategory) -> Unit,
-    viewModel: YatziViewModel,
     canScore: Boolean,
     state: YatziState
 ) {
@@ -368,7 +401,7 @@ fun Scorecard(
                                     color = textColor
                                 )
                             } else if (isCurrent && state.currentRollCount > 0) {
-                                val potential = viewModel.calculatePotentialScore(category)
+                                val potential = state.potentialScores[category] ?: 0
                                 Text(
                                     potential.toString(),
                                     color = if (isSelectable && canScore) 

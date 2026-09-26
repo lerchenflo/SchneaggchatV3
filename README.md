@@ -22,6 +22,26 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.18
 
 #### Features
+- Spiele: Spielstand wird gespeichert und beim Zurückkehren wiederhergestellt (Tetris, Tower Stack, 2048, SchneaggaHus, Grid Rush, Odd One Out, Morse Challenge, Kreuzworträtsel, Yatzi, Dart Counter, Undercover), Undercover zeigt beim Fortsetzen nie ein geheimes Wort erneut, Yatzi und Dart Counter haben Leaderboards (Trophy-Knopf im Spielselektor und Highscores-Knopf), Undercover hat ein Wins-Leaderboard (Trophy-Knopf im Spielselektor, Bestätigungsdialog beim Spielende), Bestätigungsdialog zum Hochladen von Spielergebnissen (Yatzi: Endscores, Dart Counter: Drei-Dart-Durchschnitte für 301/501), Spiele zählen nicht zum globalen Ranking aber erscheinen im Recap, Yatzi und Undercover: Zurücksetzen-Knopf in der Titelleiste zum Verwerfen des Spielstands (mit Bestätigung)
+- SchneaggaHus: Wellen-Spielmechanik mit Farb-Vorschau und Wellenfortschritt, gleitende Schneaggs auf gekrümmten Schienen, Porträt-Spielfeld mit größeren Tiles, neues visuelles Design im Train-of-Thought-Stil, Spawn-Tempo passt sich der Leistung an (schneller bei richtigen Zustellungen, langsamer nach Fehlern)
+- Tower Stack: Schneagg reitet auf jedem neuen sich bewegenden Balken, farblich dem Balken angepasst, schaut in Fahrtrichtung und springt ab (mit Hop, Fall und Fade-out), wenn der Balken platziert wird
+- Dartcounter: Checkout-Karte entfernt, Player-Anzeige mit Score/Darts/Checkout-Pfad, Scoreboard kompakt, Text-Clipping behoben
+- Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
+- Android Auto Support
+- Doppelte Nachrichten (Ungesendete) Behoben
+- Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare, "Sniff"-Knopf um sein eigenes Wort bei Auswahl, Diskussion und Abstimmung anzusehen
+
+
+#### Bugfixes
+- Spiele: Geräterotation führt nicht mehr zu einem Reset beim Spielen, Tower Stack Lifecycle-Fehler behoben
+- Tower Stack: Balken-Platzierung wird jetzt beim Tippen ausgelöst statt beim Loslassen, wahrgenommene Input-Verzögerung behoben
+- Dart Counter: Alte Spielstände werden beim Update verworfen
+- Anmeldung: Token-Refresh rebuild (5. mol??)
+- Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
+- Undercover: Crash + Logs viewer, Start-Knopf beim Öffnen deaktiviert bis Wortliste geladen ist
+- Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe
+- Events: Crash bei mehrtägigen Events behoben
+
 - Spiele: Spielstand beim Zurückkehren wiederherstellen
 - SchneaggaHus Spiel
 - Tower Stack: Schneagg reitet mit

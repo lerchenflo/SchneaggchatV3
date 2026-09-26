@@ -1,7 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.games.data
 
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.BatchScoreEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoresBatchRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.EmptyResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
@@ -54,6 +56,26 @@ class GameHighscoreRepository(
                 difficulty = difficulty.name,
                 score = score,
                 timeMillis = timeMillis,
+            )
+        ).trackConnectivity().asEmptyDataResult()
+    }
+
+    /**
+     * Uploads the results of a shared-device game for several platform users at once.
+     * [scores] maps user id to score. Only call this after the user explicitly agreed to upload.
+     */
+    suspend fun submitBatchScores(
+        game: GameId,
+        difficulty: GameDifficulty,
+        scores: Map<String, Long>,
+    ): EmptyResult<NetworkingError> {
+        if (game.indev || scores.isEmpty()) return NetworkResult.Success(Unit)
+
+        return networkUtils.submitGameScoresBatch(
+            SubmitGameScoresBatchRequest(
+                gameId = game.name,
+                difficulty = difficulty.name,
+                scores = scores.map { (userId, score) -> BatchScoreEntryRequest(userId = userId, score = score) },
             )
         ).trackConnectivity().asEmptyDataResult()
     }

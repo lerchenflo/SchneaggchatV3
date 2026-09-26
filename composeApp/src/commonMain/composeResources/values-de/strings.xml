@@ -563,7 +563,6 @@
     <string name="dartcounter_undo">Rückgängig</string>
     <string name="dartcounter_list_separator">, </string>
     <string name="dartcounter_winners_format">Gewinner: %1$s</string>
-    <string name="dartcounter_current_player_format">Aktueller Spieler: %1$s, (Dart %2$d/3)</string>
     <string name="dartcounter_avg_format">Schnitt: %1$s</string>
     <string name="dartcounter_finished_suffix"> ✓</string>
     <string name="dartcounter_player_name_label">Spielername</string>
@@ -582,12 +581,12 @@
     <string name="dartcounter_checkout_title">Checkout</string>
     <string name="dartcounter_darts_left_format">%1$d Darts übrig</string>
     <string name="dartcounter_checkout_alt_format">Alt.:</string>
-    <string name="dartcounter_no_checkout">Kein Checkout</string>
     <string name="dartcounter_segment_double_format">D%1$d</string>
     <string name="dartcounter_segment_triple_format">T%1$d</string>
     <string name="dartcounter_segment_bull">Bull</string>
     <string name="dartcounter_darts_format">%1$d Darts</string>
     <string name="dartcounter_turn_total_format">= %1$d</string>
+    <string name="dartcounter_dart_slot_empty">–</string>
 
     <!-- Games: Undercover -->
     <string name="undercover_title">Undercover</string>
@@ -665,6 +664,13 @@
     
     <string name="undercover_rules_button">Regeln</string>
     <string name="undercover_rules_close">Schließen</string>
+    <string name="undercover_cancel">Abbrechen</string>
+    <string name="undercover_sniff_button">Schnüffeln - mein Wort nochmal zeigen</string>
+    <string name="undercover_sniff_select_title">Wer will sein Wort sehen?</string>
+    <string name="undercover_sniff_confirm_title">Bist du %1$s?</string>
+    <string name="undercover_sniff_confirm_message">Nur %1$s darf jetzt auf den Bildschirm schauen. Falls du den falschen Namen angetippt hast, brich ab - sonst wird das Wort eines anderen Spielers angezeigt.</string>
+    <string name="undercover_sniff_confirm_yes">Ja, mein Wort zeigen</string>
+    <string name="undercover_sniff_hide">Verstecken</string>
 
     <string name="your_friends_wrote_this">~ Deine Freunde</string>
     <string name="show_logs">Logs anzeigen</string>
@@ -965,6 +971,7 @@
     <string name="recap_games_title">Zertifizierter Zocker.</string>
     <string name="recap_games_rank">Rang #%1$d</string>
     <string name="recap_games_score">Bester Punktestand: %1$s</string>
+    <string name="recap_games_wins">Siege: %1$s</string>
 
     <string name="recap_betatester_title">Zertifizierter Beta-Tester.</string>
     <string name="recap_betatester_your_rank">Von allen, die Schneaggchat je fast zum Absturz gebracht haben, liegst du auf Platz</string>
@@ -1086,6 +1093,20 @@
 
     <!-- Game highscores -->
     <string name="highscores_title">Bestenliste</string>
+    <string name="highscore_upload_title">Highscores hochladen?</string>
+    <string name="game_reset_title">Spiel zurücksetzen?</string>
+    <string name="game_reset_message">Das laufende Spiel und sein gespeicherter Fortschritt werden verworfen. Spieler und Einstellungen bleiben erhalten.</string>
+    <string name="game_reset_confirm">Zurücksetzen</string>
+    <string name="game_reset_cancel">Abbrechen</string>
+    <string name="highscore_upload_message">Sollen die Ergebnisse all dieser Spieler in die Bestenliste hochgeladen werden? Lade nur echte Spiele hoch - Testspiele würden die Bestenliste verfälschen.</string>
+    <string name="highscore_upload_wins_message">Soll jedem dieser Gewinner ein Sieg in der Bestenliste gutgeschrieben werden? Lade nur echte Spiele hoch - Testspiele würden die Bestenliste verfälschen.</string>
+    <string name="highscore_upload_confirm">Hochladen</string>
+    <string name="highscore_upload_decline">Nicht hochladen</string>
+    <string name="highscore_upload_retry">Erneut versuchen</string>
+    <string name="highscore_upload_uploading">Wird hochgeladen…</string>
+    <string name="highscore_upload_failed">Hochladen fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.</string>
+    <string name="highscore_upload_done">Highscores hochgeladen</string>
+    <string name="highscore_upload_skipped_players">%1$d Spieler ohne Konto werden nicht hochgeladen.</string>
     <string name="highscores_error">Bestenliste konnte nicht geladen werden</string>
     <string name="highscores_empty">Noch keine Bestenliste</string>
     <string name="highscores_period_daily">Heute</string>

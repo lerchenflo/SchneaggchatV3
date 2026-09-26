@@ -25,9 +25,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,15 +32,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
-import org.lerchenflo.schneaggchatv3mp.games.domain.defaultLeaderboardPeriod
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterCountdown
+import org.lerchenflo.schneaggchatv3mp.games.domain.formatScore
+import org.lerchenflo.schneaggchatv3mp.games.domain.hasTimedScores
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.highscores_empty
@@ -55,37 +53,36 @@ import schneaggchatv3mp.composeapp.generated.resources.highscores_period_yearly
 import schneaggchatv3mp.composeapp.generated.resources.highscores_title
 
 /**
- * Shared UI state for the server leaderboard, embedded in each game's screen state.
- */
-data class HighscoreUiState(
-    val entries: List<HighscoreEntry> = emptyList(),
-    val isLoading: Boolean = false,
-    val hasError: Boolean = false,
-)
-
-/**
- * Self-contained highscores dialog: fetches the leaderboard of [game] from the server
- * every time it is opened or another difficulty is selected.
+ * Highscores dialog: asks its ViewModel for the leaderboard of [game] and lets the player
+ * switch board and time window. [initialDifficulty] is only the board it opens on.
  */
 @Composable
 fun HighscoresDialog(
     game: GameId,
     initialDifficulty: GameDifficulty,
     onDismiss: () -> Unit,
+    viewModel: HighscoresViewModel = koinViewModel(),
 ) {
-    val repository = koinInject<GameHighscoreRepository>()
-    var selectedDifficulty by remember { mutableStateOf(initialDifficulty) }
-    var selectedPeriod by remember { mutableStateOf(game.defaultLeaderboardPeriod) }
-    var state by remember { mutableStateOf(HighscoreUiState(isLoading = true)) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(game, selectedDifficulty, selectedPeriod) {
-        state = HighscoreUiState(isLoading = true)
-        state = when (val result = repository.getHighscores(game, selectedDifficulty, selectedPeriod)) {
-            is NetworkResult.Success -> HighscoreUiState(entries = result.data)
-            is NetworkResult.Error -> HighscoreUiState(hasError = true)
-        }
+    LaunchedEffect(game, initialDifficulty) {
+        viewModel.onAction(HighscoresAction.OnOpen(game, initialDifficulty))
     }
 
+    HighscoresDialogContent(
+        state = state,
+        onAction = viewModel::onAction,
+        onDismiss = onDismiss,
+    )
+}
+
+@Composable
+fun HighscoresDialogContent(
+    state: HighscoresState,
+    onAction: (HighscoresAction) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val game = state.game
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -95,23 +92,38 @@ fun HighscoresDialog(
         },
         text = {
             Column {
-                DifficultySelector(
-                    selected = selectedDifficulty,
-                    onSelect = { selectedDifficulty = it },
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
+                if (game == GameId.DART_COUNTER) {
+                    // Dart boards are split by countdown, not by difficulty
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        state.boards.forEach { board ->
+                            FilterChip(
+                                selected = board == state.selectedDifficulty,
+                                onClick = { onAction(HighscoresAction.OnSelectDifficulty(board)) },
+                                label = { Text(dartCounterCountdown(board).toString()) },
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                } else if (state.boards.size > 1) {
+                    DifficultySelector(
+                        selected = state.selectedDifficulty,
+                        onSelect = { onAction(HighscoresAction.OnSelectDifficulty(it)) },
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
                 PeriodSelector(
-                    selected = selectedPeriod,
-                    onSelect = { selectedPeriod = it },
+                    selected = state.selectedPeriod,
+                    onSelect = { onAction(HighscoresAction.OnSelectPeriod(it)) },
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 GameHighscores(
                     state = state,
-                    modifier = Modifier.heightIn(max = 400.dp)
+                    modifier = Modifier.heightIn(max = 400.dp),
+                    formatScore = { score -> game?.formatScore(score) ?: score.toString() },
+                    showTime = game?.hasTimedScores ?: true,
                 )
             }
         }
@@ -155,8 +167,10 @@ internal fun PeriodSelector(
  */
 @Composable
 fun GameHighscores(
-    state: HighscoreUiState,
+    state: HighscoresState,
     modifier: Modifier = Modifier,
+    formatScore: (Long) -> String = { it.toString() },
+    showTime: Boolean = true,
 ) {
     val ownUserId = SessionCache.requireLoggedIn()?.userId
 
@@ -198,6 +212,8 @@ fun GameHighscores(
                         HighscoreRow(
                             entry = entry,
                             isOwn = entry.userId == ownUserId,
+                            scoreText = formatScore(entry.score),
+                            showTime = showTime,
                         )
                     }
                 }
@@ -210,6 +226,8 @@ fun GameHighscores(
 private fun HighscoreRow(
     entry: HighscoreEntry,
     isOwn: Boolean,
+    scoreText: String,
+    showTime: Boolean,
 ) {
     val contentColor = if (isOwn) MaterialTheme.colorScheme.onPrimaryContainer else Color.Unspecified
 
@@ -242,16 +260,18 @@ private fun HighscoreRow(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = entry.score.toString(),
+            text = scoreText,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = contentColor,
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = formatGameTime(entry.timeMillis),
-            style = MaterialTheme.typography.bodySmall,
-            color = if (isOwn) contentColor else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        if (showTime) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = formatGameTime(entry.timeMillis),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isOwn) contentColor else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }

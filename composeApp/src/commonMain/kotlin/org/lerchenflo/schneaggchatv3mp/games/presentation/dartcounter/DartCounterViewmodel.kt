@@ -1,409 +1,251 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartSegment
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
+import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartGame
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartOutMode
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.findCheckouts
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadController
+import kotlin.math.roundToLong
 
-class DartCounterViewModel() : ViewModel() {
-    enum class OutMode {
-        SINGLE_OUT,
-        DOUBLE_OUT
-    }
+class DartCounterViewModel(
+    gameSaveRepository: GameSaveRepository,
+    gameHighscoreRepository: GameHighscoreRepository,
+) : ViewModel() {
 
-    data class Player(val name: String, var score: Int, var throws: MutableList<Int> = mutableListOf(), var totalDartsThrown: Int = 0, var isFinished: Boolean = false)
+    private val _state = MutableStateFlow(DartCounterState())
 
-    data class Turn(
-        val playerIndex: Int,
-        val playerName: String,
-        val scoreAtStart: Int,
-        val dartsThrown: List<DartThrow>
+    private val highscoreUpload = HighscoreUploadController(
+        game = GameId.DART_COUNTER,
+        repository = gameHighscoreRepository,
+        scope = viewModelScope,
     )
-    
-    data class DartThrow(
-        val score: Int,
-        val isDouble: Boolean,
-        val isTriple: Boolean,
-        val actualScore: Int
+
+    /** The leaderboard offer lives in its own holder, so it is folded into the screen state here. */
+    val state = combine(_state, highscoreUpload.state) { state, upload ->
+        state.copy(highscoreUpload = upload)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = DartCounterState(),
     )
 
-    data class GameManager(
-        val doubleOut: Boolean = false,
-        val countdown: Int,
-        val playerNames: List<String>,
-        private val onDartCountChanged: (Int) -> Unit = {},
-        private val onThrowAdded: () -> Unit = {}
-    ) {
-        val playerList: MutableList<Player> = mutableListOf()
-        var currentPlayerIndex by mutableStateOf(0)
-        private set
-        var gameStarted = false
-        var gameOver = false
-        private var turnStartScore = 0
-        private val turnHistory: MutableList<Turn> = mutableListOf()
-        private var currentTurnDarts: MutableList<DartThrow> = mutableListOf()
-        private val allThrowsHistory: MutableList<DartThrow> = mutableListOf()
-        
-        init {
-            for(name in playerNames){
-                playerList.add(Player(name, countdown))
-            }
-            // Initialize turn start score for first player
-            if (playerList.isNotEmpty()) {
-                turnStartScore = playerList[0].score
-            }
-        }
-        
-        fun startTurn() {
-            turnStartScore = getCurrentPlayer().score
-        }
-        
-        fun subtractScore(score: Int, isDouble: Boolean = false, isTriple: Boolean = false): Boolean {
-            val currentPlayer = playerList[currentPlayerIndex]
-            if (currentPlayer.isFinished) return false
-            
-            val actualScore = if (isTriple) score * 3 else if (isDouble) score * 2 else score
-            val newScore = currentPlayer.score - actualScore
-            
-            return when {
-                gameOver -> false
-                doubleOut -> {
-                    when {
-                        newScore == 0 && isDouble -> {
-                            currentPlayer.score = 0
-                            currentPlayer.isFinished = true
-                            checkIfAllPlayersFinished()
-                            true
-                        }
-                        newScore > 1 -> {
-                            currentPlayer.score = newScore
-                            true
-                        }
-                        newScore == 1 -> {
-                            // Bust: score of 1 is impossible in double out
-                            false
-                        }
-                        newScore < 0 -> {
-                            // Bust: negative score
-                            false
-                        }
-                        else -> {
-                            // Bust: score would be 0 without double
-                            false
-                        }
-                    }
-                }
-                else -> {
-                    when {
-                        newScore >= 0 -> {
-                            currentPlayer.score = newScore
-                            if (currentPlayer.score == 0) {
-                                currentPlayer.isFinished = true
-                                checkIfAllPlayersFinished()
-                            }
-                            true
-                        }
-                        else -> {
-                            // Bust: score would be negative
-                            false
-                        }
-                    }
-                }
-            }
-        }
-        
-        fun addDartToTurn(score: Int, isDouble: Boolean, isTriple: Boolean, actualScore: Int) {
-            val dartThrow = DartThrow(score, isDouble, isTriple, actualScore)
-            currentTurnDarts.add(dartThrow)
-            allThrowsHistory.add(dartThrow)
-            onDartCountChanged(currentTurnDarts.size)
-            onThrowAdded()
-        }
-        
-        fun completeTurn() {
-            if (currentTurnDarts.isNotEmpty()) {
-                val currentPlayer = getCurrentPlayer()
-                turnHistory.add(Turn(
-                    playerIndex = currentPlayerIndex,
-                    playerName = currentPlayer.name,
-                    scoreAtStart = turnStartScore,
-                    dartsThrown = currentTurnDarts.toList()
-                ))
-                currentTurnDarts.clear()
-                onDartCountChanged(0)
-            }
-        }
-        
-        fun canUndo(): Boolean = allThrowsHistory.isNotEmpty()
-        
-        fun getAllThrowsHistory(): List<DartThrow> = allThrowsHistory.toList()
-        
-        fun getCurrentTurnDarts(): List<DartThrow> = currentTurnDarts.toList()
-        
-        fun undoLastThrow(): Boolean {
-            if (allThrowsHistory.isEmpty()) return false
-            
-            val lastThrow = allThrowsHistory.removeAt(allThrowsHistory.size - 1)
-            
-            // Rebuild the entire game state from scratch using allThrowsHistory
-            rebuildGameStateFromHistory()
-            
-            return true
-        }
-        
-        private fun rebuildGameStateFromHistory() {
-            // Reset all players to their initial scores
-            for (player in playerList) {
-                player.score = countdown
-                player.isFinished = false
-                player.totalDartsThrown = 0
-            }
-            
-            // Clear turn history and current turn
-            turnHistory.clear()
-            currentTurnDarts.clear()
-            
-            // Reset to first player
-            currentPlayerIndex = 0
-            turnStartScore = countdown
-            
-            // Replay all throws in order
-            var throwCount = 0
-            for (dartThrow in allThrowsHistory) {
-                val currentPlayer = getCurrentPlayer()
-                
-                // Check if this is a new turn (3 darts thrown or bust occurred)
-                if (throwCount > 0 && throwCount % 3 == 0) {
-                    completeTurn()
-                    nextPlayer()
-                }
-                
-                // Apply the throw
-                currentPlayer.totalDartsThrown++
-                if (subtractScore(dartThrow.score, dartThrow.isDouble, dartThrow.isTriple)) {
-                    currentTurnDarts.add(dartThrow)
-                    throwCount++
-                } else {
-                    // Bust occurred
-                    bust()
-                    completeTurn()
-                    nextPlayer()
-                    throwCount++
-                }
-            }
-            
-            onDartCountChanged(currentTurnDarts.size)
-        }
-        
-        fun bust() {
-            val currentPlayer = playerList[currentPlayerIndex]
-            currentPlayer.score = turnStartScore
-        }
-        
-        private fun checkIfAllPlayersFinished() {
-            gameOver = playerList.all { it.isFinished }
-        }
-        
-        fun nextPlayer() {
-            if (!gameOver) {
-                // Skip finished players
-                var attempts = 0
-                do {
-                    currentPlayerIndex = (currentPlayerIndex + 1) % playerList.size
-                    attempts++
-                } while (playerList[currentPlayerIndex].isFinished && attempts < playerList.size)
-                startTurn() // Initialize turn start score for next player
-            }
-        }
-        
-        fun getCurrentPlayer(): Player = playerList[currentPlayerIndex]
-        
-        fun getWinners(): List<Player> = playerList.filter { it.isFinished }
+    /** The running leg. Mutable game internals never leave the ViewModel - the UI reads [state]. */
+    private var game: DartGame? = null
+
+    // Same order as the game's players; keeps the ids of platform users for the leaderboard upload
+    private var gamePlayers: List<GamePlayer> = emptyList()
+
+    private val saveSession = GameSaveSession(
+        game = LocalGameSaveSlot.DART_COUNTER,
+        serializer = DartCounterSnapshot.serializer(),
+        schemaVersion = DART_COUNTER_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+
+    init {
+        saveSession.start(onRestore = ::restore, onAppBackgrounded = ::persist)
     }
 
-    var gameManager by mutableStateOf<GameManager?>(null)
-        private set
-    
-    var playerNames by mutableStateOf<List<String>>(emptyList())
-        private set
-    
-    var showPlayerSetup by mutableStateOf(false)
-        private set
-    
-    var showGameConfig by mutableStateOf(false)
-        private set
-    
-    var selectedCountdown by mutableStateOf(501)
-        private set
-    
-    var selectedOutMode by mutableStateOf(OutMode.DOUBLE_OUT)
-        private set
-    
-    var currentThrow by mutableStateOf(0)
-        private set
-    
-    var throwCount by mutableStateOf(0)
-        private set
+    fun onAction(action: DartCounterAction) {
+        when (action) {
+            DartCounterAction.OnAddPlayersClick -> _state.update { it.copy(showPlayerSetup = true) }
+            DartCounterAction.OnPlayerSetupDismiss -> _state.update { it.copy(showPlayerSetup = false) }
+            is DartCounterAction.OnPlayersSelected -> onPlayersSelected(action.players)
 
-    val dartsLeft: Int get() = if (gameStarted) 3 - throwCount else 0
+            DartCounterAction.OnConfigureGameClick -> _state.update { it.copy(showGameConfig = true) }
+            DartCounterAction.OnGameConfigDismiss -> _state.update { it.copy(showGameConfig = false) }
+            DartCounterAction.OnConfirmStartGame -> startGame()
+            is DartCounterAction.OnCountdownSelect -> _state.update { it.copy(selectedCountdown = action.countdown) }
+            is DartCounterAction.OnOutModeSelect -> _state.update { it.copy(selectedOutMode = action.mode) }
 
-    var showStopGameDialog by mutableStateOf(false)
-        private set
-    var gameStarted by mutableStateOf(false)
-        private set
-    
-    var currentPlayerName by mutableStateOf("")
-        private set
-    
-    var totalThrowsCount by mutableStateOf(0)
-        private set
+            DartCounterAction.OnStopGameClick -> _state.update { it.copy(showStopGameDialog = true) }
+            DartCounterAction.OnStopGameDismiss -> _state.update { it.copy(showStopGameDialog = false) }
+            DartCounterAction.OnConfirmStopGame -> stopGame()
 
-    fun setPlayers(names: List<String>) {
-        playerNames = names
-    }
+            DartCounterAction.OnHighscoresClick -> _state.update { it.copy(showHighscores = true) }
+            DartCounterAction.OnHighscoresDismiss -> _state.update { it.copy(showHighscores = false) }
 
-    fun addPlayerName(name: String) {
-        if (name.isNotBlank() && name !in playerNames) {
-            playerNames = playerNames + name
+            is DartCounterAction.OnMultiplierSelect ->
+                _state.update { it.copy(selectedMultiplier = action.multiplier) }
+            is DartCounterAction.OnDartThrow -> throwDart(action)
+            DartCounterAction.OnUndoThrow -> undoLastThrow()
+
+            DartCounterAction.OnUploadHighscores -> highscoreUpload.upload()
+            DartCounterAction.OnDeclineHighscoreUpload -> highscoreUpload.decline()
         }
     }
-    
-    fun removePlayerName(name: String) {
-        playerNames = playerNames - name
+
+    private fun onPlayersSelected(players: List<GamePlayer>) {
+        gamePlayers = players
+        _state.update {
+            it.copy(playerNames = players.map { player -> player.name }, showPlayerSetup = false)
+        }
     }
-    
-    fun startGame() {
-        if (playerNames.isNotEmpty()) {
-            gameManager = GameManager(
-                doubleOut = selectedOutMode == OutMode.DOUBLE_OUT,
-                countdown = selectedCountdown,
-                playerNames = playerNames,
-                onDartCountChanged = { count -> /* currentTurnDartCount = count */ },
-                onThrowAdded = { totalThrowsCount++ }
+
+    private fun startGame() {
+        val names = _state.value.playerNames
+        if (names.isEmpty()) return
+        highscoreUpload.reset()
+        game = DartGame(
+            outMode = _state.value.selectedOutMode,
+            countdown = _state.value.selectedCountdown,
+            playerNames = names,
+        )
+        _state.update {
+            it.copy(
+                gameStarted = true,
+                showPlayerSetup = false,
+                showGameConfig = false,
+                selectedMultiplier = DartMultiplier.SINGLE,
             )
-            gameManager?.startTurn() // Initialize first player's turn
-            updateCurrentPlayerName() // Update current player display
-            showPlayerSetup = false
-            showGameConfig = false
-            resetThrow()
-            gameStarted = true
+        }
+        projectGame()
+    }
+
+    private fun stopGame() {
+        saveSession.clear()
+        highscoreUpload.reset()
+        game = null
+        gamePlayers = emptyList()
+        _state.update {
+            it.copy(
+                gameStarted = false,
+                gameOver = false,
+                players = emptyList(),
+                winnerNames = emptyList(),
+                playerNames = emptyList(),
+                turnDarts = emptyList(),
+                checkout = emptyList(),
+                alternativeCheckout = emptyList(),
+                canUndo = false,
+                showStopGameDialog = false,
+                selectedMultiplier = DartMultiplier.SINGLE,
+            )
         }
     }
-    
-    fun showPlayerSetupDialog() {
-        showPlayerSetup = true
-    }
-    
-    fun hidePlayerSetupDialog() {
-        showPlayerSetup = false
-    }
-    
-    fun showGameConfigDialog() {
-        showGameConfig = true
-    }
-    
-    fun hideGameConfigDialog() {
-        showGameConfig = false
-    }
-    
-    fun setCountdown(countdown: Int) {
-        selectedCountdown = countdown
+
+    private fun throwDart(action: DartCounterAction.OnDartThrow) {
+        val running = game ?: return
+        running.throwDart(action.segment)
+        // Every pad press falls back to single, so a double/triple is always a deliberate choice
+        _state.update { it.copy(selectedMultiplier = DartMultiplier.SINGLE) }
+        projectGame()
+        if (running.gameOver) offerHighscoreUpload(running)
     }
 
-    fun setOutMode(mode: OutMode) {
-        selectedOutMode = mode
+    private fun undoLastThrow() {
+        val running = game ?: return
+        if (!running.undoLastThrow()) return
+        projectGame()
+        // The finish was taken back, so there is no final result to upload anymore
+        if (!running.gameOver) highscoreUpload.reset()
     }
-    
-    fun throwDart(segment: DartSegment) {
-        gameManager?.let { game ->
-            val score = segment.base
-            val isDouble = segment.isDouble
-            val isTriple = segment.isTriple
-            val actualScore = segment.points
 
-            // Track darts thrown for current player, including busts
-            game.getCurrentPlayer().totalDartsThrown++
+    /** Copies everything the UI needs out of the mutable game into the immutable state. */
+    private fun projectGame() {
+        val running = game
+        if (running == null) {
+            _state.update { it.copy(players = emptyList(), gameOver = false) }
+            return
+        }
+        val current = running.currentPlayer
+        val dartsLeft = running.dartsLeft
+        val checkouts =
+            if (!running.gameOver && dartsLeft > 0) findCheckouts(current.score, dartsLeft, running.doubleOut)
+            else emptyList()
 
-            if (game.subtractScore(score, isDouble, isTriple)) {
-                // Track this dart
-                game.addDartToTurn(score, isDouble, isTriple, actualScore)
-
-                currentThrow += actualScore
-                throwCount++
-
-                if (throwCount >= 3) {
-                    if (!game.gameOver) {
-                        game.completeTurn()
-                        game.nextPlayer()
-                        updateCurrentPlayerName()
-                    }
-                    resetThrow()
-                }
-            } else {
-                // Bust occurred - reset score to turn start and move to next player
-                game.bust()
-                resetThrow()
-                if (!game.gameOver) {
-                    game.completeTurn() // Save the busted turn
-                    game.nextPlayer()
-                    updateCurrentPlayerName()
-                }
-            }
+        _state.update { state ->
+            state.copy(
+                gameOver = running.gameOver,
+                players = running.players.mapIndexed { index, player ->
+                    player.toDartPlayerUi(
+                        countdown = running.countdown,
+                        isCurrent = index == running.currentPlayerIndex && !running.gameOver,
+                    )
+                },
+                winnerNames = running.winners.map { it.name },
+                currentPlayerName = current.name,
+                currentPlayerScore = current.score,
+                currentPlayerIndex = running.currentPlayerIndex,
+                dartsLeft = dartsLeft,
+                turnDarts = running.dartsThisTurn,
+                turnTotal = running.turnTotal,
+                checkout = checkouts.firstOrNull().orEmpty(),
+                alternativeCheckout = checkouts.getOrNull(1).orEmpty(),
+                canUndo = running.canUndo,
+            )
         }
     }
-    
-    fun canUndoThrow(): Boolean {
-        return gameStarted && totalThrowsCount > 0
+
+    // ─── Persistence ──────────────────────────────────────────────────────────
+
+    /** Leaving the screen or backgrounding the app keeps the running leg for the next visit. */
+    fun persist() = saveSession.persist(snapshotOrNull())
+
+    /** Null when there is no leg worth keeping (not started or already over). */
+    private fun snapshotOrNull(): DartCounterSnapshot? {
+        val running = game ?: return null
+        if (!_state.value.gameStarted || running.gameOver || running.players.isEmpty()) return null
+        return running.toSnapshot(userIds = gamePlayers.map { it.userId }).toSnapshot()
     }
-    
-    fun undoLastThrow() {
-        gameManager?.let { game ->
-            if (game.undoLastThrow()) {
-                // Update total throws count
-                totalThrowsCount--
-                
-                // Update current throw display
-                val currentTurnDarts = game.getCurrentTurnDarts()
-                currentThrow = currentTurnDarts.sumOf { it.actualScore }
-                throwCount = currentTurnDarts.size
-                updateCurrentPlayerName()
-            }
+
+    private fun restore(save: GameSave<DartCounterSnapshot>) {
+        val data = save.data
+        if (data.players.isEmpty()) return
+        val names = data.players.map { it.name }
+        val restored = DartGame(
+            outMode = if (data.doubleOut) DartOutMode.DOUBLE_OUT else DartOutMode.SINGLE_OUT,
+            countdown = data.countdown,
+            playerNames = names,
+        )
+        restored.restoreFrom(data.toSnapshotData())
+        if (restored.gameOver) return
+
+        game = restored
+        gamePlayers = data.players.map { GamePlayer(name = it.name, userId = it.userId) }
+        _state.update {
+            it.copy(
+                gameStarted = true,
+                playerNames = names,
+                selectedCountdown = data.countdown,
+                selectedOutMode = if (data.doubleOut) DartOutMode.DOUBLE_OUT else DartOutMode.SINGLE_OUT,
+            )
         }
+        projectGame()
     }
-    
-    private fun updateCurrentPlayerName() {
-        gameManager?.let { game ->
-            currentPlayerName = game.getCurrentPlayer().name
+
+    /**
+     * Only a finished leg counts: each player's three-dart average over the whole leg (x100),
+     * on the board of the leg's countdown. Averages during a running leg are never offered.
+     */
+    private fun offerHighscoreUpload(finished: DartGame) {
+        val results = finished.players.mapIndexedNotNull { index, player ->
+            if (player.totalDartsThrown == 0) return@mapIndexedNotNull null
+            val average = finished.countdown * 300.0 / player.totalDartsThrown
+            val gamePlayer = gamePlayers.getOrNull(index) ?: GamePlayer(name = player.name)
+            gamePlayer to average.roundToLong()
         }
+        highscoreUpload.offer(dartCounterDifficulty(finished.countdown), results)
     }
-    
-    private fun resetThrow() {
-        currentThrow = 0
-        throwCount = 0
-    }
-    
-    fun resetGame() {
-        gameManager = null
-        playerNames = emptyList()
-        resetThrow()
-        gameStarted = false
-    }
-    
-    fun showStopGameConfirmation() {
-        showStopGameDialog = true
-    }
-    
-    fun hideStopGameConfirmation() {
-        showStopGameDialog = false
-    }
-    
-    fun stopGame() {
-        resetGame()
-        showStopGameDialog = false
-    }
-    
-    fun canUndo(): Boolean {
-        return gameManager?.canUndo() ?: false
+
+    override fun onCleared() {
+        super.onCleared()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }

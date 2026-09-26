@@ -1,14 +1,24 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.undercover
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
+import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadController
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -18,418 +28,511 @@ import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_underco
 import kotlin.random.Random
 
 class UndercoverViewModel(
-    private val languageService: LanguageService
+    private val languageService: LanguageService,
+    gameSaveRepository: GameSaveRepository,
+    gameHighscoreRepository: GameHighscoreRepository,
 ) : ViewModel() {
 
-    enum class ActualRole {
-        CIVILIAN,
-        UNDERCOVER,
-        MR_WHITE
-    }
+    private val _state = MutableStateFlow(UndercoverState())
 
-    enum class Phase {
-        SETUP,
-        PASS_PHONE,
-        REVEAL,
-        CHOOSE_STARTER,
-        DISCUSSION,
-        VOTING,
-        MR_WHITE_GUESS,
-        GAME_OVER
-    }
-
-    data class Player(
-        val id: String,
-        val name: String,
-        val actualRole: ActualRole,
-        val isAlive: Boolean
+    private val highscoreUpload = HighscoreUploadController(
+        game = GameId.UNDERCOVER,
+        repository = gameHighscoreRepository,
+        scope = viewModelScope,
     )
 
-    data class VotingResult(
-        val eliminatedPlayerId: String,
-        val eliminatedPlayerName: String,
-        val revealedRole: ActualRole
+    val state = combine(_state, highscoreUpload.state) { state, upload ->
+        state.copy(highscoreUpload = upload)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = UndercoverState(),
     )
-
-    data class UiState(
-        val phase: Phase = Phase.SETUP,
-
-        val setupPlayerNameInput: String = "",
-        val setupPlayers: List<String> = emptyList(),
-        val setupMrWhiteCount: Int = 1,
-        val setupUndercoverCount: Int = 1,
-
-        val autoHideEnabled: Boolean = false,
-        val autoHideSeconds: Int = 5,
-        val mrWhiteTipEnabled: Boolean = false,
-
-        val selectedWordPair: UndercoverWordPair? = null,
-        val players: List<Player> = emptyList(),
-
-        val currentRevealIndex: Int = 0,
-
-        val selectedStarterPlayerId: String? = null,
-
-        val votingSelectedPlayerId: String? = null,
-        val votingResult: VotingResult? = null,
-
-        val mrWhiteGuessInput: String = "",
-        val mrWhiteGuessWasCorrect: Boolean? = null,
-
-        val winnerText: UiText? = null,
-        
-        val showRulesDialog: Boolean = false,
-        val showPlayerSelector: Boolean = false
-    )
-
-    var state by mutableStateOf(UiState())
-        private set
 
     private var revealAutoHideJob: Job? = null
 
-    fun updateSetupPlayerNameInput(newValue: String) {
-        state = state.copy(setupPlayerNameInput = newValue)
-    }
+    /** The round's word pair. Kept out of the state so only the player at the screen sees a word. */
+    private var selectedWordPair: UndercoverWordPair? = null
 
-    fun addSetupPlayer() {
-        val trimmed = state.setupPlayerNameInput.trim()
-        if (trimmed.isBlank()) return
-        if (state.setupPlayers.any { it.equals(trimmed, ignoreCase = true) }) return
-        state = state.copy(
-            setupPlayers = state.setupPlayers + trimmed,
-            setupPlayerNameInput = ""
+    /** Loaded once for the current language instead of blocking the main thread on every check. */
+    private var wordPairs: List<UndercoverWordPair> = emptyList()
+
+    private val saveSession = GameSaveSession(
+        game = LocalGameSaveSlot.UNDERCOVER,
+        serializer = UndercoverSnapshot.serializer(),
+        schemaVersion = UNDERCOVER_SNAPSHOT_VERSION,
+        repository = gameSaveRepository,
+        scope = viewModelScope,
+    )
+
+    init {
+        viewModelScope.launch {
+            wordPairs = getUndercoverWordPairs(languageService.getCurrentLanguage())
+            _state.update { it.copy(wordListReady = wordPairs.isNotEmpty()) }
+        }
+        saveSession.start(
+            onRestore = ::restore,
+            onAppBackgrounded = {
+                // Whoever picks the phone up next must not see a word that was left open
+                closeSniff()
+                persist()
+            }
         )
+    }
+
+    fun onAction(action: UndercoverAction) {
+        when (action) {
+            UndercoverAction.OnShowPlayerSelector -> _state.update { it.copy(showPlayerSelector = true) }
+            UndercoverAction.OnHidePlayerSelector -> _state.update { it.copy(showPlayerSelector = false) }
+            is UndercoverAction.OnPlayersSelected -> setSetupPlayers(action.players)
+            is UndercoverAction.OnRemoveSetupPlayer -> removeSetupPlayer(action.name)
+            UndercoverAction.OnIncrementMrWhiteCount -> updateRoleCounts(mrWhiteDelta = 1)
+            UndercoverAction.OnDecrementMrWhiteCount -> updateRoleCounts(mrWhiteDelta = -1)
+            UndercoverAction.OnIncrementUndercoverCount -> updateRoleCounts(undercoverDelta = 1)
+            UndercoverAction.OnDecrementUndercoverCount -> updateRoleCounts(undercoverDelta = -1)
+            is UndercoverAction.OnToggleAutoHide -> _state.update { it.copy(autoHideEnabled = action.enabled) }
+            UndercoverAction.OnIncrementAutoHideSeconds ->
+                _state.update { it.copy(autoHideSeconds = (it.autoHideSeconds + 1).coerceAtMost(30)) }
+            UndercoverAction.OnDecrementAutoHideSeconds ->
+                _state.update { it.copy(autoHideSeconds = (it.autoHideSeconds - 1).coerceAtLeast(1)) }
+            is UndercoverAction.OnToggleMrWhiteTip -> _state.update { it.copy(mrWhiteTipEnabled = action.enabled) }
+            UndercoverAction.OnShowRules -> _state.update { it.copy(showRulesDialog = true) }
+            UndercoverAction.OnHideRules -> _state.update { it.copy(showRulesDialog = false) }
+            UndercoverAction.OnStartGame -> startGame()
+
+            UndercoverAction.OnConfirmPlayerIdentity -> onConfirmPlayerIdentity()
+            UndercoverAction.OnHideAndPassPhone -> onHideAndPassPhone()
+            UndercoverAction.OnPickRandomStarter -> selectRandomStarterIfNeeded()
+            UndercoverAction.OnConfirmStarter -> confirmStarter()
+            UndercoverAction.OnStartVoting -> startVoting()
+            is UndercoverAction.OnSelectVote -> selectVote(action.playerId)
+            UndercoverAction.OnConfirmVote -> confirmVote()
+            UndercoverAction.OnContinueAfterVotingResult -> onContinueAfterVotingResult()
+            is UndercoverAction.OnMrWhiteGuessChange -> updateMrWhiteGuessInput(action.guess)
+            UndercoverAction.OnSubmitMrWhiteGuess -> submitMrWhiteGuess()
+            UndercoverAction.OnRestartWithSamePlayers -> restartWithSamePlayers()
+            UndercoverAction.OnResetGame -> resetGame()
+
+            UndercoverAction.OnOpenSniff -> openSniff()
+            is UndercoverAction.OnSelectSniffPlayer -> selectSniffPlayer(action.playerId)
+            UndercoverAction.OnConfirmSniffIdentity -> confirmSniffIdentity()
+            UndercoverAction.OnCloseSniff -> closeSniff()
+
+            UndercoverAction.OnUploadHighscores -> highscoreUpload.upload()
+            UndercoverAction.OnDeclineHighscoreUpload -> highscoreUpload.decline()
+        }
+    }
+
+    // ─── Setup ────────────────────────────────────────────────────────────────
+
+    private fun setSetupPlayers(players: List<GamePlayer>) {
+        _state.update {
+            it.copy(
+                setupPlayers = players.map { player -> player.name },
+                setupPlayerUserIds = players.mapNotNull { player ->
+                    player.userId?.let { id -> player.name to id }
+                }.toMap(),
+                showPlayerSelector = false,
+            )
+        }
         coerceRoleCountsToValidRange()
     }
 
-    fun removeSetupPlayer(name: String) {
-        state = state.copy(setupPlayers = state.setupPlayers - name)
+    private fun removeSetupPlayer(name: String) {
+        _state.update {
+            it.copy(
+                setupPlayers = it.setupPlayers - name,
+                setupPlayerUserIds = it.setupPlayerUserIds - name,
+            )
+        }
         coerceRoleCountsToValidRange()
     }
 
-    fun incrementMrWhiteCount() {
-        state = state.copy(setupMrWhiteCount = state.setupMrWhiteCount + 1)
+    private fun updateRoleCounts(mrWhiteDelta: Int = 0, undercoverDelta: Int = 0) {
+        _state.update {
+            it.copy(
+                setupMrWhiteCount = (it.setupMrWhiteCount + mrWhiteDelta).coerceAtLeast(0),
+                setupUndercoverCount = (it.setupUndercoverCount + undercoverDelta).coerceAtLeast(0),
+            )
+        }
         coerceRoleCountsToValidRange()
     }
 
-    fun decrementMrWhiteCount() {
-        state = state.copy(setupMrWhiteCount = (state.setupMrWhiteCount - 1).coerceAtLeast(0))
-        coerceRoleCountsToValidRange()
+    /** Keeps the special roles inside what the current number of players allows. */
+    private fun coerceRoleCountsToValidRange() {
+        _state.update { current ->
+            val playerCount = current.setupPlayers.size
+            if (playerCount <= 0) {
+                return@update current.copy(
+                    setupMrWhiteCount = current.setupMrWhiteCount.coerceAtLeast(0),
+                    setupUndercoverCount = current.setupUndercoverCount.coerceAtLeast(0),
+                )
+            }
+            val maxSpecial = (playerCount - 1).coerceAtLeast(0)
+            val mrWhite = current.setupMrWhiteCount.coerceIn(0, maxSpecial)
+            val undercover = current.setupUndercoverCount.coerceIn(0, (maxSpecial - mrWhite).coerceAtLeast(0))
+            current.copy(setupMrWhiteCount = mrWhite, setupUndercoverCount = undercover)
+        }
     }
 
-    fun incrementUndercoverCount() {
-        state = state.copy(setupUndercoverCount = state.setupUndercoverCount + 1)
-        coerceRoleCountsToValidRange()
-    }
+    private fun startGame() {
+        val current = _state.value
+        if (!current.canStartGame) return
+        highscoreUpload.reset()
 
-    fun decrementUndercoverCount() {
-        state = state.copy(setupUndercoverCount = (state.setupUndercoverCount - 1).coerceAtLeast(0))
-        coerceRoleCountsToValidRange()
-    }
+        val wordPair = wordPairs.randomOrNull(Random) ?: return
+        selectedWordPair = wordPair
 
-    fun toggleAutoHide(enabled: Boolean) {
-        state = state.copy(autoHideEnabled = enabled)
-    }
-
-    fun incrementAutoHideSeconds() {
-        state = state.copy(autoHideSeconds = (state.autoHideSeconds + 1).coerceAtMost(30))
-    }
-
-    fun decrementAutoHideSeconds() {
-        state = state.copy(autoHideSeconds = (state.autoHideSeconds - 1).coerceAtLeast(1))
-    }
-
-    fun toggleMrWhiteTip(enabled: Boolean) {
-        state = state.copy(mrWhiteTipEnabled = enabled)
-    }
-
-    fun showRulesDialog() {
-        state = state.copy(showRulesDialog = true)
-    }
-
-    fun hideRulesDialog() {
-        state = state.copy(showRulesDialog = false)
-    }
-
-    fun showPlayerSelector() {
-        state = state.copy(showPlayerSelector = true)
-    }
-
-    fun hidePlayerSelector() {
-        state = state.copy(showPlayerSelector = false)
-    }
-
-    fun setSetupPlayers(names: List<String>) {
-        state = state.copy(setupPlayers = names)
-        coerceRoleCountsToValidRange()
-    }
-
-    fun canStartGame(): Boolean {
-        val n = state.setupPlayers.size
-        val special = state.setupMrWhiteCount + state.setupUndercoverCount
-        if (n < 3) return false
-        if (special >= n) return false
-        if (state.setupMrWhiteCount < 0 || state.setupUndercoverCount < 0) return false
-        
-        // Check if word lists are available by trying to get them
-        val currentLanguage = runBlocking { languageService.getCurrentLanguage() }
-        val wordPairs = getUndercoverWordPairs(currentLanguage)
-        if (wordPairs.isEmpty()) return false
-        
-        return true
-    }
-
-    fun startGame() {
-        if (!canStartGame()) return
-
-        // Get the appropriate word list based on current language
-        val currentLanguage = runBlocking { languageService.getCurrentLanguage() }
-        val wordPairs = getUndercoverWordPairs(currentLanguage)
-        val wordPair = wordPairs.random(Random)
-        
-        val names = state.setupPlayers
+        val names = current.setupPlayers
         val roles = buildList {
-            repeat(state.setupMrWhiteCount) { add(ActualRole.MR_WHITE) }
-            repeat(state.setupUndercoverCount) { add(ActualRole.UNDERCOVER) }
-            repeat(names.size - state.setupMrWhiteCount - state.setupUndercoverCount) { add(ActualRole.CIVILIAN) }
+            repeat(current.setupMrWhiteCount) { add(UndercoverRole.MR_WHITE) }
+            repeat(current.setupUndercoverCount) { add(UndercoverRole.UNDERCOVER) }
+            repeat(names.size - current.setupMrWhiteCount - current.setupUndercoverCount) {
+                add(UndercoverRole.CIVILIAN)
+            }
         }.shuffled(Random)
 
         val players = names.mapIndexed { index, name ->
-            Player(
+            UndercoverPlayer(
                 id = "p$index",
                 name = name,
                 actualRole = roles[index],
-                isAlive = true
+                isAlive = true,
+                userId = current.setupPlayerUserIds[name],
             )
         }
 
-        state = state.copy(
-            phase = Phase.PASS_PHONE,
-            selectedWordPair = wordPair,
-            players = players,
-            currentRevealIndex = 0,
-            selectedStarterPlayerId = null,
-            votingSelectedPlayerId = null,
-            votingResult = null,
-            mrWhiteGuessInput = "",
-            mrWhiteGuessWasCorrect = null,
-            winnerText = null
-        )
+        _state.update {
+            it.copy(
+                phase = UndercoverPhase.PASS_PHONE,
+                players = players,
+                currentRevealIndex = 0,
+                revealWord = null,
+                revealMrWhiteTip = null,
+                selectedStarterPlayerId = null,
+                selectedStarterName = null,
+                votingSelectedPlayerId = null,
+                votingResult = null,
+                mrWhiteGuessInput = "",
+                mrWhiteGuessWasCorrect = null,
+                winnerText = null,
+                sniffStep = SniffStep.CLOSED,
+                sniffPlayerId = null,
+                sniffWord = null,
+                sniffMrWhiteTip = null,
+            )
+        }
     }
 
-    fun currentRevealPlayerOrNull(): Player? {
-        val idx = state.currentRevealIndex
-        return state.players.getOrNull(idx)
-    }
+    // ─── Reveal ───────────────────────────────────────────────────────────────
 
-    fun currentRevealPlayerNameOrEmpty(): String {
-        return currentRevealPlayerOrNull()?.name.orEmpty()
-    }
-
-    fun onConfirmPlayerIdentity() {
-        if (state.phase != Phase.PASS_PHONE) return
-        state = state.copy(phase = Phase.REVEAL)
+    private fun onConfirmPlayerIdentity() {
+        val current = _state.value
+        if (current.phase != UndercoverPhase.PASS_PHONE) return
+        val player = current.currentRevealPlayer ?: return
+        _state.update {
+            it.copy(
+                phase = UndercoverPhase.REVEAL,
+                revealWord = wordFor(player),
+                revealMrWhiteTip = mrWhiteTipFor(player),
+            )
+        }
         scheduleAutoHideIfEnabled()
     }
 
-    fun onHideAndPassPhone() {
-        if (state.phase != Phase.REVEAL) return
+    private fun onHideAndPassPhone() {
+        val current = _state.value
+        if (current.phase != UndercoverPhase.REVEAL) return
         cancelAutoHide()
 
-        val nextIndex = state.currentRevealIndex + 1
-        if (nextIndex >= state.players.size) {
-            state = state.copy(phase = Phase.CHOOSE_STARTER)
+        val nextIndex = current.currentRevealIndex + 1
+        if (nextIndex >= current.players.size) {
+            _state.update {
+                it.copy(phase = UndercoverPhase.CHOOSE_STARTER, revealWord = null, revealMrWhiteTip = null)
+            }
         } else {
-            state = state.copy(
-                phase = Phase.PASS_PHONE,
-                currentRevealIndex = nextIndex
-            )
+            _state.update {
+                it.copy(
+                    phase = UndercoverPhase.PASS_PHONE,
+                    currentRevealIndex = nextIndex,
+                    revealWord = null,
+                    revealMrWhiteTip = null,
+                )
+            }
         }
     }
 
-
-    fun getWordForPlayer(player: Player): String? {
-        val pair = state.selectedWordPair ?: return null
+    private fun wordFor(player: UndercoverPlayer): String? {
+        val pair = selectedWordPair ?: return null
         return when (player.actualRole) {
-            ActualRole.MR_WHITE -> null
-            ActualRole.CIVILIAN -> pair.civilianWord
-            ActualRole.UNDERCOVER -> pair.undercoverWord
+            UndercoverRole.MR_WHITE -> null
+            UndercoverRole.CIVILIAN -> pair.civilianWord
+            UndercoverRole.UNDERCOVER -> pair.undercoverWord
         }
     }
 
-    fun getMrWhiteTipForPlayer(player: Player): String? {
-        if (!state.mrWhiteTipEnabled) return null
-        if (player.actualRole != ActualRole.MR_WHITE) return null
-        return state.selectedWordPair?.mrWhiteTip?.takeIf { it.isNotBlank() }
+    private fun mrWhiteTipFor(player: UndercoverPlayer): String? {
+        if (!_state.value.mrWhiteTipEnabled) return null
+        if (player.actualRole != UndercoverRole.MR_WHITE) return null
+        return selectedWordPair?.mrWhiteTip?.takeIf { it.isNotBlank() }
     }
 
-    fun starterCandidates(): List<Player> {
-        return state.players.filter { it.isAlive && it.actualRole != ActualRole.MR_WHITE }
+    // ─── Round ────────────────────────────────────────────────────────────────
+
+    private fun selectRandomStarterIfNeeded() {
+        val current = _state.value
+        if (current.phase != UndercoverPhase.CHOOSE_STARTER) return
+        if (current.selectedStarterPlayerId != null) return
+        val picked = current.starterCandidates.randomOrNull(Random) ?: return
+        _state.update { it.copy(selectedStarterPlayerId = picked.id, selectedStarterName = picked.name) }
     }
 
-    fun selectRandomStarterIfNeeded() {
-        if (state.phase != Phase.CHOOSE_STARTER) return
-        if (state.selectedStarterPlayerId != null) return
-        val candidates = starterCandidates()
-        val picked = candidates.randomOrNull(Random) ?: return
-        state = state.copy(selectedStarterPlayerId = picked.id)
+    private fun confirmStarter() {
+        val current = _state.value
+        if (current.phase != UndercoverPhase.CHOOSE_STARTER) return
+        val selected = current.selectedStarterPlayerId ?: return
+        if (current.starterCandidates.none { it.id == selected }) return
+        _state.update { it.copy(phase = UndercoverPhase.DISCUSSION) }
     }
 
-    fun getPlayerNameById(playerId: String): String? {
-        return state.players.firstOrNull { it.id == playerId }?.name
-    }
-
-    fun selectStarter(playerId: String) {
-        if (state.phase != Phase.CHOOSE_STARTER) return
-        val candidateIds = starterCandidates().map { it.id }.toSet()
-        if (playerId !in candidateIds) return
-        state = state.copy(selectedStarterPlayerId = playerId)
-    }
-
-    fun confirmStarter() {
-        if (state.phase != Phase.CHOOSE_STARTER) return
-        val candidateIds = starterCandidates().map { it.id }.toSet()
-        val selected = state.selectedStarterPlayerId
-        if (selected == null || selected !in candidateIds) return
-        state = state.copy(phase = Phase.DISCUSSION)
-    }
-
-    fun startVoting() {
-        if (state.phase != Phase.DISCUSSION) return
-        state = state.copy(
-            phase = Phase.VOTING,
-            votingSelectedPlayerId = null,
-            votingResult = null
-        )
-    }
-
-    fun votingCandidates(): List<Player> {
-        return state.players.filter { it.isAlive }
-    }
-
-    fun selectVote(playerId: String) {
-        if (state.phase != Phase.VOTING) return
-        if (state.votingResult != null) return
-        val candidateIds = votingCandidates().map { it.id }.toSet()
-        if (playerId !in candidateIds) return
-        state = state.copy(votingSelectedPlayerId = playerId)
-    }
-
-    fun confirmVote() {
-        if (state.phase != Phase.VOTING) return
-        if (state.votingResult != null) return
-        val targetId = state.votingSelectedPlayerId ?: return
-        val target = state.players.firstOrNull { it.id == targetId && it.isAlive } ?: return
-
-        val updatedPlayers = state.players.map { p ->
-            if (p.id == targetId) p.copy(isAlive = false) else p
+    private fun startVoting() {
+        if (_state.value.phase != UndercoverPhase.DISCUSSION) return
+        _state.update {
+            it.copy(
+                phase = UndercoverPhase.VOTING,
+                votingSelectedPlayerId = null,
+                votingResult = null,
+            )
         }
-
-        state = state.copy(
-            players = updatedPlayers,
-            votingResult = VotingResult(
-                eliminatedPlayerId = target.id,
-                eliminatedPlayerName = target.name,
-                revealedRole = target.actualRole
-            )
-        )
     }
 
-    fun onContinueAfterVotingResult() {
-        if (state.phase != Phase.VOTING) return
-        val result = state.votingResult ?: return
+    private fun selectVote(playerId: String) {
+        val current = _state.value
+        if (current.phase != UndercoverPhase.VOTING || current.votingResult != null) return
+        if (current.votingCandidates.none { it.id == playerId }) return
+        _state.update { it.copy(votingSelectedPlayerId = playerId) }
+    }
 
-        if (result.revealedRole == ActualRole.MR_WHITE) {
-            state = state.copy(
-                phase = Phase.MR_WHITE_GUESS,
-                mrWhiteGuessInput = "",
-                mrWhiteGuessWasCorrect = null
+    private fun confirmVote() {
+        val current = _state.value
+        if (current.phase != UndercoverPhase.VOTING || current.votingResult != null) return
+        val targetId = current.votingSelectedPlayerId ?: return
+        val target = current.players.firstOrNull { it.id == targetId && it.isAlive } ?: return
+
+        _state.update {
+            it.copy(
+                players = it.players.map { player ->
+                    if (player.id == targetId) player.copy(isAlive = false) else player
+                },
+                votingResult = UndercoverVotingResult(
+                    eliminatedPlayerId = target.id,
+                    eliminatedPlayerName = target.name,
+                    revealedRole = target.actualRole,
+                ),
             )
+        }
+    }
+
+    private fun onContinueAfterVotingResult() {
+        val current = _state.value
+        if (current.phase != UndercoverPhase.VOTING) return
+        val result = current.votingResult ?: return
+
+        if (result.revealedRole == UndercoverRole.MR_WHITE) {
+            _state.update {
+                it.copy(
+                    phase = UndercoverPhase.MR_WHITE_GUESS,
+                    mrWhiteGuessInput = "",
+                    mrWhiteGuessWasCorrect = null,
+                )
+            }
             return
         }
 
-        val winner = evaluateWinner(players = state.players)
+        val winner = evaluateWinner(current.players)
         if (winner != null) {
-            state = state.copy(
-                phase = Phase.GAME_OVER,
-                winnerText = winner
-            )
+            _state.update { it.copy(phase = UndercoverPhase.GAME_OVER, winnerText = winner) }
+            offerWinsForWinningSide()
             return
         }
 
-        state = state.copy(phase = Phase.DISCUSSION)
+        _state.update {
+            it.copy(
+                phase = UndercoverPhase.DISCUSSION,
+                votingSelectedPlayerId = null,
+                votingResult = null,
+            )
+        }
     }
 
-    fun updateMrWhiteGuessInput(newValue: String) {
-        if (state.phase != Phase.MR_WHITE_GUESS) return
-        state = state.copy(mrWhiteGuessInput = newValue)
+    private fun updateMrWhiteGuessInput(newValue: String) {
+        if (_state.value.phase != UndercoverPhase.MR_WHITE_GUESS) return
+        _state.update { it.copy(mrWhiteGuessInput = newValue) }
     }
 
-    fun submitMrWhiteGuess() {
-        if (state.phase != Phase.MR_WHITE_GUESS) return
-        val civilianWord = state.selectedWordPair?.civilianWord ?: return
-        val guess = state.mrWhiteGuessInput.trim()
-        val correct = guess.equals(civilianWord, ignoreCase = true)
+    private fun submitMrWhiteGuess() {
+        val current = _state.value
+        if (current.phase != UndercoverPhase.MR_WHITE_GUESS) return
+        val civilianWord = selectedWordPair?.civilianWord ?: return
+        val correct = current.mrWhiteGuessInput.trim().equals(civilianWord, ignoreCase = true)
 
         if (correct) {
-            state = state.copy(
-                phase = Phase.GAME_OVER,
-                mrWhiteGuessWasCorrect = true,
-                winnerText = UiText.StringResourceText(Res.string.undercover_winner_mr_white)
-            )
+            _state.update {
+                it.copy(
+                    phase = UndercoverPhase.GAME_OVER,
+                    mrWhiteGuessWasCorrect = true,
+                    winnerText = UiText.StringResourceText(Res.string.undercover_winner_mr_white),
+                )
+            }
+            // Only the Mr. White who guessed wins
+            val guesser = current.players.firstOrNull { it.id == current.votingResult?.eliminatedPlayerId }
+            offerWins(listOfNotNull(guesser))
             return
         }
 
-        val winnerAfterWrongGuess = evaluateWinner(players = state.players)
-        state = state.copy(
-            phase = if (winnerAfterWrongGuess == null) Phase.DISCUSSION else Phase.GAME_OVER,
-            mrWhiteGuessWasCorrect = false,
-            winnerText = winnerAfterWrongGuess
-        )
+        val winnerAfterWrongGuess = evaluateWinner(current.players)
+        _state.update {
+            it.copy(
+                phase = if (winnerAfterWrongGuess == null) UndercoverPhase.DISCUSSION else UndercoverPhase.GAME_OVER,
+                mrWhiteGuessWasCorrect = false,
+                winnerText = winnerAfterWrongGuess,
+            )
+        }
+        if (winnerAfterWrongGuess != null) offerWinsForWinningSide()
     }
 
-    fun resetGame() {
-        cancelAutoHide()
-        state = UiState(
-            setupPlayers = state.setupPlayers,
-            setupMrWhiteCount = state.setupMrWhiteCount,
-            setupUndercoverCount = state.setupUndercoverCount,
-            autoHideEnabled = state.autoHideEnabled,
-            autoHideSeconds = state.autoHideSeconds,
-            mrWhiteTipEnabled = state.mrWhiteTipEnabled
-        )
-        coerceRoleCountsToValidRange()
-    }
-
-    fun restartWithSamePlayers() {
-        if (state.phase != Phase.GAME_OVER) return
+    private fun restartWithSamePlayers() {
+        if (_state.value.phase != UndercoverPhase.GAME_OVER) return
         startGame()
     }
 
-    private fun evaluateWinner(players: List<Player>): UiText? {
+    private fun resetGame() {
+        cancelAutoHide()
+        highscoreUpload.reset()
+        saveSession.clear()
+        selectedWordPair = null
+        _state.update { current ->
+            UndercoverState(
+                setupPlayers = current.setupPlayers,
+                setupPlayerUserIds = current.setupPlayerUserIds,
+                setupMrWhiteCount = current.setupMrWhiteCount,
+                setupUndercoverCount = current.setupUndercoverCount,
+                autoHideEnabled = current.autoHideEnabled,
+                autoHideSeconds = current.autoHideSeconds,
+                mrWhiteTipEnabled = current.mrWhiteTipEnabled,
+                wordListReady = current.wordListReady,
+            )
+        }
+        coerceRoleCountsToValidRange()
+    }
+
+    // ─── Sniff ────────────────────────────────────────────────────────────────
+
+    private fun openSniff() {
+        if (!_state.value.canSniff) return
+        _state.update {
+            it.copy(
+                sniffStep = SniffStep.SELECT_PLAYER,
+                sniffPlayerId = null,
+                sniffWord = null,
+                sniffMrWhiteTip = null,
+            )
+        }
+    }
+
+    /** Picking a name only asks for confirmation - the word stays hidden until the player confirms it is them. */
+    private fun selectSniffPlayer(playerId: String) {
+        val current = _state.value
+        if (current.sniffStep != SniffStep.SELECT_PLAYER) return
+        if (current.sniffCandidates.none { it.id == playerId }) return
+        _state.update { it.copy(sniffStep = SniffStep.CONFIRM_IDENTITY, sniffPlayerId = playerId) }
+    }
+
+    private fun confirmSniffIdentity() {
+        val current = _state.value
+        if (current.sniffStep != SniffStep.CONFIRM_IDENTITY) return
+        val player = current.sniffPlayer ?: return
+        _state.update {
+            it.copy(
+                sniffStep = SniffStep.REVEAL,
+                sniffWord = wordFor(player),
+                sniffMrWhiteTip = mrWhiteTipFor(player),
+            )
+        }
+        scheduleAutoHideIfEnabled()
+    }
+
+    private fun closeSniff() {
+        if (_state.value.sniffStep == SniffStep.CLOSED) return
+        cancelAutoHide()
+        _state.update {
+            it.copy(
+                sniffStep = SniffStep.CLOSED,
+                sniffPlayerId = null,
+                sniffWord = null,
+                sniffMrWhiteTip = null,
+            )
+        }
+    }
+
+    // ─── Winners ──────────────────────────────────────────────────────────────
+
+    private fun evaluateWinner(players: List<UndercoverPlayer>): UiText? {
+        val roles = winningRoles(players) ?: return null
+        return if (UndercoverRole.CIVILIAN in roles) {
+            UiText.StringResourceText(Res.string.undercover_winner_civilians)
+        } else {
+            UiText.StringResourceText(Res.string.undercover_winner_undercover)
+        }
+    }
+
+    /** Roles of the side that won by elimination, or null while the game is still open. */
+    private fun winningRoles(players: List<UndercoverPlayer>): Set<UndercoverRole>? {
         val alive = players.filter { it.isAlive }
-        val aliveCivilians = alive.count { it.actualRole == ActualRole.CIVILIAN }
-        val aliveUndercovers = alive.count { it.actualRole == ActualRole.UNDERCOVER }
-        val aliveMrWhites = alive.count { it.actualRole == ActualRole.MR_WHITE }
+        val aliveCivilians = alive.count { it.actualRole == UndercoverRole.CIVILIAN }
+        val aliveUndercovers = alive.count { it.actualRole == UndercoverRole.UNDERCOVER }
+        val aliveMrWhites = alive.count { it.actualRole == UndercoverRole.MR_WHITE }
 
         if (aliveUndercovers == 0 && aliveMrWhites == 0) {
-            return UiText.StringResourceText(Res.string.undercover_winner_civilians)
+            return setOf(UndercoverRole.CIVILIAN)
         }
 
         if (aliveCivilians <= 1 && (aliveUndercovers + aliveMrWhites) > 0) {
-            return UiText.StringResourceText(Res.string.undercover_winner_undercover)
+            return setOf(UndercoverRole.UNDERCOVER, UndercoverRole.MR_WHITE)
         }
 
         return null
     }
 
+    /** The whole winning side gets a win, including teammates that were voted out earlier. */
+    private fun offerWinsForWinningSide() {
+        val players = _state.value.players
+        val roles = winningRoles(players) ?: return
+        offerWins(players.filter { it.actualRole in roles })
+    }
+
+    /**
+     * Asks whether one win should be added for each winner. Wins go to each winner's own account;
+     * players without an account are skipped by the controller.
+     */
+    private fun offerWins(winners: List<UndercoverPlayer>) {
+        highscoreUpload.offer(
+            difficulty = GameDifficulty.MEDIUM,
+            results = winners.map { GamePlayer(name = it.name, userId = it.userId) to 1L },
+        )
+    }
+
+    // ─── Auto hide ────────────────────────────────────────────────────────────
+
     private fun scheduleAutoHideIfEnabled() {
         cancelAutoHide()
-        if (!state.autoHideEnabled) return
+        if (!_state.value.autoHideEnabled) return
 
         revealAutoHideJob = viewModelScope.launch {
-            delay(state.autoHideSeconds.toLong() * 1000L)
-            if (state.phase == Phase.REVEAL) {
+            delay(_state.value.autoHideSeconds.toLong() * 1000L)
+            if (_state.value.sniffStep == SniffStep.REVEAL) {
+                closeSniff()
+            } else if (_state.value.phase == UndercoverPhase.REVEAL) {
                 onHideAndPassPhone()
             }
         }
@@ -440,22 +543,105 @@ class UndercoverViewModel(
         revealAutoHideJob = null
     }
 
-    private fun coerceRoleCountsToValidRange() {
-        val n = state.setupPlayers.size
-        if (n <= 0) {
-            state = state.copy(
-                setupMrWhiteCount = state.setupMrWhiteCount.coerceAtLeast(0),
-                setupUndercoverCount = state.setupUndercoverCount.coerceAtLeast(0)
-            )
-            return
-        }
+    // ─── Persistence ──────────────────────────────────────────────────────────
 
-        val maxSpecial = (n - 1).coerceAtLeast(0)
-        val mr = state.setupMrWhiteCount.coerceIn(0, maxSpecial)
-        val under = state.setupUndercoverCount.coerceIn(0, (maxSpecial - mr).coerceAtLeast(0))
-        state = state.copy(
-            setupMrWhiteCount = mr,
-            setupUndercoverCount = under
+    /** Leaving the screen or backgrounding the app keeps the running game for the next visit. */
+    fun persist() = saveSession.persist(snapshotOrNull())
+
+    /** Null when there is no game worth keeping (still in setup or already over). */
+    private fun snapshotOrNull(): UndercoverSnapshot? {
+        val current = _state.value
+        if (current.phase == UndercoverPhase.SETUP || current.phase == UndercoverPhase.GAME_OVER) return null
+        val wordPair = selectedWordPair ?: return null
+        return UndercoverSnapshot(
+            phase = current.phase,
+            setupPlayers = current.setupPlayers,
+            setupPlayerUserIds = current.setupPlayerUserIds,
+            setupMrWhiteCount = current.setupMrWhiteCount,
+            setupUndercoverCount = current.setupUndercoverCount,
+            autoHideEnabled = current.autoHideEnabled,
+            autoHideSeconds = current.autoHideSeconds,
+            mrWhiteTipEnabled = current.mrWhiteTipEnabled,
+            wordPair = UndercoverWordPairSnapshot(
+                civilianWord = wordPair.civilianWord,
+                undercoverWord = wordPair.undercoverWord,
+                mrWhiteTip = wordPair.mrWhiteTip,
+            ),
+            players = current.players.map {
+                UndercoverPlayerSnapshot(
+                    id = it.id,
+                    name = it.name,
+                    actualRole = it.actualRole,
+                    isAlive = it.isAlive,
+                    userId = it.userId,
+                )
+            },
+            currentRevealIndex = current.currentRevealIndex,
+            selectedStarterPlayerId = current.selectedStarterPlayerId,
+            votingSelectedPlayerId = current.votingSelectedPlayerId,
+            votingResult = current.votingResult?.let {
+                UndercoverVotingResultSnapshot(
+                    eliminatedPlayerId = it.eliminatedPlayerId,
+                    eliminatedPlayerName = it.eliminatedPlayerName,
+                    revealedRole = it.revealedRole,
+                )
+            },
+            mrWhiteGuessInput = current.mrWhiteGuessInput,
+            mrWhiteGuessWasCorrect = current.mrWhiteGuessWasCorrect,
         )
+    }
+
+    private fun restore(save: GameSave<UndercoverSnapshot>) {
+        val data = save.data
+        if (data.players.isEmpty()) return
+        selectedWordPair = UndercoverWordPair(
+            civilianWord = data.wordPair.civilianWord,
+            undercoverWord = data.wordPair.undercoverWord,
+            mrWhiteTip = data.wordPair.mrWhiteTip,
+        )
+        val players = data.players.map {
+            UndercoverPlayer(
+                id = it.id,
+                name = it.name,
+                actualRole = it.actualRole,
+                isAlive = it.isAlive,
+                userId = it.userId,
+            )
+        }
+        _state.update { current ->
+            UndercoverState(
+                // A word that was on screen must not show up again for whoever reopens the app,
+                // so the player has to confirm their identity again first
+                phase = if (data.phase == UndercoverPhase.REVEAL) UndercoverPhase.PASS_PHONE else data.phase,
+                setupPlayers = data.setupPlayers,
+                setupPlayerUserIds = data.setupPlayerUserIds,
+                setupMrWhiteCount = data.setupMrWhiteCount,
+                setupUndercoverCount = data.setupUndercoverCount,
+                autoHideEnabled = data.autoHideEnabled,
+                autoHideSeconds = data.autoHideSeconds,
+                mrWhiteTipEnabled = data.mrWhiteTipEnabled,
+                wordListReady = current.wordListReady,
+                players = players,
+                currentRevealIndex = data.currentRevealIndex.coerceIn(0, data.players.lastIndex),
+                selectedStarterPlayerId = data.selectedStarterPlayerId,
+                selectedStarterName = players.firstOrNull { it.id == data.selectedStarterPlayerId }?.name,
+                votingSelectedPlayerId = data.votingSelectedPlayerId,
+                votingResult = data.votingResult?.let {
+                    UndercoverVotingResult(
+                        eliminatedPlayerId = it.eliminatedPlayerId,
+                        eliminatedPlayerName = it.eliminatedPlayerName,
+                        revealedRole = it.revealedRole,
+                    )
+                },
+                mrWhiteGuessInput = data.mrWhiteGuessInput,
+                mrWhiteGuessWasCorrect = data.mrWhiteGuessWasCorrect,
+            )
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // viewModelScope is already cancelled here; the write runs on the application scope
+        persist()
     }
 }

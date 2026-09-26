@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi
 
+import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadState
+
 enum class YatziCategory(val displayName: String, val isUpper: Boolean) {
     ONES("Ones", true),
     TWOS("Twos", true),
@@ -34,7 +37,9 @@ data class YatziDie(
 
 data class YatziPlayer(
     val name: String,
-    val scores: Map<YatziCategory, Int> = emptyMap()
+    val scores: Map<YatziCategory, Int> = emptyMap(),
+    // Set for platform users, whose final score can be uploaded to the leaderboard
+    val userId: String? = null,
 ) {
     val upperScore: Int get() = scores.filterKeys { it.isUpper }.values.sum()
     val bonus: Int get() = if (upperScore >= 63) 35 else 0
@@ -50,9 +55,30 @@ data class YatziState(
     val gameStarted: Boolean = false,
     val winner: YatziPlayer? = null,
     val potentialScores: Map<YatziCategory, Int> = emptyMap(),
-    val showPlayerSelector: Boolean = false
+    val showPlayerSelector: Boolean = false,
+    /** True right after a stored game was restored, so the screen opens it instead of the setup. */
+    val openRestoredGame: Boolean = false,
+    val highscoreUpload: HighscoreUploadState = HighscoreUploadState(),
 ) {
     val currentPlayer: YatziPlayer? get() = players.getOrNull(currentPlayerIndex)
     val canRoll: Boolean get() = currentRollCount < 3 && winner == null
     val canScore: Boolean get() = currentRollCount > 0 && winner == null
+}
+
+sealed interface YatziAction {
+    data object OnShowPlayerSelector : YatziAction
+    data object OnHidePlayerSelector : YatziAction
+    data class OnPlayersSelected(val players: List<GamePlayer>) : YatziAction
+    data object OnStartGame : YatziAction
+    data object OnRestartGame : YatziAction
+    data object OnResetAll : YatziAction
+    data object OnEndGameToSetup : YatziAction
+    data object OnRestoredGameOpened : YatziAction
+
+    data object OnRollDice : YatziAction
+    data class OnToggleDie(val index: Int) : YatziAction
+    data class OnSelectCategory(val category: YatziCategory) : YatziAction
+
+    data object OnUploadHighscores : YatziAction
+    data object OnDeclineHighscoreUpload : YatziAction
 }
