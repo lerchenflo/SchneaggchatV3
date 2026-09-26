@@ -138,6 +138,9 @@ sealed interface Route : NavKey {
     data object FingerPicker: Route
 
     @Serializable
+    data object FuelCalculator: Route
+
+    @Serializable
     data object Game2048: Route
 
     @Serializable

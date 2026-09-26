@@ -9,6 +9,9 @@ sealed interface CrosswordAction {
     data class SelectLanguage(val language: CrosswordLanguage) : CrosswordAction
     data object RetryLoad : CrosswordAction
     /** Screen is leaving (back, rotation, tab switch): keep the progress for the next visit. */
+    /** The screen became visible; the clock only runs while someone is looking at it. */
+    data object EnterGame : CrosswordAction
+
     data object LeaveGame : CrosswordAction
     /** Throw the current grid away and load a fresh random one. */
     data object NewPuzzle : CrosswordAction

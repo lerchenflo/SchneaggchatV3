@@ -12,13 +12,13 @@ import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
-import org.lerchenflo.schneaggchatv3mp.games.domain.LocalGameSaveSlot
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartGame
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartOutMode
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.findCheckouts
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadController
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadStatus
 import kotlin.math.roundToLong
 
 class DartCounterViewModel(
@@ -50,7 +50,7 @@ class DartCounterViewModel(
     private var gamePlayers: List<GamePlayer> = emptyList()
 
     private val saveSession = GameSaveSession(
-        game = LocalGameSaveSlot.DART_COUNTER,
+        game = GameId.DART_COUNTER,
         serializer = DartCounterSnapshot.serializer(),
         schemaVersion = DART_COUNTER_SNAPSHOT_VERSION,
         repository = gameSaveRepository,
@@ -150,6 +150,8 @@ class DartCounterViewModel(
 
     private fun undoLastThrow() {
         val running = game ?: return
+        // The leg is already on the leaderboard - re-throwing the winning dart would upload it twice
+        if (_state.value.highscoreUpload.status == HighscoreUploadStatus.UPLOADED) return
         if (!running.undoLastThrow()) return
         projectGame()
         // The finish was taken back, so there is no final result to upload anymore

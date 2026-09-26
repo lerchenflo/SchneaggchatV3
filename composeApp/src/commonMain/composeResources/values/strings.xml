@@ -1089,7 +1089,21 @@
     <string name="direction_w">W</string>
     <string name="direction_nw">NW</string>
 
+    <!-- Games: player selector -->
+    <string name="player_selector_title">Select players</string>
+    <string name="player_selector_new_player">New player</string>
+    <string name="player_selector_add_player">Add player</string>
+    <string name="player_selector_tab_local">Local players</string>
+    <string name="player_selector_tab_friends">Friends</string>
+    <string name="player_selector_no_local_players">No local players yet. Add some!</string>
+    <string name="player_selector_no_friends">No friends available.</string>
+    <string name="player_selector_start_format">Start (%1$d)</string>
+    <string name="player_selector_delete_player">Delete player</string>
+    <string name="player_selector_friend">Friend</string>
+
     <!-- Game highscores -->
+    <string name="highscores_board_german">Deutsch</string>
+    <string name="highscores_board_english">English</string>
     <string name="highscores_title">Highscores</string>
     <string name="highscore_upload_title">Upload highscores?</string>
     <string name="game_reset_title">Reset game?</string>
@@ -1117,7 +1131,7 @@
     <string name="game_restart">Restart</string>
     <string name="show_highscores">Show highscores</string>
     <string name="global_ranking_title">Overall ranking</string>
-    <string name="global_ranking_explanation">Points over all games and difficulties</string>
+    <string name="global_ranking_explanation">Points over all games with a leaderboard. Party games played on one device (Yahtzee, Dart Counter, Undercover) do not count.</string>
     <string name="global_ranking_error">Could not load the ranking</string>
     <string name="global_ranking_empty">Nobody has played yet</string>
     <string name="global_ranking_points">%1$d pts</string>
@@ -1127,6 +1141,10 @@
     <string name="difficulty_low">Low</string>
     <string name="difficulty_medium">Medium</string>
     <string name="difficulty_high">High</string>
+    <string name="games_difficulty_info_hint">Only applies to games marked with a difficulty icon.</string>
+    <string name="games_difficulty_info_global">Difficulty: %1$s</string>
+    <string name="games_difficulty_info_language">Language is picked in the game</string>
+    <string name="games_difficulty_info_countdown">Countdown (301/501) is picked in the game</string>
     <string name="games_without_highscores">Games without highscores</string>
 
     <!-- Morse challenge -->
@@ -1508,4 +1526,47 @@
     <string name="no_shared_links">No links shared in this chat yet</string>
     <string name="go_to_message">Go to message</string>
     <string name="copy_link">Copy link</string>
+    <!-- Tools tab and two-stroke fuel mix calculator -->
+    <string name="games_tab_tools">Tools</string>
+    <string name="tools_fuel_title">Mixture calculator</string>
+    <string name="tools_fuel_description">Work out the oil for a petrol mix</string>
+    <string name="tools_fuel_explanation">Pick the quantity you already have and read off the rest. The ratio is petrol to oil, so 1:50 means 50 parts petrol for one part oil.</string>
+    <string name="tools_fuel_basis_title">Known quantity</string>
+    <string name="tools_fuel_basis_petrol">Petrol</string>
+    <string name="tools_fuel_basis_mixture">Mixture</string>
+    <string name="tools_fuel_basis_oil">Oil</string>
+    <string name="tools_fuel_amount_petrol">Petrol (l)</string>
+    <string name="tools_fuel_amount_mixture">Finished mix (l)</string>
+    <string name="tools_fuel_amount_oil">Oil (ml)</string>
+    <string name="tools_fuel_amount_error">Enter an amount greater than zero</string>
+    <string name="tools_fuel_ratio_title">Mix ratio</string>
+    <string name="tools_fuel_ratio_preset">1:%1$d</string>
+    <string name="tools_fuel_ratio_custom">Own ratio</string>
+    <string name="tools_fuel_ratio_error">Between %1$d and %2$d</string>
+    <string name="tools_fuel_result_petrol">Petrol</string>
+    <string name="tools_fuel_result_oil">Oil</string>
+    <string name="tools_fuel_result_total">Total</string>
+    <string name="tools_fuel_unit_litres">%1$s l</string>
+    <string name="tools_fuel_unit_millilitres">%1$s ml</string>
+    <string name="tools_fuel_clear">Clear</string>
+    <string name="tools_fuel_empty_hint">Enter an amount to see the mix.</string>
+    <string name="highscores_retry">Retry</string>
+    <string name="highscore_upload_no_accounts">Nobody in this game has an account, so no results were uploaded.</string>
+    <string name="tools_coinflip_description">Heads or tails for a quick decision</string>
+    <string name="tools_fingerpicker_description">Everyone holds a finger on the screen, chance picks the winners</string>
+    <!-- One-line game summaries for the game selector cards -->
+    <string name="games_tab_solo">Solo</string>
+    <string name="games_tab_multiplayer">Multiplayer</string>
+    <string name="games_tetris_description">Fit the falling pieces into full rows</string>
+    <string name="games_stack_tower_description">Stack the platforms as high as you can</string>
+    <string name="games_morse_description">Send morse code against the clock</string>
+    <string name="games_schneaggahus_description">Flip the switches to guide every Schneagg home</string>
+    <string name="games_gridrush_description">Clear the board by linking matching tiles</string>
+    <string name="games_oddoneout_description">Spot the one tile that is different</string>
+    <string name="games_2048_description">Merge matching numbers to reach 2048</string>
+    <string name="games_crossword_description">Fill the grid from the clues</string>
+    <string name="games_wordle_description">Guess the five-letter word in six tries</string>
+    <string name="games_yahtzee_description">Roll the dice and fill the scorecard</string>
+    <string name="games_dartcounter_description">Count down a 301 or 501 leg</string>
+    <string name="games_undercover_description">Unmask the impostor by describing your secret word</string>
 </resources>

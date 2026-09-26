@@ -94,6 +94,7 @@ fun WordleScreenRoot(
 
     // Leaving the screen persists the progress so it can be picked up again later
     DisposableEffect(Unit) {
+        viewmodel.onAction(WordleAction.EnterGame)
         onDispose { viewmodel.onAction(WordleAction.LeaveGame) }
     }
 

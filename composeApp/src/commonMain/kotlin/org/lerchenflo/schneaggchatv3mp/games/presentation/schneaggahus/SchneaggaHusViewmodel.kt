@@ -126,11 +126,13 @@ class SchneaggaHusViewmodel(
 
     private fun persist() = saveSession.persist(currentDifficulty, snapshotOrNull())
 
-    /** Null when there is no run worth keeping (not started, already over, or score is 0). */
+    /** Null when there is no run worth keeping: not started, already over, or still pristine. */
     private fun snapshotOrNull(): SchneaggaHusSnapshot? {
         val current = _state.value
         if (!current.isPlaying || current.isGameOver) return null
-        if (current.score == 0) return null
+        // A wrong delivery costs a life and scores nothing, so "score == 0" alone would hand out a
+        // free full-lives reset to anyone who backgrounds the app on their last life
+        if (current.score == 0 && current.lives == SCHNEAGGHUS_MAX_LIVES && current.wave == 1) return null
         return SchneaggaHusSnapshot(
             gridWidth = current.gridWidth,
             gridHeight = current.gridHeight,

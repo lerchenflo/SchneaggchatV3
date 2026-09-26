@@ -319,7 +319,10 @@ class MorseViewModel(
                         val remaining = challenge.charTimeRemainingMs - tickMs
 
                         if (remaining <= 0) {
-                            if (state.currentCode.isNotEmpty()) {
+                            // Holding the clock is only fair while the code can still become a
+                            // character. A dead end like ".-.-" schedules no auto-commit, so this
+                            // used to freeze the timer for good - unlimited thinking time on HIGH.
+                            if (state.currentCode.isNotEmpty() && isLiveMorsePrefix(state.currentCode)) {
                                 // User is actively inputting morse code symbols! Keep timer at 0ms without resetting input
                                 state.copy(
                                     challenge = challenge.copy(

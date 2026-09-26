@@ -6,6 +6,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartPlayer
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartSegment
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartThrow
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadState
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadStatus
 import kotlin.math.round
 
 /** Which segment of the board the dart pad scores. */
@@ -50,6 +51,7 @@ data class DartCounterState(
     /** Best finishing path for this turn, empty when a finish is out of reach. */
     val checkout: List<DartSegment> = emptyList(),
     val alternativeCheckout: List<DartSegment> = emptyList(),
+    /** Whether the engine still has a dart to take back; see [undoEnabled] for the UI. */
     val canUndo: Boolean = false,
     val selectedMultiplier: DartMultiplier = DartMultiplier.SINGLE,
 
@@ -67,6 +69,13 @@ data class DartCounterState(
 ) {
     /** The dart pad only accepts input while a leg is actually running. */
     val padEnabled: Boolean get() = gameStarted && !gameOver
+
+    /**
+     * Undo is off once the result reached the leaderboard: taking the winning dart back would
+     * re-open a finished leg and let the very same result be uploaded a second time.
+     */
+    val undoEnabled: Boolean
+        get() = canUndo && highscoreUpload.status != HighscoreUploadStatus.UPLOADED
 
     val canStartGame: Boolean get() = playerNames.isNotEmpty()
 }

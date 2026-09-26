@@ -46,13 +46,19 @@ class WordleViewModel(
     val restoreChecked = saveSession.restoreChecked
 
     private var timerJob: Job? = null
+
+    /**
+     * Whether the game screen is on top. Only the screen knows - the app-wide resume event would
+     * otherwise restart the clock for a game nobody can see.
+     */
+    private var screenVisible = false
     /** Accepted English guesses; null means "not available", then any five letters pass. */
     private var englishGuessList: Set<String>? = null
 
     init {
         saveSession.start(onRestore = ::restore, onAppBackgrounded = ::onAppBackgrounded)
         viewModelScope.launch {
-            AppLifecycleManager.appResumedEvent.collect { resumeTimerIfNeeded() }
+            AppLifecycleManager.appResumedEvent.collect { if (screenVisible) resumeTimerIfNeeded() }
         }
     }
 
@@ -61,7 +67,15 @@ class WordleViewModel(
             is WordleAction.SelectLanguage -> loadPuzzle(action.language)
             WordleAction.RetryLoad -> _state.value.language?.let { loadPuzzle(it) }
             WordleAction.NewWord -> _state.value.language?.let { loadPuzzle(it) }
-            WordleAction.LeaveGame -> persist()
+            WordleAction.EnterGame -> {
+                screenVisible = true
+                resumeTimerIfNeeded()
+            }
+            // Leaving has to stop the clock: the elapsed time is this board's leaderboard tiebreaker
+            WordleAction.LeaveGame -> {
+                screenVisible = false
+                onAppBackgrounded()
+            }
             is WordleAction.KeyPressed -> onKeyPressed(action.letter)
             WordleAction.Backspace -> onBackspace()
             WordleAction.SubmitGuess -> submitGuess()

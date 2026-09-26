@@ -6,13 +6,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
-import org.lerchenflo.schneaggchatv3mp.games.domain.countsWins
-import org.lerchenflo.schneaggchatv3mp.games.domain.formatScore
+import org.lerchenflo.schneaggchatv3mp.games.domain.leaderboard
 
 enum class HighscoreUploadStatus {
     /** No finished game with uploadable players. */
@@ -22,6 +22,9 @@ enum class HighscoreUploadStatus {
     UPLOADED,
     FAILED,
     DECLINED,
+
+    /** A finished game whose players have no accounts, so there was nothing to offer. */
+    NO_ACCOUNTS,
 }
 
 data class HighscoreUploadRow(
@@ -57,7 +60,13 @@ class HighscoreUploadController(
     fun offer(difficulty: GameDifficulty, results: List<Pair<GamePlayer, Long>>) {
         val uploadable = results.filter { it.first.userId != null }
         if (uploadable.isEmpty()) {
-            reset()
+            // Silence here reads as a bug: the game is over and the leaderboard was never mentioned
+            pendingScores = emptyMap()
+            _state.value = HighscoreUploadState(
+                status = if (results.isEmpty()) HighscoreUploadStatus.NONE
+                else HighscoreUploadStatus.NO_ACCOUNTS,
+                skippedPlayerCount = results.size,
+            )
             return
         }
         pendingDifficulty = difficulty
@@ -67,25 +76,36 @@ class HighscoreUploadController(
             rows = uploadable.map { (player, score) ->
                 HighscoreUploadRow(
                     playerName = player.name,
-                    scoreText = if (game.countsWins) "+$score" else game.formatScore(score),
+                    scoreText = if (game.leaderboard.countsWins) "+$score" else game.leaderboard.formatScore(score),
                 )
             },
             skippedPlayerCount = results.size - uploadable.size,
-            winsOnly = game.countsWins,
+            winsOnly = game.leaderboard.countsWins,
         )
     }
 
     fun upload() {
         val status = _state.value.status
         if (status != HighscoreUploadStatus.ASKING && status != HighscoreUploadStatus.FAILED) return
+        // Captured now: a reset() while the request is in flight must not turn this into an
+        // empty submission that reports success without uploading anything.
+        val difficulty = pendingDifficulty
+        val scores = pendingScores
         _state.update { it.copy(status = HighscoreUploadStatus.UPLOADING) }
         scope.launch {
-            val result = repository.submitBatchScores(game, pendingDifficulty, pendingScores)
+            val result = withTimeoutOrNull(UPLOAD_TIMEOUT_MS) {
+                repository.submitBatchScores(game, difficulty, scores)
+            }
             val newStatus = when (result) {
                 is NetworkResult.Success -> HighscoreUploadStatus.UPLOADED
-                is NetworkResult.Error -> HighscoreUploadStatus.FAILED
+                // A failure and a timed-out request both need the same way out: retry or skip
+                else -> HighscoreUploadStatus.FAILED
             }
-            _state.update { it.copy(status = newStatus) }
+            // A reset or a new offer in between wins - a late answer must not revive a dialog
+            // for a game that is already over and gone.
+            _state.update {
+                if (it.status == HighscoreUploadStatus.UPLOADING) it.copy(status = newStatus) else it
+            }
         }
     }
 
@@ -100,4 +120,10 @@ class HighscoreUploadController(
         _state.value = HighscoreUploadState()
     }
 }
+
+/**
+ * Last resort above the HTTP client's own timeouts: the upload dialog cannot be dismissed and
+ * both its buttons are disabled while uploading, so UPLOADING has to end no matter what.
+ */
+private const val UPLOAD_TIMEOUT_MS = 120_000L
 

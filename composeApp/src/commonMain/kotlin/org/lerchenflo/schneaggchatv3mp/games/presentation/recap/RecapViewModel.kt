@@ -29,9 +29,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
-import org.lerchenflo.schneaggchatv3mp.games.domain.countsWins
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterCountdown
-import org.lerchenflo.schneaggchatv3mp.games.domain.formatScore
+import org.lerchenflo.schneaggchatv3mp.games.domain.leaderboard
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.month_april
 import schneaggchatv3mp.composeapp.generated.resources.month_august
@@ -225,8 +224,8 @@ class RecapViewModel(
                             ?: it.difficulty,
                         bestScore = it.bestScore,
                         rank = it.rank,
-                        bestScoreText = if (isDartCounter) GameId.DART_COUNTER.formatScore(it.bestScore) else null,
-                        countsWins = GameId.entries.find { g -> g.name == it.game }?.countsWins == true,
+                        bestScoreText = if (isDartCounter) GameId.DART_COUNTER.leaderboard.formatScore(it.bestScore) else null,
+                        countsWins = GameId.entries.find { g -> g.name == it.game }?.leaderboard?.countsWins == true,
                     )
                 },
 

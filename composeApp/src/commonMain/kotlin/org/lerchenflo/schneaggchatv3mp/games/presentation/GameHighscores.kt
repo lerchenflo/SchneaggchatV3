@@ -39,13 +39,15 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
+import org.lerchenflo.schneaggchatv3mp.games.domain.BoardAxis
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterCountdown
-import org.lerchenflo.schneaggchatv3mp.games.domain.formatScore
-import org.lerchenflo.schneaggchatv3mp.games.domain.hasTimedScores
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
+import schneaggchatv3mp.composeapp.generated.resources.highscores_board_english
+import schneaggchatv3mp.composeapp.generated.resources.highscores_board_german
 import schneaggchatv3mp.composeapp.generated.resources.highscores_empty
 import schneaggchatv3mp.composeapp.generated.resources.highscores_error
+import schneaggchatv3mp.composeapp.generated.resources.highscores_retry
 import schneaggchatv3mp.composeapp.generated.resources.highscores_period_all_time
 import schneaggchatv3mp.composeapp.generated.resources.highscores_period_daily
 import schneaggchatv3mp.composeapp.generated.resources.highscores_period_weekly
@@ -65,7 +67,9 @@ fun HighscoresDialog(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(game, initialDifficulty) {
+    // Keyed on the game only: [initialDifficulty] is just a starting point, so a caller changing
+    // it must never re-open the board and throw away the chip the user picked in here.
+    LaunchedEffect(game) {
         viewModel.onAction(HighscoresAction.OnOpen(game, initialDifficulty))
     }
 
@@ -82,9 +86,9 @@ fun HighscoresDialogContent(
     onAction: (HighscoresAction) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val game = state.game
     AlertDialog(
         onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.highscores_title)) },
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(Res.string.close))
@@ -92,28 +96,16 @@ fun HighscoresDialogContent(
         },
         text = {
             Column {
-                if (game == GameId.DART_COUNTER) {
-                    // Dart boards are split by countdown, not by difficulty
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        state.boards.forEach { board ->
-                            FilterChip(
-                                selected = board == state.selectedDifficulty,
-                                onClick = { onAction(HighscoresAction.OnSelectDifficulty(board)) },
-                                label = { Text(dartCounterCountdown(board).toString()) },
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                } else if (state.boards.size > 1) {
-                    DifficultySelector(
-                        selected = state.selectedDifficulty,
-                        onSelect = { onAction(HighscoresAction.OnSelectDifficulty(it)) },
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                BoardSelector(
+                    axis = state.spec.boardAxis,
+                    boards = state.boards,
+                    selected = state.selectedDifficulty,
+                    onSelect = { onAction(HighscoresAction.OnSelectDifficulty(it)) },
+                )
 
                 PeriodSelector(
                     selected = state.selectedPeriod,
+                    periods = state.periods,
                     onSelect = { onAction(HighscoresAction.OnSelectPeriod(it)) },
                 )
 
@@ -121,13 +113,52 @@ fun HighscoresDialogContent(
 
                 GameHighscores(
                     state = state,
+                    onRetry = { onAction(HighscoresAction.OnRetry) },
                     modifier = Modifier.heightIn(max = 400.dp),
-                    formatScore = { score -> game?.formatScore(score) ?: score.toString() },
-                    showTime = game?.hasTimedScores ?: true,
                 )
             }
         }
     )
+}
+
+/**
+ * The chips that pick a board. What they mean differs per game (difficulty, puzzle language,
+ * dart countdown), so the labels come from the axis instead of being difficulty names.
+ */
+@Composable
+private fun BoardSelector(
+    axis: BoardAxis,
+    boards: List<GameDifficulty>,
+    selected: GameDifficulty,
+    onSelect: (GameDifficulty) -> Unit,
+) {
+    if (axis == BoardAxis.NONE || boards.size <= 1) return
+
+    if (axis == BoardAxis.DIFFICULTY) {
+        DifficultySelector(selected = selected, onSelect = onSelect)
+    } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            boards.forEach { board ->
+                FilterChip(
+                    selected = board == selected,
+                    onClick = { onSelect(board) },
+                    label = { Text(boardLabel(axis, board)) },
+                )
+            }
+        }
+    }
+    Spacer(modifier = Modifier.height(8.dp))
+}
+
+@Composable
+private fun boardLabel(axis: BoardAxis, board: GameDifficulty): String = when (axis) {
+    BoardAxis.DART_COUNTDOWN -> dartCounterCountdown(board).toString()
+    BoardAxis.LANGUAGE -> stringResource(
+        if (board == GameDifficulty.LOW) Res.string.highscores_board_german
+        else Res.string.highscores_board_english
+    )
+    BoardAxis.DIFFICULTY -> stringResource(board.stringRes())
+    BoardAxis.NONE -> ""
 }
 
 @Composable
@@ -146,12 +177,13 @@ internal fun PeriodSelector(
     selected: LeaderboardPeriod,
     onSelect: (LeaderboardPeriod) -> Unit,
     modifier: Modifier = Modifier,
+    periods: List<LeaderboardPeriod> = LeaderboardPeriod.entries,
 ) {
     Row(
         modifier = modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        LeaderboardPeriod.entries.forEach { period ->
+        periods.forEach { period ->
             FilterChip(
                 selected = period == selected,
                 onClick = { onSelect(period) },
@@ -168,21 +200,16 @@ internal fun PeriodSelector(
 @Composable
 fun GameHighscores(
     state: HighscoresState,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
-    formatScore: (Long) -> String = { it.toString() },
-    showTime: Boolean = true,
 ) {
     val ownUserId = SessionCache.requireLoggedIn()?.userId
+    // Shared-device games submit no time at all, so an all-zero column would only show "00:00"
 
     Column(modifier = modifier) {
-        Text(
-            text = stringResource(Res.string.highscores_title),
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
         when {
-            state.isLoading -> {
+            // No game set yet means OnOpen has not run - that is still loading, not an empty board
+            state.isLoading || state.game == null -> {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     contentAlignment = Alignment.Center
@@ -191,11 +218,17 @@ fun GameHighscores(
                 }
             }
             state.hasError -> {
-                Text(
-                    text = stringResource(Res.string.highscores_error),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = stringResource(Res.string.highscores_error),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    // Without this the only way to retry is closing and reopening the dialog
+                    TextButton(onClick = onRetry) {
+                        Text(stringResource(Res.string.highscores_retry))
+                    }
+                }
             }
             state.entries.isEmpty() -> {
                 Text(
@@ -212,8 +245,9 @@ fun GameHighscores(
                         HighscoreRow(
                             entry = entry,
                             isOwn = entry.userId == ownUserId,
-                            scoreText = formatScore(entry.score),
-                            showTime = showTime,
+                            scoreText = state.spec.formatScore(entry.score),
+                            showScore = state.spec.showScore,
+                            showTime = state.spec.showTime,
                         )
                     }
                 }
@@ -227,6 +261,7 @@ private fun HighscoreRow(
     entry: HighscoreEntry,
     isOwn: Boolean,
     scoreText: String,
+    showScore: Boolean,
     showTime: Boolean,
 ) {
     val contentColor = if (isOwn) MaterialTheme.colorScheme.onPrimaryContainer else Color.Unspecified
@@ -258,13 +293,15 @@ private fun HighscoreRow(
             modifier = Modifier.weight(1f),
             maxLines = 1,
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = scoreText,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = contentColor,
-        )
+        if (showScore) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = scoreText,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = contentColor,
+            )
+        }
         if (showTime) {
             Spacer(modifier = Modifier.width(8.dp))
             Text(

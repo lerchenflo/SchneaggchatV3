@@ -78,6 +78,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCalculatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
@@ -90,7 +91,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverRoot
-import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerRoot
@@ -836,6 +836,12 @@ fun App() {
 
                                     entry<Route.FingerPicker> {
                                         FingerPickerScreen(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.FuelCalculator> {
+                                        FuelCalculatorScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

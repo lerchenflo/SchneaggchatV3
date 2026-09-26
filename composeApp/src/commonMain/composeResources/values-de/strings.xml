@@ -1091,7 +1091,21 @@
     <string name="direction_w">W</string>
     <string name="direction_nw">NW</string>
 
+    <!-- Games: player selector -->
+    <string name="player_selector_title">Spieler auswählen</string>
+    <string name="player_selector_new_player">Neuer Spieler</string>
+    <string name="player_selector_add_player">Spieler hinzufügen</string>
+    <string name="player_selector_tab_local">Lokale Spieler</string>
+    <string name="player_selector_tab_friends">Freunde</string>
+    <string name="player_selector_no_local_players">Noch keine lokalen Spieler. Füge welche hinzu!</string>
+    <string name="player_selector_no_friends">Keine Freunde verfügbar.</string>
+    <string name="player_selector_start_format">Start (%1$d)</string>
+    <string name="player_selector_delete_player">Spieler löschen</string>
+    <string name="player_selector_friend">Freund</string>
+
     <!-- Game highscores -->
+    <string name="highscores_board_german">Deutsch</string>
+    <string name="highscores_board_english">Englisch</string>
     <string name="highscores_title">Bestenliste</string>
     <string name="highscore_upload_title">Highscores hochladen?</string>
     <string name="game_reset_title">Spiel zurücksetzen?</string>
@@ -1119,7 +1133,7 @@
     <string name="game_restart">Neustart</string>
     <string name="show_highscores">Bestenliste anzeigen</string>
     <string name="global_ranking_title">Gesamtwertung</string>
-    <string name="global_ranking_explanation">Punkte über alle Spiele und Schwierigkeiten</string>
+    <string name="global_ranking_explanation">Punkte über alle Spiele mit Bestenliste. Partyspiele auf einem Gerät (Yahtzee, Dartcounter, Undercover) zählen nicht.</string>
     <string name="global_ranking_error">Rangliste konnte nicht geladen werden</string>
     <string name="global_ranking_empty">Es hat noch niemand gespielt</string>
     <string name="global_ranking_points">%1$d Pkt.</string>
@@ -1129,6 +1143,10 @@
     <string name="difficulty_low">Niedrig</string>
     <string name="difficulty_medium">Mittel</string>
     <string name="difficulty_high">Hoch</string>
+    <string name="games_difficulty_info_hint">Gilt nur für Spiele mit Schwierigkeits-Symbol.</string>
+    <string name="games_difficulty_info_global">Schwierigkeit: %1$s</string>
+    <string name="games_difficulty_info_language">Sprache wird im Spiel gewählt</string>
+    <string name="games_difficulty_info_countdown">Countdown (301/501) wird im Spiel gewählt</string>
     <string name="games_without_highscores">Spiele ohne Bestenliste</string>
 
     <!-- Morse challenge -->
@@ -1510,4 +1528,47 @@
     <string name="no_shared_links">In diesem Chat wurden noch keine Links geteilt</string>
     <string name="go_to_message">Zur Nachricht springen</string>
     <string name="copy_link">Link kopieren</string>
+    <!-- Tools tab and two-stroke fuel mix calculator -->
+    <string name="games_tab_tools">Werkzeuge</string>
+    <string name="tools_fuel_title">Gemischrechner</string>
+    <string name="tools_fuel_description">Ölmenge für ein Benzingemisch berechnen</string>
+    <string name="tools_fuel_explanation">Wähle die Menge, die du schon hast, und lies den Rest ab. Das Verhältnis ist Benzin zu Öl, 1:50 heißt also 50 Teile Benzin auf einen Teil Öl.</string>
+    <string name="tools_fuel_basis_title">Bekannte Menge</string>
+    <string name="tools_fuel_basis_petrol">Benzin</string>
+    <string name="tools_fuel_basis_mixture">Gemisch</string>
+    <string name="tools_fuel_basis_oil">Öl</string>
+    <string name="tools_fuel_amount_petrol">Benzin (l)</string>
+    <string name="tools_fuel_amount_mixture">Fertiges Gemisch (l)</string>
+    <string name="tools_fuel_amount_oil">Öl (ml)</string>
+    <string name="tools_fuel_amount_error">Menge größer als null eingeben</string>
+    <string name="tools_fuel_ratio_title">Mischungsverhältnis</string>
+    <string name="tools_fuel_ratio_preset">1:%1$d</string>
+    <string name="tools_fuel_ratio_custom">Eigenes Verhältnis</string>
+    <string name="tools_fuel_ratio_error">Zwischen %1$d und %2$d</string>
+    <string name="tools_fuel_result_petrol">Benzin</string>
+    <string name="tools_fuel_result_oil">Öl</string>
+    <string name="tools_fuel_result_total">Gesamt</string>
+    <string name="tools_fuel_unit_litres">%1$s l</string>
+    <string name="tools_fuel_unit_millilitres">%1$s ml</string>
+    <string name="tools_fuel_clear">Löschen</string>
+    <string name="tools_fuel_empty_hint">Menge eingeben, um das Gemisch zu sehen.</string>
+    <string name="highscores_retry">Erneut versuchen</string>
+    <string name="highscore_upload_no_accounts">Niemand in diesem Spiel hat ein Konto, es wurden keine Ergebnisse hochgeladen.</string>
+    <string name="tools_coinflip_description">Kopf oder Zahl für eine schnelle Entscheidung</string>
+    <string name="tools_fingerpicker_description">Alle halten einen Finger auf den Bildschirm, der Zufall wählt die Gewinner</string>
+    <!-- One-line game summaries for the game selector cards -->
+    <string name="games_tab_solo">Einzel</string>
+    <string name="games_tab_multiplayer">Mehrspieler</string>
+    <string name="games_tetris_description">Fallende Steine zu vollen Reihen zusammensetzen</string>
+    <string name="games_stack_tower_description">Plattformen so hoch wie möglich stapeln</string>
+    <string name="games_morse_description">Morsecode gegen die Uhr senden</string>
+    <string name="games_schneaggahus_description">Mit Weichen jede Schneagg nach Hause leiten</string>
+    <string name="games_gridrush_description">Das Feld durch Verbinden gleicher Steine leeren</string>
+    <string name="games_oddoneout_description">Das eine abweichende Feld finden</string>
+    <string name="games_2048_description">Gleiche Zahlen zu 2048 zusammenschieben</string>
+    <string name="games_crossword_description">Das Gitter anhand der Hinweise füllen</string>
+    <string name="games_wordle_description">Das Wort mit fünf Buchstaben in sechs Versuchen erraten</string>
+    <string name="games_yahtzee_description">Würfeln und den Punkteblock füllen</string>
+    <string name="games_dartcounter_description">Ein 301er oder 501er Leg herunterzählen</string>
+    <string name="games_undercover_description">Den Undercover-Spieler durch Umschreibungen entlarven</string>
 </resources>

@@ -42,6 +42,19 @@ import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.jetbrains.compose.resources.stringResource
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.player_selector_add_player
+import schneaggchatv3mp.composeapp.generated.resources.player_selector_delete_player
+import schneaggchatv3mp.composeapp.generated.resources.player_selector_friend
+import schneaggchatv3mp.composeapp.generated.resources.player_selector_new_player
+import schneaggchatv3mp.composeapp.generated.resources.player_selector_no_friends
+import schneaggchatv3mp.composeapp.generated.resources.player_selector_no_local_players
+import schneaggchatv3mp.composeapp.generated.resources.player_selector_start_format
+import schneaggchatv3mp.composeapp.generated.resources.player_selector_tab_friends
+import schneaggchatv3mp.composeapp.generated.resources.player_selector_tab_local
+import schneaggchatv3mp.composeapp.generated.resources.player_selector_title
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
@@ -84,7 +97,7 @@ fun PlayerSelectorDialog(
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = "Select Players",
+                    text = stringResource(Res.string.player_selector_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -99,7 +112,7 @@ fun PlayerSelectorDialog(
                     OutlinedTextField(
                         value = state.newPlayerName,
                         onValueChange = { onAction(PlayerSelectorAction.OnNewPlayerNameChange(it)) },
-                        label = { Text("New Player") },
+                        label = { Text(stringResource(Res.string.player_selector_new_player)) },
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
@@ -109,7 +122,7 @@ fun PlayerSelectorDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Add Player",
+                            contentDescription = stringResource(Res.string.player_selector_add_player),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -143,7 +156,7 @@ fun PlayerSelectorDialog(
                         },
                         text = { 
                             Text(
-                                "Local Players",
+                                stringResource(Res.string.player_selector_tab_local),
                                 fontWeight = if (tabIndex == 0) FontWeight.Bold else FontWeight.Normal
                             )
                         },
@@ -159,7 +172,7 @@ fun PlayerSelectorDialog(
                         },
                         text = { 
                             Text(
-                                "Friends",
+                                stringResource(Res.string.player_selector_tab_friends),
                                 fontWeight = if (tabIndex == 1) FontWeight.Bold else FontWeight.Normal
                             )
                         },
@@ -187,7 +200,7 @@ fun PlayerSelectorDialog(
                                 if (state.localPlayers.isEmpty()) {
                                     item {
                                         Text(
-                                            text = "No local players yet. Add some!",
+                                            text = stringResource(Res.string.player_selector_no_local_players),
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.padding(vertical = 16.dp)
@@ -214,7 +227,7 @@ fun PlayerSelectorDialog(
                                 if (state.friends.isEmpty()) {
                                     item {
                                         Text(
-                                            text = "No friends available.",
+                                            text = stringResource(Res.string.player_selector_no_friends),
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.padding(vertical = 16.dp)
@@ -243,7 +256,7 @@ fun PlayerSelectorDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel")
+                        Text(stringResource(Res.string.cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -254,7 +267,7 @@ fun PlayerSelectorDialog(
                         },
                         enabled = state.selectedCount > 0
                     ) {
-                        Text("Start (${state.selectedCount})")
+                        Text(stringResource(Res.string.player_selector_start_format, state.selectedCount))
                     }
                 }
             }
@@ -290,7 +303,7 @@ fun PlayerItem(
         IconButton(onClick = onDeleteRequest) {
             Icon(
                 imageVector = Icons.Default.Delete,
-                contentDescription = "Delete Player",
+                contentDescription = stringResource(Res.string.player_selector_delete_player),
                 tint = MaterialTheme.colorScheme.error
             )
         }
@@ -316,7 +329,7 @@ fun FriendItem(
         )
         Icon(
             imageVector = Icons.Default.Person,
-            contentDescription = "Friend",
+            contentDescription = stringResource(Res.string.player_selector_friend),
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(start = 8.dp, end = 8.dp)
         )

@@ -23,45 +23,45 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Spiele: Spielstand wird gespeichert und beim Zurückkehren wiederhergestellt (Tetris, Tower Stack, 2048, SchneaggaHus, Grid Rush, Odd One Out, Morse Challenge, Kreuzworträtsel, Yatzi, Dart Counter, Undercover), Undercover zeigt beim Fortsetzen nie ein geheimes Wort erneut, Yatzi und Dart Counter haben Leaderboards (Trophy-Knopf im Spielselektor und Highscores-Knopf), Undercover hat ein Wins-Leaderboard (Trophy-Knopf im Spielselektor, Bestätigungsdialog beim Spielende), Bestätigungsdialog zum Hochladen von Spielergebnissen (Yatzi: Endscores, Dart Counter: Drei-Dart-Durchschnitte für 301/501), Spiele zählen nicht zum globalen Ranking aber erscheinen im Recap, Yatzi und Undercover: Zurücksetzen-Knopf in der Titelleiste zum Verwerfen des Spielstands (mit Bestätigung)
+- Neue Spiele: SchneaggaHus, Wordle + Kreuzworträtsel-Update
 - SchneaggaHus: Wellen-Spielmechanik mit Farb-Vorschau und Wellenfortschritt, gleitende Schneaggs auf gekrümmten Schienen, Porträt-Spielfeld mit größeren Tiles, neues visuelles Design im Train-of-Thought-Stil, Spawn-Tempo passt sich der Leistung an (schneller bei richtigen Zustellungen, langsamer nach Fehlern)
 - Tower Stack: Schneagg reitet auf jedem neuen sich bewegenden Balken, farblich dem Balken angepasst, schaut in Fahrtrichtung und springt ab (mit Hop, Fall und Fade-out), wenn der Balken platziert wird
 - Dartcounter: Checkout-Karte entfernt, Player-Anzeige mit Score/Darts/Checkout-Pfad, Scoreboard kompakt, Text-Clipping behoben
-- Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
-- Android Auto Support
-- Doppelte Nachrichten (Ungesendete) Behoben
 - Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare, "Sniff"-Knopf um sein eigenes Wort bei Auswahl, Diskussion und Abstimmung anzusehen
-
-
-#### Bugfixes
-- Spiele: Geräterotation führt nicht mehr zu einem Reset beim Spielen, Tower Stack Lifecycle-Fehler behoben
-- Tower Stack: Balken-Platzierung wird jetzt beim Tippen ausgelöst statt beim Loslassen, wahrgenommene Input-Verzögerung behoben
-- Dart Counter: Alte Spielstände werden beim Update verworfen
-- Anmeldung: Token-Refresh rebuild (5. mol??)
-- Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
-- Undercover: Crash + Logs viewer, Start-Knopf beim Öffnen deaktiviert bis Wortliste geladen ist
-- Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe
-- Events: Crash bei mehrtägigen Events behoben
-
-- Spiele: Spielstand beim Zurückkehren wiederherstellen
-- SchneaggaHus Spiel
-- Tower Stack: Schneagg reitet mit
-- Wordle-Spiel, + Kreuzworträtsel update
+- Spiele: Spiele-Menü in drei Tabs aufgeteilt - "Einzel", "Mehrspieler" (Yahtzee, Dartcounter, Undercover) und "Werkzeuge" (Coin Flip, Finger Picker, Gemischrechner); "Spiele ohne Bestenliste" Sektion entfernt, die Schwierigkeits-Chips erscheinen nur noch im Einzel-Tab
+- Werkzeug: Gemischrechner für 2-Takt-Gemisch mit Mischungsverhältnissen 1:25, 1:32, 1:40, 1:50, 1:60, 1:100 oder frei von 1:1 bis 1:200
+- Spiele: Schwierigkeits-Symbol auf jeder Spielkarte im Spiele-Menü, links vom Bestenlisten-Knopf (Balken für die App-weite Schwierigkeit, Regler-Symbol wenn die Einstellung im Spiel selbst gewählt wird)
+- Spiele: Kurzbeschreibung auf jeder Spiel- und Werkzeugkarte im Spiele-Menü
 - Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
+- Chat: Geteilte Inhalte (Bilder und Links) in Chat-Details
+- Schneaggmap: Daten Picker update, neue Types, neu sortiert
+- Freundschaftsanfragen: Tippen auf Profilbilder öffnet Bildvorschau
+- Quick reactions anpassen in Einstellungen
 - Android Auto Support
 - Doppelte Nachrichten (Ungesendete) Behoben
-- Undercover: Restart mit gleichen Spielern, Mr. White Hinweis-Setting, viele neue Wortpaare
-- Freundschaftsanfragen: Tippen auf Profilbilder öffnet Bildvorschau
-- Schneaggmap: Daten Picker update, neue Types, neu sortiert
-- Quick reactions anpassen in Einstellungen
-- Chat: Geteilte Inhalte (Bilder und Links) in Chat-Details
+
 
 #### Bugfixes
-- Spiele: extrem viele Bugfixes in fast allen Spielen, Spielstände für ungespielte Durchläufe werden nicht mehr gespeichert
+- Spiele: extrem viele Bugfixes in fast allen Spielen, Spielstände für ungespielte Durchläufe werden nicht mehr gespeichert, Geräterotation führt nicht mehr zu einem Reset beim Spielen, Tower Stack Lifecycle-Fehler behoben
+- Tower Stack: Balken-Platzierung wird jetzt beim Tippen ausgelöst statt beim Loslassen, wahrgenommene Input-Verzögerung behoben
+- Dart Counter: Rückgängig nach einem überworfenen Dart (Bust) korrigiert - der Bust-Dart wurde übersprungen, danach stimmten Punktestand und Dart-Zähler nicht mehr; alte Spielstände werden beim Update verworfen, Mehrspieler-Spielfeld friert nicht mehr ein, wenn ein Spieler mit dem ersten oder zweiten Dart auscheckt (der fertige Spieler blieb aktiv und es konnte kein Dart mehr geworfen werden; eingefrorene Spielstände reparieren sich beim Fortsetzen), Rückgängig ist deaktiviert, sobald das Ergebnis auf der Bestenliste ist
+- Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren, Bestenliste behoben (zeigt Deutsch/English Chips statt Schwierigkeits-Chips, öffnet auf existierendem Board)
+- Undercover: Crash + Logs viewer, Start-Knopf beim Öffnen deaktiviert bis Wortliste geladen ist, Geheimwort bleibt nicht mehr sichtbar nach dem Hintergrund der App (geht hinter „Telefon weitergeben“-Bildschirm), automatischer Hide-Timer läuft nicht mehr im Hintergrund
+- Tetris: Laufendes Spiel wird nicht mehr gelöscht, wenn es vor Abräumen der ersten Linie in den Hintergrund geht
+- SchneaggaHus: Durchgang mit 0 Punkten wird nicht mehr verworfen, wenn die App in den Hintergrund geht - das war ein kostenloser Neustart mit allen Leben, sobald man auf dem letzten Leben war
+- Grid Rush: Das Ergebnis der täglichen Herausforderung wird nicht mehr gelöscht, wenn man sie über den „Verlassen“-Knopf im Spielende-Bildschirm verlässt - das gab einen zweiten Versuch am selben Rätsel
+- Morse Challenge: Zeichen-Countdown kann nicht mehr durch ungültige Codes unbegrenzt pausiert werden
+- Kreuzworträtsel und Wordle: Spielzeit läuft nicht mehr weiter, wenn das Spiel nicht im Fokus ist (stoppt bei Benachrichtigung, wird fortgesetzt bei Rückkehr)
 - Anmeldung: Token-Refresh rebuild (5. mol??), Leerer Bildschirm nach Hintergrundbeendigung behoben (Session wird wiederhergestellt)
 - Chat: Nachrichtenentwürfe werden beim Öffnen eines Chats wiederhergestellt, Antwort-Vorschau reagiert responsiv auf Bildschirmhöhe, Nachrichten werden korrekt als gelesen markiert, wenn der Chat über eine Benachrichtigung geöffnet wird
 - Events: Crash bei mehrtägigen Events behoben, Eigenes Profilbild und Name werden überall als Event-Ersteller/-teilnehmer angezeigt
 - Android Noti-Fehler behoben
 - Dialog-Popups: ModalBottomSheet zu Dialog konvertiert um Fehler bei schneller Navigation zu beheben
+- Bestenlisten: keine leere Zeit-Spalte mehr bei Spielen ohne Timer (Yatzi, Dart Counter, Undercover), Tages-Zeitraum nur noch bei Spielen mit täglich neuem Board (Kreuzworträtsel, Grid Rush), Ladeindikator beim Öffnen statt "Keine Bestenlisten"-Blinken, Retry-Knopf bei Fehlern, Dialog-Inhalt bleibt beim Schwierigkeitswechsel erhalten, Überschrift über Filter-Chips, Shared-Device-Hochladen: keine leeren Submissions, Upload-Dialog wird nicht durch verspätete Server-Antworten reaktiviert, Hard-Timeout gegen eingefrorene Upload-Dialogs, Kreuzworträtsel/Wordle/Dartcounter öffnen jetzt die richtige Bestenliste (verwendeten vorher fälschlicherweise die App-weite Schwierigkeit), Hinweis am Spielende, wenn kein Spieler ein Konto hat und deshalb nichts hochgeladen wurde (Yatzi, Dartcounter, Undercover)
+- Wordle: Bestenliste funktioniert wieder (das Spiel war nach einem Merge nicht mehr mit der Bestenliste verbunden), das Ergebnis wird als Anzahl Versuche angezeigt statt als interner Punktewert
+- Bugreport-E-Mail (iOS): Umlaute, Sonderzeichen und Emojis werden nicht mehr verstümmelt (mailto-Link wird korrekt UTF-8-kodiert)
+- Spieler-Auswahl: Alle Texte sind jetzt übersetzt (waren fest auf Englisch)
+- Gesamtwertung: Erklärungstext korrigiert (Yatzi, Dartcounter und Undercover sind vom globalen Ranking ausgeschlossen)
 
 ### 3.0.17
 

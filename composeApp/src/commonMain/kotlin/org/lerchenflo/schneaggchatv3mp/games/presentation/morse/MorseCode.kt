@@ -35,6 +35,19 @@ private fun buildNode(prefix: String, depth: Int): MorseTreeNode? {
 
 val MORSE_TREE: MorseTreeNode = buildNode("", 0)!!
 
+/**
+ * Whether [code] can still grow into a character. [buildNode] already prunes dead ends, so a code
+ * with no node of its own is one that no further dot or dash can rescue: "..--" is alive (it becomes
+ * '2'), while the prosign ".-.-" is not.
+ */
+fun isLiveMorsePrefix(code: String): Boolean {
+    var node: MorseTreeNode = MORSE_TREE
+    for (symbol in code) {
+        node = (if (symbol == '-') node.dash else node.dot) ?: return false
+    }
+    return true
+}
+
 /** Deepest existing tree node along [code]; falls back to the last valid ancestor. */
 fun nodeForCode(code: String): MorseTreeNode {
     var node = MORSE_TREE

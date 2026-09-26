@@ -7,7 +7,8 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartThrow
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartTurn
 
 // 2: the turn counters were dropped, they are derived from the stored darts
-const val DART_COUNTER_SNAPSHOT_VERSION = 2
+// 3: allThrows now records busted darts too, so an undo replays the leg exactly
+const val DART_COUNTER_SNAPSHOT_VERSION = 3
 
 @Serializable
 data class DartPlayerSnapshot(
@@ -35,8 +36,9 @@ data class DartTurnSnapshot(
 )
 
 /**
- * Persisted mid-game Dart Counter state. Stored field by field instead of replaying
- * [allThrows], because busted darts are not part of the throw history.
+ * Persisted mid-game Dart Counter state. Stored field by field rather than rebuilt from
+ * [allThrows] alone, so a restored leg does not have to replay to be usable; [allThrows] is
+ * kept because the undo needs the full dart history, busts included.
  */
 @Serializable
 data class DartCounterSnapshot(
