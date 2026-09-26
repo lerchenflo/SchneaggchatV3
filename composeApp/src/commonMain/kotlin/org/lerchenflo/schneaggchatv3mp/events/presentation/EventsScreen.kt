@@ -28,7 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
+import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds

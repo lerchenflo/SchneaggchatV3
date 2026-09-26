@@ -1354,6 +1354,7 @@
 
     <string name="ttt_schneaggmap_locations_freeroam">Sieh dir einige Einträge an, die andere Nutzer erstellt haben!</string>
     <string name="ttt_continue">Tour fortsetzen</string>
+    <string name="ttt_skip">Tour überspringen</string>
 
     <string name="ttt_schneaggmap_settings">Karteneinstellungen</string>
     <string name="ttt_schneaggmap_settings_description">Hier kannst du auf die Karteneinstellungen zugreifen. Lege fest, ob du deinen Standort teilen möchtest, und passe weitere Optionen an.</string>

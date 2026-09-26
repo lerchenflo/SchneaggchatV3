@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -55,7 +54,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
+import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong

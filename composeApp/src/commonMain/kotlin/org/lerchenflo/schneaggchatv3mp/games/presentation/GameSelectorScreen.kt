@@ -48,7 +48,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
+import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.formatCountdown

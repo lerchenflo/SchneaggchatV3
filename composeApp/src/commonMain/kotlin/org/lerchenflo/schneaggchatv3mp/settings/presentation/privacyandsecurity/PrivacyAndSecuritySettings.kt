@@ -33,7 +33,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
+import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.getDeleteAccountUrl
 import org.lerchenflo.schneaggchatv3mp.getPrivacyPolicyUrl

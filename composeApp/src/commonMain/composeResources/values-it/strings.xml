@@ -1346,6 +1346,7 @@
 
     <string name="ttt_schneaggmap_locations_freeroam">Dai un'occhiata ad alcune voci create da altri utenti!</string>
     <string name="ttt_continue">Continua il tour</string>
+    <string name="ttt_skip">Salta il tour</string>
 
     <string name="ttt_schneaggmap_settings">Impostazioni mappa</string>
     <string name="ttt_schneaggmap_settings_description">Puoi toccare qui per accedere alle impostazioni della mappa. Modifica se vuoi condividere la tua posizione e altre opzioni.</string>

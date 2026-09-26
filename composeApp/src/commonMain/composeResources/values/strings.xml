@@ -1352,6 +1352,7 @@
 
     <string name="ttt_schneaggmap_locations_freeroam">Take a look at some entrys other users created!</string>
     <string name="ttt_continue">Continue tour</string>
+    <string name="ttt_skip">Skip tour</string>
 
     <string name="ttt_schneaggmap_settings">Map settings</string>
     <string name="ttt_schneaggmap_settings_description">You can tap here to access the map settings. Edit if you want to share your location and some other options.</string>
