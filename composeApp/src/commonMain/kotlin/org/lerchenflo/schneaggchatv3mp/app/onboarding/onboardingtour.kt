@@ -2,6 +2,9 @@ package org.lerchenflo.schneaggchatv3mp.app.onboarding
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import io.github.lerchenflo.taptarget.FreeRoamBarPosition
+import io.github.lerchenflo.taptarget.TapTargetTour
+import io.github.lerchenflo.taptarget.tapTargetTour
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.notifications

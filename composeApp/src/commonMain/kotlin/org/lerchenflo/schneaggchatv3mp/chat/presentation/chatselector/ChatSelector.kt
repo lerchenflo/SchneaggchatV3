@@ -82,8 +82,8 @@ import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_URL
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.getDonationsUrl
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
+import io.github.lerchenflo.taptarget.LocalTapTargetController
+import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository

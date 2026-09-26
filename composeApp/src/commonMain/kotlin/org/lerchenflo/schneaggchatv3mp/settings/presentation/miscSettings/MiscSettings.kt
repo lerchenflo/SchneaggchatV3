@@ -28,7 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.formatAllLogs
 import org.lerchenflo.schneaggchatv3mp.APPSTORE_TESTER_URI
 import org.lerchenflo.schneaggchatv3mp.PLAYSTORE_TESTER_URI
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
+import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider

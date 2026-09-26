@@ -54,10 +54,12 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.getVisibleTopLevelDestinat
 import org.lerchenflo.schneaggchatv3mp.app.navigation.rememberNavigationState
 import org.lerchenflo.schneaggchatv3mp.app.navigation.resetTabRoot
 import org.lerchenflo.schneaggchatv3mp.app.navigation.restartAuthFlow
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.TourSettings
+import io.github.lerchenflo.taptarget.LocalTapTargetController
+import io.github.lerchenflo.taptarget.TapTargetController
+import io.github.lerchenflo.taptarget.TapTargetOverlay
+import io.github.lerchenflo.taptarget.TourSettings
+import io.github.lerchenflo.taptarget.TourSkipButton
+import io.github.lerchenflo.taptarget.TourStrings
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreenRoot
@@ -115,7 +117,12 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TestModeBar
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
+import schneaggchatv3mp.composeapp.generated.resources.ttt_hint_tap_anywhere
+import schneaggchatv3mp.composeapp.generated.resources.ttt_hint_tap_highlighted
+import schneaggchatv3mp.composeapp.generated.resources.ttt_skip
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.press_back_again_to_exit
 import kotlin.time.Duration.Companion.milliseconds
@@ -881,7 +888,17 @@ fun App() {
                     }
                 }
 
-                TapTargetOverlay(tourController)
+                TapTargetOverlay(
+                    controller = tourController,
+                    strings = TourStrings(
+                        tapHighlighted = stringResource(Res.string.ttt_hint_tap_highlighted),
+                        tapAnywhere = stringResource(Res.string.ttt_hint_tap_anywhere),
+                        continueButton = stringResource(Res.string.ttt_continue),
+                    ),
+                    skipButton = { onSkip ->
+                        TourSkipButton(text = stringResource(Res.string.ttt_skip), onSkip = onSkip)
+                    }
+                )
 
             }
         }
