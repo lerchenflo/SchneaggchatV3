@@ -132,6 +132,9 @@ sealed interface Route : NavKey {
     data object Recap: Route
 
     @Serializable
+    data object UnderConstruction: Route
+
+    @Serializable
     data object CoinFlip: Route
 
     @Serializable

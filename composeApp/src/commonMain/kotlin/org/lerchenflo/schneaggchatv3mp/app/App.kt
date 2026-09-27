@@ -109,6 +109,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.notificationsetting
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecuritySettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
+import org.lerchenflo.schneaggchatv3mp.sharedUi.UnderConstructionScreen
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
@@ -826,6 +827,10 @@ fun App() {
                                         RecapScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
+                                    }
+
+                                    entry<Route.UnderConstruction> {
+                                        UnderConstructionScreen()
                                     }
 
                                     entry<Route.CoinFlip> {

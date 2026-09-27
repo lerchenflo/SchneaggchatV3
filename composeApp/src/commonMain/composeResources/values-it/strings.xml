@@ -1563,4 +1563,13 @@
     <string name="games_yahtzee_description">Tirare i dadi e riempire il segnapunti</string>
     <string name="games_dartcounter_description">Contare alla rovescia un leg da 301 o 501</string>
     <string name="games_undercover_description">Smascherare l'infiltrato descrivendo la parola segreta</string>
+    <string name="under_construction_title">In costruzione</string>
+    <string name="under_construction_description">Questa parte di Schneaggchat è ancora in costruzione. Nel frattempo aiuta il cowboy a superare gli ostacoli!</string>
+    <string name="horse_game_start">Tocca o premi spazio per cavalcare, tieni premuto per saltare più in alto. Cattura le lumache con il lazo (L)!</string>
+    <string name="horse_game_game_over">Le lumache ti hanno preso! Tocca per cavalcare di nuovo</string>
+    <string name="horse_game_score">Punti: %1$d</string>
+    <string name="horse_game_best">Record: %1$d</string>
+    <string name="horse_game_fence_height">%1$d cm</string>
+    <string name="horse_game_lasso">Lazo</string>
+    <string name="horse_game_snails">Lumache: %1$d</string>
 </resources>

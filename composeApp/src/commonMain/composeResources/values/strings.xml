@@ -1569,4 +1569,13 @@
     <string name="games_yahtzee_description">Roll the dice and fill the scorecard</string>
     <string name="games_dartcounter_description">Count down a 301 or 501 leg</string>
     <string name="games_undercover_description">Unmask the impostor by describing your secret word</string>
+    <string name="under_construction_title">Under construction</string>
+    <string name="under_construction_description">This part of Schneaggchat is still being built. Help the cowboy clear the fences while you wait!</string>
+    <string name="horse_game_start">Tap or press space to ride, hold to jump higher. Catch snails with the lasso (L)!</string>
+    <string name="horse_game_game_over">The snails caught you! Tap to ride again</string>
+    <string name="horse_game_score">Score: %1$d</string>
+    <string name="horse_game_best">Best: %1$d</string>
+    <string name="horse_game_fence_height">%1$d cm</string>
+    <string name="horse_game_lasso">Lasso</string>
+    <string name="horse_game_snails">Snails: %1$d</string>
 </resources>

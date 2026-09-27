@@ -41,6 +41,12 @@ class DevSettingsViewModel(
         }
     }
 
+    fun navigateUnderConstruction() {
+        viewModelScope.launch {
+            navigator.navigate(Route.UnderConstruction)
+        }
+    }
+
     fun navigateEvents() {
         viewModelScope.launch {
             navigator.navigate(Route.Events())
