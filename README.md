@@ -39,6 +39,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Quick reactions anpassen in Einstellungen
 - Android Auto Support
 - Doppelte Nachrichten (Ungesendete) Behoben
+- Profilbild-Dialog: Zoom mit Centering, Kreis-zu-Quadrat-Morph und Mausrad-Zoom (Desktop)
 
 
 #### Bugfixes

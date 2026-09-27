@@ -247,7 +247,7 @@ private fun YatziGameScreen(
          )
 
          if (state.winner != null) {
-             WinnerScreen(state.winner!!, state.highscoreUpload, onBack)
+             WinnerScreen(state.winner, state.highscoreUpload, onBack)
          } else if (state.players.isEmpty()) {
              Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                  Text(stringResource(Res.string.yatzi_no_active_game))
