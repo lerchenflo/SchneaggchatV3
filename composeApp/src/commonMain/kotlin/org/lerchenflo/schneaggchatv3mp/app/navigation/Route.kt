@@ -129,10 +129,10 @@ sealed interface Route : NavKey {
     data object OddOneOut: Route
 
     @Serializable
-    data object Recap: Route
+    data object SchneaggRodeo: Route
 
     @Serializable
-    data object UnderConstruction: Route
+    data object Recap: Route
 
     @Serializable
     data object CoinFlip: Route

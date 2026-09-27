@@ -85,6 +85,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScree
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
@@ -109,7 +110,6 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.notificationsetting
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecuritySettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
-import org.lerchenflo.schneaggchatv3mp.sharedUi.UnderConstructionScreen
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
@@ -823,14 +823,16 @@ fun App() {
                                         )
                                     }
 
-                                    entry<Route.Recap> {
-                                        RecapScreenRoot(
+                                    entry<Route.SchneaggRodeo> {
+                                        SchneaggRodeoRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.UnderConstruction> {
-                                        UnderConstructionScreen()
+                                    entry<Route.Recap> {
+                                        RecapScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
                                     }
 
                                     entry<Route.CoinFlip> {

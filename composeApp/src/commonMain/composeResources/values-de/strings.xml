@@ -1571,13 +1571,13 @@
     <string name="games_yahtzee_description">Würfeln und den Punkteblock füllen</string>
     <string name="games_dartcounter_description">Ein 301er oder 501er Leg herunterzählen</string>
     <string name="games_undercover_description">Den Undercover-Spieler durch Umschreibungen entlarven</string>
-    <string name="under_construction_title">In Arbeit</string>
-    <string name="under_construction_description">Dieser Teil von Schneaggchat wird noch gebaut. Hilf dem Cowboy in der Zwischenzeit über die Hindernisse!</string>
-    <string name="horse_game_start">Tippen oder Leertaste drücken zum Reiten, gedrückt halten für höhere Sprünge. Fang Schnecken mit dem Lasso (L)!</string>
-    <string name="horse_game_game_over">Die Schnecken haben dich erwischt! Tippen zum erneuten Reiten</string>
-    <string name="horse_game_score">Punkte: %1$d</string>
-    <string name="horse_game_best">Rekord: %1$d</string>
-    <string name="horse_game_fence_height">%1$d cm</string>
-    <string name="horse_game_lasso">Lasso</string>
-    <string name="horse_game_snails">Schnecken: %1$d</string>
+    <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
+    <string name="games_schneaggrodeo_description">Über die Hindernisse springen und die Schnecken mit dem Lasso fangen</string>
+    <string name="games_schneaggrodeo_instructions">Reite so weit du kannst, während dich eine Horde Schneaggs verfolgt!\n\nTippe (oder drücke die Leertaste) zum Springen, halte gedrückt für höhere Sprünge. Reißt du eine Stange oder rennst in eine Schnecke, stolpert dein Pferd und die Horde holt auf — sobald sie dich erwischt, ist der Ritt vorbei.\n\nWirf das Lasso (Button oder L), um Schnecken für Bonuspunkte zu fangen. Alle 5 gefangenen Schnecken laden einen Supersprung (Button oder J) über die nächsten 5 Hindernisse auf.\n\nFahnen auf der Strecke zeigen, wo die besten Ritte geendet haben, dein eigener Rekord in deiner Akzentfarbe. Schlag sie!</string>
+    <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
+    <string name="games_schneaggrodeo_lasso">Lasso</string>
+    <string name="games_schneaggrodeo_catch_horse">Fang dein Pferd!</string>
+    <string name="games_schneaggrodeo_snails">Schnecken: %1$d</string>
+    <string name="games_schneaggrodeo_super_jump">Supersprung ×%1$d</string>
+    <string name="games_schneaggrodeo_next_to_beat">Als Nächstes schlagen: %1$s (%2$d)</string>
 </resources>

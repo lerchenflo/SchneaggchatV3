@@ -7,7 +7,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Forward
 import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Replay
@@ -36,7 +35,6 @@ import schneaggchatv3mp.composeapp.generated.resources.dev_settings_skip_tour
 import schneaggchatv3mp.composeapp.generated.resources.dev_settings_skip_tour_desc
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
-import schneaggchatv3mp.composeapp.generated.resources.under_construction_title
 
 @Composable
 fun DeveloperSettings(
@@ -102,17 +100,6 @@ fun DeveloperSettings(
                 subtext = null,
                 onClick = {
                     devSettingsViewModel.navigateRecap()
-                }
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            SettingsOption(
-                icon = Icons.Default.Construction,
-                text = stringResource(Res.string.under_construction_title),
-                subtext = null,
-                onClick = {
-                    devSettingsViewModel.navigateUnderConstruction()
                 }
             )
 

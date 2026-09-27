@@ -56,6 +56,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounte
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutViewmodel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
@@ -312,6 +313,8 @@ val sharedmodule = module{
     viewModelOf(::GridRushViewmodel)
 
     viewModelOf(::OddOneOutViewmodel)
+
+    viewModelOf(::SchneaggRodeoViewModel)
 
     viewModelOf(::CrosswordViewmodel)
 

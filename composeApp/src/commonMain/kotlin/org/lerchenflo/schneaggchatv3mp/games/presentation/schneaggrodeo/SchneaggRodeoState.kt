@@ -1,0 +1,159 @@
+package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo
+
+import androidx.compose.runtime.Immutable
+
+sealed interface SchneaggRodeoAction {
+    data object StartGame : SchneaggRodeoAction
+    /** Ends the current run without submitting a score and returns to the start screen. */
+    data object StopGame : SchneaggRodeoAction
+    data object RestartGame : SchneaggRodeoAction
+    data object TogglePause : SchneaggRodeoAction
+    /** Screen is leaving (back, rotation, tab switch): pause and keep the run for the next visit. */
+    data object LeaveGame : SchneaggRodeoAction
+
+    /** One display frame passed; the screen is the clock so the world moves in step with vsync. */
+    data class OnFrame(val frameSeconds: Float) : SchneaggRodeoAction
+    /** The play area was laid out; [widthPx] / [heightPx] decide how far ahead the rider sees. */
+    data class OnWorldSizeChanged(val widthPx: Int, val heightPx: Int) : SchneaggRodeoAction
+
+    data object OnJumpPressed : SchneaggRodeoAction
+    data object OnJumpReleased : SchneaggRodeoAction
+    data object OnLassoClick : SchneaggRodeoAction
+    data object OnSuperJumpClick : SchneaggRodeoAction
+}
+
+/** An all-time highscore shown as a marker on the track. */
+@Immutable
+data class RodeoGhostUi(
+    val username: String,
+    val score: Long,
+    val isOwn: Boolean,
+)
+
+/** Everything around the track: HUD, controls and overlays. Changes a few times per second at most. */
+@Immutable
+data class SchneaggRodeoState(
+    val isPlaying: Boolean = false,
+    val isGameOver: Boolean = false,
+    val isPaused: Boolean = false,
+    val score: Int = 0,
+    val runTimeMillis: Long = 0L,
+    val snailsCaught: Int = 0,
+    val superJumpCharges: Int = 0,
+    /** Thrown off the horse: the lasso button is highlighted, it is the only way back up. */
+    val isOnFoot: Boolean = false,
+    /** The lowest all-time highscore above the current score; null offline or once everything is beaten. */
+    val nextToBeat: RodeoGhostUi? = null,
+)
+
+// Render model of the world, rebuilt every frame. Positions are in world units (see SchneaggRodeoEngine).
+
+@Immutable
+data class RodeoFenceUi(
+    val x: Float,
+    val width: Float,
+    val heightCm: Int,
+    val top: Float,
+    val colorOffset: Int,
+    val knocked: Boolean,
+    val poleHeights: List<Float>,
+)
+
+/** [x] is the sprite center, [height] its underside above the ground. */
+@Immutable
+data class RodeoSnailUi(
+    val x: Float,
+    val height: Float,
+    val facingLeft: Boolean,
+    val tiltDeg: Float,
+)
+
+/** Pose of the horse and rider; pitch/pivot are in the horse's own grid (see drawHorseAndRider). */
+@Immutable
+data class RodeoHorsePose(
+    val height: Float,
+    val gaitPhase: Float,
+    val airborne: Boolean,
+    val riderLean: Float,
+    val pitchDegrees: Float,
+    val pivotX: Float,
+    val pivotY: Float,
+    val hindLegScale: Float,
+    val frontLegFold: Float,
+    val hatLift: Float,
+    val glow: Float,
+    /** Shift of the horse from its riding spot while it paces around riderless. */
+    val offsetX: Float = 0f,
+    /** False while the cowboy is off the horse; he is drawn as [RodeoCowboyUi] then. */
+    val hasRider: Boolean = true,
+)
+
+/**
+ * The cowboy on his own after being thrown off: [x] is his center, [height] his feet above the
+ * ground, [rotation] degrees clockwise around his middle (90 = flat on his back).
+ */
+@Immutable
+data class RodeoCowboyUi(
+    val x: Float,
+    val height: Float,
+    val rotation: Float,
+    val facingLeft: Boolean,
+    val hatLift: Float,
+)
+
+@Immutable
+data class RodeoLassoUi(
+    val handX: Float,
+    val handY: Float,
+    val tipX: Float,
+    val tipY: Float,
+    /** The snail dangling in the loop on its way back, if the throw caught one. */
+    val caught: RodeoSnailUi?,
+)
+
+@Immutable
+data class RodeoDustUi(
+    val x: Float,
+    val progress: Float,
+)
+
+/** A highscore marker post standing on the track at [x]. */
+@Immutable
+data class RodeoMarkerUi(
+    val x: Float,
+    val username: String,
+    val score: Long,
+    val isOwn: Boolean,
+    /** Drawn on a shorter post, so the labels of close highscores don't stack up. */
+    val staggered: Boolean,
+)
+
+@Immutable
+data class SchneaggRodeoFrame(
+    val distance: Float = 0f,
+    val fences: List<RodeoFenceUi> = emptyList(),
+    val snails: List<RodeoSnailUi> = emptyList(),
+    val pack: List<RodeoSnailUi> = emptyList(),
+    val horse: RodeoHorsePose = RodeoHorsePose(
+        height = 0f,
+        gaitPhase = 0f,
+        airborne = false,
+        riderLean = 0f,
+        pitchDegrees = 0f,
+        pivotX = 12f,
+        pivotY = 12f,
+        hindLegScale = 1f,
+        frontLegFold = 0f,
+        hatLift = 0f,
+        glow = 0f,
+    ),
+    val lasso: RodeoLassoUi? = null,
+    val dust: RodeoDustUi? = null,
+    /** 0..1 while the landing splash is shown. */
+    val splashProgress: Float? = null,
+    val markers: List<RodeoMarkerUi> = emptyList(),
+    /** Painted on the horse's side like a race number. */
+    val snailsCaught: Int = 0,
+    /** Only set while the cowboy is off the horse. */
+    val cowboy: RodeoCowboyUi? = null,
+)

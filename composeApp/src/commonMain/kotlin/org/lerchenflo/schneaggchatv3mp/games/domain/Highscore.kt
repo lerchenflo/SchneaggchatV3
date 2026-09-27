@@ -24,6 +24,8 @@ enum class GameId(
     GAME_2048,
     CROSSWORD(daily = true),
     WORDLE,
+    // Endless runner without a difficulty setting: one board, points first, run time as tiebreaker
+    SCHNEAGG_RODEO,
     // Final score of a finished game
     YATZI(sharedDevice = true),
     // Three-dart average x100 of a finished game; difficulty encodes the countdown (see dartCounterDifficulty)
@@ -147,6 +149,12 @@ val GameId.leaderboard: LeaderboardSpec
         )
         GameId.UNDERCOVER -> LeaderboardSpec(
             scoreKind = ScoreKind.WIN_COUNT,
+            boardAxis = BoardAxis.NONE,
+            boards = listOf(GameDifficulty.MEDIUM),
+        )
+        // No difficulty setting, so a single board; the run time ranks equal scores
+        GameId.SCHNEAGG_RODEO -> LeaderboardSpec(
+            scoreKind = ScoreKind.POINTS,
             boardAxis = BoardAxis.NONE,
             boards = listOf(GameDifficulty.MEDIUM),
         )
