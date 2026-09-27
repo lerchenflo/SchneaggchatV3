@@ -129,6 +129,9 @@ sealed interface Route : NavKey {
     data object OddOneOut: Route
 
     @Serializable
+    data object SchneaggRodeo: Route
+
+    @Serializable
     data object Recap: Route
 
     @Serializable

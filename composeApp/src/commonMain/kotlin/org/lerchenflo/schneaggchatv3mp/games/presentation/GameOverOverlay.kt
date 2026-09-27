@@ -25,7 +25,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.games.domain.BoardAxis
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.leaderboard
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.game_exit
 import schneaggchatv3mp.composeapp.generated.resources.game_over
@@ -36,7 +38,7 @@ import schneaggchatv3mp.composeapp.generated.resources.highscores_title
 
 /**
  * Unified game-over overlay for all games: shows the final score with a difficulty
- * selection for the next round, a restart button, a button opening the server
+ * selection for the next round (only for games whose board is keyed by difficulty), a restart button, a button opening the server
  * highscores of [game] for the selected difficulty and an exit button leaving the game.
  */
 @Composable
@@ -90,12 +92,15 @@ fun GameOverOverlay(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                // Games without a difficulty setting have nothing to pick for the next round
+                if (game.leaderboard.boardAxis == BoardAxis.DIFFICULTY) {
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                DifficultySelector(
-                    selected = GameDifficultySelection.selected,
-                    onSelect = { GameDifficultySelection.selected = it },
-                )
+                    DifficultySelector(
+                        selected = GameDifficultySelection.selected,
+                        onSelect = { GameDifficultySelection.selected = it },
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 

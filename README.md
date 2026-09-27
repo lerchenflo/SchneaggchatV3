@@ -32,6 +32,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Werkzeug: Gemischrechner für 2-Takt-Gemisch mit Mischungsverhältnissen 1:25, 1:32, 1:40, 1:50, 1:60, 1:100 oder frei von 1:1 bis 1:200
 - Spiele: Schwierigkeits-Symbol auf jeder Spielkarte im Spiele-Menü, links vom Bestenlisten-Knopf (Balken für die App-weite Schwierigkeit, Regler-Symbol wenn die Einstellung im Spiel selbst gewählt wird)
 - Spiele: Kurzbeschreibung auf jeder Spiel- und Werkzeugkarte im Spiele-Menü
+- Schneagg Rodeo: Neuer Endlos-Läufer - Cowboy auf Pferd springt Show-Jumping-Hindernisse (Höhenbeschriftung 50–170 cm, halten zum höher Springen), fängt Schneaggs mit Lasso für Bonuspunkte, verfolgendes Schneckenrudel beendet die Runde, Super-Sprung alle 5 gefangenen Schneaggs (Zeitlupe über 5 Hindernisse), Cowboy kann nach großen Sprüngen selten abgeworfen werden und muss sein Pferd mit Lasso fangen, Bestenliste (mehr Punkte besser, weniger Zeit besser bei Gleichstand) mit All-Time-Highscore-Markierungen auf der Strecke (eigener Highscore in Primärfarbe, fremde in Sekundärfarbe), ungenutzte Under-Construction-Anzeige entfernt
 - Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
 - Chat: Geteilte Inhalte (Bilder und Links) in Chat-Details
 - Schneaggmap: Daten Picker update, neue Types, neu sortiert
@@ -39,6 +40,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Quick reactions anpassen in Einstellungen
 - Android Auto Support
 - Doppelte Nachrichten (Ungesendete) Behoben
+- Profilbild-Dialog: Zoom mit Centering, Kreis-zu-Quadrat-Morph und Mausrad-Zoom (Desktop)
 
 
 #### Bugfixes

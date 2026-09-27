@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -47,6 +48,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -746,32 +748,6 @@ fun Chatauswahlscreen(
                     }
 
 
-                    if (availablegegners.isEmpty() && messageSearchResults.isEmpty()) {
-                        //Add friend if list is empty
-
-                        item {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                            ) {
-                                Text(
-                                    modifier = Modifier
-                                        .padding(8.dp)
-                                        .clickable {
-                                            viewModel.onNewChatClick()
-                                        }
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    text = stringResource(Res.string.no_friends_found_search),
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
-                            }
-                        }
-                    }
-
-
                     //Chats and messages are only split into labelled sections while a search
                     //actually matched messages - otherwise the list looks exactly as before.
                     val showSearchSections = messageSearchResults.isNotEmpty()
@@ -845,6 +821,29 @@ fun Chatauswahlscreen(
                             HorizontalDivider(
                                 thickness = 0.5.dp
                             )
+                        }
+                    }
+
+                    //Add friend hint - always at the bottom while searching, or when there is nothing to show
+                    if (searchterm.isNotEmpty() || (availablegegners.isEmpty() && messageSearchResults.isEmpty())) {
+                        item(key = "friend_not_found") {
+                            OutlinedButton(
+                                onClick = { viewModel.onNewChatClick() },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PersonAdd,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(Res.string.no_friends_found_search),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
                 }

@@ -164,6 +164,7 @@ private val gameRoutes: Set<KClass<out NavKey>> = setOf(
     Route.SchneaggaHus::class,
     Route.GridRush::class,
     Route.OddOneOut::class,
+    Route.SchneaggRodeo::class,
     Route.Recap::class,
     Route.CoinFlip::class,
     Route.FingerPicker::class,
@@ -218,6 +219,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.SchneaggaHus::class, Route.SchneaggaHus.serializer())
             subclass(Route.GridRush::class, Route.GridRush.serializer())
             subclass(Route.OddOneOut::class, Route.OddOneOut.serializer())
+            subclass(Route.SchneaggRodeo::class, Route.SchneaggRodeo.serializer())
             subclass(Route.Recap::class, Route.Recap.serializer())
             subclass(Route.CoinFlip::class, Route.CoinFlip.serializer())
             subclass(Route.FingerPicker::class, Route.FingerPicker.serializer())

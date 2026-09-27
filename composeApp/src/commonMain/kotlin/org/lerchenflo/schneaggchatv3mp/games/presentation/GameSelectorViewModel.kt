@@ -5,13 +5,13 @@ import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Blind
+import androidx.compose.material.icons.filled.BedroomBaby
 import androidx.compose.material.icons.filled.Castle
 import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.LocalGasStation
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -27,6 +27,8 @@ import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_descriptio
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_description
 import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_description
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_description
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_description
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower_description
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_description
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_description
@@ -63,6 +65,14 @@ class GameSelectorViewModel : ViewModel() {
             inDev = GameId.GRIDRUSH.indev,
             gameId = GameId.GRIDRUSH,
             daily = true
+        ),
+        GameScreenElement(
+            title = Res.string.games_schneaggrodeo_title,
+            description = Res.string.games_schneaggrodeo_description,
+            icon = Icons.Default.BedroomBaby, // the rocking horse is the closest thing to a horse
+            route = Route.SchneaggRodeo,
+            inDev = GameId.SCHNEAGG_RODEO.indev,
+            gameId = GameId.SCHNEAGG_RODEO
         ),
         GameScreenElement(
             title = Res.string.games_crossword_title,
