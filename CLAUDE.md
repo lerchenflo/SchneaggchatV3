@@ -80,6 +80,7 @@ When a task matches a skill, read and follow it.
 
 ## Guardrails & Agent Rules
 
+- **Always respond in English**, no matter which language the user writes in (German, Vorarlbergerisch, etc.).
 - **Never hardcode colors**: Always use `MaterialTheme.colorScheme` colors (or `contentColorFor(...)`). If a specific non-theme color is needed, ask the user first.
 - **String resources**: Whenever a string is added OR its value is changed in default `strings.xml` (in `values/`), redo the translation in `values-de/strings.xml` (German) and `values-it/strings.xml` (Italian) to match. Never add or change strings in `values-de-rAT` (Austrian) — that locale is translated manually. The only allowed edit there: always delete keys that no longer exist in the default `values/strings.xml` (orphaned keys), whenever a key is removed.
 - **Never run Gradle builds**: Do not run `./gradlew` commands or build tasks unless explicitly requested by the user.

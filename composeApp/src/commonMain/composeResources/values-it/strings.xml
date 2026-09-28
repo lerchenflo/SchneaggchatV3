@@ -945,6 +945,20 @@
     <string name="recap_password_reset_label">email di reimpostazione password inviate</string>
     <string name="recap_password_reset_this_year">%1$d di queste quest'anno</string>
     <string name="recap_password_reset_subtitle">Forse questa volta scrivila da qualche parte.</string>
+    <string name="recap_button">Recap %1$d</string>
+    <string name="settings_recap">Il tuo recap %1$d</string>
+    <string name="settings_recap_info">Il tuo anno su Schneaggchat – disponibile ancora per qualche settimana</string>
+    <string name="recap_downtime_title">Perché Schneaggchat è stato offline nel %1$d</string>
+    <string name="recap_downtime_subtitle">Ordinati per caos, il più caotico per primo.</string>
+    <string name="recap_downtime_count">%1$d×</string>
+    <string name="recap_downtime_lightning">Fulmine</string>
+    <string name="recap_downtime_lightning_detail">Questa volta ha vinto la natura.</string>
+    <string name="recap_downtime_isp_switch">Cambio di provider</string>
+    <string name="recap_downtime_isp_switch_detail">A1 ha semplicemente disattivato l'IP pubblico.</string>
+    <string name="recap_downtime_bad_internet">Internet scadente</string>
+    <string name="recap_downtime_bad_internet_detail">La linea DSL si disconnette e basta.</string>
+    <string name="recap_downtime_proxy">Configurazione proxy rotta</string>
+    <string name="recap_downtime_proxy_detail">Configurazione del reverse proxy o di Cloudflare sbagliata.</string>
 
     <string name="recap_outro_title">Ecco fatto, %1$s.</string>
     <string name="recap_outro_subtitle">Ci vediamo il prossimo anno. Continua a schneaggare.</string>

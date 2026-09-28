@@ -43,6 +43,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Profilbild-Dialog: Zoom mit Centering, Kreis-zu-Quadrat-Morph und Mausrad-Zoom (Desktop)
 - Feedback-Board: Neues In-App Feedback-Board (Daumen-hoch/runter Icon in Chat-Liste neben Einstellungen; auch in Einstellungen → Sonstiges und im Beitragen-Popup) mit zwei Tabs für Feature Requests und Bug Reports, Auf-/Abwertungen (Bugs: "Hab ich auch" / "Nicht reproduzierbar", Features: "Wusste ich nicht" bei bereits implementierten), Kommentare auf jedem Eintrag mit hervorgehobenen Developer-Kommentaren, Status je Eintrag (angefordert/geplant/implementiert, offen/bestätigt/behoben) durch Admins verwaltbar, farbige Tags, Filter-Chips (Top/Neu, Status, Tag, Meine), neu erstellte Einträge 2 Tage hervorgehoben und angepinnt, Duplikat-Warnung beim Erstellen, App-Version und Plattform automatisch auf Bug Reports angehängt, Liste mit bereits implementierten Features vorausgefüllt, Daten live vom Server
 - Feedback-Board ersetzt den Roadmap-Screen (GitHub Issues) und das E-Mail-Formular für Bug Reports / Feature Requests
+- Spiele: Jahresrückblick für alle erreichbar - farbige Recap-<Jahr>-Schaltfläche in Chat-Selector vom 15.12. bis 15.01., danach in Einstellungen bis 15.02., Eintrag visuell hervorgehoben
+- Jahresrückblick: Neue Seite mit Gründen für Schneaggchat-Ausfallzeiten nach Häufigkeit (Blitzschlag, A1 deaktiviert öffentliche IP, DSL-Probleme, Reverse-Proxy-/Cloudflare-Fehler)
 
 #### Bugfixes
 - Spiele: extrem viele Bugfixes in fast allen Spielen, Spielstände für ungespielte Durchläufe werden nicht mehr gespeichert, Geräterotation führt nicht mehr zu einem Reset beim Spielen, Tower Stack Lifecycle-Fehler behoben
@@ -65,6 +67,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Bugreport-E-Mail (iOS): Umlaute, Sonderzeichen und Emojis werden nicht mehr verstümmelt (mailto-Link wird korrekt UTF-8-kodiert)
 - Spieler-Auswahl: Alle Texte sind jetzt übersetzt (waren fest auf Englisch)
 - Gesamtwertung: Erklärungstext korrigiert (Yatzi, Dartcounter und Undercover sind vom globalen Ranking ausgeschlossen)
+- Jahresrückblick: Im Januar/Februar zeigt der Jahresrückblick korrekt das Vorjahr statt des neuen, leeren Jahres
+- Changelog: Popup nach Update geht nicht mehr verloren (gilt erst beim Schließen als gelesen), wird beim Start nicht mehr doppelt geladen, Start-Popups prüfen nicht mehr bei jeder Rückkehr zur Chatliste
 
 ### 3.0.17
 

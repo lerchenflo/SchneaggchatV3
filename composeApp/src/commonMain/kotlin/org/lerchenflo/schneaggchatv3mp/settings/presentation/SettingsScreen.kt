@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Boy
+import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Notifications
@@ -44,6 +45,7 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.RecapAvailability
 import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -65,6 +67,8 @@ import schneaggchatv3mp.composeapp.generated.resources.privacy_and_security_info
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings_info
 import schneaggchatv3mp.composeapp.generated.resources.settings
+import schneaggchatv3mp.composeapp.generated.resources.settings_recap
+import schneaggchatv3mp.composeapp.generated.resources.settings_recap_info
 import schneaggchatv3mp.composeapp.generated.resources.steps_until_developer
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.user_settingsinfo
@@ -86,7 +90,8 @@ fun SettingsScreen(
     navigateDevSettings: () -> Unit,
     navigateMiscSettings: () -> Unit,
     navigateAppearanceSettings: () -> Unit,
-    navigateSchneaggmapSettings: () -> Unit
+    navigateSchneaggmapSettings: () -> Unit,
+    navigateRecap: () -> Unit
 ){
     val appRepository = koinInject<AppRepository>()
 
@@ -229,6 +234,20 @@ fun SettingsScreen(
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+        //Recap: one more month in the settings after the chat selector button is gone
+        val showRecapEntry = remember { RecapAvailability.isSettingsEntryVisible() }
+        if (showRecapEntry) {
+            SettingsOption(
+                icon = Icons.Default.Celebration,
+                text = stringResource(Res.string.settings_recap, RecapAvailability.recapYear()),
+                subtext = stringResource(Res.string.settings_recap_info),
+                onClick = navigateRecap,
+                highlighted = true
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+        }
 
         if(sharedSettingsViewmodel.devSettingsEnabled){
             SettingsOption(

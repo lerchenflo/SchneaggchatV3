@@ -65,13 +65,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import org.lerchenflo.schneaggchatv3mp.games.domain.RecapAvailability
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapPalette
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -98,10 +102,10 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberProfilePicturePlaceholder
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ContributePopup
-import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.recap_button
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.app_name
 import schneaggchatv3mp.composeapp.generated.resources.chat_add_on_24px
@@ -124,11 +128,6 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_popup
 import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_start
 import schneaggchatv3mp.composeapp.generated.resources.unpin_chat
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.days
-
-/** How long the contribute popup stays away between two appearances. */
-private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
 
 @OptIn(ExperimentalMaterial3Api::class) // PullToRefreshBox is experimental
 @Composable
@@ -149,9 +148,9 @@ fun Chatauswahlscreen(
     val chatFilter by viewModel.filter.collectAsStateWithLifecycle()
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
-    var changeLogDialogContent by remember { mutableStateOf<ChangelogEntry?>(null) }
-    var contributePopupShown by remember { mutableStateOf(false) }
-    var newVersionAvailable by remember { mutableStateOf<String?>(null) }
+    val changelogPopup by viewModel.changelogPopup.collectAsStateWithLifecycle()
+    val contributePopupShown by viewModel.contributePopupShown.collectAsStateWithLifecycle()
+    val newVersionAvailable by viewModel.newVersionAvailable.collectAsStateWithLifecycle()
 
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
@@ -195,48 +194,6 @@ fun Chatauswahlscreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        val lastStartedVersion = preferencemanager.getLastStartedVersion()
-        val currentVersion = appRepository.appVersion.getVersionName()
-
-        val showChangelog = lastStartedVersion != currentVersion
-
-        if (showChangelog) {
-
-            //println("showing changelog")
-
-            val changelogContent = viewModel.getChangelog()
-
-            changeLogDialogContent = changelogContent
-
-            preferencemanager.saveLastStartedVersion(currentVersion)
-
-        }
-
-        // Never two popups in the same launch — the contribute nudge waits for the next one
-        if (!showChangelog) {
-            val now = Clock.System.now().toEpochMilliseconds()
-            val lastShown = preferencemanager.getLastContributePopupShown()
-
-            when {
-                // Never seeded on any device yet: seed the timestamp so the popup is due
-                // one interval from now, not immediately. Normally already set server-side
-                // (at registration, or by the migration for older accounts) and picked up by
-                // the next sync — this only covers that sync not having landed yet.
-                lastShown == 0L -> appRepository.setLastContributePopupShown(now)
-
-                now - lastShown >= CONTRIBUTE_POPUP_INTERVAL_MILLIS -> {
-                    contributePopupShown = true
-                    appRepository.setLastContributePopupShown(now)
-                }
-            }
-        }
-
-        if(appRepository.appVersion.isDesktop()) {
-            newVersionAvailable = viewModel.checkNewGitHubRelease()
-        }
-
-    }
 
 
 
@@ -437,6 +394,31 @@ fun Chatauswahlscreen(
 
                  */
 
+
+                //Recap (only during the recap season, see RecapAvailability)
+                val showRecapButton = remember { RecapAvailability.isChatSelectorButtonVisible() }
+                if (showRecapButton) {
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .height(32.dp)
+                            .clip(CircleShape)
+                            // Branded recap gradient, deliberately not a theme color
+                            .background(Brush.horizontalGradient(listOf(RecapPalette.Pink, RecapPalette.Violet, RecapPalette.Blue)))
+                            .clickable { viewModel.onRecapClick() }
+                            .tapTarget("chatselector_recap_button")
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.recap_button, RecapAvailability.recapYear()),
+                            color = RecapPalette.Paper,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1
+                        )
+                    }
+                }
 
                 //feedback board (feature requests + bug reports)
                 Box(
@@ -754,7 +736,7 @@ fun Chatauswahlscreen(
                                     uriHandler.openUri(GITHUB_LATEST_RELEASE_URL)
                                 },
                                 onDismiss = {
-                                    newVersionAvailable = null
+                                    viewModel.onNewVersionDismiss()
                                 },
                                 activateText = stringResource(Res.string.download),
                             )
@@ -878,22 +860,22 @@ fun Chatauswahlscreen(
         }
 
 
-        changeLogDialogContent?.let {
+        changelogPopup?.let {
             ChangelogPopup(
-                onDismiss = { changeLogDialogContent = null },
+                onDismiss = { viewModel.onChangelogDismiss() },
                 content = it
             )
         }
 
         if (contributePopupShown) {
             ContributePopup(
-                onDismiss = { contributePopupShown = false },
+                onDismiss = { viewModel.onContributeDismiss() },
                 onOpenReportForm = {
-                    contributePopupShown = false
+                    viewModel.onContributeDismiss()
                     viewModel.onFeedbackClick()
                 },
                 onOpenDonationPage = {
-                    contributePopupShown = false
+                    viewModel.onContributeDismiss()
                     val serverUrl = runBlocking { preferencemanager.getServerUrl() }
                     uriHandler.openUri(getDonationsUrl(serverUrl))
                 }

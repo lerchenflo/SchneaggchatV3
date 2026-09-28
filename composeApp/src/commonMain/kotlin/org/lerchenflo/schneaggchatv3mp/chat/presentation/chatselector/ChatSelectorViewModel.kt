@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -38,6 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.applySearchAndFilter
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -49,13 +51,19 @@ import schneaggchatv3mp.composeapp.generated.resources.groups
 import schneaggchatv3mp.composeapp.generated.resources.none
 import schneaggchatv3mp.composeapp.generated.resources.persons
 import schneaggchatv3mp.composeapp.generated.resources.unread
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
+
+/** How long the contribute popup stays away between two appearances. */
+private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
     private val permissionManager: PermissionManager,
+    private val preferencemanager: Preferencemanager,
 ): ViewModel() {
 
     private val _notificationPermissionState = MutableStateFlow(PermissionState.GRANTED)
@@ -63,6 +71,17 @@ class ChatSelectorViewModel(
 
     private val _pendingFriendCount = MutableStateFlow(0)
     val pendingFriendCount: StateFlow<Int> = _pendingFriendCount.asStateFlow()
+
+    /** Changelog of the current version, shown once after an update. */
+    private val _changelogPopup = MutableStateFlow<ChangelogEntry?>(null)
+    val changelogPopup: StateFlow<ChangelogEntry?> = _changelogPopup.asStateFlow()
+
+    private val _contributePopupShown = MutableStateFlow(false)
+    val contributePopupShown: StateFlow<Boolean> = _contributePopupShown.asStateFlow()
+
+    /** Desktop only: tag of a newer GitHub release, null if up to date. */
+    private val _newVersionAvailable = MutableStateFlow<String?>(null)
+    val newVersionAvailable: StateFlow<String?> = _newVersionAvailable.asStateFlow()
 
     init {
         checkNotificationPermission()
@@ -88,9 +107,16 @@ class ChatSelectorViewModel(
             }
         }
 
+        // Runs once per ViewModel, so the popups survive rotation and don't re-trigger when
+        // navigating back to the chat selector
         viewModelScope.launch {
-            //appRepository.dataSync(reason = "chatSelectorInit") //Already runs from the app resumed event
-            getChangelog()
+            checkStartupPopups()
+        }
+
+        if (appRepository.appVersion.isDesktop()) {
+            viewModelScope.launch {
+                _newVersionAvailable.value = checkNewGitHubRelease()
+            }
         }
 
     }
@@ -163,6 +189,11 @@ class ChatSelectorViewModel(
             navigator.navigate(Route.SettingsScreen)
         }
     }
+    fun onRecapClick() {
+        viewModelScope.launch {
+            navigator.navigate(Route.Recap)
+        }
+    }
     fun onFeedbackClick() {
         viewModelScope.launch {
             navigator.navigate(Route.Feedback)
@@ -204,14 +235,60 @@ class ChatSelectorViewModel(
 
 
 
-    suspend fun getChangelog(): ChangelogEntry? {
+    /** Changelog after an update, otherwise maybe the contribute nudge - never both in one launch. */
+    private suspend fun checkStartupPopups() {
+        // The chat selector only shows its content once logged in (autologin may still be running),
+        // and the contribute timestamp is written to the server
+        SessionCache.authState.first { it is SessionCache.AuthState.LoggedIn }
 
-        val appversion = appRepository.appVersion.getVersionName()
-        val changelogEntry = appRepository.getChangeLog(appversion)
-        return changelogEntry
+        val currentVersion = appRepository.appVersion.getVersionName()
+
+        if (preferencemanager.getLastStartedVersion() != currentVersion) {
+            val changelog = appRepository.getChangeLog(currentVersion)
+            if (changelog != null) {
+                // The version is only saved on dismiss, so a changelog that was never seen
+                // (process death before it appeared) shows again on the next start
+                _changelogPopup.value = changelog
+            } else {
+                // Nothing to show (offline or no entry for this version)
+                preferencemanager.saveLastStartedVersion(currentVersion)
+            }
+            return
+        }
+
+        val now = Clock.System.now().toEpochMilliseconds()
+        val lastShown = preferencemanager.getLastContributePopupShown()
+
+        when {
+            // Never seeded on any device yet: seed the timestamp so the popup is due
+            // one interval from now, not immediately. Normally already set server-side
+            // (at registration, or by the migration for older accounts) and picked up by
+            // the next sync — this only covers that sync not having landed yet.
+            lastShown == 0L -> appRepository.setLastContributePopupShown(now)
+
+            now - lastShown >= CONTRIBUTE_POPUP_INTERVAL_MILLIS -> {
+                _contributePopupShown.value = true
+                appRepository.setLastContributePopupShown(now)
+            }
+        }
     }
 
-    suspend fun checkNewGitHubRelease(): String?{
+    fun onChangelogDismiss() {
+        _changelogPopup.value = null
+        viewModelScope.launch {
+            preferencemanager.saveLastStartedVersion(appRepository.appVersion.getVersionName())
+        }
+    }
+
+    fun onContributeDismiss() {
+        _contributePopupShown.value = false
+    }
+
+    fun onNewVersionDismiss() {
+        _newVersionAvailable.value = null
+    }
+
+    private suspend fun checkNewGitHubRelease(): String?{
         // get the github release name
         val releaseJson = appRepository.getLatestGitHubVersionAsString()
         println("github json: ${releaseJson}")

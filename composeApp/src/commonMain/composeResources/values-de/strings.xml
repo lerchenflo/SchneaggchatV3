@@ -953,6 +953,20 @@
     <string name="recap_password_reset_label">Passwort-Reset-E-Mails erhalten</string>
     <string name="recap_password_reset_this_year">davon %1$d dieses Jahr</string>
     <string name="recap_password_reset_subtitle">Schreib es dir diesmal vielleicht auf.</string>
+    <string name="recap_button">Recap %1$d</string>
+    <string name="settings_recap">Dein Recap %1$d</string>
+    <string name="settings_recap_info">Dein Jahr auf Schneaggchat – nur noch ein paar Wochen verfügbar</string>
+    <string name="recap_downtime_title">Warum Schneaggchat %1$d offline war</string>
+    <string name="recap_downtime_subtitle">Nach Chaos sortiert, das größte Chaos zuerst.</string>
+    <string name="recap_downtime_count">%1$d×</string>
+    <string name="recap_downtime_lightning">Blitzeinschlag</string>
+    <string name="recap_downtime_lightning_detail">Da hat die Natur gewonnen.</string>
+    <string name="recap_downtime_isp_switch">Internetumstellung</string>
+    <string name="recap_downtime_isp_switch_detail">A1 hat einfach die öffentliche IP abgedreht.</string>
+    <string name="recap_downtime_bad_internet">Schlechtes Internet</string>
+    <string name="recap_downtime_bad_internet_detail">Die DSL-Leitung trennt sich einfach.</string>
+    <string name="recap_downtime_proxy">Proxy-Config kaputt</string>
+    <string name="recap_downtime_proxy_detail">Reverse Proxy oder Cloudflare-Config verhaut.</string>
 
     <string name="recap_outro_title">Das war's, %1$s.</string>
     <string name="recap_outro_subtitle">Bis nächstes Jahr. Bleib schleimig.</string>

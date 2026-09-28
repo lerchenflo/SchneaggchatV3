@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -30,58 +32,64 @@ fun SettingsOption(
     subtext: String? = null,
     onClick: () -> Unit,
     rightSideIcon: @Composable () -> Unit = {},
+    highlighted: Boolean = false,
     modifier: Modifier = Modifier
 ){
+    val contentColor = if (highlighted) MaterialTheme.colorScheme.onPrimaryContainer else LocalContentColor.current
+    val iconTint = if (highlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
 
-    Box(
-        modifier = modifier
-            .clickable{
-                onClick()
-            }
-            .fillMaxWidth()
-            .padding(
-                start = 16.dp,
-                end = 16.dp,
-                top = 20.dp,
-                bottom = 20.dp
-            ),
-        ){
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+    CompositionLocalProvider(LocalContentColor provides contentColor) {
+        Box(
+            modifier = modifier
+                .then(if (highlighted) Modifier.background(MaterialTheme.colorScheme.primaryContainer) else Modifier)
+                .clickable{
+                    onClick()
+                }
+                .fillMaxWidth()
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 20.dp,
+                    bottom = 20.dp
+                ),
+            ){
+            Row(
+                verticalAlignment = Alignment.CenterVertically
 
-        ) {
-            Icon(
-                contentDescription = text,
-                modifier = Modifier.size(35.dp),
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-                imageVector = icon
-            )
-
-            Spacer(modifier = Modifier.width(24.dp))
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
             ) {
-                Text(
-                    text = text,
-                    maxLines = 1,
-                    style = MaterialTheme.typography.titleMedium
+                Icon(
+                    contentDescription = text,
+                    modifier = Modifier.size(35.dp),
+                    tint = iconTint,
+                    imageVector = icon
                 )
 
-                if (subtext != null){
-                    Text(
-                        text = subtext,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = LocalContentColor.current.copy(alpha = 0.65f)
+                Spacer(modifier = Modifier.width(24.dp))
 
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    Text(
+                        text = text,
+                        maxLines = 1,
+                        style = MaterialTheme.typography.titleMedium
                     )
+
+                    if (subtext != null){
+                        Text(
+                            text = subtext,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = LocalContentColor.current.copy(alpha = 0.65f)
+
+                        )
+                    }
                 }
+
+                rightSideIcon()
             }
 
-            rightSideIcon()
         }
-
     }
 }
 

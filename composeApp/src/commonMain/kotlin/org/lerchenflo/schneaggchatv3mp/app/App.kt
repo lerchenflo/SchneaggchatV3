@@ -675,7 +675,8 @@ fun App() {
                                             navigateDevSettings = { scope.launch { navigator.navigate(Route.DeveloperSettings) } },
                                             navigateAppearanceSettings = { scope.launch { navigator.navigate(Route.AppearanceSettings) } },
                                             navigateMiscSettings = { scope.launch { navigator.navigate(Route.MiscSettings) } },
-                                            navigateSchneaggmapSettings = { scope.launch { navigator.navigate(Route.SchneaggmapSettings) } }
+                                            navigateSchneaggmapSettings = { scope.launch { navigator.navigate(Route.SchneaggmapSettings) } },
+                                            navigateRecap = { scope.launch { navigator.navigate(Route.Recap) } }
                                         )
                                     }
 
