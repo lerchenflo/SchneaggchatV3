@@ -1541,7 +1541,7 @@
     <string name="games_undercover_description">Smascherare l'infiltrato descrivendo la parola segreta</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
     <string name="games_schneaggrodeo_description">Saltare gli ostacoli e catturare con il lazo le lumache alle calcagna</string>
-    <string name="games_schneaggrodeo_instructions">Cavalca il più lontano possibile mentre un branco di schneagg ti insegue!\n\nTocca (o premi spazio) per saltare, tieni premuto per saltare più in alto. Se abbatti una barriera o urti una lumaca, il tuo cavallo inciampa e il branco si avvicina — quando ti raggiunge, la cavalcata è finita.\n\nLancia il lazo (pulsante o L) per catturare le lumache e ottenere punti bonus. Ogni 5 lumache catturate valgono un super salto (pulsante o J) sui prossimi 5 ostacoli.\n\nSalta attraverso i ferri di cavallo portafortuna sospesi: ognuno assorbe il tuo prossimo errore (fino a 3).\n\nOgni tanto passa un aereo: prendi la sua scala di corda con il lazo e vola sopra la città! La metà sinistra dello schermo fa salire, la metà destra scendere, senza comandi scende da solo. Evita gli edifici.\n\nLe bandierine sul percorso mostrano dove sono finite le cavalcate migliori, il tuo record nel tuo colore principale. Battile!</string>
+    <string name="games_schneaggrodeo_instructions">Cavalca il più lontano possibile mentre un branco di schneagg ti insegue!\n\nTocca (o premi spazio) per saltare, tieni premuto per saltare più in alto. Se abbatti una barriera o urti una lumaca, il tuo cavallo inciampa e il branco si avvicina — quando ti raggiunge, la cavalcata è finita.\n\nLancia il lazo (pulsante o L) per catturare le lumache e ottenere punti bonus. Ogni 5 lumache catturate valgono un super salto (pulsante o J) sui prossimi 5 ostacoli.\n\nSalta attraverso i ferri di cavallo portafortuna sospesi: ognuno assorbe il tuo prossimo errore (fino a 3).\n\nOgni tanto passa un aereo: prendi la sua scala di corda con il lazo e vola sopra la città! La metà sinistra dello schermo fa salire, la metà destra scendere, senza comandi scende da solo. Evita gli edifici.\n\nOgni tanto passa un trattorino tosaerba rosso: prendilo con il lazo e il tuo cavallo ci salta sopra per una corsa a tutto gas. Ogni ostacolo che falcia gli costa un pezzo.\n\nLe bandierine sul percorso mostrano dove sono finite le cavalcate migliori, il tuo record nel tuo colore principale. Battile!</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lazo</string>
     <string name="games_schneaggrodeo_catch_horse">Prendi il tuo cavallo!</string>
@@ -1550,6 +1550,8 @@
     <string name="games_schneaggrodeo_plane_controls">Metà sinistra: sali · Metà destra: scendi</string>
     <string name="games_schneaggrodeo_plane_controls_keys">Spazio / W: sali · S / ↓: scendi</string>
     <string name="games_schneaggrodeo_super_jump">Super salto ×%1$d</string>
+    <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
+    <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
     <string name="games_schneaggrodeo_next_to_beat">Prossimo da battere: %1$s (%2$d)</string>
 
     <!-- Feedback board -->

@@ -6,6 +6,7 @@ import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -148,6 +149,41 @@ private const val CLOUD_GAP_SHRINK_PER_SECOND = 0.5f
 private const val CLOUD_GAP_RANDOM = 5f
 private const val CLOUD_OVERHANG = 3f                // clouds are a bit wider than the building below
 
+// Lawn tractor: every now and then a red lawn tractor rolls by on the ground. Lasso it and the horse
+// hops onto its deck, cowboy and all, for a short ride at an absurd speed. The world races by, but
+// points keep coming in at the normal pace; everything in the way is mowed flat without a penalty.
+private const val TRACTOR_FIRST_SECONDS = 70f        // game seconds until the first tractor
+private const val TRACTOR_INTERVAL_MIN = 50f
+private const val TRACTOR_INTERVAL_RANDOM = 30f
+private const val TRACTOR_PASS_SPEED = 30f           // u/s across the screen while rolling by
+internal const val TRACTOR_LENGTH = 40f
+internal const val TRACTOR_DECK_HEIGHT = 7f          // the horse's hooves stand on this
+internal const val TRACTOR_HITCH_X = 4f              // where the lasso grabs it, relative to its left edge
+internal const val TRACTOR_HITCH_Y = 6f
+private const val TRACTOR_BOARD_SECONDS = 0.6f
+private const val TRACTOR_RIDE_SECONDS = 4f
+private const val TRACTOR_UNLOAD_SECONDS = 0.6f
+private const val TRACTOR_HOP = 6f                   // hop height onto / off the deck
+private const val TRACTOR_SCROLL_SPEED = 1500f       // u/s the world races by while riding
+private const val TRACTOR_LEAVE_SPEED = 400f         // u/s it speeds away after dropping the horse off
+private const val TRACTOR_RUMBLE_DEGREES = 0.8f
+private const val TRACTOR_SHAKE = 0.7f               // units the whole picture shakes while riding
+// Every fence mowed rips off one part; the hit after the last part wrecks it. The ride spaces its
+// fences so that happens right around the end of the ride.
+internal const val TRACTOR_PARTS = 5
+private const val TRACTOR_FIRST_FENCE_SECONDS = 0.3f
+private const val TRACTOR_MIN_FENCE_SECONDS = 0.3f
+private const val TRACTOR_LAST_HIT_MARGIN = 0.3f     // the wrecking fence arrives this long before the ride ends
+private const val TRACTOR_WRECK_TILT = 25f           // degrees the wreck tips over
+private const val TRACTOR_WRECK_TILT_SPEED = 120f    // degrees per second
+private const val DEBRIS_GRAVITY = 150f
+/** Bits of scrap the wreck scatters on top of the parts lost before. */
+private const val WRECK_SCRAP_PIECES = 4
+/** The inside gag: shown on the speedometer while riding the tractor. */
+private const val TRACTOR_SPEED_KMH = 65_000
+// One unit is 10 cm, so u/s * 0.36 = km/h (75 u/s start pace = 27 km/h, 180 u/s top pace = 65 km/h)
+private const val KMH_PER_UNIT_PER_SECOND = 0.36f
+
 // Lasso: thrown from the rider's hand, homes in on the first snail within range
 private const val LASSO_RANGE = 32f
 private const val LASSO_DURATION = 0.45f  // out and back
@@ -156,6 +192,7 @@ private const val LASSO_CATCH_TOLERANCE = 6f // extra reach at catch time, absor
 
 private const val RIDER_LEAN_RESPONSE = 12f // 1/s, how fast the rider follows the lean target
 internal const val HORSE_X = 12f          // left edge of the horse in world units
+private const val TRACTOR_RIDE_X = HORSE_X - 3f // tractor's left edge while riding: horse centered on the deck
 internal const val HAND_X = 18f           // rider's rein hand relative to the horse
 internal const val HAND_Y = 18f
 private const val MAX_FRAME_SECONDS = 0.05f
@@ -168,6 +205,14 @@ private const val HITBOX_BOTTOM = 1f
 
 /** Highscore markers stay visible this far past either edge, so their labels slide in and out. */
 private const val MARKER_VISIBLE_MARGIN = 40f
+/**
+ * Bonus points move the markers closer without any distance ridden. They catch up at this speed
+ * (u/s) instead of jumping, so a marker slides in from the edge rather than popping up mid-screen.
+ */
+private const val MARKER_CATCH_UP_SPEED = 300f
+
+/** How long the "you're in the plane / on the tractor" banner stays up, in real seconds. */
+private const val ANNOUNCEMENT_SECONDS = 1.8f
 
 // Falling off: rarely, after a big normal jump while the pack is far away, the horse bucks the
 // cowboy off. He has to lasso his horse and swing back into the saddle before the pack gets there.
@@ -211,6 +256,32 @@ private enum class PlanePhase {
     FLYING,
     /** Crashed: the wreck tumbles away and the cowboy drops back into the saddle. */
     CRASHING,
+}
+
+private enum class TractorPhase {
+    NONE,
+    /** Rolling by on the ground, waiting to be lassoed. */
+    APPROACH,
+    /** Horse and cowboy hop onto the deck while the tractor slides under them. */
+    BOARDING,
+    RIDING,
+    /** The horse hops back down and the tractor speeds off. */
+    UNLOADING,
+}
+
+/**
+ * A part torn off the tractor, flying in screen space. [part] is the index of the lost part (see
+ * RodeoTractorUi.partsLost), or [TRACTOR_PARTS] for a bit of scrap from the wreck.
+ */
+private class Debris(
+    var x: Float,
+    var y: Float,
+    val vx: Float,
+    var vy: Float,
+    val spin: Float,
+    val part: Int,
+) {
+    var rotation = 0f
 }
 
 /** A building of the skyline under the plane; [x] is its left edge. */
@@ -300,6 +371,7 @@ internal class SchneaggRodeoEngine {
     private val snails = mutableListOf<Snail>()
     private val horseshoes = mutableListOf<Horseshoe>()
     private val buildings = mutableListOf<Building>()
+    private val debris = mutableListOf<Debris>()
 
     /** Visible world width in units; follows the canvas size. */
     var worldWidth = 0f
@@ -395,8 +467,46 @@ internal class SchneaggRodeoEngine {
     /** Height of the riderless horse hopping the fences on its own while the cowboy flies. */
     private var riderlessHop = 0f
 
+    private var tractorPhase = TractorPhase.NONE
+    private var nextTractorIn = TRACTOR_FIRST_SECONDS
+    private var tractorX = 0f           // left edge of the tractor
+    private var tractorPhaseTime = 0f
+    private var tractorBoardStartX = 0f
+    private var tractorBoardStartHeight = 0f
+    /** Height of the horse's hooves while it stands on (or hops onto / off) the tractor. */
+    private var tractorLift = 0f
+    private var tractorWheelPhase = 0f
+    private var tractorPartsLost = 0
+    private var tractorWrecked = false
+    private var tractorRotation = 0f
+    private var tractorFenceIn = 0f
+    /** The wreck is still sliding off screen after the ride is over. */
+    private var tractorWreckLeaving = false
+    private var lassoAtTractor = false
+    /** Bonus points already applied to the highscore markers, in units; trails [bonusPoints]. */
+    private var markerBonus = 0f
+    private var announcementKind = RodeoAnnouncement.CRASH_PILOT
+    private var announcementTime = 0f
+
+    /** Banner currently shown over the track, if any. */
+    val announcement: RodeoAnnouncement? get() = announcementKind.takeIf { announcementTime > 0f }
+    /** How far the ground has scrolled; runs away from [distance] while the tractor races. */
+    private var groundScroll = 0f
+
     /** The cowboy is in (or on his way into / out of) the plane: the horse runs on without him. */
     val isFlying: Boolean get() = planePhase == PlanePhase.BOARDING || planePhase == PlanePhase.FLYING || planePhase == PlanePhase.CRASHING
+
+    /** Horse and cowboy are on (or hopping onto / off) the lawn tractor. */
+    private val isOnTractor: Boolean
+        get() = tractorPhase == TractorPhase.BOARDING || tractorPhase == TractorPhase.RIDING || tractorPhase == TractorPhase.UNLOADING
+
+    /** What the speedometer shows: the horse's real pace, or the tractor's (slightly exaggerated) one. */
+    val speedKmh: Int
+        get() = when {
+            tractorPhase == TractorPhase.RIDING -> TRACTOR_SPEED_KMH
+            fallPhase != FallPhase.RIDING -> 0
+            else -> (speed * (if (stumble > 0f) STUMBLE_SPEED_FACTOR else 1f) * KMH_PER_UNIT_PER_SECOND).roundToInt()
+        }
 
     val score: Int get() = (distance / UNITS_PER_POINT).toInt() + bonusPoints
 
@@ -450,6 +560,18 @@ internal class SchneaggRodeoEngine {
         planeDive = false
         lassoAtPlane = false
         riderlessHop = 0f
+        tractorPhase = TractorPhase.NONE
+        nextTractorIn = TRACTOR_FIRST_SECONDS
+        tractorLift = 0f
+        tractorPartsLost = 0
+        tractorWrecked = false
+        tractorRotation = 0f
+        tractorWreckLeaving = false
+        lassoAtTractor = false
+        groundScroll = 0f
+        debris.clear()
+        markerBonus = 0f
+        announcementTime = 0f
     }
 
     /**
@@ -464,6 +586,7 @@ internal class SchneaggRodeoEngine {
         runTimeSeconds = snapshot.runTimeSeconds
         chaseGap = snapshot.chaseGap
         bonusPoints = snapshot.bonusPoints
+        markerBonus = bonusPoints * UNITS_PER_POINT
         fenceCount = snapshot.fenceCount
         snailsCaught = snapshot.snailsCaught
         luckyCharms = snapshot.luckyCharms
@@ -578,7 +701,7 @@ internal class SchneaggRodeoEngine {
     }
 
     fun superJumpPressed() {
-        if (superJumpCharges <= 0 || fallPhase != FallPhase.RIDING || isFlying) return
+        if (superJumpCharges <= 0 || fallPhase != FallPhase.RIDING || isFlying || isOnTractor) return
         if (superJumpPhase != SuperJumpPhase.NONE || superJumpQueued) return
         // In the air it fires on landing, on the ground right away
         if (horseHeight > 0f) superJumpQueued = true else startSuperJumpWindup()
@@ -610,7 +733,7 @@ internal class SchneaggRodeoEngine {
             planeClimb = true
             return
         }
-        if (fallPhase == FallPhase.RIDING && horseHeight <= 0f && superJumpPhase == SuperJumpPhase.NONE) {
+        if (fallPhase == FallPhase.RIDING && horseHeight <= 0f && superJumpPhase == SuperJumpPhase.NONE && !isOnTractor) {
             verticalVelocity = JUMP_VELOCITY
             airTime = 0f
             jumpPeak = 0f
@@ -632,7 +755,7 @@ internal class SchneaggRodeoEngine {
     }
 
     fun lassoPressed() {
-        if (lassoTime >= 0f || lassoCooldown > 0f || isFlying) return
+        if (lassoTime >= 0f || lassoCooldown > 0f || isFlying || isOnTractor) return
         if (fallPhase != FallPhase.RIDING) {
             // On foot the lasso is for the horse only, and only once he is back on his feet
             if (fallPhase == FallPhase.ON_FOOT) {
@@ -648,10 +771,18 @@ internal class SchneaggRodeoEngine {
         lassoTime = 0f
         lassoCooldown = LASSO_COOLDOWN
         lassoResolved = false
+        lassoAtTractor = false
         // A passing plane beats any snail
         lassoAtPlane = planePhase == PlanePhase.APPROACH &&
                 (planeX + PLANE_LADDER_X - PLANE_PASS_SPEED * timeToCatch) in (handX - 2f)..(handX + LASSO_RANGE)
         if (lassoAtPlane) {
+            lassoTarget = null
+            return
+        }
+        // So does a passing tractor
+        lassoAtTractor = tractorPhase == TractorPhase.APPROACH && superJumpPhase == SuperJumpPhase.NONE &&
+                (tractorX + TRACTOR_HITCH_X - TRACTOR_PASS_SPEED * timeToCatch) in (handX - 2f)..(handX + LASSO_RANGE)
+        if (lassoAtTractor) {
             lassoTarget = null
             return
         }
@@ -680,6 +811,7 @@ internal class SchneaggRodeoEngine {
         dustTime = max(0f, dustTime - realDt)
         splashTime = max(0f, splashTime - realDt)
         sparkleTime = max(0f, sparkleTime - realDt)
+        announcementTime = max(0f, announcementTime - realDt)
 
         // Off the horse the world stands still - only the cowboy, his horse and the snails move
         if (fallPhase != FallPhase.RIDING) {
@@ -693,7 +825,12 @@ internal class SchneaggRodeoEngine {
         val effectiveSpeed = speed * (if (stumble > 0f) STUMBLE_SPEED_FACTOR else 1f)
         val step = effectiveSpeed * dt
         distance += step
-        gaitPhase += step * 0.12f
+        // On the tractor the world races by, but the points keep coming in at the horse's pace
+        val tractorRiding = tractorPhase == TractorPhase.RIDING
+        val scroll = if (tractorRiding) TRACTOR_SCROLL_SPEED * dt else step
+        groundScroll += scroll
+        // Standing on the tractor the horse keeps its legs still
+        if (!isOnTractor) gaitPhase += step * 0.12f
         packPhase += dt * 10f
 
         // Vertical movement
@@ -740,16 +877,17 @@ internal class SchneaggRodeoEngine {
         riderlessHop = if (isFlying && planePhase != PlanePhase.BOARDING) riderlessHopHeight() else 0f
 
         // Rider eases into the forward seat on takeoff and back upright after landing
-        val leanTarget = if (horseHeight > 0f) 1f else 0f
+        val leanTarget = if (horseHeight > 0f || tractorRiding) 1f else 0f
         riderLean += (leanTarget - riderLean) * min(1f, dt * RIDER_LEAN_RESPONSE)
 
         // Fences. The first one of a run (or of a restored run, whose track starts empty) comes in
         // at 60 % of the visible width.
         if (nextFenceIn < 0f && fences.isEmpty()) nextFenceIn = worldWidth * 0.6f
-        fences.forEach { it.x -= step }
+        fences.forEach { it.x -= scroll }
         fences.removeAll { it.x + it.width < 0f }
-        // No new fences while the cowboy flies; the skyline takes over
-        if (!isFlying) {
+        // No new fences while the cowboy flies (the skyline takes over) or rides the tractor (it
+        // places its own)
+        if (!isFlying && !isOnTractor) {
             nextFenceIn -= step
             if (nextFenceIn <= 0f) spawnFence()
         }
@@ -768,7 +906,7 @@ internal class SchneaggRodeoEngine {
         val hitBottom = horseHeight + HITBOX_BOTTOM
         // The super jump sails over everything, including the fences it passes low at takeoff. The
         // riderless horse under the plane hops everything on its own.
-        val invulnerable = superJumpPhase != SuperJumpPhase.NONE || isFlying
+        val invulnerable = superJumpPhase != SuperJumpPhase.NONE || isFlying || isOnTractor
 
         fences.forEach { fence ->
             if (!invulnerable && !fence.knocked && fence.x < hitRight && fence.x + fence.width > hitLeft && hitBottom < fence.top) {
@@ -789,7 +927,7 @@ internal class SchneaggRodeoEngine {
                         snail.height = seat.top
                     } else {
                         val ownSpeed = if (snail.kind == SnailKind.RUNNER) RUNNER_SPEED else CRAWLER_SPEED
-                        snail.x -= step + ownSpeed * dt
+                        snail.x -= scroll + ownSpeed * dt
                         snail.height = if (snail.kind == SnailKind.RUNNER) hopHeight(snail.x, fences) else 0f
                     }
 
@@ -804,7 +942,7 @@ internal class SchneaggRodeoEngine {
                     }
                 }
                 SnailState.KNOCKED -> {
-                    snail.x -= step * 0.5f
+                    snail.x -= scroll * 0.5f
                     snail.verticalVelocity -= GRAVITY * dt
                     snail.height += snail.verticalVelocity * dt
                     snail.spin += 720f * dt
@@ -815,10 +953,11 @@ internal class SchneaggRodeoEngine {
         snails.removeAll { it.x < -SNAIL_SIZE || it.height < -WORLD_HEIGHT_UNITS }
 
         // Lucky horseshoes scroll with the ground and are picked up by the horse passing through
-        horseshoes.forEach { it.x -= step }
+        horseshoes.forEach { it.x -= scroll }
+        val bodyHeight = horseHeight + tractorLift
         horseshoes.removeAll { shoe ->
             val collected = shoe.x > hitLeft && shoe.x < hitRight + 4f &&
-                    shoe.height in (horseHeight + HORSESHOE_REACH_BOTTOM)..(horseHeight + HORSESHOE_REACH_TOP)
+                    shoe.height in (bodyHeight + HORSESHOE_REACH_BOTTOM)..(bodyHeight + HORSESHOE_REACH_TOP)
             if (collected) {
                 luckyCharms = min(MAX_LUCKY_CHARMS, luckyCharms + 1)
                 bonusPoints += HORSESHOE_POINTS
@@ -827,7 +966,8 @@ internal class SchneaggRodeoEngine {
             collected || shoe.x < -SNAIL_SIZE
         }
 
-        stepPlane(dt, realDt, step)
+        stepTractor(dt, realDt, scroll)
+        stepPlane(dt, realDt, scroll)
 
         // Lasso: extends to the target (or straight ahead) and back over LASSO_DURATION
         lassoCooldown = max(0f, lassoCooldown - dt)
@@ -838,7 +978,20 @@ internal class SchneaggRodeoEngine {
             val handY = horseHeight + HAND_Y
             val target = lassoTarget
 
-            if (!lassoResolved && lassoAtPlane) {
+            if (!lassoResolved && lassoAtTractor) {
+                lassoAimX = tractorX + TRACTOR_HITCH_X
+                lassoAimY = TRACTOR_HITCH_Y
+                if (progress >= 0.5f) {
+                    lassoResolved = true
+                    lassoAtTractor = false
+                    val hitchX = tractorX + TRACTOR_HITCH_X
+                    if (tractorPhase == TractorPhase.APPROACH &&
+                        hitchX in (handX - LASSO_CATCH_TOLERANCE)..(handX + LASSO_RANGE + LASSO_CATCH_TOLERANCE)
+                    ) {
+                        startTractorBoarding()
+                    }
+                }
+            } else if (!lassoResolved && lassoAtPlane) {
                 lassoAimX = planeX + PLANE_LADDER_X
                 lassoAimY = planeY - PLANE_LADDER_LENGTH
                 if (progress >= 0.5f) {
@@ -883,7 +1036,7 @@ internal class SchneaggRodeoEngine {
                 caught.height = lassoTipY - SNAIL_BODY_HEIGHT / 2f
             }
 
-            if (progress >= 1f || isFlying) {
+            if (progress >= 1f || isFlying || isOnTractor) {
                 lassoTarget?.let { caught -> if (caught.state == SnailState.LASSOED) snails.remove(caught) }
                 lassoTarget = null
                 lassoTime = -1f
@@ -892,6 +1045,12 @@ internal class SchneaggRodeoEngine {
 
         chaseGap = min(CHASE_GAP_MAX, chaseGap + CHASE_GAP_REGAIN * dt)
         if (chaseGap <= 0f) chaseGap = 0f
+        markerBonus = min(bonusPoints * UNITS_PER_POINT, markerBonus + MARKER_CATCH_UP_SPEED * dt)
+    }
+
+    private fun announce(kind: RodeoAnnouncement) {
+        announcementKind = kind
+        announcementTime = ANNOUNCEMENT_SECONDS
     }
 
     /** The riderless horse arcs over whatever fence it is passing, like the running snails do. */
@@ -910,6 +1069,7 @@ internal class SchneaggRodeoEngine {
     }
 
     private fun startBoarding() {
+        announce(RodeoAnnouncement.CRASH_PILOT)
         planePhase = PlanePhase.BOARDING
         planePhaseTime = 0f
         planeBoardStartX = planeX
@@ -975,7 +1135,7 @@ internal class SchneaggRodeoEngine {
 
         when (planePhase) {
             PlanePhase.NONE -> {
-                if (superJumpPhase == SuperJumpPhase.NONE && elapsed > 0f) {
+                if (superJumpPhase == SuperJumpPhase.NONE && tractorPhase == TractorPhase.NONE && !tractorWreckLeaving && elapsed > 0f) {
                     nextPlaneIn -= dt
                     if (nextPlaneIn <= 0f) {
                         planePhase = PlanePhase.APPROACH
@@ -1061,8 +1221,183 @@ internal class SchneaggRodeoEngine {
         }
     }
 
+    private fun startTractorBoarding() {
+        announce(RodeoAnnouncement.LAWN_TRACTOR)
+        tractorPhase = TractorPhase.BOARDING
+        tractorPhaseTime = 0f
+        tractorBoardStartX = tractorX
+        // A jump in progress ends on the deck instead of the ground
+        tractorBoardStartHeight = horseHeight
+        horseHeight = 0f
+        verticalVelocity = 0f
+        stumble = 0f
+        superJumpQueued = false
+        jumpHeld = false
+        lassoTime = -1f
+    }
+
+    private fun startTractorUnloading() {
+        if (!tractorWrecked) wreckTractor()
+        tractorPhase = TractorPhase.UNLOADING
+        tractorPhaseTime = 0f
+        // Fences come back with a normal gap after the ride
+        nextFenceIn = max(nextFenceIn, randomFenceGap())
+    }
+
+    private fun finishTractorRide() {
+        tractorPhase = TractorPhase.NONE
+        tractorLift = 0f
+        tractorWreckLeaving = true
+        nextTractorIn = TRACTOR_INTERVAL_MIN + Random.nextFloat() * TRACTOR_INTERVAL_RANDOM
+        jumpPeak = 0f
+        splashTime = SPLASH_SECONDS
+    }
+
+    /** Where each part sits on the tractor, relative to its left edge / the ground (see drawTractor). */
+    private fun tractorPartAnchor(part: Int): Pair<Float, Float> = when (part) {
+        0 -> 36f to 12f   // exhaust pipe
+        1 -> 27f to 12f   // steering wheel
+        2 -> 34f to 8f    // hood
+        3 -> 20f to 1.5f  // mower deck
+        4 -> 33f to 2.8f  // front wheel
+        else -> 15f to 6f // scrap from the chassis
+    }
+
+    /** Flings [part] off the tractor, up and backwards over the screen. */
+    private fun throwDebris(part: Int) {
+        val (anchorX, anchorY) = tractorPartAnchor(part)
+        debris.add(
+            Debris(
+                x = tractorX + anchorX,
+                y = anchorY,
+                vx = -(50f + Random.nextFloat() * 70f),
+                vy = 40f + Random.nextFloat() * 35f,
+                spin = (if (Random.nextBoolean()) 1f else -1f) * (300f + Random.nextFloat() * 500f),
+                part = part,
+            )
+        )
+    }
+
+    /** A fence was mowed: one more part flies off, or the tractor is wrecked once none are left. */
+    private fun hitTractor(fenceX: Float) {
+        dustTime = DUST_SECONDS
+        dustX = fenceX
+        if (tractorPartsLost < TRACTOR_PARTS) {
+            throwDebris(tractorPartsLost)
+            tractorPartsLost++
+        } else {
+            wreckTractor()
+        }
+    }
+
+    private fun wreckTractor() {
+        // Whatever was still attached comes off at once
+        while (tractorPartsLost < TRACTOR_PARTS) throwDebris(tractorPartsLost++)
+        repeat(WRECK_SCRAP_PIECES) { throwDebris(TRACTOR_PARTS) }
+        tractorWrecked = true
+        sparkle(tractorX + TRACTOR_LENGTH - 4f, TRACTOR_DECK_HEIGHT)
+    }
+
+    /**
+     * Spaces the ride's fences so the hit that wrecks the tractor lands shortly before the ride is
+     * over. Fences already on their way count as hits too.
+     */
+    private fun nextTractorFenceDelay(): Float {
+        val pending = fences.count { !it.knocked && it.x + it.width > tractorX }
+        val hitsLeft = TRACTOR_PARTS + 1 - tractorPartsLost - pending
+        if (hitsLeft <= 0) return TRACTOR_RIDE_SECONDS // enough on the way; nothing more this ride
+        val timeLeft = TRACTOR_RIDE_SECONDS - TRACTOR_LAST_HIT_MARGIN - tractorPhaseTime
+        return max(TRACTOR_MIN_FENCE_SECONDS, timeLeft / hitsLeft)
+    }
+
+    /** Tractor spawning, passing, boarding, the ride and dropping the horse off. [scroll] is the world scroll of this frame. */
+    private fun stepTractor(dt: Float, realDt: Float, scroll: Float) {
+        debris.forEach { piece ->
+            piece.vy -= DEBRIS_GRAVITY * realDt
+            piece.x += piece.vx * realDt
+            piece.y += piece.vy * realDt
+            piece.rotation += piece.spin * realDt
+        }
+        debris.removeAll { it.y < -GROUND_OFFSET_UNITS || it.x < -SNAIL_SIZE }
+        tractorWheelPhase += scroll * 0.25f
+
+        when (tractorPhase) {
+            TractorPhase.NONE -> {
+                if (tractorWreckLeaving) {
+                    tractorX -= scroll
+                    if (tractorX + TRACTOR_LENGTH < 0f) tractorWreckLeaving = false
+                } else if (planePhase == PlanePhase.NONE && superJumpPhase == SuperJumpPhase.NONE && elapsed > 0f) {
+                    nextTractorIn -= dt
+                    if (nextTractorIn <= 0f) {
+                        tractorPhase = TractorPhase.APPROACH
+                        tractorX = worldWidth + 5f
+                        tractorPartsLost = 0
+                        tractorWrecked = false
+                        tractorRotation = 0f
+                    }
+                }
+            }
+            TractorPhase.APPROACH -> {
+                tractorX -= TRACTOR_PASS_SPEED * dt
+                if (tractorX + TRACTOR_LENGTH < 0f) {
+                    tractorPhase = TractorPhase.NONE
+                    nextTractorIn = TRACTOR_INTERVAL_MIN + Random.nextFloat() * TRACTOR_INTERVAL_RANDOM
+                }
+            }
+            TractorPhase.BOARDING -> {
+                tractorPhaseTime += dt
+                val progress = min(1f, tractorPhaseTime / TRACTOR_BOARD_SECONDS)
+                val eased = progress * progress * (3f - 2f * progress)
+                tractorX = tractorBoardStartX + (TRACTOR_RIDE_X - tractorBoardStartX) * eased
+                tractorLift = tractorBoardStartHeight + (TRACTOR_DECK_HEIGHT - tractorBoardStartHeight) * eased +
+                        TRACTOR_HOP * sin(PI.toFloat() * progress)
+                if (progress >= 1f) {
+                    tractorPhase = TractorPhase.RIDING
+                    tractorPhaseTime = 0f
+                    tractorLift = TRACTOR_DECK_HEIGHT
+                    tractorFenceIn = TRACTOR_FIRST_FENCE_SECONDS
+                }
+            }
+            TractorPhase.RIDING -> {
+                tractorPhaseTime += dt
+                tractorFenceIn -= dt
+                if (tractorFenceIn <= 0f) {
+                    addFence(x = worldWidth, gapAfter = TRACTOR_LENGTH)
+                    tractorFenceIn = nextTractorFenceDelay()
+                }
+                // Everything in front of the mower deck is mowed flat; each fence costs a part
+                val front = tractorX + TRACTOR_LENGTH
+                fences.forEach { fence ->
+                    if (!fence.knocked && fence.x < front && fence.x + fence.width > tractorX) {
+                        fence.knocked = true
+                        if (!tractorWrecked) hitTractor(fence.x)
+                    }
+                }
+                snails.forEach { snail ->
+                    if (snail.state == SnailState.ACTIVE && snail.x < front && snail.x > tractorX) {
+                        snail.state = SnailState.KNOCKED
+                        snail.onFence = null
+                        snail.verticalVelocity = 45f
+                    }
+                }
+                if (tractorWrecked || tractorPhaseTime >= TRACTOR_RIDE_SECONDS) startTractorUnloading()
+            }
+            TractorPhase.UNLOADING -> {
+                tractorPhaseTime += dt
+                val progress = min(1f, tractorPhaseTime / TRACTOR_UNLOAD_SECONDS)
+                val eased = progress * progress * (3f - 2f * progress)
+                tractorLift = TRACTOR_DECK_HEIGHT * (1f - eased) + TRACTOR_HOP * sin(PI.toFloat() * progress)
+                // The wreck tips over and stays behind on the track
+                tractorX -= scroll
+                tractorRotation = min(TRACTOR_WRECK_TILT, tractorRotation + TRACTOR_WRECK_TILT_SPEED * dt)
+                if (progress >= 1f) finishTractorRide()
+            }
+        }
+    }
+
     private fun shouldThrowCowboy(): Boolean =
         planePhase == PlanePhase.NONE &&
+                !isOnTractor &&
                 jumpPeak >= FALL_MIN_JUMP_PEAK &&
                 chaseGap >= FALL_MIN_CHASE_GAP &&
                 elapsed >= FALL_MIN_ELAPSED &&
@@ -1297,8 +1632,8 @@ internal class SchneaggRodeoEngine {
         }
 
         // A marker's post stands where the horse's nose will be once the score reaches the entry.
-        // Caught snails add points without distance, so markers jump closer by the catch bonus.
-        val effectiveDistance = distance + bonusPoints * UNITS_PER_POINT
+        // Bonus points add score without distance, so markers move closer by the bonus (smoothly).
+        val effectiveDistance = distance + markerBonus
         val markers = ghosts.mapIndexedNotNull { index, ghost ->
             val x = HORSE_X + HITBOX_RIGHT + ghost.score * UNITS_PER_POINT - effectiveDistance
             if (x > -MARKER_VISIBLE_MARGIN && x < worldWidth + MARKER_VISIBLE_MARGIN) {
@@ -1315,8 +1650,9 @@ internal class SchneaggRodeoEngine {
             }
         }
 
+        val shaking = tractorPhase == TractorPhase.RIDING
         return SchneaggRodeoFrame(
-            distance = distance,
+            distance = groundScroll,
             fences = fenceUis,
             snails = snailUis,
             pack = pack,
@@ -1347,6 +1683,23 @@ internal class SchneaggRodeoEngine {
             sparkle = if (sparkleTime > 0f) {
                 RodeoSparkleUi(x = sparkleX, y = sparkleY, progress = 1f - sparkleTime / SPARKLE_SECONDS)
             } else null,
+            tractor = tractorUi(),
+            debris = debris.map { RodeoDebrisUi(x = it.x, y = it.y, rotation = it.rotation, part = it.part) },
+            speedBlur = shaking,
+            shakeX = if (shaking) TRACTOR_SHAKE * sin(runTimeSeconds * 97f) else 0f,
+            shakeY = if (shaking) TRACTOR_SHAKE * cos(runTimeSeconds * 131f) else 0f,
+        )
+    }
+
+    private fun tractorUi(): RodeoTractorUi? {
+        if (tractorPhase == TractorPhase.NONE && !tractorWreckLeaving) return null
+        return RodeoTractorUi(
+            x = tractorX,
+            rotation = tractorRotation,
+            wheelPhase = tractorWheelPhase,
+            partsLost = tractorPartsLost,
+            wrecked = tractorWrecked,
+            exhaust = tractorPhase == TractorPhase.RIDING,
         )
     }
 
@@ -1446,7 +1799,11 @@ internal class SchneaggRodeoEngine {
                 pivotX = 7f
                 pivotY = 9f - 9f * hindLegScale
             }
-            SuperJumpPhase.NONE -> if (fallPhase == FallPhase.THROWN && fallClock < BUCK_SECONDS) {
+            SuperJumpPhase.NONE -> if (tractorPhase == TractorPhase.RIDING) {
+                // Rattling along on the deck, hat flapping in the wind
+                pitch = TRACTOR_RUMBLE_DEGREES * sin(runTimeSeconds * 70f)
+                hatLift = 1f + 0.8f * sin(runTimeSeconds * 45f)
+            } else if (fallPhase == FallPhase.THROWN && fallClock < BUCK_SECONDS) {
                 // Bucks: hindquarters kick up around the front hooves and launch the cowboy
                 pitch = BUCK_MAX_PITCH * sin(PI.toFloat() * fallClock / BUCK_SECONDS)
                 pivotX = 19f
@@ -1476,9 +1833,10 @@ internal class SchneaggRodeoEngine {
         }
         return RodeoHorsePose(
             // Pumped hind legs lift the horse, so they still reach the ground
-            height = horseHeight + riderlessHop + 9f * (hindLegScale - 1f),
+            height = horseHeight + riderlessHop + tractorLift + 9f * (hindLegScale - 1f),
             gaitPhase = gaitPhase,
-            airborne = horseHeight > 0f || riderlessHop > 0f,
+            airborne = horseHeight > 0f || riderlessHop > 0f ||
+                    tractorPhase == TractorPhase.BOARDING || tractorPhase == TractorPhase.UNLOADING,
             riderLean = max(lean, frontLegFold * 1.4f),
             pitchDegrees = pitch,
             pivotX = pivotX,
