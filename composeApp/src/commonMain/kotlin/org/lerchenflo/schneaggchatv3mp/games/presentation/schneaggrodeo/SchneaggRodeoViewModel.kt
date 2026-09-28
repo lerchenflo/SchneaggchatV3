@@ -133,6 +133,8 @@ class SchneaggRodeoViewModel(
                 luckyCharms = engine.luckyCharms,
                 isOnFoot = engine.isOnFoot,
                 isFlying = engine.isFlying,
+                speedKmh = engine.speedKmh,
+                announcement = engine.announcement,
                 nextToBeat = ghosts.firstOrNull { ghost -> ghost.score > score },
             )
         }

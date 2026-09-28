@@ -25,6 +25,8 @@ sealed interface SchneaggRodeoAction {
     data object OnSuperJumpClick : SchneaggRodeoAction
 }
 
+enum class RodeoAnnouncement { CRASH_PILOT, LAWN_TRACTOR }
+
 /** An all-time highscore shown as a marker on the track. */
 @Immutable
 data class RodeoGhostUi(
@@ -49,6 +51,10 @@ data class SchneaggRodeoState(
     val isOnFoot: Boolean = false,
     /** In the plane: left half of the play area steers up, right half down. */
     val isFlying: Boolean = false,
+    /** Shown on the speedometer: the horse's pace, or the lawn tractor's absurd one. */
+    val speedKmh: Int = 0,
+    /** Banner shown briefly over the track when the cowboy boards the plane or the tractor. */
+    val announcement: RodeoAnnouncement? = null,
     /** The lowest all-time highscore above the current score; null offline or once everything is beaten. */
     val nextToBeat: RodeoGhostUi? = null,
 )
@@ -144,6 +150,31 @@ data class RodeoPlaneUi(
     val ladderDown: Boolean,
 )
 
+/**
+ * The red lawn tractor, facing right. [x] is its left edge; it stands on the ground and tips over by
+ * [rotation] degrees (counterclockwise, around its rear wheel) once wrecked. Parts come off in the
+ * order exhaust, steering wheel, hood, mower deck, front wheel: the first [partsLost] are gone.
+ */
+@Immutable
+data class RodeoTractorUi(
+    val x: Float,
+    val rotation: Float,
+    val wheelPhase: Float,
+    val partsLost: Int,
+    val wrecked: Boolean,
+    /** Puffing exhaust while it races. */
+    val exhaust: Boolean,
+)
+
+/** A part torn off the tractor; [part] indexes the parts of [RodeoTractorUi], anything above is scrap. */
+@Immutable
+data class RodeoDebrisUi(
+    val x: Float,
+    val y: Float,
+    val rotation: Float,
+    val part: Int,
+)
+
 /** A building of the skyline flown over by the plane; [x] is its left edge. */
 @Immutable
 data class RodeoBuildingUi(
@@ -185,6 +216,7 @@ data class RodeoMarkerUi(
 
 @Immutable
 data class SchneaggRodeoFrame(
+    /** How far the ground has scrolled; moves the pebbles. */
     val distance: Float = 0f,
     val fences: List<RodeoFenceUi> = emptyList(),
     val snails: List<RodeoSnailUi> = emptyList(),
@@ -217,4 +249,11 @@ data class SchneaggRodeoFrame(
     val plane: RodeoPlaneUi? = null,
     val buildings: List<RodeoBuildingUi> = emptyList(),
     val sparkle: RodeoSparkleUi? = null,
+    val tractor: RodeoTractorUi? = null,
+    val debris: List<RodeoDebrisUi> = emptyList(),
+    /** The tractor races: the ground smears into streaks and speed lines fly through the sky. */
+    val speedBlur: Boolean = false,
+    /** Offset of the whole picture while the tractor rattles along, in units. */
+    val shakeX: Float = 0f,
+    val shakeY: Float = 0f,
 )

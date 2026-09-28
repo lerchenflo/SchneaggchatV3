@@ -1549,7 +1549,7 @@
     <string name="games_undercover_description">Den Undercover-Spieler durch Umschreibungen entlarven</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
     <string name="games_schneaggrodeo_description">Über die Hindernisse springen und die Schnecken mit dem Lasso fangen</string>
-    <string name="games_schneaggrodeo_instructions">Reite so weit du kannst, während dich eine Horde Schneaggs verfolgt!\n\nTippe (oder drücke die Leertaste) zum Springen, halte gedrückt für höhere Sprünge. Reißt du eine Stange oder rennst in eine Schnecke, stolpert dein Pferd und die Horde holt auf — sobald sie dich erwischt, ist der Ritt vorbei.\n\nWirf das Lasso (Button oder L), um Schnecken für Bonuspunkte zu fangen. Für je 5 gefangene Schnecken gibt es einen Supersprung (Button oder J) über die nächsten 5 Hindernisse.\n\nSpring durch die schwebenden Glückshufeisen: Jedes fängt deinen nächsten Fehler ab (bis zu 3).\n\nAb und zu fliegt ein Flugzeug vorbei: Fang seine Strickleiter mit dem Lasso und flieg über die Stadt! Die linke Bildschirmhälfte fliegt hoch, die rechte runter, ohne Eingabe sinkt es. Weich den Gebäuden aus.\n\nFahnen auf der Strecke zeigen, wo die besten Ritte geendet haben, dein eigener Rekord in deiner Akzentfarbe. Schlag sie!</string>
+    <string name="games_schneaggrodeo_instructions">Reite so weit du kannst, während dich eine Horde Schneaggs verfolgt!\n\nTippe (oder drücke die Leertaste) zum Springen, halte gedrückt für höhere Sprünge. Reißt du eine Stange oder rennst in eine Schnecke, stolpert dein Pferd und die Horde holt auf — sobald sie dich erwischt, ist der Ritt vorbei.\n\nWirf das Lasso (Button oder L), um Schnecken für Bonuspunkte zu fangen. Für je 5 gefangene Schnecken gibt es einen Supersprung (Button oder J) über die nächsten 5 Hindernisse.\n\nSpring durch die schwebenden Glückshufeisen: Jedes fängt deinen nächsten Fehler ab (bis zu 3).\n\nAb und zu fliegt ein Flugzeug vorbei: Fang seine Strickleiter mit dem Lasso und flieg über die Stadt! Die linke Bildschirmhälfte fliegt hoch, die rechte runter, ohne Eingabe sinkt es. Weich den Gebäuden aus.\n\nAb und zu rollt ein roter Rasentraktor über die Strecke: Fang ihn mit dem Lasso und dein Pferd springt auf für eine Fahrt mit Vollgas. Jedes Hindernis, das er mäht, kostet ihn ein Teil.\n\nFahnen auf der Strecke zeigen, wo die besten Ritte geendet haben, dein eigener Rekord in deiner Akzentfarbe. Schlag sie!</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lasso</string>
     <string name="games_schneaggrodeo_catch_horse">Fang dein Pferd!</string>
@@ -1558,6 +1558,8 @@
     <string name="games_schneaggrodeo_plane_controls">Linke Hälfte: hochfliegen · Rechte Hälfte: runterfliegen</string>
     <string name="games_schneaggrodeo_plane_controls_keys">Leertaste / W: hochfliegen · S / ↓: runterfliegen</string>
     <string name="games_schneaggrodeo_super_jump">Supersprung ×%1$d</string>
+    <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
+    <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
     <string name="games_schneaggrodeo_next_to_beat">Als Nächstes schlagen: %1$s (%2$d)</string>
 
     <!-- Feedback board -->
