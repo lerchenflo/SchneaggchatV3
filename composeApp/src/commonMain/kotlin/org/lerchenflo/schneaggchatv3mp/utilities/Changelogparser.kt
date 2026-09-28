@@ -67,25 +67,6 @@ object ChangelogParser {
 
         return ChangelogEntry(version = version, highlights = highlights, features = features, bugfixes = bugfixes, announcements = announcements)
     }
-
-    /**
-     * Returns every version heading found in the changelog, in the order they appear
-     * (newest first, matching the README).
-     */
-    fun getAllVersions(readme: String): List<String> {
-        return readme.lines().mapNotNull { line ->
-            val trimmed = line.trimStart()
-            if (!trimmed.startsWith("### ")) return@mapNotNull null
-            trimmed.removePrefix("### ").trim().substringBefore(' ').takeIf { it.isNotBlank() }
-        }
-    }
-
-    /**
-     * Returns the parsed [ChangelogEntry] for every version in the changelog, newest first.
-     */
-    fun getFullChangelog(readme: String): List<ChangelogEntry> {
-        return getAllVersions(readme).mapNotNull { version -> getParsedChangelog(readme, version) }
-    }
 }
 
 data class ChangelogEntry(

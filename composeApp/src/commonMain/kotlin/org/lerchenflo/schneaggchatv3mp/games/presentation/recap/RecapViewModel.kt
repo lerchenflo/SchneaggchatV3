@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.MessageTypeCountUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.MonthCountUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.MostReactedMessageUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.RankedRowUi
+import org.lerchenflo.schneaggchatv3mp.games.domain.RecapAvailability
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapPartnerUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
@@ -82,7 +83,7 @@ class RecapViewModel(
     private fun loadRecap() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
-            networkUtils.getRecap()
+            networkUtils.getRecap(year = RecapAvailability.recapYear())
                 .trackConnectivity()
                 .onSuccess { response ->
                     _state.update { it.copy(isLoading = false, recap = response.toRecapUi()) }

@@ -70,7 +70,8 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
-import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapViewModel
+import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackViewModel
+import org.lerchenflo.schneaggchatv3mp.feedback.data.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassViewModel
@@ -144,6 +145,7 @@ val sharedmodule = module{
     singleOf(::LoggingRepository)
     singleOf(::MapRepository)
     singleOf(::EventRepository)
+    singleOf(::FeedbackRepository)
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
     singleOf(::GameSaveRepository)
@@ -338,5 +340,5 @@ val sharedmodule = module{
 
     viewModelOf(::SchneaggmapSettingsViewModel)
 
-    viewModelOf(::RoadmapViewModel)
+    viewModelOf(::FeedbackViewModel)
 }

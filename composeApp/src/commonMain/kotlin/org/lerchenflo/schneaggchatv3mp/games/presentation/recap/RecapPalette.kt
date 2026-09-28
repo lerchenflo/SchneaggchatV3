@@ -51,6 +51,7 @@ object RecapPageThemes {
     val Map = RecapPageTheme(Color(0xFF4A3200), Color(0xFF1F1500), RecapPalette.Orange, RecapPalette.Lemon, RecapPalette.Paper, RecapPalette.Orange)
     val Games = RecapPageTheme(Color(0xFF10002B), Color(0xFF240090), RecapPalette.Aqua, RecapPalette.Gold, RecapPalette.Paper, RecapPalette.Aqua)
     val BetaTester = RecapPageTheme(Color(0xFF4A0000), Color(0xFF1A0000), RecapPalette.Coral, RecapPalette.Paper, RecapPalette.Paper, RecapPalette.Coral)
+    val Downtime = RecapPageTheme(Color(0xFF1B1F3B), Color(0xFF05060F), RecapPalette.Lemon, RecapPalette.Coral, RecapPalette.Paper, RecapPalette.Lemon)
     val Password = RecapPageTheme(Color(0xFF4A3B00), Color(0xFF1F1800), RecapPalette.Lemon, RecapPalette.Paper, RecapPalette.Paper, RecapPalette.Lemon)
     val Outro = RecapPageTheme(RecapPalette.Blue, RecapPalette.Violet, RecapPalette.Paper, RecapPalette.Lemon, RecapPalette.Paper, RecapPalette.Paper)
 }

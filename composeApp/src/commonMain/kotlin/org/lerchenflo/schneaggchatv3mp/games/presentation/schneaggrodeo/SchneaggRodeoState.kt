@@ -18,6 +18,9 @@ sealed interface SchneaggRodeoAction {
 
     data object OnJumpPressed : SchneaggRodeoAction
     data object OnJumpReleased : SchneaggRodeoAction
+    /** Right half of the screen / arrow down while flying the plane: steer down. */
+    data object OnDivePressed : SchneaggRodeoAction
+    data object OnDiveReleased : SchneaggRodeoAction
     data object OnLassoClick : SchneaggRodeoAction
     data object OnSuperJumpClick : SchneaggRodeoAction
 }
@@ -40,8 +43,12 @@ data class SchneaggRodeoState(
     val runTimeMillis: Long = 0L,
     val snailsCaught: Int = 0,
     val superJumpCharges: Int = 0,
+    /** Collected lucky horseshoes, each absorbs one crash. */
+    val luckyCharms: Int = 0,
     /** Thrown off the horse: the lasso button is highlighted, it is the only way back up. */
     val isOnFoot: Boolean = false,
+    /** In the plane: left half of the play area steers up, right half down. */
+    val isFlying: Boolean = false,
     /** The lowest all-time highscore above the current score; null offline or once everything is beaten. */
     val nextToBeat: RodeoGhostUi? = null,
 )
@@ -80,6 +87,8 @@ data class RodeoHorsePose(
     val pivotY: Float,
     val hindLegScale: Float,
     val frontLegFold: Float,
+    /** 0..1: front legs lifted and pawing the air while the horse rears up for the super jump. */
+    val frontLegRaise: Float = 0f,
     val hatLift: Float,
     val glow: Float,
     /** Shift of the horse from its riding spot while it paces around riderless. */
@@ -109,6 +118,52 @@ data class RodeoLassoUi(
     val tipY: Float,
     /** The snail dangling in the loop on its way back, if the throw caught one. */
     val caught: RodeoSnailUi?,
+)
+
+/** A lucky horseshoe floating above the track; [height] is its center above the ground. */
+@Immutable
+data class RodeoHorseshoeUi(
+    val x: Float,
+    val height: Float,
+    val tiltDeg: Float,
+)
+
+/**
+ * The plane, facing right. [x] is the left edge of the fuselage, [y] its underside above the ground,
+ * [rotation] degrees clockwise while the wreck tumbles.
+ */
+@Immutable
+data class RodeoPlaneUi(
+    val x: Float,
+    val y: Float,
+    val rotation: Float,
+    val propellerPhase: Float,
+    /** The cowboy sits in the cockpit. */
+    val hasPilot: Boolean,
+    /** Rope ladder hanging down while it passes by and while he climbs up. */
+    val ladderDown: Boolean,
+)
+
+/** A building of the skyline flown over by the plane; [x] is its left edge. */
+@Immutable
+data class RodeoBuildingUi(
+    val x: Float,
+    val width: Float,
+    val height: Float,
+    /** Picks the pattern of lit windows. */
+    val seed: Int,
+    /** Underside of the storm cloud hanging above, or null for open sky. */
+    val cloudBottom: Float? = null,
+    /** How far the cloud reaches past the building on each side. */
+    val cloudOverhang: Float = 0f,
+)
+
+/** Short burst of sparks where a horseshoe was picked up or a lucky charm absorbed a crash. */
+@Immutable
+data class RodeoSparkleUi(
+    val x: Float,
+    val y: Float,
+    val progress: Float,
 )
 
 @Immutable
@@ -156,4 +211,10 @@ data class SchneaggRodeoFrame(
     val snailsCaught: Int = 0,
     /** Only set while the cowboy is off the horse. */
     val cowboy: RodeoCowboyUi? = null,
+    val horseshoes: List<RodeoHorseshoeUi> = emptyList(),
+    /** Stored lucky charms; the horse shows a faint aura while it has any. */
+    val luckyCharms: Int = 0,
+    val plane: RodeoPlaneUi? = null,
+    val buildings: List<RodeoBuildingUi> = emptyList(),
+    val sparkle: RodeoSparkleUi? = null,
 )

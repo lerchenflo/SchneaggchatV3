@@ -52,6 +52,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.FilterQuality
@@ -76,6 +77,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -83,12 +85,15 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
@@ -96,14 +101,18 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GamePauseOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.BackButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_catch_horse
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_fence_height
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_horseshoes
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_instructions
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_next_to_beat
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_plane_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_plane_controls_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_snails
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_super_jump
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_title
@@ -117,6 +126,8 @@ private const val SNAIL_FOOT_FRACTION = 0.785f
 /** The background-colored halo that separates the schneagg from poles behind it. */
 private const val SNAIL_OUTLINE_SCALE = 1.1f
 private const val RIDER_MAX_LEAN_DEGREES = 32f
+/** How far a galloping hoof reaches forward and back from under its hip, in horse grid units. */
+private const val GALLOP_REACH = 2.6f
 
 /** Highscore marker posts; staggered ones are shorter so neighbouring labels don't stack up. */
 private const val MARKER_POST_HEIGHT = 36f
@@ -142,6 +153,9 @@ fun SchneaggRodeoRoot(
     // Not delegated: the canvas reads it in the draw phase, so a new frame only redraws
     val frame = viewModel.frame.collectAsStateWithLifecycle()
     val restoreChecked by viewModel.restoreChecked.collectAsStateWithLifecycle()
+    // Desktop has a keyboard: the buttons show their keys
+    val appVersion = koinInject<AppVersion>()
+    val showKeyHints = remember(appVersion) { appVersion.isDesktop() }
 
     var explanationDismissed by rememberSaveable { mutableStateOf(false) }
     val isStarted = state.isPlaying || state.isGameOver
@@ -168,6 +182,7 @@ fun SchneaggRodeoRoot(
         state = state,
         frame = { frame.value },
         showStartOverlay = restoreChecked && !explanationDismissed && !isStarted,
+        showKeyHints = showKeyHints,
         onAction = { action ->
             when (action) {
                 SchneaggRodeoAction.StartGame -> explanationDismissed = true
@@ -211,9 +226,11 @@ fun SchneaggRodeoScreen(
     showStartOverlay: Boolean,
     onAction: (SchneaggRodeoAction) -> Unit,
     onBackClick: () -> Unit,
+    showKeyHints: Boolean = false,
 ) {
     val colors = MaterialTheme.colorScheme
     val currentOnAction by rememberUpdatedState(onAction)
+    val isFlying by rememberUpdatedState(state.isFlying)
     val isStarted = state.isPlaying || state.isGameOver
 
     val focusRequester = remember { FocusRequester() }
@@ -248,6 +265,13 @@ fun SchneaggRodeoScreen(
                         val isLassoKey = event.key == Key.L || event.key == Key.DirectionDown || event.key == Key.S
                         val isSuperJumpKey = event.key == Key.J || event.key == Key.DirectionRight
                         when {
+                            // In the plane the lasso keys steer down, the jump keys up
+                            isLassoKey && isFlying && event.type == KeyEventType.KeyDown -> {
+                                currentOnAction(SchneaggRodeoAction.OnDivePressed); true
+                            }
+                            isLassoKey && isFlying && event.type == KeyEventType.KeyUp -> {
+                                currentOnAction(SchneaggRodeoAction.OnDiveReleased); true
+                            }
                             isLassoKey && event.type == KeyEventType.KeyDown -> {
                                 currentOnAction(SchneaggRodeoAction.OnLassoClick); true
                             }
@@ -266,11 +290,13 @@ fun SchneaggRodeoScreen(
                     }
                     // The whole play area is the jump button; the lasso / super jump buttons, the HUD
                     // and the overlays consume their own presses. Holding keeps the jump boosted.
+                    // In the plane the left half steers up and the right half down.
                     .pointerInput(Unit) {
-                        detectTapGestures(onPress = {
-                            currentOnAction(SchneaggRodeoAction.OnJumpPressed)
+                        detectTapGestures(onPress = { offset ->
+                            val dive = isFlying && offset.x > size.width / 2f
+                            currentOnAction(if (dive) SchneaggRodeoAction.OnDivePressed else SchneaggRodeoAction.OnJumpPressed)
                             tryAwaitRelease()
-                            currentOnAction(SchneaggRodeoAction.OnJumpReleased)
+                            currentOnAction(if (dive) SchneaggRodeoAction.OnDiveReleased else SchneaggRodeoAction.OnJumpReleased)
                         })
                     },
                 contentAlignment = Alignment.Center
@@ -283,14 +309,23 @@ fun SchneaggRodeoScreen(
                         .padding(bottom = if (isCompactLandscape) 8.dp else 0.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(
-                        text = stringResource(Res.string.games_schneaggrodeo_snails, state.snailsCaught),
-                        style = MaterialTheme.typography.labelLarge,
+                    Row(
                         modifier = Modifier
                             .widthIn(max = 720.dp)
                             .fillMaxWidth()
                             .padding(horizontal = 4.dp, vertical = 4.dp)
-                    )
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.games_schneaggrodeo_snails, state.snailsCaught),
+                            style = MaterialTheme.typography.labelLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = stringResource(Res.string.games_schneaggrodeo_horseshoes, state.luckyCharms),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (state.luckyCharms > 0) colors.secondary else colors.onSurfaceVariant,
+                        )
+                    }
 
                     RodeoTrack(
                         frame = frame,
@@ -310,6 +345,8 @@ fun SchneaggRodeoScreen(
                     RodeoControls(
                         superJumpCharges = state.superJumpCharges,
                         isOnFoot = state.isOnFoot,
+                        isFlying = state.isFlying,
+                        showKeyHints = showKeyHints,
                         enabled = state.isPlaying && !state.isPaused,
                         onAction = onAction,
                         modifier = Modifier
@@ -386,10 +423,25 @@ fun SchneaggRodeoScreen(
 private fun RodeoControls(
     superJumpCharges: Int,
     isOnFoot: Boolean,
+    isFlying: Boolean,
+    showKeyHints: Boolean,
     enabled: Boolean,
     onAction: (SchneaggRodeoAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (isFlying) {
+        // Buttons would swallow the steering taps; the whole play area is the joystick now
+        Text(
+            text = stringResource(
+                if (showKeyHints) Res.string.games_schneaggrodeo_plane_controls_keys else Res.string.games_schneaggrodeo_plane_controls
+            ),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier.padding(vertical = 10.dp),
+            textAlign = TextAlign.Center
+        )
+        return
+    }
     // Super jump on the left, lasso on the right - one per thumb
     Row(
         modifier = modifier,
@@ -411,7 +463,7 @@ private fun RodeoControls(
                     modifier = Modifier.size(18.dp)
                 )
                 Text(
-                    text = stringResource(Res.string.games_schneaggrodeo_super_jump, superJumpCharges),
+                    text = stringResource(Res.string.games_schneaggrodeo_super_jump, superJumpCharges) + keyHint("J", showKeyHints),
                     modifier = Modifier.padding(start = 4.dp)
                 )
             }
@@ -435,7 +487,7 @@ private fun RodeoControls(
                     }
                     .focusProperties { canFocus = false }
             ) {
-                Text(stringResource(Res.string.games_schneaggrodeo_catch_horse))
+                Text(stringResource(Res.string.games_schneaggrodeo_catch_horse) + keyHint("L", showKeyHints))
             }
         } else {
             FilledTonalButton(
@@ -444,11 +496,14 @@ private fun RodeoControls(
                 // Keeps keyboard focus on the play area so space / L keep working after a click
                 modifier = Modifier.focusProperties { canFocus = false }
             ) {
-                Text(stringResource(Res.string.games_schneaggrodeo_lasso))
+                Text(stringResource(Res.string.games_schneaggrodeo_lasso) + keyHint("L", showKeyHints))
             }
         }
     }
 }
+
+/** Key name appended to a button label on desktop, e.g. "Lasso [L]". */
+private fun keyHint(key: String, show: Boolean): String = if (show) " [$key]" else ""
 
 /** The track: ground, highscore markers, fences, snails, the chasing pack, horse, rider and lasso. */
 @Composable
@@ -495,6 +550,22 @@ private fun RodeoTrack(
 
             drawGround(groundY, unit, world.distance, colors.onSurfaceVariant)
 
+            // Skyline under the plane, behind everything on the track
+            world.buildings.forEach { building ->
+                drawBuilding(building, groundY, unit, colors.surfaceVariant, colors.onSurfaceVariant)
+                building.cloudBottom?.let { bottom ->
+                    drawStormCloud(
+                        left = (building.x - building.cloudOverhang) * unit,
+                        right = (building.x + building.width + building.cloudOverhang) * unit,
+                        bottomY = groundY - bottom * unit,
+                        unit = unit,
+                        seed = building.seed,
+                        color = colors.onSurfaceVariant,
+                        boltColor = colors.tertiary
+                    )
+                }
+            }
+
             // Highscore markers stand behind everything else on the track
             world.markers.forEach { marker ->
                 drawMarker(
@@ -515,6 +586,30 @@ private fun RodeoTrack(
             world.snails.forEach { drawSnailAt(it) }
             world.pack.forEach { drawSnailAt(it) }
 
+            world.horseshoes.forEach { shoe ->
+                drawHorseshoe(
+                    center = Offset(shoe.x * unit, groundY - shoe.height * unit),
+                    unit = unit,
+                    tiltDeg = shoe.tiltDeg,
+                    color = colors.secondary,
+                    nailColor = colors.surfaceContainer
+                )
+            }
+
+            // Faint lucky aura around the horse, stronger with every stored charm
+            if (world.luckyCharms > 0 && world.horse.hasRider) {
+                val auraCenter = Offset(
+                    (HORSE_X + world.horse.offsetX + 15f) * unit,
+                    groundY - (world.horse.height + 14f) * unit
+                )
+                drawCircle(
+                    color = colors.secondary.copy(alpha = 0.1f + 0.08f * world.luckyCharms),
+                    radius = 17f * unit,
+                    center = auraCenter,
+                    style = Stroke(width = (0.4f + 0.3f * world.luckyCharms) * unit)
+                )
+            }
+
             drawHorseAndRider(
                 left = (HORSE_X + world.horse.offsetX) * unit,
                 groundY = groundY - world.horse.height * unit,
@@ -525,6 +620,18 @@ private fun RodeoTrack(
                 shirtColor = colors.primary,
                 bodyLabel = if (world.snailsCaught > 0) textMeasurer.measure(world.snailsCaught.toString(), bodyLabelStyle) else null
             )
+
+            world.plane?.let { plane ->
+                drawPlane(
+                    plane = plane,
+                    groundY = groundY,
+                    unit = unit,
+                    bodyColor = colors.tertiary,
+                    wingColor = colors.tertiaryContainer,
+                    lineColor = colors.onSurface,
+                    pilotColor = colors.onSurface
+                )
+            }
 
             world.cowboy?.let { cowboy ->
                 drawCowboy(
@@ -550,6 +657,15 @@ private fun RodeoTrack(
                     unit = unit,
                     progress = dust.progress,
                     color = colors.onSurfaceVariant
+                )
+            }
+
+            world.sparkle?.let { sparkle ->
+                drawSparkle(
+                    center = Offset(sparkle.x * unit, groundY - sparkle.y * unit),
+                    unit = unit,
+                    progress = sparkle.progress,
+                    color = colors.secondary
                 )
             }
 
@@ -720,6 +836,171 @@ private fun DrawScope.drawSnail(
     }
 }
 
+/** A building of the skyline with a grid of windows, some of them lit. */
+private fun DrawScope.drawBuilding(building: RodeoBuildingUi, groundY: Float, unit: Float, wallColor: Color, windowColor: Color) {
+    val left = building.x * unit
+    val top = groundY - building.height * unit
+    drawRect(wallColor, Offset(left, top), Size(building.width * unit, building.height * unit))
+    var row = 0
+    var y = building.height - 3f
+    while (y > 3f) {
+        var column = 0
+        var x = 2f
+        while (x + 2f < building.width - 1f) {
+            val lit = (building.seed + row * 7 + column * 13) % 3 != 0
+            drawRect(
+                color = windowColor.copy(alpha = if (lit) 0.45f else 0.15f),
+                topLeft = Offset(left + x * unit, groundY - y * unit),
+                size = Size(2f * unit, 2.5f * unit)
+            )
+            x += 4f
+            column++
+        }
+        y -= 5f
+        row++
+    }
+}
+
+/**
+ * A storm cloud hanging from the top of the canvas down to [bottomY]: a dark block with a puffy
+ * underside and a small lightning bolt below some of them.
+ */
+private fun DrawScope.drawStormCloud(
+    left: Float,
+    right: Float,
+    bottomY: Float,
+    unit: Float,
+    seed: Int,
+    color: Color,
+    boltColor: Color,
+) {
+    val cloudColor = color.copy(alpha = 0.55f)
+    val puff = 2.2f * unit
+    drawRect(cloudColor, Offset(left, 0f), Size(right - left, max(0f, bottomY - puff)))
+    // Puffs along the underside; their bottoms line up with the collision edge
+    var x = left + puff
+    while (x <= right - puff + 0.1f) {
+        drawCircle(cloudColor, radius = puff, center = Offset(x, bottomY - puff))
+        x += puff * 1.4f
+    }
+    if (seed % 3 == 0) {
+        val boltX = (left + right) / 2f
+        drawPath(
+            Path().apply {
+                moveTo(boltX, bottomY - 0.5f * unit)
+                lineTo(boltX - 1.2f * unit, bottomY + 2.5f * unit)
+                lineTo(boltX + 0.3f * unit, bottomY + 2.5f * unit)
+                lineTo(boltX - 0.8f * unit, bottomY + 5f * unit)
+            },
+            color = boltColor,
+            style = Stroke(width = 0.5f * unit, cap = StrokeCap.Round)
+        )
+    }
+}
+
+/**
+ * A small biplane facing right, drawn on a grid with y up from the fuselage underside and x from
+ * its left edge. The rope ladder hangs from [PLANE_LADDER_X].
+ */
+private fun DrawScope.drawPlane(
+    plane: RodeoPlaneUi,
+    groundY: Float,
+    unit: Float,
+    bodyColor: Color,
+    wingColor: Color,
+    lineColor: Color,
+    pilotColor: Color,
+) {
+    fun p(x: Float, y: Float) = Offset((plane.x + x) * unit, groundY - (plane.y + y) * unit)
+    val center = p(PLANE_LENGTH / 2f, 3.5f)
+
+    rotate(plane.rotation, pivot = center) {
+        if (plane.ladderDown) {
+            val bottom = -PLANE_LADDER_LENGTH
+            drawLine(lineColor, p(PLANE_LADDER_X - 0.8f, 0f), p(PLANE_LADDER_X - 0.8f, bottom), 0.3f * unit)
+            drawLine(lineColor, p(PLANE_LADDER_X + 0.8f, 0f), p(PLANE_LADDER_X + 0.8f, bottom), 0.3f * unit)
+            var rung = -1.5f
+            while (rung >= bottom) {
+                drawLine(lineColor, p(PLANE_LADDER_X - 0.8f, rung), p(PLANE_LADDER_X + 0.8f, rung), 0.3f * unit)
+                rung -= 2f
+            }
+        }
+
+        // Lower wing and struts behind the fuselage
+        drawRoundRect(wingColor, p(6f, 1f), Size(10f * unit, 1.2f * unit), CornerRadius(0.6f * unit))
+        listOf(8f, 14f).forEach { x -> drawLine(lineColor, p(x, 1f), p(x, 8.5f), 0.35f * unit) }
+
+        // Tail fin and fuselage
+        drawPath(
+            Path().apply {
+                val a = p(0f, 5f); val b = p(0.5f, 10f); val c = p(3f, 10f); val d = p(5f, 5f)
+                moveTo(a.x, a.y); lineTo(b.x, b.y); lineTo(c.x, c.y); lineTo(d.x, d.y); close()
+            },
+            bodyColor
+        )
+        drawRoundRect(bodyColor, p(0f, 6f), Size(20f * unit, 5f * unit), CornerRadius(2.5f * unit))
+
+        // Pilot: head and hat sticking out of the cockpit
+        if (plane.hasPilot) {
+            drawCircle(pilotColor, radius = 1.6f * unit, center = p(PLANE_PILOT_X, 7.6f))
+            drawRoundRect(HAT_COLOR, p(PLANE_PILOT_X - 2.8f, 9.6f), Size(5.6f * unit, 0.6f * unit), CornerRadius(0.3f * unit))
+            drawRoundRect(HAT_COLOR, p(PLANE_PILOT_X - 1.5f, 11.6f), Size(3f * unit, 2.2f * unit), CornerRadius(0.7f * unit))
+        }
+
+        // Upper wing on top
+        drawRoundRect(wingColor, p(5f, 9.5f), Size(12f * unit, 1.2f * unit), CornerRadius(0.6f * unit))
+
+        // Spinning propeller: a blade whose visible length pulses
+        val blade = 3.2f * abs(sin(plane.propellerPhase))
+        drawLine(lineColor, p(20.5f, 3.5f - blade), p(20.5f, 3.5f + blade), 0.6f * unit, StrokeCap.Round)
+        drawCircle(lineColor, radius = 0.6f * unit, center = p(20.5f, 3.5f))
+    }
+}
+
+/** A lucky horseshoe, opening up, with a few nail holes. */
+private fun DrawScope.drawHorseshoe(center: Offset, unit: Float, tiltDeg: Float, color: Color, nailColor: Color) {
+    val radius = 2.4f * unit
+    val stroke = 1.1f * unit
+    rotate(tiltDeg, pivot = center) {
+        // Open side up: the arc runs from the left prong over the bottom to the right prong
+        drawArc(
+            color = color,
+            startAngle = -20f,
+            sweepAngle = 220f,
+            useCenter = false,
+            topLeft = center - Offset(radius, radius),
+            size = Size(radius * 2f, radius * 2f),
+            style = Stroke(width = stroke, cap = StrokeCap.Round)
+        )
+        listOf(20f, 70f, 110f, 160f).forEach { angle ->
+            val radians = angle * PI.toFloat() / 180f
+            drawCircle(
+                color = nailColor,
+                radius = 0.22f * unit,
+                center = center + Offset(cos(radians) * radius, sin(radians) * radius)
+            )
+        }
+    }
+}
+
+/** Eight short sparks flying outwards and fading. */
+private fun DrawScope.drawSparkle(center: Offset, unit: Float, progress: Float, color: Color) {
+    val alpha = 1f - progress
+    repeat(8) { index ->
+        val radians = index * PI.toFloat() / 4f
+        val direction = Offset(cos(radians), sin(radians))
+        val inner = (1f + 5f * progress) * unit
+        val outer = inner + 2f * (1f - progress) * unit + 0.5f * unit
+        drawLine(
+            color = color.copy(alpha = alpha),
+            start = center + direction * inner,
+            end = center + direction * outer,
+            strokeWidth = 0.5f * unit,
+            cap = StrokeCap.Round
+        )
+    }
+}
+
 /** Rope from the rider's [hand] sagging slightly towards the loop at [tip]. */
 private fun DrawScope.drawLasso(hand: Offset, tip: Offset, unit: Float, color: Color) {
     val control = Offset((hand.x + tip.x) / 2f, max(hand.y, tip.y) + 2f * unit)
@@ -766,7 +1047,7 @@ private fun DrawScope.drawDust(x: Float, groundY: Float, unit: Float, progress: 
  *
  * Pose: the whole figure is rotated by [RodeoHorsePose.pitchDegrees] (positive = nose down) around
  * the pivot (grid coordinates). hindLegScale > 1 pumps up the hind legs for the super jump, glow
- * lights them up. frontLegFold buckles the front legs at the knee and hatLift pops the hat off the
+ * lights them up, frontLegRaise lifts the front legs while the horse rears up for it. frontLegFold buckles the front legs at the knee and hatLift pops the hat off the
  * head, both for stumbling.
  */
 private fun DrawScope.drawHorseAndRider(
@@ -796,7 +1077,8 @@ private fun DrawScope.drawHorseAndRider(
         val legStroke = 1.6f * unit
         // Grown hind legs also get thicker, so they read as pumped up and not just stretched
         val hindStroke = legStroke * (1f + (hindLegScale - 1f) * 1.5f)
-        val bounce = if (airborne) 0f else sin(gaitPhase * 2f) * 0.4f
+        // The body rises in the moment of suspension after the front legs pushed off
+        val bounce = if (airborne) 0f else cos(gaitPhase - 3.4f) * 0.6f
 
         if (glow > 0f) {
             drawCircle(
@@ -817,22 +1099,35 @@ private fun DrawScope.drawHorseAndRider(
                 drawLine(color, p(x, 9f), p(x - 4f * hindLegScale, 9f - 7f * hindLegScale), hindStroke, StrokeCap.Round)
             }
         } else {
-            val swing = sin(gaitPhase) * 2.2f
-            // Front legs: straight while galloping, knee buckling forward while stumbling
-            listOf(17f to swing, 19f to -swing).forEach { (x, legSwing) ->
-                val knee = p(x + legSwing / 2f + 2.5f * frontLegFold, 4.5f + 0.5f * frontLegFold)
-                val hoof = p(x + legSwing - 1f * frontLegFold, 3.5f * frontLegFold)
-                drawLine(color, p(x, 9f), knee, legStroke, StrokeCap.Round)
-                drawLine(color, knee, hoof, legStroke, StrokeCap.Round)
+            // Four-beat gallop: hind left, hind right, front left, front right, then a short
+            // moment with the legs gathered. Each hoof reaches forward lifted and pushes back on
+            // the ground; knees fold forward on the front legs, hocks backwards on the hind legs.
+            val raise = pose.frontLegRaise
+            listOf(17f to 2.0f, 19f to 2.7f).forEachIndexed { index, (x, offset) ->
+                val phase = gaitPhase + offset
+                val lift = max(0f, cos(phase))
+                val reach = sin(phase) * GALLOP_REACH
+                val gallopHoof = p(x + reach - 1.2f * lift, 2.2f * lift)
+                val gallopKnee = p(x + reach / 2f + 1.8f * lift, 4.5f + 1.2f * lift)
+                // Stumbling: the knee buckles forward and the hoof folds under
+                val knee = lerp(gallopKnee, p(x + 2.5f, 5f), frontLegFold)
+                val hoof = lerp(gallopHoof, p(x - 1f, 3.5f), frontLegFold)
+                // Rearing up for the super jump: lifted and pawing the air
+                val paw = sin(gaitPhase * 6f + index * PI.toFloat()) * 1.2f
+                val raisedKnee = p(x + 3f, 7f + paw)
+                val raisedHoof = p(x + 1f, 4.5f + paw * 1.5f)
+                drawLine(color, p(x, 9f), lerp(knee, raisedKnee, raise), legStroke, StrokeCap.Round)
+                drawLine(color, lerp(knee, raisedKnee, raise), lerp(hoof, raisedHoof, raise), legStroke, StrokeCap.Round)
             }
-            listOf(6f to -swing, 8f to swing).forEach { (x, legSwing) ->
-                drawLine(
-                    color,
-                    p(x, 9f),
-                    p(x + legSwing * hindLegScale, 9f - 9f * hindLegScale),
-                    hindStroke,
-                    StrokeCap.Round
-                )
+            listOf(6f to 0f, 8f to 0.7f).forEach { (x, offset) ->
+                val phase = gaitPhase + offset
+                val lift = max(0f, cos(phase))
+                val reach = sin(phase) * GALLOP_REACH * hindLegScale
+                val hoofY = 9f - 9f * hindLegScale + 2.2f * lift
+                val hoof = p(x + reach + 0.6f * lift, hoofY)
+                val hock = p(x + reach / 2f - 1.6f - 0.8f * lift, (9f + hoofY) / 2f + 0.8f * lift)
+                drawLine(color, p(x, 9f), hock, hindStroke, StrokeCap.Round)
+                drawLine(color, hock, hoof, hindStroke, StrokeCap.Round)
             }
         }
 

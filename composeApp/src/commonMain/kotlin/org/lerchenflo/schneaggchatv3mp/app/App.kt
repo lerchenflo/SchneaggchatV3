@@ -99,7 +99,7 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.Ema
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsRoot
-import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapScreen
+import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
@@ -675,7 +675,8 @@ fun App() {
                                             navigateDevSettings = { scope.launch { navigator.navigate(Route.DeveloperSettings) } },
                                             navigateAppearanceSettings = { scope.launch { navigator.navigate(Route.AppearanceSettings) } },
                                             navigateMiscSettings = { scope.launch { navigator.navigate(Route.MiscSettings) } },
-                                            navigateSchneaggmapSettings = { scope.launch { navigator.navigate(Route.SchneaggmapSettings) } }
+                                            navigateSchneaggmapSettings = { scope.launch { navigator.navigate(Route.SchneaggmapSettings) } },
+                                            navigateRecap = { scope.launch { navigator.navigate(Route.Recap) } }
                                         )
                                     }
 
@@ -723,7 +724,7 @@ fun App() {
                                             miscSettingsViewModel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } },
-                                            navigateRoadmap = { scope.launch { navigator.navigate(Route.Roadmap) } }
+                                            navigateFeedback = { scope.launch { navigator.navigate(Route.Feedback) } }
                                         )
                                     }
 
@@ -735,11 +736,8 @@ fun App() {
                                         )
                                     }
 
-                                    entry<Route.Roadmap> {
-                                        RoadmapScreen(
-                                            roadmapViewModel = koinInject(),
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
+                                    entry<Route.Feedback> {
+                                        FeedbackScreenRoot()
                                     }
 
                                     entry<Route.Events> {

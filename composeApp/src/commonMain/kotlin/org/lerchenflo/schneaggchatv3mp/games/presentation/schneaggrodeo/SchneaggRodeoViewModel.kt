@@ -64,6 +64,8 @@ class SchneaggRodeoViewModel(
             is SchneaggRodeoAction.OnWorldSizeChanged -> onWorldSizeChanged(action.widthPx, action.heightPx)
             SchneaggRodeoAction.OnJumpPressed -> ifRiding { engine.jumpPressed() }
             SchneaggRodeoAction.OnJumpReleased -> engine.jumpReleased()
+            SchneaggRodeoAction.OnDivePressed -> ifRiding { engine.divePressed() }
+            SchneaggRodeoAction.OnDiveReleased -> engine.diveReleased()
             SchneaggRodeoAction.OnLassoClick -> ifRiding { engine.lassoPressed() }
             SchneaggRodeoAction.OnSuperJumpClick -> ifRiding {
                 engine.superJumpPressed()
@@ -98,6 +100,7 @@ class SchneaggRodeoViewModel(
         if (!current.isPlaying || current.isGameOver) return
         // A finger or key still down when pausing must not keep the jump boosted after resuming
         engine.jumpReleased()
+        engine.diveReleased()
         _state.update { it.copy(isPaused = !it.isPaused) }
     }
 
@@ -127,7 +130,9 @@ class SchneaggRodeoViewModel(
                 runTimeMillis = engine.runTimeSeconds.toLong() * 1000L,
                 snailsCaught = engine.snailsCaught,
                 superJumpCharges = engine.superJumpCharges,
+                luckyCharms = engine.luckyCharms,
                 isOnFoot = engine.isOnFoot,
+                isFlying = engine.isFlying,
                 nextToBeat = ghosts.firstOrNull { ghost -> ghost.score > score },
             )
         }
@@ -189,6 +194,7 @@ class SchneaggRodeoViewModel(
         val current = _state.value
         if (current.isPlaying && !current.isGameOver) {
             engine.jumpReleased()
+            engine.diveReleased()
             _state.update { it.copy(isPaused = true) }
         }
         persist()

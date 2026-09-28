@@ -51,7 +51,9 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
+import org.lerchenflo.schneaggchatv3mp.games.domain.DOWNTIME_RECAP_YEAR
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapBetaTesterPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapDowntimePage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapGamesPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapGroupsPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapIntroPage
@@ -214,7 +216,7 @@ private fun RecapScreenLoadingPreview() {
 // The recap story pages in display order. Pages without data are skipped when building the list.
 private enum class RecapPageKind {
     INTRO, SENT, TYPING, RHYTHM, RECEIVED, TOP_CONTACTS, REACTIONS,
-    SOCIAL, GROUPS, LEADERBOARD, MAP, MAP_LEADERBOARD, GAMES, BETA_TESTER, PASSWORD_RESET, OUTRO
+    SOCIAL, GROUPS, LEADERBOARD, MAP, MAP_LEADERBOARD, GAMES, BETA_TESTER, PASSWORD_RESET, DOWNTIME, OUTRO
 }
 
 private fun buildPages(recap: RecapUi): List<RecapPageKind> = buildList {
@@ -233,6 +235,8 @@ private fun buildPages(recap: RecapUi): List<RecapPageKind> = buildList {
     if (recap.games.isNotEmpty()) add(RecapPageKind.GAMES)
     add(RecapPageKind.BETA_TESTER)
     if (recap.passwordResetEmailsSentAllTime > 0) add(RecapPageKind.PASSWORD_RESET)
+    // Downtime reasons are hardcoded for one year only
+    if (recap.year == DOWNTIME_RECAP_YEAR) add(RecapPageKind.DOWNTIME)
     add(RecapPageKind.OUTRO)
 }
 
@@ -340,6 +344,7 @@ private fun RecapStories(
                     RecapPageKind.GAMES -> RecapGamesPage(recap, visible)
                     RecapPageKind.BETA_TESTER -> RecapBetaTesterPage(recap, visible)
                     RecapPageKind.PASSWORD_RESET -> RecapPasswordResetPage(recap, visible)
+                    RecapPageKind.DOWNTIME -> RecapDowntimePage(recap, visible)
                     RecapPageKind.OUTRO -> RecapOutroPage(recap, visible)
                 }
             }

@@ -6,11 +6,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Science
-import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.outlined.ThumbsUpDown
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
@@ -37,12 +36,12 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_broken
+import schneaggchatv3mp.composeapp.generated.resources.feedback_info
+import schneaggchatv3mp.composeapp.generated.resources.feedback_title
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_are_you_sure
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_desc
 import schneaggchatv3mp.composeapp.generated.resources.become_beta_tester
 import schneaggchatv3mp.composeapp.generated.resources.become_beta_tester_desc
-import schneaggchatv3mp.composeapp.generated.resources.bugreport_request
-import schneaggchatv3mp.composeapp.generated.resources.bugreport_request_info
 import schneaggchatv3mp.composeapp.generated.resources.misc_group_data_reset
 import schneaggchatv3mp.composeapp.generated.resources.misc_group_diagnostics
 import schneaggchatv3mp.composeapp.generated.resources.misc_group_feedback
@@ -50,8 +49,6 @@ import schneaggchatv3mp.composeapp.generated.resources.misc_settings
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings_logs
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings_reset_tour
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings_reset_tour_desc
-import schneaggchatv3mp.composeapp.generated.resources.roadmap
-import schneaggchatv3mp.composeapp.generated.resources.roadmap_info
 import schneaggchatv3mp.composeapp.generated.resources.show_logs
 
 @Composable
@@ -61,7 +58,7 @@ fun MiscSettings(
     miscSettingsViewModel: MiscSettingsViewModel,
     sharedSettingsViewmodel: SharedSettingsViewmodel,
     onBackClick : () -> Unit,
-    navigateRoadmap: () -> Unit
+    navigateFeedback: () -> Unit
 ) {
 
     val currentAppVersion = koinInject<AppVersion>()
@@ -88,31 +85,12 @@ fun MiscSettings(
             )
 
             SettingsOption(
-                icon = Icons.Default.Timeline,
-                text = stringResource(Res.string.roadmap),
-                subtext = stringResource(Res.string.roadmap_info),
-                onClick = navigateRoadmap
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            var showBugFeaturePopup by rememberSaveable { mutableStateOf(false) }
-            SettingsOption(
-                Icons.Default.BugReport,
-                text = stringResource(Res.string.bugreport_request),
-                subtext = stringResource(Res.string.bugreport_request_info),
-                onClick = { showBugFeaturePopup = true },
+                icon = Icons.Outlined.ThumbsUpDown,
+                text = stringResource(Res.string.feedback_title),
+                subtext = stringResource(Res.string.feedback_info),
+                onClick = navigateFeedback,
                 modifier = Modifier.tapTarget("settings_misc_bugreport")
             )
-            if (showBugFeaturePopup) {
-                BugReportDialog(
-                    onDismiss = { showBugFeaturePopup = false },
-                    onSubmit = {
-                        miscSettingsViewModel.onSendBugReportEmail(it)
-                        showBugFeaturePopup = false
-                    }
-                )
-            }
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
