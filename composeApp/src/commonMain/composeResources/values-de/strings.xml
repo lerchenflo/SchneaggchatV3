@@ -728,6 +728,7 @@
     <string name="poll_answer_placeholder">Gib deine Antwort ein ...</string>
     <string name="poll_answers_count">%1$s Antworten</string>
     <string name="poll_user_count">%1$s Benutzer</string>
+    <string name="poll_voter_you">du</string>
     <string name="poll_ends_in">Endet in: %1$s</string>
     <string name="poll_closed">Geschlossen</string>
 

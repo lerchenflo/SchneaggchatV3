@@ -112,6 +112,7 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_public_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_show_answers
 import schneaggchatv3mp.composeapp.generated.resources.poll_tooltip_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_user_count
+import schneaggchatv3mp.composeapp.generated.resources.poll_voter_you
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.unlimited
 import kotlin.time.Clock
@@ -321,7 +322,8 @@ fun PollMessageContentView(
                     PollVoterOverviewDialog(
                         poll = poll,
                         onDismiss = { showVoterDialog = false },
-                        readerMap = readerMap
+                        readerMap = readerMap,
+                        ownId = ownId
                     )
                 }
             }
@@ -334,6 +336,7 @@ fun PollMessageContentView(
 fun PollVoterOverviewDialog(
     poll: PollMessage,
     readerMap: Map<String, String>,
+    ownId: String,
     onDismiss: () -> Unit
 ) {
     val pictureManager = koinInject<PictureManager>()
@@ -375,7 +378,11 @@ fun PollVoterOverviewDialog(
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Text(
-                                        text = readerMap[voter.userId] ?: stringResource(Res.string.unknown_user),
+                                        text = if (voter.userId == ownId) {
+                                            stringResource(Res.string.poll_voter_you)
+                                        }else {
+                                            readerMap[voter.userId] ?: stringResource(Res.string.unknown_user)
+                                        },
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 } else {
