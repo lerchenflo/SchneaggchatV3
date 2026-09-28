@@ -14,13 +14,14 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -96,6 +97,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GamePauseOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.BackButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_catch_horse
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_fence_height
@@ -108,6 +110,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_title
 import schneaggchatv3mp.composeapp.generated.resources.icon_schneagg_alternative
 
 private val GAME_HEIGHT = 220.dp
+private val COMPACT_LANDSCAPE_MAX_HEIGHT = 480.dp
 
 /** The silhouette sits vertically centered in its square image; its underside is this far down. */
 private const val SNAIL_FOOT_FRACTION = 0.785f
@@ -219,140 +222,162 @@ fun SchneaggRodeoScreen(
     val riding = state.isPlaying && !state.isPaused
     LaunchedEffect(riding) { focusRequester.requestFocus() }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        ActivityTitle(
-            title = stringResource(Res.string.games_schneaggrodeo_title),
-            onBackClick = onBackClick
-        )
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        // Landscape phones are short: the title bar goes, a floating back button keeps the way out,
+        // and the play area moves to the bottom so the HUD has the top right to itself. Wide but
+        // tall screens (desktop windows, tablets) keep the normal layout.
+        val isCompactLandscape = maxWidth > maxHeight && maxHeight < COMPACT_LANDSCAPE_MAX_HEIGHT
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-                .background(colors.background)
-                .focusRequester(focusRequester)
-                .focusable()
-                .onKeyEvent { event ->
-                    val isJumpKey = event.key == Key.Spacebar || event.key == Key.DirectionUp || event.key == Key.W
-                    val isLassoKey = event.key == Key.L || event.key == Key.DirectionDown || event.key == Key.S
-                    val isSuperJumpKey = event.key == Key.J || event.key == Key.DirectionRight
-                    when {
-                        isLassoKey && event.type == KeyEventType.KeyDown -> {
-                            currentOnAction(SchneaggRodeoAction.OnLassoClick); true
-                        }
-                        isSuperJumpKey && event.type == KeyEventType.KeyDown -> {
-                            currentOnAction(SchneaggRodeoAction.OnSuperJumpClick); true
-                        }
-                        !isJumpKey -> false
-                        event.type == KeyEventType.KeyDown -> {
-                            currentOnAction(SchneaggRodeoAction.OnJumpPressed); true
-                        }
-                        event.type == KeyEventType.KeyUp -> {
-                            currentOnAction(SchneaggRodeoAction.OnJumpReleased); true
-                        }
-                        else -> false
-                    }
-                }
-                // The whole play area is the jump button; the lasso / super jump buttons, the HUD
-                // and the overlays consume their own presses. Holding keeps the jump boosted.
-                .pointerInput(Unit) {
-                    detectTapGestures(onPress = {
-                        currentOnAction(SchneaggRodeoAction.OnJumpPressed)
-                        tryAwaitRelease()
-                        currentOnAction(SchneaggRodeoAction.OnJumpReleased)
-                    })
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(Res.string.games_schneaggrodeo_snails, state.snailsCaught),
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier
-                        .widthIn(max = 720.dp)
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 4.dp)
-                )
-
-                RodeoTrack(
-                    frame = frame,
-                    onSizeChanged = { size ->
-                        onAction(SchneaggRodeoAction.OnWorldSizeChanged(size.width, size.height))
-                    },
-                    modifier = Modifier
-                        .widthIn(max = 720.dp)
-                        .fillMaxWidth()
-                        .height(GAME_HEIGHT)
-                )
-
-                RodeoControls(
-                    superJumpCharges = state.superJumpCharges,
-                    isOnFoot = state.isOnFoot,
-                    enabled = state.isPlaying && !state.isPaused,
-                    onAction = onAction,
-                    modifier = Modifier
-                        .widthIn(max = 720.dp)
-                        .fillMaxWidth()
-                        .padding(top = 12.dp)
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (!isCompactLandscape) {
+                ActivityTitle(
+                    title = stringResource(Res.string.games_schneaggrodeo_title),
+                    onBackClick = onBackClick
                 )
             }
 
-            if (isStarted) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+                    .background(colors.background)
+                    .focusRequester(focusRequester)
+                    .focusable()
+                    .onKeyEvent { event ->
+                        val isJumpKey = event.key == Key.Spacebar || event.key == Key.DirectionUp || event.key == Key.W
+                        val isLassoKey = event.key == Key.L || event.key == Key.DirectionDown || event.key == Key.S
+                        val isSuperJumpKey = event.key == Key.J || event.key == Key.DirectionRight
+                        when {
+                            isLassoKey && event.type == KeyEventType.KeyDown -> {
+                                currentOnAction(SchneaggRodeoAction.OnLassoClick); true
+                            }
+                            isSuperJumpKey && event.type == KeyEventType.KeyDown -> {
+                                currentOnAction(SchneaggRodeoAction.OnSuperJumpClick); true
+                            }
+                            !isJumpKey -> false
+                            event.type == KeyEventType.KeyDown -> {
+                                currentOnAction(SchneaggRodeoAction.OnJumpPressed); true
+                            }
+                            event.type == KeyEventType.KeyUp -> {
+                                currentOnAction(SchneaggRodeoAction.OnJumpReleased); true
+                            }
+                            else -> false
+                        }
+                    }
+                    // The whole play area is the jump button; the lasso / super jump buttons, the HUD
+                    // and the overlays consume their own presses. Holding keeps the jump boosted.
+                    .pointerInput(Unit) {
+                        detectTapGestures(onPress = {
+                            currentOnAction(SchneaggRodeoAction.OnJumpPressed)
+                            tryAwaitRelease()
+                            currentOnAction(SchneaggRodeoAction.OnJumpReleased)
+                        })
+                    },
+                contentAlignment = Alignment.Center
+            ) {
                 Column(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp),
-                    horizontalAlignment = Alignment.End
+                        .align(if (isCompactLandscape) Alignment.BottomCenter else Alignment.Center)
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = if (isCompactLandscape) 8.dp else 0.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    GameHud(
-                        score = state.score.toLong(),
-                        timeMillis = state.runTimeMillis,
-                        onStop = { onAction(SchneaggRodeoAction.StopGame) },
-                        isPaused = state.isPaused,
-                        onTogglePause = { onAction(SchneaggRodeoAction.TogglePause) },
+                    Text(
+                        text = stringResource(Res.string.games_schneaggrodeo_snails, state.snailsCaught),
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier
+                            .widthIn(max = 720.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp, vertical = 4.dp)
                     )
-                    state.nextToBeat?.let { ghost ->
-                        Text(
-                            text = stringResource(Res.string.games_schneaggrodeo_next_to_beat, ghost.username, ghost.score),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = colors.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .widthIn(max = 260.dp)
-                                .padding(top = 4.dp, end = 4.dp)
+
+                    RodeoTrack(
+                        frame = frame,
+                        onSizeChanged = { size ->
+                            onAction(SchneaggRodeoAction.OnWorldSizeChanged(size.width, size.height))
+                        },
+                        // Takes what is left next to the counter and the buttons, at most GAME_HEIGHT -
+                        // a landscape phone gets a lower (and wider) track instead of cut-off buttons.
+                        // Everything inside scales with the track height.
+                        modifier = Modifier
+                            .widthIn(max = 720.dp)
+                            .fillMaxWidth()
+                            .weight(1f, fill = false)
+                            .heightIn(max = GAME_HEIGHT)
+                    )
+
+                    RodeoControls(
+                        superJumpCharges = state.superJumpCharges,
+                        isOnFoot = state.isOnFoot,
+                        enabled = state.isPlaying && !state.isPaused,
+                        onAction = onAction,
+                        modifier = Modifier
+                            .widthIn(max = 720.dp)
+                            .fillMaxWidth()
+                            .padding(top = 12.dp)
+                    )
+                }
+
+                if (isStarted) {
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp),
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        GameHud(
+                            score = state.score.toLong(),
+                            timeMillis = state.runTimeMillis,
+                            onStop = { onAction(SchneaggRodeoAction.StopGame) },
+                            isPaused = state.isPaused,
+                            onTogglePause = { onAction(SchneaggRodeoAction.TogglePause) },
                         )
+                        state.nextToBeat?.let { ghost ->
+                            Text(
+                                text = stringResource(Res.string.games_schneaggrodeo_next_to_beat, ghost.username, ghost.score),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = colors.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .widthIn(max = 260.dp)
+                                    .padding(top = 4.dp, end = 4.dp)
+                            )
+                        }
                     }
                 }
-            }
 
-            if (showStartOverlay) {
-                GameStartOverlay(
-                    title = stringResource(Res.string.games_schneaggrodeo_title),
-                    explanation = stringResource(Res.string.games_schneaggrodeo_instructions),
-                    onStart = { onAction(SchneaggRodeoAction.StartGame) }
-                )
-            }
+                if (showStartOverlay) {
+                    GameStartOverlay(
+                        title = stringResource(Res.string.games_schneaggrodeo_title),
+                        explanation = stringResource(Res.string.games_schneaggrodeo_instructions),
+                        onStart = { onAction(SchneaggRodeoAction.StartGame) }
+                    )
+                }
 
-            if (state.isGameOver) {
-                GameOverOverlay(
-                    game = GameId.SCHNEAGG_RODEO,
-                    finalScore = state.score.toLong(),
-                    finalTimeMillis = state.runTimeMillis,
-                    onRestart = { onAction(SchneaggRodeoAction.RestartGame) },
-                    onExit = {
-                        onAction(SchneaggRodeoAction.StopGame)
-                        onBackClick()
-                    }
-                )
-            } else if (state.isPaused) {
-                GamePauseOverlay(onResume = { onAction(SchneaggRodeoAction.TogglePause) })
+                if (state.isGameOver) {
+                    GameOverOverlay(
+                        game = GameId.SCHNEAGG_RODEO,
+                        finalScore = state.score.toLong(),
+                        finalTimeMillis = state.runTimeMillis,
+                        onRestart = { onAction(SchneaggRodeoAction.RestartGame) },
+                        onExit = {
+                            onAction(SchneaggRodeoAction.StopGame)
+                            onBackClick()
+                        }
+                    )
+                } else if (state.isPaused) {
+                    GamePauseOverlay(onResume = { onAction(SchneaggRodeoAction.TogglePause) })
+                }
             }
+        }
+
+        if (isCompactLandscape) {
+            BackButton(
+                onBackClick = onBackClick,
+                modifier = Modifier.align(Alignment.TopStart)
+            )
         }
     }
 }
@@ -365,9 +390,9 @@ private fun RodeoControls(
     onAction: (SchneaggRodeoAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Super jump on the left, lasso on the right - one per thumb
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
         AnimatedVisibility(
@@ -378,9 +403,7 @@ private fun RodeoControls(
             Button(
                 onClick = { onAction(SchneaggRodeoAction.OnSuperJumpClick) },
                 enabled = enabled,
-                modifier = Modifier
-                    .padding(end = 8.dp)
-                    .focusProperties { canFocus = false }
+                modifier = Modifier.focusProperties { canFocus = false }
             ) {
                 Icon(
                     imageVector = Icons.Default.KeyboardDoubleArrowUp,
@@ -393,6 +416,7 @@ private fun RodeoControls(
                 )
             }
         }
+        Spacer(modifier = Modifier.weight(1f))
         if (isOnFoot) {
             // Thrown off: the lasso is the way back into the saddle, so it pulses in primary
             val pulse by rememberInfiniteTransition(label = "lassoPulse").animateFloat(
@@ -980,9 +1004,8 @@ private fun previewFrame(): SchneaggRodeoFrame {
     )
 }
 
-@Preview(showBackground = true, widthDp = 400, heightDp = 720)
 @Composable
-private fun SchneaggRodeoScreenPreview() {
+private fun SchneaggRodeoPreviewContent() {
     SchneaggchatTheme {
         val frame = previewFrame()
         SchneaggRodeoScreen(
@@ -1000,4 +1023,17 @@ private fun SchneaggRodeoScreenPreview() {
             onBackClick = {},
         )
     }
+}
+
+@Preview(showBackground = true, widthDp = 400, heightDp = 720)
+@Composable
+private fun SchneaggRodeoScreenPreview() {
+    SchneaggRodeoPreviewContent()
+}
+
+/** Phone in landscape: lower, wider track at the bottom, HUD top right. */
+@Preview(showBackground = true, widthDp = 800, heightDp = 360)
+@Composable
+private fun SchneaggRodeoScreenLandscapePreview() {
+    SchneaggRodeoPreviewContent()
 }
