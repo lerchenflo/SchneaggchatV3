@@ -1547,11 +1547,14 @@
     <string name="games_undercover_description">Unmask the impostor by describing your secret word</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
     <string name="games_schneaggrodeo_description">Jump the fences and lasso the snails on your heels</string>
-    <string name="games_schneaggrodeo_instructions">Ride as far as you can while a pack of schneaggs chases you!\n\nTap (or press space) to jump, hold to jump higher. Knocking a pole or running into a snail makes your horse stumble and lets the pack close in — once it catches you, the ride is over.\n\nThrow the lasso (button or L) to catch snails for bonus points. Every 5 caught snails charge a super jump (button or J) over the next 5 fences.\n\nFlags on the track show where the best rides ended, your own best in your accent color. Beat them!</string>
+    <string name="games_schneaggrodeo_instructions">Ride as far as you can while a pack of schneaggs chases you!\n\nTap (or press space) to jump, hold to jump higher. Knocking a pole or running into a snail makes your horse stumble and lets the pack close in — once it catches you, the ride is over.\n\nThrow the lasso (button or L) to catch snails for bonus points. Every 5 caught snails buy a super jump (button or J) over the next 5 fences.\n\nJump through the floating lucky horseshoes: each one absorbs your next crash (up to 3).\n\nNow and then a plane passes by: lasso its ladder and fly over the city! Left half of the screen flies up, right half down, and without input it sinks. Dodge the buildings.\n\nFlags on the track show where the best rides ended, your own best in your accent color. Beat them!</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lasso</string>
     <string name="games_schneaggrodeo_catch_horse">Catch your horse!</string>
     <string name="games_schneaggrodeo_snails">Snails: %1$d</string>
+    <string name="games_schneaggrodeo_horseshoes">Horseshoes: %1$d</string>
+    <string name="games_schneaggrodeo_plane_controls">Left half: fly up · Right half: fly down</string>
+    <string name="games_schneaggrodeo_plane_controls_keys">Space / W: fly up · S / ↓: fly down</string>
     <string name="games_schneaggrodeo_super_jump">Super jump ×%1$d</string>
     <string name="games_schneaggrodeo_next_to_beat">Next to beat: %1$s (%2$d)</string>
 

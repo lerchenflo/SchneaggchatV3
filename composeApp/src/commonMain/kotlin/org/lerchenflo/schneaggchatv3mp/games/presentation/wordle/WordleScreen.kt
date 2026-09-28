@@ -2,6 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.wordle
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -39,10 +41,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -59,6 +65,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.domain.WORDLE_MAX_GUESSES
@@ -245,8 +252,21 @@ private fun WordleContent(
 ) {
     val puzzle = state.puzzle ?: return
     val focusRequester = remember { FocusRequester() }
-    // Only the submitted guesses can change the key colors
-    val keyStates = remember(state.guesses) { state.keyStates() }
+
+    // Guesses whose flip reveal has finished. Seeded with the guesses present when the board
+    // first appears (restored game, returning to the screen), so only rows submitted from now
+    // on animate. Keyed on the puzzle so a new word starts from a clean slate.
+    var revealedGuessCount by remember(puzzle) { mutableIntStateOf(state.guesses.size) }
+    LaunchedEffect(puzzle, state.guesses.size) {
+        if (state.guesses.size > revealedGuessCount) delay(WORDLE_ROW_REVEAL_MILLIS)
+        revealedGuessCount = state.guesses.size
+    }
+    val isRevealing = revealedGuessCount < state.guesses.size
+
+    // Only revealed guesses color the keys, so the keyboard never spoils a row mid-flip
+    val keyStates = remember(state.guesses, revealedGuessCount) {
+        state.copy(guesses = state.guesses.take(revealedGuessCount)).keyStates()
+    }
 
     // Hardware keyboards (desktop) type straight into the board
     LaunchedEffect(state.isFinished) {
@@ -344,7 +364,10 @@ private fun WordleContent(
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            WordleBoard(state = state)
+            WordleBoard(
+                state = state,
+                revealedGuessCount = revealedGuessCount,
+            )
         }
 
         puzzle.sourceInfo?.let {
@@ -357,8 +380,9 @@ private fun WordleContent(
             )
         }
 
-        // The result takes the keyboard's place so the finished board stays visible
-        if (state.isFinished) {
+        // The result takes the keyboard's place so the finished board stays visible;
+        // it waits for the last row's reveal so it does not give the answer away early
+        if (state.isFinished && !isRevealing) {
             ResultCard(
                 state = state,
                 solution = puzzle.solution,
@@ -378,9 +402,18 @@ private fun WordleContent(
 /** How far the active row travels sideways when a guess is rejected. */
 private const val SHAKE_DISTANCE = 12f
 
+/** Duration of one tile's full flip (to 90° and back). */
+private const val TILE_FLIP_MILLIS = 500
+/** Delay between the flips of neighboring tiles, left to right. */
+private const val TILE_FLIP_STAGGER_MILLIS = 280
+/** Until the last tile of a submitted row has finished flipping. */
+private const val WORDLE_ROW_REVEAL_MILLIS =
+    (TILE_FLIP_STAGGER_MILLIS * (WORDLE_WORD_LENGTH - 1) + TILE_FLIP_MILLIS).toLong()
+
 @Composable
 private fun WordleBoard(
     state: WordleState,
+    revealedGuessCount: Int,
 ) {
     val shake = remember { Animatable(0f) }
     LaunchedEffect(state.errorNonce) {
@@ -438,6 +471,8 @@ private fun WordleBoard(
                             letter = letter,
                             letterState = guess?.states?.getOrNull(column),
                             size = tileSize,
+                            animateReveal = guess != null && rowIndex >= revealedGuessCount,
+                            revealDelayMillis = (column * TILE_FLIP_STAGGER_MILLIS).toLong(),
                         )
                     }
                 }
@@ -451,18 +486,53 @@ private fun WordleTile(
     letter: Char?,
     letterState: WordleLetterState?,
     size: Dp,
+    animateReveal: Boolean,
+    revealDelayMillis: Long,
 ) {
-    val target = letterState.tileColors()
-    val background by animateColorAsState(
-        targetValue = target.background,
-        animationSpec = tween(durationMillis = 250)
-    )
-    val content by animateColorAsState(
-        targetValue = target.content,
-        animationSpec = tween(durationMillis = 250)
-    )
+    // Whether the feedback color is shown yet. A tile that already has feedback when it
+    // first appears (earlier guess, restored game) starts revealed and never flips.
+    var showResult by remember { mutableStateOf(letterState != null && !animateReveal) }
+    val rotation = remember { Animatable(0f) }
+    LaunchedEffect(letterState, animateReveal) {
+        when {
+            letterState == null -> {
+                showResult = false
+                rotation.snapTo(0f)
+            }
+
+            !animateReveal -> {
+                showResult = true
+                rotation.snapTo(0f)
+            }
+
+            // Neutral look on the way to edge-on, feedback color from 90° back to flat
+            !showResult -> {
+                delay(revealDelayMillis)
+                rotation.animateTo(90f, tween(TILE_FLIP_MILLIS / 2, easing = FastOutLinearInEasing))
+                showResult = true
+                rotation.animateTo(0f, tween(TILE_FLIP_MILLIS / 2, easing = LinearOutSlowInEasing))
+            }
+        }
+    }
+
+    // Small bump when a letter is typed into an empty tile of the active row
+    val pop = remember { Animatable(1f) }
+    var previousLetter by remember { mutableStateOf(letter) }
+    LaunchedEffect(letter) {
+        if (letter != null && previousLetter == null && letterState == null) {
+            pop.snapTo(1f)
+            pop.animateTo(1f, keyframes {
+                durationMillis = 100
+                1.1f at 50
+            })
+        }
+        previousLetter = letter
+    }
+
+    val displayedState = if (showResult) letterState else null
+    val colors = displayedState.tileColors()
     // An unrevealed tile is only outlined, a revealed one is filled
-    val borderColor = if (letterState == null) {
+    val borderColor = if (displayedState == null) {
         if (letter == null) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.outline
     } else {
         Color.Transparent
@@ -471,15 +541,23 @@ private fun WordleTile(
     Box(
         modifier = Modifier
             .size(size)
+            // Animated values are read here in the draw phase, so frames do not recompose
+            .graphicsLayer {
+                rotationX = rotation.value
+                scaleX = pop.value
+                scaleY = pop.value
+                // A distant camera keeps the flip from ballooning towards the viewer
+                cameraDistance = 12f * density
+            }
             .clip(RoundedCornerShape(4.dp))
-            .background(background)
+            .background(colors.background)
             .border(2.dp, borderColor, RoundedCornerShape(4.dp)),
         contentAlignment = Alignment.Center
     ) {
         letter?.let {
             Text(
                 text = it.toString(),
-                color = content,
+                color = colors.content,
                 fontWeight = FontWeight.Bold,
                 fontSize = (size.value * 0.5f).sp,
                 textAlign = TextAlign.Center

@@ -2,7 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo
 
 import kotlin.math.PI
 import kotlin.math.abs
-import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
@@ -81,6 +80,73 @@ private const val SUPER_JUMP_LANDING_MARGIN = 6f
 private const val SUPER_JUMP_HIND_LEG_GROWTH = 0.6f // hind legs grow to 160 % during the wind-up
 /** Exponent < 1 turns the sine arc into a steep takeoff, long float and steep landing. */
 private const val SUPER_JUMP_ARC_SHAPE = 0.45f
+// The wind-up rears the horse up on its pumped hind legs, front hooves pawing the air
+private const val SUPER_JUMP_REAR_PITCH = 28f        // degrees nose-up at the end of the wind-up
+private const val SUPER_JUMP_LANDING_PITCH = 16f     // degrees nose-down on the way down
+
+// The galloping horse rocks gently: nose down as the front legs land, up as the hind legs push off
+private const val GALLOP_ROCK_DEGREES = 2.5f
+
+// Normal jumps tilt the horse: nose up on takeoff, level at the peak, nose down to land
+private const val JUMP_MAX_PITCH = 16f
+private const val JUMP_PITCH_BLEND_HEIGHT = 4f       // pitch fades in / out over this height above the ground
+
+// Lucky horseshoes float between the fences. Jumping through one stores a lucky charm that
+// absorbs the next crash (fence or runner) - no stumble, no penalty.
+private const val HORSESHOE_CHANCE = 0.2f
+private const val HORSESHOE_MIN_HEIGHT = 26f
+private const val HORSESHOE_MAX_HEIGHT = 42f
+// Collected when the shoe is between the horse's belly and the rider's hat
+private const val HORSESHOE_REACH_BOTTOM = 12f
+private const val HORSESHOE_REACH_TOP = 30f
+private const val HORSESHOE_POINTS = 10
+private const val MAX_LUCKY_CHARMS = 3
+private const val SPARKLE_SECONDS = 0.45f
+
+// Plane: every now and then a plane passes low with a rope ladder. Lasso the ladder and the cowboy
+// climbs aboard and flies over a city skyline until he crashes into a building or the ground,
+// then drops back into the saddle. The riderless horse gallops on below, hopping the fences.
+private const val PLANE_FIRST_SECONDS = 40f          // game seconds until the first plane
+private const val PLANE_INTERVAL_MIN = 45f
+private const val PLANE_INTERVAL_RANDOM = 30f
+private const val PLANE_PASS_SPEED = 35f             // u/s across the screen while passing by
+private const val PLANE_APPROACH_HEIGHT = 36f        // underside of the fuselage
+internal const val PLANE_LENGTH = 22f
+internal const val PLANE_LADDER_X = 10f              // ladder relative to the plane's left edge
+internal const val PLANE_LADDER_LENGTH = 12f
+private const val PLANE_BOARD_SECONDS = 0.9f
+private const val PLANE_FLY_X = 16f                  // left edge of the plane while flying (HORSE_X + 4)
+private const val PLANE_CLIMB_ACCEL = 150f           // u/s² while steering up
+private const val PLANE_DIVE_ACCEL = 170f            // u/s² while steering down
+private const val PLANE_SINK_ACCEL = 45f             // u/s² without input: it slowly goes down
+private const val PLANE_MAX_CLIMB = 35f              // u/s
+private const val PLANE_MAX_SINK = 45f               // u/s
+private const val PLANE_MAX_HEIGHT = 55f             // keeps the plane inside the canvas
+private const val PLANE_HIT_LEFT = 2f                // hitbox relative to the plane's left edge / underside
+private const val PLANE_HIT_RIGHT = 20f
+private const val PLANE_HIT_TOP = 7f
+internal const val PLANE_PILOT_X = 11f                // cowboy's feet in the cockpit
+private const val PLANE_PILOT_Y = 1f
+private const val PLANE_DROP_SECONDS = 0.8f
+private const val PLANE_DROP_HOP = 8f
+private const val PLANE_WRECK_FALL_SPEED = 30f
+private const val PLANE_WRECK_SPIN = 220f            // degrees per second
+private const val BUILDING_MIN_HEIGHT = 12f
+private const val BUILDING_MAX_HEIGHT = 44f
+private const val BUILDING_MIN_WIDTH = 14f
+private const val BUILDING_MAX_WIDTH = 22f
+private const val BUILDING_POINTS = 5                // per building flown past
+private const val FLIGHT_HORSESHOE_CHANCE = 0.6f
+// Storm clouds hang from the sky above the buildings, leaving a passage over the roof that gets
+// narrower and more frequent the longer the flight lasts
+private const val CLOUD_START_CHANCE = 0.45f
+private const val CLOUD_CHANCE_PER_SECOND = 0.03f
+private const val CLOUD_MAX_CHANCE = 0.85f
+private const val CLOUD_START_GAP = 26f              // roof to cloud at the start of a flight
+private const val CLOUD_MIN_GAP = 15f                // never narrower than this (plane is 7 high)
+private const val CLOUD_GAP_SHRINK_PER_SECOND = 0.5f
+private const val CLOUD_GAP_RANDOM = 5f
+private const val CLOUD_OVERHANG = 3f                // clouds are a bit wider than the building below
 
 // Lasso: thrown from the rider's hand, homes in on the first snail within range
 private const val LASSO_RANGE = 32f
@@ -136,6 +202,29 @@ private enum class FallPhase { RIDING, THROWN, DOWN, ON_FOOT, REMOUNT }
 
 private enum class SuperJumpPhase { NONE, WINDUP, FLIGHT }
 
+private enum class PlanePhase {
+    NONE,
+    /** Passing by with the ladder down, waiting to be lassoed. */
+    APPROACH,
+    /** Cowboy climbs the ladder while the plane settles into its flying spot. */
+    BOARDING,
+    FLYING,
+    /** Crashed: the wreck tumbles away and the cowboy drops back into the saddle. */
+    CRASHING,
+}
+
+/** A building of the skyline under the plane; [x] is its left edge. */
+private class Building(
+    var x: Float,
+    val width: Float,
+    val height: Float,
+    val seed: Int,
+    /** Underside of the storm cloud hanging above this building, or null for open sky. */
+    val cloudBottom: Float?,
+) {
+    var passed = false
+}
+
 private class Fence(var x: Float, val width: Float, val heightCm: Int, val colorOffset: Int) {
     val top: Float = heightCm / CM_PER_UNIT.toFloat()
     var knocked = false
@@ -154,6 +243,11 @@ private enum class SnailKind {
 }
 
 private enum class SnailState { ACTIVE, LASSOED, KNOCKED }
+
+/** A lucky horseshoe floating at [height] above the ground; [x] is its center. */
+private class Horseshoe(var x: Float, val height: Float) {
+    val phase = Random.nextFloat() * 2f * PI.toFloat()
+}
 
 /** [x] is the sprite center, [height] its underside above the ground, both in units. */
 private class Snail(var x: Float, val kind: SnailKind, var onFence: Fence? = null) {
@@ -204,6 +298,8 @@ internal class SchneaggRodeoEngine {
 
     private val fences = mutableListOf<Fence>()
     private val snails = mutableListOf<Snail>()
+    private val horseshoes = mutableListOf<Horseshoe>()
+    private val buildings = mutableListOf<Building>()
 
     /** Visible world width in units; follows the canvas size. */
     var worldWidth = 0f
@@ -272,8 +368,35 @@ internal class SchneaggRodeoEngine {
 
     var snailsCaught = 0
         private set
-    var superJumpCharges = 0
+    /** Super jumps cost snails: every full [SNAILS_PER_SUPER_JUMP] caught snails are one charge. */
+    val superJumpCharges: Int get() = snailsCaught / SNAILS_PER_SUPER_JUMP
+    /** Collected lucky horseshoes; each one absorbs one crash. */
+    var luckyCharms = 0
         private set
+    private var sparkleTime = 0f // counts down while a sparkle is shown
+    private var sparkleX = 0f
+    private var sparkleY = 0f
+
+    private var planePhase = PlanePhase.NONE
+    private var nextPlaneIn = PLANE_FIRST_SECONDS
+    private var planeX = 0f          // left edge of the fuselage
+    private var planeY = 0f          // underside of the fuselage
+    private var planeVy = 0f
+    private var planeRotation = 0f   // degrees clockwise, only while the wreck tumbles
+    private var planePhaseTime = 0f
+    private var planeBoardStartX = 0f
+    private var planeClimb = false
+    private var planeDive = false
+    private var propellerPhase = 0f
+    private var nextBuildingIn = 0f
+    private var lassoAtPlane = false
+    private var dropStartX = 0f
+    private var dropStartY = 0f
+    /** Height of the riderless horse hopping the fences on its own while the cowboy flies. */
+    private var riderlessHop = 0f
+
+    /** The cowboy is in (or on his way into / out of) the plane: the horse runs on without him. */
+    val isFlying: Boolean get() = planePhase == PlanePhase.BOARDING || planePhase == PlanePhase.FLYING || planePhase == PlanePhase.CRASHING
 
     val score: Int get() = (distance / UNITS_PER_POINT).toInt() + bonusPoints
 
@@ -287,6 +410,8 @@ internal class SchneaggRodeoEngine {
     fun reset() {
         fences.clear()
         snails.clear()
+        horseshoes.clear()
+        buildings.clear()
         horseHeight = 0f
         verticalVelocity = 0f
         speed = START_SPEED
@@ -317,7 +442,14 @@ internal class SchneaggRodeoEngine {
         lastFallAt = -FALL_COOLDOWN
         jumpPeak = 0f
         snailsCaught = 0
-        superJumpCharges = 0
+        luckyCharms = 0
+        sparkleTime = 0f
+        planePhase = PlanePhase.NONE
+        nextPlaneIn = PLANE_FIRST_SECONDS
+        planeClimb = false
+        planeDive = false
+        lassoAtPlane = false
+        riderlessHop = 0f
     }
 
     /**
@@ -334,7 +466,7 @@ internal class SchneaggRodeoEngine {
         bonusPoints = snapshot.bonusPoints
         fenceCount = snapshot.fenceCount
         snailsCaught = snapshot.snailsCaught
-        superJumpCharges = snapshot.superJumpCharges
+        luckyCharms = snapshot.luckyCharms
         nextRunnerIn = snapshot.nextRunnerIn
     }
 
@@ -348,6 +480,7 @@ internal class SchneaggRodeoEngine {
         fenceCount = fenceCount,
         snailsCaught = snailsCaught,
         superJumpCharges = superJumpCharges,
+        luckyCharms = luckyCharms,
         nextRunnerIn = nextRunnerIn,
     )
 
@@ -373,6 +506,11 @@ internal class SchneaggRodeoEngine {
         } else if (roll < SNAIL_ON_FENCE_CHANCE + SNAIL_BETWEEN_FENCES_CHANCE) {
             snails.add(Snail(x = fence.x + fence.width + gapAfter / 2f, kind = SnailKind.CRAWLER))
         }
+
+        if (Random.nextFloat() < HORSESHOE_CHANCE) {
+            val height = HORSESHOE_MIN_HEIGHT + Random.nextFloat() * (HORSESHOE_MAX_HEIGHT - HORSESHOE_MIN_HEIGHT)
+            horseshoes.add(Horseshoe(x = fence.x + fence.width + gapAfter / 2f, height = height))
+        }
         return fence
     }
 
@@ -396,6 +534,7 @@ internal class SchneaggRodeoEngine {
         snails.removeAll { snail ->
             snail.onFence?.let { it in offscreen } == true || (snail.kind == SnailKind.CRAWLER && snail.x > worldWidth)
         }
+        horseshoes.removeAll { it.x > worldWidth }
 
         val hitLeft = HORSE_X + HITBOX_LEFT
         val ahead = fences.filter { it.x + it.width > hitLeft }.sortedBy { it.x }
@@ -421,7 +560,7 @@ internal class SchneaggRodeoEngine {
         stumble = 0f
         verticalVelocity = 0f
         superJumpLastFence = prepareSuperJumpRow()
-        superJumpCharges--
+        snailsCaught -= SNAILS_PER_SUPER_JUMP
     }
 
     private fun launchSuperJump() {
@@ -439,22 +578,38 @@ internal class SchneaggRodeoEngine {
     }
 
     fun superJumpPressed() {
-        if (superJumpCharges <= 0 || fallPhase != FallPhase.RIDING) return
+        if (superJumpCharges <= 0 || fallPhase != FallPhase.RIDING || isFlying) return
         if (superJumpPhase != SuperJumpPhase.NONE || superJumpQueued) return
         // In the air it fires on landing, on the ground right away
         if (horseHeight > 0f) superJumpQueued = true else startSuperJumpWindup()
     }
 
     private fun crash(penalty: Float) {
+        if (luckyCharms > 0) {
+            // The lucky charm takes the hit: the poles still fall, but the horse keeps its stride
+            luckyCharms--
+            sparkle(HORSE_X + 16f, horseHeight + 14f)
+            return
+        }
         stumble = STUMBLE_SECONDS
         chaseGap -= penalty
         dustTime = DUST_SECONDS
         dustX = HORSE_X + 20f // front hooves
     }
 
+    private fun sparkle(x: Float, y: Float) {
+        sparkleTime = SPARKLE_SECONDS
+        sparkleX = x
+        sparkleY = y
+    }
+
     fun jumpPressed() {
         if (jumpHeld) return // key repeat while holding
         jumpHeld = true
+        if (isFlying) {
+            planeClimb = true
+            return
+        }
         if (fallPhase == FallPhase.RIDING && horseHeight <= 0f && superJumpPhase == SuperJumpPhase.NONE) {
             verticalVelocity = JUMP_VELOCITY
             airTime = 0f
@@ -464,10 +619,20 @@ internal class SchneaggRodeoEngine {
 
     fun jumpReleased() {
         jumpHeld = false
+        planeClimb = false
+    }
+
+    /** Steers the plane down while held; does nothing on the horse. */
+    fun divePressed() {
+        if (isFlying) planeDive = true
+    }
+
+    fun diveReleased() {
+        planeDive = false
     }
 
     fun lassoPressed() {
-        if (lassoTime >= 0f || lassoCooldown > 0f) return
+        if (lassoTime >= 0f || lassoCooldown > 0f || isFlying) return
         if (fallPhase != FallPhase.RIDING) {
             // On foot the lasso is for the horse only, and only once he is back on his feet
             if (fallPhase == FallPhase.ON_FOOT) {
@@ -483,6 +648,13 @@ internal class SchneaggRodeoEngine {
         lassoTime = 0f
         lassoCooldown = LASSO_COOLDOWN
         lassoResolved = false
+        // A passing plane beats any snail
+        lassoAtPlane = planePhase == PlanePhase.APPROACH &&
+                (planeX + PLANE_LADDER_X - PLANE_PASS_SPEED * timeToCatch) in (handX - 2f)..(handX + LASSO_RANGE)
+        if (lassoAtPlane) {
+            lassoTarget = null
+            return
+        }
         // Targets are picked by where they will be when the loop arrives - at full speed a snail
         // scrolls ~40 u during the throw, so its current position would already be behind the hand.
         lassoTarget = snails
@@ -507,6 +679,7 @@ internal class SchneaggRodeoEngine {
         val dt = realDt * timeScale
         dustTime = max(0f, dustTime - realDt)
         splashTime = max(0f, splashTime - realDt)
+        sparkleTime = max(0f, sparkleTime - realDt)
 
         // Off the horse the world stands still - only the cowboy, his horse and the snails move
         if (fallPhase != FallPhase.RIDING) {
@@ -545,7 +718,7 @@ internal class SchneaggRodeoEngine {
                 }
             }
             SuperJumpPhase.NONE -> if (horseHeight > 0f || verticalVelocity > 0f) {
-                val boosted = jumpHeld && verticalVelocity > 0f && airTime < MAX_HOLD_SECONDS
+                val boosted = !isFlying && jumpHeld && verticalVelocity > 0f && airTime < MAX_HOLD_SECONDS
                 airTime += dt
                 verticalVelocity -= GRAVITY * (if (boosted) HOLD_GRAVITY_FACTOR else 1f) * dt
                 horseHeight += verticalVelocity * dt
@@ -554,7 +727,7 @@ internal class SchneaggRodeoEngine {
                     horseHeight = 0f
                     verticalVelocity = 0f
                     splashTime = SPLASH_SECONDS
-                    if (shouldThrowCowboy()) {
+                    if (!isFlying && shouldThrowCowboy()) {
                         startFall()
                         return
                     }
@@ -564,6 +737,7 @@ internal class SchneaggRodeoEngine {
         if (superJumpQueued && horseHeight <= 0f && superJumpPhase == SuperJumpPhase.NONE) {
             startSuperJumpWindup()
         }
+        riderlessHop = if (isFlying && planePhase != PlanePhase.BOARDING) riderlessHopHeight() else 0f
 
         // Rider eases into the forward seat on takeoff and back upright after landing
         val leanTarget = if (horseHeight > 0f) 1f else 0f
@@ -574,8 +748,11 @@ internal class SchneaggRodeoEngine {
         if (nextFenceIn < 0f && fences.isEmpty()) nextFenceIn = worldWidth * 0.6f
         fences.forEach { it.x -= step }
         fences.removeAll { it.x + it.width < 0f }
-        nextFenceIn -= step
-        if (nextFenceIn <= 0f) spawnFence()
+        // No new fences while the cowboy flies; the skyline takes over
+        if (!isFlying) {
+            nextFenceIn -= step
+            if (nextFenceIn <= 0f) spawnFence()
+        }
 
         // Runners only join once the rider had some time to warm up
         if (elapsed >= RUNNER_START_SECONDS) {
@@ -589,8 +766,9 @@ internal class SchneaggRodeoEngine {
         val hitLeft = HORSE_X + HITBOX_LEFT
         val hitRight = HORSE_X + HITBOX_RIGHT
         val hitBottom = horseHeight + HITBOX_BOTTOM
-        // The super jump sails over everything, including the fences it passes low at takeoff
-        val invulnerable = superJumpPhase != SuperJumpPhase.NONE
+        // The super jump sails over everything, including the fences it passes low at takeoff. The
+        // riderless horse under the plane hops everything on its own.
+        val invulnerable = superJumpPhase != SuperJumpPhase.NONE || isFlying
 
         fences.forEach { fence ->
             if (!invulnerable && !fence.knocked && fence.x < hitRight && fence.x + fence.width > hitLeft && hitBottom < fence.top) {
@@ -636,6 +814,21 @@ internal class SchneaggRodeoEngine {
         }
         snails.removeAll { it.x < -SNAIL_SIZE || it.height < -WORLD_HEIGHT_UNITS }
 
+        // Lucky horseshoes scroll with the ground and are picked up by the horse passing through
+        horseshoes.forEach { it.x -= step }
+        horseshoes.removeAll { shoe ->
+            val collected = shoe.x > hitLeft && shoe.x < hitRight + 4f &&
+                    shoe.height in (horseHeight + HORSESHOE_REACH_BOTTOM)..(horseHeight + HORSESHOE_REACH_TOP)
+            if (collected) {
+                luckyCharms = min(MAX_LUCKY_CHARMS, luckyCharms + 1)
+                bonusPoints += HORSESHOE_POINTS
+                sparkle(shoe.x, shoe.height)
+            }
+            collected || shoe.x < -SNAIL_SIZE
+        }
+
+        stepPlane(dt, realDt, step)
+
         // Lasso: extends to the target (or straight ahead) and back over LASSO_DURATION
         lassoCooldown = max(0f, lassoCooldown - dt)
         if (lassoTime >= 0f) {
@@ -645,7 +838,20 @@ internal class SchneaggRodeoEngine {
             val handY = horseHeight + HAND_Y
             val target = lassoTarget
 
-            if (!lassoResolved) {
+            if (!lassoResolved && lassoAtPlane) {
+                lassoAimX = planeX + PLANE_LADDER_X
+                lassoAimY = planeY - PLANE_LADDER_LENGTH
+                if (progress >= 0.5f) {
+                    lassoResolved = true
+                    lassoAtPlane = false
+                    val ladderX = planeX + PLANE_LADDER_X
+                    if (planePhase == PlanePhase.APPROACH &&
+                        ladderX in (handX - LASSO_CATCH_TOLERANCE)..(handX + LASSO_RANGE + LASSO_CATCH_TOLERANCE)
+                    ) {
+                        startBoarding()
+                    }
+                }
+            } else if (!lassoResolved) {
                 if (target != null && target.state == SnailState.ACTIVE) {
                     lassoAimX = target.x
                     lassoAimY = target.height + SNAIL_BODY_HEIGHT / 2f
@@ -661,7 +867,6 @@ internal class SchneaggRodeoEngine {
                         target.state = SnailState.LASSOED
                         target.onFence = null
                         snailsCaught++
-                        if (snailsCaught % SNAILS_PER_SUPER_JUMP == 0) superJumpCharges++
                         bonusPoints += CATCH_POINTS
                         chaseGap = min(CHASE_GAP_MAX, chaseGap + CATCH_GAP_BONUS)
                     } else {
@@ -678,7 +883,7 @@ internal class SchneaggRodeoEngine {
                 caught.height = lassoTipY - SNAIL_BODY_HEIGHT / 2f
             }
 
-            if (progress >= 1f) {
+            if (progress >= 1f || isFlying) {
                 lassoTarget?.let { caught -> if (caught.state == SnailState.LASSOED) snails.remove(caught) }
                 lassoTarget = null
                 lassoTime = -1f
@@ -689,8 +894,176 @@ internal class SchneaggRodeoEngine {
         if (chaseGap <= 0f) chaseGap = 0f
     }
 
+    /** The riderless horse arcs over whatever fence it is passing, like the running snails do. */
+    private fun riderlessHopHeight(): Float {
+        val center = HORSE_X + 14f
+        var height = 0f
+        fences.forEach { fence ->
+            val halfSpan = fence.width / 2f + 14f
+            val distance = abs(center - (fence.x + fence.width / 2f))
+            if (distance < halfSpan) {
+                val relative = distance / halfSpan
+                height = max(height, (fence.top + 3f) * (1f - relative * relative))
+            }
+        }
+        return height
+    }
+
+    private fun startBoarding() {
+        planePhase = PlanePhase.BOARDING
+        planePhaseTime = 0f
+        planeBoardStartX = planeX
+        planeVy = 0f
+        planeClimb = false
+        planeDive = false
+        jumpHeld = false
+        lassoTime = -1f
+        // Buildings start right of the screen; the fences on screen scroll away under the horse
+        nextBuildingIn = 0f
+    }
+
+    private fun crashPlane() {
+        planePhase = PlanePhase.CRASHING
+        planePhaseTime = 0f
+        planeRotation = 0f
+        planeClimb = false
+        planeDive = false
+        dropStartX = planeX + PLANE_PILOT_X
+        dropStartY = planeY + PLANE_PILOT_Y
+        sparkle(planeX + PLANE_HIT_RIGHT, planeY + PLANE_HIT_TOP / 2f)
+    }
+
+    private fun finishPlaneRide() {
+        planePhase = PlanePhase.NONE
+        nextPlaneIn = PLANE_INTERVAL_MIN + Random.nextFloat() * PLANE_INTERVAL_RANDOM
+        riderlessHop = 0f
+        jumpPeak = 0f
+        splashTime = SPLASH_SECONDS
+        // Fences come back with a normal gap after the skyline
+        nextFenceIn = max(nextFenceIn, randomFenceGap())
+    }
+
+    private fun spawnBuilding() {
+        val width = BUILDING_MIN_WIDTH + Random.nextFloat() * (BUILDING_MAX_WIDTH - BUILDING_MIN_WIDTH)
+        val height = BUILDING_MIN_HEIGHT + Random.nextFloat() * (BUILDING_MAX_HEIGHT - BUILDING_MIN_HEIGHT)
+        val cloudChance = min(CLOUD_MAX_CHANCE, CLOUD_START_CHANCE + CLOUD_CHANCE_PER_SECOND * planePhaseTime)
+        val cloudGap = max(CLOUD_MIN_GAP, CLOUD_START_GAP - CLOUD_GAP_SHRINK_PER_SECOND * planePhaseTime) +
+                Random.nextFloat() * CLOUD_GAP_RANDOM
+        // Only where the cloud reaches into the flyable sky
+        val cloudBottom = (height + cloudGap).takeIf {
+            Random.nextFloat() < cloudChance && it < PLANE_MAX_HEIGHT + PLANE_HIT_TOP - 2f
+        }
+        buildings.add(
+            Building(x = worldWidth, width = width, height = height, seed = Random.nextInt(1000), cloudBottom = cloudBottom)
+        )
+        val gap = speed * (0.35f + Random.nextFloat() * 0.35f)
+        nextBuildingIn = width + gap
+        // Horseshoes float in the gaps, some above the rooftops, some low between the houses
+        if (Random.nextFloat() < FLIGHT_HORSESHOE_CHANCE) {
+            val shoeHeight = 14f + Random.nextFloat() * (PLANE_MAX_HEIGHT - 14f)
+            horseshoes.add(Horseshoe(x = worldWidth + width + gap / 2f, height = shoeHeight))
+        }
+    }
+
+    /** Plane spawning, passing, boarding, flying and crashing. [step] is the world scroll of this frame. */
+    private fun stepPlane(dt: Float, realDt: Float, step: Float) {
+        propellerPhase += realDt * 40f
+
+        // The skyline scrolls with the ground and outlives the flight until it leaves the screen
+        buildings.forEach { it.x -= step }
+        buildings.removeAll { it.x + it.width < 0f }
+
+        when (planePhase) {
+            PlanePhase.NONE -> {
+                if (superJumpPhase == SuperJumpPhase.NONE && elapsed > 0f) {
+                    nextPlaneIn -= dt
+                    if (nextPlaneIn <= 0f) {
+                        planePhase = PlanePhase.APPROACH
+                        planeX = worldWidth + 5f
+                        planeY = PLANE_APPROACH_HEIGHT
+                        planeRotation = 0f
+                    }
+                }
+            }
+            PlanePhase.APPROACH -> {
+                planeX -= PLANE_PASS_SPEED * dt
+                if (planeX + PLANE_LENGTH < 0f) {
+                    planePhase = PlanePhase.NONE
+                    nextPlaneIn = PLANE_INTERVAL_MIN + Random.nextFloat() * PLANE_INTERVAL_RANDOM
+                }
+            }
+            PlanePhase.BOARDING -> {
+                planePhaseTime += dt
+                val progress = min(1f, planePhaseTime / PLANE_BOARD_SECONDS)
+                val eased = progress * progress * (3f - 2f * progress)
+                planeX = planeBoardStartX + (PLANE_FLY_X - planeBoardStartX) * eased
+                if (progress >= 1f) {
+                    planePhase = PlanePhase.FLYING
+                    planePhaseTime = 0f
+                }
+            }
+            PlanePhase.FLYING -> {
+                planePhaseTime += dt
+                val accel = when {
+                    planeClimb && !planeDive -> PLANE_CLIMB_ACCEL
+                    planeDive && !planeClimb -> -PLANE_DIVE_ACCEL
+                    else -> -PLANE_SINK_ACCEL
+                }
+                planeVy = (planeVy + accel * dt).coerceIn(-PLANE_MAX_SINK, PLANE_MAX_CLIMB)
+                planeY += planeVy * dt
+                if (planeY >= PLANE_MAX_HEIGHT) {
+                    planeY = PLANE_MAX_HEIGHT
+                    planeVy = min(0f, planeVy)
+                }
+
+                nextBuildingIn -= step
+                if (nextBuildingIn <= 0f) spawnBuilding()
+
+                val hitLeft = planeX + PLANE_HIT_LEFT
+                val hitRight = planeX + PLANE_HIT_RIGHT
+                buildings.forEach { building ->
+                    if (!building.passed && building.x + building.width < hitLeft) {
+                        building.passed = true
+                        bonusPoints += BUILDING_POINTS
+                    }
+                }
+                horseshoes.removeAll { shoe ->
+                    val collected = shoe.x > hitLeft - 2f && shoe.x < hitRight + 2f &&
+                            shoe.height > planeY - 2f && shoe.height < planeY + PLANE_HIT_TOP + 2f
+                    if (collected) {
+                        luckyCharms = min(MAX_LUCKY_CHARMS, luckyCharms + 1)
+                        bonusPoints += HORSESHOE_POINTS
+                        sparkle(shoe.x, shoe.height)
+                    }
+                    collected
+                }
+
+                val hitBuilding = buildings.any { building ->
+                    val overlapsBuilding = building.x < hitRight && building.x + building.width > hitLeft
+                    val overlapsCloud = building.x - CLOUD_OVERHANG < hitRight &&
+                            building.x + building.width + CLOUD_OVERHANG > hitLeft
+                    (overlapsBuilding && planeY < building.height) ||
+                            (overlapsCloud && building.cloudBottom != null && planeY + PLANE_HIT_TOP > building.cloudBottom)
+                }
+                if (hitBuilding || planeY <= 0f) {
+                    planeY = max(0f, planeY)
+                    crashPlane()
+                }
+            }
+            PlanePhase.CRASHING -> {
+                planePhaseTime += dt
+                // The wreck tumbles down and away behind the horse
+                planeX -= step * 0.6f
+                planeY -= PLANE_WRECK_FALL_SPEED * dt
+                planeRotation += PLANE_WRECK_SPIN * dt
+                if (planePhaseTime >= PLANE_DROP_SECONDS) finishPlaneRide()
+            }
+        }
+    }
+
     private fun shouldThrowCowboy(): Boolean =
-        jumpPeak >= FALL_MIN_JUMP_PEAK &&
+        planePhase == PlanePhase.NONE &&
+                jumpPeak >= FALL_MIN_JUMP_PEAK &&
                 chaseGap >= FALL_MIN_CHASE_GAP &&
                 elapsed >= FALL_MIN_ELAPSED &&
                 elapsed - lastFallAt >= FALL_COOLDOWN &&
@@ -953,8 +1326,73 @@ internal class SchneaggRodeoEngine {
             splashProgress = if (splashTime > 0f) 1f - splashTime / SPLASH_SECONDS else null,
             markers = markers,
             snailsCaught = snailsCaught,
-            cowboy = cowboyOnFoot(),
+            cowboy = cowboyOnFoot() ?: cowboyAtPlane(),
+            horseshoes = horseshoes.map { shoe ->
+                RodeoHorseshoeUi(
+                    x = shoe.x,
+                    height = shoe.height + sin(packPhase * 0.4f + shoe.phase) * 1.2f,
+                    tiltDeg = sin(packPhase * 0.25f + shoe.phase) * 12f,
+                )
+            },
+            luckyCharms = luckyCharms,
+            plane = planeUi(),
+            buildings = buildings.map { RodeoBuildingUi(
+                    x = it.x,
+                    width = it.width,
+                    height = it.height,
+                    seed = it.seed,
+                    cloudBottom = it.cloudBottom,
+                    cloudOverhang = CLOUD_OVERHANG,
+                ) },
+            sparkle = if (sparkleTime > 0f) {
+                RodeoSparkleUi(x = sparkleX, y = sparkleY, progress = 1f - sparkleTime / SPARKLE_SECONDS)
+            } else null,
         )
+    }
+
+    private fun planeUi(): RodeoPlaneUi? {
+        if (planePhase == PlanePhase.NONE) return null
+        // The wreck is gone once it fell out of the picture
+        if (planePhase == PlanePhase.CRASHING && planeY < -PLANE_LENGTH) return null
+        return RodeoPlaneUi(
+            x = planeX,
+            y = planeY,
+            rotation = planeRotation,
+            propellerPhase = propellerPhase,
+            hasPilot = planePhase == PlanePhase.FLYING,
+            ladderDown = planePhase == PlanePhase.APPROACH || planePhase == PlanePhase.BOARDING,
+        )
+    }
+
+    /** The cowboy climbing the ladder, or dropping back into the saddle after a crash. */
+    private fun cowboyAtPlane(): RodeoCowboyUi? = when (planePhase) {
+        PlanePhase.BOARDING -> {
+            val progress = min(1f, planePhaseTime / PLANE_BOARD_SECONDS)
+            val startX = HORSE_X + COWBOY_SEAT_X
+            val startY = horseHeight + COWBOY_SEAT_Y - COWBOY_LEG_LENGTH
+            val endX = planeX + PLANE_PILOT_X
+            val endY = planeY + PLANE_PILOT_Y
+            RodeoCowboyUi(
+                x = startX + (endX - startX) * progress,
+                height = startY + (endY - startY) * progress,
+                rotation = 0f,
+                facingLeft = false,
+                hatLift = 0f,
+            )
+        }
+        PlanePhase.CRASHING -> {
+            val progress = min(1f, planePhaseTime / PLANE_DROP_SECONDS)
+            val endX = HORSE_X + COWBOY_SEAT_X
+            val endY = riderlessHop + COWBOY_SEAT_Y - COWBOY_LEG_LENGTH
+            RodeoCowboyUi(
+                x = dropStartX + (endX - dropStartX) * progress,
+                height = dropStartY + (endY - dropStartY) * progress + PLANE_DROP_HOP * sin(PI.toFloat() * progress),
+                rotation = 360f * progress, // a full flip on the way down
+                facingLeft = false,
+                hatLift = 2f * (1f - progress),
+            )
+        }
+        else -> null
     }
 
     /** The cowboy while he is off the horse; null while riding. */
@@ -981,16 +1419,20 @@ internal class SchneaggRodeoEngine {
         var hindLegScale = 1f
         var glow = 0f
         var frontLegFold = 0f
+        var frontLegRaise = 0f
         var hatLift = 0f
+        var lean = riderLean
         when (superJumpPhase) {
             SuperJumpPhase.WINDUP -> {
-                // Hind legs pump up; the longer legs lift the hindquarters, tipping the horse
-                // forward over its front hooves like a loaded spring.
+                // Rears up: the hind legs pump up and lift the whole horse, which tips back around
+                // its hind hooves with the front legs pawing the air - a loaded spring.
                 val progress = min(1f, superJumpWindup / SUPER_JUMP_WINDUP_SECONDS)
                 hindLegScale = 1f + SUPER_JUMP_HIND_LEG_GROWTH * easeOutBack(progress)
-                pitch = atan(9f * (hindLegScale - 1f) / 11f) * 180f / PI.toFloat()
-                pivotX = 19f
-                pivotY = 0f
+                pitch = -SUPER_JUMP_REAR_PITCH * easeOutBack(progress)
+                pivotX = 7f
+                pivotY = 9f - 9f * hindLegScale // the hind hooves stay planted
+                frontLegRaise = min(1f, progress * 2f)
+                lean = max(lean, progress) // rider leans into the mane to stay on
                 glow = progress * (0.75f + 0.25f * sin(superJumpWindup * 40f))
             }
             SuperJumpPhase.FLIGHT -> {
@@ -998,7 +1440,11 @@ internal class SchneaggRodeoEngine {
                 // Legs shrink back over the first quarter of the flight
                 hindLegScale = 1f + SUPER_JUMP_HIND_LEG_GROWTH * max(0f, 1f - progress / 0.25f)
                 glow = max(0f, 1f - progress / 0.25f)
-                pitch = -16f * cos(PI.toFloat() * progress) // nose up while rising, down to land
+                // Continues from the rear: nose up while rising, down to land
+                val amplitude = if (progress < 0.5f) SUPER_JUMP_REAR_PITCH else SUPER_JUMP_LANDING_PITCH
+                pitch = -amplitude * cos(PI.toFloat() * progress)
+                pivotX = 7f
+                pivotY = 9f - 9f * hindLegScale
             }
             SuperJumpPhase.NONE -> if (fallPhase == FallPhase.THROWN && fallClock < BUCK_SECONDS) {
                 // Bucks: hindquarters kick up around the front hooves and launch the cowboy
@@ -1015,22 +1461,35 @@ internal class SchneaggRodeoEngine {
                 pivotY = 0f
                 frontLegFold = dip
                 hatLift = 3f * dip
+            } else if (horseHeight > 0f) {
+                // Normal jump: tilts with the vertical speed, faded in and out near the ground so
+                // takeoff and landing don't snap
+                val tilt = (verticalVelocity / JUMP_VELOCITY).coerceIn(-1f, 1f)
+                val blend = min(1f, horseHeight / JUMP_PITCH_BLEND_HEIGHT)
+                pitch = -JUMP_MAX_PITCH * tilt * blend
+            } else if (riderlessHop > 0f) {
+                // Riderless hop over a fence under the plane: level
+                pitch = 0f
+            } else {
+                pitch = GALLOP_ROCK_DEGREES * sin(gaitPhase + 0.8f)
             }
         }
         return RodeoHorsePose(
-            height = horseHeight,
+            // Pumped hind legs lift the horse, so they still reach the ground
+            height = horseHeight + riderlessHop + 9f * (hindLegScale - 1f),
             gaitPhase = gaitPhase,
-            airborne = horseHeight > 0f,
-            riderLean = max(riderLean, frontLegFold * 1.4f),
+            airborne = horseHeight > 0f || riderlessHop > 0f,
+            riderLean = max(lean, frontLegFold * 1.4f),
             pitchDegrees = pitch,
             pivotX = pivotX,
             pivotY = pivotY,
             hindLegScale = hindLegScale,
             frontLegFold = frontLegFold,
+            frontLegRaise = frontLegRaise,
             hatLift = hatLift,
             glow = glow,
             offsetX = horseOffset(),
-            hasRider = fallPhase == FallPhase.RIDING,
+            hasRider = fallPhase == FallPhase.RIDING && !isFlying,
         )
     }
 }
