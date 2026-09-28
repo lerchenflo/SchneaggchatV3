@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.outlined.ThumbsUpDown
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DropdownMenu
@@ -81,7 +82,6 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_URL
-import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.getDonationsUrl
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import io.github.lerchenflo.taptarget.LocalTapTargetController
@@ -90,7 +90,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.BugReportDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ChatSelectorDismissableInfo
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
@@ -101,7 +100,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ContributePopup
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
-import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -120,6 +118,7 @@ import schneaggchatv3mp.composeapp.generated.resources.pin_chat
 import schneaggchatv3mp.composeapp.generated.resources.search_friend
 import schneaggchatv3mp.composeapp.generated.resources.search_section_chats
 import schneaggchatv3mp.composeapp.generated.resources.search_section_messages
+import schneaggchatv3mp.composeapp.generated.resources.feedback_title
 import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.ttt_popup
 import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_description
@@ -147,14 +146,11 @@ fun Chatauswahlscreen(
 
     val pendingFriendCount by viewModel.pendingFriendCount.collectAsStateWithLifecycle()
 
-    val shareUtils = koinInject<ShareUtils>()
-
     val chatFilter by viewModel.filter.collectAsStateWithLifecycle()
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var changeLogDialogContent by remember { mutableStateOf<ChangelogEntry?>(null) }
     var contributePopupShown by remember { mutableStateOf(false) }
-    var bugReportDialogShown by remember { mutableStateOf(false) }
     var newVersionAvailable by remember { mutableStateOf<String?>(null) }
 
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
@@ -441,6 +437,24 @@ fun Chatauswahlscreen(
 
                  */
 
+
+                //feedback board (feature requests + bug reports)
+                Box(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .size(touchSize)
+                        .clip(CircleShape)
+                        .clickable { viewModel.onFeedbackClick() }
+                        .tapTarget("chatselector_feedback_button"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ThumbsUpDown,
+                        contentDescription = stringResource(Res.string.feedback_title),
+                        modifier = Modifier.size(iconSize),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
                 //settings
                 Box(
@@ -876,26 +890,12 @@ fun Chatauswahlscreen(
                 onDismiss = { contributePopupShown = false },
                 onOpenReportForm = {
                     contributePopupShown = false
-                    bugReportDialogShown = true
+                    viewModel.onFeedbackClick()
                 },
                 onOpenDonationPage = {
                     contributePopupShown = false
                     val serverUrl = runBlocking { preferencemanager.getServerUrl() }
                     uriHandler.openUri(getDonationsUrl(serverUrl))
-                }
-            )
-        }
-
-        if (bugReportDialogShown) {
-            BugReportDialog(
-                onDismiss = { bugReportDialogShown = false },
-                onSubmit = { emailContent ->
-                    shareUtils.openMailClient(
-                        recipient = SUPPORT_EMAIL,
-                        subject = "Bug Report / Feature Request",
-                        body = emailContent
-                    )
-                    bugReportDialogShown = false
                 }
             )
         }

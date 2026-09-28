@@ -103,8 +103,6 @@
     <string name="version">Version: %1$s</string>
     <string name="app_broken">App isch kaputt</string>
 
-    <string name="bugreport_request">Bugreport / Featurerequest</string>
-    <string name="bugreport_request_info">Schick alls was da ned gfallt oda wasd gern hia würdesch</string>
 
 
     <string name="loadinginfo_messages">Nachrichta werrand glada...</string>
@@ -761,29 +759,9 @@
 
 
     <!-- Bug Report Dialog -->
-    <string name="bugreportdialog_title_bug">Bug Report</string>
-    <string name="bugreportdialog_title_feature">Feature Request</string>
-    <string name="bugreportdialog_type_bug">Bug</string>
-    <string name="bugreportdialog_type_feature">Feature</string>
-    <string name="bugreportdialog_field_title">Titel *</string>
-    <string name="bugreportdialog_field_description">Beschreibung *</string>
-    <string name="bugreportdialog_field_steps">Schritt zums nochmacha</string>
-    <string name="bugreportdialog_field_steps_placeholder">1. Chat öffna\n2. Profilbild drucka\n3. etc</string>
-    <string name="bugreportdialog_field_expected">Erwartetes Verhalta</string>
-    <string name="bugreportdialog_field_actual">Uftreatanes Verhalta</string>
-    <string name="bugreportdialog_label_severity">Schwere</string>
 
-    <string name="bugreportdialog_severity_low">Leicht</string>
-    <string name="bugreportdialog_severity_medium">Mittel</string>
-    <string name="bugreportdialog_severity_high">Hoch</string>
-    <string name="bugreportdialog_severity_critical">Kritisch</string>
 
-    <string name="bugreportdialog_field_motivation">Warum bruchts des?</string>
-    <string name="bugreportdialog_label_priority">Priorität</string>
 
-    <string name="bugreportdialog_priority_low">Niedrig</string>
-    <string name="bugreportdialog_priority_medium">Mittel</string>
-    <string name="bugreportdialog_priority_high">Hoch</string>
 
 
     <!-- Games: Yatzi -->
@@ -1033,13 +1011,6 @@ Mealds, egal wie klenn.</string>
     <string name="contribute_later">Eventuell später</string>
 
     <!-- Roadmap -->
-    <string name="roadmap">Roadmap</string>
-    <string name="roadmap_info">Schou a wassas scho git und was als Nächstes kut</string>
-    <string name="roadmap_status_done">Erledigt</string>
-    <string name="roadmap_status_upcoming">Plant</string>
-    <string name="roadmap_load_error">Die Roadmap hot ned glada werra künna. Prüf dine Verbindung und versuachs nomml.</string>
-    <string name="roadmap_retry">Nomml versuacha</string>
-    <string name="roadmap_view_issue">Issue #%1$d aschoua</string>
 
 
     <string name="custom_reaction">Eigne Reaktion</string>

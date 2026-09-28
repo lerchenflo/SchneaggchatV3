@@ -102,11 +102,6 @@
     <string name="cancel">cancel</string>
     <string name="version">Version: %1$s</string>
     <string name="app_broken">App broken</string>
-
-    <string name="bugreport_request">Bugreport / Featurerequest</string>
-    <string name="bugreport_request_info">Report bugs or things that feel off (Not userfriendly etc), or request a new feature!</string>
-
-
     <string name="loadinginfo_messages">Loading messages...</string>
     <string name="loadinginfo_offline">You are currently offline...</string>
     <string name="read">read</string>
@@ -770,31 +765,6 @@
 
 
     <!-- Bug Report Dialog -->
-    <string name="bugreportdialog_title_bug">Bug Report</string>
-    <string name="bugreportdialog_title_feature">Feature Request</string>
-    <string name="bugreportdialog_type_bug">Bug</string>
-    <string name="bugreportdialog_type_feature">Feature</string>
-    <string name="bugreportdialog_field_title">Title *</string>
-    <string name="bugreportdialog_field_description">Description *</string>
-    <string name="bugreportdialog_field_steps">Steps to Reproduce</string>
-    <string name="bugreportdialog_field_steps_placeholder">1. Open…\n2. Tap…\n3. See error</string>
-    <string name="bugreportdialog_field_expected">Expected Behavior</string>
-    <string name="bugreportdialog_field_actual">Actual Behavior</string>
-    <string name="bugreportdialog_label_severity">Severity</string>
-
-    <string name="bugreportdialog_severity_low">LOW</string>
-    <string name="bugreportdialog_severity_medium">MEDIUM</string>
-    <string name="bugreportdialog_severity_high">HIGH</string>
-    <string name="bugreportdialog_severity_critical">CRITICAL</string>
-
-    <string name="bugreportdialog_field_motivation">Why is this needed?</string>
-    <string name="bugreportdialog_label_priority">Priority</string>
-
-    <string name="bugreportdialog_priority_low">LOW</string>
-    <string name="bugreportdialog_priority_medium">MEDIUM</string>
-    <string name="bugreportdialog_priority_high">HIGH</string>
-
-
     <!-- Games: Yatzi -->
     <string name="games_yahtzee_title">Yahtzee</string>
     <string name="yatzi_setup_title">Yahtzee Setup</string>
@@ -1042,15 +1012,6 @@
     <string name="contribute_later">Maybe later</string>
 
     <!-- Roadmap -->
-    <string name="roadmap">Roadmap</string>
-    <string name="roadmap_info">See what has already shipped and what is coming next</string>
-    <string name="roadmap_status_done">Done</string>
-    <string name="roadmap_status_upcoming">Planned</string>
-    <string name="roadmap_load_error">Couldn't load the roadmap. Check your connection and try again.</string>
-    <string name="roadmap_retry">Retry</string>
-    <string name="roadmap_view_issue">View issue #%1$d</string>
-
-
     <string name="custom_reaction">Custom reaction</string>
     <string name="enter_reaction">Enter reaction</string>
 
@@ -1368,7 +1329,7 @@
 
     <string name="ttt_settings_misc">misc settings</string>
 
-    <string name="ttt_settings_misc_bugreport">Here you can file a bug reports and feature requests.</string>
+    <string name="ttt_settings_misc_bugreport">Vote on features and report bugs here.</string>
 
     <string name="ttt_settings_misc_app_broken">App broken?</string>
     <string name="ttt_settings_misc_app_broken_description">If something is not working as intended, you can press this button. It will delete all app data and refetch from the server.</string>
@@ -1579,4 +1540,65 @@
     <string name="games_schneaggrodeo_snails">Snails: %1$d</string>
     <string name="games_schneaggrodeo_super_jump">Super jump ×%1$d</string>
     <string name="games_schneaggrodeo_next_to_beat">Next to beat: %1$s (%2$d)</string>
+
+    <!-- Feedback board -->
+    <string name="feedback_title">Feedback</string>
+    <string name="feedback_info">Vote on features, report bugs and see what is planned</string>
+    <string name="feedback_tab_features">Features</string>
+    <string name="feedback_tab_bugs">Bugs</string>
+    <string name="feedback_sort_top">Top</string>
+    <string name="feedback_sort_new">New</string>
+    <string name="feedback_filter_mine">Mine</string>
+    <string name="feedback_filter_tag">Tag</string>
+    <string name="feedback_filter_all_tags">All tags</string>
+    <string name="feedback_status_requested">Requested</string>
+    <string name="feedback_status_planned">Planned</string>
+    <string name="feedback_status_implemented">Implemented</string>
+    <string name="feedback_status_open">Open</string>
+    <string name="feedback_status_confirmed">Confirmed</string>
+    <string name="feedback_status_fixed">Fixed</string>
+    <string name="feedback_tag_chat">Chat</string>
+    <string name="feedback_tag_groups">Groups</string>
+    <string name="feedback_tag_events">Events</string>
+    <string name="feedback_tag_map">Map</string>
+    <string name="feedback_tag_games">Games</string>
+    <string name="feedback_tag_settings">Settings</string>
+    <string name="feedback_tag_ui">Design</string>
+    <string name="feedback_tag_notifications">Notifications</string>
+    <string name="feedback_tag_performance">Performance</string>
+    <string name="feedback_tag_other">Other</string>
+    <string name="feedback_vote_up">Upvote</string>
+    <string name="feedback_vote_down">Downvote</string>
+    <string name="feedback_vote_didnt_know">Didn't know</string>
+    <string name="feedback_vote_me_too">I have this too</string>
+    <string name="feedback_vote_cant_repro">Can't reproduce</string>
+    <string name="feedback_new_badge">New</string>
+    <string name="feedback_dev_comment">Developer</string>
+    <string name="feedback_empty">Nothing here yet.</string>
+    <string name="feedback_load_error">Couldn't load the list. Check your connection and try again.</string>
+    <string name="feedback_retry">Retry</string>
+    <string name="feedback_create">New entry</string>
+    <string name="feedback_create_title_feature">Request a feature</string>
+    <string name="feedback_create_title_bug">Report a bug</string>
+    <string name="feedback_duplicate_warning">Please check the list for duplicates first. If it already exists, vote or comment there instead.</string>
+    <string name="feedback_field_title">Title</string>
+    <string name="feedback_field_description">Description</string>
+    <string name="feedback_field_description_bug_hint">What happened, and how can it be reproduced?</string>
+    <string name="feedback_field_location">Where to find it (optional)</string>
+    <string name="feedback_field_tags">Tags (1–3)</string>
+    <string name="feedback_submit">Submit</string>
+    <string name="feedback_created">Entry created</string>
+    <string name="feedback_bug_device_info_hint">Your app version and platform are attached automatically.</string>
+    <string name="feedback_where_to_find">Where to find it: %1$s</string>
+    <string name="feedback_seeded_author">Schneaggchat team</string>
+    <string name="feedback_unknown_user">Deleted user</string>
+    <string name="feedback_comments">Comments</string>
+    <string name="feedback_no_comments">No comments yet.</string>
+    <string name="feedback_comment_hint">Add more info or a comment…</string>
+    <string name="feedback_send_comment">Send comment</string>
+    <string name="feedback_delete_entry">Delete entry</string>
+    <string name="feedback_delete_entry_confirm">Delete this entry and all its comments?</string>
+    <string name="feedback_delete_comment_confirm">Delete this comment?</string>
+    <string name="feedback_change_status">Change status</string>
+    <string name="feedback_details_load_error">Couldn't load the details.</string>
 </resources>

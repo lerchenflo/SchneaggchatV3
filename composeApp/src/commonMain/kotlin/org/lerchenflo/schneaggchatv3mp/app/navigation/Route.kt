@@ -89,7 +89,7 @@ sealed interface Route : NavKey {
     data object SchneaggmapSettings: Route
 
     @Serializable
-    data object Roadmap: Route
+    data object Feedback: Route
 
 
 

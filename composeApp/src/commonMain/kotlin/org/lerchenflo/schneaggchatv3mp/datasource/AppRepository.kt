@@ -34,7 +34,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
-import org.lerchenflo.schneaggchatv3mp.GITHUB_ISSUES_API_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_API_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
@@ -100,7 +99,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncR
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
@@ -932,21 +930,6 @@ class AppRepository(
     }
 
     /**
-     * Fetches the full changelog history (all versions, newest first) for the Roadmap screen.
-     */
-    suspend fun getFullChangelog() : List<ChangelogEntry>? {
-        return when (val networkResult = networkUtils.getChangeLog("$GITHUB_URL/main/README.md")) {
-            is NetworkResult.Error<*> -> {
-                println("get full changelog network error: ${networkResult.error.message}")
-                null
-            }
-            is NetworkResult.Success<*> -> {
-                ChangelogParser.getFullChangelog(networkResult.data.toString())
-            }
-        }
-    }
-
-    /**
      * Fetches the name of the current GitHub release
      */
     suspend fun getLatestGitHubVersionAsString(): String? {
@@ -957,22 +940,6 @@ class AppRepository(
             }
             is NetworkResult.Success<*> -> {
                 networkResult.data.toString()
-            }
-        }
-    }
-
-    /**
-     * Fetches the currently open GitHub issues for the Roadmap screen's "Upcoming" section.
-     * Pull requests (which the GitHub issues endpoint also returns) are filtered out.
-     */
-    suspend fun getOpenGithubIssues() : List<GithubIssueDto>? {
-        return when (val networkResult = networkUtils.getOpenGithubIssues(GITHUB_ISSUES_API_URL)) {
-            is NetworkResult.Error<*> -> {
-                println("get github issues network error: ${networkResult.error.message}")
-                null
-            }
-            is NetworkResult.Success<List<GithubIssueDto>?> -> {
-                networkResult.data?.filterNot { it.isPullRequest }
             }
         }
     }

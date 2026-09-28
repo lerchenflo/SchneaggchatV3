@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -14,13 +13,11 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 
 class MiscSettingsViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
-    private val shareUtils: ShareUtils,
     private val applicationScope: ApplicationScope,
     private val preferencemanager: Preferencemanager
 ): ViewModel() {
@@ -61,13 +58,6 @@ class MiscSettingsViewModel(
         }
     }
 
-    fun onSendBugReportEmail(emailContent: String) {
-        shareUtils.openMailClient(
-            recipient = SUPPORT_EMAIL,
-            subject = "Bug Report / Feature Request",
-            body = emailContent
-        )
-    }
 
 
 }

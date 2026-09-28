@@ -28,9 +28,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,6 +49,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.image.FullscreenImageDialog
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import org.lerchenflo.schneaggchatv3mp.utilities.toOpenableUrl
@@ -95,10 +93,16 @@ fun SharedContentScreen(
 
         HorizontalDivider()
 
-        SharedContentTabSwitch(
+        CountSegmentedSwitch(
+            options = SharedContentTab.entries,
             selected = state.selectedTab,
-            imageCount = state.images.size,
-            linkCount = state.links.size,
+            label = { stringResource(it.labelRes()) },
+            count = { tab ->
+                when (tab) {
+                    SharedContentTab.IMAGES -> state.images.size
+                    SharedContentTab.LINKS -> state.links.size
+                }
+            },
             onSelect = { onAction(SharedContentAction.OnTabSelected(it)) },
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
@@ -122,37 +126,6 @@ fun SharedContentScreen(
                         SharedLinkList(links = state.links, onAction = onAction)
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SharedContentTabSwitch(
-    selected: SharedContentTab,
-    imageCount: Int,
-    linkCount: Int,
-    onSelect: (SharedContentTab) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val tabs = SharedContentTab.entries
-
-    SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
-        tabs.forEachIndexed { index, tab ->
-            val count = when (tab) {
-                SharedContentTab.IMAGES -> imageCount
-                SharedContentTab.LINKS -> linkCount
-            }
-
-            SegmentedButton(
-                selected = tab == selected,
-                onClick = { onSelect(tab) },
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = tabs.size)
-            ) {
-                Text(
-                    text = "${stringResource(tab.labelRes())} ($count)",
-                    maxLines = 1
-                )
             }
         }
     }

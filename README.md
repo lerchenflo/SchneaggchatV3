@@ -41,7 +41,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Android Auto Support
 - Doppelte Nachrichten (Ungesendete) Behoben
 - Profilbild-Dialog: Zoom mit Centering, Kreis-zu-Quadrat-Morph und Mausrad-Zoom (Desktop)
-
+- Feedback-Board: Neues In-App Feedback-Board (Daumen-hoch/runter Icon in Chat-Liste neben Einstellungen; auch in Einstellungen → Sonstiges und im Beitragen-Popup) mit zwei Tabs für Feature Requests und Bug Reports, Auf-/Abwertungen (Bugs: "Hab ich auch" / "Nicht reproduzierbar", Features: "Wusste ich nicht" bei bereits implementierten), Kommentare auf jedem Eintrag mit hervorgehobenen Developer-Kommentaren, Status je Eintrag (angefordert/geplant/implementiert, offen/bestätigt/behoben) durch Admins verwaltbar, farbige Tags, Filter-Chips (Top/Neu, Status, Tag, Meine), neu erstellte Einträge 2 Tage hervorgehoben und angepinnt, Duplikat-Warnung beim Erstellen, App-Version und Plattform automatisch auf Bug Reports angehängt, Liste mit bereits implementierten Features vorausgefüllt, Daten live vom Server
+- Feedback-Board ersetzt den Roadmap-Screen (GitHub Issues) und das E-Mail-Formular für Bug Reports / Feature Requests
 
 #### Bugfixes
 - Spiele: extrem viele Bugfixes in fast allen Spielen, Spielstände für ungespielte Durchläufe werden nicht mehr gespeichert, Geräterotation führt nicht mehr zu einem Reset beim Spielen, Tower Stack Lifecycle-Fehler behoben

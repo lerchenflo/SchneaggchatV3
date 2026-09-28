@@ -101,11 +101,6 @@
     <string name="cancel">annulla</string>
     <string name="version">Versione: %1$s</string>
     <string name="app_broken">App non funzionante</string>
-
-    <string name="bugreport_request">Segnalazione bug / Richiesta funzione</string>
-    <string name="bugreport_request_info">Segnala bug o cose che non ti convincono (non intuitivo ecc.), o richiedi una nuova funzione!</string>
-
-
     <string name="loadinginfo_messages">Caricamento messaggi...</string>
     <string name="loadinginfo_offline">Sei attualmente offline...</string>
     <string name="read">letto</string>
@@ -764,31 +759,6 @@
 
 
     <!-- Bug Report Dialog -->
-    <string name="bugreportdialog_title_bug">Segnalazione bug</string>
-    <string name="bugreportdialog_title_feature">Richiesta funzione</string>
-    <string name="bugreportdialog_type_bug">Bug</string>
-    <string name="bugreportdialog_type_feature">Funzione</string>
-    <string name="bugreportdialog_field_title">Titolo *</string>
-    <string name="bugreportdialog_field_description">Descrizione *</string>
-    <string name="bugreportdialog_field_steps">Passaggi per riprodurre</string>
-    <string name="bugreportdialog_field_steps_placeholder">1. Apri…\n2. Tocca…\n3. Vedi errore</string>
-    <string name="bugreportdialog_field_expected">Comportamento atteso</string>
-    <string name="bugreportdialog_field_actual">Comportamento effettivo</string>
-    <string name="bugreportdialog_label_severity">Gravità</string>
-
-    <string name="bugreportdialog_severity_low">BASSA</string>
-    <string name="bugreportdialog_severity_medium">MEDIA</string>
-    <string name="bugreportdialog_severity_high">ALTA</string>
-    <string name="bugreportdialog_severity_critical">CRITICA</string>
-
-    <string name="bugreportdialog_field_motivation">Perché è necessario?</string>
-    <string name="bugreportdialog_label_priority">Priorità</string>
-
-    <string name="bugreportdialog_priority_low">BASSA</string>
-    <string name="bugreportdialog_priority_medium">MEDIA</string>
-    <string name="bugreportdialog_priority_high">ALTA</string>
-
-
     <!-- Games: Yatzi -->
     <string name="games_yahtzee_title">Yahtzee</string>
     <string name="yatzi_setup_title">Configurazione Yahtzee</string>
@@ -1036,15 +1006,6 @@
     <string name="contribute_later">Forse più tardi</string>
 
     <!-- Roadmap -->
-    <string name="roadmap">Roadmap</string>
-    <string name="roadmap_info">Scopri cosa è già stato rilasciato e cosa sta per arrivare</string>
-    <string name="roadmap_status_done">Fatto</string>
-    <string name="roadmap_status_upcoming">Pianificato</string>
-    <string name="roadmap_load_error">Impossibile caricare la roadmap. Controlla la tua connessione e riprova.</string>
-    <string name="roadmap_retry">Riprova</string>
-    <string name="roadmap_view_issue">Visualizza issue #%1$d</string>
-
-
     <string name="custom_reaction">Reazione personalizzata</string>
     <string name="enter_reaction">Inserisci reazione</string>
 
@@ -1362,7 +1323,7 @@
 
     <string name="ttt_settings_misc">impostazioni varie</string>
 
-    <string name="ttt_settings_misc_bugreport">Qui puoi inviare segnalazioni di bug e richieste di funzionalità.</string>
+    <string name="ttt_settings_misc_bugreport">Qui puoi votare le funzionalità e segnalare bug.</string>
 
     <string name="ttt_settings_misc_app_broken">App non funzionante?</string>
     <string name="ttt_settings_misc_app_broken_description">Se qualcosa non funziona come previsto, puoi premere questo pulsante. Eliminerà tutti i dati dell'app e li recupererà di nuovo dal server.</string>
@@ -1573,4 +1534,65 @@
     <string name="games_schneaggrodeo_snails">Lumache: %1$d</string>
     <string name="games_schneaggrodeo_super_jump">Super salto ×%1$d</string>
     <string name="games_schneaggrodeo_next_to_beat">Prossimo da battere: %1$s (%2$d)</string>
+
+    <!-- Feedback board -->
+    <string name="feedback_title">Feedback</string>
+    <string name="feedback_info">Vota le funzionalità, segnala bug e scopri cosa è in programma</string>
+    <string name="feedback_tab_features">Funzionalità</string>
+    <string name="feedback_tab_bugs">Bug</string>
+    <string name="feedback_sort_top">Top</string>
+    <string name="feedback_sort_new">Nuovi</string>
+    <string name="feedback_filter_mine">Miei</string>
+    <string name="feedback_filter_tag">Tag</string>
+    <string name="feedback_filter_all_tags">Tutti i tag</string>
+    <string name="feedback_status_requested">Richiesta</string>
+    <string name="feedback_status_planned">Pianificata</string>
+    <string name="feedback_status_implemented">Implementata</string>
+    <string name="feedback_status_open">Aperto</string>
+    <string name="feedback_status_confirmed">Confermato</string>
+    <string name="feedback_status_fixed">Risolto</string>
+    <string name="feedback_tag_chat">Chat</string>
+    <string name="feedback_tag_groups">Gruppi</string>
+    <string name="feedback_tag_events">Eventi</string>
+    <string name="feedback_tag_map">Mappa</string>
+    <string name="feedback_tag_games">Giochi</string>
+    <string name="feedback_tag_settings">Impostazioni</string>
+    <string name="feedback_tag_ui">Design</string>
+    <string name="feedback_tag_notifications">Notifiche</string>
+    <string name="feedback_tag_performance">Prestazioni</string>
+    <string name="feedback_tag_other">Altro</string>
+    <string name="feedback_vote_up">Voto positivo</string>
+    <string name="feedback_vote_down">Voto negativo</string>
+    <string name="feedback_vote_didnt_know">Non lo sapevo</string>
+    <string name="feedback_vote_me_too">Ce l'ho anch'io</string>
+    <string name="feedback_vote_cant_repro">Non riproducibile</string>
+    <string name="feedback_new_badge">Nuovo</string>
+    <string name="feedback_dev_comment">Sviluppatore</string>
+    <string name="feedback_empty">Ancora niente qui.</string>
+    <string name="feedback_load_error">Impossibile caricare l'elenco. Controlla la connessione e riprova.</string>
+    <string name="feedback_retry">Riprova</string>
+    <string name="feedback_create">Nuova voce</string>
+    <string name="feedback_create_title_feature">Richiedi una funzionalità</string>
+    <string name="feedback_create_title_bug">Segnala un bug</string>
+    <string name="feedback_duplicate_warning">Controlla prima se esiste già una voce simile. In tal caso vota o commenta lì.</string>
+    <string name="feedback_field_title">Titolo</string>
+    <string name="feedback_field_description">Descrizione</string>
+    <string name="feedback_field_description_bug_hint">Cosa è successo e come si può riprodurre?</string>
+    <string name="feedback_field_location">Dove trovarla (opzionale)</string>
+    <string name="feedback_field_tags">Tag (1–3)</string>
+    <string name="feedback_submit">Invia</string>
+    <string name="feedback_created">Voce creata</string>
+    <string name="feedback_bug_device_info_hint">La versione dell'app e la piattaforma vengono allegate automaticamente.</string>
+    <string name="feedback_where_to_find">Dove trovarla: %1$s</string>
+    <string name="feedback_seeded_author">Team Schneaggchat</string>
+    <string name="feedback_unknown_user">Utente eliminato</string>
+    <string name="feedback_comments">Commenti</string>
+    <string name="feedback_no_comments">Ancora nessun commento.</string>
+    <string name="feedback_comment_hint">Aggiungi info o un commento…</string>
+    <string name="feedback_send_comment">Invia commento</string>
+    <string name="feedback_delete_entry">Elimina voce</string>
+    <string name="feedback_delete_entry_confirm">Eliminare questa voce e tutti i commenti?</string>
+    <string name="feedback_delete_comment_confirm">Eliminare questo commento?</string>
+    <string name="feedback_change_status">Cambia stato</string>
+    <string name="feedback_details_load_error">Impossibile caricare i dettagli.</string>
 </resources>

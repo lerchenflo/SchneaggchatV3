@@ -21,13 +21,21 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackCommentRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackCommentResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackEntryDetailResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackEntryResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackListResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackStatusRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GameScoreResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GlobalRankingResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.HighscoresResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoresBatchRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventParticipationRequest
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventSyncResponse
@@ -200,13 +208,6 @@ class NetworkUtils(
         return safeAuthGet(
             endpoint = "",
             url = url
-        )
-    }
-
-    suspend fun getOpenGithubIssues(githubIssuesApiUrl: String) : NetworkResult<List<GithubIssueDto>, NetworkingError> {
-        return safeAuthGet(
-            endpoint = "",
-            url = githubIssuesApiUrl
         )
     }
 
@@ -1353,5 +1354,39 @@ class NetworkUtils(
     suspend fun getRecap(year: Int? = null): NetworkResult<RecapResponse, NetworkingError> {
         val endpoint = if (year != null) "/recap?year=$year" else "/recap"
         return safeGet(endpoint)
+    }
+
+    // ─── Feedback ─────────────────────────────────────────────────────────────
+
+    suspend fun getFeedbackList(type: FeedbackType): NetworkResult<FeedbackListResponse, NetworkingError> {
+        return safeGet(endpoint = "/feedback/list?type=${type.name}")
+    }
+
+    suspend fun getFeedbackDetails(entryId: String): NetworkResult<FeedbackEntryDetailResponse, NetworkingError> {
+        return safeGet(endpoint = "/feedback/details?entryid=$entryId")
+    }
+
+    suspend fun createFeedback(request: FeedbackCreateRequest): NetworkResult<FeedbackEntryResponse, NetworkingError> {
+        return safePost(endpoint = "/feedback/create", body = request)
+    }
+
+    suspend fun voteFeedback(request: FeedbackVoteRequest): NetworkResult<FeedbackEntryResponse, NetworkingError> {
+        return safePost(endpoint = "/feedback/vote", body = request)
+    }
+
+    suspend fun commentFeedback(request: FeedbackCommentRequest): NetworkResult<FeedbackCommentResponse, NetworkingError> {
+        return safePost(endpoint = "/feedback/comment", body = request)
+    }
+
+    suspend fun deleteFeedback(entryId: String): NetworkResult<Unit, NetworkingError> {
+        return safeDelete(endpoint = "/feedback/delete?entryid=$entryId")
+    }
+
+    suspend fun deleteFeedbackComment(commentId: String): NetworkResult<Unit, NetworkingError> {
+        return safeDelete(endpoint = "/feedback/deletecomment?commentid=$commentId")
+    }
+
+    suspend fun setFeedbackStatus(request: FeedbackStatusRequest): NetworkResult<FeedbackEntryResponse, NetworkingError> {
+        return safePost(endpoint = "/feedback/status", body = request)
     }
 }

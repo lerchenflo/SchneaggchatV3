@@ -163,6 +163,11 @@ class ChatSelectorViewModel(
             navigator.navigate(Route.SettingsScreen)
         }
     }
+    fun onFeedbackClick() {
+        viewModelScope.launch {
+            navigator.navigate(Route.Feedback)
+        }
+    }
     fun onToolsAndGamesClick() {
         viewModelScope.launch {
             navigator.navigate(Route.GamesSelector)
