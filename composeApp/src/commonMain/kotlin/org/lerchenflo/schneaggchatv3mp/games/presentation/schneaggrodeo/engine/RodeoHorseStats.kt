@@ -18,8 +18,11 @@ internal const val HORSE_COAT_COUNT = 5
 
 /** Hearts of a level-1 horse; every level adds one. */
 private const val BASE_LIVES = 2
-/** Jump strength added per level above 1 (level 5 jumps 20 % faster off the ground). */
-private const val JUMP_BOOST_PER_LEVEL = 0.05f
+/**
+ * Jump strength added per level above 1: level 5 pushes off 32 % harder and jumps about 1.75 times
+ * as high as level 1, so a stronger horse is clearly felt.
+ */
+private const val JUMP_BOOST_PER_LEVEL = 0.08f
 /** Seconds of riding one heart lasts at level 1, and how much longer per level. */
 private const val SECONDS_PER_LIFE = 18f
 private const val SECONDS_PER_LIFE_PER_LEVEL = 4f

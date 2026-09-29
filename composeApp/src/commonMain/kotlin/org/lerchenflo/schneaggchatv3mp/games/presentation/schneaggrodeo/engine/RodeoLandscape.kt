@@ -7,8 +7,7 @@ import kotlin.random.Random
 //  - a mountain: the track runs up and down it. Uphill the horse slows and tires three times as
 //    fast, downhill it races. A cable car picks horse and rider up before it (see
 //    vehicles/cablecar) - miss it and it's the slog over the top.
-//  - a forest: trees in the background, magic mushrooms on the ground and a bear to ride (see
-//    vehicles/bear).
+//  - a forest: trees in the background and magic mushrooms on the ground.
 // Sections lie on the track like fences: they scroll with the ground, [x] is where they begin.
 
 /** Game seconds until the first section, and between the end of one and the next. */

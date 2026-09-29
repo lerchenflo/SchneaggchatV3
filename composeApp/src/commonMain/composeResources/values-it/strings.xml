@@ -1564,18 +1564,20 @@
     <string name="games_schneaggrodeo_next_to_beat">Prossimo da battere: %1$s (%2$d)</string>
     <string name="games_schneaggrodeo_car_wreck">Escort-Wrack</string>
     <string name="games_schneaggrodeo_car_wreck_controls">Tieniti forte: il tuo cavallo spinge il rottame attraverso tutto!</string>
+    <string name="games_schneaggrodeo_car_money">%1$s €</string>
     <string name="games_schneaggrodeo_bull">Muni-Ritt</string>
     <string name="games_schneaggrodeo_bull_controls">Metà sinistra: inclinati indietro · Metà destra: inclinati in avanti – resisti 8 s!</string>
     <string name="games_schneaggrodeo_bull_controls_keys">Spazio / W: inclinati indietro · S / ↓: inclinati in avanti – resisti 8 s!</string>
     <string name="games_schneaggrodeo_cable_car">Seilbahn</string>
     <string name="games_schneaggrodeo_cable_car_controls">Goditi il panorama – la cabinovia ti porta oltre la montagna!</string>
-    <string name="games_schneaggrodeo_bear">Bärenritt</string>
-    <string name="games_schneaggrodeo_bear_controls">Tieni premuto ovunque per arrampicarti sugli alberi – a terra l'orso distrugge gli ostacoli e mangia le lumache!</string>
-    <string name="games_schneaggrodeo_bear_controls_keys">Tieni premuto spazio per arrampicarti sugli alberi – a terra l'orso distrugge gli ostacoli e mangia le lumache!</string>
     <string name="games_schneaggrodeo_candy_bus">Free Candy Bus</string>
-    <string name="games_schneaggrodeo_candy_bus_controls">Prendi al lazo Stanislaus sul ciglio della strada – sale dalla porta laterale!</string>
+    <string name="games_schneaggrodeo_candy_bus_controls">Premi Cattura – il furgone si ferma accanto a Stanislaus e lo tira dentro dalla porta laterale!</string>
     <string name="games_schneaggrodeo_candy_bus_sign">FREE CANDY</string>
     <string name="games_schneaggrodeo_capture">Cattura</string>
+    <string name="games_schneaggrodeo_pocket_bike">Pocketbike</string>
+    <string name="games_schneaggrodeo_pocket_bike_controls">Tutto gas – non durerà a lungo!</string>
+    <string name="games_schneaggrodeo_shopping_cart">Ikoufswäga</string>
+    <string name="games_schneaggrodeo_shopping_cart_controls">Il tuo cavallo spinge il carrello – ogni lumaca sulla strada ci finisce dentro!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s cavalca con te!</string>
     <string name="games_schneaggrodeo_friend_joined">Da adesso cavalchi anche per il record di %1$s: appena scendi da cavallo, i tuoi punti finora valgono anche per %1$s.</string>
 

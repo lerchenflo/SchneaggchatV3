@@ -34,8 +34,12 @@ class RodeoDrawContext(
 class RodeoVehicleAssets(
     /** Stanislaus standing, facing right (the candy bus picks him up). */
     val stanislaus: ImageBitmap,
+    /** The snail, facing right (the shopping cart collects them). */
+    val snail: ImageBitmap,
     /** Written on the candy bus. */
     val candySign: String,
+    /** The money left in the Escort's trunk, e.g. "12000 €". */
+    val moneyText: (Int) -> String,
     val textMeasurer: TextMeasurer,
 )
 

@@ -203,6 +203,14 @@ data class RodeoSectionUi(
     val seed: Int,
 )
 
+/** A pizza oven by the roadside; [x] its left end, [hasPizza] until the lasso took it out. */
+@Immutable
+data class RodeoPizzaOvenUi(val x: Float, val hasPizza: Boolean)
+
+/** The pizza dangling in the lasso's loop; [x] / [y] its center. */
+@Immutable
+data class RodeoPizzaUi(val x: Float, val y: Float)
+
 /** A crystal floating in the cave; [height] is its center above the ground, [hue] picks its color. */
 @Immutable
 data class RodeoGemUi(
@@ -326,6 +334,9 @@ data class SchneaggRodeoFrame(
     val inCave: Boolean = false,
     val portals: List<RodeoPortalUi> = emptyList(),
     val gems: List<RodeoGemUi> = emptyList(),
+    val pizzaOvens: List<RodeoPizzaOvenUi> = emptyList(),
+    /** Dangling in the lasso on its way to the horse. */
+    val pizza: RodeoPizzaUi? = null,
     /** 0..1 how dark the picture is while switching maps. */
     val fade: Float = 0f,
 )

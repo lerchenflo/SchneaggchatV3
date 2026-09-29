@@ -28,7 +28,7 @@ internal interface RodeoWorld {
     /** Fences come back with a normal gap after a ride. */
     fun resumeFences()
     fun addBonusPoints(points: Int)
-    /** A snail taken off the track by something other than the lasso (the bear eats it): counts as caught. */
+    /** A snail taken off the track by something other than the lasso (the shopping cart scoops it up): counts as caught. */
     fun eatSnail(snail: Snail)
     /** A horseshoe touched by the rider: stores a lucky charm, gives points, sparkles. */
     fun collectHorseshoe(shoe: Horseshoe)

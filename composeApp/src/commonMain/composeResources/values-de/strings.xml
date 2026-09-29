@@ -1572,18 +1572,20 @@
     <string name="games_schneaggrodeo_next_to_beat">Als Nächstes schlagen: %1$s (%2$d)</string>
     <string name="games_schneaggrodeo_car_wreck">Escort-Wrack</string>
     <string name="games_schneaggrodeo_car_wreck_controls">Gut festhalten – dein Pferd schiebt das Wrack durch alles durch!</string>
+    <string name="games_schneaggrodeo_car_money">%1$s €</string>
     <string name="games_schneaggrodeo_bull">Muni-Ritt</string>
     <string name="games_schneaggrodeo_bull_controls">Linke Hälfte: nach hinten lehnen · Rechte Hälfte: nach vorne lehnen – halte 8 s durch!</string>
     <string name="games_schneaggrodeo_bull_controls_keys">Leertaste / W: nach hinten lehnen · S / ↓: nach vorne lehnen – halte 8 s durch!</string>
     <string name="games_schneaggrodeo_cable_car">Seilbahn</string>
     <string name="games_schneaggrodeo_cable_car_controls">Genieß die Aussicht – die Gondel bringt dich über den Berg!</string>
-    <string name="games_schneaggrodeo_bear">Bärenritt</string>
-    <string name="games_schneaggrodeo_bear_controls">Irgendwo gedrückt halten, um auf die Bäume zu klettern – am Boden zertrümmert der Bär Hindernisse und frisst Schnecken!</string>
-    <string name="games_schneaggrodeo_bear_controls_keys">Leertaste halten, um auf die Bäume zu klettern – am Boden zertrümmert der Bär Hindernisse und frisst Schnecken!</string>
     <string name="games_schneaggrodeo_candy_bus">Free Candy Bus</string>
-    <string name="games_schneaggrodeo_candy_bus_controls">Fang Stanislaus am Straßenrand mit dem Lasso – er steigt durch die Seitentür ein!</string>
+    <string name="games_schneaggrodeo_candy_bus_controls">Drück Einfangen – der Bus hält neben Stanislaus und zieht ihn durch die Seitentür rein!</string>
     <string name="games_schneaggrodeo_candy_bus_sign">FREE CANDY</string>
     <string name="games_schneaggrodeo_capture">Einfangen</string>
+    <string name="games_schneaggrodeo_pocket_bike">Pocketbike</string>
+    <string name="games_schneaggrodeo_pocket_bike_controls">Vollgas – lang hält das nicht!</string>
+    <string name="games_schneaggrodeo_shopping_cart">Ikoufswäga</string>
+    <string name="games_schneaggrodeo_shopping_cart_controls">Dein Pferd schiebt den Wagen – jede Schnecke im Weg landet drin!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s reitet mit!</string>
     <string name="games_schneaggrodeo_friend_joined">Ab jetzt reitest du auch für den Highscore von %1$s: Sobald du vom Pferd steigst, zählen deine bisherigen Punkte auch für %1$s.</string>
 

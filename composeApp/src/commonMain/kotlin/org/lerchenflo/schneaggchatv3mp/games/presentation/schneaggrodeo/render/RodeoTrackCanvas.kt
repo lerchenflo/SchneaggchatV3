@@ -24,16 +24,21 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoSna
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoFrame
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.GROUND_OFFSET_UNITS
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.OVEN_MOUTH_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MAX_FENCE_CM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MIN_FENCE_CM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SNAIL_SIZE
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.WORLD_HEIGHT_UNITS
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_candy_bus_sign
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_car_money
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_fence_height
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint
 import schneaggchatv3mp.composeapp.generated.resources.icon_schneagg_alternative
 import schneaggchatv3mp.composeapp.generated.resources.rodeo_stanislaus
+
+/** Stands in for the amount in the money text, filled in while drawing. */
+private const val MONEY_PLACEHOLDER = "{amount}"
 
 /** Highscore marker posts; staggered ones are shorter so neighbouring labels don't stack up. */
 private const val MARKER_POST_HEIGHT = 36f
@@ -64,8 +69,15 @@ internal fun RodeoTrack(
     val snailImage = imageResource(Res.drawable.icon_schneagg_alternative)
     val stanislausImage = imageResource(Res.drawable.rodeo_stanislaus)
     val candySign = stringResource(Res.string.games_schneaggrodeo_candy_bus_sign)
-    val vehicleAssets = remember(stanislausImage, candySign, textMeasurer) {
-        RodeoVehicleAssets(stanislaus = stanislausImage, candySign = candySign, textMeasurer = textMeasurer)
+    val moneyTemplate = stringResource(Res.string.games_schneaggrodeo_car_money, MONEY_PLACEHOLDER)
+    val vehicleAssets = remember(stanislausImage, snailImage, candySign, moneyTemplate, textMeasurer) {
+        RodeoVehicleAssets(
+            stanislaus = stanislausImage,
+            snail = snailImage,
+            candySign = candySign,
+            moneyText = { amount -> moneyTemplate.replace(MONEY_PLACEHOLDER, amount.toString()) },
+            textMeasurer = textMeasurer,
+        )
     }
     val lassoHintText = stringResource(Res.string.games_schneaggrodeo_lasso_hint)
     val lassoHintStyle = MaterialTheme.typography.labelMedium.copy(
@@ -159,6 +171,8 @@ internal fun RodeoTrack(
                     )
                 }
 
+                // Pizza ovens stand by the roadside, behind the track
+                world.pizzaOvens.forEach { drawPizzaOven(it, context, world.distance * 0.02f) }
                 world.mud.forEach { drawMud(it, groundY, unit) }
                 world.mushrooms.forEach { drawMushroom(it, context) }
 
@@ -234,7 +248,8 @@ internal fun RodeoTrack(
 
                 // "Lasso it" hint over a vehicle passing by, and over the other horses
                 val hints = world.vehicles.mapNotNull { it.lassoHint?.let { hint -> hint.x to hint.y } } +
-                        world.wildHorses.filter { it.lassoable }.map { it.x + 14f to it.pose.height + if (it.friendName != null) 40f else 32f }
+                        world.wildHorses.filter { it.lassoable }.map { it.x + 14f to it.pose.height + if (it.friendName != null) 40f else 32f } +
+                        world.pizzaOvens.filter { it.hasPizza }.map { it.x + OVEN_MOUTH_X to 18f }
                 hints.forEach { (hintX, hintY) ->
                     drawLassoHint(
                         layout = lassoHintLayout,
@@ -244,6 +259,8 @@ internal fun RodeoTrack(
                         color = colors.primaryContainer
                     )
                 }
+
+                world.pizza?.let { drawPizza(it, context) }
 
                 world.cowboy?.let { cowboy ->
                     drawCowboy(cowboy = cowboy, groundY = groundY, unit = unit, color = colors.onSurface, shirtColor = colors.primary)

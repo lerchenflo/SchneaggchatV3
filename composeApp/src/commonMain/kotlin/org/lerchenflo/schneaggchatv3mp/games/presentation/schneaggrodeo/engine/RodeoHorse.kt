@@ -115,6 +115,12 @@ internal class RodeoHorse {
     }
 
     /** A carrot brings back a heart. */
+    /** A pizza from the oven: all hearts back and one level stronger. */
+    fun eatPizza() {
+        level = min(MAX_HORSE_LEVEL, level + 1)
+        lives = maxLives.toFloat()
+    }
+
     fun feed() {
         lives = minOf(maxLives.toFloat(), lives + 1f)
     }

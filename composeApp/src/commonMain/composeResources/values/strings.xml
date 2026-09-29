@@ -1570,18 +1570,20 @@
     <string name="games_schneaggrodeo_next_to_beat">Next to beat: %1$s (%2$d)</string>
     <string name="games_schneaggrodeo_car_wreck">Escort-Wrack</string>
     <string name="games_schneaggrodeo_car_wreck_controls">Hold on – your horse shoves the wreck through everything!</string>
+    <string name="games_schneaggrodeo_car_money">€%1$s</string>
     <string name="games_schneaggrodeo_bull">Muni-Ritt</string>
     <string name="games_schneaggrodeo_bull_controls">Left half: lean back · Right half: lean forward – stay on for 8 s!</string>
     <string name="games_schneaggrodeo_bull_controls_keys">Space / W: lean back · S / ↓: lean forward – stay on for 8 s!</string>
     <string name="games_schneaggrodeo_cable_car">Seilbahn</string>
     <string name="games_schneaggrodeo_cable_car_controls">Enjoy the view – the gondola takes you over the mountain!</string>
-    <string name="games_schneaggrodeo_bear">Bärenritt</string>
-    <string name="games_schneaggrodeo_bear_controls">Hold anywhere to climb the trees – on the ground the bear smashes fences and eats snails!</string>
-    <string name="games_schneaggrodeo_bear_controls_keys">Hold space to climb the trees – on the ground the bear smashes fences and eats snails!</string>
     <string name="games_schneaggrodeo_candy_bus">Free Candy Bus</string>
-    <string name="games_schneaggrodeo_candy_bus_controls">Lasso Stanislaus by the roadside – he hops in through the side door!</string>
+    <string name="games_schneaggrodeo_candy_bus_controls">Press Capture – the bus pulls up next to Stanislaus and pulls him in through the side door!</string>
     <string name="games_schneaggrodeo_candy_bus_sign">FREE CANDY</string>
     <string name="games_schneaggrodeo_capture">Capture</string>
+    <string name="games_schneaggrodeo_pocket_bike">Pocketbike</string>
+    <string name="games_schneaggrodeo_pocket_bike_controls">Full throttle – it won't last long!</string>
+    <string name="games_schneaggrodeo_shopping_cart">Ikoufswäga</string>
+    <string name="games_schneaggrodeo_shopping_cart_controls">Your horse shoves the cart – every snail in the way lands in it!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s rides with you!</string>
     <string name="games_schneaggrodeo_friend_joined">From now on you're riding for %1$s's highscore too: as soon as you leave the horse, your score so far counts for %1$s.</string>
 

@@ -2,9 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicle
 
 import org.jetbrains.compose.resources.StringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_bear
-import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_bear_controls
-import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_bear_controls_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_bull
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_bull_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_bull_controls_keys
@@ -22,7 +19,11 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_milk_
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_milk_truck_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_plane_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_plane_controls_keys
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_pocket_bike
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_pocket_bike_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_rocket_name
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_shopping_cart
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_shopping_cart_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_train
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_train_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_train_controls_keys
@@ -74,7 +75,7 @@ enum class RodeoVehicleKind(
         rideHintKeys = Res.string.games_schneaggrodeo_bull_controls_keys,
         steers = true,
     ),
-    CAR_WRECK(
+    FORD_ESCORT(
         title = Res.string.games_schneaggrodeo_car_wreck,
         rideHint = Res.string.games_schneaggrodeo_car_wreck_controls,
     ),
@@ -84,16 +85,18 @@ enum class RodeoVehicleKind(
         keepsButtons = true,
         lassoLabel = Res.string.games_schneaggrodeo_capture,
     ),
+    POCKET_BIKE(
+        title = Res.string.games_schneaggrodeo_pocket_bike,
+        rideHint = Res.string.games_schneaggrodeo_pocket_bike_controls,
+    ),
+    SHOPPING_CART(
+        title = Res.string.games_schneaggrodeo_shopping_cart,
+        rideHint = Res.string.games_schneaggrodeo_shopping_cart_controls,
+    ),
     /** Comes along with a mountain (see RodeoLandscape). */
     CABLE_CAR(
         title = Res.string.games_schneaggrodeo_cable_car,
         rideHint = Res.string.games_schneaggrodeo_cable_car_controls,
-    ),
-    /** Comes along with a forest (see RodeoLandscape). */
-    BEAR(
-        title = Res.string.games_schneaggrodeo_bear,
-        rideHint = Res.string.games_schneaggrodeo_bear_controls,
-        rideHintKeys = Res.string.games_schneaggrodeo_bear_controls_keys,
     ),
     /** Bought with snails instead of coming along the track. */
     ROCKET(

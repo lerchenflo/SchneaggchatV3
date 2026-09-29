@@ -1,13 +1,14 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.bear.RodeoBear
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.bull.RodeoBull
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.cablecar.RodeoCableCar
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.candybus.RodeoCandyBus
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.carwreck.RodeoCarWreck
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.fordescort.RodeoFordEscort
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.milktruck.RodeoMilkTruck
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.plane.RodeoPlane
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.pocketbike.RodeoPocketBike
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.rocket.RodeoRocket
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.shoppingcart.RodeoShoppingCart
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.tractor.RodeoLawnTractor
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.train.RodeoTrain
 
@@ -18,16 +19,15 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 internal class RodeoTraffic {
 
     private val rocket = RodeoRocket()
-    /** Only come with their landscape: the cable car before a mountain, the bear in a forest. */
+    /** Only comes with its landscape, before a mountain. */
     private val cableCar = RodeoCableCar()
-    private val bear = RodeoBear()
 
     /** Every vehicle of the game - register new ones here. */
     private val all: List<RodeoVehicle> =
-        listOf(RodeoPlane(), RodeoTrain(), RodeoMilkTruck(), RodeoCarWreck(), RodeoBull(), RodeoLawnTractor(), RodeoCandyBus(), rocket, cableCar, bear)
+        listOf(RodeoPlane(), RodeoTrain(), RodeoMilkTruck(), RodeoFordEscort(), RodeoBull(), RodeoLawnTractor(), RodeoCandyBus(), RodeoPocketBike(), RodeoShoppingCart(), rocket, cableCar)
 
     /** The rocket is bought with snails and the landscape brings its own; never sent along. */
-    private val rotation = RodeoVehicleRotation(all - rocket - cableCar - bear)
+    private val rotation = RodeoVehicleRotation(all - rocket - cableCar)
 
     /** The vehicle in the picture, if any. */
     var current: RodeoVehicle? = null
@@ -57,8 +57,6 @@ internal class RodeoTraffic {
     /** Sends the cable car in along with a mountain; false if another vehicle is still around. */
     fun sendCableCar(world: RodeoWorld): Boolean = sendNow(cableCar, world)
 
-    /** Sends a bear in along with a forest; false if another vehicle is still around. */
-    fun sendBear(world: RodeoWorld): Boolean = sendNow(bear, world)
 
 
     private fun sendNow(vehicle: RodeoVehicle, world: RodeoWorld): Boolean {

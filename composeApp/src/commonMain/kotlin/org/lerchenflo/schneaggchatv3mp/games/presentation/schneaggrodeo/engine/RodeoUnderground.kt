@@ -50,6 +50,9 @@ internal class RodeoUnderground {
     /** No portal is ahead and no fade is running: the surface may bring other things. */
     val isClear: Boolean get() = portals.isEmpty() && fadeTime < 0f
 
+    /** A mine shaft is due: nothing new comes along until it opened, so it can't be crowded out. */
+    val isDue: Boolean get() = map == RodeoMap.SURFACE && isClear && nextEntranceIn <= 0f
+
     fun reset() {
         map = RodeoMap.SURFACE
         portals.clear()
@@ -64,16 +67,16 @@ internal class RodeoUnderground {
     }
 
     /**
-     * Opens a mine shaft at the right edge once it is due and [allowed] (on the surface), shows the
-     * way out once the cave time is over.
+     * Opens a mine shaft at the right edge once it is due and [allowed] (the track is clear), shows
+     * the way out once the cave time is over.
      */
     fun tick(dt: Float, worldWidth: Float, allowed: Boolean) {
         if (fadeTime >= 0f || portals.isNotEmpty()) return
         when (map) {
             RodeoMap.SURFACE -> {
-                if (!allowed) return
+                // Counts down no matter what; once due, the rest waits (see isDue) until the track is clear
                 nextEntranceIn -= dt
-                if (nextEntranceIn <= 0f) {
+                if (nextEntranceIn <= 0f && allowed) {
                     nextEntranceIn = ENTRANCE_INTERVAL_MIN + Random.nextFloat() * ENTRANCE_INTERVAL_RANDOM
                     portals.add(Portal(x = worldWidth + 5f))
                 }
