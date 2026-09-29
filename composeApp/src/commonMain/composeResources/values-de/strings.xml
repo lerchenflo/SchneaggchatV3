@@ -1549,7 +1549,7 @@
     <string name="games_undercover_description">Den Undercover-Spieler durch Umschreibungen entlarven</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
     <string name="games_schneaggrodeo_description">Über die Hindernisse springen und die Schnecken mit dem Lasso fangen</string>
-    <string name="games_schneaggrodeo_instructions">Reite so weit du kannst, während dich eine Horde Schneaggs verfolgt!\n\nTippe (oder drücke die Leertaste) zum Springen, halte gedrückt für höhere Sprünge. Reißt du eine Stange oder rennst in eine Schnecke, stolpert dein Pferd und die Horde holt auf — sobald sie dich erwischt, ist der Ritt vorbei.\n\nWirf das Lasso (Button oder L), um Schnecken für Bonuspunkte zu fangen. Für je 5 gefangene Schnecken gibt es einen Supersprung (Button oder J) über die nächsten 5 Hindernisse.\n\nSpring durch die schwebenden Glückshufeisen: Jedes fängt deinen nächsten Fehler ab (bis zu 3).\n\nAb und zu fliegt ein Flugzeug vorbei: Fang seine Strickleiter mit dem Lasso und flieg über die Stadt! Die linke Bildschirmhälfte fliegt hoch, die rechte runter, ohne Eingabe sinkt es. Weich den Gebäuden aus.\n\nAb und zu rollt ein roter Rasentraktor über die Strecke: Fang ihn mit dem Lasso und dein Pferd springt auf für eine Fahrt mit Vollgas. Jedes Hindernis, das er mäht, kostet ihn ein Teil.\n\nFahnen auf der Strecke zeigen, wo die besten Ritte geendet haben, dein eigener Rekord in deiner Akzentfarbe. Schlag sie!</string>
+    <string name="games_schneaggrodeo_instructions">Reite so weit du kannst, während dich eine Horde Schneaggs verfolgt! Je länger du reitest, desto schneller und härter wird es — bis die Horde dich doch einholt.\n\nTippe (oder drücke die Leertaste) zum Springen, halte gedrückt für höhere Sprünge. Reißt du eine Stange oder rennst in eine Schnecke, stolpert dein Pferd und die Horde holt auf — sobald sie dich erwischt, ist der Ritt vorbei.\n\nWirf das Lasso (Button oder L), um Schnecken für Bonuspunkte zu fangen. Für je 5 gefangene Schnecken gibt es einen Supersprung (Button oder J) über die nächsten 5 Hindernisse.\n\nSpring durch die schwebenden Glückshufeisen: Jedes fängt deinen nächsten Fehler ab (bis zu 3).\n\nFahnen auf der Strecke zeigen, wo die besten Ritte geendet haben, dein eigener Rekord in deiner Akzentfarbe. Schlag sie!\n\nDein Pferd wird beim Reiten und bei jedem Fehler müde — seine Herzen sind auf die Seite gemalt. Je höher es von den Hufen an golden ist, desto stärker ist es. Fang Karotten, um es zu füttern! Sind alle Herzen weg, wirft es dich ab und läuft davon, und du musst ein neues Pferd mit dem Lasso fangen. Wilde Pferde auf der Strecke sind stärker, springen höher und sind ausgeruht: Fang eins mit dem Lasso, um zu wechseln. Schlamm bremst dein Pferd, also spring drüber.\n\nFreunde reiten kurz vor ihrem eigenen Rekord mit: Fang sie mit dem Lasso und sie reiten bei dir mit.</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lasso</string>
     <string name="games_schneaggrodeo_catch_horse">Fang dein Pferd!</string>
@@ -1560,7 +1560,32 @@
     <string name="games_schneaggrodeo_super_jump">Supersprung ×%1$d</string>
     <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
     <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
+    <string name="games_schneaggrodeo_lasso_hint">Mit dem Lasso fangen und aufsteigen!</string>
+    <string name="games_schneaggrodeo_train">Wälderbähnle</string>
+    <string name="games_schneaggrodeo_milk_truck">Milchlaster</string>
+    <string name="games_schneaggrodeo_rocket_name">Schneagg-Rakete</string>
+    <string name="games_schneaggrodeo_rocket">Rakete</string>
+    <string name="games_schneaggrodeo_train_controls">Irgendwo gedrückt halten, um dich unter den Brücken zu ducken</string>
+    <string name="games_schneaggrodeo_train_controls_keys">Leertaste halten, um dich unter den Brücken zu ducken</string>
+    <string name="games_schneaggrodeo_milk_truck_controls">Fang die fliegenden Milchkannen mit dem Lasso!</string>
+    <string name="games_schneaggrodeo_lawn_tractor_controls">Gut festhalten – er mäht alles nieder!</string>
     <string name="games_schneaggrodeo_next_to_beat">Als Nächstes schlagen: %1$s (%2$d)</string>
+    <string name="games_schneaggrodeo_car_wreck">Escort-Wrack</string>
+    <string name="games_schneaggrodeo_car_wreck_controls">Gut festhalten – dein Pferd schiebt das Wrack durch alles durch!</string>
+    <string name="games_schneaggrodeo_bull">Muni-Ritt</string>
+    <string name="games_schneaggrodeo_bull_controls">Linke Hälfte: nach hinten lehnen · Rechte Hälfte: nach vorne lehnen – halte 8 s durch!</string>
+    <string name="games_schneaggrodeo_bull_controls_keys">Leertaste / W: nach hinten lehnen · S / ↓: nach vorne lehnen – halte 8 s durch!</string>
+    <string name="games_schneaggrodeo_cable_car">Seilbahn</string>
+    <string name="games_schneaggrodeo_cable_car_controls">Genieß die Aussicht – die Gondel bringt dich über den Berg!</string>
+    <string name="games_schneaggrodeo_bear">Bärenritt</string>
+    <string name="games_schneaggrodeo_bear_controls">Irgendwo gedrückt halten, um auf die Bäume zu klettern – am Boden zertrümmert der Bär Hindernisse und frisst Schnecken!</string>
+    <string name="games_schneaggrodeo_bear_controls_keys">Leertaste halten, um auf die Bäume zu klettern – am Boden zertrümmert der Bär Hindernisse und frisst Schnecken!</string>
+    <string name="games_schneaggrodeo_candy_bus">Free Candy Bus</string>
+    <string name="games_schneaggrodeo_candy_bus_controls">Fang Stanislaus am Straßenrand mit dem Lasso – er steigt durch die Seitentür ein!</string>
+    <string name="games_schneaggrodeo_candy_bus_sign">FREE CANDY</string>
+    <string name="games_schneaggrodeo_capture">Einfangen</string>
+    <string name="games_schneaggrodeo_friend_joined_title">%1$s reitet mit!</string>
+    <string name="games_schneaggrodeo_friend_joined">Ab jetzt reitest du auch für den Highscore von %1$s: Sobald du vom Pferd steigst, zählen deine bisherigen Punkte auch für %1$s.</string>
 
     <!-- Feedback board -->
     <string name="feedback_title">Feedback</string>

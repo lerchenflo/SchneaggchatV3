@@ -6,7 +6,7 @@ const val SCHNEAGG_RODEO_SNAPSHOT_VERSION = 1
 
 /**
  * Persisted mid-run progress. Only what the run has earned is kept (distance, pace, chase gap,
- * points, caught snails, super jump charges, lucky charms); fences and snails on the track are not, so a
+ * points, caught snails, super jump charges, lucky charms, the horse and a friend riding along); fences and snails on the track are not, so a
  * restored run continues on an empty stretch of track.
  */
 @Serializable
@@ -23,4 +23,11 @@ data class SchneaggRodeoSnapshot(
     val nextRunnerIn: Float,
     /** Added later; saves from before default to none. */
     val luckyCharms: Int = 0,
+    /** The ridden horse's strength (see RodeoHorseStats); saves from before start on a fresh horse. */
+    val horseLevel: Int = 1,
+    val horseLives: Float = 3f,
+    val horseCoat: Int = -1,
+    /** A lassoed friend riding along, if any. */
+    val passengerId: String? = null,
+    val passengerName: String? = null,
 )

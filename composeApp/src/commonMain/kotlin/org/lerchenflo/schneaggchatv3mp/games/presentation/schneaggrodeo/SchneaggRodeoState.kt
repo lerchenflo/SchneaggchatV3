@@ -1,6 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.graphics.ImageBitmap
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
 
 sealed interface SchneaggRodeoAction {
     data object StartGame : SchneaggRodeoAction
@@ -23,16 +26,29 @@ sealed interface SchneaggRodeoAction {
     data object OnDiveReleased : SchneaggRodeoAction
     data object OnLassoClick : SchneaggRodeoAction
     data object OnSuperJumpClick : SchneaggRodeoAction
+    data object OnRocketClick : SchneaggRodeoAction
 }
 
-enum class RodeoAnnouncement { CRASH_PILOT, LAWN_TRACTOR }
-
-/** An all-time highscore shown as a marker on the track. */
+/**
+ * An all-time highscore shown as a marker on the track. A friend's ([isFriend]) also comes riding
+ * along shortly before it, to be lassoed.
+ */
 @Immutable
 data class RodeoGhostUi(
     val username: String,
     val score: Long,
     val isOwn: Boolean,
+    val userId: String = "",
+    val isFriend: Boolean = false,
+)
+
+/**
+ * The friends on the track, loaded once per run: profile [pictures] by user id (friends on their
+ * own horse or riding along).
+ */
+@Immutable
+data class RodeoPeopleUi(
+    val pictures: Map<String, ImageBitmap> = emptyMap(),
 )
 
 /** Everything around the track: HUD, controls and overlays. Changes a few times per second at most. */
@@ -49,17 +65,25 @@ data class SchneaggRodeoState(
     val luckyCharms: Int = 0,
     /** Thrown off the horse: the lasso button is highlighted, it is the only way back up. */
     val isOnFoot: Boolean = false,
-    /** In the plane: left half of the play area steers up, right half down. */
-    val isFlying: Boolean = false,
-    /** Shown on the speedometer: the horse's pace, or the lawn tractor's absurd one. */
+    /** The vehicle being ridden; the controls turn into a hint on how to ride it. */
+    val ride: RodeoVehicleKind? = null,
+    /** Enough snails saved up for the rocket, and nothing else going on. */
+    val rocketReady: Boolean = false,
+    /** Shown on the speedometer: the horse's pace, or the vehicle's. */
     val speedKmh: Int = 0,
-    /** Banner shown briefly over the track when the cowboy boards the plane or the tractor. */
-    val announcement: RodeoAnnouncement? = null,
+    /** Banner shown briefly over the track when the rider boards a vehicle. */
+    val announcement: RodeoVehicleKind? = null,
     /** The lowest all-time highscore above the current score; null offline or once everything is beaten. */
     val nextToBeat: RodeoGhostUi? = null,
-)
+    /** A lassoed friend just joined the ride: the run is paused to tell the player whose highscore it raises now. */
+    val friendJoined: String? = null,
+) {
+    /** Flying (plane, rocket): left half of the play area steers up, right half down. */
+    val steers: Boolean get() = ride?.steers == true
+}
 
-// Render model of the world, rebuilt every frame. Positions are in world units (see SchneaggRodeoEngine).
+// Render model of the world, rebuilt every frame by SchneaggRodeoEngine.toFrame. Positions are in world
+// units (see engine/RodeoScale); vehicles bring their own render models (vehicles/*/Rodeo*Drawing.kt).
 
 @Immutable
 data class RodeoFenceUi(
@@ -97,10 +121,28 @@ data class RodeoHorsePose(
     val frontLegRaise: Float = 0f,
     val hatLift: Float,
     val glow: Float,
+    /** 0..1: horse crouched and rider flat on its neck, ducking under a bridge. */
+    val duck: Float = 0f,
+    /** Floating down under a parachute after the rocket ride. */
+    val parachute: Boolean = false,
+    /** False while horse and rider sit inside a vehicle (the rocket's dome). */
+    val visible: Boolean = true,
     /** Shift of the horse from its riding spot while it paces around riderless. */
     val offsetX: Float = 0f,
     /** False while the cowboy is off the horse; he is drawn as [RodeoCowboyUi] then. */
     val hasRider: Boolean = true,
+    /** Index into HORSE_COATS, or -1 for the theme-colored horse the run starts on. */
+    val coat: Int = -1,
+    /** Colors the horse gold from the hooves up; [lives] of [maxLives] hearts on its side (none if 0). */
+    val level: Int = 1,
+    val lives: Float = 0f,
+    val maxLives: Int = 0,
+    /** A friend riding this horse: their profile picture is the rider's head. */
+    val riderId: String? = null,
+    /** A lassoed friend sitting behind the rider, with their profile picture as head. */
+    val passengerId: String? = null,
+    /** Size of horse and rider, around the hooves: grown or shrunk by a magic mushroom. */
+    val scale: Float = 1f,
 )
 
 /**
@@ -134,59 +176,71 @@ data class RodeoHorseshoeUi(
     val tiltDeg: Float,
 )
 
-/**
- * The plane, facing right. [x] is the left edge of the fuselage, [y] its underside above the ground,
- * [rotation] degrees clockwise while the wreck tumbles.
- */
+/** A carrot floating above the track; [height] is its center above the ground. */
 @Immutable
-data class RodeoPlaneUi(
+data class RodeoCarrotUi(
     val x: Float,
-    val y: Float,
-    val rotation: Float,
-    val propellerPhase: Float,
-    /** The cowboy sits in the cockpit. */
-    val hasPilot: Boolean,
-    /** Rope ladder hanging down while it passes by and while he climbs up. */
-    val ladderDown: Boolean,
+    val height: Float,
+    val tiltDeg: Float,
+)
+
+/** A magic mushroom on the ground at [x]; [seed] picks its dots. */
+@Immutable
+data class RodeoMushroomUi(
+    val x: Float,
+    val seed: Int,
 )
 
 /**
- * The red lawn tractor, facing right. [x] is its left edge; it stands on the ground and tips over by
- * [rotation] degrees (counterclockwise, around its rear wheel) once wrecked. Parts come off in the
- * order exhaust, steering wheel, hood, mower deck, front wheel: the first [partsLost] are gone.
+ * A stretch of landscape along the track from [x] over [width]: a mountain (with the cable car's
+ * cable) or else a forest. [seed] picks the details.
  */
 @Immutable
-data class RodeoTractorUi(
-    val x: Float,
-    val rotation: Float,
-    val wheelPhase: Float,
-    val partsLost: Int,
-    val wrecked: Boolean,
-    /** Puffing exhaust while it races. */
-    val exhaust: Boolean,
-)
-
-/** A part torn off the tractor; [part] indexes the parts of [RodeoTractorUi], anything above is scrap. */
-@Immutable
-data class RodeoDebrisUi(
-    val x: Float,
-    val y: Float,
-    val rotation: Float,
-    val part: Int,
-)
-
-/** A building of the skyline flown over by the plane; [x] is its left edge. */
-@Immutable
-data class RodeoBuildingUi(
+data class RodeoSectionUi(
+    val isMountain: Boolean,
     val x: Float,
     val width: Float,
-    val height: Float,
-    /** Picks the pattern of lit windows. */
     val seed: Int,
-    /** Underside of the storm cloud hanging above, or null for open sky. */
-    val cloudBottom: Float? = null,
-    /** How far the cloud reaches past the building on each side. */
-    val cloudOverhang: Float = 0f,
+)
+
+/** A crystal floating in the cave; [height] is its center above the ground, [hue] picks its color. */
+@Immutable
+data class RodeoGemUi(
+    val x: Float,
+    val height: Float,
+    val tiltDeg: Float,
+    val hue: Int,
+)
+
+/**
+ * A way to the other map from [x] over [width]: a mine shaft in the track, or ([exit]) the shaft of
+ * light leading out of the cave.
+ */
+@Immutable
+data class RodeoPortalUi(
+    val x: Float,
+    val width: Float,
+    val exit: Boolean,
+)
+
+/** A mud puddle on the ground from [x] over [width]; [seed] picks its splotches. */
+@Immutable
+data class RodeoMudUi(
+    val x: Float,
+    val width: Float,
+    val seed: Int,
+)
+
+/**
+ * Another horse on the track: a wild one or a friend on their own ([friendName], name shown above).
+ * [x] is its left edge; [lassoable] shows the "lasso it" hint.
+ */
+@Immutable
+data class RodeoWildHorseUi(
+    val x: Float,
+    val pose: RodeoHorsePose,
+    val friendName: String?,
+    val lassoable: Boolean,
 )
 
 /** Short burst of sparks where a horseshoe was picked up or a lucky charm absorbed a crash. */
@@ -246,14 +300,32 @@ data class SchneaggRodeoFrame(
     val horseshoes: List<RodeoHorseshoeUi> = emptyList(),
     /** Stored lucky charms; the horse shows a faint aura while it has any. */
     val luckyCharms: Int = 0,
-    val plane: RodeoPlaneUi? = null,
-    val buildings: List<RodeoBuildingUi> = emptyList(),
     val sparkle: RodeoSparkleUi? = null,
-    val tractor: RodeoTractorUi? = null,
-    val debris: List<RodeoDebrisUi> = emptyList(),
-    /** The tractor races: the ground smears into streaks and speed lines fly through the sky. */
+    val vehicles: List<RodeoVehicleUi> = emptyList(),
+    /** A vehicle races: the ground smears into streaks and speed lines fly through the sky. */
     val speedBlur: Boolean = false,
-    /** Offset of the whole picture while the tractor rattles along, in units. */
+    /** Offset of the whole picture while a vehicle rattles along, in units. */
     val shakeX: Float = 0f,
     val shakeY: Float = 0f,
+    /** Units the view is panned up by, following the horse into the sky. */
+    val cameraY: Float = 0f,
+    /** 0..1: the sky has turned into space (rocket ride). */
+    val space: Float = 0f,
+    val carrots: List<RodeoCarrotUi> = emptyList(),
+    val mud: List<RodeoMudUi> = emptyList(),
+    /** The horse wades through mud: brown spray at its hooves. */
+    val inMud: Boolean = false,
+    val wildHorses: List<RodeoWildHorseUi> = emptyList(),
+    val sections: List<RodeoSectionUi> = emptyList(),
+    val mushrooms: List<RodeoMushroomUi> = emptyList(),
+    /** Degrees the whole track tilts on the mountain: negative uphill, positive downhill. */
+    val tiltDegrees: Float = 0f,
+    /** A slow-motion mushroom: the picture gets a dreamy tint. */
+    val slowMotion: Boolean = false,
+    /** Down in the cave: dark backdrop, stalagmites instead of fences. */
+    val inCave: Boolean = false,
+    val portals: List<RodeoPortalUi> = emptyList(),
+    val gems: List<RodeoGemUi> = emptyList(),
+    /** 0..1 how dark the picture is while switching maps. */
+    val fade: Float = 0f,
 )

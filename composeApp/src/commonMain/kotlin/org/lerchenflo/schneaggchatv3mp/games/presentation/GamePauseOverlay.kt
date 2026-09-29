@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -28,12 +29,16 @@ import schneaggchatv3mp.composeapp.generated.resources.game_resume
 /**
  * Unified pause overlay shown while a run is paused. Dims the board (which
  * stays visible underneath) and swallows all taps/drags so the game beneath
- * can't be interacted with, offering only a resume button.
+ * can't be interacted with, offering only a resume button. A game may pause
+ * itself to tell the player something: [title] replaces "Paused", [message]
+ * is shown below it.
  */
 @Composable
 fun GamePauseOverlay(
     onResume: () -> Unit,
     modifier: Modifier = Modifier,
+    title: String? = null,
+    message: String? = null,
 ) {
     Box(
         modifier = modifier
@@ -47,11 +52,22 @@ fun GamePauseOverlay(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = stringResource(Res.string.game_paused),
+                text = title ?: stringResource(Res.string.game_paused),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center,
             )
+
+            if (message != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    textAlign = TextAlign.Center,
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 

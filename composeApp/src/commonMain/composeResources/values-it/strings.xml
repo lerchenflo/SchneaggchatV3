@@ -1541,7 +1541,7 @@
     <string name="games_undercover_description">Smascherare l'infiltrato descrivendo la parola segreta</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
     <string name="games_schneaggrodeo_description">Saltare gli ostacoli e catturare con il lazo le lumache alle calcagna</string>
-    <string name="games_schneaggrodeo_instructions">Cavalca il più lontano possibile mentre un branco di schneagg ti insegue!\n\nTocca (o premi spazio) per saltare, tieni premuto per saltare più in alto. Se abbatti una barriera o urti una lumaca, il tuo cavallo inciampa e il branco si avvicina — quando ti raggiunge, la cavalcata è finita.\n\nLancia il lazo (pulsante o L) per catturare le lumache e ottenere punti bonus. Ogni 5 lumache catturate valgono un super salto (pulsante o J) sui prossimi 5 ostacoli.\n\nSalta attraverso i ferri di cavallo portafortuna sospesi: ognuno assorbe il tuo prossimo errore (fino a 3).\n\nOgni tanto passa un aereo: prendi la sua scala di corda con il lazo e vola sopra la città! La metà sinistra dello schermo fa salire, la metà destra scendere, senza comandi scende da solo. Evita gli edifici.\n\nOgni tanto passa un trattorino tosaerba rosso: prendilo con il lazo e il tuo cavallo ci salta sopra per una corsa a tutto gas. Ogni ostacolo che falcia gli costa un pezzo.\n\nLe bandierine sul percorso mostrano dove sono finite le cavalcate migliori, il tuo record nel tuo colore principale. Battile!</string>
+    <string name="games_schneaggrodeo_instructions">Cavalca il più lontano possibile mentre un branco di schneagg ti insegue! Più a lungo cavalchi, più diventa veloce e difficile — finché il branco non ti raggiunge.\n\nTocca (o premi spazio) per saltare, tieni premuto per saltare più in alto. Se abbatti una barriera o urti una lumaca, il tuo cavallo inciampa e il branco si avvicina — quando ti raggiunge, la cavalcata è finita.\n\nLancia il lazo (pulsante o L) per catturare le lumache e ottenere punti bonus. Ogni 5 lumache catturate valgono un super salto (pulsante o J) sui prossimi 5 ostacoli.\n\nSalta attraverso i ferri di cavallo portafortuna sospesi: ognuno assorbe il tuo prossimo errore (fino a 3).\n\nLe bandierine sul percorso mostrano dove sono finite le cavalcate migliori, il tuo record nel tuo colore principale. Battile!\n\nIl tuo cavallo si stanca cavalcando e a ogni errore — i suoi cuori sono dipinti sul fianco. Più è dorato dagli zoccoli in su, più è forte. Prendi le carote per nutrirlo! Quando i cuori finiscono ti disarciona e scappa, e devi prendere al lazo un nuovo cavallo. I cavalli selvaggi sul percorso sono più forti, saltano più in alto e sono riposati: prendine uno al lazo per cambiare. Il fango rallenta il tuo cavallo, quindi saltalo.\n\nGli amici cavalcano poco prima del loro record: prendili al lazo e cavalcano con te.</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lazo</string>
     <string name="games_schneaggrodeo_catch_horse">Prendi il tuo cavallo!</string>
@@ -1552,7 +1552,32 @@
     <string name="games_schneaggrodeo_super_jump">Super salto ×%1$d</string>
     <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
     <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
+    <string name="games_schneaggrodeo_lasso_hint">Prendilo al lazo per salire!</string>
+    <string name="games_schneaggrodeo_train">Wälderbähnle</string>
+    <string name="games_schneaggrodeo_milk_truck">Milchlaster</string>
+    <string name="games_schneaggrodeo_rocket_name">Schneagg-Rakete</string>
+    <string name="games_schneaggrodeo_rocket">Razzo</string>
+    <string name="games_schneaggrodeo_train_controls">Tieni premuto ovunque per abbassarti sotto i ponti</string>
+    <string name="games_schneaggrodeo_train_controls_keys">Tieni premuto spazio per abbassarti sotto i ponti</string>
+    <string name="games_schneaggrodeo_milk_truck_controls">Prendi al lazo i bidoni del latte volanti!</string>
+    <string name="games_schneaggrodeo_lawn_tractor_controls">Tieniti forte: falcia tutto!</string>
     <string name="games_schneaggrodeo_next_to_beat">Prossimo da battere: %1$s (%2$d)</string>
+    <string name="games_schneaggrodeo_car_wreck">Escort-Wrack</string>
+    <string name="games_schneaggrodeo_car_wreck_controls">Tieniti forte: il tuo cavallo spinge il rottame attraverso tutto!</string>
+    <string name="games_schneaggrodeo_bull">Muni-Ritt</string>
+    <string name="games_schneaggrodeo_bull_controls">Metà sinistra: inclinati indietro · Metà destra: inclinati in avanti – resisti 8 s!</string>
+    <string name="games_schneaggrodeo_bull_controls_keys">Spazio / W: inclinati indietro · S / ↓: inclinati in avanti – resisti 8 s!</string>
+    <string name="games_schneaggrodeo_cable_car">Seilbahn</string>
+    <string name="games_schneaggrodeo_cable_car_controls">Goditi il panorama – la cabinovia ti porta oltre la montagna!</string>
+    <string name="games_schneaggrodeo_bear">Bärenritt</string>
+    <string name="games_schneaggrodeo_bear_controls">Tieni premuto ovunque per arrampicarti sugli alberi – a terra l'orso distrugge gli ostacoli e mangia le lumache!</string>
+    <string name="games_schneaggrodeo_bear_controls_keys">Tieni premuto spazio per arrampicarti sugli alberi – a terra l'orso distrugge gli ostacoli e mangia le lumache!</string>
+    <string name="games_schneaggrodeo_candy_bus">Free Candy Bus</string>
+    <string name="games_schneaggrodeo_candy_bus_controls">Prendi al lazo Stanislaus sul ciglio della strada – sale dalla porta laterale!</string>
+    <string name="games_schneaggrodeo_candy_bus_sign">FREE CANDY</string>
+    <string name="games_schneaggrodeo_capture">Cattura</string>
+    <string name="games_schneaggrodeo_friend_joined_title">%1$s cavalca con te!</string>
+    <string name="games_schneaggrodeo_friend_joined">Da adesso cavalchi anche per il record di %1$s: appena scendi da cavallo, i tuoi punti finora valgono anche per %1$s.</string>
 
     <!-- Feedback board -->
     <string name="feedback_title">Feedback</string>

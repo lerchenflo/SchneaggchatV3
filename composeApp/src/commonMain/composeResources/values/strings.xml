@@ -1547,7 +1547,7 @@
     <string name="games_undercover_description">Unmask the impostor by describing your secret word</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
     <string name="games_schneaggrodeo_description">Jump the fences and lasso the snails on your heels</string>
-    <string name="games_schneaggrodeo_instructions">Ride as far as you can while a pack of schneaggs chases you!\n\nTap (or press space) to jump, hold to jump higher. Knocking a pole or running into a snail makes your horse stumble and lets the pack close in — once it catches you, the ride is over.\n\nThrow the lasso (button or L) to catch snails for bonus points. Every 5 caught snails buy a super jump (button or J) over the next 5 fences.\n\nJump through the floating lucky horseshoes: each one absorbs your next crash (up to 3).\n\nNow and then a plane passes by: lasso its ladder and fly over the city! Left half of the screen flies up, right half down, and without input it sinks. Dodge the buildings.\n\nEvery now and then a red lawn tractor rolls along the ground: lasso it and your horse hops on for a ride at full throttle. Every fence it mows costs it a part.\n\nFlags on the track show where the best rides ended, your own best in your accent color. Beat them!</string>
+    <string name="games_schneaggrodeo_instructions">Ride as far as you can while a pack of schneaggs chases you! The longer you ride, the faster and tougher it gets — until the pack catches up for good.\n\nTap (or press space) to jump, hold to jump higher. Knocking a pole or running into a snail makes your horse stumble and lets the pack close in — once it catches you, the ride is over.\n\nThrow the lasso (button or L) to catch snails for bonus points. Every 5 caught snails buy a super jump (button or J) over the next 5 fences.\n\nJump through the floating lucky horseshoes: each one absorbs your next crash (up to 3).\n\nFlags on the track show where the best rides ended, your own best in your accent color. Beat them!\n\nYour horse tires as you ride and with every crash — its hearts are painted on its side. The higher it is golden from the hooves up, the stronger it is. Catch carrots to feed it! Once its hearts are gone it throws you off and runs away, and you have to lasso a new horse. Wild horses on the track are stronger, jump higher and come fully rested: lasso one to switch. Mud slows your horse down, so jump over it.\n\nFriends ride along shortly before their own best: lasso them and they ride with you.</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lasso</string>
     <string name="games_schneaggrodeo_catch_horse">Catch your horse!</string>
@@ -1558,7 +1558,32 @@
     <string name="games_schneaggrodeo_super_jump">Super jump ×%1$d</string>
     <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
     <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
+    <string name="games_schneaggrodeo_lasso_hint">Lasso it to hop on!</string>
+    <string name="games_schneaggrodeo_train">Wälderbähnle</string>
+    <string name="games_schneaggrodeo_milk_truck">Milchlaster</string>
+    <string name="games_schneaggrodeo_rocket_name">Schneagg-Rakete</string>
+    <string name="games_schneaggrodeo_rocket">Rocket</string>
+    <string name="games_schneaggrodeo_train_controls">Hold anywhere to duck under the bridges</string>
+    <string name="games_schneaggrodeo_train_controls_keys">Hold space to duck under the bridges</string>
+    <string name="games_schneaggrodeo_milk_truck_controls">Lasso the flying milk cans!</string>
+    <string name="games_schneaggrodeo_lawn_tractor_controls">Hold on tight – it mows down everything!</string>
     <string name="games_schneaggrodeo_next_to_beat">Next to beat: %1$s (%2$d)</string>
+    <string name="games_schneaggrodeo_car_wreck">Escort-Wrack</string>
+    <string name="games_schneaggrodeo_car_wreck_controls">Hold on – your horse shoves the wreck through everything!</string>
+    <string name="games_schneaggrodeo_bull">Muni-Ritt</string>
+    <string name="games_schneaggrodeo_bull_controls">Left half: lean back · Right half: lean forward – stay on for 8 s!</string>
+    <string name="games_schneaggrodeo_bull_controls_keys">Space / W: lean back · S / ↓: lean forward – stay on for 8 s!</string>
+    <string name="games_schneaggrodeo_cable_car">Seilbahn</string>
+    <string name="games_schneaggrodeo_cable_car_controls">Enjoy the view – the gondola takes you over the mountain!</string>
+    <string name="games_schneaggrodeo_bear">Bärenritt</string>
+    <string name="games_schneaggrodeo_bear_controls">Hold anywhere to climb the trees – on the ground the bear smashes fences and eats snails!</string>
+    <string name="games_schneaggrodeo_bear_controls_keys">Hold space to climb the trees – on the ground the bear smashes fences and eats snails!</string>
+    <string name="games_schneaggrodeo_candy_bus">Free Candy Bus</string>
+    <string name="games_schneaggrodeo_candy_bus_controls">Lasso Stanislaus by the roadside – he hops in through the side door!</string>
+    <string name="games_schneaggrodeo_candy_bus_sign">FREE CANDY</string>
+    <string name="games_schneaggrodeo_capture">Capture</string>
+    <string name="games_schneaggrodeo_friend_joined_title">%1$s rides with you!</string>
+    <string name="games_schneaggrodeo_friend_joined">From now on you're riding for %1$s's highscore too: as soon as you leave the horse, your score so far counts for %1$s.</string>
 
     <!-- Feedback board -->
     <string name="feedback_title">Feedback</string>
