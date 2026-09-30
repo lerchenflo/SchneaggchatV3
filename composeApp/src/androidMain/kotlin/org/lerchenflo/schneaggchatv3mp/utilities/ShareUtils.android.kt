@@ -98,7 +98,7 @@ actual class ShareUtils(private val context: Context) {
             putExtra(CalendarContract.Events.DESCRIPTION, description)
             putExtra(CalendarContract.Events.EVENT_LOCATION, location)
             putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startDateMillis)
-            putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endDateMillis ?: startDateMillis)
+            putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endDateMillis ?: (startDateMillis + 3_600_000L)) //Event ends one hour after starting that it is not nearly invisible for the user
             addFlags(FLAG_ACTIVITY_NEW_TASK)
         }
         try {
