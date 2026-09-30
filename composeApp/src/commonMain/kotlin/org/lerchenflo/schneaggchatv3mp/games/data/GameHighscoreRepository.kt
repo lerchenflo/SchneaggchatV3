@@ -61,6 +61,29 @@ class GameHighscoreRepository(
     }
 
     /**
+     * Submits [score] for the friend [friendId] - a friend who rode along in the player's run
+     * (Schneagg Rodeo). Goes through the batch endpoint, which the server only allows for the
+     * player's accepted friends and for games that permit friend scores.
+     */
+    suspend fun submitFriendScore(
+        game: GameId,
+        difficulty: GameDifficulty,
+        friendId: String,
+        score: Long,
+        timeMillis: Long,
+    ): EmptyResult<NetworkingError> {
+        if (game.indev) return NetworkResult.Success(Unit)
+
+        return networkUtils.submitGameScoresBatch(
+            SubmitGameScoresBatchRequest(
+                gameId = game.name,
+                difficulty = difficulty.name,
+                scores = listOf(BatchScoreEntryRequest(userId = friendId, score = score, timeMillis = timeMillis)),
+            )
+        ).trackConnectivity().asEmptyDataResult()
+    }
+
+    /**
      * Uploads the results of a shared-device game for several platform users at once.
      * [scores] maps user id to score. Only call this after the user explicitly agreed to upload.
      */
