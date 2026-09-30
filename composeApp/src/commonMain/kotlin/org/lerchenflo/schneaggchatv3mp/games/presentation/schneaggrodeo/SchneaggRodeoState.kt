@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoDeepKind
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.bridgeSagAt
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainHeightAt
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainSlopeAt
 import androidx.compose.runtime.Immutable
@@ -265,11 +266,15 @@ data class RodeoMudUi(
     val seed: Int,
 )
 
-/** The ground's height profile: control points [xs] (ascending) with heights [hs], eased between. */
+/**
+ * The ground's height profile: control points [xs] (ascending) with heights [hs], eased between, and
+ * the [bridges] over gorges sagging in it.
+ */
 @Immutable
 data class RodeoTerrainUi(
     val xs: List<Float> = emptyList(),
     val hs: List<Float> = emptyList(),
+    val bridges: List<RodeoBridgeUi> = emptyList(),
 ) {
     /**
      * Heights every [SAMPLE_STEP] units from the first control point on, worked out once: the
@@ -281,8 +286,15 @@ data class RodeoTerrainUi(
         }
     }
 
-    /** Height of the ground at [x]. */
+    /** Height of the ground at [x], down a sagging bridge's planks. */
     fun heightAt(x: Float): Float {
+        var height = baseHeightAt(x)
+        for (bridge in bridges) height -= bridgeSagAt(x, bridge.x, bridge.dip, bridge.loadAt)
+        return height
+    }
+
+    /** Height at [x] without the bridges' sag: the banks of a gorge. */
+    fun baseHeightAt(x: Float): Float {
         if (samples.isEmpty()) return 0f
         val position = ((x - xs.first()) / SAMPLE_STEP).coerceIn(0f, samples.size - 1f)
         val index = position.toInt().coerceAtMost(samples.size - 2)
@@ -291,9 +303,17 @@ data class RodeoTerrainUi(
         return samples[index] + (samples[index + 1] - samples[index]) * t
     }
 
-    /** Rise per unit at [x]: positive uphill. */
-    fun slopeAt(x: Float): Float = terrainSlopeAt(xs, hs, x)
+    /** Rise per unit at [x]: positive uphill, along a bridge's planks too. */
+    fun slopeAt(x: Float): Float =
+        if (bridges.isEmpty()) terrainSlopeAt(xs, hs, x) else (heightAt(x + 1f) - heightAt(x - 1f)) / 2f
 }
+
+/**
+ * A plank bridge over a gorge from [x] to x + BRIDGE_LENGTH, sagging by [dip] more under a load at
+ * [loadAt] (0..1 along it).
+ */
+@Immutable
+data class RodeoBridgeUi(val x: Float, val dip: Float, val loadAt: Float)
 
 /** Units between two sampled heights of [RodeoTerrainUi]. */
 private const val SAMPLE_STEP = 1f

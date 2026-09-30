@@ -215,9 +215,14 @@ internal fun RodeoTrack(
                 // The rainbow after the rain, its feet on the track
                 world.rainbowX?.let { drawRainbow(it, context) }
 
-                // In the sea the horse swims: no ground, the water's surface is drawn over everything
+                // In the sea the horse swims: no ground, the water's surface is drawn over everything.
+                // Gorges are cut out of the ground, a river at their bottom.
+                val bridges = world.terrain.bridges
                 if (world.map != RodeoMap.SEA) {
-                    drawGround(context, world.distance, world.speedBlur)
+                    drawWithGorges(bridges, context) { drawGround(context, world.distance, world.speedBlur) }
+                    bridges.forEach { drawGorge(it, context, world.distance) }
+                    // Plank bridges over the gorges, snowed over like the ground
+                    bridges.forEach { drawBridge(it, context) }
                 }
                 if (world.map == RodeoMap.SURFACE && world.weather == RodeoWeather.SNOW) drawSnowCover(context)
                 // Ways to the other maps: shafts, the beach, ramps back up

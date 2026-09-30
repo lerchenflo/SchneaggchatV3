@@ -115,6 +115,14 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_candy
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_car_money
 import schneaggchatv3mp.composeapp.generated.resources.icon_schneagg_alternative
 import schneaggchatv3mp.composeapp.generated.resources.rodeo_stanislaus
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoBridgeUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoTerrainUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.BRIDGE_LENGTH
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.BRIDGE_LOAD_DIP
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HOOVES_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawBridge
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawGorge
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawWithGorges
 
 // IDE previews of every vehicle (and the pizza oven) in a typical moment, drawn straight from its render model on a bare
 // track (no horse, no engine). Positions are in world units like in the game.
@@ -131,7 +139,7 @@ private fun RodeoVehiclePreviewTrack(vararg vehicles: RodeoVehicleUi) = RodeoPre
  * A bare track with a ground line; [content] draws on it in world units through the context. The
  * ground follows [ground] (hills, see engine/RodeoTerrain); the [sea] has no ground but water with the
  * seabed below and its surface over everything. The view looks down by [cameraDown] (negative) like in
- * the game. [backdrop] goes behind the ground, on the flat.
+ * the game. [backdrop] goes behind the ground, on the flat; [bridges] cut their gorges into it.
  */
 @Composable
 private fun RodeoPreviewTrack(
@@ -140,6 +148,7 @@ private fun RodeoPreviewTrack(
     sea: Boolean = false,
     cameraDown: Float = 0f,
     backdrop: DrawScope.(RodeoDrawContext) -> Unit = {},
+    bridges: List<RodeoBridgeUi> = emptyList(),
     content: DrawScope.(RodeoDrawContext) -> Unit,
 ) {
     SchneaggchatTheme {
@@ -166,7 +175,13 @@ private fun RodeoPreviewTrack(
                 backdrop(context.flat())
                 when {
                     sea -> drawSeaBackdrop(distance = 0f, context = context.flat())
-                    ground != null -> drawGround(context, distance = 0f)
+                    ground != null -> {
+                        drawWithGorges(bridges, context) { drawGround(context, distance = 0f) }
+                        bridges.forEach {
+                            drawGorge(it, context, distance = 0f)
+                            drawBridge(it, context)
+                        }
+                    }
                     else -> {
                         drawRect(colors.surfaceContainer, topLeft = Offset(0f, groundY), size = size.copy(height = size.height - groundY))
                         drawLine(colors.outline, Offset(0f, groundY), Offset(size.width, groundY), 0.3f * unit)
@@ -683,6 +698,35 @@ private fun NightWondersPreview() = RodeoPreviewTrack { context ->
     }
     drawTimeOfDay(RodeoTimeOfDay.NIGHT, lantern = context.p(40f, 14f), unit = unit)
     listOf(RodeoFireflyUi(20f, 18f, 1f), RodeoFireflyUi(70f, 24f, 0.5f), RodeoFireflyUi(140f, 16f, 0.8f)).forEach { drawFirefly(it, context) }
+}
+
+/** A gorge with its plank bridge, bending under the horse galloping across. */
+@Preview
+@Composable
+private fun BridgePreview() {
+    val terrain = RodeoTerrainUi(
+        xs = listOf(-70f, 0f, 70f, 140f, 210f),
+        hs = List(5) { 4f },
+        bridges = listOf(RodeoBridgeUi(x = 30f, dip = BRIDGE_LOAD_DIP, loadAt = 0.4f)),
+    )
+    RodeoPreviewTrack(ground = terrain::heightAt, bridges = terrain.bridges, cameraDown = -12f) { context ->
+        val colors = context.colors
+        val horseColors = RodeoHorseColors(
+            body = colors.onSurface,
+            shirt = colors.primary,
+            glow = colors.primary,
+            canopy = colors.secondary,
+            friendShirt = colors.tertiary,
+            headRing = colors.surfaceContainer,
+        )
+        val pose = RodeoHorsePose(
+            height = 0f, gaitPhase = 1f, airborne = false, riderLean = 0f, pitchDegrees = 0f,
+            pivotX = 12f, pivotY = 12f, hindLegScale = 1f, frontLegFold = 0f, hatLift = 0f, glow = 0f,
+            maxLives = 4, lives = 3f,
+        )
+        val hooves = 30f + 0.4f * BRIDGE_LENGTH
+        drawHorseAndRider(left = (hooves - HOOVES_X) * context.unit, groundY = context.groundYAt(hooves), unit = context.unit, pose = pose, colors = horseColors)
+    }
 }
 
 @Preview

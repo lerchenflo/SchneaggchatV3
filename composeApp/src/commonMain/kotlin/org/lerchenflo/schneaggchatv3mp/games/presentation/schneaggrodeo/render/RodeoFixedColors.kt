@@ -134,6 +134,9 @@ internal val SAND = Color(0xFFE6C98F)
 internal val PIER_WOOD = Color(0xFF8D6E63)
 internal val PIER_WOOD_DARK = Color(0xFF5D4037)
 
+// The rope bridge over a gorge (planks and posts use the pier's wood)
+internal val BRIDGE_ROPE = Color(0xFFC8A165)
+
 // The deep sea: darkest water, fish, jellyfish, the whale and old wrecks
 internal val SEA_DEEP = Color(0xFF0D2B45)
 internal val FISH_COLORS = listOf(Color(0xFFFFB74D), Color(0xFF4DD0E1), Color(0xFFF06292))

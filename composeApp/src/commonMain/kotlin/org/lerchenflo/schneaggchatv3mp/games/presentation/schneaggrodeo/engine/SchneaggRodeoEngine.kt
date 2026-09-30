@@ -109,6 +109,13 @@ private const val CAMERA_HORSE_TOP = 34f
 private const val CAMERA_TOP_MARGIN = 2f
 /** Units the whole picture shakes while a vehicle rattles along. */
 private const val VEHICLE_SHAKE = 0.7f
+/** Crossing a gorge the view looks down to the river: how far, around which stretch, how fast. */
+private const val GORGE_CAMERA_DOWN = -12f
+private const val GORGE_LOOK_BEHIND = 40f
+private const val GORGE_LOOK_AHEAD = 90f
+private const val GORGE_LOOK_RESPONSE = 1.5f
+/** Nothing new is placed this close to a bridge (units). */
+private const val BRIDGE_CLEARANCE = 20f
 /** Degrees the picture tilts on the mountain, and how fast it follows. */
 private const val UPHILL_TILT = -8f
 private const val DOWNHILL_TILT = 6f
@@ -188,6 +195,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     private val events = mutableListOf<RodeoEvent>()
     /** Degrees the picture is tilted on the mountain, easing towards the slope. */
     private var tilt = 0f
+    /** How far the view looks down into a gorge the horse crosses (negative), easing in and out. */
+    private var gorgeLook = 0f
     /** Test mode: seconds until the tested vehicle comes (again). */
     private var testVehicleIn = 0f
 
@@ -254,6 +263,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         flavor.roll()
         course.mudFactor = flavor.mudFactor
         tilt = 0f
+        gorgeLook = 0f
         passenger = null
         events.clear()
         distance = 0f
@@ -439,6 +449,10 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             scroll, worldWidth, elapsed,
             keepFlat = traffic.needsFlatTrack || landscape.mountain != null || mapSwitch.isAway,
         )
+        // The planks of a bridge bend under the horse standing (or galloping) on them
+        terrain.bearBridges(dt, load = if (horseBase < 0.5f) HORSE_X + HOOVES_X else null)
+        val gorgeTarget = if (terrain.bridgeWithin(HORSE_X - GORGE_LOOK_BEHIND, HORSE_X + GORGE_LOOK_AHEAD)) GORGE_CAMERA_DOWN else 0f
+        gorgeLook += (gorgeTarget - gorgeLook) * min(1f, dt * GORGE_LOOK_RESPONSE)
         mapSwitch.scroll(scroll)
         pizzaOvens.scroll(scroll)
         course.map = mapSwitch.map
@@ -462,8 +476,14 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         // Mushrooms grow thick in the forest
         course.mushroomChance = if (landscape.inForest(worldWidth, worldWidth + 1f)) FOREST_MUSHROOM_CHANCE else MUSHROOM_CHANCE
 
-        // No new fences while a vehicle is ridden: it brings its own obstacles (or none)
-        course.scrollFences(scroll, ridden, worldWidth, horse.speed, elapsed, spawnFences = traffic.current?.blocksFences != true)
+        // No new fences while a vehicle is ridden: it brings its own obstacles (or none). None on a
+        // bridge either, and no mud or mushrooms on its planks.
+        val bridgeComing = terrain.bridgeWithin(worldWidth - BRIDGE_CLEARANCE, worldWidth + BRIDGE_CLEARANCE)
+        course.scrollFences(scroll, ridden, worldWidth, horse.speed, elapsed, spawnFences = traffic.current?.blocksFences != true && !bridgeComing)
+        if (terrain.hasBridge) {
+            course.mud.removeAll { it.x > worldWidth && terrain.bridgeWithin(it.x, it.x + it.width) }
+            course.mushrooms.removeAll { it.x > worldWidth && terrain.bridgeWithin(it.x - 2f, it.x + 2f) }
+        }
         course.sendRunners(dt, worldWidth, elapsed)
         crashIntoFences()
         course.moveSnails(scroll, dt)
@@ -499,7 +519,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             worldWidth,
             pace = horse.pace,
             passSpeed = CABLE_CAR_PASS_SPEED,
-            allowed = horsesMayCome && wildHorses.isClear && onSurface && regular,
+            allowed = horsesMayCome && wildHorses.isClear && onSurface && regular && !terrain.hasBridge,
         )
         when (section) {
             SectionKind.MOUNTAIN -> traffic.sendCableCar(this)
@@ -518,9 +538,9 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         sendTestVehicle(dt)
 
         // Rarely a mine shaft opens up, when nothing else is going on; in the cave the way out comes
-        if (regular) mapSwitch.tick(dt, allowed = nothingAround, shapeGround = terrain::addFeature)
+        if (regular) mapSwitch.tick(dt, allowed = nothingAround && !terrain.hasBridge, shapeGround = terrain::addFeature)
         // Now and then a stop by the roadside, and very rarely Stanislaus running along
-        pizzaOvens.tick(dt, worldWidth, allowed = onSurface && regular)
+        pizzaOvens.tick(dt, worldWidth, allowed = onSurface && regular && !bridgeComing)
         stanislaus.step(dt)
         stanislaus.tick(dt, worldWidth, allowed = nothingAround && onSurface && regular)
         // Boarding a vehicle ends a throw at once
@@ -975,7 +995,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             pizzaOvens = pizzaOvens.ui(),
             pizza = pizzaOvens.pizzaUi(),
             terrain = terrain.ui(),
-            terrainShift = terrain.heightAt(HORSE_X + HOOVES_X),
+            // The banks, not the planks: the camera stays put while the bridge bends
+            terrainShift = terrain.baseHeightAt(HORSE_X + HOOVES_X),
             deepSea = deepSea.ui(),
             rainbowX = wonders.rainbowX,
             doublePointsSeconds = wonders.doublePointsSeconds,
@@ -992,7 +1013,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         traffic.current?.camera()?.let { return it }
         val visibleTop = WORLD_HEIGHT_UNITS - GROUND_OFFSET_UNITS - CAMERA_TOP_MARGIN
         // In the sea the view looks down into the deep water, unless the horse jumps high
-        val lowest = if (mapSwitch.map == RodeoMap.SEA) SEA_CAMERA_DOWN else 0f
+        val lowest = (if (mapSwitch.map == RodeoMap.SEA) SEA_CAMERA_DOWN else 0f) + gorgeLook
         return max(lowest, horseBase + CAMERA_HORSE_TOP - visibleTop)
     }
 }

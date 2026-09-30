@@ -67,6 +67,7 @@ private val COMPACT_LANDSCAPE_MAX_HEIGHT = 480.dp
 /** Keeps the counters clear of the floating back button in landscape. */
 private val BACK_BUTTON_SPACE = 52.dp
 private val OVERLAY_PADDING = 8.dp
+private val NEXT_TO_BEAT_END_PADDING = 16.dp
 
 @Composable
 fun SchneaggRodeoRoot(
@@ -263,8 +264,9 @@ fun SchneaggRodeoScreen(
                                     color = colors.onSurfaceVariant,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
+                                    // Clear of the rounded screen corner on the right
                                     modifier = Modifier
-                                        .padding(top = 4.dp)
+                                        .padding(top = 4.dp, end = NEXT_TO_BEAT_END_PADDING)
                                         .widthIn(max = 260.dp)
                                         .background(colors.surfaceVariant.copy(alpha = 0.85f), RoundedCornerShape(8.dp))
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
