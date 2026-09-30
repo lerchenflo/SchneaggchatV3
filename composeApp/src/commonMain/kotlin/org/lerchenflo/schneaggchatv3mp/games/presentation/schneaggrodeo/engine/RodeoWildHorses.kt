@@ -13,6 +13,8 @@ import kotlin.random.Random
 //  - friends on their own horse, showing up shortly before their highscore no matter what else is
 //    going on; they gallop next to the rider until the run passes their highscore, then fall back.
 //    Lasso them and they ride along behind the cowboy (see the engine's passenger)
+//  - on night runs, now and then the ghost horse instead of a wild one: see-through and glowing.
+//    Lassoed, it vanishes and makes horse and rider ghostly for a while (see RodeoSkyWonders)
 // Horses let go (the old horse after a switch, a friend's horse) stop and fall back with the ground.
 
 /** Game seconds until the first wild horse, and between two. */
@@ -30,6 +32,8 @@ private const val FRIEND_MAX_DRIFT = 35f
 private const val RELEASED_DRIFT = 10f
 private const val WILD_GAIT_SPEED = 14f   // gait radians per second
 private const val GALLOP_ROCK_DEGREES = 2.5f
+/** Chance on a night run that the ghost horse comes instead of a wild one. */
+private const val GHOST_CHANCE = 0.4f
 
 /** A friend of the player, known by the id their profile picture is stored under. */
 internal data class RodeoFriend(val userId: String, val username: String)
@@ -52,6 +56,8 @@ internal class WildHorse(
     val drift: Float,
     /** A friend keeps pace next to the rider until the run's score reaches this (their highscore). */
     var holdUntilScore: Long? = null,
+    /** The ghost horse: lassoing it does not switch horses. */
+    val ghost: Boolean = false,
 ) {
     var state = WildHorseState.RUNNING
     var height = 0f
@@ -95,12 +101,19 @@ internal class RodeoWildHorses {
         horses.removeAll { it.x + 32f < 0f }
     }
 
-    /** Sends a wild horse stronger than [currentLevel] in from the right now and then, while [allowed]. */
-    fun sendWild(dt: Float, worldWidth: Float, currentLevel: Int, allowed: Boolean) {
+    /**
+     * Sends a wild horse stronger than [currentLevel] in from the right now and then, while [allowed];
+     * on a [night] run sometimes the ghost horse instead.
+     */
+    fun sendWild(dt: Float, worldWidth: Float, currentLevel: Int, allowed: Boolean, night: Boolean) {
         if (!allowed || !isClear) return
         nextWildIn -= dt
         if (nextWildIn > 0f) return
         nextWildIn = WILD_INTERVAL_MIN + Random.nextFloat() * WILD_INTERVAL_RANDOM
+        if (night && Random.nextFloat() < GHOST_CHANCE) {
+            horses.add(WildHorse(x = worldWidth + 5f, stats = RodeoHorseStats.wild(currentLevel), friend = null, drift = WILD_DRIFT, ghost = true))
+            return
+        }
         // At the top level there is nothing stronger to switch to
         if (currentLevel >= MAX_HORSE_LEVEL) return
         horses.add(WildHorse(x = worldWidth + 5f, stats = RodeoHorseStats.wild(currentLevel), friend = null, drift = WILD_DRIFT))
@@ -177,6 +190,7 @@ internal class RodeoWildHorses {
                 lives = horse.stats.lives,
                 maxLives = horse.stats.maxLives,
                 riderId = horse.friend?.userId,
+                ghost = horse.ghost,
             ),
             friendName = horse.friend?.username,
             lassoable = horse.state == WildHorseState.RUNNING,

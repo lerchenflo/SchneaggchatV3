@@ -11,6 +11,7 @@ import androidx.compose.ui.text.drawText
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoFenceUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGemUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoPortalUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import kotlin.math.floor
 import kotlin.math.sin
 
@@ -112,10 +113,11 @@ internal fun DrawScope.drawGem(gem: RodeoGemUi, context: RodeoDrawContext) {
 }
 
 /**
- * A way to the other map: the mine shaft (a dark hole in the track under a wooden frame with a
- * lantern), or the shaft of light falling in from above that leads out of the cave.
+ * A way to the other map: an entrance in the track - the shaft into the cave (a dark hole under a
+ * wooden frame with a lantern), the well into the sea, the timber-framed mine shaft - or the shaft
+ * of light falling in from above that leads back up.
  */
-internal fun DrawScope.drawPortal(portal: RodeoPortalUi, context: RodeoDrawContext) {
+internal fun DrawScope.drawPortal(portal: RodeoPortalUi, context: RodeoDrawContext, distance: Float) {
     val unit = context.unit
     fun p(dx: Float, y: Float) = context.p(portal.x + dx, y)
     if (portal.exit) {
@@ -129,6 +131,11 @@ internal fun DrawScope.drawPortal(portal: RodeoPortalUi, context: RodeoDrawConte
             TORCH_COLOR.copy(alpha = 0.25f)
         )
         return
+    }
+    when (portal.destination) {
+        RodeoMap.SEA -> return drawSeaEntrance(portal.x, portal.width, context, distance)
+        RodeoMap.MINE -> return drawMineEntrance(portal.x, portal.width, context)
+        else -> Unit
     }
     // The hole, reaching a bit below the ground line
     drawOval(context.colors.scrim, topLeft = p(0f, 1f), size = Size(portal.width * unit, 3.5f * unit))

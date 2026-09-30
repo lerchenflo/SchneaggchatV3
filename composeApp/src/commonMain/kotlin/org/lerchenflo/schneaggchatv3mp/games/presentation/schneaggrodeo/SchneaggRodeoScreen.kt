@@ -228,6 +228,7 @@ fun SchneaggRodeoScreen(
                         isOnFoot = state.isOnFoot,
                         ride = state.ride,
                         rocketReady = state.rocketReady,
+                        carriageReady = state.carriageReady,
                         showKeyHints = showKeyHints,
                         enabled = state.isPlaying && !state.isPaused,
                         onAction = onAction,

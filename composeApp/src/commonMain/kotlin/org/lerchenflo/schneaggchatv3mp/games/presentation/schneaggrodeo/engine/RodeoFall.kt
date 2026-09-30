@@ -80,6 +80,12 @@ internal class RodeoFall {
     /** Back on his feet and a horse is around: the lasso may be thrown at it. */
     val canLasso: Boolean get() = phase == FallPhase.ON_FOOT && horseIsBack
 
+    /** The exhausted horse ran off and the new one is not there yet: nothing the player can do meanwhile. */
+    val isWaitingForHorse: Boolean get() = isOnFoot && !horseIsBack
+
+    /** The fall came from an exhausted horse, so the cowboy gets (or got) back up on a new one. */
+    val hasNewHorse: Boolean get() = horseRunsOff
+
     private val runOffStart: Float get() = BUCK_SECONDS
     private val horseIsBack: Boolean get() = !horseRunsOff || clock >= runOffStart + RUN_OFF_SECONDS + ARRIVE_SECONDS
 

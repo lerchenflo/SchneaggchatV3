@@ -5,10 +5,15 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoPiz
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.LassoGrab
 import kotlin.random.Random
 
-// Now and then a wood-fired pizza oven stands by the roadside, a pizza baking in its mouth. Lasso
-// the pizza out of it while riding by: the horse eats it, gets all its hearts back and grows one
-// level stronger (see RodeoHorse.eatPizza). The oven stands behind the track, so the horse passes
-// in front of it without crashing.
+// Now and then a stop stands by the roadside with something to eat. Lasso it while riding by:
+//  - a wood-fired pizza oven: the horse eats the pizza, gets all its hearts back and grows one level
+//    stronger (see RodeoHorse.eatPizza)
+//  - a Käsknöpfle kiosk: a bowl of Käsknöpfle keeps the horse full - no hearts drain for a while
+//    (see RodeoHorse.eatKaesknoepfle)
+// The stops stand behind the track, so the horse passes in front of them without crashing.
+
+/** What stands by the roadside. */
+enum class RodeoStopKind { PIZZA_OVEN, KIOSK }
 
 /** Game seconds until the first oven, and between two. */
 private const val OVEN_FIRST_SECONDS = 50f
@@ -19,14 +24,16 @@ internal const val OVEN_WIDTH = 16f
 /** Middle of the oven's mouth, where the pizza sits and the lasso grabs it. */
 internal const val OVEN_MOUTH_X = 8f
 internal const val OVEN_MOUTH_Y = 7f
+/** Share of the stops that are Käsknöpfle kiosks. */
+private const val KIOSK_SHARE = 0.55f
 
-/** An oven by the roadside; [x] its left end. */
-internal class PizzaOven(var x: Float) {
+/** A stop by the roadside; [x] its left end. */
+internal class PizzaOven(var x: Float, val kind: RodeoStopKind) {
     var hasPizza = true
 }
 
 /** A pizza dangling in the lasso's loop on its way to the horse; [x] / [y] its center. */
-private class CarriedPizza(var x: Float, var y: Float)
+private class CarriedPizza(var x: Float, var y: Float, val kind: RodeoStopKind)
 
 internal class RodeoPizzaOvens {
     val ovens = mutableListOf<PizzaOven>()
@@ -45,7 +52,9 @@ internal class RodeoPizzaOvens {
         nextIn -= dt
         if (nextIn > 0f) return
         nextIn = OVEN_INTERVAL_MIN + Random.nextFloat() * OVEN_INTERVAL_RANDOM
-        ovens.add(PizzaOven(x = worldWidth + 5f))
+        // The kiosk comes a bit more often than the oven
+        val kind = if (Random.nextFloat() < KIOSK_SHARE) RodeoStopKind.KIOSK else RodeoStopKind.PIZZA_OVEN
+        ovens.add(PizzaOven(x = worldWidth + 5f, kind = kind))
     }
 
     /** The ovens stand still on the ground, so they scroll by with it. */
@@ -58,7 +67,7 @@ internal class RodeoPizzaOvens {
      * The closest oven whose pizza will be in [reach] when the loop arrives in [timeToCatch] (the
      * ground moves by at [groundSpeed]); [onEaten] once the loop brought the pizza to the horse.
      */
-    fun lassoGrab(reach: ClosedFloatingPointRange<Float>, timeToCatch: Float, groundSpeed: Float, onEaten: () -> Unit): LassoGrab? {
+    fun lassoGrab(reach: ClosedFloatingPointRange<Float>, timeToCatch: Float, groundSpeed: Float, onEaten: (RodeoStopKind) -> Unit): LassoGrab? {
         val oven = ovens
             .filter { it.hasPizza && it.x + OVEN_MOUTH_X - groundSpeed * timeToCatch in reach }
             .minByOrNull { it.x }
@@ -69,7 +78,7 @@ internal class RodeoPizzaOvens {
             override fun catch(): Boolean {
                 if (!oven.hasPizza) return false
                 oven.hasPizza = false
-                carried = CarriedPizza(x, y)
+                carried = CarriedPizza(x, y, oven.kind)
                 return true
             }
             override fun follow(tipX: Float, tipY: Float) {
@@ -80,12 +89,12 @@ internal class RodeoPizzaOvens {
             }
             override fun release() {
                 carried = null
-                onEaten()
+                onEaten(oven.kind)
             }
         }
     }
 
-    fun ui(): List<RodeoPizzaOvenUi> = ovens.map { RodeoPizzaOvenUi(x = it.x, hasPizza = it.hasPizza) }
+    fun ui(): List<RodeoPizzaOvenUi> = ovens.map { RodeoPizzaOvenUi(x = it.x, hasPizza = it.hasPizza, kind = it.kind) }
 
-    fun pizzaUi(): RodeoPizzaUi? = carried?.let { RodeoPizzaUi(x = it.x, y = it.y) }
+    fun pizzaUi(): RodeoPizzaUi? = carried?.let { RodeoPizzaUi(x = it.x, y = it.y, kind = it.kind) }
 }

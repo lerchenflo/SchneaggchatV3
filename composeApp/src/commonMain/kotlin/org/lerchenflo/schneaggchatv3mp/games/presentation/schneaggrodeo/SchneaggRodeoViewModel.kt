@@ -94,6 +94,10 @@ class SchneaggRodeoViewModel(
                 engine.rocketPressed()
                 publish()
             }
+            SchneaggRodeoAction.OnCarriageClick -> ifRiding {
+                engine.carriagePressed()
+                publish()
+            }
         }
     }
 
@@ -190,6 +194,7 @@ class SchneaggRodeoViewModel(
                 isOnFoot = engine.isOnFoot,
                 ride = engine.rideKind,
                 rocketReady = engine.rocketReady,
+                carriageReady = engine.carriageReady,
                 speedKmh = engine.speedKmh,
                 announcement = engine.announcement,
                 nextToBeat = ghosts.firstOrNull { ghost -> ghost.score > score },

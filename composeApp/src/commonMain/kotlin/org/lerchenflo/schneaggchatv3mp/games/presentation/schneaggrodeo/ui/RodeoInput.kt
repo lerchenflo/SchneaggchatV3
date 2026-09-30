@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.Schneagg
  *  - L / S / arrow down: lasso (steer down while flying)
  *  - J / arrow right: super jump
  *  - R: rocket
+ *  - G: golden carriage
  *
  * [steers] and [onAction] are read on every event, so they may change without restarting input.
  */
@@ -31,6 +32,7 @@ internal fun Modifier.rodeoInput(
         val isLassoKey = event.key == Key.L || event.key == Key.DirectionDown || event.key == Key.S
         val isSuperJumpKey = event.key == Key.J || event.key == Key.DirectionRight
         val isRocketKey = event.key == Key.R
+        val isCarriageKey = event.key == Key.G
         val down = event.type == KeyEventType.KeyDown
         val up = event.type == KeyEventType.KeyUp
         val action = when {
@@ -40,6 +42,7 @@ internal fun Modifier.rodeoInput(
             isLassoKey && down -> SchneaggRodeoAction.OnLassoClick
             isSuperJumpKey && down -> SchneaggRodeoAction.OnSuperJumpClick
             isRocketKey && down -> SchneaggRodeoAction.OnRocketClick
+            isCarriageKey && down -> SchneaggRodeoAction.OnCarriageClick
             isJumpKey && down -> SchneaggRodeoAction.OnJumpPressed
             isJumpKey && up -> SchneaggRodeoAction.OnJumpReleased
             else -> null

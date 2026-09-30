@@ -51,6 +51,11 @@ internal class RodeoPack {
         gap = min(CHASE_GAP_MAX, gap + units)
     }
 
+    /** Falls back to at least [minGap]. */
+    fun keepAway(minGap: Float) {
+        gap = max(gap, minGap)
+    }
+
     /** Far behind again, as far as it gets. */
     fun escape() {
         gap = CHASE_GAP_MAX

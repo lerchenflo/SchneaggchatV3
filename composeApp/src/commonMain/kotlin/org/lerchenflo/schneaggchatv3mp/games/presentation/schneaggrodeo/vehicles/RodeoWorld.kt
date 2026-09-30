@@ -41,6 +41,8 @@ internal interface RodeoWorld {
     fun takeHorseOffTheGround(): Float
     /** The pack falls back to its farthest distance. */
     fun escapePack()
+    /** The pack falls back by [gap] (scared by a cowbell, ...). */
+    fun scarePack(gap: Float)
 }
 
 /**

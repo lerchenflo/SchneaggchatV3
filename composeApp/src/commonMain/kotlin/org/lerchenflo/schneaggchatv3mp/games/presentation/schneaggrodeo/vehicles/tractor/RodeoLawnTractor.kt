@@ -15,7 +15,7 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
 
-// Lawn tractor: a red lawn tractor rolls by on the ground. Lasso it and the horse hops onto its
+// Lawn tractor: a maroon Murray lawn tractor rolls by on the ground. Lasso it and the horse hops onto its
 // deck, cowboy and all, for a short ride at an absurd speed. The world races by, but points keep
 // coming in at the normal pace; everything in the way is mowed flat without a penalty - but every
 // fence rips a part off. It is the special one of the rotation: it only comes once every other
@@ -170,16 +170,16 @@ internal class RodeoLawnTractor : RodeoDeckVehicle(RodeoVehicleKind.LAWN_TRACTOR
 
     /** Where each part sits on the tractor, relative to its left edge / the ground (see drawTractor). */
     private fun partAnchor(part: Int): Pair<Float, Float> = when (part) {
-        PART_HEADLIGHT -> 38.8f to 9.3f
-        PART_EXHAUST -> 36f to 12f
-        PART_STEERING_WHEEL -> 27f to 12f
-        PART_SEAT -> 1.5f to 10f
-        PART_GRILLE -> 40.2f to 7f
-        PART_FENDER -> 7f to 9f
-        PART_HOOD -> 34f to 8f
-        PART_MOWER_DECK -> 20f to 1.5f
-        PART_FRONT_WHEEL -> 33f to 2.8f
-        PART_REAR_WHEEL -> 7f to 4.5f
+        PART_HEADLIGHT -> 40f to 6.8f
+        PART_EXHAUST -> -1.2f to 7f
+        PART_STEERING_WHEEL -> 31f to 15.5f
+        PART_SEAT -> 15f to 12f
+        PART_GRILLE -> 33.4f to 10.8f
+        PART_FENDER -> 8f to 9f
+        PART_HOOD -> 8.4f to 11f
+        PART_MOWER_DECK -> 27.5f to 7.5f
+        PART_FRONT_WHEEL -> 36f to 2.6f
+        PART_REAR_WHEEL -> 8f to 5f
         else -> 15f to 6f // scrap from the chassis
     }
 

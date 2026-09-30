@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -44,6 +45,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_catch_horse
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_rocket
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_golden_carriage_button
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_super_jump
 
 /** Big enough to hit with a thumb without looking. */
@@ -65,6 +67,7 @@ internal fun RodeoControls(
     isOnFoot: Boolean,
     ride: RodeoVehicleKind?,
     rocketReady: Boolean,
+    carriageReady: Boolean,
     showKeyHints: Boolean,
     enabled: Boolean,
     onAction: (SchneaggRodeoAction) -> Unit,
@@ -123,6 +126,23 @@ internal fun RodeoControls(
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.tertiary,
                                 contentColor = MaterialTheme.colorScheme.onTertiary
+                            ),
+                        )
+                    }
+                    // Even more snails saved up: the golden carriage
+                    AnimatedVisibility(
+                        visible = carriageReady,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
+                    ) {
+                        RodeoBigButton(
+                            text = stringResource(Res.string.games_schneaggrodeo_golden_carriage_button) + keyHint("G", showKeyHints),
+                            icon = Icons.Default.EmojiEvents,
+                            enabled = enabled,
+                            onClick = { onAction(SchneaggRodeoAction.OnCarriageClick) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary,
+                                contentColor = MaterialTheme.colorScheme.onSecondary
                             ),
                         )
                     }

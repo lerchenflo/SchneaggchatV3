@@ -76,3 +76,53 @@ internal val PIZZA_SAUCE = Color(0xFFD84315)
 internal val PIZZA_CHEESE = Color(0xFFFFE082)
 internal val PIZZA_SALAMI = Color(0xFFB71C1C)
 internal val PIZZA_BASIL = Color(0xFF388E3C)
+
+// The underground sea: water, buoys, sharks, swim rings, oil and pearls
+internal val SEA_WATER = Color(0xFF0D47A1)
+internal val SEA_WATER_LIGHT = Color(0xFF4FC3F7)
+internal val SEAWEED = Color(0xFF2E7D32)
+internal val BUOY_RED = Color(0xFFE53935)
+internal val BUOY_WHITE = Color(0xFFF5F5F5)
+internal val SHARK_GRAY = Color(0xFF78909C)
+internal val SHARK_BELLY = Color(0xFFECEFF1)
+internal val SWIM_RING = Color(0xFFFF80AB)
+internal val OIL_BLACK = Color(0xFF1B1B1B)
+internal val OIL_SHEEN = listOf(Color(0xFF7E57C2), Color(0xFF26A69A), Color(0xFFFFCA28))
+internal val PEARL_WHITE = Color(0xFFF8F4EC)
+internal val CLAM_SHELL = Color(0xFFBCAAA4)
+
+// The mine: earth walls, timber, crates, gold, helmets and dirt mounds
+internal val MINE_EARTH = Color(0xFF4E342E)
+internal val MINE_EARTH_LIGHT = Color(0xFF6D4C41)
+internal val MINE_TIMBER = Color(0xFF8D6E63)
+internal val CRATE_WOOD_LIGHT = Color(0xFFBCAAA4)
+internal val MINE_ROCK = Color(0xFF757575)
+internal val GOLD_NUGGET = Color(0xFFFFC107)
+internal val GOLD_SHINE = Color(0xFFFFF59D)
+internal val HELMET_YELLOW = Color(0xFFFDD835)
+internal val SHOVEL_STEEL = Color(0xFF9E9E9E)
+
+// Weather and time of day
+internal val RAIN_COLOR = Color(0xFF90CAF9)
+internal val SNOW_COLOR = Color(0xFFFFFFFF)
+internal val DUSK_TINT = Color(0xFFFF7043)
+internal val NIGHT_SHADE = Color(0xFF0A0F24)
+
+// The Käsknöpfle kiosk
+internal val KIOSK_AWNING = Color(0xFFE53935)
+internal val KIOSK_WOOD = Color(0xFFA1887F)
+internal val KNOEPFLE_YELLOW = Color(0xFFFFE082)
+internal val ONION_BROWN = Color(0xFF8D6E63)
+internal val BOWL_BROWN = Color(0xFF6D4C41)
+
+// Rainbow after the rain (outer to inner band), fireflies and the ghost horse's glow
+internal val RAINBOW_BANDS = listOf(
+    Color(0xFFE53935),
+    Color(0xFFFB8C00),
+    Color(0xFFFDD835),
+    Color(0xFF43A047),
+    Color(0xFF1E88E5),
+    Color(0xFF8E24AA),
+)
+internal val FIREFLY_GLOW = Color(0xFFD4FF5C)
+internal val GHOST_GLOW = Color(0xFF80DEEA)

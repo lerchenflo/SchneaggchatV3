@@ -4,6 +4,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCar
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoFenceUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGemUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoHorseshoeUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMoundUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMudUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMushroomUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoSnailUi
@@ -43,6 +44,17 @@ private const val GEM_MAX_HEIGHT = 34f
 /** Mushrooms grow in the damp cave too. */
 private const val CAVE_MUSHROOM_CHANCE = 0.2f
 
+// The underground sea: pearls float in the water, oil slicks slow the swimming horse
+private const val PEARL_CHANCE = 0.55f
+private const val OIL_CHANCE = 0.3f
+// The mine: gold nuggets in the rock, dirt mounds to dig through
+private const val NUGGET_CHANCE = 0.45f
+private const val NUGGET_MIN_HEIGHT = 12f
+private const val NUGGET_MAX_HEIGHT = 26f
+private const val MOUND_CHANCE = 0.5f
+/** Half the width of a dirt mound; the horse digs it when its hitbox overlaps. */
+internal const val MOUND_HALF_WIDTH = 4f
+
 private const val OXER_WIDTH = 18f
 private const val FENCE_WIDTH = 10f
 /** Snails sent flying fall like the horse does. */
@@ -61,10 +73,13 @@ internal class RodeoCourse {
     val mud = mutableListOf<MudPatch>()
     val mushrooms = mutableListOf<Mushroom>()
     val gems = mutableListOf<Gem>()
+    val mounds = mutableListOf<DigMound>()
     /** Chance of a mushroom per fence placed; the engine raises it in the forest. */
     var mushroomChance = MUSHROOM_CHANCE
-    /** In the cave: crystals instead of mud, more mushrooms. */
-    var inCave = false
+    /** Multiplies the chance of a mud puddle; the run's weather sets it (see RodeoRunFlavor). */
+    var mudFactor = 1f
+    /** The map the track runs through: each underground map has its own pickups. */
+    var map = RodeoMap.SURFACE
 
     /** Fences placed this run; also rotates their pole colors. */
     var fenceCount = 0
@@ -83,8 +98,10 @@ internal class RodeoCourse {
         mud.clear()
         mushrooms.clear()
         gems.clear()
+        mounds.clear()
         mushroomChance = MUSHROOM_CHANCE
-        inCave = false
+        mudFactor = 1f
+        map = RodeoMap.SURFACE
         fenceCount = 0
         nextRunnerIn = 0f
         // Placed on the first frame, once the world width is known for sure
@@ -127,19 +144,42 @@ internal class RodeoCourse {
             val height = CARROT_MIN_HEIGHT + Random.nextFloat() * (CARROT_MAX_HEIGHT - CARROT_MIN_HEIGHT)
             carrots.add(Carrot(x = fence.x + fence.width + gapAfter / 3f, height = height))
         }
-        if (inCave) {
-            if (Random.nextFloat() < GEM_CHANCE) {
-                val height = GEM_MIN_HEIGHT + Random.nextFloat() * (GEM_MAX_HEIGHT - GEM_MIN_HEIGHT)
-                gems.add(Gem(x = fence.x + fence.width + gapAfter * 0.45f, height = height))
+        val gapStart = fence.x + fence.width
+        when (map) {
+            RodeoMap.CAVE -> {
+                if (Random.nextFloat() < GEM_CHANCE) {
+                    val height = GEM_MIN_HEIGHT + Random.nextFloat() * (GEM_MAX_HEIGHT - GEM_MIN_HEIGHT)
+                    gems.add(Gem(x = gapStart + gapAfter * 0.45f, height = height))
+                }
+                if (Random.nextFloat() < CAVE_MUSHROOM_CHANCE) mushrooms.add(Mushroom(x = gapStart + gapAfter * 0.75f))
             }
-            if (Random.nextFloat() < CAVE_MUSHROOM_CHANCE) mushrooms.add(Mushroom(x = fence.x + fence.width + gapAfter * 0.75f))
-        } else if (elapsed >= MUD_START_SECONDS && Random.nextFloat() < MUD_CHANCE) {
-            val width = min(gapAfter * 0.4f, MUD_MIN_WIDTH + Random.nextFloat() * (MUD_MAX_WIDTH - MUD_MIN_WIDTH))
-            mud.add(MudPatch(x = fence.x + fence.width + gapAfter * 0.55f, width = width))
-        } else if (Random.nextFloat() < mushroomChance) {
-            mushrooms.add(Mushroom(x = fence.x + fence.width + gapAfter * 0.7f))
+            RodeoMap.SEA -> {
+                // Pearls count like crystals; oil slicks work like mud
+                if (Random.nextFloat() < PEARL_CHANCE) {
+                    val height = GEM_MIN_HEIGHT + Random.nextFloat() * (GEM_MAX_HEIGHT - GEM_MIN_HEIGHT)
+                    gems.add(Gem(x = gapStart + gapAfter * 0.45f, height = height))
+                }
+                if (Random.nextFloat() < OIL_CHANCE) addPuddle(gapStart, gapAfter)
+            }
+            RodeoMap.MINE -> {
+                if (Random.nextFloat() < NUGGET_CHANCE) {
+                    val height = NUGGET_MIN_HEIGHT + Random.nextFloat() * (NUGGET_MAX_HEIGHT - NUGGET_MIN_HEIGHT)
+                    gems.add(Gem(x = gapStart + gapAfter * 0.3f, height = height))
+                }
+                if (Random.nextFloat() < MOUND_CHANCE) mounds.add(DigMound(x = gapStart + gapAfter * 0.65f))
+            }
+            RodeoMap.SURFACE -> if (elapsed >= MUD_START_SECONDS && Random.nextFloat() < MUD_CHANCE * mudFactor) {
+                addPuddle(gapStart, gapAfter)
+            } else if (Random.nextFloat() < mushroomChance) {
+                mushrooms.add(Mushroom(x = gapStart + gapAfter * 0.7f))
+            }
         }
         return fence
+    }
+
+    private fun addPuddle(gapStart: Float, gapAfter: Float) {
+        val width = min(gapAfter * 0.4f, MUD_MIN_WIDTH + Random.nextFloat() * (MUD_MAX_WIDTH - MUD_MIN_WIDTH))
+        mud.add(MudPatch(x = gapStart + gapAfter * 0.55f, width = width))
     }
 
     /**
@@ -154,6 +194,7 @@ internal class RodeoCourse {
         mud.clear()
         mushrooms.clear()
         gems.clear()
+        mounds.clear()
         nextFenceIn = RodeoDifficulty.randomFenceGap(speed, elapsed)
     }
 
@@ -233,6 +274,8 @@ internal class RodeoCourse {
         mushrooms.removeAll { it.x < -SNAIL_SIZE }
         gems.forEach { it.x -= scroll }
         gems.removeAll { it.x < -SNAIL_SIZE }
+        mounds.forEach { it.x -= scroll }
+        mounds.removeAll { it.x < -SNAIL_SIZE }
     }
 
     /**
@@ -251,6 +294,7 @@ internal class RodeoCourse {
         mud.removeAll { it.x > worldWidth }
         mushrooms.removeAll { it.x > worldWidth }
         gems.removeAll { it.x > worldWidth }
+        mounds.removeAll { it.x > worldWidth }
 
         val hitLeft = HORSE_X + HITBOX_LEFT
         val ahead = fences.filter { it.x + it.width > hitLeft }.sortedBy { it.x }
@@ -290,9 +334,9 @@ internal class RodeoCourse {
                 } else {
                     sin(clock * 0.3f + snail.phase) * 3f
                 }
-                RodeoSnailUi(snail.x, snail.height, facingLeft = true, tiltDeg = wobble)
+                RodeoSnailUi(snail.x, snail.height, facingLeft = true, tiltDeg = wobble, runner = snail.kind == SnailKind.RUNNER)
             }
-            SnailState.KNOCKED -> RodeoSnailUi(snail.x, snail.height, facingLeft = true, tiltDeg = snail.spin)
+            SnailState.KNOCKED -> RodeoSnailUi(snail.x, snail.height, facingLeft = true, tiltDeg = snail.spin, runner = snail.kind == SnailKind.RUNNER)
             SnailState.LASSOED -> null
         }
     }
@@ -327,6 +371,8 @@ internal class RodeoCourse {
     }
 
     fun mushroomUis(): List<RodeoMushroomUi> = mushrooms.map { RodeoMushroomUi(x = it.x, seed = it.seed) }
+
+    fun moundUis(): List<RodeoMoundUi> = mounds.map { RodeoMoundUi(x = it.x, seed = it.seed) }
 
     fun mudUis(): List<RodeoMudUi> = mud.map { RodeoMudUi(x = it.x, width = it.width, seed = it.seed) }
 }

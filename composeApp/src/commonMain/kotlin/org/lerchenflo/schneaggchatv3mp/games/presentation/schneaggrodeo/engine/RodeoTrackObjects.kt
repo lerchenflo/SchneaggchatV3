@@ -124,3 +124,8 @@ internal fun hopOverFences(x: Float, fences: List<Fence>, reach: Float, clearanc
     return height
 }
 
+
+/** A dirt mound in the mine: galloping through it digs it up and turns up a find; [x] its center. */
+internal class DigMound(var x: Float) {
+    val seed = Random.nextInt(1000)
+}

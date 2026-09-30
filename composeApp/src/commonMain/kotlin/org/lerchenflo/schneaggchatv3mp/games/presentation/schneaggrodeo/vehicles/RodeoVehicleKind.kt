@@ -2,6 +2,32 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicle
 
 import org.jetbrains.compose.resources.StringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_balloon
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_balloon_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_balloon_controls_keys
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_cow
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_cow_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_rowboat
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_rowboat_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_uboat
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_uboat_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_uboat_controls_keys
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_oil_tanker
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_oil_tanker_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_flamingo
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_flamingo_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_flamingo_controls_keys
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_mine_cart
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_mine_cart_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_traffic_jam
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_traffic_jam_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_pirate_ship
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_pirate_ship_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_drill
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_golden_carriage
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_golden_carriage_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_drill_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_drill_controls_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_bull
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_bull_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_bull_controls_keys
@@ -92,6 +118,60 @@ enum class RodeoVehicleKind(
     SHOPPING_CART(
         title = Res.string.games_schneaggrodeo_shopping_cart,
         rideHint = Res.string.games_schneaggrodeo_shopping_cart_controls,
+    ),
+    BALLOON(
+        title = Res.string.games_schneaggrodeo_balloon,
+        rideHint = Res.string.games_schneaggrodeo_balloon_controls,
+        rideHintKeys = Res.string.games_schneaggrodeo_balloon_controls_keys,
+    ),
+    COW(
+        title = Res.string.games_schneaggrodeo_cow,
+        rideHint = Res.string.games_schneaggrodeo_cow_controls,
+    ),
+    /** The underground sea's vehicles (see RodeoTraffic). */
+    ROWBOAT(
+        title = Res.string.games_schneaggrodeo_rowboat,
+        rideHint = Res.string.games_schneaggrodeo_rowboat_controls,
+        keepsButtons = true,
+    ),
+    U_BOAT(
+        title = Res.string.games_schneaggrodeo_uboat,
+        rideHint = Res.string.games_schneaggrodeo_uboat_controls,
+        rideHintKeys = Res.string.games_schneaggrodeo_uboat_controls_keys,
+    ),
+    OIL_TANKER(
+        title = Res.string.games_schneaggrodeo_oil_tanker,
+        rideHint = Res.string.games_schneaggrodeo_oil_tanker_controls,
+    ),
+    FLAMINGO(
+        title = Res.string.games_schneaggrodeo_flamingo,
+        rideHint = Res.string.games_schneaggrodeo_flamingo_controls,
+        rideHintKeys = Res.string.games_schneaggrodeo_flamingo_controls_keys,
+    ),
+    /** The mine's vehicle. */
+    MINE_CART(
+        title = Res.string.games_schneaggrodeo_mine_cart,
+        rideHint = Res.string.games_schneaggrodeo_mine_cart_controls,
+    ),
+    TRAFFIC_JAM(
+        title = Res.string.games_schneaggrodeo_traffic_jam,
+        rideHint = Res.string.games_schneaggrodeo_traffic_jam_controls,
+    ),
+    /** The sea's pirate ship. */
+    PIRATE_SHIP(
+        title = Res.string.games_schneaggrodeo_pirate_ship,
+        rideHint = Res.string.games_schneaggrodeo_pirate_ship_controls,
+    ),
+    /** The mine's drill machine. */
+    DRILL(
+        title = Res.string.games_schneaggrodeo_drill,
+        rideHint = Res.string.games_schneaggrodeo_drill_controls,
+        rideHintKeys = Res.string.games_schneaggrodeo_drill_controls_keys,
+    ),
+    /** Bought with snails, like the rocket. */
+    GOLDEN_CARRIAGE(
+        title = Res.string.games_schneaggrodeo_golden_carriage,
+        rideHint = Res.string.games_schneaggrodeo_golden_carriage_controls,
     ),
     /** Comes along with a mountain (see RodeoLandscape). */
     CABLE_CAR(

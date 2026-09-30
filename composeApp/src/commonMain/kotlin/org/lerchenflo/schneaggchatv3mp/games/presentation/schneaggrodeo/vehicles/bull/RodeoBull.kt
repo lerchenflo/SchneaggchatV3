@@ -42,7 +42,7 @@ private const val BULL_RIDE_X = HORSE_X + 34f  // runs ahead of the riderless ho
 private const val BULL_BOARD_SECONDS = 0.7f
 private const val BULL_UNLOAD_SECONDS = 0.8f
 private const val BULL_JUMP_HOP = 8f
-internal const val BULL_RIDE_SECONDS = 8f
+internal const val BULL_RIDE_SECONDS = 6f
 private const val BULL_RIDE_BONUS = 150
 private const val BULL_FENCE_POINTS = 5
 private const val BULL_FENCE_SECONDS = 1.1f
@@ -52,14 +52,18 @@ private const val BULL_GAIT_SPEED = 16f       // gait radians per second
 // Balance: the rider's lean runs from -1 (flat back) to 1 (over the horns); at either end he's off.
 // The bull's bucks push it one way, the rider's input the other; the further he leans, the more he
 // tips (like any inverted pendulum), and his own sway dampens it a bit.
-private const val BUCK_START_STRENGTH = 2.5f
-private const val BUCK_END_STRENGTH = 5f
-private const val BUCK_WARMUP_SECONDS = 0.8f  // the first bucks ramp in, time to find the balance
-private const val BUCK_MIN_SECONDS = 0.45f    // a buck lasts this long plus a random share
+// Tuned forgiving: gentle bucks that ramp in slowly, strong control, and the rider finds back to
+// the middle on his own (LEAN_RECENTER) - the input only has to help against the bucks.
+private const val BUCK_START_STRENGTH = 1.2f
+private const val BUCK_END_STRENGTH = 2.6f
+private const val BUCK_WARMUP_SECONDS = 2f    // the first bucks ramp in, time to find the balance
+private const val BUCK_MIN_SECONDS = 0.6f     // a buck lasts this long plus a random share
 private const val BUCK_RANDOM_SECONDS = 0.5f
-private const val LEAN_CONTROL = 9f
-private const val LEAN_INSTABILITY = 1.5f
-private const val LEAN_DAMPING = 2.5f
+private const val LEAN_CONTROL = 11f
+private const val LEAN_INSTABILITY = 0.4f
+private const val LEAN_DAMPING = 4f
+/** Pulls the rider back upright by himself. */
+private const val LEAN_RECENTER = 2.2f
 /** Degrees the bull pitches with a buck: rear up (positive) or rearing up at the front (negative). */
 private const val BUCK_PITCH = 14f
 private const val BUCK_PITCH_RESPONSE = 10f
@@ -169,7 +173,7 @@ internal class RodeoBull : RodeoVehicle(RodeoVehicleKind.BULL) {
         val progress = phaseTime / BULL_RIDE_SECONDS
         val strength = lerp(BUCK_START_STRENGTH, BUCK_END_STRENGTH, progress) * min(1f, phaseTime / BUCK_WARMUP_SECONDS)
         val input = (if (leanForward) 1f else 0f) - (if (leanBack) 1f else 0f)
-        val accel = buckDirection * strength + LEAN_INSTABILITY * lean + input * LEAN_CONTROL - LEAN_DAMPING * leanSpeed
+        val accel = buckDirection * strength + (LEAN_INSTABILITY - LEAN_RECENTER) * lean + input * LEAN_CONTROL - LEAN_DAMPING * leanSpeed
         leanSpeed += accel * dt
         lean += leanSpeed * dt
         pitch += (buckDirection * BUCK_PITCH - pitch) * min(1f, dt * BUCK_PITCH_RESPONSE)

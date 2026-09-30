@@ -4,6 +4,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCow
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_LEG_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_Y
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.Horseshoe
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
@@ -21,22 +22,41 @@ import kotlin.math.min
 import kotlin.math.sin
 import kotlin.random.Random
 
-// Plane: passes low with a rope ladder. Lasso the ladder and the cowboy climbs aboard and flies over
-// a city skyline until he crashes into a building or the ground, then drops back into the saddle.
-// The riderless horse gallops on below, hopping the fences.
+// Plane: an airfield comes along the track with the plane rolling down its runway, taking off. Lasso
+// it while it rolls and the cowboy jumps into the cockpit and lifts off, then flies over a city
+// skyline until he crashes into a building or the ground (or the tank runs dry), then drops back into
+// the saddle. The riderless horse gallops on below, hopping the fences.
 
 // Shape, shared with the drawing (grid: x from the plane's left edge, y up from the fuselage underside)
 internal const val PLANE_LENGTH = 22f
-internal const val PLANE_LADDER_X = 10f
-internal const val PLANE_LADDER_LENGTH = 12f
+/** Landing gear: the wheels hang this far below the fuselage while it rolls. */
+internal const val PLANE_GEAR_HEIGHT = 2.5f
+/** The airfield: runway length, the plane starts [AIRPORT_PLANE_START] into it. */
+internal const val AIRPORT_LENGTH = 110f
+private const val AIRPORT_PLANE_START = 20f
 internal const val PLANE_PILOT_X = 11f               // cowboy's feet in the cockpit
 private const val PLANE_PILOT_Y = 1f
 /** Storm clouds are a bit wider than the building below. */
 internal const val CLOUD_OVERHANG = 3f
 
-private const val PLANE_PASS_SPEED = 35f             // u/s across the screen while passing by
-private const val PLANE_APPROACH_HEIGHT = 36f        // underside of the fuselage
-private const val PLANE_BOARD_SECONDS = 0.9f
+private const val PLANE_PASS_SPEED = 16f             // u/s across the screen while rolling down the runway
+private const val PLANE_HITCH_Y = 5f
+private const val PLANE_HITCH_AIM = HORSE_X + HAND_X + 16f
+private const val LASSO_LEAD = 0.225f
+/** Not caught by here: it lifts off without the cowboy. */
+private const val PLANE_LIFTOFF_X = HORSE_X - 6f
+private const val PLANE_LIFTOFF_CLIMB = 14f
+private const val PLANE_BOARD_SECONDS = 1.4f
+private const val PLANE_TAKEOFF_HEIGHT = 20f
+private const val PLANE_BOARD_HOP = 8f
+/** The tank runs dry after this long: the cowboy jumps back into the saddle, the plane flies off. */
+private const val PLANE_FLIGHT_SECONDS = 16f
+private const val PLANE_LEAVE_SPEED = 25f
+/** Nose up while climbing, down while diving: degrees per u/s of vertical speed, and the limit. */
+private const val PLANE_PITCH_PER_SPEED = 0.7f
+private const val PLANE_MAX_PITCH = 28f
+private const val PLANE_PITCH_RESPONSE = 8f
+private const val PLANE_TAKEOFF_PITCH = -14f
 private const val PLANE_FLY_X = 16f                  // left edge of the plane while flying (HORSE_X + 4)
 private const val PLANE_MAX_HEIGHT = 55f             // keeps the plane inside the canvas
 private const val PLANE_HIT_LEFT = 2f                // hitbox relative to the plane's left edge / underside
@@ -47,19 +67,19 @@ private const val PLANE_DROP_HOP = 8f
 private const val PLANE_WRECK_FALL_SPEED = 30f
 private const val PLANE_WRECK_SPIN = 220f            // degrees per second
 private const val BUILDING_MIN_HEIGHT = 12f
-private const val BUILDING_MAX_HEIGHT = 44f
+private const val BUILDING_MAX_HEIGHT = 32f
 private const val BUILDING_MIN_WIDTH = 14f
 private const val BUILDING_MAX_WIDTH = 22f
 private const val BUILDING_POINTS = 5                // per building flown past
 private const val FLIGHT_HORSESHOE_CHANCE = 0.6f
 // Storm clouds hang from the sky above the buildings, leaving a passage over the roof that gets
 // narrower and more frequent the longer the flight lasts
-private const val CLOUD_START_CHANCE = 0.45f
-private const val CLOUD_CHANCE_PER_SECOND = 0.03f
-private const val CLOUD_MAX_CHANCE = 0.85f
-private const val CLOUD_START_GAP = 26f              // roof to cloud at the start of a flight
-private const val CLOUD_MIN_GAP = 15f                // never narrower than this (plane is 7 high)
-private const val CLOUD_GAP_SHRINK_PER_SECOND = 0.5f
+private const val CLOUD_START_CHANCE = 0.2f
+private const val CLOUD_CHANCE_PER_SECOND = 0.01f
+private const val CLOUD_MAX_CHANCE = 0.4f
+private const val CLOUD_START_GAP = 32f              // roof to cloud at the start of a flight
+private const val CLOUD_MIN_GAP = 22f                // never narrower than this (plane is 7 high)
+private const val CLOUD_GAP_SHRINK_PER_SECOND = 0.4f
 private const val CLOUD_GAP_RANDOM = 5f
 
 /** A building of the skyline under the plane; [x] is its left edge. */
@@ -85,12 +105,16 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
         maxSink = 45f,
     )
     private var y = 0f          // underside of the fuselage
-    private var rotation = 0f   // degrees clockwise, only while the wreck tumbles
+    private var rotation = 0f   // degrees clockwise: nose down while diving, tumbling as a wreck
     private var boardStartX = 0f
     private var propellerPhase = 0f
     private var nextBuildingIn = 0f
     private var dropStartX = 0f
     private var dropStartY = 0f
+    /** Left end of the airfield's runway; scrolls with the ground. */
+    private var airportX = 0f
+    /** The flight ended because the tank ran dry, not in a crash: the plane flies off in one piece. */
+    private var outOfFuel = false
 
     override val length = PLANE_LENGTH
     override val passSpeed = PLANE_PASS_SPEED
@@ -102,7 +126,14 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
 
     override val riderOnHorse: Boolean get() = !carriesRider
 
-    override fun hitch() = (x + PLANE_LADDER_X) to (y - PLANE_LADDER_LENGTH)
+    /** The whole plane on the runway is a target. */
+    override fun hitch() = (PLANE_HITCH_AIM + PLANE_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + PLANE_LENGTH - 2f) to y + PLANE_HITCH_Y
+
+    /** No fences on the runway ahead. */
+    override val blocksFences: Boolean
+        get() = carriesRider || (phase == VehiclePhase.APPROACH && airportX + AIRPORT_LENGTH > HORSE_X)
+
+    private val airportVisible: Boolean get() = airportX + AIRPORT_LENGTH > -5f
 
     override fun reset() {
         super.reset()
@@ -112,8 +143,13 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
 
     override fun spawn(world: RodeoWorld) {
         super.spawn(world)
-        y = PLANE_APPROACH_HEIGHT
+        airportX = world.worldWidth
+        x = airportX + AIRPORT_PLANE_START
+        y = PLANE_GEAR_HEIGHT
         rotation = 0f
+        outOfFuel = false
+        // Clear the runway of what is already lying there
+        world.fences.removeAll { it.x + it.width > airportX }
     }
 
     override fun board(world: RodeoWorld) {
@@ -136,20 +172,48 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
     override fun update(world: RodeoWorld, dt: Float, scroll: Float) {
         propellerPhase += dt * 40f
 
-        // The skyline scrolls with the ground and outlives the flight until it leaves the screen
+        // The skyline and the airfield scroll with the ground and outlive the flight until they leave the screen
+        airportX -= scroll
         buildings.forEach { it.x -= scroll }
         buildings.removeAll { it.x + it.width < 0f }
 
         when (phase) {
             VehiclePhase.IDLE -> Unit
-            VehiclePhase.APPROACH -> passBy(dt)
+            VehiclePhase.APPROACH -> {
+                // Rolling down the runway; missed, it lifts off without the cowboy
+                x -= passSpeed * dt
+                if (x < PLANE_LIFTOFF_X) y += PLANE_LIFTOFF_CLIMB * dt
+                if (x + length < 0f) enter(VehiclePhase.LEAVING)
+            }
             VehiclePhase.BOARDING -> {
+                // Take-off with the cowboy aboard
                 val progress = progressOf(phaseTime, PLANE_BOARD_SECONDS)
                 x = lerp(boardStartX, PLANE_FLY_X, smoothstep(progress))
+                y = lerp(PLANE_GEAR_HEIGHT, PLANE_TAKEOFF_HEIGHT, smoothstep(progress))
+                // Nose up for the take-off, level again at the top
+                rotation = PLANE_TAKEOFF_PITCH * sin(PI.toFloat() * progress)
                 if (progress >= 1f) enter(VehiclePhase.RIDING)
             }
-            VehiclePhase.RIDING -> fly(world, dt, scroll)
-            VehiclePhase.UNLOADING -> {
+            VehiclePhase.RIDING -> {
+                fly(world, dt, scroll)
+                // Turns its nose up while climbing and down while diving (clockwise is nose down)
+                val pitch = (-steering.vy * PLANE_PITCH_PER_SPEED).coerceIn(-PLANE_MAX_PITCH, PLANE_MAX_PITCH)
+                rotation += (pitch - rotation) * min(1f, dt * PLANE_PITCH_RESPONSE)
+                if (phase == VehiclePhase.RIDING && phaseTime >= PLANE_FLIGHT_SECONDS) {
+                    outOfFuel = true
+                    crash(world)
+                }
+            }
+            VehiclePhase.UNLOADING -> if (outOfFuel) {
+                // Flies off in one piece, nose up and away
+                rotation += (PLANE_TAKEOFF_PITCH - rotation) * min(1f, dt * PLANE_PITCH_RESPONSE)
+                x += PLANE_LEAVE_SPEED * dt
+                y += PLANE_LEAVE_SPEED * 0.5f * dt
+                if (phaseTime >= PLANE_DROP_SECONDS) {
+                    enter(VehiclePhase.LEAVING)
+                    world.resumeFences()
+                }
+            } else {
                 // The wreck tumbles down and away behind the horse
                 x -= scroll * 0.6f
                 y -= PLANE_WRECK_FALL_SPEED * dt
@@ -160,7 +224,13 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
                     world.resumeFences()
                 }
             }
-            VehiclePhase.LEAVING -> if (buildings.isEmpty()) enter(VehiclePhase.IDLE)
+            VehiclePhase.LEAVING -> {
+                if (outOfFuel) {
+                    x += PLANE_LEAVE_SPEED * dt
+                    y += PLANE_LEAVE_SPEED * 0.5f * dt
+                }
+                if (buildings.isEmpty() && !airportVisible) enter(VehiclePhase.IDLE)
+            }
         }
     }
 
@@ -200,11 +270,10 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
 
     private fun crash(world: RodeoWorld) {
         enter(VehiclePhase.UNLOADING)
-        rotation = 0f
         steering.release()
         dropStartX = x + PLANE_PILOT_X
         dropStartY = y + PLANE_PILOT_Y
-        world.sparkle(x + PLANE_HIT_RIGHT, y + PLANE_HIT_TOP / 2f)
+        if (!outOfFuel) world.sparkle(x + PLANE_HIT_RIGHT, y + PLANE_HIT_TOP / 2f)
     }
 
     private fun spawnBuilding(world: RodeoWorld) {
@@ -220,7 +289,7 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
         buildings.add(
             Building(x = world.worldWidth, width = width, height = height, seed = Random.nextInt(1000), cloudBottom = cloudBottom)
         )
-        val gap = world.speed * (0.35f + Random.nextFloat() * 0.35f)
+        val gap = world.speed * (0.7f + Random.nextFloat() * 0.5f)
         nextBuildingIn = width + gap
         // Horseshoes float in the gaps, some above the rooftops, some low between the houses
         if (Random.nextFloat() < FLIGHT_HORSESHOE_CHANCE) {
@@ -230,12 +299,13 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
     }
 
     override fun cowboy(world: RodeoWorld): RodeoCowboyUi? = when (phase) {
-        // Climbing the ladder
+        // Jumping over into the cockpit, landing there halfway through the take-off
         VehiclePhase.BOARDING -> {
-            val progress = progressOf(phaseTime, PLANE_BOARD_SECONDS)
+            val progress = min(1f, progressOf(phaseTime, PLANE_BOARD_SECONDS) * 2f)
             RodeoCowboyUi(
                 x = lerp(HORSE_X + COWBOY_SEAT_X, x + PLANE_PILOT_X, progress),
-                height = lerp(world.horseHeight + COWBOY_SEAT_Y - COWBOY_LEG_LENGTH, y + PLANE_PILOT_Y, progress),
+                height = lerp(world.horseHeight + COWBOY_SEAT_Y - COWBOY_LEG_LENGTH, y + PLANE_PILOT_Y, progress) +
+                        PLANE_BOARD_HOP * sin(PI.toFloat() * progress),
                 rotation = 0f,
                 facingLeft = false,
                 hatLift = 0f,
@@ -258,20 +328,25 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
 
     override fun ui(): RodeoVehicleUi? {
         if (phase == VehiclePhase.IDLE) return null
-        // The wreck is gone once it fell out of the picture
-        val planeVisible = phase != VehiclePhase.LEAVING && !(phase == VehiclePhase.UNLOADING && y < -PLANE_LENGTH)
+        // The wreck is gone once it fell out of the picture; flown off, the plane is gone once out of view
+        val planeVisible = when (phase) {
+            VehiclePhase.LEAVING -> outOfFuel
+            VehiclePhase.UNLOADING -> y >= -PLANE_LENGTH
+            else -> true
+        } && x + PLANE_LENGTH > 0f && y < PLANE_MAX_HEIGHT + 30f
         return RodeoPlaneUi(
             x = x,
             y = y,
             rotation = rotation,
             propellerPhase = propellerPhase,
             visible = planeVisible,
-            hasPilot = phase == VehiclePhase.RIDING,
-            ladderDown = phase == VehiclePhase.APPROACH || phase == VehiclePhase.BOARDING,
+            hasPilot = phase == VehiclePhase.RIDING || (phase == VehiclePhase.BOARDING && progressOf(phaseTime, PLANE_BOARD_SECONDS) >= 0.5f),
+            gearDown = phase == VehiclePhase.APPROACH || phase == VehiclePhase.BOARDING,
+            airportX = airportX.takeIf { airportVisible },
             buildings = buildings.map {
                 RodeoBuildingUi(x = it.x, width = it.width, height = it.height, seed = it.seed, cloudBottom = it.cloudBottom)
             },
-            lassoHint = lassoHint(x + PLANE_LENGTH / 2f, y + 12f),
+            lassoHint = lassoHint(x + PLANE_LENGTH / 2f, y + 16f),
         )
     }
 }

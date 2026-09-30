@@ -34,8 +34,10 @@ data class RodeoPlaneUi(
     val visible: Boolean,
     /** The cowboy sits in the cockpit. */
     val hasPilot: Boolean,
-    /** Rope ladder hanging down while it passes by and while he climbs up. */
-    val ladderDown: Boolean,
+    /** Wheels out while it rolls down the runway and takes off. */
+    val gearDown: Boolean,
+    /** Left end of the airfield's runway while it is in the picture, else null. */
+    val airportX: Float?,
     val buildings: List<RodeoBuildingUi>,
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
@@ -43,8 +45,10 @@ data class RodeoPlaneUi(
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         val colors = context.colors
         when (layer) {
-            // Skyline under the plane, behind everything on the track
-            RodeoLayer.BACK -> buildings.forEach { building ->
+            // Airfield and skyline under the plane, behind everything on the track
+            RodeoLayer.BACK -> {
+                airportX?.let { drawAirport(it, context, propellerPhase) }
+                buildings.forEach { building ->
                 drawBuilding(building, context, colors.surfaceVariant, colors.onSurfaceVariant)
                 building.cloudBottom?.let { bottom ->
                     drawStormCloud(
@@ -56,6 +60,7 @@ data class RodeoPlaneUi(
                         color = colors.onSurfaceVariant,
                         boltColor = colors.tertiary
                     )
+                }
                 }
             }
             RodeoLayer.BODY -> Unit
@@ -177,9 +182,64 @@ private fun DrawScope.drawStormCloud(
     }
 }
 
+// The airfield's fixed colors: asphalt, runway markings, the tower's glass, hangar tin and windsock
+private val ASPHALT = Color(0xFF455A64)
+private val RUNWAY_MARK = Color(0xFFF5F5F5)
+private val TOWER_WALL = Color(0xFFCFD8DC)
+private val TOWER_GLASS = Color(0xFF81D4FA)
+private val HANGAR_TIN = Color(0xFF90A4AE)
+private val HANGAR_DARK = Color(0xFF37474F)
+private val WINDSOCK_ORANGE = Color(0xFFFF7043)
+
+/**
+ * The airfield along the track from [left]: an asphalt runway with dashes down the middle, the control
+ * tower with its blinking beacon, a round-roofed hangar and a windsock blowing back.
+ */
+private fun DrawScope.drawAirport(left: Float, context: RodeoDrawContext, time: Float) {
+    val unit = context.unit
+    fun p(dx: Float, y: Float) = context.p(left + dx, y)
+    // Control tower near the start
+    drawRect(TOWER_WALL, p(6f, 22f), Size(3.5f * unit, 22f * unit))
+    drawRect(TOWER_WALL, p(4f, 27f), Size(7.5f * unit, 5f * unit))
+    drawRect(TOWER_GLASS, p(4.6f, 26.2f), Size(6.3f * unit, 2.6f * unit))
+    drawRect(HANGAR_DARK, p(3.5f, 27.6f), Size(8.5f * unit, 0.7f * unit))
+    if (sin(time * 0.15f) > 0f) drawCircle(WINDSOCK_ORANGE, radius = 0.6f * unit, center = p(7.75f, 28.4f))
+    // Hangar at the far end, with its big door
+    val hangarLeft = AIRPORT_LENGTH - 34f
+    drawArc(HANGAR_TIN, 180f, 180f, useCenter = true, topLeft = p(hangarLeft, 16f), size = Size(28f * unit, 32f * unit))
+    drawRect(HANGAR_TIN, p(hangarLeft, 1f), Size(28f * unit, 1f * unit))
+    drawRect(HANGAR_DARK, p(hangarLeft + 6f, 10f), Size(16f * unit, 10f * unit))
+    var rib = hangarLeft + 3f
+    while (rib < hangarLeft + 26f) {
+        drawLine(HANGAR_DARK.copy(alpha = 0.3f), p(rib, 0f), p(rib, 14f), 0.2f * unit)
+        rib += 4f
+    }
+    // Windsock blowing back, its stripes fluttering
+    val sockX = AIRPORT_LENGTH - 48f
+    drawLine(HANGAR_DARK, p(sockX, 0f), p(sockX, 11f), 0.3f * unit)
+    repeat(4) { index ->
+        val flutter = 0.3f * sin(time * 0.3f + index)
+        drawRect(
+            if (index % 2 == 0) WINDSOCK_ORANGE else RUNWAY_MARK,
+            p(sockX - (index + 1) * 1.4f, 11f - index * 0.25f + flutter),
+            Size(1.4f * unit, (1.6f - index * 0.25f) * unit)
+        )
+    }
+    // Runway with the dashed middle line and threshold stripes
+    drawRect(ASPHALT, p(0f, 0.4f), Size(AIRPORT_LENGTH * unit, 2.2f * unit))
+    var dash = 8f
+    while (dash < AIRPORT_LENGTH - 6f) {
+        drawRect(RUNWAY_MARK, p(dash, -0.5f), Size(3f * unit, 0.35f * unit))
+        dash += 7f
+    }
+    listOf(1f, AIRPORT_LENGTH - 5f).forEach { end ->
+        repeat(3) { index -> drawRect(RUNWAY_MARK, p(end + index * 1.4f, 0.1f), Size(0.6f * unit, 1.6f * unit)) }
+    }
+}
+
 /**
  * A small biplane facing right, drawn on a grid with y up from the fuselage underside and x from
- * its left edge. The rope ladder hangs from [PLANE_LADDER_X].
+ * its left edge. The landing gear hangs [PLANE_GEAR_HEIGHT] below it while it rolls.
  */
 private fun DrawScope.drawPlane(
     plane: RodeoPlaneUi,
@@ -194,15 +254,16 @@ private fun DrawScope.drawPlane(
     val center = p(PLANE_LENGTH / 2f, 3.5f)
 
     rotate(plane.rotation, pivot = center) {
-        if (plane.ladderDown) {
-            val bottom = -PLANE_LADDER_LENGTH
-            drawLine(lineColor, p(PLANE_LADDER_X - 0.8f, 0f), p(PLANE_LADDER_X - 0.8f, bottom), 0.3f * unit)
-            drawLine(lineColor, p(PLANE_LADDER_X + 0.8f, 0f), p(PLANE_LADDER_X + 0.8f, bottom), 0.3f * unit)
-            var rung = -1.5f
-            while (rung >= bottom) {
-                drawLine(lineColor, p(PLANE_LADDER_X - 0.8f, rung), p(PLANE_LADDER_X + 0.8f, rung), 0.3f * unit)
-                rung -= 2f
+        if (plane.gearDown) {
+            // Two struts with wheels in front, a little tail wheel
+            val wheel = 1.1f
+            listOf(13f, 15f).forEach { strutX ->
+                drawLine(lineColor, p(strutX, 1f), p(14f, -PLANE_GEAR_HEIGHT + wheel), 0.35f * unit)
             }
+            drawCircle(lineColor, radius = wheel * unit, center = p(14f, -PLANE_GEAR_HEIGHT + wheel))
+            drawCircle(wingColor, radius = wheel * 0.4f * unit, center = p(14f, -PLANE_GEAR_HEIGHT + wheel))
+            drawLine(lineColor, p(2f, 5f), p(1.5f, -PLANE_GEAR_HEIGHT + 0.5f), 0.3f * unit)
+            drawCircle(lineColor, radius = 0.5f * unit, center = p(1.5f, -PLANE_GEAR_HEIGHT + 0.5f))
         }
 
         // Lower wing and struts behind the fuselage

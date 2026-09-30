@@ -8,12 +8,14 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoWorld
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.cablecar.CABLE_CAR_PASS_SPEED
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.carriage.SNAILS_PER_CARRIAGE
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.rocket.SNAILS_PER_ROCKET
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.random.Random
 
 // Schneagg Rodeo - how the game is put together
 //
@@ -37,7 +39,11 @@ import kotlin.math.sin
 //            RodeoWildHorses   other horses on the track: wild ones to switch to, friends to pick up
 //            RodeoLandscape    mountains and forests the track runs through; their vehicles come along
 //            RodeoMushrooms    magic mushrooms: giant, tiny or slow motion for a few seconds
-//            RodeoUnderground  the rare mine shaft down into the cave map and the way back up
+//            RodeoUnderground  the rare way down into an underground map (cave, sea, mine) and back up
+//            RodeoRunFlavor    the run's weather and time of day
+//            RodeoSkyWonders   rainbow after the rain, fireflies and the ghost horse's spell at night
+//            RodeoPizzaOvens   stops by the roadside: pizza oven and Käsknöpfle kiosk
+//            RodeoStanislausRunner  the rare Stanislaus running alongside
 //            RodeoHorsePoser   how horse and rider look in every situation
 //  vehicles/ RodeoTraffic      all vehicles and which one is around; see RodeoVehicle on adding one
 //  render/   drawing of the track (RodeoTrackCanvas) and everything on it
@@ -64,6 +70,26 @@ private const val MAX_LUCKY_CHARMS = 3
 private const val CARROT_POINTS = 5
 private const val PIZZA_POINTS = 30
 private const val GEM_POINTS = 20
+private const val FIREFLY_POINTS = 5
+// Spending saved-up snails pays out on top of what catching them gave, so saving them up is worth it
+private const val SUPER_JUMP_POINTS = 150
+private const val ROCKET_POINTS = 1000
+private const val CARRIAGE_POINTS = 2500
+/** Seconds a bowl of Käsknöpfle keeps the horse full (no hearts drain). */
+private const val KAESKNOEPFLE_SECONDS = 20f
+private const val KAESKNOEPFLE_POINTS = 20
+// Digging through a dirt mound in the mine turns up a find
+private const val DIG_GOLD_POINTS = 25
+private const val DIG_GOLD_CHANCE = 0.5f
+private const val DIG_CARROT_CHANCE = 0.2f
+private const val DIG_HORSESHOE_CHANCE = 0.15f
+// The pack keeps its distance around a new horse, so getting back up is never an instant loss
+/** At least this far back when an exhausted horse runs off: time to lasso the new one. */
+private const val EXHAUSTED_PACK_GAP = 22f
+/** At least this far back once the cowboy sits on a new horse. */
+private const val NEW_HORSE_PACK_GAP = 30f
+/** At least this far back after getting back on after any fall. */
+private const val REMOUNT_PACK_GAP = 15f
 /** u/s the pack gains while the horse wades through mud. */
 private const val MUD_PACK_GAIN = 3f
 /**
@@ -116,6 +142,9 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     private val trip = RodeoMushroomTrip()
     private val underground = RodeoUnderground()
     private val pizzaOvens = RodeoPizzaOvens()
+    private val flavor = RodeoRunFlavor()
+    private val stanislaus = RodeoStanislausRunner()
+    private val wonders = RodeoSkyWonders()
 
     // --- Progress of the run
 
@@ -181,6 +210,10 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     val rocketReady: Boolean
         get() = snailsCaught >= SNAILS_PER_ROCKET && fall.isInSaddle && !superJump.isBusy && traffic.isClear
 
+    /** Enough snails saved up for the golden carriage, and the track is clear for it. */
+    val carriageReady: Boolean
+        get() = snailsCaught >= SNAILS_PER_CARRIAGE && fall.isInSaddle && !superJump.isBusy && traffic.isClear
+
     /** The vehicle carrying the rider (or getting him on / off). */
     private val ride: RodeoVehicle? get() = traffic.ride
 
@@ -205,6 +238,10 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         trip.reset()
         underground.reset()
         pizzaOvens.reset()
+        stanislaus.reset()
+        wonders.reset()
+        flavor.roll()
+        course.mudFactor = flavor.mudFactor
         tilt = 0f
         passenger = null
         events.clear()
@@ -306,7 +343,16 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     fun rocketPressed() {
         if (!rocketReady) return
         snailsCaught -= SNAILS_PER_ROCKET
+        bonusPoints += ROCKET_POINTS
         traffic.launchRocket(this)
+    }
+
+    /** Buys the golden carriage with saved-up snails. */
+    fun carriagePressed() {
+        if (!carriageReady) return
+        snailsCaught -= SNAILS_PER_CARRIAGE
+        bonusPoints += CARRIAGE_POINTS
+        traffic.sendCarriage(this)
     }
 
     fun lassoPressed() {
@@ -326,7 +372,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             // Then other horses on the track, then snails.
             traffic.current?.takeIf { !superJump.isActive }?.lassoGrab(this, HORSE_X + HAND_X, reach, timeToCatch)
                 ?: wildHorses.takeIf { ride == null && !superJump.isActive }?.lassoGrab(reach, timeToCatch, ::wildHorseCaught)
-                ?: pizzaOvens.takeIf { ride == null && !superJump.isActive }?.lassoGrab(reach, timeToCatch, groundSpeed, ::pizzaEaten)
+                ?: stanislaus.takeIf { ride == null && !superJump.isActive }?.lassoGrab(reach, timeToCatch, ::stanislausCaught)
+                ?: pizzaOvens.takeIf { ride == null && !superJump.isActive }?.lassoGrab(reach, timeToCatch, groundSpeed, ::stopFood)
         }
     }
 
@@ -370,7 +417,17 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         landscape.scroll(scroll, worldWidth)
         underground.scroll(scroll)
         pizzaOvens.scroll(scroll)
-        course.inCave = underground.isInCave
+        course.map = underground.map
+        // The rain runs out, and once back on the surface a rainbow comes along
+        if (flavor.tick(dt)) course.mudFactor = flavor.mudFactor
+        if (flavor.rainbowDue && !underground.isUnderground && underground.isClear) {
+            flavor.rainbowSent()
+            wonders.sendRainbow(worldWidth)
+        }
+        bonusPoints += wonders.step(
+            dt, scroll, ridden, worldWidth,
+            firefliesAllowed = flavor.timeOfDay == RodeoTimeOfDay.NIGHT && !underground.isUnderground && underground.isClear,
+        )
         val targetTilt = when (horse.slope) {
             Slope.FLAT -> 0f
             Slope.UPHILL -> UPHILL_TILT
@@ -391,17 +448,20 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         collectCarrots()
         eatMushrooms()
         collectGems()
+        catchFireflies()
+        digMounds()
         wadeThroughMud(dt)
         // Down the mine shaft (hooves on the ground) or up the light shaft
         underground.checkHorse(HORSE_X + HITBOX_LEFT, HORSE_X + HITBOX_RIGHT, onGround = ride == null && !superJump.isActive && horse.isOnGround)
 
         // Other horses: wild ones now and then, friends shortly before their highscore
         wildHorses.step(dt, scroll, course.fences, score.toLong())
-        // Down in the cave there are no wild horses, vehicles or landscapes - friends still come.
-        // A due mine shaft goes first.
-        val onSurface = !underground.isInCave && underground.isClear && !underground.isDue
+        // Underground there are no wild horses, landscapes or stops - friends still come, and each
+        // underground map has vehicles of its own. A due way down (or up) goes first.
+        val mapIsClear = underground.isClear && !underground.isDue
+        val onSurface = !underground.isUnderground && mapIsClear
         val horsesMayCome = ride == null && traffic.isClear && !superJump.isActive
-        wildHorses.sendWild(dt, worldWidth, horse.level, allowed = horsesMayCome && onSurface)
+        wildHorses.sendWild(dt, worldWidth, horse.level, allowed = horsesMayCome && onSurface, night = flavor.timeOfDay == RodeoTimeOfDay.NIGHT)
         // Friends come near their highscore no matter what else is going on
         sendFriends()
 
@@ -420,12 +480,18 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         }
 
         // Vehicles: one at a time, sent along while the rider is free
-        traffic.step(this, dt, scroll, maySend = !superJump.isActive && elapsed > 0f && wildHorses.isClear && landscape.isClear && onSurface)
+        traffic.step(
+            this, dt, scroll,
+            maySend = !superJump.isActive && elapsed > 0f && wildHorses.isClear && landscape.isClear && mapIsClear && !stanislaus.isAround,
+            map = underground.map,
+        )
 
         // Rarely a mine shaft opens up, when nothing else is going on; in the cave the way out comes
         underground.tick(dt, worldWidth, allowed = horsesMayCome && wildHorses.isClear && landscape.isClear)
-        // Now and then a pizza oven by the roadside
+        // Now and then a stop by the roadside, and very rarely Stanislaus running along
         pizzaOvens.tick(dt, worldWidth, allowed = onSurface)
+        stanislaus.step(dt)
+        stanislaus.tick(dt, worldWidth, allowed = horsesMayCome && wildHorses.isClear && landscape.isClear && onSurface)
         // Boarding a vehicle ends a throw at once
         lasso.step(dt, horseBase, cutShort = ride?.allowsLasso == false, onSnailCaught = ::snailCaught)
         traffic.checkRider(
@@ -451,7 +517,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     /** Off the horse the world stands still - only the cowboy, his horse and the snails move. */
     private fun stepOffTheHorse(dt: Float) {
         pack.tick(dt)
-        pack.approachStandingHorse(dt)
+        // While the new horse is still on its way the pack waits
+        if (!fall.isWaitingForHorse) pack.approachStandingHorse(dt)
         horse.gaitPhase += dt * 4f // nervous pacing
         lasso.cool(dt)
         course.moveSnails(scroll = 0f, dt = dt)
@@ -463,6 +530,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             onNewHorse = { horse.takeOver(RodeoHorseStats.replacement()) },
         )
         if (remounted) {
+            pack.keepAway(if (fall.hasNewHorse) NEW_HORSE_PACK_GAP else REMOUNT_PACK_GAP)
             lasso.reset()
             horse.remounted()
             effects.splash()
@@ -491,6 +559,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         horse.stopJumping()
         superJump.start(course, worldWidth, horse.speed, elapsed)
         snailsCaught -= SNAILS_PER_SUPER_JUMP
+        bonusPoints += SUPER_JUMP_POINTS
     }
 
     private fun shouldThrowCowboy(): Boolean =
@@ -504,6 +573,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     /** No hearts left: the horse throws the cowboy off and runs away; another one comes along. */
     private fun exhaustHorse() {
         fall.start(elapsed, horseRunsOff = true, worldWidth = worldWidth)
+        pack.keepAway(EXHAUSTED_PACK_GAP)
         loseRider()
     }
 
@@ -523,7 +593,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
      * vehicle the vehicle deals with the track; the riderless horse under the plane hops everything
      * on its own.
      */
-    private val invulnerable: Boolean get() = superJump.isActive || ride != null
+    private val invulnerable: Boolean get() = superJump.isActive || ride != null || wonders.isGhost
 
     private fun crashIntoFences() {
         if (invulnerable) return
@@ -610,13 +680,30 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         }
     }
 
+    /** Fireflies on a night run are caught by horse and rider passing through, like the horseshoes. */
+    private fun catchFireflies() {
+        if (ride?.hidesHorse == true) return
+        val base = horseBase
+        wonders.catchFireflies(
+            left = HORSE_X + HITBOX_LEFT,
+            right = HORSE_X + HITBOX_RIGHT + 4f,
+            bottom = base + HORSESHOE_REACH_BOTTOM - 4f,
+            top = base + HORSESHOE_REACH_TOP,
+        ) { firefly ->
+            bonusPoints += FIREFLY_POINTS
+            effects.sparkle(firefly.x, firefly.height)
+        }
+    }
+
     /**
      * The fade to the other map is at its darkest: the track is cleared and [map] begins. The pack
      * and friends on their horses come along; everything else stays behind.
      */
     private fun switchMap(map: RodeoMap) {
         course.clearForNewMap(horse.speed, elapsed)
-        course.inCave = map == RodeoMap.CAVE
+        course.map = map
+        stanislaus.reset()
+        wonders.clearForNewMap()
         landscape.sections.clear()
         pizzaOvens.ovens.clear()
         wildHorses.horses.removeAll { it.friend == null }
@@ -656,6 +743,13 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             wildHorses.letGo(caught)
             return
         }
+        if (caught.ghost) {
+            // The ghost horse vanishes into thin air and leaves its spell on horse and rider
+            wildHorses.horses.remove(caught)
+            wonders.startGhost()
+            effects.sparkle(HORSE_X + COWBOY_SEAT_X, horseBase + COWBOY_SEAT_Y + 6f)
+            return
+        }
         val friend = caught.friend
         if (friend != null) {
             caught.friend = null
@@ -674,11 +768,50 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         effects.splash()
     }
 
-    /** The lasso brought a pizza from the oven: the horse eats it, back to full hearts and one level up. */
-    private fun pizzaEaten() {
-        horse.eatPizza()
-        bonusPoints += PIZZA_POINTS
+    /**
+     * The lasso brought something to eat from a stop: a pizza (full hearts and one level up) or a
+     * bowl of Käsknöpfle (full for a while).
+     */
+    private fun stopFood(kind: RodeoStopKind) {
+        when (kind) {
+            RodeoStopKind.PIZZA_OVEN -> {
+                horse.eatPizza()
+                bonusPoints += PIZZA_POINTS
+            }
+            RodeoStopKind.KIOSK -> {
+                horse.eatKaesknoepfle(KAESKNOEPFLE_SECONDS)
+                bonusPoints += KAESKNOEPFLE_POINTS
+            }
+        }
         effects.sparkle(HORSE_X + HAND_X, horseBase + HAND_Y)
+    }
+
+    /** The lasso brought Stanislaus in: a big bonus, and the baffled pack falls all the way back. */
+    private fun stanislausCaught() {
+        bonusPoints += stanislaus.catchPoints
+        pack.escape()
+        effects.sparkle(HORSE_X + HAND_X, horseBase + HAND_Y)
+        effects.splash()
+    }
+
+    /** Galloping through a dirt mound in the mine digs it up: gold, a carrot, a horseshoe or a snail. */
+    private fun digMounds() {
+        if (ride != null || !horse.isOnGround) return
+        course.mounds.removeAll { mound ->
+            val dug = mound.x + MOUND_HALF_WIDTH > HORSE_X + HITBOX_LEFT && mound.x - MOUND_HALF_WIDTH < HORSE_X + HITBOX_RIGHT
+            if (dug) {
+                effects.dust(mound.x)
+                val roll = Random.nextFloat()
+                when {
+                    roll < DIG_GOLD_CHANCE -> bonusPoints += DIG_GOLD_POINTS
+                    roll < DIG_GOLD_CHANCE + DIG_CARROT_CHANCE -> horse.feed()
+                    roll < DIG_GOLD_CHANCE + DIG_CARROT_CHANCE + DIG_HORSESHOE_CHANCE -> luckyCharms = min(MAX_LUCKY_CHARMS, luckyCharms + 1)
+                    else -> snailCaught()
+                }
+                effects.sparkle(mound.x, 6f)
+            }
+            dug
+        }
     }
 
     private fun snailCaught() {
@@ -746,6 +879,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     override fun escapePack() = pack.escape()
 
+    override fun scarePack(gap: Float) = pack.fallBack(gap)
+
     // --- Render model
 
     /** Immutable render model of the current world. */
@@ -757,7 +892,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             fences = course.fenceUis(),
             snails = course.snailUis(pack.clock),
             pack = pack.ui(course.fences),
-            horse = poseHorse(horse, superJump, fall, ride, horseBase, riderlessHop, runTimeSeconds, passenger, trip.horseScale),
+            horse = poseHorse(horse, superJump, fall, ride, horseBase, riderlessHop, runTimeSeconds, passenger, trip.horseScale)
+                .copy(ghost = wonders.isGhost),
             lasso = if (fall.isInSaddle) lasso.uiFromSaddle(horseBase) else fall.lassoUi(lasso),
             dust = effects.dustUi(),
             splashProgress = effects.splashProgress(),
@@ -780,11 +916,19 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             sections = landscape.ui(),
             mushrooms = course.mushroomUis(),
             tiltDegrees = tilt,
-            inCave = underground.isInCave,
+            inCave = underground.isUnderground,
+            map = underground.map,
+            mounds = course.moundUis(),
+            runnerMan = stanislaus.ui(),
+            weather = flavor.weather,
+            timeOfDay = flavor.timeOfDay,
             portals = underground.ui(),
             gems = course.gemUis(pack.clock),
             pizzaOvens = pizzaOvens.ui(),
             pizza = pizzaOvens.pizzaUi(),
+            rainbowX = wonders.rainbowX,
+            doublePointsSeconds = wonders.doublePointsSeconds,
+            fireflies = wonders.fireflyUis(),
             fade = underground.fade,
             slowMotion = trip.timeFactor < 1f,
         )

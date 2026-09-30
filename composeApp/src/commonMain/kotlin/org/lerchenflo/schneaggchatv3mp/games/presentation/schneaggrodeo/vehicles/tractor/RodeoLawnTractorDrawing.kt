@@ -16,12 +16,23 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.p
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoLassoHintUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
 
-// Lawn tractor, explicitly requested as a fixed red (plus a darker shade of it for vents and trim)
-private val TRACTOR_COLOR = Color(0xFFE53935)
-private val TRACTOR_SHADE_COLOR = Color(0xFFB71C1C)
+// Lawn tractor, explicitly requested like the user's Murray rear-engine rider: a maroon body, a black
+// engine with a yellow oil cap at the back, a chrome muffler hanging down, a torn black seat with the
+// yellow foam showing, black floor mats and a black steering console
+private val TRACTOR_COLOR = Color(0xFF9E1B32)
+private val TRACTOR_SHADE_COLOR = Color(0xFF6B1020)
+private val TRACTOR_BLACK = Color(0xFF1C1C1C)
+private val TRACTOR_GRAY = Color(0xFF424242)
+private val CHROME = Color(0xFFCFD8DC)
+private val CHROME_DARK = Color(0xFF90A4AE)
+private val OIL_CAP_YELLOW = Color(0xFFFDD835)
+private val FOAM_YELLOW = Color(0xFFE0A030)
+private val FRONT_HUB = Color(0xFFBDBDBD)
+/** Edge around the black parts, so they stand out on a dark track too. */
+private val BLACK_EDGE = Color(0xFF8A8A8A)
 
 /**
- * The red lawn tractor, facing right. [x] is its left edge; it stands on the ground and tips over by
+ * The Murray lawn tractor, facing right. [x] is its left edge; it stands on the ground and tips over by
  * [rotation] degrees (counterclockwise, around its rear wheel) once wrecked. Parts come off in the
  * order of the PART_ constants: the first [partsLost] are gone.
  */
@@ -76,9 +87,11 @@ data class RodeoDebrisUi(
 )
 
 /**
- * The lawn tractor, facing right, on a grid with y up from the ground and x from its rear end: a
- * flat deck for the horse over a big fendered rear wheel, a sloped hood with a headlight in front,
- * and the mower deck low between the wheels. Parts come off in the order of the PART_ constants.
+ * The lawn tractor, facing right, on a grid with y up from the ground and x from its rear end, like a
+ * Murray rear-engine rider: the chrome muffler hanging down at the very back, the black engine with
+ * its air cleaner and yellow oil cap over the big rear wheel, the torn seat, a low floor with black
+ * mats, the steering console with its badge and a small front wheel. The horse stands across it on
+ * [TRACTOR_DECK_HEIGHT]. Parts come off in the order of the PART_ constants.
  */
 private fun DrawScope.drawTractor(
     tractor: RodeoTractorUi,
@@ -96,82 +109,102 @@ private fun DrawScope.drawTractor(
     /** The part is still attached. */
     fun has(part: Int) = tractor.partsLost <= part
 
-    // Exhaust puffs trailing back in the wind
+    // Exhaust puffs out of the muffler, trailing back in the wind
     if (tractor.exhaust && has(PART_EXHAUST)) {
         repeat(3) { index ->
             val drift = (tractor.wheelPhase * 0.3f + index / 3f) % 1f
             drawCircle(
                 color = smokeColor.copy(alpha = 0.35f * (1f - drift)),
                 radius = (0.8f + 1.4f * drift) * unit,
-                center = p(35.5f - 12f * drift, 16f + 2f * drift)
+                center = p(-1f - 10f * drift, 2f + 2f * drift)
             )
         }
     }
-    // Grass clippings spraying out behind the mower deck while it races
+    // Grass clippings spraying out from under it while it races
     if (tractor.exhaust && has(PART_MOWER_DECK)) {
         repeat(6) { index ->
             val t = (tractor.wheelPhase * 0.17f + index / 6f) % 1f
-            val x = 10f - 9f * t
-            val y = 1.5f + 6f * t * (1.2f - t)
+            val x = 16f - 12f * t
+            val y = 1f + 6f * t * (1.2f - t)
             val flip = if (index % 2 == 0) 0.5f else -0.5f
             drawLine(clippingColor.copy(alpha = 1f - t), p(x, y), p(x - 0.9f, y + flip), 0.35f * unit, StrokeCap.Round)
         }
     }
 
-    rotate(-tractor.rotation, pivot = p(7f, 0f)) {
-        // Mower deck housing, low between the wheels
-        if (has(PART_MOWER_DECK)) {
-            drawPath(polygon(11f to 3.8f, 29f to 3.8f, 30.5f to 1.2f, 10f to 1.2f), deckColor)
-            drawLine(hubColor.copy(alpha = 0.5f), p(12f, 2.5f), p(28.5f, 2.5f), 0.25f * unit)
-        }
-        // Frame rail between the axles
-        drawRect(lineColor, p(6f, 5.4f), Size(28f * unit, 1f * unit))
-
-        // Deck the horse stands on, with a darker skirt
-        drawRoundRect(TRACTOR_COLOR, p(0f, TRACTOR_DECK_HEIGHT), Size(30f * unit, 2.4f * unit), CornerRadius(0.6f * unit))
-        drawRect(TRACTOR_SHADE_COLOR, p(0.6f, 5.3f), Size(28.8f * unit, 0.7f * unit))
-        // Seat back behind the horse's tail
-        if (has(PART_SEAT)) {
-            drawRoundRect(lineColor, p(0.4f, 12.5f), Size(1.6f * unit, 5.5f * unit), CornerRadius(0.6f * unit))
-        }
-
-        // Hood with vents, or the bare engine once it flew off
+    rotate(-tractor.rotation, pivot = p(8f, 0f)) {
+        // Engine at the back: the big black shroud with its yellow oil cap and the air cleaner behind it,
+        // or the bare engine with its cooling fins once the shroud flew off
         if (has(PART_HOOD)) {
-            drawPath(polygon(27.5f to 4.8f, 27.5f to 11.5f, 37f to 11.5f, 40.5f to 9f, 40.5f to 4.8f), TRACTOR_COLOR)
-            drawLine(hubColor.copy(alpha = 0.35f), p(28.2f, 11f), p(36.6f, 11f), 0.35f * unit, StrokeCap.Round)
-            listOf(30f, 31.4f, 32.8f).forEach { x ->
-                drawLine(TRACTOR_SHADE_COLOR, p(x, 9.8f), p(x, 7.4f), 0.4f * unit, StrokeCap.Round)
-            }
+            val edge = Stroke(width = 0.3f * unit)
+            drawRoundRect(TRACTOR_BLACK, p(0.4f, 13.2f), Size(4.6f * unit, 4.4f * unit), CornerRadius(0.8f * unit))
+            drawRoundRect(BLACK_EDGE, p(0.4f, 13.2f), Size(4.6f * unit, 4.4f * unit), CornerRadius(0.8f * unit), style = edge)
+            drawRoundRect(TRACTOR_BLACK, p(4.6f, 14.4f), Size(7.6f * unit, 7f * unit), CornerRadius(1f * unit))
+            drawRoundRect(BLACK_EDGE, p(4.6f, 14.4f), Size(7.6f * unit, 7f * unit), CornerRadius(1f * unit), style = edge)
+            // Pull-start cover lines on the engine
+            listOf(15.8f, 16.8f).forEach { x -> drawLine(BLACK_EDGE.copy(alpha = 0.5f), p(x - 10f, 12.4f), p(x - 5f, 12.4f), 0.2f * unit) }
+            drawRoundRect(OIL_CAP_YELLOW, p(8.2f, 15.4f), Size(2.4f * unit, 1f * unit), CornerRadius(0.3f * unit))
+            drawRect(CHROME.copy(alpha = 0.7f), p(1f, 11f), Size(3f * unit, 0.5f * unit))
         } else {
-            drawRoundRect(deckColor, p(28.5f, 10f), Size(7f * unit, 5f * unit), CornerRadius(0.5f * unit))
-            listOf(30f, 32f, 34f).forEach { x ->
-                drawLine(lineColor, p(x, 10f), p(x, 6f), 0.3f * unit)
+            drawRoundRect(deckColor, p(5f, 13f), Size(6.4f * unit, 5.6f * unit), CornerRadius(0.5f * unit))
+            listOf(6.2f, 7.8f, 9.4f).forEach { x -> drawLine(TRACTOR_BLACK, p(x, 13f), p(x, 8f), 0.3f * unit) }
+        }
+        // Rear body with the rim the horse's hind hooves stand on, and the low floor in front
+        drawPath(polygon(0f to 2.6f, 0f to 8f, 18f to 8f, 19f to TRACTOR_DECK_HEIGHT, 38f to TRACTOR_DECK_HEIGHT, 40.5f to 7.6f, 40.5f to 5.8f, 38.5f to 3f, 19f to 3f, 17f to 2.6f), TRACTOR_COLOR)
+        drawLine(TRACTOR_SHADE_COLOR, p(0.4f, 5.2f), p(17.5f, 5.2f), 0.3f * unit)
+        drawLine(TRACTOR_SHADE_COLOR, p(18.5f, 3.4f), p(18.5f, 7.6f), 0.3f * unit)
+        // Black grip mats on the floor
+        if (has(PART_MOWER_DECK)) {
+            drawRect(TRACTOR_BLACK, p(20f, TRACTOR_DECK_HEIGHT + 0.6f), Size(15f * unit, 0.8f * unit))
+            var rib = 20.6f
+            while (rib < 35f) {
+                drawLine(TRACTOR_GRAY, p(rib, TRACTOR_DECK_HEIGHT + 0.5f), p(rib, TRACTOR_DECK_HEIGHT - 0.1f), 0.15f * unit)
+                rib += 1f
             }
         }
-        if (has(PART_GRILLE)) drawLine(lineColor.copy(alpha = 0.6f), p(40f, 8.4f), p(40f, 5.4f), 0.35f * unit)
-        if (has(PART_HEADLIGHT)) drawCircle(lightColor, radius = 0.75f * unit, center = p(38.8f, 9.3f))
-        if (has(PART_STEERING_WHEEL)) {
-            drawLine(lineColor, p(28.5f, 11.5f), p(26.5f, 14.5f), 0.5f * unit, StrokeCap.Round)
-            drawLine(lineColor, p(25f, 15.2f), p(28f, 14f), 0.7f * unit, StrokeCap.Round)
-        }
+        // Chrome muffler hanging down at the very back
         if (has(PART_EXHAUST)) {
-            drawLine(lineColor, p(35.5f, 11.5f), p(35.5f, 15.5f), 0.7f * unit, StrokeCap.Round)
-            drawLine(lineColor, p(35f, 15.6f), p(36.4f, 16f), 0.6f * unit, StrokeCap.Round)
+            drawRoundRect(CHROME, p(-2.2f, 12f), Size(1.9f * unit, 9.6f * unit), CornerRadius(0.8f * unit))
+            drawLine(CHROME_DARK, p(-2.2f, 7.4f), p(-0.3f, 7.4f), 0.3f * unit)
+            drawRect(CHROME_DARK, p(-1.9f, 2.4f), Size(1.3f * unit, 0.8f * unit))
         }
+        // Torn black seat leaning back, the yellow foam showing through the cracks
+        if (has(PART_SEAT)) {
+            val seat = polygon(11.5f to 8f, 11f to 16.5f, 13f to 17f, 14f to 10f, 19f to 10f, 19.5f to 8.8f)
+            drawPath(seat, TRACTOR_BLACK)
+            drawPath(seat, BLACK_EDGE, style = Stroke(width = 0.3f * unit))
+            listOf(11.8f to 15f, 12.4f to 12.2f, 15.5f to 9.6f, 17.8f to 9.3f).forEach { (x, y) ->
+                drawOval(FOAM_YELLOW, p(x, y), Size(0.9f * unit, 0.6f * unit))
+            }
+        }
+        // Steering console with its silver badge, the column and the wheel
+        val console = polygon(30f to TRACTOR_DECK_HEIGHT, 31.5f to 12f, 35f to 12f, 36f to TRACTOR_DECK_HEIGHT)
+        drawPath(console, TRACTOR_BLACK)
+        drawPath(console, BLACK_EDGE, style = Stroke(width = 0.3f * unit))
+        if (has(PART_GRILLE)) {
+            drawRect(CHROME, p(31.8f, 10.8f), Size(3.2f * unit, 1f * unit))
+            drawRect(TRACTOR_SHADE_COLOR, p(32.2f, 10.6f), Size(2.4f * unit, 0.6f * unit))
+        }
+        if (has(PART_STEERING_WHEEL)) {
+            drawLine(BLACK_EDGE, p(33.5f, 12f), p(31f, 16f), 0.6f * unit, StrokeCap.Round)
+            drawLine(BLACK_EDGE, p(28f, 16.8f), p(33.5f, 15.4f), 1f * unit, StrokeCap.Round)
+            drawLine(TRACTOR_BLACK, p(28.2f, 16.75f), p(33.3f, 15.45f), 0.5f * unit, StrokeCap.Round)
+        }
+        if (has(PART_HEADLIGHT)) drawCircle(lightColor, radius = 0.6f * unit, center = p(40f, 6.8f))
 
-        if (has(PART_REAR_WHEEL)) drawWheel(p(7f, 4.5f), 4.5f * unit, tractor.wheelPhase, lineColor, hubColor, TRACTOR_COLOR)
+        if (has(PART_REAR_WHEEL)) drawWheel(p(8f, 5f), 5f * unit, tractor.wheelPhase, TRACTOR_BLACK, TRACTOR_GRAY, TRACTOR_BLACK)
+        // Maroon side panel over the rear wheel with its arch
         if (has(PART_FENDER)) {
             drawArc(
                 color = TRACTOR_COLOR,
                 startAngle = 180f,
-                sweepAngle = 110f,
+                sweepAngle = 180f,
                 useCenter = false,
-                topLeft = p(7f - 5.6f, 4.5f + 5.6f),
-                size = Size(11.2f * unit, 11.2f * unit),
-                style = Stroke(width = 1.2f * unit, cap = StrokeCap.Round)
+                topLeft = p(8f - 6f, 5f + 6f),
+                size = Size(12f * unit, 12f * unit),
+                style = Stroke(width = 1.4f * unit)
             )
         }
-        if (has(PART_FRONT_WHEEL)) drawWheel(p(33f, 2.8f), 2.8f * unit, tractor.wheelPhase * 1.6f, lineColor, hubColor, TRACTOR_COLOR)
+        if (has(PART_FRONT_WHEEL)) drawWheel(p(36f, 2.6f), 2.6f * unit, tractor.wheelPhase * 1.8f, TRACTOR_BLACK, FRONT_HUB, TRACTOR_GRAY)
     }
 }
 
@@ -189,31 +222,32 @@ private fun DrawScope.drawDebris(
     rotate(piece.rotation, pivot = center) {
         when (piece.part) {
             PART_HEADLIGHT -> drawCircle(lightColor, radius = 0.75f * unit, center = center)
-            PART_EXHAUST -> drawLine(lineColor, center - Offset(0f, 1.5f * unit), center + Offset(0f, 1.5f * unit), 0.8f * unit, StrokeCap.Round)
+            PART_EXHAUST -> drawRoundRect(CHROME, center - Offset(0.95f * unit, 4.8f * unit), Size(1.9f * unit, 9.6f * unit), CornerRadius(0.8f * unit))
             PART_STEERING_WHEEL -> {
-                drawLine(lineColor, center, center + Offset(0f, 3f * unit), 0.5f * unit, StrokeCap.Round)
-                drawLine(lineColor, center - Offset(1.5f * unit, 0f), center + Offset(1.5f * unit, 0f), 0.6f * unit, StrokeCap.Round)
+                drawLine(TRACTOR_BLACK, center, center + Offset(0f, 3f * unit), 0.5f * unit, StrokeCap.Round)
+                drawLine(TRACTOR_BLACK, center - Offset(2.5f * unit, 0f), center + Offset(2.5f * unit, 0f), 0.8f * unit, StrokeCap.Round)
             }
-            PART_SEAT -> drawRoundRect(lineColor, center - Offset(0.8f * unit, 2.75f * unit), Size(1.6f * unit, 5.5f * unit), CornerRadius(0.6f * unit))
-            PART_GRILLE -> drawLine(lineColor, center - Offset(0f, 1.5f * unit), center + Offset(0f, 1.5f * unit), 0.35f * unit)
+            PART_SEAT -> {
+                drawRoundRect(TRACTOR_BLACK, center - Offset(3f * unit, 2.5f * unit), Size(6f * unit, 5f * unit), CornerRadius(1f * unit))
+                drawOval(FOAM_YELLOW, center - Offset(1f * unit, 0.5f * unit), Size(1.2f * unit, 0.7f * unit))
+            }
+            PART_GRILLE -> drawRect(CHROME, center - Offset(1.6f * unit, 0.5f * unit), Size(3.2f * unit, 1f * unit))
             PART_FENDER -> drawArc(
                 color = TRACTOR_COLOR,
                 startAngle = 180f,
                 sweepAngle = 110f,
                 useCenter = false,
-                topLeft = center - Offset(5.6f * unit, 2f * unit),
-                size = Size(11.2f * unit, 11.2f * unit),
-                style = Stroke(width = 1.2f * unit, cap = StrokeCap.Round)
+                topLeft = center - Offset(6f * unit, 2f * unit),
+                size = Size(12f * unit, 12f * unit),
+                style = Stroke(width = 1.4f * unit, cap = StrokeCap.Round)
             )
             PART_HOOD -> {
-                drawRoundRect(TRACTOR_COLOR, center - Offset(4f * unit, 2f * unit), Size(8f * unit, 4f * unit), CornerRadius(1f * unit))
-                listOf(-1f, 0.5f).forEach { x ->
-                    drawLine(TRACTOR_SHADE_COLOR, center + Offset(x * unit, -1f * unit), center + Offset(x * unit, 1f * unit), 0.4f * unit)
-                }
+                drawRoundRect(TRACTOR_BLACK, center - Offset(3.8f * unit, 3.5f * unit), Size(7.6f * unit, 7f * unit), CornerRadius(1f * unit))
+                drawRoundRect(OIL_CAP_YELLOW, center - Offset(0.4f * unit, 3.9f * unit), Size(2.4f * unit, 1f * unit), CornerRadius(0.3f * unit))
             }
-            PART_MOWER_DECK -> drawRoundRect(deckColor, center - Offset(4f * unit, 0.75f * unit), Size(8f * unit, 1.5f * unit), CornerRadius(0.5f * unit))
-            PART_FRONT_WHEEL -> drawWheel(center, 2.8f * unit, 0f, lineColor, hubColor, TRACTOR_COLOR)
-            PART_REAR_WHEEL -> drawWheel(center, 4.5f * unit, 0f, lineColor, hubColor, TRACTOR_COLOR)
+            PART_MOWER_DECK -> drawRect(TRACTOR_BLACK, center - Offset(7.5f * unit, 0.4f * unit), Size(15f * unit, 0.8f * unit))
+            PART_FRONT_WHEEL -> drawWheel(center, 2.6f * unit, 0f, TRACTOR_BLACK, FRONT_HUB, TRACTOR_GRAY)
+            PART_REAR_WHEEL -> drawWheel(center, 5f * unit, 0f, TRACTOR_BLACK, TRACTOR_GRAY, TRACTOR_BLACK)
             else -> drawRect(TRACTOR_COLOR, center - Offset(0.75f * unit, 0.75f * unit), Size(1.5f * unit, 1.5f * unit))
         }
     }

@@ -12,22 +12,32 @@ private const val VEHICLE_INTERVAL_RANDOM = 20f
  * many times in a run - just never twice in a row. [RodeoVehicle.special] ones only join once every
  * regular one came by, so they stay a treat for long runs.
  */
-internal class RodeoVehicleRotation(private val vehicles: List<RodeoVehicle>) {
+internal class RodeoVehicleRotation(
+    private val vehicles: List<RodeoVehicle>,
+    private val firstSeconds: Float = VEHICLE_FIRST_SECONDS,
+    private val intervalMin: Float = VEHICLE_INTERVAL_MIN,
+    private val intervalRandom: Float = VEHICLE_INTERVAL_RANDOM,
+) {
     private val seen = mutableSetOf<RodeoVehicleKind>()
     private var last: RodeoVehicle? = null
-    private var nextIn = VEHICLE_FIRST_SECONDS
+    private var nextIn = firstSeconds
 
     fun reset() {
         seen.clear()
         last = null
-        nextIn = VEHICLE_FIRST_SECONDS
+        nextIn = firstSeconds
+    }
+
+    /** Back on this rotation's map: the first vehicle comes after [firstSeconds] again. */
+    fun restartTimer() {
+        nextIn = firstSeconds
     }
 
     /** Counts down while no vehicle is around; returns the one to send in once it is time. */
     fun tick(dt: Float): RodeoVehicle? {
         nextIn -= dt
         if (nextIn > 0f) return null
-        nextIn = VEHICLE_INTERVAL_MIN + Random.nextFloat() * VEHICLE_INTERVAL_RANDOM
+        nextIn = intervalMin + Random.nextFloat() * intervalRandom
         val regular = vehicles.filter { !it.special }
         val pool = (if (regular.all { it.kind in seen }) vehicles else regular)
             .filter { it != last }

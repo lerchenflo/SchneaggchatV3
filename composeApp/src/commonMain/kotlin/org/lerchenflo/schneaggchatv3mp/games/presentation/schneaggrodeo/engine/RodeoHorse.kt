@@ -88,6 +88,7 @@ internal class RodeoHorse {
         inMud = false
         slope = Slope.FLAT
         jumpBoost = 1f
+        fullSeconds = 0f
         takeOver(RodeoHorseStats.START)
     }
 
@@ -105,6 +106,10 @@ internal class RodeoHorse {
 
     /** Riding tires the horse: one heart per secondsPerLifeOf(level), three times as fast uphill. */
     fun tire(dt: Float) {
+        if (fullSeconds > 0f) {
+            fullSeconds = maxOf(0f, fullSeconds - dt)
+            return
+        }
         val factor = if (slope == Slope.UPHILL) UPHILL_TIRE_FACTOR else 1f
         lives = maxOf(0f, lives - factor * dt / secondsPerLifeOf(level))
     }
@@ -115,6 +120,15 @@ internal class RodeoHorse {
     }
 
     /** A carrot brings back a heart. */
+    /** Seconds the horse stays full after a bowl of Käsknöpfle: no hearts drain meanwhile. */
+    var fullSeconds = 0f
+
+    /** A bowl of Käsknöpfle from the kiosk: full for a while, and a heart back. */
+    fun eatKaesknoepfle(seconds: Float) {
+        fullSeconds = seconds
+        feed()
+    }
+
     /** A pizza from the oven: all hearts back and one level stronger. */
     fun eatPizza() {
         level = min(MAX_HORSE_LEVEL, level + 1)
