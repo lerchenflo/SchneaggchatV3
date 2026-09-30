@@ -99,7 +99,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import androidx.compose.ui.graphics.drawscope.translate
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.carriage.RodeoGoldenCarriageUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoDeepThingUi
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoPortalUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMapWayUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoDeepKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SEABED_Y
@@ -109,7 +109,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.T
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainHeightAt
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawDeepThing
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawGround
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawPortal
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawMapWay
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_candy_bus_sign
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_car_money
@@ -135,7 +135,7 @@ private fun RodeoVehiclePreviewTrack(vararg vehicles: RodeoVehicleUi) = RodeoPre
  */
 @Composable
 private fun RodeoPreviewTrack(
-    underground: Boolean = false,
+    enclosed: Boolean = false,
     ground: ((Float) -> Float)? = null,
     sea: Boolean = false,
     cameraDown: Float = 0f,
@@ -143,7 +143,7 @@ private fun RodeoPreviewTrack(
     content: DrawScope.(RodeoDrawContext) -> Unit,
 ) {
     SchneaggchatTheme {
-        val colors = if (underground) MaterialTheme.colorScheme.cave() else MaterialTheme.colorScheme
+        val colors = if (enclosed) MaterialTheme.colorScheme.cave() else MaterialTheme.colorScheme
         val textMeasurer = rememberTextMeasurer()
         val stanislaus = imageResource(Res.drawable.rodeo_stanislaus)
         val snail = imageResource(Res.drawable.icon_schneagg_alternative)
@@ -518,7 +518,7 @@ private fun SeaMapPreview() = RodeoPreviewTrack(sea = true, cameraDown = SEA_CAM
 /** The mine: crate stacks (one wide with rocks), a gold nugget, a dirt mound with a shovel, a helmet. */
 @Preview
 @Composable
-private fun MineMapPreview() = RodeoPreviewTrack(underground = true) { context ->
+private fun MineMapPreview() = RodeoPreviewTrack(enclosed = true) { context ->
     drawMineBackdrop(distance = 40f, context = context)
     val label = context.assets!!.textMeasurer.measure("100 cm")
     drawCrateStack(RodeoFenceUi(x = 30f, width = 10f, heightCm = 100, top = 10f, colorOffset = 0, knocked = false, poleHeights = listOf(10f)), context, label)
@@ -640,7 +640,7 @@ private fun DrillPreview() = RodeoVehiclePreviewTrack(
 @Preview
 @Composable
 private fun DrillDiggingPreview() = RodeoPreviewTrack(
-    underground = true,
+    enclosed = true,
     cameraDown = -26f,
     backdrop = { drawMineBackdrop(distance = 40f, context = it) },
 ) { context ->
@@ -704,32 +704,32 @@ private fun previewGround(feature: TerrainFeature, at: Float) = previewGround(at
 @Preview
 @Composable
 private fun MineShaftPreview() = RodeoPreviewTrack(ground = previewGround(TerrainFeature.SHAFT, at = 60f)) { context ->
-    drawPortal(RodeoPortalUi(x = 60f, width = 24f, exit = false, destination = RodeoMap.MINE), context, distance = 0f)
+    drawMapWay(RodeoMapWayUi(x = 60f, width = 24f, exit = false, destination = RodeoMap.MINE), context, distance = 0f)
 }
 
 /** The cave shaft with its glowing crystals, at the foot of a hill too. */
 @Preview
 @Composable
 private fun CaveShaftPreview() = RodeoPreviewTrack(ground = previewGround(TerrainFeature.SHAFT, at = 60f)) { context ->
-    drawPortal(RodeoPortalUi(x = 60f, width = 24f, exit = false, destination = RodeoMap.CAVE), context, distance = 30f)
+    drawMapWay(RodeoMapWayUi(x = 60f, width = 24f, exit = false, destination = RodeoMap.CAVE), context, distance = 30f)
 }
 
 /** Down the beach into the sea. */
 @Preview
 @Composable
 private fun BeachPreview() = RodeoPreviewTrack(ground = previewGround(TerrainFeature.BEACH, at = 120f), cameraDown = -8f) { context ->
-    drawPortal(RodeoPortalUi(x = 120f, width = 24f, exit = false, destination = RodeoMap.SEA), context, distance = 0f)
+    drawMapWay(RodeoMapWayUi(x = 120f, width = 24f, exit = false, destination = RodeoMap.SEA), context, distance = 0f)
 }
 
 /** The plank ramp up to daylight, out of the mine (and the cave). */
 @Preview
 @Composable
 private fun RampOutPreview() = RodeoPreviewTrack(
-    underground = true,
+    enclosed = true,
     ground = previewGround(TerrainFeature.RAMP_UP, at = 150f),
     backdrop = { drawMineBackdrop(distance = 40f, context = it) },
 ) { context ->
-    drawPortal(RodeoPortalUi(x = 126f, width = 24f, exit = true, destination = RodeoMap.SURFACE, origin = RodeoMap.MINE), context, distance = 0f)
+    drawMapWay(RodeoMapWayUi(x = 126f, width = 24f, exit = true, destination = RodeoMap.SURFACE, origin = RodeoMap.MINE), context, distance = 0f)
 }
 
 /** The harbour pier out of the sea. */
@@ -740,7 +740,7 @@ private fun HarbourPierPreview() = RodeoPreviewTrack(
     sea = true,
     cameraDown = -10f,
 ) { context ->
-    drawPortal(RodeoPortalUi(x = 126f, width = 24f, exit = true, destination = RodeoMap.SURFACE, origin = RodeoMap.SEA), context, distance = 0f)
+    drawMapWay(RodeoMapWayUi(x = 126f, width = 24f, exit = true, destination = RodeoMap.SURFACE, origin = RodeoMap.SEA), context, distance = 0f)
 }
 
 /** The traffic jam over gentle hills: every car follows the ground. */

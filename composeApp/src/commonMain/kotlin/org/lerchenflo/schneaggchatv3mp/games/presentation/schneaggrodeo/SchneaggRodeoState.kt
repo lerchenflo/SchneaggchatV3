@@ -239,7 +239,7 @@ data class RodeoGemUi(
  * sea, or ([exit]) the ramp back up out of [origin].
  */
 @Immutable
-data class RodeoPortalUi(
+data class RodeoMapWayUi(
     val x: Float,
     val width: Float,
     val exit: Boolean,
@@ -271,12 +271,32 @@ data class RodeoTerrainUi(
     val xs: List<Float> = emptyList(),
     val hs: List<Float> = emptyList(),
 ) {
+    /**
+     * Heights every [SAMPLE_STEP] units from the first control point on, worked out once: the
+     * drawing asks for the height of thousands of points per frame.
+     */
+    private val samples: FloatArray by lazy {
+        if (xs.isEmpty()) FloatArray(0) else FloatArray(((xs.last() - xs.first()) / SAMPLE_STEP).toInt() + 2) { index ->
+            terrainHeightAt(xs, hs, xs.first() + index * SAMPLE_STEP)
+        }
+    }
+
     /** Height of the ground at [x]. */
-    fun heightAt(x: Float): Float = terrainHeightAt(xs, hs, x)
+    fun heightAt(x: Float): Float {
+        if (samples.isEmpty()) return 0f
+        val position = ((x - xs.first()) / SAMPLE_STEP).coerceIn(0f, samples.size - 1f)
+        val index = position.toInt().coerceAtMost(samples.size - 2)
+        if (index < 0) return samples[0]
+        val t = position - index
+        return samples[index] + (samples[index + 1] - samples[index]) * t
+    }
 
     /** Rise per unit at [x]: positive uphill. */
     fun slopeAt(x: Float): Float = terrainSlopeAt(xs, hs, x)
 }
+
+/** Units between two sampled heights of [RodeoTerrainUi]. */
+private const val SAMPLE_STEP = 1f
 
 /** Something in the deep water of the sea: [time] animates it, [seed] picks its looks. */
 @Immutable
@@ -387,8 +407,8 @@ data class SchneaggRodeoFrame(
     val tiltDegrees: Float = 0f,
     /** A slow-motion mushroom: the picture gets a dreamy tint. */
     val slowMotion: Boolean = false,
-    /** Underground (any underground map): the theme turned inside out. */
-    val inCave: Boolean = false,
+    /** In the cave or the mine (rock all around): the theme turned inside out. */
+    val enclosed: Boolean = false,
     /** Which map the track runs through: surface, cave, sea or mine. */
     val map: RodeoMap = RodeoMap.SURFACE,
     val mounds: List<RodeoMoundUi> = emptyList(),
@@ -396,7 +416,7 @@ data class SchneaggRodeoFrame(
     /** The run's weather and time of day, drawn over the surface. */
     val weather: RodeoWeather = RodeoWeather.CLEAR,
     val timeOfDay: RodeoTimeOfDay = RodeoTimeOfDay.DAY,
-    val portals: List<RodeoPortalUi> = emptyList(),
+    val mapWays: List<RodeoMapWayUi> = emptyList(),
     val gems: List<RodeoGemUi> = emptyList(),
     val pizzaOvens: List<RodeoPizzaOvenUi> = emptyList(),
     /** Dangling in the lasso on its way to the horse. */

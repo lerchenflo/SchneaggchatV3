@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.train
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.OnTrack
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.scrollAlong
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoDeckVehicle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoRidePose
@@ -50,7 +52,7 @@ private const val HORSE_SPAN_RIGHT = 28f
 private const val SMOKE_INTERVAL = 0.06f
 private const val SMOKE_SECONDS = 1.4f
 
-private class Bridge(var x: Float) {
+private class Bridge(override var x: Float) : OnTrack {
     var done = false
 }
 
@@ -109,8 +111,7 @@ internal class RodeoTrain : RodeoDeckVehicle(RodeoVehicleKind.TRAIN) {
         val duckTarget = if (duckHeld && isRiding) 1f else 0f
         duck += (duckTarget - duck) * min(1f, dt * DUCK_RESPONSE)
         stepSmoke(dt, scroll)
-        bridges.forEach { it.x -= scroll }
-        bridges.removeAll { it.x + BRIDGE_WIDTH < 0f }
+        bridges.scrollAlong(scroll) { it.x + BRIDGE_WIDTH < 0f }
     }
 
     /** The cowcatcher clears the track: fences and snails in the way are swept aside for free. */

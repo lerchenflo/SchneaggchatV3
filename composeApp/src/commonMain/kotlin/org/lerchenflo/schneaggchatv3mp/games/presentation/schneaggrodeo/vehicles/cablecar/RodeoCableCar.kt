@@ -10,6 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.h
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.progressOf
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.smoothstep
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoBoardingHop
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
@@ -48,8 +49,7 @@ internal class RodeoCableCar : RodeoVehicle(RodeoVehicleKind.CABLE_CAR) {
     /** Height of the cabin floor. */
     private var floor = 0f
     private var lift = 0f
-    private var boardStartX = 0f
-    private var boardStartHeight = 0f
+    private val boardingHop = RodeoBoardingHop()
     private var horseshoeIn = 0f
 
     override val length = CABIN_WIDTH
@@ -67,8 +67,7 @@ internal class RodeoCableCar : RodeoVehicle(RodeoVehicleKind.CABLE_CAR) {
 
     override fun board(world: RodeoWorld) {
         super.board(world)
-        boardStartX = x
-        boardStartHeight = world.takeHorseOffTheGround()
+        boardingHop.start(x, world)
     }
 
     override fun worldScroll(world: RodeoWorld, step: Float, dt: Float): Float =
@@ -80,8 +79,8 @@ internal class RodeoCableCar : RodeoVehicle(RodeoVehicleKind.CABLE_CAR) {
             VehiclePhase.APPROACH -> passBy(dt)
             VehiclePhase.BOARDING -> {
                 val progress = progressOf(phaseTime, CABIN_BOARD_SECONDS)
-                x = lerp(boardStartX, CABIN_RIDE_X, smoothstep(progress))
-                lift = hopArc(boardStartHeight, floor, progress, CABIN_HOP)
+                x = boardingHop.slideX(CABIN_RIDE_X, progress)
+                lift = boardingHop.lift(floor, progress, CABIN_HOP)
                 if (progress >= 1f) {
                     enter(VehiclePhase.RIDING)
                     lift = floor

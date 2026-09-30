@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.plane
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.OnTrack
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.scrollAlong
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_LEG_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_X
@@ -81,13 +83,13 @@ private const val CLOUD_GAP_RANDOM = 5f
 
 /** A building of the skyline under the plane; [x] is its left edge. */
 private class Building(
-    var x: Float,
+    override var x: Float,
     val width: Float,
     val height: Float,
     val seed: Int,
     /** Underside of the storm cloud hanging above this building, or null for open sky. */
     val cloudBottom: Float?,
-) {
+) : OnTrack {
     var passed = false
 }
 
@@ -173,8 +175,7 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
 
         // The skyline and the airfield scroll with the ground and outlive the flight until they leave the screen
         airportX -= scroll
-        buildings.forEach { it.x -= scroll }
-        buildings.removeAll { it.x + it.width < 0f }
+        buildings.scrollAlong(scroll) { it.x + it.width < 0f }
 
         when (phase) {
             VehiclePhase.IDLE -> Unit

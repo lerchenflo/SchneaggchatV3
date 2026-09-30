@@ -28,7 +28,7 @@ internal const val OVEN_MOUTH_Y = 7f
 private const val KIOSK_SHARE = 0.55f
 
 /** A stop by the roadside; [x] its left end. */
-internal class PizzaOven(var x: Float, val kind: RodeoStopKind) {
+internal class PizzaOven(override var x: Float, val kind: RodeoStopKind) : OnTrack {
     var hasPizza = true
 }
 
@@ -59,8 +59,7 @@ internal class RodeoPizzaOvens {
 
     /** The ovens stand still on the ground, so they scroll by with it. */
     fun scroll(scroll: Float) {
-        ovens.forEach { it.x -= scroll }
-        ovens.removeAll { it.x + OVEN_WIDTH < 0f }
+        ovens.scrollAlong(scroll) { it.x + OVEN_WIDTH < 0f }
     }
 
     /**

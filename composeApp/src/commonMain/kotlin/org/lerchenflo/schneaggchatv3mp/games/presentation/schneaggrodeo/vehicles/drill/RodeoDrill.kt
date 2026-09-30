@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.drill
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.OnTrack
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.scrollAlong
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HOOVES_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.hopArc
@@ -7,6 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.l
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.circleTouchesBox
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.progressOf
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.smoothstep
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoBoardingHop
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
@@ -65,7 +68,7 @@ private const val TRAIL_SPACING = 1.5f
 private const val LEAVE_SINK_SPEED = 10f
 
 /** A nugget or a rock in the earth; moves with the ground. [y] is its middle (negative: below the ground). */
-private class Find(var x: Float, val y: Float, val rock: Boolean, val seed: Int)
+private class Find(override var x: Float, val y: Float, val rock: Boolean, val seed: Int) : OnTrack
 
 internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
 
@@ -75,11 +78,9 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
     /** The ride is over (time up or a rock): the machine comes back up no matter what. */
     private var surfacing = false
     private var lift = 0f
-    private var boardStartX = 0f
-    private var boardStartHeight = 0f
+    private val boardingHop = RodeoBoardingHop()
     private var drillPhase = 0f
     private var nextFindIn = 0f
-    private var trailIn = 0f
     private val finds = mutableListOf<Find>()
     /** The tunnel dug so far: middle points, moving with the ground. */
     private val trail = mutableListOf<Pair<Float, Float>>()
@@ -110,8 +111,7 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
 
     override fun board(world: RodeoWorld) {
         super.board(world)
-        boardStartX = x
-        boardStartHeight = world.takeHorseOffTheGround()
+        boardingHop.start(x, world)
         drilling = false
         surfacing = false
         nextFindIn = 6f
@@ -122,8 +122,7 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
     }
 
     override fun update(world: RodeoWorld, dt: Float, scroll: Float) {
-        finds.forEach { it.x -= scroll }
-        finds.removeAll { it.x < -ROCK_RADIUS }
+        finds.scrollAlong(scroll) { it.x < -ROCK_RADIUS }
         trail.replaceAll { (trailX, trailY) -> trailX - scroll to trailY }
         trail.removeAll { it.first < -6f }
         when (phase) {
@@ -134,8 +133,8 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
             }
             VehiclePhase.BOARDING -> {
                 val progress = progressOf(phaseTime, BOARD_SECONDS)
-                x = lerp(boardStartX, DRILL_RIDE_X, smoothstep(progress))
-                lift = hopArc(boardStartHeight, BODY_TOP, progress, HOP)
+                x = boardingHop.slideX(DRILL_RIDE_X, progress)
+                lift = boardingHop.lift(BODY_TOP, progress, HOP)
                 if (progress >= 1f) enter(VehiclePhase.RIDING)
             }
             VehiclePhase.RIDING -> dig(world, dt, scroll)

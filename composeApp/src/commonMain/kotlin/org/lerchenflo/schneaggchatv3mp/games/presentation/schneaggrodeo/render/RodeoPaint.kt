@@ -12,7 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 
 /**
  * Everything the track is painted with in one map: its colors and the text laid out in them. The
- * surface uses the theme; the cave (see RodeoUnderground) uses it turned inside out, so it is dark
+ * surface uses the theme; the cave (see RodeoMapSwitch) uses it turned inside out, so it is dark
  * in a light theme and the other way round, and everything on it keeps its contrast.
  */
 internal class RodeoPaint(

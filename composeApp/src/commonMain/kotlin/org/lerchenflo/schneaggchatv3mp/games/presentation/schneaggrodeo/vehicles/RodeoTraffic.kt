@@ -49,7 +49,7 @@ internal class RodeoTraffic {
 
     /**
      * Which vehicles come along on which map; the rocket is bought with snails and the cable car
-     * comes with its mountain, so neither is sent along. The short underground visits get their
+     * comes with its mountain, so neither is sent along. The short visits to the other maps get their
      * vehicles sooner.
      */
     private val rotations: Map<RodeoMap, RodeoVehicleRotation> = mapOf(

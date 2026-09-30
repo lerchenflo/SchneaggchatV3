@@ -9,6 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.p
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.smoothstep
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoRidePose
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoSteering
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoBoardingHop
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
@@ -115,7 +116,7 @@ internal class RodeoRocket : RodeoVehicle(RodeoVehicleKind.ROCKET) {
     private var stageTime = 0f
     private var y = 0f           // underside of the body
     private var tilt = 0f        // degrees nose up
-    private var boardStartHeight = 0f
+    private val boardingHop = RodeoBoardingHop()
     private var lift = 0f
     private var thrust = 0f      // 0..1, size of the flame
     private var nextPlanetIn = 0f
@@ -155,7 +156,7 @@ internal class RodeoRocket : RodeoVehicle(RodeoVehicleKind.ROCKET) {
 
     override fun board(world: RodeoWorld) {
         super.board(world)
-        boardStartHeight = world.takeHorseOffTheGround()
+        boardingHop.start(x, world)
     }
 
     override fun onJump(pressed: Boolean) {
@@ -207,7 +208,7 @@ internal class RodeoRocket : RodeoVehicle(RodeoVehicleKind.ROCKET) {
                 val progress = progressOf(phaseTime, ROCKET_BOARD_SECONDS)
                 x = lerp(ROCKET_START_X, ROCKET_RIDE_X, smoothstep(progress))
                 // Hops up into the dome
-                lift = hopArc(boardStartHeight, y + ROCKET_BODY_HEIGHT, progress, ROCKET_HOP)
+                lift = boardingHop.lift(y + ROCKET_BODY_HEIGHT, progress, ROCKET_HOP)
                 clearPad(world)
                 if (progress >= 1f) {
                     enter(VehiclePhase.RIDING)

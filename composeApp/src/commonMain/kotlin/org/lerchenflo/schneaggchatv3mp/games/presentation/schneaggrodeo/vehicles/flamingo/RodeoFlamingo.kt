@@ -13,7 +13,7 @@ import kotlin.math.max
 import kotlin.math.sin
 import kotlin.random.Random
 
-// Flamingo float (underground sea): a big pink inflatable flamingo bobs by. Lasso it and the horse
+// Flamingo float (sea): a big pink inflatable flamingo bobs by. Lasso it and the horse
 // sits down on its back. Every tap bounces horse and float high out of the water - grab the
 // horseshoes floating up there. The float drifts over the buoys.
 

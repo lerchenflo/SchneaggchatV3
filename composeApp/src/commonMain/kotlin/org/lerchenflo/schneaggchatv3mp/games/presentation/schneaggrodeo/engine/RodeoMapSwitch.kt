@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoPortalUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMapWayUi
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -24,11 +24,11 @@ private const val ENTRANCE_FIRST_SECONDS = 90f
 private const val ENTRANCE_INTERVAL_MIN = 150f
 private const val ENTRANCE_INTERVAL_RANDOM = 90f
 /** Game seconds on another map until the way out shows up; the big sea lasts longer. */
-private const val UNDERGROUND_SECONDS = 30f
+private const val VISIT_SECONDS = 30f
 private const val SEA_SECONDS = 60f
-/** Width of the hole in the track, and of the shaft of light. */
-internal const val PORTAL_WIDTH = 24f
-/** Height of the water surface in the underground sea: the horse swims with its legs below it. */
+/** Width of a way to another map: the shaft in the track, the end of the beach or the ramp. */
+internal const val MAP_WAY_WIDTH = 24f
+/** Height of the water surface in the sea: the horse swims with its legs below it. */
 internal const val SEA_WATER_LINE = 5f
 /** Height of the seabed of the open sea, far below the surface the horse swims on. */
 internal const val SEABED_Y = -30f
@@ -38,27 +38,28 @@ private const val FADE_SECONDS = 1f
 enum class RodeoMap {
     SURFACE, CAVE, SEA, MINE;
 
-    val isUnderground: Boolean get() = this != SURFACE
+    /** Away from the surface, on one of the other maps. */
+    val isAway: Boolean get() = this != SURFACE
 
     /** Dark with rock all around (the open sea has the sky above it). */
     val isEnclosed: Boolean get() = this == CAVE || this == MINE
 }
 
-/** A way to the other map: an entrance on the surface, the light shaft back up; [x] its left edge. */
-internal class Portal(var x: Float, val destination: RodeoMap) {
+/** A way to another map: a shaft or the beach on the surface, the ramp back up; [x] its left edge. */
+internal class MapWay(override var x: Float, val destination: RodeoMap) : OnTrack {
     /** The horse went through; it only works once. */
     var used = false
 }
 
-internal class RodeoUnderground {
+internal class RodeoMapSwitch {
     var map = RodeoMap.SURFACE
         private set
-    val portals = mutableListOf<Portal>()
+    val mapWays = mutableListOf<MapWay>()
     private var nextEntranceIn = ENTRANCE_FIRST_SECONDS
-    private var undergroundTime = 0f
-    /** Underground maps still to come, in random order; refilled once all were visited. */
+    private var awayTime = 0f
+    /** Maps still to come, in random order; refilled once all were visited. */
     private val upcoming = mutableListOf<RodeoMap>()
-    private var lastUnderground: RodeoMap? = null
+    private var lastVisited: RodeoMap? = null
     /** Seconds into the fade, or < 0 while none is running. */
     private var fadeTime = -1f
     private var switched = false
@@ -68,24 +69,24 @@ internal class RodeoUnderground {
     val fade: Float
         get() = if (fadeTime < 0f) 0f else 1f - abs(2f * fadeTime / FADE_SECONDS - 1f)
 
-    val isUnderground: Boolean get() = map.isUnderground
+    val isAway: Boolean get() = map.isAway
 
-    /** No portal is ahead and no fade is running: the map may bring other things. */
-    val isClear: Boolean get() = portals.isEmpty() && fadeTime < 0f
+    /** No way to another map is ahead and no fade is running: the map may bring other things. */
+    val isClear: Boolean get() = mapWays.isEmpty() && fadeTime < 0f
 
     /** A way down (or back up) is due: nothing new comes along until it opened, so it can't be crowded out. */
     val isDue: Boolean
-        get() = isClear && if (map == RodeoMap.SURFACE) nextEntranceIn <= 0f else undergroundTime >= visitSeconds
+        get() = isClear && if (map == RodeoMap.SURFACE) nextEntranceIn <= 0f else awayTime >= visitSeconds
 
-    private val visitSeconds: Float get() = if (map == RodeoMap.SEA) SEA_SECONDS else UNDERGROUND_SECONDS
+    private val visitSeconds: Float get() = if (map == RodeoMap.SEA) SEA_SECONDS else VISIT_SECONDS
 
     fun reset() {
         map = RodeoMap.SURFACE
-        portals.clear()
+        mapWays.clear()
         nextEntranceIn = ENTRANCE_FIRST_SECONDS
-        undergroundTime = 0f
+        awayTime = 0f
         upcoming.clear()
-        lastUnderground = null
+        lastVisited = null
         fadeTime = -1f
     }
 
@@ -95,8 +96,7 @@ internal class RodeoUnderground {
     }
 
     fun scroll(scroll: Float) {
-        portals.forEach { it.x -= scroll }
-        portals.removeAll { it.x + PORTAL_WIDTH < 0f }
+        mapWays.scrollAlong(scroll) { it.x + MAP_WAY_WIDTH < 0f }
     }
 
     /**
@@ -105,46 +105,46 @@ internal class RodeoUnderground {
      * ground for it and returns where it lies.
      */
     fun tick(dt: Float, allowed: Boolean, shapeGround: (TerrainFeature) -> Float) {
-        if (fadeTime >= 0f || portals.isNotEmpty()) return
+        if (fadeTime >= 0f || mapWays.isNotEmpty()) return
         if (map == RodeoMap.SURFACE) {
             nextEntranceIn -= dt
             if (nextEntranceIn <= 0f && allowed) {
                 nextEntranceIn = ENTRANCE_INTERVAL_MIN + Random.nextFloat() * ENTRANCE_INTERVAL_RANDOM
-                val destination = nextUnderground()
+                val destination = nextDestination()
                 val feature = if (destination == RodeoMap.SEA) TerrainFeature.BEACH else TerrainFeature.SHAFT
-                portals.add(Portal(x = shapeGround(feature), destination = destination))
+                mapWays.add(MapWay(x = shapeGround(feature), destination = destination))
             }
         } else {
-            undergroundTime += dt
-            if (undergroundTime >= visitSeconds && allowed) {
+            awayTime += dt
+            if (awayTime >= visitSeconds && allowed) {
                 // The ramp ends at the way out
-                portals.add(Portal(x = shapeGround(TerrainFeature.RAMP_UP) - PORTAL_WIDTH, destination = RodeoMap.SURFACE))
+                mapWays.add(MapWay(x = shapeGround(TerrainFeature.RAMP_UP) - MAP_WAY_WIDTH, destination = RodeoMap.SURFACE))
             }
         }
     }
 
-    /** The next underground map: every one comes once in random order, never the same twice in a row. */
-    private fun nextUnderground(): RodeoMap {
+    /** The next map to visit: every one comes once in random order, never the same twice in a row. */
+    private fun nextDestination(): RodeoMap {
         if (upcoming.isEmpty()) {
             upcoming += listOf(RodeoMap.CAVE, RodeoMap.SEA, RodeoMap.MINE).shuffled()
-            if (upcoming.first() == lastUnderground) upcoming.add(upcoming.removeAt(0))
+            if (upcoming.first() == lastVisited) upcoming.add(upcoming.removeAt(0))
         }
-        return upcoming.removeAt(0).also { lastUnderground = it }
+        return upcoming.removeAt(0).also { lastVisited = it }
     }
 
     /**
-     * Starts the fade once the horse's hitbox ([from]..[to]) is over a portal: into a shaft only
+     * Starts the fade once the horse's hitbox ([from]..[to]) is over a way: into a shaft only
      * with the hooves [onGround] (jumping over it stays up), into the sea and out any way.
      */
     fun checkHorse(from: Float, to: Float, onGround: Boolean) {
         if (fadeTime >= 0f) return
-        portals.forEach { portal ->
-            val over = portal.x < to && portal.x + PORTAL_WIDTH > from
-            if (!portal.used && over && (onGround || map.isUnderground || portal.destination == RodeoMap.SEA)) {
-                portal.used = true
+        mapWays.forEach { way ->
+            val over = way.x < to && way.x + MAP_WAY_WIDTH > from
+            if (!way.used && over && (onGround || map.isAway || way.destination == RodeoMap.SEA)) {
+                way.used = true
                 fadeTime = 0f
                 switched = false
-                switchTo = portal.destination
+                switchTo = way.destination
             }
         }
     }
@@ -156,14 +156,14 @@ internal class RodeoUnderground {
         if (!switched && fadeTime >= FADE_SECONDS / 2f) {
             switched = true
             map = switchTo
-            portals.clear()
-            undergroundTime = 0f
+            mapWays.clear()
+            awayTime = 0f
             onSwitch(map)
         }
         if (fadeTime >= FADE_SECONDS) fadeTime = -1f
     }
 
-    fun ui(): List<RodeoPortalUi> = portals.map {
-        RodeoPortalUi(x = it.x, width = PORTAL_WIDTH, exit = map.isUnderground, destination = it.destination, origin = map)
+    fun ui(): List<RodeoMapWayUi> = mapWays.map {
+        RodeoMapWayUi(x = it.x, width = MAP_WAY_WIDTH, exit = map.isAway, destination = it.destination, origin = map)
     }
 }

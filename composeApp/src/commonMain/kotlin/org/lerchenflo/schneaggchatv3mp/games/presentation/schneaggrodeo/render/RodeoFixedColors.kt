@@ -60,7 +60,7 @@ internal val MUSHROOM_RED = Color(0xFFE53935)
 internal val MUSHROOM_DOTS = Color.White
 internal val MUSHROOM_STEM = Color(0xFFFFF3E0)
 
-// The cave (see RodeoUnderground): crystals, torch light and the wooden mine shaft frame
+// The cave (see RodeoMapSwitch): crystals, torch light and the wooden mine shaft frame
 // (explicitly allowed; everything else down there is the theme turned inside out, see RodeoPaint)
 internal val CRYSTAL_COLORS = listOf(Color(0xFF4FC3F7), Color(0xFFBA68C8))
 internal val TORCH_COLOR = Color(0xFFFFB300)

@@ -37,14 +37,14 @@ private const val MUD_MAX_WIDTH = 32f
 internal const val FOREST_MUSHROOM_CHANCE = 0.4f
 internal const val MUSHROOM_CHANCE = 0.03f
 
-// Crystals float in the cave, one or two per gap (see RodeoUnderground)
+// Crystals float in the cave, one or two per gap (see RodeoMapSwitch)
 private const val GEM_CHANCE = 0.7f
 private const val GEM_MIN_HEIGHT = 12f
 private const val GEM_MAX_HEIGHT = 34f
 /** Mushrooms grow in the damp cave too. */
 private const val CAVE_MUSHROOM_CHANCE = 0.2f
 
-// The underground sea: pearls float in the water, oil slicks slow the swimming horse
+// The sea: pearls float in the water, oil slicks slow the swimming horse
 private const val PEARL_CHANCE = 0.55f
 private const val OIL_CHANCE = 0.3f
 // The mine: gold nuggets in the rock, dirt mounds to dig through
@@ -78,7 +78,7 @@ internal class RodeoCourse {
     var mushroomChance = MUSHROOM_CHANCE
     /** Multiplies the chance of a mud puddle; the run's weather sets it (see RodeoRunFlavor). */
     var mudFactor = 1f
-    /** The map the track runs through: each underground map has its own pickups. */
+    /** The map the track runs through: each map has its own pickups. */
     var map = RodeoMap.SURFACE
 
     /** Fences placed this run; also rotates their pole colors. */
@@ -211,8 +211,7 @@ internal class RodeoCourse {
         // The first fence of a run (or of a restored run, whose track starts empty) comes in at 60 %
         // of the visible width
         if (nextFenceIn < 0f && fences.isEmpty()) nextFenceIn = worldWidth * 0.6f
-        fences.forEach { it.x -= scroll }
-        fences.removeAll { it.x + it.width < 0f }
+        fences.scrollAlong(scroll) { it.x + it.width < 0f }
         if (!spawnFences) return
         nextFenceIn -= ridden
         if (nextFenceIn <= 0f) {
@@ -264,18 +263,12 @@ internal class RodeoCourse {
 
     /** Horseshoes, carrots, mushrooms and puddles lie still on the track: they only move with the ground. */
     fun scrollPickups(scroll: Float) {
-        horseshoes.forEach { it.x -= scroll }
-        horseshoes.removeAll { it.x < -SNAIL_SIZE }
-        carrots.forEach { it.x -= scroll }
-        carrots.removeAll { it.x < -SNAIL_SIZE }
-        mud.forEach { it.x -= scroll }
-        mud.removeAll { it.x + it.width < 0f }
-        mushrooms.forEach { it.x -= scroll }
-        mushrooms.removeAll { it.x < -SNAIL_SIZE }
-        gems.forEach { it.x -= scroll }
-        gems.removeAll { it.x < -SNAIL_SIZE }
-        mounds.forEach { it.x -= scroll }
-        mounds.removeAll { it.x < -SNAIL_SIZE }
+        horseshoes.scrollAlong(scroll) { it.x < -SNAIL_SIZE }
+        carrots.scrollAlong(scroll) { it.x < -SNAIL_SIZE }
+        mud.scrollAlong(scroll) { it.x + it.width < 0f }
+        mushrooms.scrollAlong(scroll) { it.x < -SNAIL_SIZE }
+        gems.scrollAlong(scroll) { it.x < -SNAIL_SIZE }
+        mounds.scrollAlong(scroll) { it.x < -SNAIL_SIZE }
     }
 
     /**

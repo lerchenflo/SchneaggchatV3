@@ -9,15 +9,15 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.TextLayoutResult
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoFenceUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGemUi
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoPortalUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMapWayUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.TERRAIN_STEP
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import kotlin.math.floor
 import kotlin.math.sin
 
-// The underground (see engine/RodeoUnderground): the cave backdrop, stalagmites standing in for the
-// fences, crystals, and the portals between the maps - the mine shaft in the track and the shaft of
-// light out of the cave. Colors come from the cave paint (RodeoPaint) plus a few fixed ones.
+// The cave (see engine/RodeoMapSwitch): its backdrop, stalagmites standing in for the
+// fences, crystals, and the ways between the maps - the shafts in the track and the ramps back up.
+// Colors come from the cave paint (RodeoPaint) plus a few fixed ones.
 
 private const val STALACTITE_SPACING = 7f
 private const val TORCH_SPACING = 90f
@@ -114,27 +114,27 @@ internal fun DrawScope.drawGem(gem: RodeoGemUi, context: RodeoDrawContext) {
  * the timber-framed mine shaft, the beach into the sea - or the way back: a ramp up to daylight out
  * of the cave and the mine, the harbour pier out of the sea.
  */
-internal fun DrawScope.drawPortal(portal: RodeoPortalUi, context: RodeoDrawContext, distance: Float) {
-    if (portal.exit) {
-        when (portal.origin) {
-            RodeoMap.SEA -> drawHarbourPier(portal.x + portal.width, context)
-            else -> drawRampOut(portal.x + portal.width, context)
+internal fun DrawScope.drawMapWay(way: RodeoMapWayUi, context: RodeoDrawContext, distance: Float) {
+    if (way.exit) {
+        when (way.origin) {
+            RodeoMap.SEA -> drawHarbourPier(way.x + way.width, context)
+            else -> drawRampOut(way.x + way.width, context)
         }
         return
     }
-    when (portal.destination) {
-        RodeoMap.SEA -> drawBeach(portal.x, context, distance)
-        RodeoMap.MINE -> drawMineEntrance(portal.x, portal.width, context)
-        else -> drawCaveShaft(portal, context, distance)
+    when (way.destination) {
+        RodeoMap.SEA -> drawBeach(way.x, context, distance)
+        RodeoMap.MINE -> drawMineEntrance(way.x, way.width, context)
+        else -> drawCaveShaft(way, context, distance)
     }
 }
 
 /** The shaft into the cave: a dark hole with crystals glowing round its rim and a few stones. */
-private fun DrawScope.drawCaveShaft(portal: RodeoPortalUi, context: RodeoDrawContext, distance: Float) {
+private fun DrawScope.drawCaveShaft(way: RodeoMapWayUi, context: RodeoDrawContext, distance: Float) {
     val unit = context.unit
-    fun p(dx: Float, y: Float) = context.p(portal.x + dx, y)
-    drawOval(context.colors.scrim, topLeft = p(0f, 1f), size = Size(portal.width * unit, 3.5f * unit))
-    listOf(-1.5f to 0.8f, 2f to 1.4f, portal.width - 3f to 1.2f, portal.width + 1f to 0.9f).forEachIndexed { index, (dx, size) ->
+    fun p(dx: Float, y: Float) = context.p(way.x + dx, y)
+    drawOval(context.colors.scrim, topLeft = p(0f, 1f), size = Size(way.width * unit, 3.5f * unit))
+    listOf(-1.5f to 0.8f, 2f to 1.4f, way.width - 3f to 1.2f, way.width + 1f to 0.9f).forEachIndexed { index, (dx, size) ->
         val glow = 0.6f + 0.4f * sin(distance * 0.08f + index * 1.9f)
         val center = p(dx, size)
         drawCircle(TORCH_COLOR.copy(alpha = 0.15f * glow), radius = 3f * unit, center = center)

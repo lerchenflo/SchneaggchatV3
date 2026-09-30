@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.pirateship
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.OnTrack
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.scrollAlong
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HITBOX_LEFT
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HITBOX_RIGHT
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
@@ -16,7 +18,7 @@ import kotlin.math.PI
 import kotlin.math.sin
 import kotlin.random.Random
 
-// Pirate ship (underground sea): a wooden ship with a black skull flag sails by. Lasso it and the
+// Pirate ship (sea): a wooden ship with a black skull flag sails by. Lasso it and the
 // horse hops up onto its deck. Its bow cannon fires on its own at every shark and snail ahead
 // (points for each hit), and treasure chests come floating by - the horse grabs them passing
 // through. No input needed; it pushes the buoys aside.
@@ -60,7 +62,7 @@ private class Shot(val fromX: Float, var toX: Float, val toY: Float) {
 }
 
 /** A treasure chest bobbing ahead; moves with the ground. */
-private class Chest(var x: Float, val seed: Int)
+private class Chest(override var x: Float, val seed: Int) : OnTrack
 
 internal class RodeoPirateShip : RodeoDeckVehicle(RodeoVehicleKind.PIRATE_SHIP) {
 
@@ -95,8 +97,7 @@ internal class RodeoPirateShip : RodeoDeckVehicle(RodeoVehicleKind.PIRATE_SHIP) 
     override fun updateAlways(world: RodeoWorld, dt: Float, scroll: Float) {
         time += dt
         smokeTime += dt
-        chests.forEach { it.x -= scroll }
-        chests.removeAll { it.x < -5f }
+        chests.scrollAlong(scroll) { it.x < -5f }
         shots.forEach {
             it.time += dt
             it.toX -= scroll

@@ -26,8 +26,19 @@ private const val RUNNER_SPEED = 30f
 /** Upwards speed of a snail sent flying. */
 private const val KNOCK_VELOCITY = 45f
 
+/** Something lying on the track: the ground carries it along to the left. */
+internal interface OnTrack {
+    var x: Float
+}
+
+/** Moves everything [scroll] units to the left with the ground and drops what [isGone] (out of the picture). */
+internal fun <T : OnTrack> MutableList<T>.scrollAlong(scroll: Float, isGone: (T) -> Boolean) {
+    forEach { it.x -= scroll }
+    removeAll(isGone)
+}
+
 /** [x] is the left edge, [colorOffset] rotates the pole colors so neighbouring fences differ. */
-internal class Fence(var x: Float, val width: Float, val heightCm: Int, val colorOffset: Int) {
+internal class Fence(override var x: Float, val width: Float, val heightCm: Int, val colorOffset: Int) : OnTrack {
     val top: Float = heightCm / CM_PER_UNIT.toFloat()
     var knocked = false
 
@@ -78,28 +89,28 @@ internal class Snail(var x: Float, val kind: SnailKind, var onFence: Fence? = nu
 }
 
 /** A lucky horseshoe floating at [height] above the ground; [x] is its center. */
-internal class Horseshoe(var x: Float, val height: Float) {
+internal class Horseshoe(override var x: Float, val height: Float) : OnTrack {
     val phase = Random.nextFloat() * 2f * PI.toFloat()
 }
 
 /** A carrot floating at [height] above the ground; [x] is its center. Feeds the horse one heart. */
-internal class Carrot(var x: Float, val height: Float) {
+internal class Carrot(override var x: Float, val height: Float) : OnTrack {
     val phase = Random.nextFloat() * 2f * PI.toFloat()
 }
 
 /** A magic mushroom on the ground at [x] (its center); see RodeoMushrooms. */
-internal class Mushroom(var x: Float) {
+internal class Mushroom(override var x: Float) : OnTrack {
     val seed = Random.nextInt(1000)
 }
 
 /** A crystal floating in the cave at [height]; [x] is its center, [hue] picks its color. */
-internal class Gem(var x: Float, val height: Float) {
+internal class Gem(override var x: Float, val height: Float) : OnTrack {
     val phase = Random.nextFloat() * 2f * PI.toFloat()
     val hue = Random.nextInt(2)
 }
 
 /** A mud puddle on the ground from [x] (left edge) over [width]; slows the horse wading through. */
-internal class MudPatch(var x: Float, val width: Float) {
+internal class MudPatch(override var x: Float, val width: Float) : OnTrack {
     /** Picks the shape of the splotches. */
     val seed = Random.nextInt(1000)
 
@@ -126,6 +137,6 @@ internal fun hopOverFences(x: Float, fences: List<Fence>, reach: Float, clearanc
 
 
 /** A dirt mound in the mine: galloping through it digs it up and turns up a find; [x] its center. */
-internal class DigMound(var x: Float) {
+internal class DigMound(override var x: Float) : OnTrack {
     val seed = Random.nextInt(1000)
 }

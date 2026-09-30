@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import kotlin.math.PI
+import kotlin.math.max
 import kotlin.math.sin
 
 // The backdrop: ground, speed streaks, clouds high up and space. [distance] is how far the ground
@@ -19,6 +20,8 @@ private const val SPEED_LINE_COUNT = 9
 private const val STAR_COUNT = 70
 /** Units between two points of the ground line over the hills. */
 private const val GROUND_STEP = 2f
+/** How far below the picture the earth reaches. */
+private const val EARTH_DEPTH = 200f
 
 /**
  * The ground line over the hills, the earth under it shaded a little, and pebbles in it. [fill]
@@ -29,19 +32,26 @@ internal fun DrawScope.drawGround(context: RodeoDrawContext, distance: Float, sp
     val color = context.colors.onSurfaceVariant
     val fill = color.copy(alpha = 0.06f)
     val line = Path()
-    val earth = Path()
     var worldX = 0f
+    var lowestY = 0f
     val visibleWidth = size.width / unit
-    earth.moveTo(0f, size.height + 200f * unit)
     while (worldX <= visibleWidth + GROUND_STEP) {
         val point = Offset(worldX * unit, context.groundYAt(worldX))
         if (worldX == 0f) line.moveTo(point.x, point.y) else line.lineTo(point.x, point.y)
-        earth.lineTo(point.x, point.y)
+        lowestY = max(lowestY, point.y)
         worldX += GROUND_STEP
     }
-    earth.lineTo(size.width + GROUND_STEP * unit, size.height + 200f * unit)
-    earth.close()
-    drawPath(earth, fill)
+    val right = worldX * unit
+    // The earth: only the band between the hills and their lowest point needs a path, a plain rect
+    // does the rest (far down, so it still covers the bottom while the picture follows a hill up)
+    val band = Path().apply {
+        addPath(line)
+        lineTo(right, lowestY)
+        lineTo(0f, lowestY)
+        close()
+    }
+    drawPath(band, fill)
+    drawRect(fill, Offset(0f, lowestY), Size(right, size.height + EARTH_DEPTH * unit - lowestY))
     drawPath(line, color, style = Stroke(width = unit * 0.6f, join = StrokeJoin.Round))
 
     // Small pebbles scrolling with the ground, so the speed is visible between fences. At tractor

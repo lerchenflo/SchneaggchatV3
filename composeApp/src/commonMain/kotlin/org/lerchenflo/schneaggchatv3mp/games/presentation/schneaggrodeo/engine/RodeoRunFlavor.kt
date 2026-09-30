@@ -7,7 +7,7 @@ import kotlin.random.Random
 //  - rain: more mud puddles on the track; once it stops a rainbow comes along (see RodeoSkyWonders)
 //  - snow: fewer puddles, a white dusting on the ground
 //  - dusk: a warm evening light; night: dark all around, a lantern lights up the horse
-// Together with the shuffled order of the underground maps (see RodeoUnderground) and the random
+// Together with the shuffled order of the other maps (see RodeoMapSwitch) and the random
 // vehicles, landscapes and stops, every run is different.
 
 enum class RodeoWeather { CLEAR, RAIN, SNOW }

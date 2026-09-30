@@ -116,7 +116,7 @@ internal fun RodeoTrack(
         ) {
             val world = frame() // read here so every frame only redraws the canvas
             val crowd = people()
-            val paint = if (world.inCave) cavePaint else surfacePaint
+            val paint = if (world.enclosed) cavePaint else surfacePaint
             val colors = paint.colors
             val unit = size.height / WORLD_HEIGHT_UNITS
             val groundY = size.height - GROUND_OFFSET_UNITS * unit
@@ -160,7 +160,7 @@ internal fun RodeoTrack(
 
             // Up in space (rocket) the sky turns dark and starry - fixed to the screen
             drawSpace(world.distance, unit, world.space)
-            // Underground: the cave's rock, the sea's water or the mine's earth walls all around
+            // In the cave and the mine: rock or earth walls all around
             when (world.map) {
                 RodeoMap.CAVE -> drawCaveBackdrop(world.distance, screenContext)
                 // The sea is drawn in the world, so the view can look down into it
@@ -205,8 +205,8 @@ internal fun RodeoTrack(
                     drawGround(context, world.distance, world.speedBlur)
                 }
                 if (world.map == RodeoMap.SURFACE && world.weather == RodeoWeather.SNOW) drawSnowCover(context)
-                // Ways down in the track, light shafts back up
-                world.portals.forEach { drawPortal(it, context, world.distance) }
+                // Ways to the other maps: shafts, the beach, ramps back up
+                world.mapWays.forEach { drawMapWay(it, context, world.distance) }
                 if (world.speedBlur) drawSpeedLines(groundY, unit, world.distance, colors.onSurfaceVariant)
 
                 // Skylines, bridge piers and planets stand behind everything on the track
@@ -247,7 +247,7 @@ internal fun RodeoTrack(
 
                 world.fences.forEach { fence ->
                     val label = paint.heightLabels.getValue(fence.heightCm)
-                    // Underground the fences are stalagmites, buoys or crate stacks
+                    // On the other maps the fences are stalagmites, buoys or crate stacks
                     when (world.map) {
                         RodeoMap.CAVE -> drawStalagmite(fence, context, label)
                         RodeoMap.SEA -> drawBuoy(fence, context, label)

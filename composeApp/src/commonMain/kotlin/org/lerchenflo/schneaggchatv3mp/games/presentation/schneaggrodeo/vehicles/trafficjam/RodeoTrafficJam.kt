@@ -6,6 +6,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.h
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.progressOf
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.smoothstep
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoBoardingHop
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
@@ -47,8 +48,7 @@ internal class RodeoTrafficJam : RodeoVehicle(RodeoVehicleKind.TRAFFIC_JAM) {
     /** The ground's pace; the cars stand still, so they pass by with it. */
     private var groundSpeed = 30f
     private var lift = 0f
-    private var boardStartX = 0f
-    private var boardStartHeight = 0f
+    private val boardingHop = RodeoBoardingHop()
     /** The car the horse stands on (or hops onto). */
     private var carIndex = 0
     private var hopFrom = 0f
@@ -88,8 +88,7 @@ internal class RodeoTrafficJam : RodeoVehicle(RodeoVehicleKind.TRAFFIC_JAM) {
 
     override fun board(world: RodeoWorld) {
         super.board(world)
-        boardStartX = x
-        boardStartHeight = world.takeHorseOffTheGround()
+        boardingHop.start(x, world)
         carIndex = 0
     }
 
@@ -108,8 +107,8 @@ internal class RodeoTrafficJam : RodeoVehicle(RodeoVehicleKind.TRAFFIC_JAM) {
                 val progress = progressOf(phaseTime, BOARD_SECONDS)
                 // Lassoed from afar the jam is pulled in; otherwise it just stands there
                 val target = HOOVES_AT - 3f
-                x = if (boardStartX > target) lerp(boardStartX, target, smoothstep(progress)) else x - scroll
-                lift = hopArc(boardStartHeight, cars.first().style.roof, progress, BOARD_HOP)
+                x = if (boardingHop.startX > target) boardingHop.slideX(target, progress) else x - scroll
+                lift = boardingHop.lift(cars.first().style.roof, progress, BOARD_HOP)
                 if (progress >= 1f) {
                     enter(VehiclePhase.RIDING)
                     world.addBonusPoints(CAR_POINTS)
@@ -155,12 +154,12 @@ internal class RodeoTrafficJam : RodeoVehicle(RodeoVehicleKind.TRAFFIC_JAM) {
 
     override fun ui(): RodeoVehicleUi? {
         if (phase == VehiclePhase.IDLE) return null
-        val last = cars.first().style
+        val rear = cars.first().style
         return RodeoTrafficJamUi(
             x = x,
             cars = cars,
             time = time,
-            lassoHint = lassoHint(x + last.length / 2f, last.roof + 6f),
+            lassoHint = lassoHint(x + rear.length / 2f, rear.roof + 6f),
         )
     }
 }

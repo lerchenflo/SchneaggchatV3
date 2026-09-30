@@ -39,7 +39,7 @@ import kotlin.random.Random
 //            RodeoWildHorses   other horses on the track: wild ones to switch to, friends to pick up
 //            RodeoLandscape    mountains and forests the track runs through; their vehicles come along
 //            RodeoMushrooms    magic mushrooms: giant, tiny or slow motion for a few seconds
-//            RodeoUnderground  the rare way down into an underground map (cave, sea, mine) and back up
+//            RodeoMapSwitch  the rare way to another map (cave, sea, mine) and back
 //            RodeoTerrain      the hills of the ground under the track
 //            RodeoTest         developer toggles to try out one vehicle or map on its own
 //            RodeoDeepSea      fish, whales and wrecks deep down in the open sea
@@ -144,7 +144,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     private val wildHorses = RodeoWildHorses()
     private val landscape = RodeoLandscape()
     private val trip = RodeoMushroomTrip()
-    private val underground = RodeoUnderground()
+    private val mapSwitch = RodeoMapSwitch()
     private val pizzaOvens = RodeoPizzaOvens()
     private val flavor = RodeoRunFlavor()
     private val stanislaus = RodeoStanislausRunner()
@@ -244,7 +244,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         wildHorses.reset()
         landscape.reset()
         trip.reset()
-        underground.reset()
+        mapSwitch.reset()
         pizzaOvens.reset()
         stanislaus.reset()
         wonders.reset()
@@ -267,7 +267,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         // Test mode starts right on the tested map
         val testMap = RodeoTest.vehicle?.let { traffic.mapOf(it) } ?: RodeoTest.map
         if (testMap != null && testMap != RodeoMap.SURFACE) {
-            underground.startOn(testMap)
+            mapSwitch.startOn(testMap)
             switchMap(testMap)
         }
     }
@@ -404,7 +404,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         trip.tick(realDt)
         // A slow-motion mushroom slows down the whole world, not the clock of the run
         val dt = realDt * trip.timeFactor
-        underground.stepFade(realDt, ::switchMap)
+        mapSwitch.stepFade(realDt, ::switchMap)
         effects.tick(dt)
         if (fall.isInSaddle) stepRiding(dt) else stepOffTheHorse(dt)
     }
@@ -437,21 +437,21 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         // Hills only up on the surface, and never under the fast vehicles or the mountain
         terrain.scroll(
             scroll, worldWidth, elapsed,
-            keepFlat = traffic.needsFlatTrack || landscape.mountain != null || underground.isUnderground,
+            keepFlat = traffic.needsFlatTrack || landscape.mountain != null || mapSwitch.isAway,
         )
-        underground.scroll(scroll)
+        mapSwitch.scroll(scroll)
         pizzaOvens.scroll(scroll)
-        course.map = underground.map
-        deepSea.step(dt, scroll, worldWidth, active = underground.map == RodeoMap.SEA)
+        course.map = mapSwitch.map
+        deepSea.step(dt, scroll, worldWidth, active = mapSwitch.map == RodeoMap.SEA)
         // The rain runs out, and once back on the surface a rainbow comes along
         if (flavor.tick(dt)) course.mudFactor = flavor.mudFactor
-        if (flavor.rainbowDue && !underground.isUnderground && underground.isClear) {
+        if (flavor.rainbowDue && !mapSwitch.isAway && mapSwitch.isClear) {
             flavor.rainbowSent()
             wonders.sendRainbow(worldWidth)
         }
         bonusPoints += wonders.step(
             dt, scroll, ridden, worldWidth,
-            firefliesAllowed = flavor.timeOfDay == RodeoTimeOfDay.NIGHT && !underground.isUnderground && underground.isClear,
+            firefliesAllowed = flavor.timeOfDay == RodeoTimeOfDay.NIGHT && !mapSwitch.isAway && mapSwitch.isClear,
         )
         val targetTilt = when (horse.slope) {
             Slope.FLAT -> 0f
@@ -476,15 +476,15 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         catchFireflies()
         digMounds()
         wadeThroughMud(dt)
-        // Down the mine shaft (hooves on the ground) or up the light shaft
-        underground.checkHorse(HORSE_X + HITBOX_LEFT, HORSE_X + HITBOX_RIGHT, onGround = ride == null && !superJump.isActive && horse.isOnGround)
+        // Down a shaft (hooves on the ground), into the sea or up the ramp
+        mapSwitch.checkHorse(HORSE_X + HITBOX_LEFT, HORSE_X + HITBOX_RIGHT, onGround = ride == null && !superJump.isActive && horse.isOnGround)
 
         // Other horses: wild ones now and then, friends shortly before their highscore
         wildHorses.step(dt, scroll, course.fences, score.toLong())
-        // Underground there are no wild horses, landscapes or stops - friends still come, and each
-        // underground map has vehicles of its own. A due way down (or up) goes first.
-        val mapIsClear = underground.isClear && !underground.isDue
-        val onSurface = !underground.isUnderground && mapIsClear
+        // On the other maps there are no wild horses, landscapes or stops - friends still come, and each
+        // other map has vehicles of its own. A due way there (or back) goes first.
+        val mapIsClear = mapSwitch.isClear && !mapSwitch.isDue
+        val onSurface = !mapSwitch.isAway && mapIsClear
         val horsesMayCome = ride == null && traffic.isClear && !superJump.isActive
         val nothingAround = horsesMayCome && wildHorses.isClear && landscape.isClear
         // A test run (see RodeoTest) only brings its vehicle
@@ -512,13 +512,13 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             this, dt, scroll,
             maySend = !superJump.isActive && elapsed > 0f && wildHorses.isClear && landscape.isClear && mapIsClear &&
                     !stanislaus.isAround && regular,
-            map = underground.map,
+            map = mapSwitch.map,
             flatTrack = terrain.isFlat(HORSE_X, worldWidth),
         )
         sendTestVehicle(dt)
 
         // Rarely a mine shaft opens up, when nothing else is going on; in the cave the way out comes
-        if (regular) underground.tick(dt, allowed = nothingAround, shapeGround = terrain::addFeature)
+        if (regular) mapSwitch.tick(dt, allowed = nothingAround, shapeGround = terrain::addFeature)
         // Now and then a stop by the roadside, and very rarely Stanislaus running along
         pizzaOvens.tick(dt, worldWidth, allowed = onSurface && regular)
         stanislaus.step(dt)
@@ -964,13 +964,13 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             sections = landscape.ui(),
             mushrooms = course.mushroomUis(),
             tiltDegrees = tilt,
-            inCave = underground.map.isEnclosed,
-            map = underground.map,
+            enclosed = mapSwitch.map.isEnclosed,
+            map = mapSwitch.map,
             mounds = course.moundUis(),
             runnerMan = stanislaus.ui(),
             weather = flavor.weather,
             timeOfDay = flavor.timeOfDay,
-            portals = underground.ui(),
+            mapWays = mapSwitch.ui(),
             gems = course.gemUis(pack.clock),
             pizzaOvens = pizzaOvens.ui(),
             pizza = pizzaOvens.pizzaUi(),
@@ -980,7 +980,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             rainbowX = wonders.rainbowX,
             doublePointsSeconds = wonders.doublePointsSeconds,
             fireflies = wonders.fireflyUis(),
-            fade = underground.fade,
+            fade = mapSwitch.fade,
             slowMotion = trip.timeFactor < 1f,
         )
     }
@@ -990,7 +990,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         traffic.current?.camera()?.let { return it }
         val visibleTop = WORLD_HEIGHT_UNITS - GROUND_OFFSET_UNITS - CAMERA_TOP_MARGIN
         // In the sea the view looks down into the deep water, unless the horse jumps high
-        val lowest = if (underground.map == RodeoMap.SEA) SEA_CAMERA_DOWN else 0f
+        val lowest = if (mapSwitch.map == RodeoMap.SEA) SEA_CAMERA_DOWN else 0f
         return max(lowest, horseBase + CAMERA_HORSE_TOP - visibleTop)
     }
 }

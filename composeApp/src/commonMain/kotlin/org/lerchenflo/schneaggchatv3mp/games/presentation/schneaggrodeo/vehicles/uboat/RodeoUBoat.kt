@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.uboat
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.OnTrack
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.scrollAlong
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.circleTouchesBox
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SEABED_Y
@@ -55,7 +57,7 @@ private const val HIT_INSET = 2f
 private enum class ThingKind { PEARL, MINE, TREASURE }
 
 /** A pearl or a sea mine in the water, or a treasure chest on the seabed; [x] / [y] its center. */
-private class Thing(var x: Float, val y: Float, val kind: ThingKind)
+private class Thing(override var x: Float, val y: Float, val kind: ThingKind) : OnTrack
 
 internal class RodeoUBoat : RodeoVehicle(RodeoVehicleKind.U_BOAT) {
 
@@ -112,8 +114,7 @@ internal class RodeoUBoat : RodeoVehicle(RodeoVehicleKind.U_BOAT) {
 
     override fun update(world: RodeoWorld, dt: Float, scroll: Float) {
         propeller += dt * 20f
-        things.forEach { it.x -= scroll }
-        things.removeAll { it.x < -5f }
+        things.scrollAlong(scroll) { it.x < -5f }
         when (phase) {
             VehiclePhase.IDLE -> Unit
             VehiclePhase.APPROACH -> passBy(dt)

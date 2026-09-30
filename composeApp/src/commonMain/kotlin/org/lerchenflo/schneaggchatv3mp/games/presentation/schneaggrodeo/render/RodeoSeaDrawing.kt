@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.TextLayoutResult
@@ -22,7 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.T
 import kotlin.math.floor
 import kotlin.math.sin
 
-// The open sea (see engine/RodeoUnderground): the sky above, deep water below with
+// The open sea (see engine/RodeoMapSwitch): the sky above, deep water below with
 // seaweed swaying, buoys instead of fences, sharks instead of runners, swim rings under the
 // crawlers, oil slicks instead of mud, pearls instead of crystals - and the water over everything
 // below its surface, so the horse swims.
@@ -31,9 +32,14 @@ private const val SEAWEED_SPACING = 23f
 private const val SEA_PARALLAX = 0.5f
 /** Units the water and the seabed reach below the picture, so they still cover it while the view looks down. */
 private const val BELOW_PICTURE = 60f
+/** The sand of the seabed, seen through the deep water. */
+private val SEABED = lerp(SAND, SEA_DEEP, 0.6f)
 
 /** Height of the sea's wavy surface at world x [x]. */
-private fun seaSurfaceAt(x: Float, distance: Float) = SEA_WATER_LINE + 0.4f * sin(x * 0.5f + distance * 0.2f)
+private fun seaSurfaceAt(x: Float, distance: Float) = SEA_WATER_LINE + WAVE_HEIGHT * sin(x * 0.5f + distance * 0.2f)
+
+/** How far the waves rise above and sink below the water line. */
+private const val WAVE_HEIGHT = 0.4f
 
 /**
  * The open sea, drawn in the world so it moves with the view: water from its surface down to the
@@ -43,14 +49,13 @@ internal fun DrawScope.drawSeaBackdrop(distance: Float, context: RodeoDrawContex
     val unit = context.unit
     val surfaceY = context.p(0f, SEA_WATER_LINE).y
     val bedY = context.p(0f, SEABED_Y).y
+    // Opaque, so nothing behind it has to be blended in
     drawRect(
-        Brush.verticalGradient(listOf(SEA_WATER_LIGHT.copy(alpha = 0.8f), SEA_WATER, SEA_DEEP), startY = surfaceY, endY = bedY),
+        Brush.verticalGradient(listOf(SEA_WATER_LIGHT, SEA_WATER, SEA_DEEP), startY = surfaceY, endY = bedY),
         topLeft = Offset(0f, surfaceY),
         size = Size(size.width, bedY - surfaceY),
     )
-    val below = Size(size.width, size.height + BELOW_PICTURE * unit)
-    drawRect(SAND.copy(alpha = 0.55f), topLeft = Offset(0f, bedY), size = below)
-    drawRect(SEA_DEEP.copy(alpha = 0.5f), topLeft = Offset(0f, bedY), size = below)
+    drawRect(SEABED, topLeft = Offset(0f, bedY), size = Size(size.width, size.height + BELOW_PICTURE * unit))
     // Seaweed on the seabed, swaying, and stones in the sand
     val shift = distance * SEA_PARALLAX
     var index = floor(shift / SEAWEED_SPACING).toInt()
@@ -162,20 +167,26 @@ private fun DrawScope.drawWreck(wreck: RodeoDeepThingUi, context: RodeoDrawConte
  */
 internal fun DrawScope.drawWaterOverlay(distance: Float, context: RodeoDrawContext) {
     val unit = context.unit
+    val water = SEA_WATER.copy(alpha = 0.45f)
+    // Only the wavy band along the surface needs a path; below its troughs a plain rect does
+    val troughY = context.groundY - (SEA_WATER_LINE - WAVE_HEIGHT) * unit
     val surface = Path()
+    val band = Path()
     var x = 0f
     while (x <= size.width / unit + 1f) {
         val point = Offset(x * unit, context.groundY - seaSurfaceAt(x, distance) * unit)
-        if (x == 0f) surface.moveTo(point.x, point.y) else surface.lineTo(point.x, point.y)
+        if (x == 0f) {
+            surface.moveTo(point.x, point.y)
+            band.moveTo(point.x, troughY)
+        }
+        surface.lineTo(point.x, point.y)
+        band.lineTo(point.x, point.y)
         x += 1f
     }
-    val water = Path().apply {
-        addPath(surface)
-        lineTo(size.width + unit, size.height + BELOW_PICTURE * unit)
-        lineTo(0f, size.height + BELOW_PICTURE * unit)
-        close()
-    }
-    drawPath(water, SEA_WATER.copy(alpha = 0.45f))
+    band.lineTo(x * unit, troughY)
+    band.close()
+    drawPath(band, water)
+    drawRect(water, Offset(0f, troughY), Size(size.width, size.height + BELOW_PICTURE * unit - troughY))
     drawPath(surface, SEA_WATER_LIGHT, style = Stroke(width = 0.25f * unit))
 }
 

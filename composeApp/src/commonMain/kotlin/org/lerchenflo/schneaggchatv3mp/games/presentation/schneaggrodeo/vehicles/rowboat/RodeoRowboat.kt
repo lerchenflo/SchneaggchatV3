@@ -13,7 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import kotlin.math.sin
 import kotlin.random.Random
 
-// Rowboat (underground sea): a little wooden rowboat drifts by. Lasso it and the horse hops in; the
+// Rowboat (sea): a little wooden rowboat drifts by. Lasso it and the horse hops in; the
 // oars dip on their own while fish keep jumping out of the water ahead - lasso them for points
 // before they splash back in. The boat pushes the buoys aside.
 

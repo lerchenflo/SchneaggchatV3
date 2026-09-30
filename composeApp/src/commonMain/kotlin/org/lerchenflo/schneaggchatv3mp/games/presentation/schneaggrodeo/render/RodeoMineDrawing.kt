@@ -15,7 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.S
 import kotlin.math.floor
 import kotlin.math.sin
 
-// The mine (see engine/RodeoUnderground): earth walls with timber frames and lanterns, stacks of
+// The mine (see engine/RodeoMapSwitch): earth walls with timber frames and lanterns, stacks of
 // crates and rock piles instead of fences, gold nuggets instead of crystals, dirt mounds with a
 // shovel stuck in them to dig through, and every snail wearing a miner's helmet.
 

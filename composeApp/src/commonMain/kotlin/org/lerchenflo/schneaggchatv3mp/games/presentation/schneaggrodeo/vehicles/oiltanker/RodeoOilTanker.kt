@@ -12,7 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-// Oil tanker (underground sea): a huge black tanker steams by. Lasso it and the horse hops up onto
+// Oil tanker (sea): a huge black tanker steams by. Lasso it and the horse hops up onto
 // its long deck. It plows slowly through every buoy (points for each), smoke pouring from its
 // funnel and its horn blaring now and then.
 

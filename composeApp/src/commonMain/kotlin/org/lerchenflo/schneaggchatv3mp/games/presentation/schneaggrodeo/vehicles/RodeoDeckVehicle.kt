@@ -1,9 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.hopArc
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.progressOf
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.smoothstep
 
 /**
  * A vehicle the horse hops onto and rides standing on its deck (train roof, truck box, tractor
@@ -27,8 +25,7 @@ internal abstract class RodeoDeckVehicle(kind: RodeoVehicleKind) : RodeoVehicle(
 
     /** Current height of the horse's hooves while on board. */
     private var lift = 0f
-    private var boardStartX = 0f
-    private var boardStartHeight = 0f
+    private val boardingHop = RodeoBoardingHop()
     /** Wheel rotation in radians, for drawing. */
     protected var wheelPhase = 0f
         private set
@@ -45,9 +42,7 @@ internal abstract class RodeoDeckVehicle(kind: RodeoVehicleKind) : RodeoVehicle(
 
     override fun board(world: RodeoWorld) {
         super.board(world)
-        boardStartX = x
-        // A jump in progress ends on the deck instead of the ground
-        boardStartHeight = world.takeHorseOffTheGround()
+        boardingHop.start(x, world)
     }
 
     final override fun update(world: RodeoWorld, dt: Float, scroll: Float) {
@@ -58,8 +53,8 @@ internal abstract class RodeoDeckVehicle(kind: RodeoVehicleKind) : RodeoVehicle(
             VehiclePhase.APPROACH -> passBy(dt)
             VehiclePhase.BOARDING -> {
                 val progress = progressOf(phaseTime, boardSeconds)
-                x = lerp(boardStartX, rideX, smoothstep(progress))
-                lift = hopArc(boardStartHeight, deckHeight, progress, hop)
+                x = boardingHop.slideX(rideX, progress)
+                lift = boardingHop.lift(deckHeight, progress, hop)
                 whileBoarding(world)
                 if (progress >= 1f) {
                     enter(VehiclePhase.RIDING)

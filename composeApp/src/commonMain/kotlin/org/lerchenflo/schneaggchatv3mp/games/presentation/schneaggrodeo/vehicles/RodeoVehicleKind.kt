@@ -128,7 +128,7 @@ enum class RodeoVehicleKind(
         title = Res.string.games_schneaggrodeo_cow,
         rideHint = Res.string.games_schneaggrodeo_cow_controls,
     ),
-    /** The underground sea's vehicles (see RodeoTraffic). */
+    /** The sea's vehicles (see RodeoTraffic). */
     ROWBOAT(
         title = Res.string.games_schneaggrodeo_rowboat,
         rideHint = Res.string.games_schneaggrodeo_rowboat_controls,

@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.fordescort
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.OnTrack
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.scrollAlong
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_LEG_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_X
@@ -112,7 +114,7 @@ private class Bill(var x: Float, var y: Float, val vx: Float, var vy: Float, val
 }
 
 /** A puddle of red paint on the road, [x] its center. */
-private class Puddle(var x: Float, val size: Float)
+private class Puddle(override var x: Float, val size: Float) : OnTrack
 
 private enum class Ending { SCRAPYARD, CAR_LIFT }
 
@@ -413,8 +415,7 @@ internal class RodeoFordEscort : RodeoVehicle(RodeoVehicleKind.FORD_ESCORT) {
             }
         }
         bills.removeAll { it.x < -5f }
-        puddles.forEach { it.x -= scroll }
-        puddles.removeAll { it.x < -5f }
+        puddles.scrollAlong(scroll) { it.x < -5f }
     }
 
     /** Red paint drips off the body and leaves puddles on the road. */
