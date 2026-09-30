@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.train
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.KMH_PER_UNIT_PER_SECOND
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoDeckVehicle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoRidePose
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
@@ -10,7 +9,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.VehiclePhase
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.clearTrack
 import kotlin.math.min
-import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -97,11 +95,7 @@ internal class RodeoTrain : RodeoDeckVehicle(RodeoVehicleKind.TRAIN) {
         duckHeld = pressed
     }
 
-    override fun worldScroll(world: RodeoWorld, step: Float, dt: Float): Float =
-        if (isRiding) step * TRAIN_SPEED_FACTOR else step
-
-    override fun speedKmh(world: RodeoWorld): Int? =
-        if (isRiding) (world.speed * TRAIN_SPEED_FACTOR * KMH_PER_UNIT_PER_SECOND).roundToInt() else null
+    override val rideSpeedFactor = TRAIN_SPEED_FACTOR
 
     override fun ridePose(runTimeSeconds: Float): RodeoRidePose? = if (carriesRider && phase != VehiclePhase.BOARDING) {
         RodeoRidePose(

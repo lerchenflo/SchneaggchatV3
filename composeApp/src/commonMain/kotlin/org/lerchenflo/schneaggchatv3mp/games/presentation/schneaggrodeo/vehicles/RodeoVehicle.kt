@@ -1,6 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.KMH_PER_UNIT_PER_SECOND
+import kotlin.math.roundToInt
 
 // Every vehicle follows the same life cycle (VehiclePhase): it passes by with a lasso hint, the
 // lasso catches it, horse and / or cowboy board it, ride it for a while and get back on the track,
@@ -13,6 +17,10 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCow
 //     anything the horse stands on; RodeoSteering flies like the plane.
 //  3. A RodeoVehicleUi data class that draws itself.
 //  4. Register it in RodeoTraffic.
+
+/** Where a lasso thrown at a passing vehicle aims, and how far ahead of it (seconds of its pass speed). */
+private const val LASSO_AIM_X = HORSE_X + HAND_X + 16f
+private const val LASSO_LEAD_SECONDS = 0.225f
 
 /** Something the lasso can catch other than a snail: a vehicle passing by or a flying milk can. */
 internal interface LassoGrab {
@@ -55,6 +63,9 @@ internal abstract class RodeoVehicle(val kind: RodeoVehicleKind) {
     /** Only joins the rotation once every regular vehicle came by at least once. */
     open val special: Boolean = false
 
+    /** Too fast for the hills: only comes on a flat stretch, and the ground stays flat while it is around. */
+    open val needsFlatTrack: Boolean = false
+
     var phase = VehiclePhase.IDLE
         private set
     /** Seconds in the current [phase]. */
@@ -72,6 +83,13 @@ internal abstract class RodeoVehicle(val kind: RodeoVehicleKind) {
 
     /** Where the lasso grabs it while it passes by. */
     protected abstract fun hitch(): Pair<Float, Float>
+
+    /**
+     * Where along the vehicle the lasso aims while it passes by: just ahead of the hand, where the
+     * loop meets it, but always on the vehicle ([inset] from its ends).
+     */
+    protected fun hitchX(inset: Float = 2f): Float =
+        (LASSO_AIM_X + passSpeed * LASSO_LEAD_SECONDS).coerceIn(x + inset, x + length - inset)
 
     /** Shows up at the right edge, passing by. */
     open fun spawn(world: RodeoWorld) {
@@ -143,11 +161,20 @@ internal abstract class RodeoVehicle(val kind: RodeoVehicleKind) {
     /** 0..1: how far the sky has turned into space. */
     open fun space(): Float = 0f
 
+    /** While riding, the world scrolls this many times as fast as the horse's own pace (null: as fast). */
+    protected open val rideSpeedFactor: Float? = null
+
     /** How far the world scrolls this frame; [step] is how far the horse's own pace carries it. */
-    open fun worldScroll(world: RodeoWorld, step: Float, dt: Float): Float = step
+    open fun worldScroll(world: RodeoWorld, step: Float, dt: Float): Float {
+        val factor = rideSpeedFactor
+        return if (isRiding && factor != null) step * factor else step
+    }
 
     /** Shown on the speedometer while riding, or null for the horse's pace. */
-    open fun speedKmh(world: RodeoWorld): Int? = null
+    open fun speedKmh(world: RodeoWorld): Int? {
+        val factor = rideSpeedFactor
+        return if (isRiding && factor != null) (world.speed * factor * KMH_PER_UNIT_PER_SECOND).roundToInt() else null
+    }
 
     open fun ridePose(runTimeSeconds: Float): RodeoRidePose? = null
 

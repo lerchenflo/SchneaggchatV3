@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.shoppingcart
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SnailState
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
@@ -35,9 +34,7 @@ internal const val CART_MAX_SHOWN_SNAILS = 12
 private const val CART_PASS_SPEED = 26f          // u/s across the screen while rolling by, slow enough to lasso
 private const val CART_HITCH_Y = 7f
 /** Where the loop lands on the cart: the middle of the lasso's reach, ahead of the hand. */
-private const val CART_HITCH_AIM = HORSE_X + HAND_X + 16f
 /** Seconds the loop takes to reach the cart (half the lasso's throw), aimed at where it will be. */
-private const val LASSO_LEAD = 0.225f
 /** Handle against the horse's chest while shoving. */
 private const val CART_RIDE_X = HORSE_X + 29f
 private const val CART_BOARD_SECONDS = 0.6f
@@ -70,7 +67,7 @@ internal class RodeoShoppingCart : RodeoVehicle(RodeoVehicleKind.SHOPPING_CART) 
     override val horseHops = false
 
     /** The whole cart is a target, like the Ford Escort. */
-    override fun hitch() = (CART_HITCH_AIM + CART_PASS_SPEED * LASSO_LEAD).coerceIn(x + 1f, x + CART_LENGTH - 1f) to CART_HITCH_Y
+    override fun hitch() = hitchX(inset = 1f) to CART_HITCH_Y
 
     override fun spawn(world: RodeoWorld) {
         super.spawn(world)

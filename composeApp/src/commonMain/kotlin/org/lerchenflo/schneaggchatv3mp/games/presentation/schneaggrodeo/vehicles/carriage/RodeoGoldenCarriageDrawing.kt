@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HOOVES_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoHorsePose
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MAX_HORSE_LEVEL
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoDrawContext
@@ -76,7 +77,7 @@ private fun DrawScope.drawPullingHorse(left: Float, gait: Float, context: RodeoD
         friendShirt = colors.tertiary,
         headRing = colors.surfaceContainer,
     )
-    drawHorseAndRider(left = left * unit, groundY = context.groundY, unit = unit, pose = pose, colors = horseColors, bodyLabel = null)
+    drawHorseAndRider(left = left * unit, groundY = context.groundYAt(left + HOOVES_X), unit = unit, pose = pose, colors = horseColors, bodyLabel = null)
 }
 
 /** Big spoked wheels, a golden body with scrolls and a window with curtains, a crown and the shaft. */

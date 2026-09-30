@@ -4,7 +4,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCow
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_LEG_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_Y
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.progressOf
@@ -39,9 +38,7 @@ internal const val BIKE_EXHAUST_Y = 2.8f
 private const val BIKE_PASS_SPEED = 22f          // u/s across the screen while puttering by, slow enough to lasso
 private const val BIKE_HITCH_Y = 4f
 /** Where the loop lands on the bike: the middle of the lasso's reach, ahead of the hand. */
-private const val BIKE_HITCH_AIM = HORSE_X + HAND_X + 16f
 /** Seconds the loop takes to reach the bike (half the lasso's throw), aimed at where it will be. */
-private const val LASSO_LEAD = 0.225f
 /** Ahead of the horse, which gallops on riderless behind it. */
 private const val BIKE_RIDE_X = HORSE_X + 34f
 private const val BIKE_BOARD_SECONDS = 0.6f
@@ -90,7 +87,7 @@ internal class RodeoPocketBike : RodeoVehicle(RodeoVehicleKind.POCKET_BIKE) {
     override val riderOnHorse: Boolean get() = !carriesRider
 
     /** The whole bike is a target, like the Ford Escort. */
-    override fun hitch() = (BIKE_HITCH_AIM + BIKE_PASS_SPEED * LASSO_LEAD).coerceIn(x + 1f, x + BIKE_LENGTH - 1f) to BIKE_HITCH_Y
+    override fun hitch() = hitchX(inset = 1f) to BIKE_HITCH_Y
 
     override fun reset() {
         super.reset()

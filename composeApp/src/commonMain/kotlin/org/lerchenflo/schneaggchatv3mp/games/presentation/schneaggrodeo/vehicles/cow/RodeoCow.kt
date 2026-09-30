@@ -4,7 +4,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCow
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_LEG_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_Y
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.progressOf
@@ -34,8 +33,6 @@ internal const val COW_BELL_Y = 6f
 
 private const val COW_PASS_SPEED = 20f
 private const val COW_HITCH_Y = 8f
-private const val COW_HITCH_AIM = HORSE_X + HAND_X + 16f
-private const val LASSO_LEAD = 0.225f
 /** Ahead of the horse, which gallops on riderless behind her. */
 private const val COW_RIDE_X = HORSE_X + 32f
 private const val COW_BOARD_SECONDS = 0.7f
@@ -69,7 +66,7 @@ internal class RodeoCow : RodeoVehicle(RodeoVehicleKind.COW) {
     override val riderOnHorse: Boolean get() = !carriesRider
 
     /** The whole cow is a target. */
-    override fun hitch() = (COW_HITCH_AIM + COW_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + COW_LENGTH - 2f) to COW_HITCH_Y
+    override fun hitch() = hitchX() to COW_HITCH_Y
 
     override fun board(world: RodeoWorld) {
         super.board(world)

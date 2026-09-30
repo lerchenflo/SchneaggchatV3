@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoDeepKind
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainHeightAt
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainSlopeAt
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.ImageBitmap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
@@ -232,16 +235,18 @@ data class RodeoGemUi(
 )
 
 /**
- * A way to the other map from [x] over [width]: a mine shaft in the track, or ([exit]) the shaft of
- * light leading out of the cave.
+ * A way to another map from [x] over [width]: a shaft into the mine or the cave, the beach into the
+ * sea, or ([exit]) the ramp back up out of [origin].
  */
 @Immutable
 data class RodeoPortalUi(
     val x: Float,
     val width: Float,
     val exit: Boolean,
-    /** Where it leads; an entrance looks different for each underground map. */
+    /** Where it leads; an entrance looks different for each map. */
     val destination: RodeoMap = RodeoMap.CAVE,
+    /** The map it is on; a way out looks different for each map. */
+    val origin: RodeoMap = RodeoMap.SURFACE,
 )
 
 /** A dirt mound in the mine the horse digs through at a gallop; [x] its center. */
@@ -260,10 +265,29 @@ data class RodeoMudUi(
     val seed: Int,
 )
 
-/**
- * Another horse on the track: a wild one or a friend on their own ([friendName], name shown above).
- * [x] is its left edge; [lassoable] shows the "lasso it" hint.
- */
+/** The ground's height profile: control points [xs] (ascending) with heights [hs], eased between. */
+@Immutable
+data class RodeoTerrainUi(
+    val xs: List<Float> = emptyList(),
+    val hs: List<Float> = emptyList(),
+) {
+    /** Height of the ground at [x]. */
+    fun heightAt(x: Float): Float = terrainHeightAt(xs, hs, x)
+
+    /** Rise per unit at [x]: positive uphill. */
+    fun slopeAt(x: Float): Float = terrainSlopeAt(xs, hs, x)
+}
+
+/** Something in the deep water of the sea: [time] animates it, [seed] picks its looks. */
+@Immutable
+data class RodeoDeepThingUi(
+    val x: Float,
+    val y: Float,
+    val kind: RodeoDeepKind,
+    val seed: Int,
+    val time: Float,
+)
+
 /** A firefly on a night run; [glow] 0..1 pulses. */
 @Immutable
 data class RodeoFireflyUi(
@@ -272,6 +296,10 @@ data class RodeoFireflyUi(
     val glow: Float,
 )
 
+/**
+ * Another horse on the track: a wild one or a friend on their own ([friendName], name shown above).
+ * [x] is its left edge; [lassoable] shows the "lasso it" hint.
+ */
 @Immutable
 data class RodeoWildHorseUi(
     val x: Float,
@@ -373,6 +401,12 @@ data class SchneaggRodeoFrame(
     val pizzaOvens: List<RodeoPizzaOvenUi> = emptyList(),
     /** Dangling in the lasso on its way to the horse. */
     val pizza: RodeoPizzaUi? = null,
+    /** The hills of the ground; everything on the track stands on it. */
+    val terrain: RodeoTerrainUi = RodeoTerrainUi(),
+    /** Height of the ground under the horse: the picture moves by it, so the horse stays put on screen. */
+    val terrainShift: Float = 0f,
+    /** Fish, jellyfish, sharks, a whale and wrecks deep down in the sea. */
+    val deepSea: List<RodeoDeepThingUi> = emptyList(),
     /** Middle of the rainbow's feet after the rain, or null. */
     val rainbowX: Float? = null,
     /** Seconds the points still count double after riding under the rainbow; 0 when they don't. */

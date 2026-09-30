@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.trafficjam
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HOOVES_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.hopArc
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
@@ -21,7 +21,7 @@ import kotlin.random.Random
 internal const val JAM_CAR_COUNT = 4
 private const val JAM_GAP = 4f
 /** Where the horse's hooves are, measured from HORSE_X. */
-private const val HOOVES_X = HORSE_X + 16f
+private const val HOOVES_AT = HORSE_X + HOOVES_X
 /** A hop to the next roof starts this far before its car. */
 private const val HOP_LEAD = 6f
 private const val HOP_SECONDS = 0.4f
@@ -32,8 +32,6 @@ private const val UNLOAD_SECONDS = 0.5f
 private const val UNLOAD_HOP = 5f
 private const val CAR_POINTS = 15
 private const val JAM_HITCH_Y = 8f
-private const val JAM_HITCH_AIM = HORSE_X + HAND_X + 16f
-private const val LASSO_LEAD = 0.225f
 
 /** The kinds of cars in the jam, the size of the Ford Escort: how long they are and how high their roof is. */
 enum class JamCarStyle(val length: Float, val roof: Float) {
@@ -68,7 +66,7 @@ internal class RodeoTrafficJam : RodeoVehicle(RodeoVehicleKind.TRAFFIC_JAM) {
     override val blocksFences: Boolean get() = phase != VehiclePhase.IDLE && phase != VehiclePhase.LEAVING
 
     /** The whole jam is a target. */
-    override fun hitch() = (JAM_HITCH_AIM + groundSpeed * LASSO_LEAD).coerceIn(x + 2f, x + totalLength - 2f) to JAM_HITCH_Y
+    override fun hitch() = hitchX() to JAM_HITCH_Y
 
     override fun spawn(world: RodeoWorld) {
         super.spawn(world)
@@ -104,12 +102,12 @@ internal class RodeoTrafficJam : RodeoVehicle(RodeoVehicleKind.TRAFFIC_JAM) {
             VehiclePhase.APPROACH -> {
                 x -= scroll
                 // Not lassoed: the horse hops up on its own once it reaches the first car
-                if (x < HOOVES_X + HOP_LEAD) board(world)
+                if (x < HOOVES_AT + HOP_LEAD) board(world)
             }
             VehiclePhase.BOARDING -> {
                 val progress = progressOf(phaseTime, BOARD_SECONDS)
                 // Lassoed from afar the jam is pulled in; otherwise it just stands there
-                val target = HOOVES_X - 3f
+                val target = HOOVES_AT - 3f
                 x = if (boardStartX > target) lerp(boardStartX, target, smoothstep(progress)) else x - scroll
                 lift = hopArc(boardStartHeight, cars.first().style.roof, progress, BOARD_HOP)
                 if (progress >= 1f) {
@@ -140,7 +138,7 @@ internal class RodeoTrafficJam : RodeoVehicle(RodeoVehicleKind.TRAFFIC_JAM) {
 
     /** Hops onto the next roof as it comes, and down behind the last car. */
     private fun gallopOverRoofs(world: RodeoWorld) {
-        val hooves = HOOVES_X - x
+        val hooves = HOOVES_AT - x
         val next = cars.getOrNull(carIndex + 1)
         if (next != null && hooves > next.offset - HOP_LEAD) {
             hopFrom = cars[carIndex].style.roof
@@ -157,11 +155,12 @@ internal class RodeoTrafficJam : RodeoVehicle(RodeoVehicleKind.TRAFFIC_JAM) {
 
     override fun ui(): RodeoVehicleUi? {
         if (phase == VehiclePhase.IDLE) return null
+        val last = cars.first().style
         return RodeoTrafficJamUi(
             x = x,
             cars = cars,
             time = time,
-            lassoHint = lassoHint(x + (cars.firstOrNull()?.style?.length ?: 30f) / 2f, (cars.firstOrNull()?.style?.roof ?: 13f) + 6f),
+            lassoHint = lassoHint(x + last.length / 2f, last.roof + 6f),
         )
     }
 }

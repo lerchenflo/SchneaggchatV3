@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.oiltanker
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.KMH_PER_UNIT_PER_SECOND
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoDeckVehicle
@@ -29,8 +28,6 @@ internal const val FUNNEL_X = 8f
 
 private const val TANKER_PASS_SPEED = 18f
 private const val TANKER_HITCH_Y = 10f
-private const val TANKER_HITCH_AIM = HORSE_X + HAND_X + 16f
-private const val LASSO_LEAD = 0.225f
 /** Stern while riding: the horse stands on the deck in front of the bridge. */
 private const val TANKER_RIDE_X = HORSE_X - 22f
 private const val TANKER_SPEED_FACTOR = 0.85f
@@ -55,7 +52,7 @@ internal class RodeoOilTanker : RodeoDeckVehicle(RodeoVehicleKind.OIL_TANKER) {
     override val hop = 8f
 
     /** The whole ship is a target. */
-    override fun hitch() = (TANKER_HITCH_AIM + TANKER_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + TANKER_LENGTH - 2f) to TANKER_HITCH_Y
+    override fun hitch() = hitchX() to TANKER_HITCH_Y
 
     override fun worldScroll(world: RodeoWorld, step: Float, dt: Float): Float =
         if (isRiding) step * TANKER_SPEED_FACTOR else step

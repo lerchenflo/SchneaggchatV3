@@ -1603,8 +1603,8 @@
     <string name="games_schneaggrodeo_rowboat">Ruderboot</string>
     <string name="games_schneaggrodeo_rowboat_controls">Tap the Lasso button to catch the jumping fish – points for each one!</string>
     <string name="games_schneaggrodeo_uboat">U-Boot</string>
-    <string name="games_schneaggrodeo_uboat_controls">Hold to rise, let go to dive – grab the pearls, dodge the mines!</string>
-    <string name="games_schneaggrodeo_uboat_controls_keys">Hold space to rise, let go to dive – grab the pearls, dodge the mines!</string>
+    <string name="games_schneaggrodeo_uboat_controls">Hold anywhere to rise, let go to dive down to the seabed – grab pearls and treasure chests, dodge the mines!</string>
+    <string name="games_schneaggrodeo_uboat_controls_keys">Hold Space / W to rise, let go to dive down to the seabed – grab pearls and treasure chests, dodge the mines!</string>
     <string name="games_schneaggrodeo_oil_tanker">Öltanker</string>
     <string name="games_schneaggrodeo_oil_tanker_controls">Full steam ahead – the tanker plows through everything!</string>
     <string name="games_schneaggrodeo_flamingo">Flamingo</string>

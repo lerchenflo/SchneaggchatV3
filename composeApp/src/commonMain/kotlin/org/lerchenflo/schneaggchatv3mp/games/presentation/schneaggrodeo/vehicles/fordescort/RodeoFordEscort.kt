@@ -4,7 +4,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCow
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_LEG_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_Y
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.progressOf
@@ -54,11 +53,9 @@ internal const val PILE_TOP = 12f
 private const val CAR_PASS_SPEED = 30f      // u/s across the screen while rolling by, slow enough to lasso
 private const val CAR_HITCH_Y = 5f
 /** Where the loop lands on the car: the middle of the lasso's reach, ahead of the hand. */
-private const val CAR_HITCH_AIM = HORSE_X + HAND_X + 16f
 /** Rear bumper against the horse's chest while shoving. */
 private const val CAR_RIDE_X = HORSE_X + 29f
 /** Seconds the loop takes to reach the car (half the lasso's throw), aimed at where it will be. */
-private const val LASSO_LEAD = 0.225f
 private const val CAR_BOARD_SECONDS = 0.7f
 private const val CAR_UNLOAD_SECONDS = 0.9f
 /** Until the money is gone and the wreck breaks down. */
@@ -174,7 +171,7 @@ internal class RodeoFordEscort : RodeoVehicle(RodeoVehicleKind.FORD_ESCORT) {
      * The whole car is a target: the loop grabs the part closest to the middle of the lasso's
      * reach, so any throw while some of it passes in front of the horse catches it.
      */
-    override fun hitch() = (CAR_HITCH_AIM + CAR_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + CAR_LENGTH - 2f) to CAR_HITCH_Y
+    override fun hitch() = hitchX() to CAR_HITCH_Y
 
     override fun reset() {
         super.reset()

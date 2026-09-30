@@ -1605,8 +1605,8 @@
     <string name="games_schneaggrodeo_rowboat">Ruderboot</string>
     <string name="games_schneaggrodeo_rowboat_controls">Tipp auf Lasso, um die springenden Fische zu fangen – Punkte für jeden!</string>
     <string name="games_schneaggrodeo_uboat">U-Boot</string>
-    <string name="games_schneaggrodeo_uboat_controls">Halten zum Auftauchen, loslassen zum Abtauchen – schnapp die Perlen, weich den Minen aus!</string>
-    <string name="games_schneaggrodeo_uboat_controls_keys">Leertaste halten zum Auftauchen, loslassen zum Abtauchen – schnapp die Perlen, weich den Minen aus!</string>
+    <string name="games_schneaggrodeo_uboat_controls">Irgendwo halten zum Auftauchen, loslassen zum Abtauchen bis zum Meeresgrund – schnapp Perlen und Schatztruhen, weich den Minen aus!</string>
+    <string name="games_schneaggrodeo_uboat_controls_keys">Leertaste / W halten zum Auftauchen, loslassen zum Abtauchen bis zum Meeresgrund – schnapp Perlen und Schatztruhen, weich den Minen aus!</string>
     <string name="games_schneaggrodeo_oil_tanker">Öltanker</string>
     <string name="games_schneaggrodeo_oil_tanker_controls">Volle Kraft voraus – der Tanker pflügt durch alles durch!</string>
     <string name="games_schneaggrodeo_flamingo">Flamingo</string>

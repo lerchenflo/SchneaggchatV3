@@ -1597,8 +1597,8 @@
     <string name="games_schneaggrodeo_rowboat">Ruderboot</string>
     <string name="games_schneaggrodeo_rowboat_controls">Tocca Lazo per prendere i pesci che saltano – punti per ognuno!</string>
     <string name="games_schneaggrodeo_uboat">U-Boot</string>
-    <string name="games_schneaggrodeo_uboat_controls">Tieni premuto per risalire, lascia per immergerti – prendi le perle, evita le mine!</string>
-    <string name="games_schneaggrodeo_uboat_controls_keys">Tieni premuto spazio per risalire, lascia per immergerti – prendi le perle, evita le mine!</string>
+    <string name="games_schneaggrodeo_uboat_controls">Tieni premuto ovunque per risalire, lascia per immergerti fino al fondale – prendi perle e forzieri, evita le mine!</string>
+    <string name="games_schneaggrodeo_uboat_controls_keys">Tieni premuto Spazio / W per risalire, lascia per immergerti fino al fondale – prendi perle e forzieri, evita le mine!</string>
     <string name="games_schneaggrodeo_oil_tanker">Öltanker</string>
     <string name="games_schneaggrodeo_oil_tanker_controls">Avanti tutta – la petroliera travolge tutto!</string>
     <string name="games_schneaggrodeo_flamingo">Flamingo</string>

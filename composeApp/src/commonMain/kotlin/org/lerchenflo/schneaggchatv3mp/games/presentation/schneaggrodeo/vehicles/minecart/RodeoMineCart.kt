@@ -1,8 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.minecart
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.KMH_PER_UNIT_PER_SECOND
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoDeckVehicle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoRidePose
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
@@ -10,7 +8,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoWorld
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.VehiclePhase
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.clearTrack
-import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -28,8 +25,6 @@ internal const val CART_WHEEL_RADIUS = 1.5f
 
 private const val CART_PASS_SPEED = 26f
 private const val CART_HITCH_Y = 6f
-private const val CART_HITCH_AIM = HORSE_X + HAND_X + 16f
-private const val LASSO_LEAD = 0.225f
 private const val CART_RIDE_X = HORSE_X + 2f
 private const val CART_SPEED_FACTOR = 2f
 private const val CART_LEAVE_SPEED = 80f
@@ -55,13 +50,9 @@ internal class RodeoMineCart : RodeoDeckVehicle(RodeoVehicleKind.MINE_CART) {
     override val shaking: Boolean get() = isRiding
 
     /** The whole cart is a target. */
-    override fun hitch() = (CART_HITCH_AIM + CART_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + CART_LENGTH - 2f) to CART_HITCH_Y
+    override fun hitch() = hitchX() to CART_HITCH_Y
 
-    override fun worldScroll(world: RodeoWorld, step: Float, dt: Float): Float =
-        if (isRiding) step * CART_SPEED_FACTOR else step
-
-    override fun speedKmh(world: RodeoWorld): Int? =
-        if (isRiding) (world.speed * CART_SPEED_FACTOR * KMH_PER_UNIT_PER_SECOND).roundToInt() else null
+    override val rideSpeedFactor = CART_SPEED_FACTOR
 
     override fun ridePose(runTimeSeconds: Float): RodeoRidePose? =
         if (isRiding) RodeoRidePose(pitch = CART_RATTLE_DEGREES * sin(runTimeSeconds * 40f), hatLift = 0.5f) else null

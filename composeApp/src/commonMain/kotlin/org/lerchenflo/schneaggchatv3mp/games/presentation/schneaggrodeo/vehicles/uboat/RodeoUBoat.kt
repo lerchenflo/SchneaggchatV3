@@ -1,8 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.uboat
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.circleTouchesBox
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.KMH_PER_UNIT_PER_SECOND
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SEABED_Y
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SEA_CAMERA_DOWN
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SEA_WATER_LINE
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.progressOf
@@ -14,12 +15,12 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoWorld
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.VehiclePhase
 import kotlin.math.max
-import kotlin.math.roundToInt
 import kotlin.random.Random
 
-// U-boat (underground sea): a yellow submarine surfaces next to the track. Lasso it and horse and
-// rider climb in through the hatch. Hold to rise, let go to dive: pearls float at all depths, and
-// sea mines too - touching one blows the U-boat back up to the surface and ends the dive early.
+// U-boat (open sea): a yellow submarine surfaces next to the track. Lasso it and horse and rider
+// climb in through the hatch. Hold to rise, let go to dive all the way down to the seabed, the view
+// following it: pearls float at all depths, treasure chests lie on the seabed, and sea mines hang on
+// their chains - touching one blows the U-boat back up to the surface and ends the dive early.
 
 // Shape, shared with the drawing (grid: x from the stern, y up from the hull's underside)
 internal const val UBOAT_LENGTH = 32f
@@ -32,29 +33,33 @@ internal const val PEARL_RADIUS = 1.2f
 internal const val MINE_RADIUS = 2f
 
 private const val UBOAT_PASS_SPEED = 22f
-private const val UBOAT_HITCH_AIM = HORSE_X + HAND_X + 16f
-private const val LASSO_LEAD = 0.225f
 /** Underside while surfaced: only the tower and the top of the hull stick out of the water. */
 private const val SURFACED_Y = SEA_WATER_LINE - UBOAT_HEIGHT + 1.5f
-/** How deep it dives (the underside), below the ground line the horse swims on. */
-private const val DEEPEST_Y = -8f
+/** How deep it dives (the underside): just above the seabed. */
+private const val DEEPEST_Y = SEABED_Y + 2f
+/** How far the view goes down with it, at most (see RodeoVehicle.camera). */
+internal const val UBOAT_CAMERA_DEEPEST = -30f
 private const val UBOAT_RIDE_X = HORSE_X - 4f
 private const val UBOAT_BOARD_SECONDS = 0.7f
-private const val UBOAT_RIDE_SECONDS = 9f
+private const val UBOAT_RIDE_SECONDS = 12f
 private const val UBOAT_UNLOAD_SECONDS = 0.8f
 private const val UBOAT_SPEED_FACTOR = 1.1f
 private const val THING_INTERVAL = 0.45f
 private const val MINE_SHARE = 0.3f
+private const val TREASURE_SHARE = 0.15f
 private const val PEARL_POINTS = 15
+private const val TREASURE_POINTS = 40
 /** Hitbox inset from the hull's ends. */
 private const val HIT_INSET = 2f
 
-/** A pearl or a sea mine drifting in the water; [x] / [y] its center. */
-private class Thing(var x: Float, val y: Float, val mine: Boolean)
+private enum class ThingKind { PEARL, MINE, TREASURE }
+
+/** A pearl or a sea mine in the water, or a treasure chest on the seabed; [x] / [y] its center. */
+private class Thing(var x: Float, val y: Float, val kind: ThingKind)
 
 internal class RodeoUBoat : RodeoVehicle(RodeoVehicleKind.U_BOAT) {
 
-    private val steering = RodeoSteering(climbAccel = 60f, diveAccel = 0f, sinkAccel = 40f, maxClimb = 18f, maxSink = 16f)
+    private val steering = RodeoSteering(climbAccel = 60f, diveAccel = 0f, sinkAccel = 40f, maxClimb = 22f, maxSink = 22f)
     private val things = mutableListOf<Thing>()
     /** Underside of the hull. */
     private var y = SURFACED_Y
@@ -73,7 +78,7 @@ internal class RodeoUBoat : RodeoVehicle(RodeoVehicleKind.U_BOAT) {
     override val hidesHorse: Boolean get() = phase == VehiclePhase.RIDING
 
     /** The whole U-boat is a target. */
-    override fun hitch() = (UBOAT_HITCH_AIM + UBOAT_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + UBOAT_LENGTH - 2f) to SEA_WATER_LINE
+    override fun hitch() = hitchX() to SEA_WATER_LINE
 
     override fun reset() {
         super.reset()
@@ -99,11 +104,11 @@ internal class RodeoUBoat : RodeoVehicle(RodeoVehicleKind.U_BOAT) {
         steering.climb = pressed && phase == VehiclePhase.RIDING
     }
 
-    override fun worldScroll(world: RodeoWorld, step: Float, dt: Float): Float =
-        if (isRiding) step * UBOAT_SPEED_FACTOR else step
+    /** The view dives along with it. */
+    override fun camera(): Float? =
+        if (phase == VehiclePhase.RIDING || phase == VehiclePhase.UNLOADING) (y - 4f).coerceIn(UBOAT_CAMERA_DEEPEST, SEA_CAMERA_DOWN) else null
 
-    override fun speedKmh(world: RodeoWorld): Int? =
-        if (isRiding) (world.speed * UBOAT_SPEED_FACTOR * KMH_PER_UNIT_PER_SECOND).roundToInt() else null
+    override val rideSpeedFactor = UBOAT_SPEED_FACTOR
 
     override fun update(world: RodeoWorld, dt: Float, scroll: Float) {
         propeller += dt * 20f
@@ -143,16 +148,29 @@ internal class RodeoUBoat : RodeoVehicle(RodeoVehicleKind.U_BOAT) {
         thingIn -= dt
         if (thingIn <= 0f) {
             thingIn = THING_INTERVAL
-            val depth = DEEPEST_Y + 2f + Random.nextFloat() * (SURFACED_Y + UBOAT_HEIGHT - DEEPEST_Y - 3f)
-            things.add(Thing(x = world.worldWidth + 3f, y = depth, mine = Random.nextFloat() < MINE_SHARE))
+            val roll = Random.nextFloat()
+            val kind = when {
+                roll < MINE_SHARE -> ThingKind.MINE
+                roll < MINE_SHARE + TREASURE_SHARE -> ThingKind.TREASURE
+                else -> ThingKind.PEARL
+            }
+            val depth = if (kind == ThingKind.TREASURE) {
+                SEABED_Y + 1.5f
+            } else {
+                DEEPEST_Y + 2f + Random.nextFloat() * (SURFACED_Y + UBOAT_HEIGHT - DEEPEST_Y - 3f)
+            }
+            things.add(Thing(x = world.worldWidth + 3f, y = depth, kind = kind))
         }
         var hitMine = false
         things.removeAll { thing ->
-            val radius = if (thing.mine) MINE_RADIUS else PEARL_RADIUS
-            val touching = thing.x + radius > x + HIT_INSET && thing.x - radius < x + UBOAT_LENGTH - HIT_INSET &&
-                    thing.y + radius > y && thing.y - radius < y + UBOAT_HEIGHT
+            val radius = if (thing.kind == ThingKind.MINE) MINE_RADIUS else PEARL_RADIUS * 1.5f
+            val touching = circleTouchesBox(thing.x, thing.y, radius, left = x + HIT_INSET, right = x + UBOAT_LENGTH - HIT_INSET, bottom = y, top = y + UBOAT_HEIGHT)
             if (touching) {
-                if (thing.mine) hitMine = true else world.addBonusPoints(PEARL_POINTS)
+                when (thing.kind) {
+                    ThingKind.MINE -> hitMine = true
+                    ThingKind.PEARL -> world.addBonusPoints(PEARL_POINTS)
+                    ThingKind.TREASURE -> world.addBonusPoints(TREASURE_POINTS)
+                }
                 world.sparkle(thing.x, thing.y)
             }
             touching
@@ -177,8 +195,9 @@ internal class RodeoUBoat : RodeoVehicle(RodeoVehicleKind.U_BOAT) {
             propeller = propeller,
             crewAboard = phase == VehiclePhase.RIDING,
             boom = if (boom && phase == VehiclePhase.UNLOADING) progressOf(phaseTime, UBOAT_UNLOAD_SECONDS) else null,
-            pearls = things.filter { !it.mine }.map { RodeoSeaThingUi(it.x, it.y) },
-            mines = things.filter { it.mine }.map { RodeoSeaThingUi(it.x, it.y) },
+            pearls = things.filter { it.kind == ThingKind.PEARL }.map { RodeoSeaThingUi(it.x, it.y) },
+            mines = things.filter { it.kind == ThingKind.MINE }.map { RodeoSeaThingUi(it.x, it.y) },
+            treasures = things.filter { it.kind == ThingKind.TREASURE }.map { RodeoSeaThingUi(it.x, it.y) },
             lassoHint = lassoHint(x + UBOAT_LENGTH / 2f, SEA_WATER_LINE + 8f),
         )
     }

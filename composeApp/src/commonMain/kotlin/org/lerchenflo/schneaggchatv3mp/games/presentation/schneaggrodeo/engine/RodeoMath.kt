@@ -31,3 +31,7 @@ internal fun progressOf(time: Float, seconds: Float) = min(1f, time / seconds)
 
 /** A timer that counts down to zero and stays there. */
 internal fun countDown(value: Float, dt: Float) = max(0f, value - dt)
+
+/** A circle at ([x], [y]) with [radius] overlaps the box from [left] to [right] and [bottom] to [top]. */
+internal fun circleTouchesBox(x: Float, y: Float, radius: Float, left: Float, right: Float, bottom: Float, top: Float): Boolean =
+    x + radius > left && x - radius < right && y + radius > bottom && y - radius < top

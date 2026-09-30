@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.pirateship
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HITBOX_LEFT
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HITBOX_RIGHT
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
@@ -37,8 +36,6 @@ internal const val CANNON_Y = SHIP_DECK + 2f
 
 private const val SHIP_PASS_SPEED = 20f
 private const val SHIP_HITCH_Y = 8f
-private const val SHIP_HITCH_AIM = HORSE_X + HAND_X + 16f
-private const val LASSO_LEAD = 0.225f
 /** Stern while riding: the horse stands on the deck in front of the stern castle. */
 private const val SHIP_RIDE_X = HORSE_X - 14f
 private const val SHIP_LEAVE_SPEED = 30f
@@ -84,7 +81,7 @@ internal class RodeoPirateShip : RodeoDeckVehicle(RodeoVehicleKind.PIRATE_SHIP) 
     override val hop = 8f
 
     /** The whole ship is a target. */
-    override fun hitch() = (SHIP_HITCH_AIM + SHIP_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + SHIP_LENGTH - 2f) to SHIP_HITCH_Y
+    override fun hitch() = hitchX() to SHIP_HITCH_Y
 
     override fun ridePose(runTimeSeconds: Float): RodeoRidePose? =
         if (isRiding) RodeoRidePose(pitch = SHIP_ROLL_DEGREES * sin(runTimeSeconds * 1.5f)) else null

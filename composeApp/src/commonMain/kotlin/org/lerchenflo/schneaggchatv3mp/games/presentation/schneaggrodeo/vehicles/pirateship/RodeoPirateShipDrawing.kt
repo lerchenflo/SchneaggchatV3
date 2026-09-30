@@ -9,13 +9,15 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoDrawContext
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoLayer
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.TREASURE_GOLD
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawTreasureChest
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.polygonPath
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoLassoHintUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
 import kotlin.math.sin
 
 // The pirate ship's fixed colors: dark and light planks, patched canvas, the black flag with its
-// white skull, iron cannon, smoke and the treasure chests' gold
+// white skull, iron cannon and smoke (the treasure chests' colors are shared, see render/RodeoFixedColors)
 private val PLANK_DARK = Color(0xFF4E342E)
 private val PLANK_LIGHT = Color(0xFF795548)
 private val SAIL = Color(0xFFF5E6C8)
@@ -24,8 +26,6 @@ private val FLAG_BLACK = Color(0xFF111111)
 private val SKULL_WHITE = Color(0xFFFAFAFA)
 private val IRON = Color(0xFF263238)
 private val SMOKE = Color(0xFF9E9E9E)
-private val CHEST_WOOD = Color(0xFF8D6E63)
-private val GOLD = Color(0xFFFFC107)
 
 /** A cannonball in flight. */
 @Immutable
@@ -128,8 +128,8 @@ private fun DrawScope.drawHull(ship: RodeoPirateShipUi, context: RodeoDrawContex
         port += 8f
     }
     // Stern castle windows and railing along the deck
-    drawRect(GOLD.copy(alpha = 0.7f), p(2f, STERN_CASTLE_TOP - 1.5f), Size(2f * unit, 1.5f * unit))
-    drawRect(GOLD.copy(alpha = 0.7f), p(6f, STERN_CASTLE_TOP - 1.5f), Size(2f * unit, 1.5f * unit))
+    drawRect(TREASURE_GOLD.copy(alpha = 0.7f), p(2f, STERN_CASTLE_TOP - 1.5f), Size(2f * unit, 1.5f * unit))
+    drawRect(TREASURE_GOLD.copy(alpha = 0.7f), p(6f, STERN_CASTLE_TOP - 1.5f), Size(2f * unit, 1.5f * unit))
     drawLine(PLANK_LIGHT, p(STERN_CASTLE_WIDTH, SHIP_DECK + 2.4f), p(SHIP_LENGTH + 2f, SHIP_DECK + 3.4f), 0.3f * unit)
     var post = STERN_CASTLE_WIDTH + 2f
     while (post < SHIP_LENGTH + 2f) {
@@ -145,9 +145,6 @@ private fun DrawScope.drawHull(ship: RodeoPirateShipUi, context: RodeoDrawContex
 private fun DrawScope.drawTreasureChest(chest: RodeoTreasureChestUi, context: RodeoDrawContext) {
     val unit = context.unit
     val center = context.p(chest.x, chest.y)
-    drawRect(CHEST_WOOD, center + Offset(-1.8f * unit, -0.6f * unit), Size(3.6f * unit, 2.2f * unit))
-    drawRoundRect(CHEST_WOOD, center + Offset(-1.9f * unit, -1.8f * unit), Size(3.8f * unit, 1.4f * unit), CornerRadius(0.7f * unit))
-    drawRect(GOLD, center + Offset(-1.9f * unit, -0.6f * unit), Size(3.8f * unit, 0.35f * unit))
-    drawRect(GOLD, center + Offset(-0.3f * unit, -0.5f * unit), Size(0.6f * unit, 0.8f * unit))
-    drawCircle(GOLD.copy(alpha = 0.5f + 0.5f * sin(chest.seed.toFloat())), radius = 0.3f * unit, center = center + Offset(1.2f * unit, -2f * unit))
+    drawTreasureChest(center, unit)
+    drawCircle(TREASURE_GOLD.copy(alpha = 0.5f + 0.5f * sin(chest.seed.toFloat())), radius = 0.3f * unit, center = center + Offset(1.2f * unit, -2f * unit))
 }

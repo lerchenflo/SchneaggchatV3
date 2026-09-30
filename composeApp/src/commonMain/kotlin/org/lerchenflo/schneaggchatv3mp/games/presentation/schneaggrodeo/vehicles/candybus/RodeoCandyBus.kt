@@ -4,7 +4,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCow
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_LEG_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_Y
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.KMH_PER_UNIT_PER_SECOND
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
@@ -49,9 +48,7 @@ internal const val STANISLAUS_HEIGHT = 9f
 private const val BUS_PASS_SPEED = 28f           // u/s across the screen while passing by, slow enough to lasso
 private const val BUS_HITCH_Y = 10f
 /** Where the loop lands on the bus: the middle of the lasso's reach, ahead of the hand. */
-private const val BUS_HITCH_AIM = HORSE_X + HAND_X + 16f
 /** Seconds the loop takes to reach the bus (half the lasso's throw), aimed at where it will be. */
-private const val LASSO_LEAD = 0.225f
 /** Rear bumper while riding: the cargo room covers the horse. */
 private const val BUS_RIDE_X = HORSE_X - 8f
 /** Rear bumper once it pulled forward off the horse at the end. */
@@ -110,7 +107,7 @@ internal class RodeoCandyBus : RodeoVehicle(RodeoVehicleKind.CANDY_BUS) {
     override val hidesHorse: Boolean get() = phase == VehiclePhase.RIDING
 
     /** The whole bus is a target, like the Ford Escort. */
-    override fun hitch() = (BUS_HITCH_AIM + BUS_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + BUS_LENGTH - 2f) to BUS_HITCH_Y
+    override fun hitch() = hitchX() to BUS_HITCH_Y
 
     private val doorCenter: Float get() = x + DOOR_LEFT + DOOR_WIDTH / 2f
 

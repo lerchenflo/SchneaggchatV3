@@ -8,22 +8,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SEABED_Y
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.HAT_COLOR
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoDrawContext
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoLayer
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.TREASURE_GOLD
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawPearlBall
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawTreasureChest
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoLassoHintUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-// The U-boat's fixed colors: a yellow submarine with dark portholes, white pearls and black mines
+// The U-boat's fixed colors: a yellow submarine with dark portholes and black mines
 private val SUB_YELLOW = Color(0xFFFDD835)
 private val SUB_YELLOW_DARK = Color(0xFFC6A700)
 private val SUB_TRIM = Color(0xFF37474F)
 private val PORTHOLE_GLASS = Color(0xFF80DEEA)
-private val PEARL = Color(0xFFF8F4EC)
-private val PEARL_SHINE = Color(0xFFFFFFFF)
 private val MINE_BLACK = Color(0xFF263238)
 private val BOOM = Color(0xFFFF7043)
 
@@ -39,6 +41,8 @@ data class RodeoUBoatUi(
     val boom: Float?,
     val pearls: List<RodeoSeaThingUi>,
     val mines: List<RodeoSeaThingUi>,
+    /** Treasure chests on the seabed. */
+    val treasures: List<RodeoSeaThingUi> = emptyList(),
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
@@ -47,14 +51,15 @@ data class RodeoUBoatUi(
             RodeoLayer.BACK -> Unit
             RodeoLayer.BODY -> drawUBoat(this@RodeoUBoatUi, context)
             RodeoLayer.FRONT -> {
-                pearls.forEach { drawPearl(it, context) }
+                pearls.forEach { drawPearlBall(context.p(it.x, it.y), context.unit, PEARL_RADIUS) }
                 mines.forEach { drawMine(it, context) }
+                treasures.forEach { drawTreasure(it, context) }
             }
         }
     }
 }
 
-/** A pearl or sea mine; [x] / [y] its center. */
+/** A pearl, sea mine or treasure chest; [x] / [y] its center. */
 @Immutable
 data class RodeoSeaThingUi(val x: Float, val y: Float)
 
@@ -108,18 +113,25 @@ private fun DrawScope.drawUBoat(boat: RodeoUBoatUi, context: RodeoDrawContext) {
     }
 }
 
-private fun DrawScope.drawPearl(pearl: RodeoSeaThingUi, context: RodeoDrawContext) {
-    val unit = context.unit
-    val center = context.p(pearl.x, pearl.y)
-    drawCircle(PEARL, radius = PEARL_RADIUS * unit, center = center)
-    drawCircle(PEARL_SHINE, radius = PEARL_RADIUS * 0.35f * unit, center = center + Offset(-0.4f * unit, -0.4f * unit))
+/** A chest on the seabed, glowing golden. */
+private fun DrawScope.drawTreasure(chest: RodeoSeaThingUi, context: RodeoDrawContext) {
+    val center = context.p(chest.x, chest.y)
+    drawCircle(TREASURE_GOLD.copy(alpha = 0.25f), radius = 3f * context.unit, center = center)
+    drawTreasureChest(center, context.unit)
 }
 
-/** A sea mine: black ball with spikes, anchored by a chain going down. */
+/** A sea mine: black ball with spikes, anchored by a chain to the seabed. */
 private fun DrawScope.drawMine(mine: RodeoSeaThingUi, context: RodeoDrawContext) {
     val unit = context.unit
     val center = context.p(mine.x, mine.y)
-    drawLine(MINE_BLACK.copy(alpha = 0.6f), center, center + Offset(0f, 12f * unit), 0.2f * unit)
+    // The chain down to its anchor on the seabed
+    val anchor = context.p(mine.x, SEABED_Y)
+    var link = 0f
+    while (center.y + link < anchor.y) {
+        drawOval(MINE_BLACK.copy(alpha = 0.7f), center + Offset(-0.25f * unit, link), Size(0.5f * unit, 0.9f * unit), style = Stroke(width = 0.15f * unit))
+        link += 0.8f * unit
+    }
+    drawRect(MINE_BLACK, anchor + Offset(-1.2f * unit, -0.8f * unit), Size(2.4f * unit, 0.8f * unit))
     repeat(8) { index ->
         val angle = index * PI.toFloat() / 4f
         drawLine(MINE_BLACK, center, center + Offset(cos(angle), sin(angle)) * ((MINE_RADIUS + 0.8f) * unit), 0.35f * unit, StrokeCap.Round)

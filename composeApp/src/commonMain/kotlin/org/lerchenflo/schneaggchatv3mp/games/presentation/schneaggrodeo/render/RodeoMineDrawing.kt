@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.drawText
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoFenceUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGemUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMoundUi
@@ -96,10 +95,7 @@ internal fun DrawScope.drawCrateStack(fence: RodeoFenceUi, context: RodeoDrawCon
             drawCircle(MINE_ROCK, radius = radius * unit, center = context.p(pileX + dx, radius * (if (fence.knocked) 0.5f else 0.9f)))
         }
     }
-    val labelX = (fence.x + fence.width / 2f) * unit - label.size.width / 2f
-    if (labelX + label.size.width > 0f && labelX < size.width) {
-        drawText(label, topLeft = Offset(labelX, context.groundY + 2f * unit))
-    }
+    drawHeightLabel(label, fence.x + fence.width / 2f, context)
 }
 
 /** A yellow miner's helmet with a lamp, on top of a snail. */

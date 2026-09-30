@@ -2,7 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicle
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.CABLE_FOOT_HEIGHT
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.CABLE_STATION_MARGIN
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.Horseshoe
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MOUNTAIN_WIDTH
@@ -32,9 +31,7 @@ internal const val CABIN_HANG = 38f
 internal const val CABLE_CAR_PASS_SPEED = 30f
 private const val CABIN_HITCH_Y = 8f
 /** Where the loop lands on the cabin: the middle of the lasso's reach, ahead of the hand. */
-private const val CABIN_HITCH_AIM = HORSE_X + HAND_X + 16f
 /** Seconds the loop takes to reach the cabin (half the lasso's throw), aimed at where it will be. */
-private const val LASSO_LEAD = 0.225f
 private const val CABIN_RIDE_X = HORSE_X - 2f
 private const val CABIN_BOARD_SECONDS = 0.8f
 private const val CABIN_UNLOAD_SECONDS = 0.7f
@@ -61,7 +58,7 @@ internal class RodeoCableCar : RodeoVehicle(RodeoVehicleKind.CABLE_CAR) {
     override val horseLift: Float get() = if (carriesRider) lift else 0f
 
     override fun hitch() =
-        (CABIN_HITCH_AIM + CABLE_CAR_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + CABIN_WIDTH - 2f) to floor + CABIN_HITCH_Y
+        hitchX() to floor + CABIN_HITCH_Y
 
     override fun spawn(world: RodeoWorld) {
         super.spawn(world)

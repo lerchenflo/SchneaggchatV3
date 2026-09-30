@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoFireflyUi
-import kotlin.math.max
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -78,7 +77,7 @@ internal class RodeoSkyWonders {
      * while [firefliesAllowed]. Returns the extra points of [ridden] while they count double.
      */
     fun step(dt: Float, scroll: Float, ridden: Float, worldWidth: Float, firefliesAllowed: Boolean): Int {
-        ghostSeconds = max(0f, ghostSeconds - dt)
+        ghostSeconds = countDown(ghostSeconds, dt)
 
         rainbowX = rainbowX?.minus(scroll)?.takeIf { it + RAINBOW_HALF_WIDTH > 0f }
         val rainbow = rainbowX
@@ -89,7 +88,7 @@ internal class RodeoSkyWonders {
 
         var extra = 0
         if (doublePointsSeconds > 0f) {
-            doublePointsSeconds = max(0f, doublePointsSeconds - dt)
+            doublePointsSeconds = countDown(doublePointsSeconds, dt)
             doubleFraction += ridden / UNITS_PER_POINT
             extra = doubleFraction.toInt()
             doubleFraction -= extra

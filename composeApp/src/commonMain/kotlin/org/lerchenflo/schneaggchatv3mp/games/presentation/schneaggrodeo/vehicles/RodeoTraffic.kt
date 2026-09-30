@@ -86,6 +86,25 @@ internal class RodeoTraffic {
         rocket.spawn(world)
     }
 
+    /** A vehicle in the picture keeps the ground flat (see RodeoVehicle.needsFlatTrack). */
+    val needsFlatTrack: Boolean get() = current?.needsFlatTrack == true
+
+    /** The map [kind] comes along on (the surface for the rocket, carriage and cable car). */
+    fun mapOf(kind: RodeoVehicleKind): RodeoMap =
+        rotations.entries.firstOrNull { (_, rotation) -> rotation.has(kind) }?.key ?: RodeoMap.SURFACE
+
+    /**
+     * Test mode (see RodeoTest): sends the vehicle of [kind] in right now, if the track is clear. The
+     * rocket and the carriage pick the rider up at once; the cable car needs its mountain first.
+     */
+    fun sendTest(kind: RodeoVehicleKind, world: RodeoWorld): Boolean {
+        if (!isClear) return false
+        val vehicle = all.first { it.kind == kind }
+        current = vehicle
+        vehicle.spawn(world)
+        return true
+    }
+
     /** Sends the golden carriage in; it picks up horse and rider right away. */
     fun sendCarriage(world: RodeoWorld) {
         current = carriage
@@ -108,13 +127,13 @@ internal class RodeoTraffic {
      * Sends the next vehicle of [map] once it is due (and [maySend] allows it), and moves the
      * current one.
      */
-    fun step(world: RodeoWorld, dt: Float, scroll: Float, maySend: Boolean, map: RodeoMap) {
+    fun step(world: RodeoWorld, dt: Float, scroll: Float, maySend: Boolean, map: RodeoMap, flatTrack: Boolean) {
         if (map != lastMap) {
             lastMap = map
             rotations[map]?.restartTimer()
         }
         if (current == null && maySend) {
-            rotations[map]?.tick(dt)?.let { next ->
+            rotations[map]?.tick(dt, flatTrack)?.let { next ->
                 current = next
                 next.spawn(world)
             }

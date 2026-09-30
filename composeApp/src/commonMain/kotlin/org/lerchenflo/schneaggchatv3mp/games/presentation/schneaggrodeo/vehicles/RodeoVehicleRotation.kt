@@ -28,20 +28,31 @@ internal class RodeoVehicleRotation(
         nextIn = firstSeconds
     }
 
+    fun has(kind: RodeoVehicleKind): Boolean = vehicles.any { it.kind == kind }
+
     /** Back on this rotation's map: the first vehicle comes after [firstSeconds] again. */
     fun restartTimer() {
         nextIn = firstSeconds
     }
 
-    /** Counts down while no vehicle is around; returns the one to send in once it is time. */
-    fun tick(dt: Float): RodeoVehicle? {
+    /**
+     * Counts down while no vehicle is around; returns the one to send in once it is time. Vehicles
+     * that need a flat track only come while the track ahead is [flatTrack].
+     */
+    fun tick(dt: Float, flatTrack: Boolean): RodeoVehicle? {
         nextIn -= dt
         if (nextIn > 0f) return null
-        nextIn = intervalMin + Random.nextFloat() * intervalRandom
         val regular = vehicles.filter { !it.special }
         val pool = (if (regular.all { it.kind in seen }) vehicles else regular)
             .filter { it != last }
             .ifEmpty { vehicles }
+            .filter { flatTrack || !it.needsFlatTrack }
+        if (pool.isEmpty()) {
+            // Only fast ones left: try again once the track ahead is flat
+            nextIn = 1f
+            return null
+        }
+        nextIn = intervalMin + Random.nextFloat() * intervalRandom
         return pool.random().also {
             seen += it.kind
             last = it

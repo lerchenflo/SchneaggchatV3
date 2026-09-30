@@ -20,6 +20,8 @@ internal const val UNITS_PER_POINT = 10f
 // The horse never moves horizontally while riding - the world scrolls by under it.
 /** Left edge of the horse. */
 internal const val HORSE_X = 12f
+/** The hooves, relative to the horse's left edge: the horse stands on the ground there. */
+internal const val HOOVES_X = 16f
 /** The rider's rein hand (where the lasso starts), relative to the horse's left edge / hooves. */
 internal const val HAND_X = 18f
 internal const val HAND_Y = 18f

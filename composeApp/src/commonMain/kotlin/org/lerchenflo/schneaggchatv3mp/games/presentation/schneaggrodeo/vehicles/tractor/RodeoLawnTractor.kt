@@ -81,6 +81,7 @@ internal class RodeoLawnTractor : RodeoDeckVehicle(RodeoVehicleKind.LAWN_TRACTOR
     private var fenceIn = 0f
 
     override val special = true
+    override val needsFlatTrack = true
     override val length = TRACTOR_LENGTH
     override val passSpeed = TRACTOR_PASS_SPEED
     override val deckHeight = TRACTOR_DECK_HEIGHT

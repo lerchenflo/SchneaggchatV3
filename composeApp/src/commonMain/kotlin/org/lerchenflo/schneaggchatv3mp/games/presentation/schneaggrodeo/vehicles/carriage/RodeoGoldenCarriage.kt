@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.carriage
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.KMH_PER_UNIT_PER_SECOND
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoDeckVehicle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoRidePose
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
@@ -9,7 +8,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoWorld
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.VehiclePhase
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.clearTrack
-import kotlin.math.roundToInt
 import kotlin.math.sin
 
 // Golden carriage: never comes along on its own - it is bought with SNAILS_PER_CARRIAGE saved-up
@@ -57,11 +55,7 @@ internal class RodeoGoldenCarriage : RodeoDeckVehicle(RodeoVehicleKind.GOLDEN_CA
         board(world)
     }
 
-    override fun worldScroll(world: RodeoWorld, step: Float, dt: Float): Float =
-        if (isRiding) step * CARRIAGE_SPEED_FACTOR else step
-
-    override fun speedKmh(world: RodeoWorld): Int? =
-        if (isRiding) (world.speed * CARRIAGE_SPEED_FACTOR * KMH_PER_UNIT_PER_SECOND).roundToInt() else null
+    override val rideSpeedFactor = CARRIAGE_SPEED_FACTOR
 
     override fun ridePose(runTimeSeconds: Float): RodeoRidePose? =
         if (isRiding) RodeoRidePose(pitch = SWAY_DEGREES * sin(runTimeSeconds * 5f)) else null

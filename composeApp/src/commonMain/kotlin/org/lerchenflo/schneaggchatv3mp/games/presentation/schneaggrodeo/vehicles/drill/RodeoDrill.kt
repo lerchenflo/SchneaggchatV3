@@ -1,10 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.drill
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HOOVES_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.KMH_PER_UNIT_PER_SECOND
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.hopArc
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.circleTouchesBox
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.progressOf
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.smoothstep
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicle
@@ -12,7 +12,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoWorld
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.VehiclePhase
-import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -40,10 +39,8 @@ internal const val ROCK_RADIUS = 3f
 
 private const val DRILL_PASS_SPEED = 16f
 private const val DRILL_HITCH_Y = 8f
-private const val DRILL_HITCH_AIM = HORSE_X + HAND_X + 16f
-private const val LASSO_LEAD = 0.225f
 /** While riding, the hatch is where the horse's hooves were. */
-private const val DRILL_RIDE_X = HORSE_X + 16f - HATCH_X - 1f
+private const val DRILL_RIDE_X = HORSE_X + HOOVES_X - HATCH_X - 1f
 private const val BOARD_SECONDS = 0.7f
 private const val UNLOAD_SECONDS = 0.6f
 private const val HOP = 6f
@@ -96,23 +93,12 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
     override val hidesHorse: Boolean get() = phase == VehiclePhase.RIDING
 
     /** The whole machine is a target. */
-    override fun hitch() = (DRILL_HITCH_AIM + DRILL_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + FULL_LENGTH - 2f) to DRILL_HITCH_Y
+    override fun hitch() = hitchX() to DRILL_HITCH_Y
 
     override fun camera(): Float? =
         if (phase == VehiclePhase.RIDING) (y * CAMERA_FOLLOW).coerceIn(-CAMERA_MAX_DOWN, 0f) else null
 
-    override fun worldScroll(world: RodeoWorld, step: Float, dt: Float): Float =
-        if (isRiding) step * SPEED_FACTOR else step
-
-    override fun speedKmh(world: RodeoWorld): Int? =
-        if (isRiding) (world.speed * SPEED_FACTOR * KMH_PER_UNIT_PER_SECOND).roundToInt() else null
-
-    override fun reset() {
-        super.reset()
-        finds.clear()
-        trail.clear()
-        drilling = false
-    }
+    override val rideSpeedFactor = SPEED_FACTOR
 
     override fun spawn(world: RodeoWorld) {
         super.spawn(world)
@@ -208,8 +194,7 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
         val top = y + BODY_TOP - 1f
         finds.removeAll { find ->
             val radius = if (find.rock) ROCK_RADIUS else NUGGET_RADIUS
-            val hit = find.x + radius > tipLeft && find.x - radius < tipRight &&
-                    find.y + radius > bottom && find.y - radius < top
+            val hit = circleTouchesBox(find.x, find.y, radius, left = tipLeft, right = tipRight, bottom = bottom, top = top)
             if (hit && find.rock && !surfacing) {
                 // Too hard to drill through: back up to the surface
                 world.sparkle(find.x, find.y)

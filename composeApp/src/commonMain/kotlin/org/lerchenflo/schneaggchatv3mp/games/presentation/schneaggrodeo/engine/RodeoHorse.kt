@@ -18,6 +18,12 @@ private const val STUMBLE_SPEED_FACTOR = 0.55f
 private const val RIDER_LEAN_RESPONSE = 12f   // 1/s, how fast the rider follows the lean target
 private const val GALLOP_STRIDE = 0.12f       // gait radians per unit ridden
 private const val REMOUNT_SPEED_FACTOR = 0.8f // pace lost while the cowboy was off the horse
+// Momentum on the hills: how fast a slope changes the pace, how fast it settles back on the flat,
+// and how slow / fast it can get
+private const val HILL_ACCELERATION = 1.3f
+private const val HILL_SETTLE = 1.4f
+private const val HILL_MIN_FACTOR = 0.65f
+private const val HILL_MAX_FACTOR = 1.4f
 /** Wading through mud: share of the pace that is left. */
 private const val MUD_SPEED_FACTOR = 0.6f
 
@@ -49,6 +55,9 @@ internal class RodeoHorse {
     var inMud = false
     /** Up or down a mountain this frame; set by the engine. */
     var slope = Slope.FLAT
+    /** Momentum from the hills: > 1 after running downhill, < 1 after uphill. */
+    var hillFactor = 1f
+        private set
     /** Extra jump strength of a mushroom (tiny horse); set by the engine. */
     var jumpBoost = 1f
 
@@ -66,7 +75,7 @@ internal class RodeoHorse {
 
     /** Pace including a stumble, mud and the mountain. */
     val pace: Float
-        get() = speed * (if (stumble > 0f) STUMBLE_SPEED_FACTOR else 1f) * (if (inMud) MUD_SPEED_FACTOR else 1f) *
+        get() = speed * hillFactor * (if (stumble > 0f) STUMBLE_SPEED_FACTOR else 1f) * (if (inMud) MUD_SPEED_FACTOR else 1f) *
                 when (slope) {
                     Slope.FLAT -> 1f
                     Slope.UPHILL -> UPHILL_SPEED_FACTOR
@@ -87,6 +96,7 @@ internal class RodeoHorse {
         airTime = 0f
         inMud = false
         slope = Slope.FLAT
+        hillFactor = 1f
         jumpBoost = 1f
         fullSeconds = 0f
         takeOver(RodeoHorseStats.START)
@@ -137,6 +147,15 @@ internal class RodeoHorse {
 
     fun feed() {
         lives = minOf(maxLives.toFloat(), lives + 1f)
+    }
+
+    /**
+     * The ground under the hooves rises by [rise] per unit: uphill the horse slows down, downhill it
+     * speeds up, and on the flat it settles back to its own pace. In the air it keeps its momentum.
+     */
+    fun rideHills(dt: Float, rise: Float) {
+        if (isOnGround) hillFactor -= rise * HILL_ACCELERATION * dt
+        hillFactor = (hillFactor - (hillFactor - 1f) * HILL_SETTLE * dt).coerceIn(HILL_MIN_FACTOR, HILL_MAX_FACTOR)
     }
 
     /** Speeds up towards [topSpeed] and recovers from a stumble. */

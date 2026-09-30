@@ -1,8 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.rowboat
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.KMH_PER_UNIT_PER_SECOND
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SEA_WATER_LINE
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.LassoGrab
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoDeckVehicle
@@ -12,7 +10,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoWorld
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.VehiclePhase
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.clearTrack
-import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
@@ -30,8 +27,6 @@ internal const val FISH_LENGTH = 3f
 
 private const val BOAT_PASS_SPEED = 22f
 private const val BOAT_HITCH_Y = 6f
-private const val BOAT_HITCH_AIM = HORSE_X + HAND_X + 16f
-private const val LASSO_LEAD = 0.225f
 private const val BOAT_RIDE_X = HORSE_X - 3f
 private const val BOAT_SPEED_FACTOR = 1.1f
 private const val BOAT_LEAVE_SPEED = 40f
@@ -66,18 +61,14 @@ internal class RodeoRowboat : RodeoDeckVehicle(RodeoVehicleKind.ROWBOAT) {
     override val hop = 5f
 
     /** The whole boat is a target. */
-    override fun hitch() = (BOAT_HITCH_AIM + BOAT_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + BOAT_LENGTH - 2f) to BOAT_HITCH_Y
+    override fun hitch() = hitchX() to BOAT_HITCH_Y
 
     override fun reset() {
         super.reset()
         fish.clear()
     }
 
-    override fun worldScroll(world: RodeoWorld, step: Float, dt: Float): Float =
-        if (isRiding) step * BOAT_SPEED_FACTOR else step
-
-    override fun speedKmh(world: RodeoWorld): Int? =
-        if (isRiding) (world.speed * BOAT_SPEED_FACTOR * KMH_PER_UNIT_PER_SECOND).roundToInt() else null
+    override val rideSpeedFactor = BOAT_SPEED_FACTOR
 
     override fun ridePose(runTimeSeconds: Float): RodeoRidePose? =
         if (isRiding) RodeoRidePose(pitch = BOAT_ROCK_DEGREES * sin(runTimeSeconds * 3f)) else null

@@ -6,7 +6,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.drawText
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
 import kotlin.math.PI
 import kotlin.math.cos
@@ -25,9 +27,17 @@ class RodeoDrawContext(
     val colors: ColorScheme,
     /** Pictures and texts some vehicles draw. */
     val assets: RodeoVehicleAssets? = null,
+    /** Height of the hills at world x (see engine/RodeoTerrain); everything stands on them. */
+    val ground: (Float) -> Float = { 0f },
 ) {
-    /** Canvas position of world point ([x], [y]). */
-    fun p(x: Float, y: Float) = Offset(x * unit, groundY - y * unit)
+    /** Canvas position of world point ([x], [y]), [y] above the ground at [x]. */
+    fun p(x: Float, y: Float) = Offset(x * unit, groundY - (y + ground(x)) * unit)
+
+    /** Canvas y of the ground at world x [x]. */
+    fun groundYAt(x: Float) = groundY - ground(x) * unit
+
+    /** The same without the hills, for backdrops fixed to the screen. */
+    fun flat() = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = assets)
 }
 
 /** Pictures and texts vehicles draw, loaded by the track canvas. */
@@ -51,6 +61,31 @@ enum class RodeoLayer { BACK, BODY, FRONT }
 
 internal fun DrawScope.drawVehicle(vehicle: RodeoVehicleUi, layer: RodeoLayer, context: RodeoDrawContext) {
     with(vehicle) { draw(layer, context) }
+}
+
+/** Draws [vehicles] whole, layer by layer, with nothing in between. */
+internal fun DrawScope.drawVehicles(vehicles: List<RodeoVehicleUi>, context: RodeoDrawContext) {
+    RodeoLayer.entries.forEach { layer -> vehicles.forEach { drawVehicle(it, layer, context) } }
+}
+
+/**
+ * A strip following the ground from world x [from] to [to] at [y] above it, drawn as short pieces
+ * [dash] long every 2 units, so it bends with the hills: sand, planks, snow.
+ */
+internal fun DrawScope.drawGroundStrip(context: RodeoDrawContext, from: Float, to: Float, y: Float, color: Color, width: Float, dash: Float = 2f) {
+    var x = from
+    while (x < to) {
+        drawLine(color, context.p(x, y), context.p(x + dash, y), width * context.unit)
+        x += 2f
+    }
+}
+
+/** A fence's height [label] centered under world x [middle], below the ground there (if on screen). */
+internal fun DrawScope.drawHeightLabel(label: TextLayoutResult, middle: Float, context: RodeoDrawContext) {
+    val labelX = middle * context.unit - label.size.width / 2f
+    if (labelX + label.size.width > 0f && labelX < size.width) {
+        drawText(label, topLeft = Offset(labelX, context.groundYAt(middle) + 2f * context.unit))
+    }
 }
 
 /** A closed polygon through grid [points], converted to pixels by [p]. */

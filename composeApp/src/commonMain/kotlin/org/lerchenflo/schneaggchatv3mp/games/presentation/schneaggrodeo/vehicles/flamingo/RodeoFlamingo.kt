@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.flamingo
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.Horseshoe
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoDeckVehicle
@@ -25,8 +24,6 @@ internal const val FLAMINGO_BACK = 7f
 
 private const val FLAMINGO_PASS_SPEED = 20f
 private const val FLAMINGO_HITCH_Y = 6f
-private const val FLAMINGO_HITCH_AIM = HORSE_X + HAND_X + 16f
-private const val LASSO_LEAD = 0.225f
 private const val FLAMINGO_RIDE_X = HORSE_X - 2f
 private const val FLAMINGO_LEAVE_SPEED = 30f
 private const val BOUNCE_VELOCITY = 75f
@@ -57,7 +54,7 @@ internal class RodeoFlamingo : RodeoDeckVehicle(RodeoVehicleKind.FLAMINGO) {
     override val horseLift: Float get() = super.horseLift + if (carriesRider) bounce else 0f
 
     /** The whole float is a target. */
-    override fun hitch() = (FLAMINGO_HITCH_AIM + FLAMINGO_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + FLAMINGO_LENGTH - 2f) to FLAMINGO_HITCH_Y
+    override fun hitch() = hitchX() to FLAMINGO_HITCH_Y
 
     override fun spawn(world: RodeoWorld) {
         super.spawn(world)

@@ -4,7 +4,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCow
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_LEG_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_Y
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.progressOf
@@ -35,9 +34,7 @@ internal const val BULL_SEAT_Y = 19f
 private const val BULL_PASS_SPEED = 32f       // u/s across the screen while charging by
 private const val BULL_HITCH_Y = 16f
 /** Where the loop lands on the bull: the middle of the lasso's reach, ahead of the hand. */
-private const val BULL_HITCH_AIM = HORSE_X + HAND_X + 16f
 /** Seconds the loop takes to reach the bull (half the lasso's throw), aimed at where it will be. */
-private const val LASSO_LEAD = 0.225f
 private const val BULL_RIDE_X = HORSE_X + 34f  // runs ahead of the riderless horse
 private const val BULL_BOARD_SECONDS = 0.7f
 private const val BULL_UNLOAD_SECONDS = 0.8f
@@ -101,7 +98,7 @@ internal class RodeoBull : RodeoVehicle(RodeoVehicleKind.BULL) {
      * reach, so any throw while some of it charges past in front of the horse catches it.
      */
     override fun hitch() =
-        (BULL_HITCH_AIM + BULL_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + BULL_LENGTH - 2f) to BULL_HITCH_Y
+        hitchX() to BULL_HITCH_Y
 
     override fun spawn(world: RodeoWorld) {
         super.spawn(world)

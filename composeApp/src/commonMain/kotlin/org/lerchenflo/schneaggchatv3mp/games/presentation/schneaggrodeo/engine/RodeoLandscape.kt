@@ -95,7 +95,7 @@ internal class RodeoLandscape {
     }
 
     /** Places a section of [kind] now (see [tick]). */
-    private fun place(kind: SectionKind, worldWidth: Float, pace: Float, passSpeed: Float) {
+    fun place(kind: SectionKind, worldWidth: Float, pace: Float, passSpeed: Float) {
         when (kind) {
             SectionKind.MOUNTAIN -> {
                 val passSeconds = (worldWidth - HORSE_X) / passSpeed

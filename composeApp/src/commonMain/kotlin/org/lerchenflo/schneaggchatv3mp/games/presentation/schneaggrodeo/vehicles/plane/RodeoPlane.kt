@@ -4,7 +4,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCow
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_LEG_LENGTH
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.COWBOY_SEAT_Y
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.Horseshoe
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.lerp
@@ -41,8 +40,6 @@ internal const val CLOUD_OVERHANG = 3f
 
 private const val PLANE_PASS_SPEED = 16f             // u/s across the screen while rolling down the runway
 private const val PLANE_HITCH_Y = 5f
-private const val PLANE_HITCH_AIM = HORSE_X + HAND_X + 16f
-private const val LASSO_LEAD = 0.225f
 /** Not caught by here: it lifts off without the cowboy. */
 private const val PLANE_LIFTOFF_X = HORSE_X - 6f
 private const val PLANE_LIFTOFF_CLIMB = 14f
@@ -117,6 +114,8 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
     private var outOfFuel = false
 
     override val length = PLANE_LENGTH
+    // The skyline and its storm clouds are laid out on the flat
+    override val needsFlatTrack = true
     override val passSpeed = PLANE_PASS_SPEED
     override val carriesHorse = false
     override val horseHops = false
@@ -127,7 +126,7 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
     override val riderOnHorse: Boolean get() = !carriesRider
 
     /** The whole plane on the runway is a target. */
-    override fun hitch() = (PLANE_HITCH_AIM + PLANE_PASS_SPEED * LASSO_LEAD).coerceIn(x + 2f, x + PLANE_LENGTH - 2f) to y + PLANE_HITCH_Y
+    override fun hitch() = hitchX() to y + PLANE_HITCH_Y
 
     /** No fences on the runway ahead. */
     override val blocksFences: Boolean

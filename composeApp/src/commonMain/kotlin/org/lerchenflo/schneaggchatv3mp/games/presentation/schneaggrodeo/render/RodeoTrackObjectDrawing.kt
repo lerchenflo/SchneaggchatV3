@@ -41,51 +41,45 @@ private const val SNAIL_OUTLINE_SCALE = 1.1f
  */
 internal fun DrawScope.drawFence(
     fence: RodeoFenceUi,
-    groundY: Float,
-    unit: Float,
+    context: RodeoDrawContext,
     woodColor: Color,
     label: TextLayoutResult,
 ) {
-    val left = fence.x * unit
-    val right = (fence.x + fence.width) * unit
-    val postWidth = 1.2f * unit
-    val postHeight = (fence.top + 2.5f) * unit
+    val unit = context.unit
+    val left = fence.x
+    val right = fence.x + fence.width
+    val postWidth = 1.2f
+    val postHeight = fence.top + 2.5f
 
-    // Wooden standards with little feet
+    // Wooden standards with little feet, upright on the ground under each
     listOf(left, right - postWidth).forEach { postX ->
-        drawRect(woodColor, Offset(postX, groundY - postHeight), Size(postWidth, postHeight))
-        drawRect(
-            woodColor,
-            Offset(postX - unit, groundY - 0.8f * unit),
-            Size(postWidth + 2f * unit, 0.8f * unit)
-        )
+        drawRect(woodColor, context.p(postX, postHeight), Size(postWidth * unit, postHeight * unit))
+        drawRect(woodColor, context.p(postX - 1f, 0.8f), Size((postWidth + 2f) * unit, 0.8f * unit))
     }
 
-    val poleThickness = POLE_THICKNESS * unit
-    val stripeWidth = 2f * unit
+    // Striped poles from standard to standard, following the slope
+    val stripeWidth = 2f
     fence.poleHeights.forEachIndexed { index, height ->
         val poleColor = POLE_COLORS[(fence.colorOffset + index) % POLE_COLORS.size]
         val poleBottom = if (fence.knocked) index * POLE_THICKNESS else height - POLE_THICKNESS
-        val poleY = groundY - (poleBottom + POLE_THICKNESS) * unit
+        val poleMiddle = poleBottom + POLE_THICKNESS / 2f
         var x = left
         var stripe = 0
         while (x < right) {
-            val width = min(stripeWidth, right - x)
-            drawRect(
+            val end = min(x + stripeWidth, right)
+            drawLine(
                 color = if (stripe % 2 == 0) poleColor else poleColor.copy(alpha = 0.45f),
-                topLeft = Offset(x, poleY),
-                size = Size(width, poleThickness)
+                start = context.p(x, poleMiddle),
+                end = context.p(end, poleMiddle),
+                strokeWidth = POLE_THICKNESS * unit,
             )
-            x += stripeWidth
+            x = end
             stripe++
         }
     }
 
     // Height label below the ground, centered under the fence
-    val labelX = (left + right) / 2f - label.size.width / 2f
-    if (labelX + label.size.width > 0f && labelX < size.width) {
-        drawText(label, topLeft = Offset(labelX, groundY + 2f * unit))
-    }
+    drawHeightLabel(label, (left + right) / 2f, context)
 }
 
 /**
@@ -172,7 +166,9 @@ internal fun DrawScope.drawCarrot(carrot: RodeoCarrotUi, context: RodeoDrawConte
 }
 
 /** A flat mud puddle on the ground with darker splotches and a few bubbles, picked by its seed. */
-internal fun DrawScope.drawMud(mud: RodeoMudUi, groundY: Float, unit: Float) {
+internal fun DrawScope.drawMud(mud: RodeoMudUi, context: RodeoDrawContext) {
+    val unit = context.unit
+    val groundY = context.groundYAt(mud.x + mud.width / 2f)
     val left = mud.x * unit
     val width = mud.width * unit
     drawOval(MUD_COLOR, topLeft = Offset(left, groundY - 0.9f * unit), size = Size(width, 2.4f * unit))

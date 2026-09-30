@@ -77,7 +77,7 @@ internal val PIZZA_CHEESE = Color(0xFFFFE082)
 internal val PIZZA_SALAMI = Color(0xFFB71C1C)
 internal val PIZZA_BASIL = Color(0xFF388E3C)
 
-// The underground sea: water, buoys, sharks, swim rings, oil and pearls
+// The sea: water, buoys, sharks, swim rings, oil and pearls
 internal val SEA_WATER = Color(0xFF0D47A1)
 internal val SEA_WATER_LIGHT = Color(0xFF4FC3F7)
 internal val SEAWEED = Color(0xFF2E7D32)
@@ -90,6 +90,8 @@ internal val OIL_BLACK = Color(0xFF1B1B1B)
 internal val OIL_SHEEN = listOf(Color(0xFF7E57C2), Color(0xFF26A69A), Color(0xFFFFCA28))
 internal val PEARL_WHITE = Color(0xFFF8F4EC)
 internal val CLAM_SHELL = Color(0xFFBCAAA4)
+internal val TREASURE_WOOD = Color(0xFF8D6E63)
+internal val TREASURE_GOLD = Color(0xFFFFC107)
 
 // The mine: earth walls, timber, crates, gold, helmets and dirt mounds
 internal val MINE_EARTH = Color(0xFF4E342E)
@@ -126,3 +128,17 @@ internal val RAINBOW_BANDS = listOf(
 )
 internal val FIREFLY_GLOW = Color(0xFFD4FF5C)
 internal val GHOST_GLOW = Color(0xFF80DEEA)
+
+// The beach and the harbour pier
+internal val SAND = Color(0xFFE6C98F)
+internal val PIER_WOOD = Color(0xFF8D6E63)
+internal val PIER_WOOD_DARK = Color(0xFF5D4037)
+
+// The deep sea: darkest water, fish, jellyfish, the whale and old wrecks
+internal val SEA_DEEP = Color(0xFF0D2B45)
+internal val FISH_COLORS = listOf(Color(0xFFFFB74D), Color(0xFF4DD0E1), Color(0xFFF06292))
+internal val JELLY_PINK = Color(0xFFF8BBD0)
+internal val WHALE_BLUE = Color(0xFF3F6E9E)
+internal val WHALE_BELLY = Color(0xFFB0C4DE)
+internal val WRECK_WOOD = Color(0xFF5D4037)
+internal val WRECK_WOOD_DARK = Color(0xFF3E2723)

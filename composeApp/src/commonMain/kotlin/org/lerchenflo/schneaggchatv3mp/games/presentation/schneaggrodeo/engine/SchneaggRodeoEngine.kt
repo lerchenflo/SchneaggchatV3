@@ -40,6 +40,9 @@ import kotlin.random.Random
 //            RodeoLandscape    mountains and forests the track runs through; their vehicles come along
 //            RodeoMushrooms    magic mushrooms: giant, tiny or slow motion for a few seconds
 //            RodeoUnderground  the rare way down into an underground map (cave, sea, mine) and back up
+//            RodeoTerrain      the hills of the ground under the track
+//            RodeoTest         developer toggles to try out one vehicle or map on its own
+//            RodeoDeepSea      fish, whales and wrecks deep down in the open sea
 //            RodeoRunFlavor    the run's weather and time of day
 //            RodeoSkyWonders   rainbow after the rain, fireflies and the ghost horse's spell at night
 //            RodeoPizzaOvens   stops by the roadside: pizza oven and Käsknöpfle kiosk
@@ -71,6 +74,7 @@ private const val CARROT_POINTS = 5
 private const val PIZZA_POINTS = 30
 private const val GEM_POINTS = 20
 private const val FIREFLY_POINTS = 5
+/** Where the horse's hooves stand, from HORSE_X: the ground there carries it (and the camera). */
 // Spending saved-up snails pays out on top of what catching them gave, so saving them up is worth it
 private const val SUPER_JUMP_POINTS = 150
 private const val ROCKET_POINTS = 1000
@@ -145,6 +149,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     private val flavor = RodeoRunFlavor()
     private val stanislaus = RodeoStanislausRunner()
     private val wonders = RodeoSkyWonders()
+    private val terrain = RodeoTerrain()
+    private val deepSea = RodeoDeepSea()
 
     // --- Progress of the run
 
@@ -182,6 +188,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     private val events = mutableListOf<RodeoEvent>()
     /** Degrees the picture is tilted on the mountain, easing towards the slope. */
     private var tilt = 0f
+    /** Test mode: seconds until the tested vehicle comes (again). */
+    private var testVehicleIn = 0f
 
     // --- Read by the ViewModel
 
@@ -240,6 +248,9 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         pizzaOvens.reset()
         stanislaus.reset()
         wonders.reset()
+        terrain.reset()
+        deepSea.reset()
+        testVehicleIn = 0f
         flavor.roll()
         course.mudFactor = flavor.mudFactor
         tilt = 0f
@@ -253,6 +264,12 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         luckyCharms = 0
         groundScroll = 0f
         riderlessHop = 0f
+        // Test mode starts right on the tested map
+        val testMap = RodeoTest.vehicle?.let { traffic.mapOf(it) } ?: RodeoTest.map
+        if (testMap != null && testMap != RodeoMap.SURFACE) {
+            underground.startOn(testMap)
+            switchMap(testMap)
+        }
     }
 
     /**
@@ -398,6 +415,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         horse.slope = if (ride == null && !superJump.isActive) landscape.slopeAt(HORSE_X + HITBOX_RIGHT) else Slope.FLAT
         horse.jumpBoost = trip.jumpBoost
         horse.accelerate(dt, RodeoDifficulty.topSpeed(elapsed))
+        // Momentum from the hills, unless something carries the horse
+        horse.rideHills(dt, if (ride == null && !superJump.isActive) terrain.slopeAt(HORSE_X + HOOVES_X) else 0f)
         val ridden = horse.pace * dt
         distance += ridden
         // On a vehicle the world may race by, but the points keep coming in at the horse's pace
@@ -415,9 +434,15 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         horse.lean(dt, leaning = horse.height > 0f || ride?.riderLeans == true)
 
         landscape.scroll(scroll, worldWidth)
+        // Hills only up on the surface, and never under the fast vehicles or the mountain
+        terrain.scroll(
+            scroll, worldWidth, elapsed,
+            keepFlat = traffic.needsFlatTrack || landscape.mountain != null || underground.isUnderground,
+        )
         underground.scroll(scroll)
         pizzaOvens.scroll(scroll)
         course.map = underground.map
+        deepSea.step(dt, scroll, worldWidth, active = underground.map == RodeoMap.SEA)
         // The rain runs out, and once back on the surface a rainbow comes along
         if (flavor.tick(dt)) course.mudFactor = flavor.mudFactor
         if (flavor.rainbowDue && !underground.isUnderground && underground.isClear) {
@@ -461,9 +486,12 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         val mapIsClear = underground.isClear && !underground.isDue
         val onSurface = !underground.isUnderground && mapIsClear
         val horsesMayCome = ride == null && traffic.isClear && !superJump.isActive
-        wildHorses.sendWild(dt, worldWidth, horse.level, allowed = horsesMayCome && onSurface, night = flavor.timeOfDay == RodeoTimeOfDay.NIGHT)
+        val nothingAround = horsesMayCome && wildHorses.isClear && landscape.isClear
+        // A test run (see RodeoTest) only brings its vehicle
+        val regular = !RodeoTest.isActive
+        wildHorses.sendWild(dt, worldWidth, horse.level, allowed = horsesMayCome && onSurface && regular, night = flavor.timeOfDay == RodeoTimeOfDay.NIGHT)
         // Friends come near their highscore no matter what else is going on
-        sendFriends()
+        if (regular) sendFriends()
 
         // A mountain (with its cable car) or a forest (with its magic mushrooms) now and then
         val section = landscape.tick(
@@ -471,7 +499,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             worldWidth,
             pace = horse.pace,
             passSpeed = CABLE_CAR_PASS_SPEED,
-            allowed = horsesMayCome && wildHorses.isClear && onSurface,
+            allowed = horsesMayCome && wildHorses.isClear && onSurface && regular,
         )
         when (section) {
             SectionKind.MOUNTAIN -> traffic.sendCableCar(this)
@@ -482,16 +510,19 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         // Vehicles: one at a time, sent along while the rider is free
         traffic.step(
             this, dt, scroll,
-            maySend = !superJump.isActive && elapsed > 0f && wildHorses.isClear && landscape.isClear && mapIsClear && !stanislaus.isAround,
+            maySend = !superJump.isActive && elapsed > 0f && wildHorses.isClear && landscape.isClear && mapIsClear &&
+                    !stanislaus.isAround && regular,
             map = underground.map,
+            flatTrack = terrain.isFlat(HORSE_X, worldWidth),
         )
+        sendTestVehicle(dt)
 
         // Rarely a mine shaft opens up, when nothing else is going on; in the cave the way out comes
-        underground.tick(dt, worldWidth, allowed = horsesMayCome && wildHorses.isClear && landscape.isClear)
+        if (regular) underground.tick(dt, allowed = nothingAround, shapeGround = terrain::addFeature)
         // Now and then a stop by the roadside, and very rarely Stanislaus running along
-        pizzaOvens.tick(dt, worldWidth, allowed = onSurface)
+        pizzaOvens.tick(dt, worldWidth, allowed = onSurface && regular)
         stanislaus.step(dt)
-        stanislaus.tick(dt, worldWidth, allowed = horsesMayCome && wildHorses.isClear && landscape.isClear && onSurface)
+        stanislaus.tick(dt, worldWidth, allowed = nothingAround && onSurface && regular)
         // Boarding a vehicle ends a throw at once
         lasso.step(dt, horseBase, cutShort = ride?.allowsLasso == false, onSnailCaught = ::snailCaught)
         traffic.checkRider(
@@ -512,6 +543,23 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
         // Out of hearts: bucks the cowboy off and runs away, once nothing else is going on
         if (horse.isExhausted && ride == null && !superJump.isActive && horse.isOnGround) exhaustHorse()
+    }
+
+    /** Test mode: sends the tested vehicle right away, and again shortly after each ride. */
+    private fun sendTestVehicle(dt: Float) {
+        val kind = RodeoTest.vehicle ?: return
+        if (!traffic.isClear || !fall.isInSaddle || superJump.isActive) return
+        testVehicleIn -= dt
+        if (testVehicleIn > 0f) return
+        testVehicleIn = TEST_VEHICLE_AGAIN_SECONDS
+        if (kind == RodeoVehicleKind.CABLE_CAR) {
+            // The cable car comes with its mountain
+            landscape.sections.clear()
+            landscape.place(SectionKind.MOUNTAIN, worldWidth, horse.pace, CABLE_CAR_PASS_SPEED)
+            traffic.sendCableCar(this)
+        } else {
+            traffic.sendTest(kind, this)
+        }
     }
 
     /** Off the horse the world stands still - only the cowboy, his horse and the snails move. */
@@ -859,7 +907,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         if (luckyCharms > 0) {
             // The lucky charm takes the hit: the poles still fall, but the horse keeps its stride
             luckyCharms--
-            effects.sparkle(HORSE_X + 16f, horseBase + 14f)
+            effects.sparkle(HORSE_X + HOOVES_X, horseBase + 14f)
             return false
         }
         horse.stumble()
@@ -916,7 +964,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             sections = landscape.ui(),
             mushrooms = course.mushroomUis(),
             tiltDegrees = tilt,
-            inCave = underground.isUnderground,
+            inCave = underground.map.isEnclosed,
             map = underground.map,
             mounds = course.moundUis(),
             runnerMan = stanislaus.ui(),
@@ -926,6 +974,9 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             gems = course.gemUis(pack.clock),
             pizzaOvens = pizzaOvens.ui(),
             pizza = pizzaOvens.pizzaUi(),
+            terrain = terrain.ui(),
+            terrainShift = terrain.heightAt(HORSE_X + HOOVES_X),
+            deepSea = deepSea.ui(),
             rainbowX = wonders.rainbowX,
             doublePointsSeconds = wonders.doublePointsSeconds,
             fireflies = wonders.fireflyUis(),
@@ -938,6 +989,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     private fun cameraY(): Float {
         traffic.current?.camera()?.let { return it }
         val visibleTop = WORLD_HEIGHT_UNITS - GROUND_OFFSET_UNITS - CAMERA_TOP_MARGIN
-        return max(0f, horseBase + CAMERA_HORSE_TOP - visibleTop)
+        // In the sea the view looks down into the deep water, unless the horse jumps high
+        val lowest = if (underground.map == RodeoMap.SEA) SEA_CAMERA_DOWN else 0f
+        return max(lowest, horseBase + CAMERA_HORSE_TOP - visibleTop)
     }
 }

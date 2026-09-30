@@ -5,7 +5,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -14,9 +17,32 @@ import kotlin.math.sin
 
 private const val SPEED_LINE_COUNT = 9
 private const val STAR_COUNT = 70
+/** Units between two points of the ground line over the hills. */
+private const val GROUND_STEP = 2f
 
-internal fun DrawScope.drawGround(groundY: Float, unit: Float, distance: Float, color: Color, speedBlur: Boolean) {
-    drawLine(color, Offset(0f, groundY), Offset(size.width, groundY), strokeWidth = unit * 0.6f)
+/**
+ * The ground line over the hills, the earth under it shaded a little, and pebbles in it. [fill]
+ * reaches far down, so the earth still covers the bottom while the picture follows a hill up.
+ */
+internal fun DrawScope.drawGround(context: RodeoDrawContext, distance: Float, speedBlur: Boolean = false) {
+    val unit = context.unit
+    val color = context.colors.onSurfaceVariant
+    val fill = color.copy(alpha = 0.06f)
+    val line = Path()
+    val earth = Path()
+    var worldX = 0f
+    val visibleWidth = size.width / unit
+    earth.moveTo(0f, size.height + 200f * unit)
+    while (worldX <= visibleWidth + GROUND_STEP) {
+        val point = Offset(worldX * unit, context.groundYAt(worldX))
+        if (worldX == 0f) line.moveTo(point.x, point.y) else line.lineTo(point.x, point.y)
+        earth.lineTo(point.x, point.y)
+        worldX += GROUND_STEP
+    }
+    earth.lineTo(size.width + GROUND_STEP * unit, size.height + 200f * unit)
+    earth.close()
+    drawPath(earth, fill)
+    drawPath(line, color, style = Stroke(width = unit * 0.6f, join = StrokeJoin.Round))
 
     // Small pebbles scrolling with the ground, so the speed is visible between fences. At tractor
     // speed they smear into long streaks.
@@ -28,10 +54,11 @@ internal fun DrawScope.drawGround(groundY: Float, unit: Float, distance: Float, 
     while (x < size.width) {
         val depth = 1.5f + (index * 7 % 5) * 0.8f
         val length = if (speedBlur) (14f + index * 5 % 3 * 6f) * unit else (1f + index * 5 % 3) * unit
+        val pebbleY = context.groundYAt(x / unit) + depth * unit
         drawLine(
             color = pebbleColor,
-            start = Offset(x, groundY + depth * unit),
-            end = Offset(x + length, groundY + depth * unit),
+            start = Offset(x, pebbleY),
+            end = Offset(x + length, pebbleY),
             strokeWidth = unit * 0.5f,
             cap = StrokeCap.Round
         )

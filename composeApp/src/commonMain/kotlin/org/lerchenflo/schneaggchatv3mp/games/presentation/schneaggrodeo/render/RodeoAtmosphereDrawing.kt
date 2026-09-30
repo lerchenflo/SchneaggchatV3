@@ -56,8 +56,8 @@ internal fun DrawScope.drawWeather(weather: RodeoWeather, time: Float, unit: Flo
 }
 
 /** A white dusting on the ground in the snow. */
-internal fun DrawScope.drawSnowCover(groundY: Float, unit: Float) {
-    drawRect(SNOW_COLOR.copy(alpha = 0.7f), topLeft = Offset(0f, groundY - 0.3f * unit), size = Size(size.width, 1.2f * unit))
+internal fun DrawScope.drawSnowCover(context: RodeoDrawContext) {
+    drawGroundStrip(context, from = 0f, to = size.width / context.unit + 2f, y = 0.3f, SNOW_COLOR.copy(alpha = 0.7f), width = 1.2f)
 }
 
 /**
