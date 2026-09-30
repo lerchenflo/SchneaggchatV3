@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.pocketbike
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -42,10 +44,12 @@ data class RodeoPocketBikeUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x + BIKE_REAR_WHEEL_X, x + BIKE_FRONT_WHEEL_X)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         // Ahead of the horse; the smoke drifts back over it
         if (layer == RodeoLayer.FRONT) {
-            drawPocketBike(this@RodeoPocketBikeUi, context)
+            onFootprint(context, footprint) { drawPocketBike(this@RodeoPocketBikeUi, it) }
             smoke.forEach { puff ->
                 drawCircle(
                     context.colors.outline.copy(alpha = 0.55f * puff.alpha),

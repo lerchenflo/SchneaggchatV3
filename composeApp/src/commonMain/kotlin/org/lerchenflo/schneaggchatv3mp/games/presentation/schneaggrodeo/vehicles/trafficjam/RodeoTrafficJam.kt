@@ -55,6 +55,8 @@ internal class RodeoTrafficJam : RodeoVehicle(RodeoVehicleKind.TRAFFIC_JAM) {
     private var hopTime = HOP_SECONDS
     private var time = 0f
 
+    /** The row of cars is too long to tilt as one piece over the hills. */
+    override val needsFlatTrack = true
     override val length: Float get() = totalLength
     override val passSpeed: Float get() = groundSpeed
     override val carriesHorse = false

@@ -378,8 +378,6 @@ data class SchneaggRodeoFrame(
     /** 0..1 while the landing splash is shown. */
     val splashProgress: Float? = null,
     val markers: List<RodeoMarkerUi> = emptyList(),
-    /** Painted on the horse's side like a race number. */
-    val snailsCaught: Int = 0,
     /** Only set while the cowboy is off the horse. */
     val cowboy: RodeoCowboyUi? = null,
     val horseshoes: List<RodeoHorseshoeUi> = emptyList(),
@@ -387,6 +385,8 @@ data class SchneaggRodeoFrame(
     val luckyCharms: Int = 0,
     val sparkle: RodeoSparkleUi? = null,
     val vehicles: List<RodeoVehicleUi> = emptyList(),
+    /** The horse stands on the vehicle (and tilts along with it on the hills). */
+    val horseOnVehicle: Boolean = false,
     /** A vehicle races: the ground smears into streaks and speed lines fly through the sky. */
     val speedBlur: Boolean = false,
     /** Offset of the whole picture while a vehicle rattles along, in units. */
@@ -407,6 +407,10 @@ data class SchneaggRodeoFrame(
     val tiltDegrees: Float = 0f,
     /** A slow-motion mushroom: the picture gets a dreamy tint. */
     val slowMotion: Boolean = false,
+    /** 0..1 while any mushroom works: the picture's outline wobbles. */
+    val tripStrength: Float = 0f,
+    /** Seconds into the mushroom's effect, for the wobble. */
+    val tripClock: Float = 0f,
     /** In the cave or the mine (rock all around): the theme turned inside out. */
     val enclosed: Boolean = false,
     /** Which map the track runs through: surface, cave, sea or mine. */

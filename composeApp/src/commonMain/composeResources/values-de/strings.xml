@@ -1561,6 +1561,11 @@
     <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
     <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
     <string name="games_schneaggrodeo_lasso_hint">Mit dem Lasso fangen und aufsteigen!</string>
+    <string name="games_schneaggrodeo_lasso_hint_horse">Mit dem Lasso fangen und Pferd wechseln!</string>
+    <string name="games_schneaggrodeo_lasso_hint_friend">Mit dem Lasso fangen und zusammen reiten!</string>
+    <string name="games_schneaggrodeo_lasso_hint_pizza">Schnapp dir die Pizza mit dem Lasso!</string>
+    <string name="games_schneaggrodeo_lasso_hint_kaesknoepfle">Schnapp dir die Käsknöpfle mit dem Lasso!</string>
+    <string name="games_schneaggrodeo_lasso_hint_stanislaus">Fang Stanislaus mit dem Lasso!</string>
     <string name="games_schneaggrodeo_golden_carriage">Goldene Kutsche!</string>
     <string name="games_schneaggrodeo_golden_carriage_button">Goldene Kutsche</string>
     <string name="games_schneaggrodeo_golden_carriage_controls">Nichts drücken: Die goldenen Pferde brechen durch jeden Zaun – 20 Punkte für jeden!</string>

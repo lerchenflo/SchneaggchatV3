@@ -1559,6 +1559,11 @@
     <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
     <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
     <string name="games_schneaggrodeo_lasso_hint">Lasso it to hop on!</string>
+    <string name="games_schneaggrodeo_lasso_hint_horse">Lasso it to switch horses!</string>
+    <string name="games_schneaggrodeo_lasso_hint_friend">Lasso them to ride together!</string>
+    <string name="games_schneaggrodeo_lasso_hint_pizza">Lasso the pizza!</string>
+    <string name="games_schneaggrodeo_lasso_hint_kaesknoepfle">Lasso the Käsknöpfle!</string>
+    <string name="games_schneaggrodeo_lasso_hint_stanislaus">Lasso Stanislaus!</string>
     <string name="games_schneaggrodeo_golden_carriage">Golden carriage!</string>
     <string name="games_schneaggrodeo_golden_carriage_button">Golden carriage</string>
     <string name="games_schneaggrodeo_golden_carriage_controls">No input needed: the golden horses smash through every fence – 20 points for each!</string>

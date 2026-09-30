@@ -28,6 +28,9 @@ internal class RodeoMushroomTrip {
         private set
     /** Real seconds left. */
     private var left = 0f
+    /** Real seconds since the effect started; makes the picture's outline wobble. */
+    var clock = 0f
+        private set
 
     fun reset() {
         effect = null
@@ -36,12 +39,14 @@ internal class RodeoMushroomTrip {
 
     /** A mushroom was eaten: a random effect starts (or replaces the current one). */
     fun start() {
+        if (effect == null) clock = 0f
         effect = MushroomEffect.entries.random()
         left = MUSHROOM_EFFECT_SECONDS
     }
 
     fun tick(realDt: Float) {
         if (effect == null) return
+        clock += realDt
         left -= realDt
         if (left <= 0f) reset()
     }
@@ -49,6 +54,9 @@ internal class RodeoMushroomTrip {
     /** 0..1 how far the horse has grown or shrunk: eases in at the start, out at the end. */
     private val morph: Float
         get() = if (effect == null) 0f else min(1f, min(MUSHROOM_EFFECT_SECONDS - left, left) / MUSHROOM_MORPH_SECONDS)
+
+    /** 0..1 how strong the effect shows: fades in at the start and out at the end. */
+    val strength: Float get() = morph
 
     /** Size of the horse (and rider) drawn. */
     val horseScale: Float

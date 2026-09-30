@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.fordescort
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -89,6 +91,8 @@ data class RodeoFordEscortUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x + 7.5f, x + 30.5f)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         when (layer) {
             // The scrapyard stands behind the track, the wreck ends up on its pile
@@ -102,7 +106,7 @@ data class RodeoFordEscortUi(
             // In front of the horse: its nose disappears behind the trunk it shoves
             RodeoLayer.FRONT -> {
                 puddles.forEach { drawPuddle(it, context) }
-                if (!onPile && !onLift) drawFordEscort(this@RodeoFordEscortUi, context)
+                if (!onPile && !onLift) onFootprint(context, footprint) { drawFordEscort(this@RodeoFordEscortUi, it) }
                 flyingParts.filter { !it.landed }.forEach { drawFlyingPart(it, context) }
                 bills.forEach { drawBill(it, context) }
             }

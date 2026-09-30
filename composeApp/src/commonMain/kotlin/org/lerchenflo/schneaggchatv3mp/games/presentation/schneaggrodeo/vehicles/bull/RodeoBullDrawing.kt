@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.bull
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -42,9 +44,11 @@ data class RodeoBullUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x + 6f, x + 23f)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         if (layer != RodeoLayer.FRONT) return
-        drawBull(this@RodeoBullUi, context)
+        onFootprint(context, footprint) { drawBull(this@RodeoBullUi, it) }
         rideProgress?.let { drawBalanceGauge(this@RodeoBullUi, it, context) }
     }
 }

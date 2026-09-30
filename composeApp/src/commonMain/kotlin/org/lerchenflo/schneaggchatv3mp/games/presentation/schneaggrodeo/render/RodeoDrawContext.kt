@@ -1,16 +1,19 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render
 
 import androidx.compose.material3.ColorScheme
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.drawText
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
 import kotlin.math.PI
+import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.sin
@@ -38,6 +41,33 @@ class RodeoDrawContext(
 
     /** The same without the hills, for backdrops fixed to the screen. */
     fun flat() = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = assets)
+
+    /** The same with the ground level at [height] everywhere. */
+    fun leveled(height: Float) = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = assets, ground = { height })
+}
+
+/**
+ * Where something rigid touches the hills, from world x [from] to [to] (a vehicle's wheels, an
+ * animal's hooves). Drawn on it, it rests on the ground at both ends and [tilts] with the slope in
+ * between as one piece, instead of every part following the ground under it on its own.
+ */
+@Immutable
+data class RodeoFootprint(val from: Float, val to: Float, val tilts: Boolean = true)
+
+/**
+ * Draws [block] rigidly on [footprint]: on level ground at the height between its two ends, turned
+ * to the slope from one end to the other (see [RodeoFootprint]).
+ */
+internal inline fun DrawScope.onFootprint(context: RodeoDrawContext, footprint: RodeoFootprint, block: DrawScope.(RodeoDrawContext) -> Unit) {
+    val rear = context.ground(footprint.from)
+    val front = context.ground(footprint.to)
+    val level = context.leveled((rear + front) / 2f)
+    if (!footprint.tilts || rear == front) {
+        block(level)
+        return
+    }
+    val degrees = -atan2(front - rear, footprint.to - footprint.from) * 180f / PI.toFloat()
+    rotate(degrees, pivot = level.p((footprint.from + footprint.to) / 2f, 0f)) { block(level) }
 }
 
 /** Pictures and texts vehicles draw, loaded by the track canvas. */

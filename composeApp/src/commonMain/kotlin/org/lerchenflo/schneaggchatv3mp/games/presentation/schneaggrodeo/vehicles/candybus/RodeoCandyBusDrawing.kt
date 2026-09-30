@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.candybus
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -71,11 +73,13 @@ data class RodeoCandyBusUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x + 10f, x + 50f)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         // In front of the horse: it disappears in the back while the bus backs up over it.
         // Stanislaus waits by the roadside in front of the bus.
         if (layer == RodeoLayer.FRONT) {
-            drawCandyBus(this@RodeoCandyBusUi, context)
+            onFootprint(context, footprint) { drawCandyBus(this@RodeoCandyBusUi, it) }
             stanislaus.forEach { drawStanislaus(it, this@RodeoCandyBusUi, context) }
         }
     }

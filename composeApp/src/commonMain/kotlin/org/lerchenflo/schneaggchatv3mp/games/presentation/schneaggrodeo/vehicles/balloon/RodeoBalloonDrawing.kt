@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.balloon
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
@@ -41,8 +43,10 @@ data class RodeoBalloonUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x, x + BASKET_WIDTH, tilts = false)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
-        if (layer == RodeoLayer.FRONT) drawBalloon(this@RodeoBalloonUi, context)
+        if (layer == RodeoLayer.FRONT) onFootprint(context, footprint) { drawBalloon(this@RodeoBalloonUi, it) }
     }
 }
 

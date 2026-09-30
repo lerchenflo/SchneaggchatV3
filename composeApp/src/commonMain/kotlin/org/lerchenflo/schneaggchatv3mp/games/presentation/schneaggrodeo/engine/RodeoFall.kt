@@ -14,18 +14,18 @@ import kotlin.random.Random
 // An exhausted horse (no hearts left) bucks him off too, but then runs away; a new horse comes
 // trotting in from behind and is lassoed instead.
 private const val FALL_MIN_JUMP_PEAK = 14f      // jumps peaking at 140 cm and more can throw him
-private const val FALL_CHANCE = 0.25f
+private const val FALL_CHANCE = 0.125f
 private const val FALL_MIN_CHASE_GAP = 32f      // only while the pack is well off screen
 private const val FALL_MIN_ELAPSED = 20f
 private const val FALL_COOLDOWN = 45f           // game seconds between two falls
 internal const val BUCK_SECONDS = 0.5f
-private const val COWBOY_THROW_VX = 40f         // lands ~30 u ahead: the pacing horse drifts in and out of lasso range
+private const val COWBOY_THROW_VX = 40f         // lands ~30 u ahead of the pacing horse
 private const val COWBOY_THROW_VY = 35f
 private const val COWBOY_GRAVITY = 150f         // floaty, so the flip over the neck is readable
 private const val COWBOY_DOWN_SECONDS = 0.8f    // lying in the dirt before he gets up
 private const val COWBOY_GET_UP_SECONDS = 0.35f // last part of lying down: rotating back upright
 private const val COWBOY_HAND_Y = 10f
-// The riderless horse paces nervously behind him, in and out of lasso range
+// The riderless horse paces nervously behind him
 private const val HORSE_WANDER_CENTER = -4f
 private const val HORSE_WANDER_AMPLITUDE = 8f
 private const val HORSE_WANDER_SPEED = 1.1f     // rad/s
@@ -123,7 +123,7 @@ internal class RodeoFall {
         // One and a quarter forward flips over the flight, so he lands exactly on his back
         val flightSeconds = (COWBOY_THROW_VY + sqrt(COWBOY_THROW_VY * COWBOY_THROW_VY + 2f * COWBOY_GRAVITY * COWBOY_SEAT_Y)) / COWBOY_GRAVITY
         cowboySpin = 450f / flightSeconds
-        // Wander starts at the horse's riding spot (sin = 0.5 -> offset 0) and in lasso range
+        // Wander starts at the horse's riding spot (sin = 0.5 -> offset 0)
         horseWanderPhase = PI.toFloat() / 6f
     }
 

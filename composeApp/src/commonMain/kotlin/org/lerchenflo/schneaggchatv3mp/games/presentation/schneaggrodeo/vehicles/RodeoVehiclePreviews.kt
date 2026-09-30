@@ -679,7 +679,7 @@ private fun NightWondersPreview() = RodeoPreviewTrack { context ->
         hasRider = false, coat = 2, ghost = true,
     )
     drawGhostly(context.p(100f + 15f, 14f), unit, time = 1f) {
-        drawHorseAndRider(left = 100f * unit, groundY = context.groundY, unit = unit, pose = pose, colors = horseColors, bodyLabel = null)
+        drawHorseAndRider(left = 100f * unit, groundY = context.groundY, unit = unit, pose = pose, colors = horseColors)
     }
     drawTimeOfDay(RodeoTimeOfDay.NIGHT, lantern = context.p(40f, 14f), unit = unit)
     listOf(RodeoFireflyUi(20f, 18f, 1f), RodeoFireflyUi(70f, 24f, 0.5f), RodeoFireflyUi(140f, 16f, 0.8f)).forEach { drawFirefly(it, context) }
@@ -743,9 +743,16 @@ private fun HarbourPierPreview() = RodeoPreviewTrack(
     drawMapWay(RodeoMapWayUi(x = 126f, width = 24f, exit = true, destination = RodeoMap.SURFACE, origin = RodeoMap.SEA), context, distance = 0f)
 }
 
-/** The traffic jam over gentle hills: every car follows the ground. */
+/** Vehicles over gentle hills: each one tilts as a whole, resting on the ground at both ends. */
 @Preview
 @Composable
-private fun TrafficJamHillsPreview() = RodeoPreviewTrack(ground = previewGround(-50f, listOf(0f, 8f, -2f, 6f))) { context ->
-    drawVehicles(listOf(RodeoTrafficJamUi(x = 20f, cars = PREVIEW_JAM_CARS, time = 0.5f, lassoHint = null)), context)
+private fun VehiclesOnHillsPreview() = RodeoPreviewTrack(ground = previewGround(-50f, listOf(0f, 8f, -2f, 6f))) { context ->
+    drawVehicles(
+        listOf(
+            RodeoMilkTruckUi(x = 10f, wheelPhase = 0.5f, cansInRack = 3, cans = emptyList(), lassoHint = null),
+            RodeoCowUi(x = 80f, gait = 0.8f, hasRider = false, ring = null, lassoHint = null),
+            RodeoMilkTruckUi(x = 130f, wheelPhase = 1.5f, cansInRack = 1, cans = emptyList(), lassoHint = null),
+        ),
+        context,
+    )
 }

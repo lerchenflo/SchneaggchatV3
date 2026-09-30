@@ -1553,6 +1553,11 @@
     <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
     <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
     <string name="games_schneaggrodeo_lasso_hint">Prendilo al lazo per salire!</string>
+    <string name="games_schneaggrodeo_lasso_hint_horse">Prendilo al lazo per cambiare cavallo!</string>
+    <string name="games_schneaggrodeo_lasso_hint_friend">Prendilo al lazo per cavalcare insieme!</string>
+    <string name="games_schneaggrodeo_lasso_hint_pizza">Prendi la pizza al lazo!</string>
+    <string name="games_schneaggrodeo_lasso_hint_kaesknoepfle">Prendi i Käsknöpfle al lazo!</string>
+    <string name="games_schneaggrodeo_lasso_hint_stanislaus">Prendi Stanislaus al lazo!</string>
     <string name="games_schneaggrodeo_golden_carriage">Carrozza d\'oro!</string>
     <string name="games_schneaggrodeo_golden_carriage_button">Carrozza d\'oro</string>
     <string name="games_schneaggrodeo_golden_carriage_controls">Non serve premere nulla: i cavalli d\'oro sfondano ogni recinto – 20 punti per ognuno!</string>

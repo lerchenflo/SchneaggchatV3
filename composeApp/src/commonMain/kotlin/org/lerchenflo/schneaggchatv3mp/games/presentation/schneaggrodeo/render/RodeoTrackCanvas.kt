@@ -2,22 +2,22 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import kotlin.math.PI
 import kotlin.math.atan
 import org.jetbrains.compose.resources.imageResource
@@ -42,6 +42,11 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_car_m
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_double_points
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_fence_height
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_friend
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_horse
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_kaesknoepfle
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_pizza
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_stanislaus
 import schneaggchatv3mp.composeapp.generated.resources.icon_schneagg_alternative
 import schneaggchatv3mp.composeapp.generated.resources.rodeo_stanislaus
 
@@ -90,14 +95,24 @@ internal fun RodeoTrack(
             textMeasurer = textMeasurer,
         )
     }
-    val lassoHintText = stringResource(Res.string.games_schneaggrodeo_lasso_hint)
+    // "Lasso it" hints: what the lasso does depends on what it is thrown at
+    val hintTexts = listOf(
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint),
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint_horse),
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint_friend),
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint_pizza),
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint_kaesknoepfle),
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint_stanislaus),
+    )
     val lassoHintStyle = MaterialTheme.typography.labelMedium.copy(
         color = themeColors.onPrimaryContainer,
         fontWeight = FontWeight.Bold
     )
-    val lassoHintLayout = remember(textMeasurer, lassoHintText, lassoHintStyle) {
-        textMeasurer.measure(lassoHintText, lassoHintStyle)
+    val hintLayouts = remember(textMeasurer, hintTexts, lassoHintStyle) {
+        hintTexts.map { textMeasurer.measure(it, lassoHintStyle) }
     }
+    val (vehicleHint, horseHint, friendHint, pizzaHint, knoepfleHint) = hintLayouts
+    val stanislausHint = hintLayouts[5]
     val doublePointsText = stringResource(Res.string.games_schneaggrodeo_double_points)
     val doublePointsStyle = MaterialTheme.typography.titleMedium.copy(color = SNOW_COLOR, fontWeight = FontWeight.Black)
     val doublePointsLayout = remember(textMeasurer, doublePointsText, doublePointsStyle) {
@@ -105,7 +120,7 @@ internal fun RodeoTrack(
     }
 
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RectangleShape,
         color = themeColors.surfaceContainer,
         modifier = modifier
     ) {
@@ -287,7 +302,6 @@ internal fun RodeoTrack(
                             unit = unit,
                             pose = wild.pose.copy(pitchDegrees = wild.pose.pitchDegrees + hillPitch(wild.x + HOOVES_X, wild.pose.height)),
                             colors = paint.horseColors,
-                            bodyLabel = null,
                             pictures = crowd.pictures,
                         )
                     }
@@ -322,17 +336,21 @@ internal fun RodeoTrack(
                 if (world.horse.visible) {
                     val drawRidden: DrawScope.() -> Unit = {
                         val hooves = HORSE_X + world.horse.offsetX + HOOVES_X
-                        drawHorseAndRider(
+                        fun DrawScope.drawOn(ground: RodeoDrawContext, pitch: Float) = drawHorseAndRider(
                             left = (HORSE_X + world.horse.offsetX) * unit,
-                            groundY = context.groundYAt(hooves) - world.horse.height * unit,
+                            groundY = ground.groundYAt(hooves) - world.horse.height * unit,
                             unit = unit,
-                            pose = world.horse.copy(pitchDegrees = world.horse.pitchDegrees + hillPitch(hooves, world.horse.height)),
+                            pose = world.horse.copy(pitchDegrees = world.horse.pitchDegrees + pitch),
                             colors = paint.horseColors,
-                            bodyLabel = if (world.snailsCaught > 0) {
-                                paint.bodyLabels.getOrPut(world.snailsCaught) { textMeasurer.measure(world.snailsCaught.toString(), paint.bodyLabelStyle) }
-                            } else null,
                             pictures = crowd.pictures,
                         )
+                        // Standing on a vehicle, the horse tilts along with it
+                        val deck = if (world.horseOnVehicle) world.vehicles.firstOrNull()?.footprint else null
+                        if (deck != null) {
+                            onFootprint(context, deck) { drawOn(it, 0f) }
+                        } else {
+                            drawOn(context, hillPitch(hooves, world.horse.height))
+                        }
                     }
                     // Under the ghost horse's spell horse and rider are see-through
                     if (world.horse.ghost) {
@@ -348,20 +366,23 @@ internal fun RodeoTrack(
                 // Planes, debris, smoke, bridge decks and flying cans pass in front of the horse
                 world.vehicles.forEach { drawVehicle(it, RodeoLayer.FRONT, context) }
 
-                // "Lasso it" hint over a vehicle passing by, and over the other horses
-                val hints = world.vehicles.mapNotNull { it.lassoHint?.let { hint -> hint.x to hint.y } } +
-                        world.wildHorses.filter { it.lassoable }.map { it.x + 14f to it.pose.height + if (it.friendName != null) 40f else 32f } +
-                        world.pizzaOvens.filter { it.hasPizza }.map { it.x + OVEN_MOUTH_X to 18f } +
-                        listOfNotNull(world.runnerMan?.takeIf { !it.caught }?.let { it.x to it.y + 12f })
-                hints.forEach { (hintX, hintY) ->
-                    drawLassoHint(
-                        layout = lassoHintLayout,
-                        centerX = hintX * unit,
-                        bottomY = context.groundYAt(hintX) - hintY * unit,
-                        unit = unit,
-                        color = colors.primaryContainer
-                    )
+                // "Lasso it" hints over a vehicle passing by, the other horses, the stops and Stanislaus
+                fun drawHint(layout: TextLayoutResult, hintX: Float, hintY: Float) = drawLassoHint(
+                    layout = layout,
+                    centerX = hintX * unit,
+                    bottomY = context.groundYAt(hintX) - hintY * unit,
+                    unit = unit,
+                    color = colors.primaryContainer
+                )
+                world.vehicles.forEach { vehicle -> vehicle.lassoHint?.let { drawHint(vehicleHint, it.x, it.y) } }
+                world.wildHorses.filter { it.lassoable }.forEach { wild ->
+                    if (wild.friendName != null) drawHint(friendHint, wild.x + 14f, wild.pose.height + 40f)
+                    else drawHint(horseHint, wild.x + 14f, wild.pose.height + 32f)
                 }
+                world.pizzaOvens.filter { it.hasPizza }.forEach { stop ->
+                    drawHint(if (stop.kind == RodeoStopKind.KIOSK) knoepfleHint else pizzaHint, stop.x + OVEN_MOUTH_X, 18f)
+                }
+                world.runnerMan?.takeIf { !it.caught }?.let { drawHint(stanislausHint, it.x, it.y + 12f) }
 
                 world.pizza?.let { carried ->
                     when (carried.kind) {
@@ -420,6 +441,8 @@ internal fun RodeoTrack(
 
             // Slow-motion mushroom: a dreamy haze over everything
             if (world.slowMotion) drawSlowMotionHaze(colors.tertiary, unit, world.distance)
+            // Any mushroom: the edges of the picture wobble
+            if (world.tripStrength > 0f) drawWobblyOutline(world.tripStrength, world.tripClock, unit, colors.tertiary, colors.primary)
             // Switching maps fades through black
             if (world.fade > 0f) drawRect(colors.scrim.copy(alpha = world.fade))
         }

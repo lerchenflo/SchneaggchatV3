@@ -20,9 +20,6 @@ internal class RodeoPaint(
     val horseColors: RodeoHorseColors,
     /** Fence height labels by height in cm. */
     val heightLabels: Map<Int, TextLayoutResult>,
-    val bodyLabelStyle: TextStyle,
-    /** Caught-snail numbers painted on the horse, laid out on first use. */
-    val bodyLabels: MutableMap<Int, TextLayoutResult>,
     val markerLabelStyle: TextStyle,
     val markerLabels: MutableMap<Triple<String, Long, Boolean>, TextLayoutResult>,
     val friendNameStyle: TextStyle,
@@ -58,8 +55,6 @@ internal fun rememberRodeoPaint(colors: ColorScheme, textMeasurer: TextMeasurer,
                 headRing = colors.surfaceContainer,
             ),
             heightLabels = heightLabelTexts.mapValues { (_, label) -> textMeasurer.measure(label, heightLabelStyle) },
-            bodyLabelStyle = typography.labelMedium.copy(color = colors.surface, fontWeight = FontWeight.Bold),
-            bodyLabels = mutableMapOf(),
             markerLabelStyle = typography.labelSmall,
             markerLabels = mutableMapOf(),
             friendNameStyle = typography.labelSmall.copy(color = colors.tertiary, fontWeight = FontWeight.Bold),

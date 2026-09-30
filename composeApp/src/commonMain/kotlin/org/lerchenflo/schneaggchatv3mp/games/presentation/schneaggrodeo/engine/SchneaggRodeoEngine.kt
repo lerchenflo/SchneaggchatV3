@@ -946,12 +946,12 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             dust = effects.dustUi(),
             splashProgress = effects.splashProgress(),
             markers = markers.ui(ghosts, distance, worldWidth),
-            snailsCaught = snailsCaught,
             cowboy = fall.cowboyUi() ?: vehicle?.cowboy(this),
             horseshoes = course.horseshoeUis(pack.clock),
             luckyCharms = luckyCharms,
             sparkle = effects.sparkleUi(),
             vehicles = listOfNotNull(vehicle?.ui()),
+            horseOnVehicle = ride?.carriesHorse == true,
             speedBlur = shaking,
             shakeX = if (shaking) VEHICLE_SHAKE * sin(runTimeSeconds * 97f) else 0f,
             shakeY = if (shaking) VEHICLE_SHAKE * cos(runTimeSeconds * 131f) else 0f,
@@ -982,6 +982,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             fireflies = wonders.fireflyUis(),
             fade = mapSwitch.fade,
             slowMotion = trip.timeFactor < 1f,
+            tripStrength = trip.strength,
+            tripClock = trip.clock,
         )
     }
 

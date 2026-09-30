@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.milktruck
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -28,22 +30,26 @@ data class RodeoMilkTruckUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x + 7f, x + 36f)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         val colors = context.colors
         when (layer) {
             RodeoLayer.BACK -> Unit
-            RodeoLayer.BODY -> drawMilkTruck(
-                truck = this@RodeoMilkTruckUi,
-                context = context,
-                boxColor = colors.surfaceBright,
-                spotColor = colors.onSurface,
-                cabColor = colors.primary,
-                glassColor = colors.primaryContainer,
-                lineColor = colors.onSurface,
-                hubColor = colors.surfaceContainer,
-                canColor = colors.outline,
-                lidColor = colors.onSurfaceVariant,
-            )
+            RodeoLayer.BODY -> onFootprint(context, footprint) { level ->
+                drawMilkTruck(
+                    truck = this@RodeoMilkTruckUi,
+                    context = level,
+                    boxColor = colors.surfaceBright,
+                    spotColor = colors.onSurface,
+                    cabColor = colors.primary,
+                    glassColor = colors.primaryContainer,
+                    lineColor = colors.onSurface,
+                    hubColor = colors.surfaceContainer,
+                    canColor = colors.outline,
+                    lidColor = colors.onSurfaceVariant,
+                )
+            }
             RodeoLayer.FRONT -> cans.forEach { can ->
                 val center = context.p(can.x, can.y)
                 if (can.spilled) {

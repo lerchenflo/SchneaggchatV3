@@ -17,8 +17,9 @@ import kotlin.random.Random
 // The ways to the other maps shape the ground too (see [TerrainFeature]): the mine or cave shaft
 // lies flat at the foot of a hill, the beach runs down into the sea, and ramps lead back up.
 //
-// The hills are kept gentle enough for every vehicle to drive over them; the fast ones (lawn tractor,
-// plane) only come on the flat, and the ground stays flat while they are around.
+// The hills are kept gentle enough for every vehicle to drive over them, tilting as one piece (see
+// RodeoFootprint); the fast and the long ones (lawn tractor, plane, train, traffic jam) only come on
+// the flat, and the ground stays flat while they are around.
 
 /** Units between two control points of the ground; the ground eases smoothly from one to the next. */
 private const val STEP = 70f

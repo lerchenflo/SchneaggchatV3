@@ -16,8 +16,6 @@ import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyUi
@@ -77,7 +75,6 @@ internal fun DrawScope.drawHorseAndRider(
     unit: Float,
     pose: RodeoHorsePose,
     colors: RodeoHorseColors,
-    bodyLabel: TextLayoutResult?,
     pictures: Map<String, ImageBitmap> = emptyMap(),
 ) {
     val coat = coatColor(pose.coat, colors.body)
@@ -204,13 +201,7 @@ internal fun DrawScope.drawHorseAndRider(
             }
         }
 
-        // Caught snails, painted on the horse's side like a race number
-        if (bodyLabel != null) {
-            val center = p(8f, 11.5f + bounce) // rear half, clear of the rider's leg
-            drawText(bodyLabel, topLeft = center - Offset(bodyLabel.size.width / 2f, bodyLabel.size.height / 2f))
-        }
-
-        // Hearts on the front half, clear of the rider's leg
+        // Hearts along the body, low enough to stay clear of the rider's leg
         if (pose.maxLives > 0) drawHorseHearts(::p, unit, bounce, pose)
 
         // Cowboy: leg stays at the horse's side, the upper body pivots forward at the seat in jumps.
@@ -255,15 +246,15 @@ internal fun DrawScope.drawHorseAndRider(
     }
 }
 
-/** The horse's hearts on the front half of its body; the last one fills up only partly while it drains away. */
+/** The horse's hearts along its body; the last one fills up only partly while it drains away. */
 private fun DrawScope.drawHorseHearts(p: (Float, Float) -> Offset, unit: Float, bounce: Float, pose: RodeoHorsePose) {
-    val areaLeft = 14.3f
-    val areaWidth = 5.6f
-    val heartSpacing = min(1.3f, areaWidth / pose.maxLives)
+    val areaLeft = 6f
+    val areaWidth = 13.5f
+    val heartSpacing = min(2.7f, areaWidth / pose.maxLives)
     val heartsLeft = areaLeft + (areaWidth - heartSpacing * pose.maxLives) / 2f
     repeat(pose.maxLives) { index ->
         val fill = (pose.lives - index).coerceIn(0f, 1f)
-        drawHeart(p(heartsLeft + heartSpacing * (index + 0.5f), 11.5f + bounce), 0.95f * heartSpacing * unit, fill)
+        drawHeart(p(heartsLeft + heartSpacing * (index + 0.5f), 10.4f + bounce), 0.92f * heartSpacing * unit, fill)
     }
 }
 

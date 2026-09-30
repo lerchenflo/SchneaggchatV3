@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.shoppingcart
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -36,9 +38,11 @@ data class RodeoShoppingCartUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x + 3f, x + 12f)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         // In front of the horse, which shoves it with its chest
-        if (layer == RodeoLayer.FRONT) drawShoppingCart(this@RodeoShoppingCartUi, context)
+        if (layer == RodeoLayer.FRONT) onFootprint(context, footprint) { drawShoppingCart(this@RodeoShoppingCartUi, it) }
     }
 }
 

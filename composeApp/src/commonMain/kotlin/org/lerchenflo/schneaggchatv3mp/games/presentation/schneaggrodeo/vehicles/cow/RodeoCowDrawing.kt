@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.cow
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -32,8 +34,10 @@ data class RodeoCowUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x + 5f, x + 16f)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
-        if (layer == RodeoLayer.FRONT) drawCow(this@RodeoCowUi, context)
+        if (layer == RodeoLayer.FRONT) onFootprint(context, footprint) { drawCow(this@RodeoCowUi, it) }
     }
 }
 
