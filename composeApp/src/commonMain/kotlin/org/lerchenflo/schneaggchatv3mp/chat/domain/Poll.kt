@@ -30,6 +30,10 @@ data class PollMessage(
 
     //If false, the poll renders as a plain read-only list - no voting, no checkboxes
     val showCheckboxes: Boolean = true,
+
+    //Only meaningful on a sub poll: true = users who did not pick the parent option may still look at it
+    //(read-only). If false the server does not even send it to them.
+    val visibleToAll: Boolean = true,
 ) {
     /**
      * Get total number of votes across all options
@@ -92,6 +96,32 @@ data class PollMessage(
      */
     fun canDeleteOption(option: PollVoteOption, ownId: String): Boolean =
         allowDeleteOptions && !isExpired() && (creatorId == ownId || option.createdByMe)
+
+    /** Number of sub polls in this poll tree (not counting this poll itself). */
+    fun subPollCount(): Int = voteOptions.sumOf { option ->
+        option.subPoll?.let { 1 + it.subPollCount() } ?: 0
+    }
+
+    /** Whether anyone answered anything in this poll tree, sub polls included. */
+    fun hasAnyVotes(): Boolean =
+        voteOptions.any { it.voters.isNotEmpty() || it.subPoll?.hasAnyVotes() == true }
+
+    /**
+     * The option whose vote the server drops when [userId] picks one more option on a poll with an
+     * answer limit (their oldest vote), or null if picking does not push anything out.
+     */
+    fun optionDroppedBySelecting(userId: String): PollVoteOption? {
+        val max = maxAnswers ?: return null
+        if (getUserVotes(userId).size < max) return null
+        return voteOptions
+            .flatMap { option -> option.voters.filter { it.userId == userId }.map { option to it } }
+            .minByOrNull { (_, voter) -> voter.votedAt }
+            ?.first
+    }
+
+    /** Whether userId answered anything inside this poll tree, sub polls included. */
+    fun hasUserVotedAnywhere(userId: String): Boolean =
+        hasUserVoted(userId) || voteOptions.any { it.subPoll?.hasUserVotedAnywhere(userId) == true }
 }
 
 
@@ -106,6 +136,9 @@ data class PollVoteOption(
 
     //True if the current user created this option - computed server-side so it also works on anonymous polls
     val createdByMe: Boolean = false,
+
+    //Follow-up poll for users who pick this option. Null if there is none, or the server hides it from us
+    val subPoll: PollMessage? = null,
 ) {
     /**
      * Get list of user IDs who voted for this option

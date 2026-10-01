@@ -247,6 +247,21 @@ interface MessageDao {
         imageType: String = MessageType.IMAGE.name,
     ): Flow<List<MessageDto>>
 
+    /** Every poll ever sent in one chat, newest first, for the shared content screen's poll list. */
+    @Query("""
+        SELECT * FROM messages
+        WHERE (senderId = :userId OR receiverId = :userId)
+          AND groupMessage = :gruppe
+          AND msgType = :pollType
+          AND deleted = 0
+        ORDER BY CAST(sendDate AS INTEGER) DESC
+    """)
+    fun getPollMessagesForChatFlow(
+        userId: String,
+        gruppe: Boolean,
+        pollType: String = MessageType.POLL.name,
+    ): Flow<List<MessageDto>>
+
     /**
      * Messages of one chat whose text might carry a url, newest first, for the shared content
      * screen's link list. The two LIKEs are only a cheap prefilter and have to stay as wide as the

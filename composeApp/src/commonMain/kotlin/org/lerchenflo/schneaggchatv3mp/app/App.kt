@@ -626,7 +626,7 @@ fun App() {
                                         SharedContentScreenRoot(
                                             chatId = route.chatId,
                                             isGroup = route.isGroup,
-                                            showLinks = route.showLinks
+                                            initialTab = route.initialTab
                                         )
                                     }
                                     entry<Route.Birthdays> {

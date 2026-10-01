@@ -3,10 +3,44 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCl
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
 
+
+/**
+ * Local echo of a poll that is still being sent, sub polls included. Option ids are fakes ("0", "0.1",
+ * ...), unique across the whole tree, until the server response replaces them.
+ */
+fun NetworkUtils.PollCreateRequest.toLocalPollMessage(ownId: String, idPrefix: String = ""): PollMessage {
+    return PollMessage(
+        creatorId = ownId,
+        title = title,
+        description = description,
+        maxAnswers = maxAnswers,
+        customAnswersEnabled = customAnswersEnabled,
+        maxAllowedCustomAnswers = maxAllowedCustomAnswers,
+        visibility = visibility,
+        expiresAt = closeDate,
+        allowDeleteOptions = allowDeleteOptions,
+        showCheckboxes = showCheckboxes,
+        visibleToAll = visibleToAll,
+        voteOptions = voteOptions.mapIndexed { index, request ->
+            val id = idPrefix + index
+            PollVoteOption(
+                id = id,
+                text = request.text,
+                custom = false,
+                creatorId = ownId,
+                voters = emptyList(),
+                maxVoters = request.maxVoters,
+                createdByMe = true,
+                subPoll = request.subPoll?.toLocalPollMessage(ownId, idPrefix = "$id."),
+            )
+        }
+    )
+}
 
 fun PollResponse.toPollMessage(ownId: String): PollMessage {
 
@@ -21,6 +55,7 @@ fun PollResponse.toPollMessage(ownId: String): PollMessage {
         expiresAt = this.closeDate,
         allowDeleteOptions = this.allowDeleteOptions,
         showCheckboxes = this.showCheckboxes,
+        visibleToAll = this.visibleToAll,
         voteOptions = when (this) {
             is PollResponse.PublicPollResponse -> this.voteOptions.map { option ->
                 PollVoteOption(
@@ -36,6 +71,7 @@ fun PollResponse.toPollMessage(ownId: String): PollMessage {
                     },
                     maxVoters = option.maxVoters,
                     createdByMe = option.creatorId == ownId,
+                    subPoll = option.subPoll?.toPollMessage(ownId),
                 )
             }
             is PollResponse.AnonymousPollResponse -> this.voteOptions.map { option ->
@@ -52,6 +88,7 @@ fun PollResponse.toPollMessage(ownId: String): PollMessage {
                     },
                     maxVoters = option.maxVoters,
                     createdByMe = option.createdByMe,
+                    subPoll = option.subPoll?.toPollMessage(ownId),
                 )
             }
             else -> emptyList()
@@ -80,6 +117,7 @@ interface PollResponse {
 
     val allowDeleteOptions: Boolean
     val showCheckboxes: Boolean
+    val visibleToAll: Boolean
 
 
 
@@ -96,6 +134,7 @@ interface PollResponse {
         override val closeDate: Long?,
         override val allowDeleteOptions: Boolean = false,
         override val showCheckboxes: Boolean = true,
+        override val visibleToAll: Boolean = true,
 
         val voteOptions: List<PublicPollVoteOptionResponse>,
 
@@ -114,6 +153,7 @@ interface PollResponse {
         override val closeDate: Long?,
         override val allowDeleteOptions: Boolean = false,
         override val showCheckboxes: Boolean = true,
+        override val visibleToAll: Boolean = true,
 
         val voteOptions: List<AnonymousPollVoteOptionResponse>,
 
@@ -129,6 +169,7 @@ data class AnonymousPollVoteOptionResponse(
     val createdByMe: Boolean = false,
     val voters : List<AnonymousPollVoterResponse>,
     val maxVoters: Int? = null,
+    val subPoll: PollResponse? = null,
 )
 
 @Serializable
@@ -147,6 +188,7 @@ data class PublicPollVoteOptionResponse(
     val creatorId: String,
     val voters : List<PublicPollVoterResponse>,
     val maxVoters: Int? = null,
+    val subPoll: PollResponse? = null,
 )
 
 @Serializable

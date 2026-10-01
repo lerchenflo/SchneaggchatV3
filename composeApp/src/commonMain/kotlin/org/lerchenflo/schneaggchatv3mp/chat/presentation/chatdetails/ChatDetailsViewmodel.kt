@@ -3,6 +3,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
 import androidx.compose.runtime.getValue
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
@@ -359,10 +360,20 @@ class ChatDetailsViewmodel(
             initialValue = 0
         )
 
-    fun navigateToSharedContent(showLinks: Boolean) {
+    val sharedPollCount: StateFlow<Int> = messageRepository
+        .getPollMessagesForChatFlow(chatId, isGroup)
+        .map { messages -> messages.count { it.poll != null } }
+        .flowOn(Dispatchers.Default)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+    fun navigateToSharedContent(initialTab: SharedContentTab) {
         viewModelScope.launch {
             navigator.navigate(
-                Route.ChatSharedContent(chatId = chatId, isGroup = isGroup, showLinks = showLinks)
+                Route.ChatSharedContent(chatId = chatId, isGroup = isGroup, initialTab = initialTab)
             )
         }
     }

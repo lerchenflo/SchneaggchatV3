@@ -1,14 +1,19 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent
 
-/** The two things a chat can have shared in it, one tab each. */
+import kotlinx.serialization.Serializable
+
+/** The things a chat can have shared in it, one tab each. */
+@Serializable
 enum class SharedContentTab {
     IMAGES,
-    LINKS
+    LINKS,
+    POLLS
 }
 
 data class SharedContentState(
     val images: List<SharedImageItem> = emptyList(),
     val links: List<SharedLinkItem> = emptyList(),
+    val polls: List<SharedPollItem> = emptyList(),
     val selectedTab: SharedContentTab = SharedContentTab.IMAGES,
     val isLoading: Boolean = true,
 )

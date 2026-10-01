@@ -55,8 +55,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
@@ -104,6 +102,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toLocalPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
@@ -1701,29 +1700,7 @@ class AppRepository(
                         id = null,
                         msgType = MessageType.POLL,
                         content = "",
-                        poll = PollMessage(
-                            creatorId = ownId,
-                            title = content.poll.title,
-                            description = content.poll.description,
-                            maxAnswers = content.poll.maxAnswers,
-                            customAnswersEnabled = content.poll.customAnswersEnabled,
-                            maxAllowedCustomAnswers = content.poll.maxAllowedCustomAnswers,
-                            visibility = content.poll.visibility,
-                            expiresAt = content.poll.closeDate,
-                            allowDeleteOptions = content.poll.allowDeleteOptions,
-                            showCheckboxes = content.poll.showCheckboxes,
-                            voteOptions = content.poll.voteOptions.mapIndexed { index, request ->
-                                PollVoteOption(
-                                    id = index.toString(),
-                                    text = request.text,
-                                    custom = false,
-                                    creatorId = ownId,
-                                    voters = emptyList(),
-                                    maxVoters = request.maxVoters,
-                                    createdByMe = true,
-                                )
-                            }
-                        ),
+                        poll = content.poll.toLocalPollMessage(ownId),
                         senderId = ownId,
                         receiverId = empfaenger,
                         sendDate = senddate,

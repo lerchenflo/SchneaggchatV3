@@ -3,6 +3,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll
 
 import androidx.compose.foundation.border
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -21,11 +23,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.SubdirectoryArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonSearch
@@ -54,12 +59,18 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,6 +87,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboAnnotationSource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
@@ -110,6 +122,13 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_option_maxvoters_wit
 import schneaggchatv3mp.composeapp.generated.resources.poll_private_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_public_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_show_answers
+import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_pick_to_answer
+import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_option_count
+import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_expand
+import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_collapse
+import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_clear_confirm_title
+import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_clear_confirm_text
+import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_clear_confirm
 import schneaggchatv3mp.composeapp.generated.resources.poll_tooltip_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_user_count
 import schneaggchatv3mp.composeapp.generated.resources.poll_voter_you
@@ -141,9 +160,56 @@ fun PollMessageContentView(
     Column(
         modifier = Modifier.padding(4.dp)
     ) {
+        PollLevelView(
+            poll = poll,
+            messageId = message.id,
+            ownId = ownId,
+            useMD = useMD,
+            myMessage = myMessage,
+            readerMap = readerMap,
+            onAction = onAction,
+            depth = 0,
+            parentOptionId = null,
+            lockedByOptionText = null,
+        )
+    }
+}
 
-        // Example usage when implementing poll voting UI:
-        // Button(onClick = { onAction(MessageAction.VotePoll(message.id!!, option.id)) }) { ... }
+/**
+ * A vote that would throw away the user's answers in a sub poll, waiting for confirmation.
+ * [subPollTitle] is the sub poll whose answers get lost.
+ */
+private data class PendingPollVote(
+    val optionId: String,
+    val checked: Boolean,
+    val subPollTitle: String,
+)
+
+/**
+ * One level of a poll: title, description, options (each possibly with an expandable sub poll, which
+ * renders through this same composable) and the custom answer button.
+ *
+ * @param parentOptionId The option this level is the sub poll of, null for the root poll.
+ * @param lockedByOptionText Non-null if the user can't answer this level yet because they did not pick
+ *   the parent option (named by this text) - the level is then shown read-only.
+ */
+@Composable
+private fun PollLevelView(
+    poll: PollMessage,
+    messageId: String?,
+    ownId: String,
+    useMD: Boolean,
+    myMessage: Boolean,
+    readerMap: Map<String, String>,
+    onAction: (MessageAction) -> Unit,
+    depth: Int,
+    parentOptionId: String?,
+    lockedByOptionText: String?,
+) {
+    val contentColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    val canAnswer = lockedByOptionText == null
+
+    Column {
 
         //Title
         Row(
@@ -152,8 +218,8 @@ fun PollMessageContentView(
             ComboText(
                 text = poll.title,
                 useMD = useMD,
-                textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.titleLarge,
+                textColor = contentColor,
+                style = if (depth == 0) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f)
             )
 
@@ -189,6 +255,31 @@ fun PollMessageContentView(
             }
         }
 
+        //Read-only sub poll: tell the user what unlocks it
+        if (lockedByOptionText != null) {
+            val annotationSources = rememberComboAnnotationSources()
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(top = 2.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = contentColor.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = stringResource(
+                        Res.string.poll_subpoll_pick_to_answer,
+                        resolveComboAnnotationsToPlainText(lockedByOptionText, annotationSources)
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = contentColor.copy(alpha = 0.7f)
+                )
+            }
+        }
+
         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
         //Description
@@ -196,7 +287,7 @@ fun PollMessageContentView(
             ComboText(
                 text = poll.description,
                 useMD = useMD,
-                textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                textColor = contentColor,
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -205,9 +296,23 @@ fun PollMessageContentView(
         }
 
 
-
-
         val cannot_vote_on_unsent_message_text = stringResource(Res.string.poll_cannot_vote_on_unsent)
+
+        fun sendVote(optionId: String, checked: Boolean) {
+            if (messageId != null) {
+                onAction(
+                    MessageAction.VotePoll(
+                        messageId = messageId,
+                        optionId = optionId,
+                        checked = checked
+                    )
+                )
+            } else {
+                SnackbarManager.showMessage(cannot_vote_on_unsent_message_text)
+            }
+        }
+
+        var pendingVote by remember { mutableStateOf<PendingPollVote?>(null) }
 
         poll.voteOptions.forEach { option ->
             PollMessageOptionView(
@@ -217,34 +322,78 @@ fun PollMessageContentView(
                 myMessage = myMessage,
                 voterIds = option.getVoterIdsForOption(),
                 full = poll.optionIsFull(option, ownId),
-                onOptionSelected = {
-                    if (message.id != null) {
-                        onAction(
-                            MessageAction.VotePoll(
-                                messageId = message.id!!,
-                                optionId = option.id,
-                                checked = it
-                            )
-                        )
+                onOptionSelected = { checked ->
+                    //Unpicking an option - or picking one that pushes out the oldest vote on a
+                    //limited poll - also drops the answers given in that option's sub poll
+                    val optionLosingAnswers = if (checked) poll.optionDroppedBySelecting(ownId) else option
+                    val lostSubPoll = optionLosingAnswers?.subPoll?.takeIf { it.hasUserVotedAnywhere(ownId) }
+
+                    if (lostSubPoll != null) {
+                        pendingVote = PendingPollVote(option.id, checked, lostSubPoll.title)
                     } else {
-                        SnackbarManager.showMessage(cannot_vote_on_unsent_message_text)
+                        sendVote(option.id, checked)
                     }
                 },
                 ownId = ownId,
                 useMD = useMD,
                 showCheckbox = poll.showCheckboxes,
+                enabled = canAnswer,
                 //Fake option ids ("0", "1", ...) are used for the optimistic local echo until the server responds - deleting those would target nothing
-                canDelete = poll.canDeleteOption(option, ownId) && message.id != null,
-                onDelete = { onAction(MessageAction.DeletePollOption(message.id!!, option.id)) }
+                canDelete = poll.canDeleteOption(option, ownId) && messageId != null,
+                onDelete = { onAction(MessageAction.DeletePollOption(messageId!!, option.id)) }
             )
+
+            option.subPoll?.let { subPoll ->
+                SubPollSection(
+                    option = option,
+                    subPoll = subPoll,
+                    messageId = messageId,
+                    ownId = ownId,
+                    useMD = useMD,
+                    myMessage = myMessage,
+                    readerMap = readerMap,
+                    onAction = onAction,
+                    depth = depth,
+                    parentLocked = !canAnswer,
+                )
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
         }
 
+        pendingVote?.let { vote ->
+            val annotationSources = rememberComboAnnotationSources()
+            AlertDialog(
+                onDismissRequest = { pendingVote = null },
+                title = { Text(stringResource(Res.string.poll_subpoll_clear_confirm_title)) },
+                text = {
+                    Text(
+                        stringResource(
+                            Res.string.poll_subpoll_clear_confirm_text,
+                            resolveComboAnnotationsToPlainText(vote.subPollTitle, annotationSources)
+                        )
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        pendingVote = null
+                        sendVote(vote.optionId, vote.checked)
+                    }) {
+                        Text(stringResource(Res.string.poll_subpoll_clear_confirm))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { pendingVote = null }) {
+                        Text(stringResource(Res.string.cancel))
+                    }
+                }
+            )
+        }
+
         Spacer(modifier = Modifier.height(4.dp))
 
-        //Add custom option
-        if (poll.customAnswersEnabled) {
+        //Add custom option - not while this (sub) poll is read-only
+        if (poll.customAnswersEnabled && canAnswer) {
             var showDialog by remember { mutableStateOf(false) }
 
             Row(
@@ -292,18 +441,30 @@ fun PollMessageContentView(
                     showSlider = poll.voteOptions.any { it.maxVoters != null },
                     onDismiss = { showDialog = false },
                     onSubmit = { customOption ->
-                        onAction(MessageAction.AddCustomPollOption(message.id!!, customOption.text.text.trim(), customOption.maxVoters))
+                        if (messageId != null) {
+                            onAction(
+                                MessageAction.AddCustomPollOption(
+                                    messageId = messageId,
+                                    text = customOption.text.text.trim(),
+                                    maxAnswers = customOption.maxVoters,
+                                    parentOptionId = parentOptionId
+                                )
+                            )
+                        } else {
+                            SnackbarManager.showMessage(cannot_vote_on_unsent_message_text)
+                        }
                         showDialog = false
                     }
                 )
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
 
-
+        //Results button only once, on the root poll - the dialog lists the sub polls as well.
         //A list-mode poll (no checkboxes) never accepts votes, so there is no results view to show
-        if (poll.showCheckboxes && (poll.visibility == PollVisibility.PUBLIC || (poll.visibility == PollVisibility.PRIVATE && poll.creatorId == ownId))) {
+        if (depth == 0 && poll.showCheckboxes && (poll.visibility == PollVisibility.PUBLIC || (poll.visibility == PollVisibility.PRIVATE && poll.creatorId == ownId))) {
             var showVoterDialog by remember { mutableStateOf(false) }
 
             Row {
@@ -332,6 +493,108 @@ fun PollMessageContentView(
     }
 }
 
+/**
+ * Collapsible sub poll below its option. Opens by itself as soon as the user picks the option;
+ * users who did not pick it can still expand it read-only (the server only sends it to them if the
+ * creator made it visible to everyone).
+ */
+@Composable
+private fun SubPollSection(
+    option: PollVoteOption,
+    subPoll: PollMessage,
+    messageId: String?,
+    ownId: String,
+    useMD: Boolean,
+    myMessage: Boolean,
+    readerMap: Map<String, String>,
+    onAction: (MessageAction) -> Unit,
+    depth: Int,
+    parentLocked: Boolean,
+) {
+    val pickedByMe = option.voters.any { it.userId == ownId }
+    var expanded by rememberSaveable(option.id) { mutableStateOf(pickedByMe) }
+    LaunchedEffect(pickedByMe) {
+        if (pickedByMe) expanded = true
+    }
+
+    val accentColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+    val contentColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    val annotationSources = rememberComboAnnotationSources()
+
+    //Indented to line up with the option text next to the 24dp checkbox + 8dp gap
+    Column(
+        modifier = Modifier.padding(start = 32.dp, top = 2.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(accentColor.copy(alpha = 0.08f))
+                .clickable { expanded = !expanded }
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.SubdirectoryArrowRight,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = accentColor
+            )
+            Text(
+                text = resolveComboAnnotationsToPlainText(subPoll.title, annotationSources),
+                style = MaterialTheme.typography.labelLarge,
+                color = contentColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = stringResource(Res.string.poll_subpoll_option_count, subPoll.voteOptions.size.toString()),
+                style = MaterialTheme.typography.labelSmall,
+                color = contentColor.copy(alpha = 0.7f)
+            )
+            Icon(
+                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = stringResource(if (expanded) Res.string.poll_subpoll_collapse else Res.string.poll_subpoll_expand),
+                modifier = Modifier.size(20.dp),
+                tint = accentColor
+            )
+        }
+
+        AnimatedVisibility(visible = expanded) {
+            //Thin guide line on the left ties the nested poll to its option
+            Box(
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .drawBehind {
+                        drawLine(
+                            color = accentColor.copy(alpha = 0.5f),
+                            start = Offset(1.dp.toPx(), 0f),
+                            end = Offset(1.dp.toPx(), size.height),
+                            strokeWidth = 2.dp.toPx(),
+                            cap = StrokeCap.Round
+                        )
+                    }
+                    .padding(start = 10.dp)
+            ) {
+                PollLevelView(
+                    poll = subPoll,
+                    messageId = messageId,
+                    ownId = ownId,
+                    useMD = useMD,
+                    myMessage = myMessage,
+                    readerMap = readerMap,
+                    onAction = onAction,
+                    depth = depth + 1,
+                    parentOptionId = option.id,
+                    lockedByOptionText = if (parentLocked || !pickedByMe) option.text else null,
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun PollVoterOverviewDialog(
     poll: PollMessage,
@@ -356,58 +619,13 @@ fun PollVoterOverviewDialog(
                 modifier = Modifier.fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
-                poll.voteOptions.forEach { option ->
-                    if (option.voters.isEmpty()) return@forEach
-
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
-                            text = resolveComboAnnotationsToPlainText(option.text, annotationSources),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        option.voters.forEach { voter ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.padding(start = 8.dp)
-                            ) {
-                                if (voter.userId != null) {
-                                    ProfilePictureView(
-                                        filepath = pictureManager.getProfilePicFilePath(voter.userId, false),
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Text(
-                                        text = if (voter.userId == ownId) {
-                                            stringResource(Res.string.poll_voter_you)
-                                        }else {
-                                            readerMap[voter.userId] ?: stringResource(Res.string.unknown_user)
-                                        },
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = Icons.Default.Blind,
-                                        contentDescription = "Anonymous",
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-
-                                    /*
-                                    Text(
-                                        text = stringResource(Res.string.poll_anonymous_info),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-
-                                     */
-                                }
-                            }
-                        }
-
-                        HorizontalDivider()
-                    }
-                }
+                PollVoterOverviewEntries(
+                    poll = poll,
+                    readerMap = readerMap,
+                    ownId = ownId,
+                    pictureManager = pictureManager,
+                    annotationSources = annotationSources,
+                )
             }
         },
         confirmButton = {
@@ -416,6 +634,96 @@ fun PollVoterOverviewDialog(
             }
         }
     )
+}
+
+/**
+ * Voters per option of one poll level. Sub polls with at least one answer follow right below their
+ * option, indented, through this same composable.
+ */
+@Composable
+private fun PollVoterOverviewEntries(
+    poll: PollMessage,
+    readerMap: Map<String, String>,
+    ownId: String,
+    pictureManager: PictureManager,
+    annotationSources: List<ComboAnnotationSource>,
+) {
+    poll.voteOptions.forEach { option ->
+        val answeredSubPoll = option.subPoll?.takeIf { it.hasAnyVotes() }
+        if (option.voters.isEmpty() && answeredSubPoll == null) return@forEach
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = resolveComboAnnotationsToPlainText(option.text, annotationSources),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            option.voters.forEach { voter ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    if (voter.userId != null) {
+                        ProfilePictureView(
+                            filepath = pictureManager.getProfilePicFilePath(voter.userId, false),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = if (voter.userId == ownId) {
+                                stringResource(Res.string.poll_voter_you)
+                            }else {
+                                readerMap[voter.userId] ?: stringResource(Res.string.unknown_user)
+                            },
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Blind,
+                            contentDescription = "Anonymous",
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            answeredSubPoll?.let { subPoll ->
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SubdirectoryArrowRight,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = resolveComboAnnotationsToPlainText(subPoll.title, annotationSources),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+
+                    PollVoterOverviewEntries(
+                        poll = subPoll,
+                        readerMap = readerMap,
+                        ownId = ownId,
+                        pictureManager = pictureManager,
+                        annotationSources = annotationSources,
+                    )
+                }
+            }
+
+            HorizontalDivider()
+        }
+    }
 }
 
 @Composable
@@ -502,12 +810,13 @@ fun PollMessageOptionView(
     full: Boolean = false,
     useMD: Boolean = false,
     showCheckbox: Boolean = true,
+    enabled: Boolean = true, //False on a read-only sub poll: results visible, voting off
     canDelete: Boolean = false,
     onDelete: () -> Unit = {}
 ) {
 
     val optionCheckedByMe = option.voters.any { it.userId == ownId }
-    val selectable = showCheckbox && (optionCheckedByMe || !full)
+    val selectable = enabled && showCheckbox && (optionCheckedByMe || !full)
 
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
@@ -623,7 +932,8 @@ fun PollMessageOptionView(
 
                     Spacer(modifier = Modifier.width(4.dp))
 
-                    val pictureManager = koinInject<PictureManager>()
+                    //No Koin in @Previews - avatars are skipped there, the anonymous "+n" count still shows
+                    val pictureManager = if (LocalInspectionMode.current) null else koinInject<PictureManager>()
 
 
                     val nonNullVoterIds = voterIds.filterNotNull()
@@ -636,7 +946,7 @@ fun PollMessageOptionView(
                     ) {
 
                         // Show profile pictures for identified voters
-                        nonNullVoterIds.forEach { userId ->
+                        if (pictureManager != null) nonNullVoterIds.forEach { userId ->
                             ProfilePictureView(
                                 filepath = pictureManager.getProfilePicFilePath(userId, false),
                                 modifier = Modifier.size(24.dp)

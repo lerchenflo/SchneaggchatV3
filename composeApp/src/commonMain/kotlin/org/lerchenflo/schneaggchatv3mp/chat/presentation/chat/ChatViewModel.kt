@@ -402,7 +402,8 @@ class ChatViewModel(
                             id = null,
                             text = action.text,
                             maxAllowedAnswers = action.maxAnswers,
-                            selected = true
+                            selected = true,
+                            parentOptionId = action.parentOptionId,
                         )
                     )
                 }

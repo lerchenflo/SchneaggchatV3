@@ -26,3 +26,17 @@ data class SharedLinkItem(
     val senderName: String,
     val sendDate: Long,
 )
+
+/**
+ * One poll sent in the chat. [messageId] is null for a poll that has not reached the server yet.
+ */
+@Immutable
+data class SharedPollItem(
+    val messageId: String?,
+    val title: String,
+    val senderName: String,
+    val sendDate: Long,
+    val voterCount: Int,
+    val subPollCount: Int,
+    val isClosed: Boolean,
+)

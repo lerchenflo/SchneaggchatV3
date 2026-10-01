@@ -23,10 +23,12 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 ##### Highlights
 - Feedback-Board
-- Neue Spiele: SchneaggaHus, Wordle, Schneagg Rodeo
+- Neue Spiele: SchneaggaHus, Wordle, SCHNEAGG RODEO
+- Unterumfragen
 
 #### Features
 - Feedback-Board für Feature Requests und Bug Reports (ersetzt Roadmap und E-Mail-Formular)
+- Unterumfragen
 - Neue Spiele: SchneaggaHus, Wordle, Schneagg Rodeo
 - Spiele: Spielstand wird gespeichert und wiederhergestellt
 - Spiele: Menü in Tabs aufgeteilt (Einzel, Mehrspieler, Werkzeuge), Kurzbeschreibung und Schwierigkeits-Symbol auf jeder Karte

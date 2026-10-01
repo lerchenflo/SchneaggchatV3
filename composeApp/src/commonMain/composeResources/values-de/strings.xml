@@ -756,6 +756,27 @@
 
     <string name="poll_cannot_vote_on_unsent">Du kannst nicht für eine unversendete Umfrage abstimmen</string>
 
+    <string name="poll_subpoll_screentitle">Unterumfrage</string>
+    <string name="poll_settings_subpolls">Unterumfragen</string>
+    <string name="poll_settings_subpolls_info">Füge einer Option eine Folgeumfrage hinzu - sie öffnet sich nur für alle, die diese Option wählen</string>
+    <string name="poll_settings_subpoll_visible_to_all">Für alle sichtbar</string>
+    <string name="poll_settings_subpoll_visible_to_all_info">Wer diese Option nicht gewählt hat, kann die Unterumfrage trotzdem ansehen, aber nicht beantworten. Wenn aus, sehen sie nur die, die sie gewählt haben</string>
+    <string name="poll_subpoll_add">Unterumfrage hinzufügen</string>
+    <string name="poll_subpoll_edit">Unterumfrage bearbeiten</string>
+    <string name="poll_subpoll_remove">Unterumfrage entfernen</string>
+    <string name="poll_subpoll_untitled">Unterumfrage ohne Titel</string>
+    <string name="poll_subpoll_error">Unvollständig - tippen zum Beheben</string>
+    <string name="poll_subpoll_shown_for">Öffnet sich für alle, die "%1$s" wählen</string>
+    <string name="poll_subpoll_done">Fertig</string>
+    <string name="poll_subpoll_too_many_options">Zu viele Optionen insgesamt (max. %1$s über alle Unterumfragen)</string>
+    <string name="poll_subpoll_option_count">%1$s Optionen</string>
+    <string name="poll_subpoll_pick_to_answer">Wähle "%1$s", um zu antworten</string>
+    <string name="poll_subpoll_expand">Unterumfrage anzeigen</string>
+    <string name="poll_subpoll_collapse">Unterumfrage ausblenden</string>
+    <string name="poll_subpoll_clear_confirm_title">Antworten der Unterumfrage entfernen?</string>
+    <string name="poll_subpoll_clear_confirm_text">Deine Antworten in "%1$s" werden entfernt.</string>
+    <string name="poll_subpoll_clear_confirm">Entfernen</string>
+
 
 
 
@@ -1502,6 +1523,10 @@
     <string name="shared_links">Links</string>
     <string name="no_shared_images">In diesem Chat wurden noch keine Bilder geteilt</string>
     <string name="no_shared_links">In diesem Chat wurden noch keine Links geteilt</string>
+
+    <string name="shared_polls">Umfragen</string>
+    <string name="no_shared_polls">In diesem Chat gibt es noch keine Umfragen</string>
+    <string name="shared_polls_subpoll_count">%1$s Unterumfragen</string>
     <string name="go_to_message">Zur Nachricht springen</string>
     <string name="copy_link">Link kopieren</string>
     <!-- Tools tab and two-stroke fuel mix calculator -->

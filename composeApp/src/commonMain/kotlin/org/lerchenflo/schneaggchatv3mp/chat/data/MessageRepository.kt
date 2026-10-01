@@ -94,6 +94,13 @@ class MessageRepository(
         }
     }
 
+    /** Poll messages of one chat, newest first, without readers. */
+    fun getPollMessagesForChatFlow(chatId: String, gruppe: Boolean): Flow<List<Message>> {
+        return database.messageDao().getPollMessagesForChatFlow(chatId, gruppe).map { messages ->
+            messages.map { it.toMessage() }
+        }
+    }
+
     /** Messages of one chat that might carry a url, newest first, without readers. */
     fun getLinkCandidateMessagesForChatFlow(chatId: String, gruppe: Boolean): Flow<List<Message>> {
         return database.messageDao().getLinkCandidateMessagesForChatFlow(chatId, gruppe).map { messages ->

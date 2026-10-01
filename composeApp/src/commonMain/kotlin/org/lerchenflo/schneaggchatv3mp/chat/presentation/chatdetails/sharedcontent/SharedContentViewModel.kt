@@ -34,12 +34,12 @@ class SharedContentViewModel(
 
     private val chatId: String,
     private val isGroup: Boolean,
-    showLinks: Boolean,
+    initialTab: SharedContentTab,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
         SharedContentState(
-            selectedTab = if (showLinks) SharedContentTab.LINKS else SharedContentTab.IMAGES
+            selectedTab = initialTab
         )
     )
     val state = _state.asStateFlow()
@@ -57,8 +57,9 @@ class SharedContentViewModel(
             combine(
                 messageRepository.getImageMessagesForChatFlow(chatId, isGroup),
                 messageRepository.getLinkCandidateMessagesForChatFlow(chatId, isGroup),
+                messageRepository.getPollMessagesForChatFlow(chatId, isGroup),
                 senderNamesFlow
-            ) { imageMessages, linkCandidates, senderNames ->
+            ) { imageMessages, linkCandidates, pollMessages, senderNames ->
                 val images = imageMessages
                     .filter { !it.pictureUrl.isNullOrEmpty() }
                     .map { message ->
@@ -83,14 +84,27 @@ class SharedContentViewModel(
                     }
                 }
 
-                images to links
+                val polls = pollMessages.mapNotNull { message ->
+                    val poll = message.poll ?: return@mapNotNull null
+                    SharedPollItem(
+                        messageId = message.id,
+                        title = poll.title,
+                        senderName = message.senderName(senderNames),
+                        sendDate = message.getSendDateAsLong(),
+                        voterCount = poll.getUniqueVoterCount(),
+                        subPollCount = poll.subPollCount(),
+                        isClosed = poll.isExpired(),
+                    )
+                }
+
+                Triple(images, links, polls)
             }
                 // The link regex runs over every candidate message of the chat, so keep it off the
                 // main thread
                 .flowOn(Dispatchers.Default)
-                .collectLatest { (images, links) ->
+                .collectLatest { (images, links, polls) ->
                     _state.update {
-                        it.copy(images = images, links = links, isLoading = false)
+                        it.copy(images = images, links = links, polls = polls, isLoading = false)
                     }
                 }
         }

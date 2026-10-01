@@ -753,6 +753,27 @@
 
     <string name="poll_cannot_vote_on_unsent">Non puoi votare in un sondaggio non inviato</string>
 
+    <string name="poll_subpoll_screentitle">Sottosondaggio</string>
+    <string name="poll_settings_subpolls">Sottosondaggi</string>
+    <string name="poll_settings_subpolls_info">Aggiungi un sondaggio di approfondimento a un'opzione - si apre solo per chi sceglie quell'opzione</string>
+    <string name="poll_settings_subpoll_visible_to_all">Visibile a tutti</string>
+    <string name="poll_settings_subpoll_visible_to_all_info">Chi non ha scelto questa opzione può comunque vedere il sottosondaggio senza rispondere. Se disattivato, lo vede solo chi l'ha scelta</string>
+    <string name="poll_subpoll_add">Aggiungi sottosondaggio</string>
+    <string name="poll_subpoll_edit">Modifica sottosondaggio</string>
+    <string name="poll_subpoll_remove">Rimuovi sottosondaggio</string>
+    <string name="poll_subpoll_untitled">Sottosondaggio senza titolo</string>
+    <string name="poll_subpoll_error">Incompleto - tocca per correggere</string>
+    <string name="poll_subpoll_shown_for">Si apre per chiunque scelga "%1$s"</string>
+    <string name="poll_subpoll_done">Fatto</string>
+    <string name="poll_subpoll_too_many_options">Troppe opzioni in totale (max %1$s in tutti i sottosondaggi)</string>
+    <string name="poll_subpoll_option_count">%1$s opzioni</string>
+    <string name="poll_subpoll_pick_to_answer">Scegli "%1$s" per rispondere</string>
+    <string name="poll_subpoll_expand">Mostra sottosondaggio</string>
+    <string name="poll_subpoll_collapse">Nascondi sottosondaggio</string>
+    <string name="poll_subpoll_clear_confirm_title">Rimuovere le risposte del sottosondaggio?</string>
+    <string name="poll_subpoll_clear_confirm_text">Le tue risposte in "%1$s" verranno rimosse.</string>
+    <string name="poll_subpoll_clear_confirm">Rimuovi</string>
+
 
 
     <string name="audio_playback_on_desktop_not_supported_yet">La riproduzione audio non è ancora supportata su Desktop</string>
@@ -1494,6 +1515,10 @@
     <string name="shared_links">Link</string>
     <string name="no_shared_images">Nessuna immagine condivisa in questa chat</string>
     <string name="no_shared_links">Nessun link condiviso in questa chat</string>
+
+    <string name="shared_polls">Sondaggi</string>
+    <string name="no_shared_polls">Nessun sondaggio in questa chat</string>
+    <string name="shared_polls_subpoll_count">%1$s sottosondaggi</string>
     <string name="go_to_message">Vai al messaggio</string>
     <string name="copy_link">Copia link</string>
     <!-- Tools tab and two-stroke fuel mix calculator -->

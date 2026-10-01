@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,6 +53,8 @@ import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.image.FullscreenImageDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import org.lerchenflo.schneaggchatv3mp.utilities.toOpenableUrl
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -59,18 +63,23 @@ import schneaggchatv3mp.composeapp.generated.resources.download
 import schneaggchatv3mp.composeapp.generated.resources.go_to_message
 import schneaggchatv3mp.composeapp.generated.resources.no_shared_images
 import schneaggchatv3mp.composeapp.generated.resources.no_shared_links
+import schneaggchatv3mp.composeapp.generated.resources.no_shared_polls
+import schneaggchatv3mp.composeapp.generated.resources.poll_closed
+import schneaggchatv3mp.composeapp.generated.resources.poll_user_count
 import schneaggchatv3mp.composeapp.generated.resources.shared_content_title
 import schneaggchatv3mp.composeapp.generated.resources.shared_images
 import schneaggchatv3mp.composeapp.generated.resources.shared_links
+import schneaggchatv3mp.composeapp.generated.resources.shared_polls
+import schneaggchatv3mp.composeapp.generated.resources.shared_polls_subpoll_count
 
 @Composable
 fun SharedContentScreenRoot(
     chatId: String,
     isGroup: Boolean,
-    showLinks: Boolean,
+    initialTab: SharedContentTab,
 ) {
     val viewModel = koinViewModel<SharedContentViewModel> {
-        parametersOf(chatId, isGroup, showLinks)
+        parametersOf(chatId, isGroup, initialTab)
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -101,6 +110,7 @@ fun SharedContentScreen(
                 when (tab) {
                     SharedContentTab.IMAGES -> state.images.size
                     SharedContentTab.LINKS -> state.links.size
+                    SharedContentTab.POLLS -> state.polls.size
                 }
             },
             onSelect = { onAction(SharedContentAction.OnTabSelected(it)) },
@@ -124,6 +134,14 @@ fun SharedContentScreen(
                         EmptyHint(text = Res.string.no_shared_links, isLoading = state.isLoading)
                     } else {
                         SharedLinkList(links = state.links, onAction = onAction)
+                    }
+                }
+
+                SharedContentTab.POLLS -> {
+                    if (state.polls.isEmpty()) {
+                        EmptyHint(text = Res.string.no_shared_polls, isLoading = state.isLoading)
+                    } else {
+                        SharedPollList(polls = state.polls, onAction = onAction)
                     }
                 }
             }
@@ -288,8 +306,74 @@ private fun SharedLinkRow(
     }
 }
 
+@Composable
+private fun SharedPollList(
+    polls: List<SharedPollItem>,
+    onAction: (SharedContentAction) -> Unit,
+) {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        items(
+            items = polls,
+            key = { it.messageId ?: (it.title + it.sendDate) }
+        ) { poll ->
+            SharedPollRow(poll = poll, onAction = onAction)
+        }
+    }
+}
+
+/** Tapping a poll jumps to it in the chat - voting happens there, with the full poll view. */
+@Composable
+private fun SharedPollRow(
+    poll: SharedPollItem,
+    onAction: (SharedContentAction) -> Unit,
+) {
+    val annotationSources = rememberComboAnnotationSources()
+
+    val details = buildList {
+        add(stringResource(Res.string.poll_user_count, poll.voterCount.toString()))
+        if (poll.subPollCount > 0) add(stringResource(Res.string.shared_polls_subpoll_count, poll.subPollCount.toString()))
+        if (poll.isClosed) add(stringResource(Res.string.poll_closed))
+    }.joinToString(" · ")
+
+    ListItem(
+        headlineContent = {
+            Text(
+                text = resolveComboAnnotationsToPlainText(poll.title, annotationSources),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        supportingContent = {
+            Column {
+                Text(
+                    text = poll.senderName + " · " + millisToString(
+                        millis = poll.sendDate,
+                        format = "dd.MM.yyyy HH:mm"
+                    ),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = details,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (poll.isClosed) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
+                )
+            }
+        },
+        leadingContent = {
+            Icon(
+                imageVector = Icons.Default.Poll,
+                contentDescription = null,
+                tint = if (poll.isClosed) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
+            )
+        },
+        modifier = Modifier.clickable(enabled = poll.messageId != null) {
+            poll.messageId?.let { onAction(SharedContentAction.OnGoToMessageClick(it)) }
+        }
+    )
+}
+
 /**
- * Long-press menu shared by both tabs. "Go to message" is left out for a message that has no server
+ * Long-press menu shared by the image and link tabs. "Go to message" is left out for a message that has no server
  * id yet - it could not be jumped to, and an entry that silently does nothing is worse than none.
  */
 @Composable
@@ -335,4 +419,5 @@ private fun EmptyHint(text: StringResource, isLoading: Boolean) {
 private fun SharedContentTab.labelRes(): StringResource = when (this) {
     SharedContentTab.IMAGES -> Res.string.shared_images
     SharedContentTab.LINKS -> Res.string.shared_links
+    SharedContentTab.POLLS -> Res.string.shared_polls
 }

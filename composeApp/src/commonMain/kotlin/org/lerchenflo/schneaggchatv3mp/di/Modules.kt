@@ -15,6 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsViewmodel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays.BirthdaysViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorViewModel
@@ -235,8 +236,8 @@ val sharedmodule = module{
         )
     }
 
-    // Explicit lambda because the runtime chatId/isGroup/showLinks can't be resolved by viewModelOf
-    viewModel { (chatId: String, isGroup: Boolean, showLinks: Boolean) ->
+    // Explicit lambda because the runtime chatId/isGroup/initialTab can't be resolved by viewModelOf
+    viewModel { (chatId: String, isGroup: Boolean, initialTab: SharedContentTab) ->
         SharedContentViewModel(
             messageRepository = get(),
             userRepository = get(),
@@ -244,7 +245,7 @@ val sharedmodule = module{
             pictureManager = get(),
             chatId = chatId,
             isGroup = isGroup,
-            showLinks = showLinks
+            initialTab = initialTab
         )
     }
 

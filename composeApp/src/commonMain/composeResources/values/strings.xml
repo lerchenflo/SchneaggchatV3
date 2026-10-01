@@ -754,6 +754,27 @@
 
     <string name="poll_cannot_vote_on_unsent">You can not vote on an unsent poll</string>
 
+    <string name="poll_subpoll_screentitle">Sub poll</string>
+    <string name="poll_settings_subpolls">Sub polls</string>
+    <string name="poll_settings_subpolls_info">Add a follow-up poll to an option - it only opens for people who pick that option</string>
+    <string name="poll_settings_subpoll_visible_to_all">Visible to everyone</string>
+    <string name="poll_settings_subpoll_visible_to_all_info">People who did not pick this option can still look at the sub poll without answering. If off, only people who picked it see it</string>
+    <string name="poll_subpoll_add">Add sub poll</string>
+    <string name="poll_subpoll_edit">Edit sub poll</string>
+    <string name="poll_subpoll_remove">Remove sub poll</string>
+    <string name="poll_subpoll_untitled">Untitled sub poll</string>
+    <string name="poll_subpoll_error">Incomplete - tap to fix</string>
+    <string name="poll_subpoll_shown_for">Opens for everyone who picks "%1$s"</string>
+    <string name="poll_subpoll_done">Done</string>
+    <string name="poll_subpoll_too_many_options">Too many options in total (max %1$s across all sub polls)</string>
+    <string name="poll_subpoll_option_count">%1$s options</string>
+    <string name="poll_subpoll_pick_to_answer">Pick "%1$s" to answer</string>
+    <string name="poll_subpoll_expand">Show sub poll</string>
+    <string name="poll_subpoll_collapse">Hide sub poll</string>
+    <string name="poll_subpoll_clear_confirm_title">Remove your sub poll answers?</string>
+    <string name="poll_subpoll_clear_confirm_text">Your answers in "%1$s" will be removed.</string>
+    <string name="poll_subpoll_clear_confirm">Remove</string>
+
 
 
 
@@ -1500,6 +1521,10 @@
     <string name="shared_links">Links</string>
     <string name="no_shared_images">No images shared in this chat yet</string>
     <string name="no_shared_links">No links shared in this chat yet</string>
+
+    <string name="shared_polls">Polls</string>
+    <string name="no_shared_polls">No polls in this chat yet</string>
+    <string name="shared_polls_subpoll_count">%1$s sub polls</string>
     <string name="go_to_message">Go to message</string>
     <string name="copy_link">Copy link</string>
     <!-- Tools tab and two-stroke fuel mix calculator -->
