@@ -51,7 +51,7 @@
 
     <string name="username">Nama</string>
     <string name="password">Passwort</string>
-    <string name="password_again">Passwort noml</string>
+    <string name="password_again">Passwort nomml</string>
     <string name="password_forgotten">Passwort vergeassa?</string>
 
 
@@ -102,7 +102,7 @@
     <string name="cancel">abbreacha</string>
     <string name="version">Version: %1$s</string>
     <string name="app_broken">App isch kaputt</string>
-    <string name="loadinginfo_messages">Nachrichta werrand glada...</string>
+    <string name="loadinginfo_messages">Nochrichta werrand glada...</string>
     <string name="loadinginfo_offline">Du bisch offline...</string>
     <string name="read">gleasa</string>
     <string name="useMarkdown">Markdown-formatierung verwenda</string>
@@ -110,13 +110,13 @@
     <string name="highlight_todays_message_timestamp">Hütige Zeitstempel hervorheba</string>
     <string name="highlight_todays_message_timestamp_info">Markiert da Zitstempel vo hüt empfangana Nochrichta in da Chat-Uswahl grün</string>
     <string name="quick_reactions">Schneallreaktion</string>
-    <string name="quick_reactions_info">Emojis, dia bem langa Drucka vo na Nachricht abota werrand. Zum Umsortiera züha.</string>
+    <string name="quick_reactions_info">Emojis, dia bem langa Drucka vo na Nochricht abota werrand. Zum Umsortiera züha.</string>
     <string name="quick_reactions_empty">Kua Schnellreaktiona - du kannsch trotzdem bei jeda Nochricht a eigene Reaktion hinzufüga.</string>
     <string name="quick_reactions_reorder">Schneallreaktiona umsortiera</string>
     <string name="add_quick_reaction">Schneallreaktiona dazuatua</string>
     <string name="restore_defaults">Standard wiederherstella</string>
     <string name="something_wrong_message">Irgendwas isch falsch glofa</string>
-    <string name="message_too_long">Nachricht zlang!</string>
+    <string name="message_too_long">Nochricht z lang!</string>
     <string name="log_out_successfully">Usgloggt</string>
     <string name="accept_agb_pt1">Ich akzeptier d </string>
     <string name="accept_agb_pt2">Nutzungsbedingunga und d Datenschutzerklärung</string>
@@ -151,7 +151,7 @@
     <string name="verification_email_sent">Verifizierungsemail gschickt</string>
     <string name="others_say_about">Freunde hond über %1$s gschrieba:</string>
     <string name="status_info">Der Text isch vo eam verfasst worra</string>
-    <string name="description_info_user">Alle Freunde vo %1$s künnan dean Text bearbeita, aber %1$s kannan nur leasa.</string>
+    <string name="description_info_user">Alle Freunde vo %1$s künnand dean Text bearbeita, aber %1$s kannan nur leasa.</string>
     <string name="description_info_group">Beschreibung ändra</string>
 
     <string name="become_beta_tester">Werd Beta Tester</string>
@@ -225,7 +225,7 @@
     <string name="group_timer_picker_info">Zu deam Zitpunkt wird da Gruppenchat und alle Nochrichta für alle glöscht. Nur Admins künnand dean Timer ändra.</string>
     <string name="delete_event">Event löscha</string>
     <string name="event_delete_failed">❌ Event hot ned glöscht werra künna</string>
-    <string name="event_delete_warning_message">Wenn du a Event löschesch kann des ned rückgängig gmacht werra. Magsch du o die verbundene Gruppe löscha?</string>
+    <string name="event_delete_warning_message">Wähl, was mit deam Event und sinem Gruppenchat passiera söll. Trenna bhebt beides, löscha entfernt nur des, was du uswählsch.</string>
     <string name="event_delete_confirm_no_group_message">Des Event löscha? Es kann num rückgängig gmacht werra.</string>
     <string name="event_delete_detach_only">Nur trenna (Event &amp; Gruppe blieband)</string>
     <string name="event_delete_only">Event löscha</string>
@@ -275,8 +275,8 @@
 
     <string name="send_friend_request">Freundschaftsanfrog senda</string>
     <string name="send_friend_request_description">Willsch du %1$s a Freundschaftsanfrog senda?</string>
-    <string name="friend_request_sent">✔ Freunschaftsanfrog gesendet</string>
-    <string name="error_friend_request">❌ Fehler beim Senda vo da Freunschaftsanfrog</string>
+    <string name="friend_request_sent">✔ Freundschaftsanfrog gsendet</string>
+    <string name="error_friend_request">❌ Fehler beim Senda vo da Freundschaftsanfrog</string>
 
     <string name="server_not_reachable">D Verbindung zum Server funktioniert ned.</string>
 
@@ -317,8 +317,8 @@
     <string name="use_test_server">Testserver verwenda</string>
 
 
-    <string name="you_have_new_messages">Du hosch neue Nachrichta</string>
-    <string name="new_messages">Neue Nachrichta</string>
+    <string name="you_have_new_messages">Du hosch neue Nochrichta</string>
+    <string name="new_messages">Neue Nochrichta</string>
     <string name="new_message_noti_single_title">Neuer Chat vo %1$s</string>
     <string name="new_message_noti_group_title">Neuer Chat vo %1$s in %2$s</string>
 
@@ -328,7 +328,7 @@
     <string name="new_friend_request_noti">Freundschaftsanfrog von %1$s</string>
     <string name="new_friend_request_noti_body">%1$s will din Freund sei</string>
 
-    <string name="new_friend_accepted_noti">Freundschaftafrog agno</string>
+    <string name="new_friend_accepted_noti">Freundschaftsanfrog agno</string>
     <string name="new_friend_accepted_noti_body">%1$s isch jetzt din Freund</string>
 
     <string name="own_birthday_noti_title">Alles Gute zum Geburtstag! &#127874;</string>
@@ -467,7 +467,7 @@
     <string name="car_filter_radar">Radars</string>
     <string name="car_radar_added">Radar igfügt</string>
 
-    <string name="message_delete_info">Willsch du dia Nachricht wirklich löscha?</string>
+    <string name="message_delete_info">Willsch du dia Nochricht wirklich löscha?</string>
     <string name="chat_message_image">Nochrichtabild</string>
     <string name="chat_remove_image">Bild entferna</string>
     <string name="chat_discard_recording">Aufnahme verwerfa</string>
@@ -491,7 +491,7 @@
     <string name="phone_number_placeholder">Telefonnummer ...</string>
     <string name="invalid_phone_number">Des isch kua gültige Telefonnummer</string>
     <string name="change_email">Email ändra</string>
-    <string name="resend_verification">Bestätigungsemail noml schicka</string>
+    <string name="resend_verification">Bestätigungsemail nomml schicka</string>
 
 
     <string name="common_groups">Gemeinsame Gruppa (%1$s)</string>
@@ -594,7 +594,7 @@
     <string name="undercover_role_mr_white">Mr. White</string>
     <string name="undercover_role_undercover">Undercover</string>
     <string name="undercover_autohide_title">Automatisch fastecka</string>
-    <string name="undercover_mr_white_tip_title">Mr- White Tipp</string>
+    <string name="undercover_mr_white_tip_title">Mr. White Tipp</string>
     <string name="undercover_mr_white_tip_format">Tipp: %1$s</string>
     <string name="undercover_restart_same_players">Neu starta mit da glicha Spieler</string>
     <string name="undercover_seconds_format">Sekunden: %1$d</string>
@@ -628,29 +628,29 @@
     <string name="undercover_game_over">Spiel vorbei</string>
     <string name="undercover_new_game">Neus Spiel</string>
     <string name="undercover_winner_mr_white">Mr. White hot gwunna</string>
-    <string name="undercover_winner_civilians">Civilians hon gwunna</string>
-    <string name="undercover_winner_undercover">Undercover und Mr. White hon gwunna</string>
+    <string name="undercover_winner_civilians">Civilians hond gwunna</string>
+    <string name="undercover_winner_undercover">Undercover und Mr. White hond gwunna</string>
 
     <!-- Rules Dialog -->
     <string name="undercover_rules_explanation">Erklärung</string>
-    <string name="undercover_rules_explanation_text">Es sin paar falsche Hünd in dera Gruppa. Die hon a andas Wort wie da Rest. Findan se!</string>
+    <string name="undercover_rules_explanation_text">Es sin paar falsche Hünd in dera Gruppa. Die hond a andas Wort wie da Rest. Findan se!</string>
     
     <string name="undercover_rules_roles">Regla und Ziele</string>
     <string name="undercover_rules_roles_text">Es git drü Gruppa: Zivis, Undercover und Mr. White. Es git hauptsächlich unschuldige Zivis, da Rest sin Schlawiner!</string>
     
     <string name="undercover_rules_secret_word">Krig din geheims Wort</string>
-    <string name="undercover_rules_secret_word_text">Am Anfang krigt jeda a geheims Wort. Jeds spiel hot zwoa sehr ähnliche Worter. Zivis krigan alle des selbe Wort. Undercover krigan alle des andere ähnliche Wort. Mr. White krigt goanix. Wenn was ida Bira hosch merksch das am Afang sealb ned woasch ob Zivi oda Undercover bisch. </string>
+    <string name="undercover_rules_secret_word_text">Am Anfang krigt jeda a geheims Wort. Jeds spiel hot zwoa sehr ähnliche Worter. Zivis krigan alle des selbe Wort. Undercover krigan alle des andere ähnliche Wort. Mr. White krigt goanix. Wenn was ida Bira hosch merksch das am Afang sealb ned woasch ob Zivi oda Undercover bisch.</string>
     
     <string name="undercover_rules_gameplay">Des Spiel sealb</string>
     
     <string name="undercover_rules_description_phase">Posaun was usse</string>
-    <string name="undercover_rules_description_phase_text">Sobald alle ihr Wort krigt hon (und hoffentlich gmerkt sus kaschas glei fagessa), fang an Spiela a der ned Mr. White isch. Denn beschribt jeda da Reihe noch sin Wort mit oa zwoa Wörter die des ursprüngliche Wort ned beinhalten (du Bimbo). Mr. White muss hald ane phantasiera so guat dasas goht. Segan nix zu leichts sus kut da Mr. White direkt druf. Es muss trozm was sie, das da Rest mirkt das du dochs Wort kennsch.</string>
+    <string name="undercover_rules_description_phase_text">Sobald alle ihr Wort krigt hond (und hoffentlich gmerkt sus kaschas glei fagessa), fang an Spiela a der ned Mr. White isch. Denn beschribt jeda da Reihe noch sin Wort mit oa zwoa Wörter die des ursprüngliche Wort ned beinhalten (du Bimbo). Mr. White muss hald ane phantasiera so guat dasas goht. Segan nix zu leichts sus kut da Mr. White direkt druf. Es muss trozm was sie, das da Rest mirkt das du dochs Wort kennsch.</string>
     
     <string name="undercover_rules_discussion_phase">Stritand mitnand</string>
     <string name="undercover_rules_discussion_phase_text">Alta eig bini zful zum dean ganza scheiß übasetza. Es isch ned so deep ma voted jz hald dia usse wo ma denkt das sie Schlawiner sin. Denk oh kle drüba noch obs ned vlt sealb bisch... Zum voten künnt ma uf drei ufnand zoaga oda sowas.</string>
     
     <string name="undercover_rules_elimination_phase">Jz wöran Lüt tötet</string>
-    <string name="undercover_rules_elimination_phase_text">Wenns jz no ned gschnallt hosch kanni da oh num wittahelfa man. Wenn du mol usse gvoted wora bisch kannsch num mit voten eh klar. Wenn da Mr. White tötet wird hota a Chance des Wort fo da Zivis zum errota, schafft ers gwinnt er des Spiel! Sus hald net und Zivis gwinnen. Ma wiederholt des usse voten solang bis nur no oan Zivi übrig isch (die Schlawiner gwinnen) oda hald alle Schalwiner (Undercover und Mr. Whites) dussa sin.</string>
+    <string name="undercover_rules_elimination_phase_text">Wenns jz no ned gschnallt hosch kanni da oh num wittahelfa man. Wenn du mol usse gvoted wora bisch kannsch num mit voten eh klar. Wenn da Mr. White tötet wird hota a Chance des Wort fo da Zivis zum errota, schafft ers gwinnt er des Spiel! Sus hald ned und Zivis gwinnen. Ma wiederholt des usse voten solang bis nur no oan Zivi übrig isch (die Schlawiner gwinnen) oda hald alle Schalwiner (Undercover und Mr. Whites) dussa sin.</string>
     
     <string name="undercover_rules_victory">Gwunna</string>
     <string name="undercover_rules_victory_text">Wenns jz no ned gschnallt hosch gang ham</string>
@@ -661,7 +661,7 @@
     <string name="undercover_sniff_button">Schnüffla - mi Wort nomml zoaga</string>
     <string name="undercover_sniff_select_title">Wer will si Wort seaha?</string>
     <string name="undercover_sniff_confirm_title">Bisch du %1$s?</string>
-    <string name="undercover_sniff_confirm_message">Nur %1$s darf jetzt Schoua</string>
+    <string name="undercover_sniff_confirm_message">Nur %1$s darf jetzt uf da Bildschirm luaga. Wenn du da falscha Nama atippt hosch, brich ab – sus siahsch s Wort vo nam andra Spieler.</string>
     <string name="undercover_sniff_confirm_yes">Jo, mi Wort azoaga</string>
     <string name="undercover_sniff_hide">Verstecka</string>
 
@@ -696,7 +696,7 @@
     <string name="poll_option_maxvoters_withcount">Maxi. %1$s Nutzer für dean Eintrag</string>
 
     <string name="poll_settings_showcheckboxes">Checkboxa azoaga</string>
-    <string name="poll_settings_showcheckboxes_info">Wenn usgschalta, wird die Umfrog als einfache Liste ohne Abstimmung azoagr - nützlich für geteilte Lista wie a Einkaufsliste</string>
+    <string name="poll_settings_showcheckboxes_info">Wenn usgschalta, wird die Umfrog als einfache Liste ohne Abstimmung azoagt - nützlich für geteilte Lista wie a Einkaufsliste</string>
 
     <string name="poll_settings_allowdeleteoptions">Löscha vo Optiona erlauba</string>
     <string name="poll_settings_allowdeleteoptions_info">Erlaubt dir, jede Option zum löscha, und jedem Nutzer sine eigana Optiona zum löscha.</string>
@@ -766,7 +766,7 @@
     <string name="poll_subpoll_error">Unvollständig - tippa zum Beheba</string>
     <string name="poll_subpoll_shown_for">Öffnat sich für alle, die "%1$s" wähland</string>
     <string name="poll_subpoll_done">Fertig</string>
-    <string name="poll_subpoll_too_many_options">Zu viele Optiona insgesamt (max.  %1$s über alle Unterumfroga</string>
+    <string name="poll_subpoll_too_many_options">Zu viele Optiona insgesamt (max. %1$s über alle Unterumfroga)</string>
     <string name="poll_subpoll_option_count">%1$s Optiona</string>
     <string name="poll_subpoll_pick_to_answer">Wähl "%1$s" zum Antworta</string>
     <string name="poll_subpoll_expand">Unterumfrog azoaga</string>
@@ -800,7 +800,7 @@
     <string name="yatzi_winner">Gwunna: %1$s</string>
     <string name="yatzi_score">Punkte: %1$s</string>
     <string name="yatzi_back_to_menu">Zruck</string>
-    <string name="yatzi_no_active_game">Du Bimbo hosch koa Spiel igstelt.</string>
+    <string name="yatzi_no_active_game">Du Bimbo hosch kua Spiel igstelt.</string>
     <string name="yatzi_category">Kategorie</string>
     <string name="yatzi_upper_sum">Alls fo oba</string>
     <string name="yatzi_bonus">Bonus</string>
@@ -832,7 +832,7 @@
 
     <!-- Games: Schneaggahus -->
     <string name="games_schneaggahus_title">Schneaggahus</string>
-    <string name="games_schneaggahus_instructions">Schneagga krabbeln us am Startpunkt und folgen dam Weag. Tipp uf die Weichen, um die Gleise umleiten, und lenke jeden Schneagg zu sinem Hus.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneagga im falscha Hus glandet sind, ischas Spiel vorbei. Je länger du überleabsch, desto schneller kumman neue Schneagga!</string>
+    <string name="games_schneaggahus_instructions">Schneagga krabbland usam Tunnel und folgand da Gleis. Tipp uf a Weiche zum ihr Gleis umstella – des zellt nur, wenn du se umlegsch, bevor da Schneagg bei da Weiche isch. Lenk jeda Schneagg zum Hus vo sinra Farb; die nägschta Farba siahsch nebam Tunnel.\n\nS Spiel goht in Wella: Jede Welle schickt a feste Azahl Schneagga, wird schnealla und größer, und jede zwoate Welle bringt a neus Hus. Lieferesch richtig, kummand d Schneagga schnealla noch; Fehler gend da a Verschnaufpause. Jede richtige Zuastellung bringt 10 Punkte mol Wellanummer – sobald 3 Schneagga im falscha Hus glandet sind, isch s Spiel vorbei.</string>
     <string name="games_schneaggahus_wave">Welle %1$d</string>
     <string name="games_schneaggahus_next_up">Nächste</string>
     <string name="games_schneaggahus_wave_progress">%1$d von %2$d Schneagga zuagestellt</string>
@@ -840,7 +840,7 @@
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Krützworträtsel</string>
-    <string name="games_crossword_instructions">Lös des tägliche Kreuzworträtsel! Tipp uf a Feald, um s auszunwähla, tipp erneut, um zwüscha waagrecht und senkrecht zum weachsla, und schrieb mit der Tastatur unten. Des englische Rätsel stammt us am öffentlicha NYT-Archiv, des dütsche wird jeden Tag neu generiert. Alle kriagand am glicha Tag s gliche Rätsel.</string>
+    <string name="games_crossword_instructions">Lös so viel Kreuzworträtsel wie du willsch! Tipp uf a Feald zum uswähla, tipp nomml zum zwüscha waagrecht und senkrecht weachsla, und schrieb mit da Tastatur unta. D englischa Rätsel werrand zufällig us am öffentlicha NYT-Archiv zoga, d dütscha werrand jeds mol neu generiert. Je größer s glöste Gitter und je schnealla du bisch, desto besser din Platz in da Rangliste.</string>
     <string name="games_crossword_language_question">Wähl dine Rätselsproch</string>
     <string name="games_crossword_language_english">Englisch (NYT-Archiv)</string>
     <string name="games_crossword_language_german">Dütsch</string>
@@ -855,11 +855,11 @@
 
     <!-- Games: Wordle -->
     <string name="games_wordle_title">Wordle</string>
-    <string name="games_wordle_instructions">Errot s Wort us füf Buchstaba in sechs versuach, so oft du willsch! Wenn a Reihe voll isch wird automatisch prüft, Grün hoast richtiger Buchstab an da richtiga Stell, Orange richtiger Buchstab an da falscha Stell, Grau falscher Buchstab.</string>
+    <string name="games_wordle_instructions">Errot s Wort us füf Buchstaba in sechs Versuach, so oft du willsch! Wenn a Reihe voll isch, wird se automatisch prüft: Grün hoast richtiger Buchstab an da richtiga Stell, Orange richtiger Buchstab an da falscha Stell, Grau kut gar ned vor.\n\nD englischa Wörter sind echte Lösunga vo da New York Times, zufällig zoga, d dütscha kummand us üsra eigna Liste. Je weniger Versuach du bruchsch und je schnealla du bisch, desto besser din Platz in da Rangliste.</string>
     <string name="games_wordle_language_question">Wähl a Sproch</string>
     <string name="games_wordle_language_english">Englisch (NYT Wordle)</string>
     <string name="games_wordle_language_german">Dütsch</string>
-    <string name="games_wordle_load_failed">Des Wort hot ned glada werra kümma. Prüf dine Internetverbindung und versuachs nomml.</string>
+    <string name="games_wordle_load_failed">Des Wort hot ned glada werra künna. Prüf dine Internetverbindung und versuachs nomml.</string>
     <string name="games_wordle_retry">Nomml versuacha</string>
     <string name="games_wordle_guess_counter">Versuche %1$d / %2$d</string>
     <string name="games_wordle_new_word">Neus Wort</string>
@@ -873,14 +873,14 @@
     <string name="games_daily_section">Tägliche Challenge (%1$s)</string>
     <string name="games_daily_reset">Es git a neue tägliche Challenge, din Fortschritt isch zruck gsetzt worra.</string>
     <string name="games_gridrush_title">Grid Rush</string>
-    <string name="games_gridrush_instructions">Züh a Linie durch benachbarte Felder mit da glicha Farb — wenn  du loslosch verschwindand die Fealda und die drübat rutschand abe.\n\nDin Highscore zellt nur wenn du alle Blöck wekkriagsch. Jeden Tag ändert sich s Spielfeld, jeder kriagt s gliche.</string>
+    <string name="games_gridrush_instructions">Züh a Linie durch benachbarte Fealda mit da glicha Farb — wenn du bi 2 oder meh Fealda loslosch, verschwindand se und die drübat rutschand abe. Räum s ganze Feald leer zum Gwinna!\n\nLängere Ketta bringand meh Punkte, und wer unterm Par blibt, kriagt an Bonus. Wenn sich kua zwoa glichfarbige Fealda meh berührand, isch da Versuach vorbei. Jeda spielt jeden Tag s gliche Feald — da Timer startet erst mit dim erschta Zug, also plan voraus!</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
 
 
     <!-- Games: Odd One Out -->
     <string name="games_oddoneout_title">Odd One Out</string>
-    <string name="games_oddoneout_instructions">A Raster us Fealda kut, alle luagand glich us außer uans. Druck druf und es kut a neues Feald. Umso schnealla umso besser.</string>
-    <string name="games_oddoneout_lives_remaining">%1$d Lebaba übrig</string>
+    <string name="games_oddoneout_instructions">A Raster us Fealda kut – alle luagand glich us, außer uans. Tipp uf des andre Feald, bevor d Zit ablouft!\n\nJe schnealla du s findsch, desto meh Punkte. A falscha Tipp oder a abgloufene Zit kostet uans vo dina 3 Leba – sind alle weg, isch da Versuach vorbei. D Runda werrand schnealla und s andre Feald schwieriger zum finda, je länger du durchhebsch!</string>
+    <string name="games_oddoneout_lives_remaining">%1$d Leba übrig</string>
 
     <!-- Games: Morse -->
     <string name="games_morse_clear">Löscha</string>
@@ -888,7 +888,7 @@
 
     <!-- Games: 2048 -->
     <string name="games_2048_title">2048</string>
-    <string name="games_2048_instructions">Wüscha oda mit Pfeiltasta ummadrucka. Wenn sich zwoa Fealda mit da glicha Zahl berührand, werrand se zu uana großa. Mehr groß mehr Punkte</string>
+    <string name="games_2048_instructions">Wüsch (uffe, abe, links, rechts) oder nimm d Pfeiltasta zum d Kachla verschiaba. Wenn sich zwoa Kachla mit da glicha Zahl berührand, werrand se zu uana!\n\nKombinier d Zahla bis zur 2048-Kachel zum Gwinna, und spiel witta für da Highscore! S Spielfeld wird mit höhera Schwierigkeit klenner.</string>
     <string name="games_2048_reached">★ 2048 erreicht! ★</string>
 
 
@@ -899,7 +899,7 @@
     <string name="recap_others_sent_you">Dieses Joar hond andre Lüt dir</string>
     <string name="recap_others_sent_you_suffix">Nochrichta gschickt</string>
     <string name="recap_you_sent">Du hosch</string>
-    <string name="recap_messages_to_favorite_humans">Nachrichta an dine Lieblingsmenscha gschickt.</string>
+    <string name="recap_messages_to_favorite_humans">Nochrichta an dine Lieblingsmenscha gschickt.</string>
     <string name="recap_new_friends_found">Neue Freunde gfunda</string>
     <string name="recap_you_have">Du hosch</string>
     <string name="recap_are_now_your_friends">neue Freunde gmacht.</string>
@@ -919,7 +919,7 @@
     <string name="recap_characters_typed">Zeichen itippt</string>
     <string name="recap_words_typed">%1$s Wörter insgesamt</string>
     <string name="recap_avg_message_length">Ø %1$d Zeicha pro Nochricht</string>
-    <string name="recap_longest_message">Dine längste Nachricht: %1$d Zeicha</string>
+    <string name="recap_longest_message">Dine längste Nochricht: %1$d Zeicha</string>
     <string name="recap_longest_message_to">gsendet an %1$s</string>
     <string name="recap_rhythm_title">Du hosch an Rythmus</string>
     <string name="recap_busiest_day">Din aktivster Tag: %1$s</string>
@@ -950,7 +950,7 @@
     <string name="recap_reactions_received">%1$s Reaktiona erhalta</string>
     <string name="recap_top_emoji_given">Dine Lieblingsemojis</string>
     <string name="recap_top_emoji_received">Was du zruckkriagt hosch</string>
-    <string name="recap_most_reacted_message">Deine meistreagierte Nachricht (%1$d Reaktiona):</string>
+    <string name="recap_most_reacted_message">Dine meistreagierte Nochricht (%1$d Reaktiona):</string>
     <string name="recap_social_title">Din Kreis isch gwachsa.</string>
     <string name="recap_friends_label">Dine Freunde</string>
     <string name="recap_new_friends_this_year">%1$d neu dieses Joar</string>
@@ -961,7 +961,7 @@
     <string name="recap_groups_member_of">Gruppen, bei deana du dabei bisch</string>
     <string name="recap_groups_created">%1$d vo dir erstellt</string>
     <string name="recap_most_active_group">Dine Gruppe mit am meista terror</string>
-    <string name="recap_group_message_count">%1$s Nachrichta</string>
+    <string name="recap_group_message_count">%1$s Nochrichta</string>
     <string name="recap_leaderboard_title">Die globala Charts</string>
     <string name="recap_your_rank">Vo alla Schneaggchat User hosch du Platz</string>
     <string name="recap_rank_number">#%1$d</string>
@@ -972,7 +972,7 @@
     <string name="recap_map_all_time">%1$d insgesamt erstellt</string>
     <string name="recap_games_title">Profigamer</string>
     <string name="recap_games_your_rank">Uf da globala Spiele-Rangliste vo allna Spiele zem landesch du uf Platz</string>
-    <string name="recap_games_points">%1$s us %2$d Spielen</string>
+    <string name="recap_games_points">%1$s Punkte us %2$d Spiel</string>
     <string name="recap_games_not_ranked">Dieses Joar kua Ranglisten-Spiele von dir. Die Spiele wartand.</string>
 
     <string name="recap_betatester_title">Zertifizierter Beta-Tester</string>
@@ -1004,16 +1004,16 @@
     <string name="recap_outro_messages">Nochrichta</string>
     <string name="recap_outro_friends">Freunde</string>
     <string name="recap_outro_reactions">Reaktiona</string>
-    <string name="recap_outro_streak">Takesstreak</string>
+    <string name="recap_outro_streak">Tagesstreak</string>
     <string name="recap_outro_rank_messages">Nochrichta-Rang</string>
     <string name="recap_outro_rank_errors">Fehler-Rang</string>
     <string name="recap_tap_hint">Tipp zum wittamacha</string>
     <string name="recap_close">Recap schlüßa</string>
-    <string name="recap_hold_hint">Heba zum Pause macha · links tippa für zruck </string>
+    <string name="recap_hold_hint">Heba zum Pause macha · links tippa für zruck</string>
     <string name="recap_map_leaderboard_title">Dia Karta-Charts</string>
     <string name="recap_map_your_rank">Unter allna, die d Schneaggmap mitgstaltand, bisch du uf Platz</string>
     <string name="recap_map_contributions">%1$s Kartenänderunga des Joar</string>
-    <string name="recap_map_not_ranked">Du hosch d Karta des Joard ned agrührt. D Schneagga wartand.</string>
+    <string name="recap_map_not_ranked">Du hosch d Karta des Joar ned agrührt. D Schneagga wartand.</string>
     <string name="recap_leaderboard_not_ranked">Kua Nochrichta vo dir dieses Joar. Viellicht nächstes Joar.</string>
     <string name="recap_outro_rank_map">Karta-Rang</string>
     <string name="recap_top_partner_intro">Niemand hot öfter vo dir ghört als</string>
@@ -1044,7 +1044,7 @@
 
     <!-- Contribute Popup -->
     <string name="contribute_title">Gestalt Schneaggchat mit</string>
-    <string name="contribute_message">Dia App wird nur besser wenn du di mealdasch. Vo allua wird ned alles besser. Wenn di was stört oda a Feature fehlt, säg Bescheid!</string>
+    <string name="contribute_message">Dia App wird nur besser, wenn du di mealdasch – und sie lebt nur witta, wenn wer d Kosta zahlt. Wähl unta uane vo da drü Möglichkeita.</string>
     <string name="contribute_bug_title">Fehler gfunda?</string>
     <string name="contribute_bug_hint">Stürzt was ab, isch kaputt oder fühlt sich einfach falsch a?
 Mealds, egal wie klenn.</string>
@@ -1117,8 +1117,11 @@ Mealds, egal wie klenn.</string>
     <string name="highscores_title">Highscores</string>
     <string name="highscore_upload_title">Highscores uffelada?</string>
     <string name="game_reset_title">Spiel zrucksetza?</string>
+    <string name="game_reset_message">S laufende Spiel und sin gspeicherta Fortschritt werrand verworfa. Spieler und Einstellunga blieband.</string>
     <string name="game_reset_confirm">Zrucksetza</string>
     <string name="game_reset_cancel">Abbreacha</string>
+    <string name="highscore_upload_message">Söllan d Ergebnisse vo all deana Spieler in d Highscores uffeglada werra? Ladat nur echte Spiele uffe – Testspiele versauand d Highscores.</string>
+    <string name="highscore_upload_wins_message">Söll jedem vo dena Gwinner a Sieg in d Highscores gschrieba werra? Ladat nur echte Spiele uffe – Testspiele versauand d Highscores.</string>
     <string name="highscore_upload_confirm">Uffelada</string>
     <string name="highscore_upload_decline">Ned uffelada</string>
     <string name="highscore_upload_retry">Nomml versuacha</string>
@@ -1138,7 +1141,7 @@ Mealds, egal wie klenn.</string>
     <string name="game_restart">Neustart</string>
     <string name="show_highscores">Bestenliste azoaga</string>
     <string name="global_ranking_title">Gesamtwertung</string>
-    <string name="global_ranking_explanation">Punkte über alle Spiele und alle Schwierigkeita</string>
+    <string name="global_ranking_explanation">Punkte über alle Spiele mit Highscores. Partyspiele uf uanam Handy (Yahtzee, Dartcounter, Undercover) zellan ned.</string>
     <string name="global_ranking_error">Rangliste hot ned glada werra künna</string>
     <string name="global_ranking_empty">Es hot noch niemand gspielt</string>
     <string name="global_ranking_points">%1$d Pkt.</string>
@@ -1233,11 +1236,11 @@ Mealds, egal wie klenn.</string>
     <string name="location_option_venue_setting_outdoor">Outdoor</string>
     <string name="location_option_venue_setting_both">Indoor &amp; Outdoor</string>
     <string name="location_option_offroad_discipline_motocross">Motocross</string>
-    <string name="location_option_offroad_discipline_enduro">Enrudo</string>
+    <string name="location_option_offroad_discipline_enduro">Enduro</string>
     <string name="location_option_offroad_discipline_both">Motocross &amp; Enduro</string>
     <string name="location_option_camping_kind_official_site">Offizieller Campingplatz</string>
     <string name="location_option_camping_kind_wild_camping">Wildcampen</string>
-    <string name="location_option_camping_kind_tolerated">Gedultet</string>
+    <string name="location_option_camping_kind_tolerated">Gduldet</string>
     <string name="location_lie_down_friendly">Kama aneliega</string>
 
     <!-- Camping -->
@@ -1401,7 +1404,7 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_skip">Tour überspringa</string>
 
     <string name="ttt_schneaggmap_settings">Kartaeinstellunga</string>
-    <string name="ttt_schneaggmap_settings_description">Do kannsch du uf die Kartaeinstellunga zuagriefa. Leg fest, ob du dinen Standort teila willsch, und stell no andere sacha i.</string>
+    <string name="ttt_schneaggmap_settings_description">Do kannsch du uf die Kartaeinstellunga zuagriefa. Leg fest, ob du din Standort teila willsch, und stell no andere sacha i.</string>
 
     <string name="ttt_schneaggmap_snailtrail_description">Du kannsch Schleimspura azoaga (wo dine Freunde in da letzta 24h warand), wenn se des für di aktiviert hond.</string>
 
@@ -1504,9 +1507,9 @@ Mealds, egal wie klenn.</string>
     <string name="system_admin_revoked">%1$s hot %2$s die Admin-Rechte entzoga</string>
     <string name="system_group_name_changed">%1$s hot da Gruppennama zu %2$s gändert</string>
     <string name="system_group_description_changed">%1$s hot d Gruppenbeschreibung gändert</string>
-    <string name="system_group_picture_changed">%1$s hat s Gruppenbild gändert</string>
+    <string name="system_group_picture_changed">%1$s hot s Gruppenbild gändert</string>
     <string name="system_event_changed">%1$s hot s Event aktualisiert</string>
-    <string name="system_friendship_accepted">Ihr sind jetzt freunde</string>
+    <string name="system_friendship_accepted">Ihr sind jetzt Freunde</string>
     <string name="system_wake_sent">%1$s hot di gweckt</string>
     <string name="system_wake_sent_reason">%1$s hot di gweckt: %2$s</string>
     <string name="system_unknown_event">Chat aktualisiert</string>
@@ -1546,6 +1549,7 @@ Mealds, egal wie klenn.</string>
     <string name="games_tab_tools">Werkzüg</string>
     <string name="tools_fuel_title">Gmischreachna</string>
     <string name="tools_fuel_description">Ölmenge für s Benzingmisch bereachna</string>
+    <string name="tools_fuel_explanation">Wähl d Menge, wo du scho hosch, und leas da Rest ab. S Verhältnis isch Benzin zu Öl, 1:50 hoast also 50 Teil Benzin uf uan Teil Öl.</string>
     <string name="tools_fuel_basis_title">Bekannte Menge</string>
     <string name="tools_fuel_basis_petrol">Benzin</string>
     <string name="tools_fuel_basis_mixture">Gmisch</string>
@@ -1566,16 +1570,112 @@ Mealds, egal wie klenn.</string>
     <string name="tools_fuel_clear">Löscha</string>
     <string name="tools_fuel_empty_hint">Menge igia, ums Gmisch zum seaha.</string>
     <string name="highscores_retry">Nomml versuacha</string>
+    <string name="highscore_upload_no_accounts">Niemand in deam Spiel hot an Account, drum isch nix uffeglada worra.</string>
+    <string name="tools_coinflip_description">Kopf oder Zahl, wenns schneall go muss</string>
+    <string name="tools_fingerpicker_description">Alle heband an Finger ufan Bildschirm, da Zufall wählt da Gewinner</string>
+    <string name="games_tab_solo">Allua</string>
+    <string name="games_tab_multiplayer">Mitanand</string>
+    <string name="games_tetris_description">Fallende Stüa zu volla Reiha zemmabaua</string>
+    <string name="games_stack_tower_description">Plattforma so hoch wie s goht stapla</string>
+    <string name="games_morse_description">Morsecode gega d Uhr senda</string>
+    <string name="games_schneaggahus_description">Weicha umstella und jeda Schneagg huam bringa</string>
+    <string name="games_gridrush_description">S Feald leer macha, indeam du gliche Stüa verbindesch</string>
+    <string name="games_oddoneout_description">S uane Feald finda, wo andersch isch</string>
+    <string name="games_2048_description">Gliche Zahla bis 2048 zemmaschieba</string>
+    <string name="games_crossword_description">S Gitter mit da Hinweis fülla</string>
+    <string name="games_wordle_description">S Wort mit fünf Buchstaba in sechs Versuach errota</string>
+    <string name="games_yahtzee_description">Würfla und da Punkteblock fülla</string>
+    <string name="games_dartcounter_description">A 301er oda 501er Leg abezella</string>
+    <string name="games_undercover_description">Da Undercover entlarva, indeam du din geheims Wort umschriebsch</string>
+    <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
+    <string name="games_schneaggrodeo_description">Über d Hindernis jucka, Schneagga mitam Lasso fanga und da Raba davo ritta</string>
+    <string name="games_schneaggrodeo_instructions">Ritt so wit wie du kannsch, während di a Schwarm Raba verfolgt. Tipp (oder druck d Leertaste) zum über d Zün jucka, und wirf s Lasso zum Schneagga fanga – mit dena kofsch du Supersprüng und meh. Jeda Fehler bringt d Raba nöcher; wenn se di erwischand, isch s End vom Ritt.</string>
+    <string name="games_schneaggrodeo_start_easier">Liechter</string>
+    <string name="games_schneaggrodeo_start_harder">Strenger · 1,5× Punkte</string>
+    <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
+    <string name="games_schneaggrodeo_lasso">Lasso</string>
+    <string name="games_schneaggrodeo_catch_horse">Fang din Pferd!</string>
+    <string name="games_schneaggrodeo_on_foot_hint">Tipp zum Jucka – tipp genau bim Landa nomml für an Salto, dreimol hintranand für an Dreifachsprung, der di schnealla macht! Fang din Pferd mitam Lasso, sobald du noch gnua dra bisch.</string>
+    <string name="games_schneaggrodeo_on_foot_hint_keys">Leertaste zum Jucka – druck genau bim Landa nomml für an Salto, dreimol hintranand für an Dreifachsprung, der di schnealla macht! Fang din Pferd mitam Lasso [L], sobald du noch gnua dra bisch.</string>
+    <string name="games_schneaggrodeo_snails">Schneagga: %1$d</string>
+    <string name="games_schneaggrodeo_horseshoes">Hufeisen: %1$d</string>
+    <string name="games_schneaggrodeo_plane_controls">Linke Hälfte: uffe · Rechte Hälfte: abe – weich da Hüser und Wolka us, schnapp d Hufeisen!</string>
+    <string name="games_schneaggrodeo_plane_controls_keys">Leertaste / W: uffe · S / ↓: abe – weich da Hüser und Wolka us, schnapp d Hufeisen!</string>
+    <string name="games_schneaggrodeo_super_jump">Supersprung ×%1$d</string>
+    <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
+    <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
+    <string name="games_schneaggrodeo_lasso_hint">Mitam Lasso fanga und ufstiega!</string>
+    <string name="games_schneaggrodeo_lasso_hint_horse">Mitam Lasso fanga und s Pferd wechsla!</string>
+    <string name="games_schneaggrodeo_lasso_hint_friend">Mitam Lasso fanga und zemma ritta!</string>
+    <string name="games_schneaggrodeo_lasso_hint_pizza">Schnapp da d Pizza mitam Lasso!</string>
+    <string name="games_schneaggrodeo_lasso_hint_kaesknoepfle">Schnapp da d Käsknöpfle mitam Lasso!</string>
+    <string name="games_schneaggrodeo_lasso_hint_stanislaus">Fang da Stanislaus mitam Lasso!</string>
+    <string name="games_schneaggrodeo_goodbye">Pfiati</string>
+    <string name="games_schneaggrodeo_golden_carriage">Goldige Kutscha!</string>
+    <string name="games_schneaggrodeo_golden_carriage_button">Goldige Kutscha</string>
+    <string name="games_schneaggrodeo_golden_carriage_controls">Nix drucka: D goldiga Pferd brechand durch jeda Zu – 20 Punkte für jeda!</string>
+    <string name="games_schneaggrodeo_traffic_jam">Stau!</string>
+    <string name="games_schneaggrodeo_traffic_jam_controls">Nix drucka: Din Pferd juckt vo sealb vo Autodach zu Autodach – 15 Punkte für jeds Auto!</string>
+    <string name="games_schneaggrodeo_helicopter">Helikopter!</string>
+    <string name="games_schneaggrodeo_helicopter_controls">Irgendwo heba zum Stiega – erreich da Regaboga do oba, bevor da Flug vorbei isch!</string>
+    <string name="games_schneaggrodeo_helicopter_controls_keys">Leertaste / W heba zum Stiega – erreich da Regaboga do oba, bevor da Flug vorbei isch!</string>
+    <string name="games_schneaggrodeo_map_welcome">Willkomma in</string>
+    <string name="games_schneaggrodeo_map_cave">Da Höhle</string>
+    <string name="games_schneaggrodeo_map_sea">Dam offena Meer</string>
+    <string name="games_schneaggrodeo_map_rainbow">Dam Regaboga</string>
+    <string name="games_schneaggrodeo_map_fossil">Da Fossilienschicht</string>
+    <string name="games_schneaggrodeo_pirate_ship">Pirataschiff!</string>
+    <string name="games_schneaggrodeo_pirate_ship_controls">Nix drucka: D Kanone schüßt vo sealb uf jeda Hai und s Pferd schnappt sich d Schatztruha – Punkte für alls!</string>
+    <string name="games_schneaggrodeo_drill">Bohrmaschina!</string>
+    <string name="games_schneaggrodeo_drill_controls">Irgendwo heba: abe zum Gold bohra · Loslo: wieder uffe – weich da graua Felsa us! Ganz unta witta bohra, zum bis in d Fossilienschicht dure z kumma.</string>
+    <string name="games_schneaggrodeo_drill_controls_keys">Leertaste / W heba: abe zum Gold bohra · Loslo: wieder uffe – weich da graua Felsa us! Ganz unta witta bohra, zum bis in d Fossilienschicht dure z kumma.</string>
+    <string name="games_schneaggrodeo_drill_boarding">Drill, baby, drill!</string>
+    <string name="games_schneaggrodeo_double_points">×2 Punkte</string>
+    <string name="games_schneaggrodeo_train">Wälderbähnle</string>
+    <string name="games_schneaggrodeo_milk_truck">Milchlastwaga</string>
+    <string name="games_schneaggrodeo_rocket_name">Rakete</string>
+    <string name="games_schneaggrodeo_rocket">Raketa</string>
+    <string name="games_schneaggrodeo_train_controls">Irgendwo heba zum Ducka, wenn a Bruck kut – loslo zum wieder Ufstoh!</string>
+    <string name="games_schneaggrodeo_train_controls_keys">Leertaste heba zum Ducka, wenn a Bruck kut – loslo zum wieder Ufstoh!</string>
+    <string name="games_schneaggrodeo_milk_truck_controls">Tipp uf Lasso zum die fliegenda Milchkanna fanga – Punkte für jede!</string>
+    <string name="games_schneaggrodeo_lawn_tractor_controls">Heb di guat fest – der mäht alls um!</string>
+    <string name="games_schneaggrodeo_next_to_beat">Als nägschts schlaga: %1$s (%2$d)</string>
+    <string name="games_schneaggrodeo_car_wreck">Escort-Wrack</string>
+    <string name="games_schneaggrodeo_car_wreck_controls">Heb di fest – din Pferd schiebt s Wrack durch alls dure!</string>
+    <string name="games_schneaggrodeo_car_money">%1$s €</string>
+    <string name="games_schneaggrodeo_bull">Muni-Ritt</string>
+    <string name="games_schneaggrodeo_bull_controls">Halt d Balance! Kippsch noch vorna → linke Hälfte heba · noch hinta → rechte Hälfte heba. Bliib 6 s druf!</string>
+    <string name="games_schneaggrodeo_bull_controls_keys">Halt d Balance! Kippsch noch vorna → Leertaste heba · noch hinta → S heba. Bliib 6 s druf!</string>
+    <string name="games_schneaggrodeo_cable_car">Seilbahn</string>
+    <string name="games_schneaggrodeo_cable_car_controls">Gnüß d Ussicht – d Gondel bringt di übern Berg!</string>
+    <string name="games_schneaggrodeo_candy_bus">Ghettobus</string>
+    <string name="games_schneaggrodeo_candy_bus_controls">Druck Ifanga – da Bus hält nebam Stanislaus und zücht ean durch d Sitatür ine!</string>
+    <string name="games_schneaggrodeo_candy_bus_sign">FREE CANDY</string>
+    <string name="games_schneaggrodeo_capture">Ifanga</string>
+    <string name="games_schneaggrodeo_pocket_bike">Pocketbike</string>
+    <string name="games_schneaggrodeo_pocket_bike_controls">Vollgas – lang hebt des ned!</string>
+    <string name="games_schneaggrodeo_shopping_cart">Ikoufswäga</string>
+    <string name="games_schneaggrodeo_shopping_cart_controls">Din Pferd schiebt da Waga – jede Schneagg im Weag landet drin!</string>
+    <string name="games_schneaggrodeo_balloon">Heißluftballo</string>
+    <string name="games_schneaggrodeo_balloon_controls">Heba für da Brenner – schnapp da d Hufeisen!</string>
+    <string name="games_schneaggrodeo_balloon_controls_keys">Leertaste heba für da Brenner – schnapp da d Hufeisen!</string>
+    <string name="games_schneaggrodeo_cow">Kuah-Ritt</string>
+    <string name="games_schneaggrodeo_cow_controls">Nix z tua – gnüß afach da Ritt! D Kuahglocka verjagt d Raba.</string>
+    <string name="games_schneaggrodeo_rowboat">Ruderboot</string>
+    <string name="games_schneaggrodeo_rowboat_controls">Tipp uf Lasso zum die juckenda Fisch fanga – Punkte für jeda!</string>
+    <string name="games_schneaggrodeo_uboat">U-Boot</string>
+    <string name="games_schneaggrodeo_uboat_controls">Irgendwo heba zum Uftaucha, loslo zum Abtaucha bis zum Meeresgrund – schnapp Perla und Schatztruha, weich da Mina us!</string>
+    <string name="games_schneaggrodeo_uboat_controls_keys">Leertaste / W heba zum Uftaucha, loslo zum Abtaucha bis zum Meeresgrund – schnapp Perla und Schatztruha, weich da Mina us!</string>
     <!-- One-line game summaries for the game selector cards -->
     <string name="games_schneaggrodeo_oil_tanker">Öltanker</string>
     <string name="games_schneaggrodeo_oil_tanker_controls">Vollgas! Da Tanker fahrt drüba!</string>
-    <string name="games_schneaggrodeo_flamingo">Famingo</string>
+    <string name="games_schneaggrodeo_flamingo">Flamingo</string>
     <string name="games_schneaggrodeo_flamingo_controls">Tip zum jucka - fang d Hufeisen!</string>
     <string name="games_schneaggrodeo_flamingo_controls_keys">Leertaste  drucka zum Jucka - schnapp da d Hufeisen!</string>
     <string name="games_schneaggrodeo_mine_cart">Grubenhunt</string>
-    <string name="games_schneaggrodeo_mine_cart_controls">Heb di fest da Karra hoazt!</string>
+    <string name="games_schneaggrodeo_mine_cart_controls">Heb di fest, da Karra hoazt!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s rittat mit!</string>
-    <string name="games_schneaggrodeo_friend_joined">Ab jetzt rittasch du o für da Highscore vo %1$s: Sobald du vom Pferd abstiegsch,, wird döt sin Highscore gsetzt.</string>
+    <string name="games_schneaggrodeo_friend_joined">Ab jetzt rittasch du o für da Highscore vo %1$s: Sobald du vom Pferd abstiegsch, zellan dine bisherige Punkte o für %1$s.</string>
 
     <!-- Feedback board -->
     <string name="feedback_title">Feedback</string>
@@ -1616,6 +1716,7 @@ Mealds, egal wie klenn.</string>
     <string name="feedback_create">Neuer Eintrag</string>
     <string name="feedback_create_title_feature">Feature wünscha</string>
     <string name="feedback_create_title_bug">Bug mealda</string>
+    <string name="feedback_duplicate_warning">Bitte luag zersch in da Liste, obs dean Itrag scho git. Wenn jo, stimm döt ab oder kommentier.</string>
     <string name="feedback_field_title">Titel</string>
     <string name="feedback_field_description">Beschreibung</string>
     <string name="feedback_field_description_bug_hint">Was isch passiert und wie kann ma s nochstella</string>
