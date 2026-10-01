@@ -42,6 +42,32 @@ fun NetworkUtils.PollCreateRequest.toLocalPollMessage(ownId: String, idPrefix: S
     )
 }
 
+/**
+ * Inverse of [toLocalPollMessage]: the create request for a poll that is still unsent, sub polls
+ * included - used when the offline queue resends it.
+ */
+fun PollMessage.toCreateRequest(): NetworkUtils.PollCreateRequest {
+    return NetworkUtils.PollCreateRequest(
+        title = title,
+        description = description,
+        maxAnswers = maxAnswers,
+        customAnswersEnabled = customAnswersEnabled,
+        maxAllowedCustomAnswers = maxAllowedCustomAnswers,
+        visibility = visibility,
+        closeDate = expiresAt,
+        voteOptions = voteOptions.map { option ->
+            NetworkUtils.PollVoteOptionCreateRequest(
+                text = option.text,
+                maxVoters = option.maxVoters,
+                subPoll = option.subPoll?.toCreateRequest(),
+            )
+        },
+        allowDeleteOptions = allowDeleteOptions,
+        showCheckboxes = showCheckboxes,
+        visibleToAll = visibleToAll,
+    )
+}
+
 fun PollResponse.toPollMessage(ownId: String): PollMessage {
 
     return PollMessage(

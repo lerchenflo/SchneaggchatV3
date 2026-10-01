@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -189,6 +190,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
                 if (socketMessage.deleted) {
                     messageRepository.deleteMessage(socketMessage.message.messageId)
+                } else if (existing != null && existing.msgType == MessageType.POLL && existing.isNewerThan(socketMessage.message.lastChanged)) {
+                    //Out-of-order poll push (two quick votes): the stored poll is already newer, keep it
                 } else {
                     messageRepository.upsertMessage(message)
                 }

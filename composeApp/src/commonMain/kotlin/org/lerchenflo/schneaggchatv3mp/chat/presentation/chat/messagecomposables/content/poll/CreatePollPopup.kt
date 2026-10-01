@@ -142,6 +142,7 @@ class PollOptionInput(
 //Keep in sync with the server-side limits in ValidationUtils / MessageService (schneaggchatv3server)
 private const val POLL_TITLE_MAX_LENGTH = 200
 private const val POLL_DESCRIPTION_MAX_LENGTH = 500
+internal const val POLL_OPTION_MAX_LENGTH = 250 //Also used for custom answers in PollMessageContentView
 private const val POLL_MAX_VOTE_OPTIONS = 20
 private const val POLL_MAX_DEPTH = 5 //Poll levels in one message, the root poll included
 private const val POLL_MAX_TREE_OPTIONS = 60 //Options of the root poll and all sub polls together
@@ -629,7 +630,7 @@ private fun PollDraftEditor(
                     Column(modifier = Modifier.weight(1f)) {
                         ComboInputField(
                             value = value.text,
-                            onValueChange = { value.text = it },
+                            onValueChange = { if (it.text.length <= POLL_OPTION_MAX_LENGTH) value.text = it },
                             placeholder = { Text(stringResource(Res.string.poll_options_placeholder)) },
                             modifier = Modifier.fillMaxWidth()
                         )

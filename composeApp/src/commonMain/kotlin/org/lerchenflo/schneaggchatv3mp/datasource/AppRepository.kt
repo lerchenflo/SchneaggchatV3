@@ -55,6 +55,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
@@ -86,7 +87,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.NewFriend
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PersonalUserSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollOptionDeleteRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteOptionCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
@@ -102,6 +102,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toLocalPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
@@ -1944,6 +1945,13 @@ class AppRepository(
 
                 val m = messages.first()
 
+                //A poll row whose poll no longer decodes (the type converter returns null for it) can
+                //never be sent - drop it, or it would block the whole queue forever
+                if (m.msgType == MessageType.POLL && m.poll == null) {
+                    database.messageDao().deleteMessageDtoByPk(m.localPK)
+                    continue
+                }
+
                 sendMessage(
                     empfaenger = m.receiverId,
                     gruppe = m.groupMessage,
@@ -1967,27 +1975,9 @@ class AppRepository(
                         }
 
                         MessageType.POLL -> {
-
-                            val poll = m.poll!!
-                            PollContent(
-                                PollCreateRequest(
-                                    title = poll.title,
-                                    description = poll.description,
-                                    maxAnswers = poll.maxAnswers,
-                                    customAnswersEnabled = poll.customAnswersEnabled,
-                                    maxAllowedCustomAnswers = poll.maxAllowedCustomAnswers,
-                                    visibility = poll.visibility,
-                                    closeDate = poll.expiresAt,
-                                    voteOptions = poll.voteOptions.map {
-                                        PollVoteOptionCreateRequest(
-                                            text = it.text,
-                                            maxVoters = it.maxVoters
-                                        )
-                                    },
-                                    allowDeleteOptions = poll.allowDeleteOptions,
-                                    showCheckboxes = poll.showCheckboxes,
-                                )
-                            )
+                            //Null-checked above. Rebuilt with the shared mapper so sub polls and
+                            //every other setting survive the resend
+                            PollContent(m.poll!!.toCreateRequest())
                         }
 
                         MessageType.AUDIO -> {
@@ -2368,7 +2358,9 @@ class AppRepository(
             }
             is NetworkResult.Success<MessageResponse> -> {
                 val existing = messageRepository.getMessageById(request.data.messageId)
-                if (existing != null) {
+                //Skip a response older than what is stored - a socket push or a later vote's
+                //response may have landed first, and must not be rolled back
+                if (existing != null && !existing.isNewerThan(request.data.lastChanged)) {
                     messageRepository.upsertMessage(existing.copy(
                         poll = request.data.pollResponse?.toPollMessage(ownId),
                         changeDate = request.data.lastChanged.toString(),
@@ -2390,7 +2382,9 @@ class AppRepository(
             }
             is NetworkResult.Success<MessageResponse> -> {
                 val existing = messageRepository.getMessageById(request.data.messageId)
-                if (existing != null) {
+                //Skip a response older than what is stored - a socket push or a later vote's
+                //response may have landed first, and must not be rolled back
+                if (existing != null && !existing.isNewerThan(request.data.lastChanged)) {
                     messageRepository.upsertMessage(existing.copy(
                         poll = request.data.pollResponse?.toPollMessage(ownId),
                         changeDate = request.data.lastChanged.toString(),

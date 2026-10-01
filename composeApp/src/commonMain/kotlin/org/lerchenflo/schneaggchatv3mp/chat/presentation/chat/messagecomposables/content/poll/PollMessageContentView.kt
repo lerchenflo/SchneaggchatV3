@@ -208,6 +208,8 @@ private fun PollLevelView(
 ) {
     val contentColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
     val canAnswer = lockedByOptionText == null
+    //Past the close date the server rejects every vote, so don't offer any (sub polls share the root's date)
+    val isClosed = poll.isExpired()
 
     Column {
 
@@ -314,11 +316,14 @@ private fun PollLevelView(
 
         var pendingVote by remember { mutableStateOf<PendingPollVote?>(null) }
 
+        //A fresh (sub) poll has no votes yet - dividing by 0 would hand the progress bars NaN
+        val totalVoteCount = poll.getTotalVoteCount()
+
         poll.voteOptions.forEach { option ->
             PollMessageOptionView(
                 option = option,
                 multipleAnswers = poll.acceptsMultipleAnswers(), //Allow multiple answers if maxanswers is null(not set) or more than one
-                votePercentage = option.voters.size.toFloat() / poll.getTotalVoteCount().toFloat(),
+                votePercentage = if (totalVoteCount == 0) 0f else option.voters.size.toFloat() / totalVoteCount,
                 myMessage = myMessage,
                 voterIds = option.getVoterIdsForOption(),
                 full = poll.optionIsFull(option, ownId),
@@ -337,7 +342,7 @@ private fun PollLevelView(
                 ownId = ownId,
                 useMD = useMD,
                 showCheckbox = poll.showCheckboxes,
-                enabled = canAnswer,
+                enabled = canAnswer && !isClosed,
                 //Fake option ids ("0", "1", ...) are used for the optimistic local echo until the server responds - deleting those would target nothing
                 canDelete = poll.canDeleteOption(option, ownId) && messageId != null,
                 onDelete = { onAction(MessageAction.DeletePollOption(messageId!!, option.id)) }
@@ -392,8 +397,8 @@ private fun PollLevelView(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        //Add custom option - not while this (sub) poll is read-only
-        if (poll.customAnswersEnabled && canAnswer) {
+        //Add custom option - not while this (sub) poll is read-only or closed
+        if (poll.customAnswersEnabled && canAnswer && !isClosed) {
             var showDialog by remember { mutableStateOf(false) }
 
             Row(
@@ -748,7 +753,7 @@ fun CustomPollOptionDialog(
             Column {
                 ComboInputField(
                     value = option.text,
-                    onValueChange = { option.text = it },
+                    onValueChange = { if (it.text.length <= POLL_OPTION_MAX_LENGTH) option.text = it },
                     label = { Text(stringResource(Res.string.poll_answer_label)) },
                     placeholder = { Text(stringResource(Res.string.poll_answer_placeholder)) },
                     singleLine = true,
