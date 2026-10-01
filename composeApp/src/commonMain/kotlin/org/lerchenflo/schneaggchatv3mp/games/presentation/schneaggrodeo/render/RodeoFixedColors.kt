@@ -41,6 +41,11 @@ internal val HEART_COLOR = Color(0xFFE53935)
 
 // Mud puddles and carrots (explicitly requested)
 internal val MUD_COLOR = Color(0xFF6D4C2F)
+// Ravens: black in every theme, small red eyes, a dark grey beak (explicitly requested)
+internal val RAVEN_BLACK = Color(0xFF16161A)
+internal val RAVEN_BEAK = Color(0xFF3A3A42)
+internal val RAVEN_EYE = Color(0xFFE53935)
+internal val RAVEN_OUTLINE = Color(0xFFFFFFFF)
 internal val MUD_DARK_COLOR = Color(0xFF4E3521)
 internal val CARROT_COLOR = Color(0xFFF57C00)
 internal val CARROT_LEAF_COLOR = Color(0xFF43A047)
@@ -93,15 +98,13 @@ internal val CLAM_SHELL = Color(0xFFBCAAA4)
 internal val TREASURE_WOOD = Color(0xFF8D6E63)
 internal val TREASURE_GOLD = Color(0xFFFFC107)
 
-// The mine: earth walls, timber, crates, gold, helmets and dirt mounds
-internal val MINE_EARTH = Color(0xFF4E342E)
-internal val MINE_EARTH_LIGHT = Color(0xFF6D4C41)
+// Earth, timber, rock and gold: the dirt mounds in the cave and the drill
+internal val EARTH_DARK = Color(0xFF4E342E)
+internal val EARTH_LIGHT = Color(0xFF6D4C41)
 internal val MINE_TIMBER = Color(0xFF8D6E63)
-internal val CRATE_WOOD_LIGHT = Color(0xFFBCAAA4)
 internal val MINE_ROCK = Color(0xFF757575)
 internal val GOLD_NUGGET = Color(0xFFFFC107)
 internal val GOLD_SHINE = Color(0xFFFFF59D)
-internal val HELMET_YELLOW = Color(0xFFFDD835)
 internal val SHOVEL_STEEL = Color(0xFF9E9E9E)
 
 // Weather and time of day
@@ -133,6 +136,9 @@ internal val GHOST_GLOW = Color(0xFF80DEEA)
 internal val SAND = Color(0xFFE6C98F)
 internal val PIER_WOOD = Color(0xFF8D6E63)
 internal val PIER_WOOD_DARK = Color(0xFF5D4037)
+
+// The rope bridge over a gorge (planks and posts use the pier's wood)
+internal val BRIDGE_ROPE = Color(0xFFC8A165)
 
 // The deep sea: darkest water, fish, jellyfish, the whale and old wrecks
 internal val SEA_DEEP = Color(0xFF0D2B45)

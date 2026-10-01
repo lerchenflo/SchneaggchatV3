@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.drill
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.OnTrack
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.scrollAlong
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HOOVES_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
@@ -18,10 +19,12 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import kotlin.math.sin
 import kotlin.random.Random
 
-// Drill machine (mine): a yellow tracked machine with a huge drill at its front rolls by. Lasso it
+// Drill machine (cave): a yellow tracked machine with a huge drill at its front rolls by. Lasso it
 // and horse and rider climb in through the hatch (only the hat sticks out). Hold to drill down into
 // the earth below the track, let go and it comes back up. Gold nuggets down there give points; the
 // hard gray rocks end the ride early (without any harm). Afterwards it surfaces and the horse hops out.
+// Keep drilling at the very bottom and it breaks through into the fossil layer below the cave: the
+// run goes on down there (see RodeoMapSwitch).
 
 // Shape, shared with the drawing (grid: x from the machine's rear, y up from the underside of its
 // tracks). The machine is drawn [DRILL_SCALE] times as big as this grid, big enough for horse and rider.
@@ -53,10 +56,14 @@ private const val RISE_SPEED = 15f
 private const val SURFACE_SPEED = 18f
 /** How deep the machine's underside goes. */
 private const val MAX_DEPTH = 34f
+/** The fossil layer's bones show in the earth this deep, just below the deepest the machine gets. */
+internal const val DRILL_FOSSIL_DEPTH = MAX_DEPTH + 3f
+/** Seconds of drilling at the very bottom until it breaks through into the fossil layer. */
+private const val BREAK_SECONDS = 1.2f
 private const val SPEED_FACTOR = 0.75f
 /** The view follows the machine down. */
-private const val CAMERA_FOLLOW = 0.9f
-private const val CAMERA_MAX_DOWN = 30f
+private const val CAMERA_FOLLOW = 1f
+private const val CAMERA_MAX_DOWN = 34f
 private const val FIND_GAP_MIN = 10f
 private const val FIND_GAP_RANDOM = 10f
 private const val ROCK_CHANCE = 0.3f
@@ -85,6 +92,10 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
     /** The tunnel dug so far: middle points, moving with the ground. */
     private val trail = mutableListOf<Pair<Float, Float>>()
     private var trailScroll = 0f
+    /** Seconds drilled at the very bottom; breaks through at [BREAK_SECONDS]. */
+    private var breakTime = 0f
+    /** Broke through into the fossil layer: it keeps drilling until the fade is dark. */
+    private var brokeThrough = false
 
     override val length = FULL_LENGTH
     override val passSpeed = DRILL_PASS_SPEED
@@ -105,6 +116,8 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
         super.spawn(world)
         y = 0f
         surfacing = false
+        breakTime = 0f
+        brokeThrough = false
         finds.clear()
         trail.clear()
     }
@@ -161,11 +174,21 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
         drillPhase += dt * 12f
         val velocity = when {
             surfacing -> SURFACE_SPEED
-            drilling -> -DIG_SPEED
+            drilling || brokeThrough -> -DIG_SPEED
             else -> RISE_SPEED
         }
         y = (y + velocity * dt).coerceIn(-MAX_DEPTH, 0f)
         lift = BODY_TOP + y
+
+        // Holding on at the very bottom of the cave breaks through into the fossil layer
+        if (!brokeThrough) {
+            breakTime = if (drilling && !surfacing && y <= -MAX_DEPTH && world.map == RodeoMap.CAVE) breakTime + dt else 0f
+            if (breakTime >= BREAK_SECONDS) {
+                brokeThrough = true
+                world.sparkle(x + FULL_LENGTH, y)
+                world.travelTo(RodeoMap.FOSSIL)
+            }
+        }
 
         // The tunnel behind the machine
         trailScroll += scroll
@@ -206,7 +229,7 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
             hit && !find.rock
         }
 
-        if (phaseTime >= RIDE_SECONDS) surfacing = true
+        if (phaseTime >= RIDE_SECONDS && !brokeThrough) surfacing = true
         if (surfacing && y >= 0f) {
             y = 0f
             enter(VehiclePhase.UNLOADING)
@@ -225,8 +248,12 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
             earthVisible = underground,
             tunnel = trail.map { (trailX, trailY) -> RodeoTunnelUi(trailX, trailY) },
             finds = finds.map { RodeoDrillFindUi(x = it.x, y = it.y, rock = it.rock, seed = it.seed) },
-            // Stuck in a rock: the drill shakes
-            shake = if (surfacing && phase == VehiclePhase.RIDING) 0.3f * sin(drillPhase * 3f) else 0f,
+            // Stuck in a rock, or breaking through at the bottom: the drill shakes
+            shake = when {
+                surfacing && phase == VehiclePhase.RIDING -> 0.3f * sin(drillPhase * 3f)
+                breakTime > 0f || brokeThrough -> 0.5f * sin(drillPhase * 4f)
+                else -> 0f
+            },
             lassoHint = lassoHint(x + FULL_LENGTH / 2f, BODY_TOP + 8f),
         )
     }

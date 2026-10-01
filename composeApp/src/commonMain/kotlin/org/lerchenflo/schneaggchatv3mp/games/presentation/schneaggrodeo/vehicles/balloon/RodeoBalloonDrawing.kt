@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.balloon
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
@@ -41,8 +43,10 @@ data class RodeoBalloonUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x, x + BASKET_WIDTH, tilts = false)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
-        if (layer == RodeoLayer.FRONT) drawBalloon(this@RodeoBalloonUi, context)
+        if (layer == RodeoLayer.FRONT) onFootprint(context, footprint) { drawBalloon(this@RodeoBalloonUi, it) }
     }
 }
 
@@ -99,7 +103,7 @@ private fun DrawScope.drawBalloon(balloon: RodeoBalloonUi, context: RodeoDrawCon
         }
 
         // The cowboy peeking out of the basket
-        if (balloon.hasPilot) drawSeatedCowboy(::p, hipX = centerX - 0.8f, hipY = BASKET_HEIGHT - 2.4f, unit = unit, colors = colors)
+        if (balloon.hasPilot) drawSeatedCowboy(::p, hipX = centerX - 0.8f, hipY = BASKET_HEIGHT - 2.4f, unit = unit, colors = colors, wounds = context.cowboyWounds)
 
         // Wicker basket with weave lines
         drawRoundRect(WICKER, p(0f, BASKET_HEIGHT), Size(BASKET_WIDTH * unit, BASKET_HEIGHT * unit), CornerRadius(0.4f * unit))

@@ -21,9 +21,11 @@ data class RecapResponse(
     val globalLeaderboard: LeaderboardRecapDto,
     val groups: GroupsRecapDto,
     val map: MapRecapDto,
-    val games: List<GameRecapEntryDto>,
+    // Public global games ranking (all games together); defaulted for servers that still send per-board `games`
+    val gamesLeaderboard: GamesLeaderboardRecapDto = GamesLeaderboardRecapDto(),
     val betaTester: BetaTesterRecapDto = BetaTesterRecapDto(),
     val passwordResets: PasswordResetRecapDto = PasswordResetRecapDto(),
+    val usageTime: UsageTimeRecapDto = UsageTimeRecapDto(),
 )
 
 @Serializable
@@ -170,13 +172,22 @@ data class MapLeaderboardRecapDto(
 )
 
 @Serializable
-data class GameRecapEntryDto(
-    val game: String,
-    val difficulty: String,
-    val bestScore: Long,
-    val bestTimeMillis: Long,
+data class GamesLeaderboardRowDto(
     val rank: Int,
-    val achievedAt: Long,
+    val userId: String,
+    val username: String,
+    val points: Long,
+    val boardsPlayed: Int = 0,
+    val gamesPlayed: Int = 0,
+)
+
+@Serializable
+data class GamesLeaderboardRecapDto(
+    val top: List<GamesLeaderboardRowDto> = emptyList(),
+    val myRank: Int? = null,
+    val myPoints: Long = 0,
+    val myBoardsPlayed: Int = 0,
+    val myGamesPlayed: Int = 0,
 )
 
 @Serializable
@@ -198,6 +209,28 @@ data class BetaTesterRecapDto(
 data class PasswordResetRecapDto(
     val passwordResetEmailsSentThisYear: Long = 0,
     val passwordResetEmailsSentAllTime: Long = 0,
+)
+
+@Serializable
+data class DurationDayCountDto(val date: String, val millis: Long)
+
+@Serializable
+data class DurationMonthCountDto(val month: Int, val millis: Long)
+
+// Time connected over the WebSocket. Every session counts on its own: two devices online at the
+// same time add up (not merged server-side). Logging only started mid-2026, see trackingSince.
+@Serializable
+data class UsageTimeRecapDto(
+    val totalMillisThisYear: Long = 0,
+    val totalMillisAllTime: Long = 0,
+    val sessionCountThisYear: Long = 0,
+    val averageSessionMillis: Long = 0,
+    val longestSessionMillis: Long = 0,
+    val longestSessionAt: Long? = null,
+    val busiestDay: DurationDayCountDto? = null,
+    val busiestHourOfDay: Int? = null,
+    val perMonth: List<DurationMonthCountDto> = emptyList(),
+    val trackingSince: Long? = null,
 )
 
 // ─── UI models (formatted, enriched with local data) ──────────────────────
@@ -256,7 +289,10 @@ data class RecapUi(
     val myMapRank: Int?,
     val myMapContributions: Long,
 
-    val games: List<GameRecapUi>,
+    val gamesLeaderboardTop: List<RankedRowUi>,
+    val myGamesRank: Int?,
+    val myGamesPoints: Long,
+    val myGamesPlayed: Int,
 
     val betaTesterRows: List<RankedRowUi>,
     val myBetaTesterRank: Int?,
@@ -264,6 +300,19 @@ data class RecapUi(
 
     val passwordResetEmailsSentThisYear: Long,
     val passwordResetEmailsSentAllTime: Long,
+
+    val usageMillisThisYear: Long,
+    val usageSessionCount: Long,
+    val usageAverageSessionMillis: Long,
+    val usageLongestSessionMillis: Long,
+    val usageBusiestDayFormatted: String?,
+    val usageBusiestDayMillis: Long,
+    val usageBusiestHourOfDay: Int?,
+    // MonthCountUi.count holds online minutes here
+    val usagePerMonth: List<MonthCountUi>,
+    val usagePeakMonth: MonthCountUi?,
+    val usageTrackingSinceMonth: UiText?,
+    val usageTrackingSinceYear: Int?,
 )
 
 data class MessageTypeCountUi(
@@ -313,15 +362,4 @@ data class RankedRowUi(
 data class GroupActivityUi(
     val name: String,
     val messageCount: Long,
-)
-
-data class GameRecapUi(
-    val gameName: String,
-    val difficulty: String,
-    val bestScore: Long,
-    val rank: Int,
-    // Preformatted score for games that don't store a plain count (Dart Counter average x100)
-    val bestScoreText: String? = null,
-    // Win-counting game (Undercover): bestScore is the number of wins
-    val countsWins: Boolean = false,
 )

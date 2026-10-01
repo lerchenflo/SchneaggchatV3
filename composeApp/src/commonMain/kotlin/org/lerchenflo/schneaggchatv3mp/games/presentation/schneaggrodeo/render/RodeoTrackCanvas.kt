@@ -2,22 +2,22 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import kotlin.math.PI
 import kotlin.math.atan
 import org.jetbrains.compose.resources.imageResource
@@ -32,7 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.O
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoStopKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoWeather
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MAX_FENCE_CM
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HIGHEST_FENCE_CM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MIN_FENCE_CM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SNAIL_SIZE
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.WORLD_HEIGHT_UNITS
@@ -41,7 +41,13 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_candy
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_car_money
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_double_points
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_fence_height
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_goodbye
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_friend
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_horse
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_kaesknoepfle
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_pizza
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_stanislaus
 import schneaggchatv3mp.composeapp.generated.resources.icon_schneagg_alternative
 import schneaggchatv3mp.composeapp.generated.resources.rodeo_stanislaus
 
@@ -57,7 +63,7 @@ private const val MARKER_POST_HEIGHT_STAGGERED = 29f
 
 /**
  * The track: space and sky, ground, highscore markers, mud, fences,
- * snails, the chasing pack, other horses, vehicles, horse, rider and lasso - drawn back to front.
+ * snails, other horses, vehicles, horse, rider, the chasing ravens and lasso - drawn back to front.
  * [frame] and [people] are read in the draw phase only, so a new frame redraws the canvas without
  * recomposing anything.
  */
@@ -70,8 +76,8 @@ internal fun RodeoTrack(
 ) {
     val themeColors = MaterialTheme.colorScheme
     val textMeasurer = rememberTextMeasurer()
-    // Only 13 possible heights - resolved in composition since the canvas draws outside of it
-    val heightLabels = (MIN_FENCE_CM..MAX_FENCE_CM step 10).associateWith {
+    // Only 15 possible heights - resolved in composition since the canvas draws outside of it
+    val heightLabels = (MIN_FENCE_CM..HIGHEST_FENCE_CM step 10).associateWith {
         stringResource(Res.string.games_schneaggrodeo_fence_height, it)
     }
     // Text is laid out once per map and reused, instead of being measured again for every frame
@@ -90,14 +96,27 @@ internal fun RodeoTrack(
             textMeasurer = textMeasurer,
         )
     }
-    val lassoHintText = stringResource(Res.string.games_schneaggrodeo_lasso_hint)
+    // "Lasso it" hints: what the lasso does depends on what it is thrown at
+    val hintTexts = listOf(
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint),
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint_horse),
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint_friend),
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint_pizza),
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint_kaesknoepfle),
+        stringResource(Res.string.games_schneaggrodeo_lasso_hint_stanislaus),
+    )
     val lassoHintStyle = MaterialTheme.typography.labelMedium.copy(
         color = themeColors.onPrimaryContainer,
         fontWeight = FontWeight.Bold
     )
-    val lassoHintLayout = remember(textMeasurer, lassoHintText, lassoHintStyle) {
-        textMeasurer.measure(lassoHintText, lassoHintStyle)
+    val hintLayouts = remember(textMeasurer, hintTexts, lassoHintStyle) {
+        hintTexts.map { textMeasurer.measure(it, lassoHintStyle) }
     }
+    val (vehicleHint, horseHint, friendHint, pizzaHint, knoepfleHint) = hintLayouts
+    val stanislausHint = hintLayouts[5]
+    val goodbyeText = stringResource(Res.string.games_schneaggrodeo_goodbye)
+    val goodbyeStyle = MaterialTheme.typography.titleMedium.copy(color = themeColors.onSurface, fontWeight = FontWeight.Black)
+    val goodbyeLayout = remember(textMeasurer, goodbyeText, goodbyeStyle) { textMeasurer.measure(goodbyeText, goodbyeStyle) }
     val doublePointsText = stringResource(Res.string.games_schneaggrodeo_double_points)
     val doublePointsStyle = MaterialTheme.typography.titleMedium.copy(color = SNOW_COLOR, fontWeight = FontWeight.Black)
     val doublePointsLayout = remember(textMeasurer, doublePointsText, doublePointsStyle) {
@@ -105,7 +124,7 @@ internal fun RodeoTrack(
     }
 
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RectangleShape,
         color = themeColors.surfaceContainer,
         modifier = modifier
     ) {
@@ -121,7 +140,7 @@ internal fun RodeoTrack(
             val unit = size.height / WORLD_HEIGHT_UNITS
             val groundY = size.height - GROUND_OFFSET_UNITS * unit
             val terrain = world.terrain
-            val context = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = vehicleAssets, ground = terrain::heightAt)
+            val context = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = vehicleAssets, ground = terrain::heightAt, cowboyWounds = world.cowboyWounds)
             // Backdrops are fixed to the screen: the camera (and with it the hills) doesn't move them
             val screenContext = context.flat()
 
@@ -141,18 +160,14 @@ internal fun RodeoTrack(
                 outline = paint.snailOutline
             )
 
-            // Each map dresses the snails differently: sharks and swim rings in the sea, helmets in the mine
-            fun drawSnailAt(snail: RodeoSnailUi, pack: Boolean = false) {
+            // In the sea the snails are sharks or ride swim rings
+            fun drawSnailAt(snail: RodeoSnailUi) {
                 when (world.map) {
-                    RodeoMap.SEA -> if (snail.runner || pack) {
+                    RodeoMap.SEA -> if (snail.runner) {
                         drawShark(snail, context)
                     } else {
                         drawSwimRing(snail, context)
                         drawPlainSnail(snail)
-                    }
-                    RodeoMap.MINE -> {
-                        drawPlainSnail(snail)
-                        drawMinerHelmet(snail, context)
                     }
                     else -> drawPlainSnail(snail)
                 }
@@ -160,20 +175,24 @@ internal fun RodeoTrack(
 
             // Up in space (rocket) the sky turns dark and starry - fixed to the screen
             drawSpace(world.distance, unit, world.space)
-            // In the cave and the mine: rock or earth walls all around
+            // In the cave and the fossil layer: rock walls all around; on the rainbow: clouds below
             when (world.map) {
                 RodeoMap.CAVE -> drawCaveBackdrop(world.distance, screenContext)
+                RodeoMap.FOSSIL -> drawFossilBackdrop(world.distance, screenContext)
+                RodeoMap.RAINBOW -> drawRainbowBackdrop(world.distance, screenContext)
                 // The sea is drawn in the world, so the view can look down into it
                 RodeoMap.SEA -> Unit
-                RodeoMap.MINE -> drawMineBackdrop(world.distance, screenContext)
                 RodeoMap.SURFACE -> Unit
             }
 
             // The whole picture rattles while a vehicle races, pans up with the horse and tilts with
             // the mountain around the horse's hooves
+            // At the end of a run the view zooms in on the cowboy carried off by the ravens
+            val spotlight = world.spotlight
             fun inWorld(block: DrawScope.() -> Unit) = withTransform({
                 translate(world.shakeX * unit, (world.shakeY + world.cameraY + world.terrainShift) * unit)
                 rotate(world.tiltDegrees, pivot = Offset((HORSE_X + 15f) * unit, context.groundYAt(HORSE_X + 15f)))
+                if (spotlight != null) scale(spotlight.zoom, spotlight.zoom, pivot = context.p(spotlight.x, spotlight.height))
             }, block)
 
             inWorld {
@@ -200,9 +219,19 @@ internal fun RodeoTrack(
                 // The rainbow after the rain, its feet on the track
                 world.rainbowX?.let { drawRainbow(it, context) }
 
-                // In the sea the horse swims: no ground, the water's surface is drawn over everything
-                if (world.map != RodeoMap.SEA) {
-                    drawGround(context, world.distance, world.speedBlur)
+                // In the sea the horse swims: no ground, the water's surface is drawn over everything.
+                // Gorges are cut out of the ground, a river at their bottom.
+                // On the rainbow the rainbow itself is the track, with gaps in it.
+                val bridges = world.terrain.bridges
+                when (world.map) {
+                    RodeoMap.SEA -> Unit
+                    RodeoMap.RAINBOW -> drawRainbowTrack(context, world.gaps)
+                    else -> {
+                        drawWithGorges(bridges, context) { drawGround(context, world.distance, world.speedBlur, world.enclosed) }
+                        bridges.forEach { drawGorge(it, context, world.distance) }
+                        // Plank bridges over the gorges, snowed over like the ground
+                        bridges.forEach { drawBridge(it, context) }
+                    }
                 }
                 if (world.map == RodeoMap.SURFACE && world.weather == RodeoWeather.SNOW) drawSnowCover(context)
                 // Ways to the other maps: shafts, the beach, ramps back up
@@ -247,17 +276,16 @@ internal fun RodeoTrack(
 
                 world.fences.forEach { fence ->
                     val label = paint.heightLabels.getValue(fence.heightCm)
-                    // On the other maps the fences are stalagmites, buoys or crate stacks
+                    // On the other maps the fences are stalagmites, buoys or dinosaur bones
                     when (world.map) {
                         RodeoMap.CAVE -> drawStalagmite(fence, context, label)
                         RodeoMap.SEA -> drawBuoy(fence, context, label)
-                        RodeoMap.MINE -> drawCrateStack(fence, context, label)
-                        RodeoMap.SURFACE -> drawFence(fence, context, colors.onSurface, label)
+                        RodeoMap.FOSSIL -> drawBoneFence(fence, context, label)
+                        RodeoMap.SURFACE, RodeoMap.RAINBOW -> drawFence(fence, context, colors.onSurface, label)
                     }
                 }
 
                 world.snails.forEach { drawSnailAt(it) }
-                world.pack.forEach { drawSnailAt(it, pack = true) }
 
                 world.horseshoes.forEach { shoe ->
                     drawHorseshoe(
@@ -273,7 +301,8 @@ internal fun RodeoTrack(
                 world.gems.forEach { gem ->
                     when (world.map) {
                         RodeoMap.SEA -> drawPearl(gem, context)
-                        RodeoMap.MINE -> drawNugget(gem, context)
+                        RodeoMap.FOSSIL -> drawAmmonite(gem, context)
+                        RodeoMap.RAINBOW -> drawStar(gem, context)
                         else -> drawGem(gem, context)
                     }
                 }
@@ -287,7 +316,6 @@ internal fun RodeoTrack(
                             unit = unit,
                             pose = wild.pose.copy(pitchDegrees = wild.pose.pitchDegrees + hillPitch(wild.x + HOOVES_X, wild.pose.height)),
                             colors = paint.horseColors,
-                            bodyLabel = null,
                             pictures = crowd.pictures,
                         )
                     }
@@ -322,17 +350,21 @@ internal fun RodeoTrack(
                 if (world.horse.visible) {
                     val drawRidden: DrawScope.() -> Unit = {
                         val hooves = HORSE_X + world.horse.offsetX + HOOVES_X
-                        drawHorseAndRider(
+                        fun DrawScope.drawOn(ground: RodeoDrawContext, pitch: Float) = drawHorseAndRider(
                             left = (HORSE_X + world.horse.offsetX) * unit,
-                            groundY = context.groundYAt(hooves) - world.horse.height * unit,
+                            groundY = ground.groundYAt(hooves) - world.horse.height * unit,
                             unit = unit,
-                            pose = world.horse.copy(pitchDegrees = world.horse.pitchDegrees + hillPitch(hooves, world.horse.height)),
+                            pose = world.horse.copy(pitchDegrees = world.horse.pitchDegrees + pitch),
                             colors = paint.horseColors,
-                            bodyLabel = if (world.snailsCaught > 0) {
-                                paint.bodyLabels.getOrPut(world.snailsCaught) { textMeasurer.measure(world.snailsCaught.toString(), paint.bodyLabelStyle) }
-                            } else null,
                             pictures = crowd.pictures,
                         )
+                        // Standing on a vehicle, the horse tilts along with it
+                        val deck = if (world.horseOnVehicle) world.vehicles.firstOrNull()?.footprint else null
+                        if (deck != null) {
+                            onFootprint(context, deck) { drawOn(it, 0f) }
+                        } else {
+                            drawOn(context, hillPitch(hooves, world.horse.height))
+                        }
                     }
                     // Under the ghost horse's spell horse and rider are see-through
                     if (world.horse.ghost) {
@@ -348,20 +380,23 @@ internal fun RodeoTrack(
                 // Planes, debris, smoke, bridge decks and flying cans pass in front of the horse
                 world.vehicles.forEach { drawVehicle(it, RodeoLayer.FRONT, context) }
 
-                // "Lasso it" hint over a vehicle passing by, and over the other horses
-                val hints = world.vehicles.mapNotNull { it.lassoHint?.let { hint -> hint.x to hint.y } } +
-                        world.wildHorses.filter { it.lassoable }.map { it.x + 14f to it.pose.height + if (it.friendName != null) 40f else 32f } +
-                        world.pizzaOvens.filter { it.hasPizza }.map { it.x + OVEN_MOUTH_X to 18f } +
-                        listOfNotNull(world.runnerMan?.takeIf { !it.caught }?.let { it.x to it.y + 12f })
-                hints.forEach { (hintX, hintY) ->
-                    drawLassoHint(
-                        layout = lassoHintLayout,
-                        centerX = hintX * unit,
-                        bottomY = context.groundYAt(hintX) - hintY * unit,
-                        unit = unit,
-                        color = colors.primaryContainer
-                    )
+                // "Lasso it" hints over a vehicle passing by, the other horses, the stops and Stanislaus
+                fun drawHint(layout: TextLayoutResult, hintX: Float, hintY: Float) = drawLassoHint(
+                    layout = layout,
+                    centerX = hintX * unit,
+                    bottomY = context.groundYAt(hintX) - hintY * unit,
+                    unit = unit,
+                    color = colors.primaryContainer
+                )
+                world.vehicles.forEach { vehicle -> vehicle.lassoHint?.let { drawHint(vehicleHint, it.x, it.y) } }
+                world.wildHorses.filter { it.lassoable }.forEach { wild ->
+                    if (wild.friendName != null) drawHint(friendHint, wild.x + 14f, wild.pose.height + 40f)
+                    else drawHint(horseHint, wild.x + 14f, wild.pose.height + 32f)
                 }
+                world.pizzaOvens.filter { it.hasPizza }.forEach { stop ->
+                    drawHint(if (stop.kind == RodeoStopKind.KIOSK) knoepfleHint else pizzaHint, stop.x + OVEN_MOUTH_X, 18f)
+                }
+                world.runnerMan?.takeIf { !it.caught }?.let { drawHint(stanislausHint, it.x, it.y + 12f) }
 
                 world.pizza?.let { carried ->
                     when (carried.kind) {
@@ -371,8 +406,26 @@ internal fun RodeoTrack(
                 }
 
                 world.cowboy?.let { cowboy ->
-                    drawCowboy(cowboy = cowboy, groundY = context.groundYAt(cowboy.x), unit = unit, color = colors.onSurface, shirtColor = colors.primary)
+                    drawCowboy(
+                        cowboy = cowboy,
+                        groundY = context.groundYAt(cowboy.x),
+                        unit = unit,
+                        color = colors.onSurface,
+                        shirtColor = colors.primary,
+                        scarfColor = colors.secondary,
+                        pantsColor = paint.horseColors.pants,
+                        wounds = world.cowboyWounds,
+                    )
                 }
+
+                // Mud splashing up where he fell at the end of the run
+                world.mudSplash?.let { splash ->
+                    drawLandingSplash(splash.x * unit, context.groundYAt(splash.x), unit * 2f, splash.progress, MUD_COLOR)
+                }
+
+                // The ravens fly in front of everything, swooping down onto the cowboy
+                world.ravens.forEach { drawRaven(it, context) }
+                world.lostPart?.let { drawLostPart(it, context, skin = colors.onSurface, shirt = colors.primary, pants = paint.horseColors.pants) }
 
                 // Wading through mud: brown spray keeps flying from the hooves
                 if (world.inMud) {
@@ -420,6 +473,20 @@ internal fun RodeoTrack(
 
             // Slow-motion mushroom: a dreamy haze over everything
             if (world.slowMotion) drawSlowMotionHaze(colors.tertiary, unit, world.distance)
+            // Any mushroom: the edges of the picture wobble
+            if (world.tripStrength > 0f) drawWobblyOutline(world.tripStrength, world.tripClock, unit, colors.tertiary, colors.primary)
+            // The end of a run: dark all round, closing in on the cowboy, who says goodbye
+            if (spotlight != null) {
+                val worldPoint = context.p(spotlight.x, spotlight.height)
+                val center = Offset(
+                    worldPoint.x + world.shakeX * unit,
+                    worldPoint.y + (world.shakeY + world.cameraY + world.terrainShift) * unit,
+                )
+                drawSpotlight(center, spotlight.radius * spotlight.zoom * unit, colors.scrim)
+                if (spotlight.sayGoodbye) {
+                    drawSpeechBubble(goodbyeLayout, center + Offset(3f * unit * spotlight.zoom, -4f * unit * spotlight.zoom), unit, colors.surfaceBright)
+                }
+            }
             // Switching maps fades through black
             if (world.fade > 0f) drawRect(colors.scrim.copy(alpha = world.fade))
         }

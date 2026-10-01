@@ -3,12 +3,14 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcont
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -26,6 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.extractLinks
  * Backs the shared content screen: every image and every link ever shared in one chat, kept up to
  * date from the database.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class SharedContentViewModel(
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
@@ -34,12 +37,12 @@ class SharedContentViewModel(
 
     private val chatId: String,
     private val isGroup: Boolean,
-    showLinks: Boolean,
+    initialTab: SharedContentTab,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
         SharedContentState(
-            selectedTab = if (showLinks) SharedContentTab.LINKS else SharedContentTab.IMAGES
+            selectedTab = initialTab
         )
     )
     val state = _state.asStateFlow()
@@ -94,6 +97,47 @@ class SharedContentViewModel(
                     }
                 }
         }
+
+        // The MESSAGES tab follows whichever type is picked in its dropdown
+        viewModelScope.launch {
+            _state
+                .map { it.messageType }
+                .distinctUntilChanged()
+                .flatMapLatest { type ->
+                    _state.update { it.copy(isLoadingMessages = true) }
+                    combine(
+                        messageRepository.getMessagesOfTypeForChatFlow(chatId, isGroup, type),
+                        senderNamesFlow
+                    ) { messages, senderNames ->
+                        messages.map { message -> message.toSharedMessageItem(senderNames) }
+                    }
+                }
+                .flowOn(Dispatchers.Default)
+                .collectLatest { messages ->
+                    _state.update { it.copy(messages = messages, isLoadingMessages = false) }
+                }
+        }
+    }
+
+    private fun Message.toSharedMessageItem(senderNames: Map<String, String>): SharedMessageItem {
+        val poll = poll
+        return SharedMessageItem(
+            messageId = id,
+            localPK = localPK,
+            type = msgType,
+            text = poll?.title ?: content,
+            pictureUrl = pictureUrl,
+            systemEvent = systemEvent,
+            senderName = senderName(senderNames),
+            sendDate = getSendDateAsLong(),
+            poll = poll?.let {
+                SharedPollInfo(
+                    voterCount = it.getUniqueVoterCount(),
+                    subPollCount = it.subPollCount(),
+                    isClosed = it.isExpired(),
+                )
+            },
+        )
     }
 
     /** Resolved display name of the sender, falling back to whatever the message itself carries. */
@@ -103,6 +147,7 @@ class SharedContentViewModel(
     fun onAction(action: SharedContentAction) {
         when (action) {
             is SharedContentAction.OnTabSelected -> _state.update { it.copy(selectedTab = action.tab) }
+            is SharedContentAction.OnMessageTypeSelected -> _state.update { it.copy(messageType = action.type) }
             is SharedContentAction.OnGoToMessageClick -> goToMessage(action.messageId)
             is SharedContentAction.OnCopyLinkClick -> copyToClipboard(action.url)
             is SharedContentAction.OnDownloadImageClick -> downloadImage(action.item)

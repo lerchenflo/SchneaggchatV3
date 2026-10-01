@@ -24,7 +24,7 @@ enum class GameId(
     GAME_2048,
     CROSSWORD(daily = true),
     WORDLE,
-    // Endless runner without a difficulty setting: one board, points first, run time as tiebreaker
+    // Endless runner: its levels are picked in the game and share one board, points first, run time as tiebreaker
     SCHNEAGG_RODEO,
     // Final score of a finished game
     YATZI(sharedDevice = true),
@@ -152,7 +152,7 @@ val GameId.leaderboard: LeaderboardSpec
             boardAxis = BoardAxis.NONE,
             boards = listOf(GameDifficulty.MEDIUM),
         )
-        // No difficulty setting, so a single board; the run time ranks equal scores
+        // Levels are picked in the game and share a single board; the run time ranks equal scores
         GameId.SCHNEAGG_RODEO -> LeaderboardSpec(
             scoreKind = ScoreKind.POINTS,
             boardAxis = BoardAxis.NONE,

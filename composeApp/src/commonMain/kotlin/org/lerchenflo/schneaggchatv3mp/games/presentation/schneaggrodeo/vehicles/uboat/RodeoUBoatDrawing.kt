@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.uboat
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -81,9 +82,13 @@ private fun DrawScope.drawUBoat(boat: RodeoUBoatUi, context: RodeoDrawContext) {
     drawLine(SUB_TRIM, p(TOWER_X + 4.5f, UBOAT_HEIGHT + TOWER_HEIGHT), p(TOWER_X + 4.5f, UBOAT_HEIGHT + TOWER_HEIGHT + 3f), 0.4f * unit)
     drawLine(SUB_TRIM, p(TOWER_X + 4.5f, UBOAT_HEIGHT + TOWER_HEIGHT + 3f), p(TOWER_X + 5.8f, UBOAT_HEIGHT + TOWER_HEIGHT + 3f), 0.4f * unit, StrokeCap.Round)
     if (boat.crewAboard) {
-        // The cowboy's hat pokes out of the tower hatch
-        drawRoundRect(HAT_COLOR, p(TOWER_X + 0.8f, UBOAT_HEIGHT + TOWER_HEIGHT + 0.9f), Size(3.6f * unit, 0.5f * unit), CornerRadius(0.25f * unit))
-        drawRoundRect(HAT_COLOR, p(TOWER_X + 1.6f, UBOAT_HEIGHT + TOWER_HEIGHT + 2.4f), Size(2f * unit, 1.5f * unit), CornerRadius(0.5f * unit))
+        // The cowboy's hat pokes out of the tower hatch - or his bare head, once the ravens took it
+        if (context.cowboyLost(RodeoCowboyPart.HAT)) {
+            drawCircle(context.colors.onSurface, radius = 1.2f * unit, center = p(TOWER_X + 2.6f, UBOAT_HEIGHT + TOWER_HEIGHT + 0.6f))
+        } else {
+            drawRoundRect(HAT_COLOR, p(TOWER_X + 0.8f, UBOAT_HEIGHT + TOWER_HEIGHT + 0.9f), Size(3.6f * unit, 0.5f * unit), CornerRadius(0.25f * unit))
+            drawRoundRect(HAT_COLOR, p(TOWER_X + 1.6f, UBOAT_HEIGHT + TOWER_HEIGHT + 2.4f), Size(2f * unit, 1.5f * unit), CornerRadius(0.5f * unit))
+        }
     }
     // Hull with fins
     drawRoundRect(SUB_YELLOW, p(0f, UBOAT_HEIGHT), Size(UBOAT_LENGTH * unit, UBOAT_HEIGHT * unit), CornerRadius(3.5f * unit))

@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicle
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoDrawContext
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoLayer
 
 /**
@@ -12,6 +13,12 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.R
 interface RodeoVehicleUi {
     /** Where the "lasso it" hint points to while it passes by. */
     val lassoHint: RodeoLassoHintUi?
+
+    /**
+     * Where it stands on the ground, if it is rigid: it draws itself on it (see onFootprint), and a
+     * horse standing on it tilts along with it.
+     */
+    val footprint: RodeoFootprint? get() = null
 
     /** Draws the parts of the vehicle that belong on [layer] (see [RodeoLayer]). */
     fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext)

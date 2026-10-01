@@ -1,9 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoDeepKind
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.bridgeSagAt
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainHeightAt
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainSlopeAt
 import androidx.compose.runtime.Immutable
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import androidx.compose.ui.graphics.ImageBitmap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoStopKind
@@ -14,6 +16,8 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 
 sealed interface SchneaggRodeoAction {
     data object StartGame : SchneaggRodeoAction
+    /** Picks the level of the next run on the start screen. */
+    data class OnLevelSelected(val level: GameDifficulty) : SchneaggRodeoAction
     /** Ends the current run without submitting a score and returns to the start screen. */
     data object StopGame : SchneaggRodeoAction
     data object RestartGame : SchneaggRodeoAction
@@ -62,6 +66,8 @@ data class RodeoPeopleUi(
 /** Everything around the track: HUD, controls and overlays. Changes a few times per second at most. */
 @Immutable
 data class SchneaggRodeoState(
+    /** Low / medium / high, picked on the start screen; all levels share one leaderboard. */
+    val level: GameDifficulty = GameDifficulty.MEDIUM,
     val isPlaying: Boolean = false,
     val isGameOver: Boolean = false,
     val isPaused: Boolean = false,
@@ -73,6 +79,8 @@ data class SchneaggRodeoState(
     val luckyCharms: Int = 0,
     /** Thrown off the horse: the lasso button is highlighted, it is the only way back up. */
     val isOnFoot: Boolean = false,
+    /** On foot and close enough to the horse to lasso it. */
+    val canCatchHorse: Boolean = false,
     /** The vehicle being ridden; the controls turn into a hint on how to ride it. */
     val ride: RodeoVehicleKind? = null,
     /** Enough snails saved up for the rocket, and nothing else going on. */
@@ -83,10 +91,14 @@ data class SchneaggRodeoState(
     val speedKmh: Int = 0,
     /** Banner shown briefly over the track when the rider boards a vehicle. */
     val announcement: RodeoVehicleKind? = null,
+    /** Shown big over the track right after arriving on another map. */
+    val mapTitle: RodeoMap? = null,
     /** The lowest all-time highscore above the current score; null offline or once everything is beaten. */
     val nextToBeat: RodeoGhostUi? = null,
     /** A lassoed friend just joined the ride: the run is paused to tell the player whose highscore it raises now. */
     val friendJoined: String? = null,
+    /** The ravens are carrying the cowboy off: a restart button lets the player skip the ending. */
+    val isEnding: Boolean = false,
 ) {
     /** Flying (plane, rocket): left half of the play area steers up, right half down. */
     val steers: Boolean get() = ride?.steers == true
@@ -106,6 +118,18 @@ data class RodeoFenceUi(
     val poleHeights: List<Float>,
 )
 
+/** A raven chasing the horse: [x] the middle of its body, [height] above the ground. */
+@Immutable
+data class RodeoRavenUi(
+    val x: Float,
+    val height: Float,
+    /** Wing beat: tips up at 1, down at -1. */
+    val flap: Float,
+    val tiltDeg: Float,
+    /** Flying back off after an attack. */
+    val facingLeft: Boolean = false,
+)
+
 /** [x] is the sprite center, [height] its underside above the ground. */
 @Immutable
 data class RodeoSnailUi(
@@ -113,7 +137,7 @@ data class RodeoSnailUi(
     val height: Float,
     val facingLeft: Boolean,
     val tiltDeg: Float,
-    /** A runner: drawn as a shark in the sea and with a helmet lamp in the mine. */
+    /** A runner: drawn as a shark in the sea. */
     val runner: Boolean = false,
 )
 
@@ -157,11 +181,51 @@ data class RodeoHorsePose(
     val passengerId: String? = null,
     /** Size of horse and rider, around the hooves: grown or shrunk by a magic mushroom. */
     val scale: Float = 1f,
+    /** What the ravens pecked off the rider (see RodeoCowboyPart); only the player's own cowboy. */
+    val riderWounds: Int = 0,
+    /** The rider twirls the lasso over his head with his free arm; only the player's own cowboy. */
+    val hasLasso: Boolean = false,
+    /** Turn of the twirling loop, radians. */
+    val lassoTwirl: Float = 0f,
+    /** 0..1 through a throw (the arm swings forward after the rope), negative while twirling. */
+    val lassoThrow: Float = -1f,
+)
+
+/** What the ravens peck off the cowboy, one per hit and in this order; the next hit ends the run. */
+enum class RodeoCowboyPart {
+    HAT, ARM, LEG;
+
+    /** With [wounds] hits taken this part is gone. */
+    fun isLostAt(wounds: Int) = wounds > ordinal
+}
+
+/**
+ * The end of a run: the picture goes dark except for a circle of [radius] round ([x], [height]),
+ * zoomed in by [zoom] around that point.
+ */
+@Immutable
+data class RodeoSpotlightUi(
+    val x: Float,
+    val height: Float,
+    val radius: Float,
+    val zoom: Float,
+    /** He waves goodbye with his greetings in a speech bubble. */
+    val sayGoodbye: Boolean,
+)
+
+/** A pecked-off [part] flying away from where it was ([x], [y]), spinning. */
+@Immutable
+data class RodeoLostPartUi(
+    val part: RodeoCowboyPart,
+    val x: Float,
+    val y: Float,
+    val progress: Float,
 )
 
 /**
  * The cowboy on his own after being thrown off: [x] is his center, [height] his feet above the
- * ground, [rotation] degrees clockwise around his middle (90 = flat on his back).
+ * ground, [rotation] degrees clockwise around his middle (90 = flat on his back). [runPhase] swings
+ * his legs while he runs (null: standing still), [tuck] pulls his knees in for a salto (0..1).
  */
 @Immutable
 data class RodeoCowboyUi(
@@ -170,6 +234,14 @@ data class RodeoCowboyUi(
     val rotation: Float,
     val facingLeft: Boolean,
     val hatLift: Float,
+    val runPhase: Float? = null,
+    val tuck: Float = 0f,
+    /** Gone limp like a rag doll: arms and legs flung about by [flail] (radians, see RodeoDeath). */
+    val limp: Boolean = false,
+    val flail: Float = 0f,
+    /** Carried off by the ravens: waves goodbye with his free arm, by this phase (radians). */
+    val waving: Float? = null,
+    val alpha: Float = 1f,
 )
 
 @Immutable
@@ -235,7 +307,7 @@ data class RodeoGemUi(
 )
 
 /**
- * A way to another map from [x] over [width]: a shaft into the mine or the cave, the beach into the
+ * A way to another map from [x] over [width]: a shaft into the cave, the beach into the
  * sea, or ([exit]) the ramp back up out of [origin].
  */
 @Immutable
@@ -249,9 +321,22 @@ data class RodeoMapWayUi(
     val origin: RodeoMap = RodeoMap.SURFACE,
 )
 
-/** A dirt mound in the mine the horse digs through at a gallop; [x] its center. */
+/**
+ * A dirt mound in the cave, [x] its center, with a shovel stuck in it while [hasShovel]. A lassoed
+ * shovel dangles from the loop at [shovelX] / [shovelY] on its way back.
+ */
 @Immutable
-data class RodeoMoundUi(val x: Float, val seed: Int)
+data class RodeoMoundUi(
+    val x: Float,
+    val seed: Int,
+    val hasShovel: Boolean = true,
+    val shovelX: Float? = null,
+    val shovelY: Float = 0f,
+)
+
+/** A gap in the rainbow track from [x] over [width]. */
+@Immutable
+data class RodeoGapUi(val x: Float, val width: Float)
 
 /** Stanislaus running alongside (rare); [x] his center, [hop] his stride, [caught] dangling in the lasso. */
 @Immutable
@@ -265,11 +350,15 @@ data class RodeoMudUi(
     val seed: Int,
 )
 
-/** The ground's height profile: control points [xs] (ascending) with heights [hs], eased between. */
+/**
+ * The ground's height profile: control points [xs] (ascending) with heights [hs], eased between, and
+ * the [bridges] over gorges sagging in it.
+ */
 @Immutable
 data class RodeoTerrainUi(
     val xs: List<Float> = emptyList(),
     val hs: List<Float> = emptyList(),
+    val bridges: List<RodeoBridgeUi> = emptyList(),
 ) {
     /**
      * Heights every [SAMPLE_STEP] units from the first control point on, worked out once: the
@@ -281,8 +370,15 @@ data class RodeoTerrainUi(
         }
     }
 
-    /** Height of the ground at [x]. */
+    /** Height of the ground at [x], down a sagging bridge's planks. */
     fun heightAt(x: Float): Float {
+        var height = baseHeightAt(x)
+        for (bridge in bridges) height -= bridgeSagAt(x, bridge.x, bridge.dip, bridge.loadAt)
+        return height
+    }
+
+    /** Height at [x] without the bridges' sag: the banks of a gorge. */
+    fun baseHeightAt(x: Float): Float {
         if (samples.isEmpty()) return 0f
         val position = ((x - xs.first()) / SAMPLE_STEP).coerceIn(0f, samples.size - 1f)
         val index = position.toInt().coerceAtMost(samples.size - 2)
@@ -291,9 +387,17 @@ data class RodeoTerrainUi(
         return samples[index] + (samples[index + 1] - samples[index]) * t
     }
 
-    /** Rise per unit at [x]: positive uphill. */
-    fun slopeAt(x: Float): Float = terrainSlopeAt(xs, hs, x)
+    /** Rise per unit at [x]: positive uphill, along a bridge's planks too. */
+    fun slopeAt(x: Float): Float =
+        if (bridges.isEmpty()) terrainSlopeAt(xs, hs, x) else (heightAt(x + 1f) - heightAt(x - 1f)) / 2f
 }
+
+/**
+ * A plank bridge over a gorge from [x] to x + BRIDGE_LENGTH, sagging by [dip] more under a load at
+ * [loadAt] (0..1 along it).
+ */
+@Immutable
+data class RodeoBridgeUi(val x: Float, val dip: Float, val loadAt: Float)
 
 /** Units between two sampled heights of [RodeoTerrainUi]. */
 private const val SAMPLE_STEP = 1f
@@ -359,7 +463,7 @@ data class SchneaggRodeoFrame(
     val distance: Float = 0f,
     val fences: List<RodeoFenceUi> = emptyList(),
     val snails: List<RodeoSnailUi> = emptyList(),
-    val pack: List<RodeoSnailUi> = emptyList(),
+    val ravens: List<RodeoRavenUi> = emptyList(),
     val horse: RodeoHorsePose = RodeoHorsePose(
         height = 0f,
         gaitPhase = 0f,
@@ -378,15 +482,22 @@ data class SchneaggRodeoFrame(
     /** 0..1 while the landing splash is shown. */
     val splashProgress: Float? = null,
     val markers: List<RodeoMarkerUi> = emptyList(),
-    /** Painted on the horse's side like a race number. */
-    val snailsCaught: Int = 0,
     /** Only set while the cowboy is off the horse. */
     val cowboy: RodeoCowboyUi? = null,
     val horseshoes: List<RodeoHorseshoeUi> = emptyList(),
     /** Stored lucky charms; the horse shows a faint aura while it has any. */
     val luckyCharms: Int = 0,
     val sparkle: RodeoSparkleUi? = null,
+    /** Hits the cowboy took from the ravens (see RodeoCowboyPart). */
+    val cowboyWounds: Int = 0,
+    val lostPart: RodeoLostPartUi? = null,
+    /** Mud splashing up where the cowboy fell at the end of the run. */
+    val mudSplash: RodeoDustUi? = null,
+    /** Darkness closing in on the cowboy as the ravens carry him off. */
+    val spotlight: RodeoSpotlightUi? = null,
     val vehicles: List<RodeoVehicleUi> = emptyList(),
+    /** The horse stands on the vehicle (and tilts along with it on the hills). */
+    val horseOnVehicle: Boolean = false,
     /** A vehicle races: the ground smears into streaks and speed lines fly through the sky. */
     val speedBlur: Boolean = false,
     /** Offset of the whole picture while a vehicle rattles along, in units. */
@@ -407,10 +518,16 @@ data class SchneaggRodeoFrame(
     val tiltDegrees: Float = 0f,
     /** A slow-motion mushroom: the picture gets a dreamy tint. */
     val slowMotion: Boolean = false,
-    /** In the cave or the mine (rock all around): the theme turned inside out. */
+    /** 0..1 while any mushroom works: the picture's outline wobbles. */
+    val tripStrength: Float = 0f,
+    /** Seconds into the mushroom's effect, for the wobble. */
+    val tripClock: Float = 0f,
+    /** In the cave or the fossil layer (rock all around): the theme turned inside out. */
     val enclosed: Boolean = false,
-    /** Which map the track runs through: surface, cave, sea or mine. */
+    /** Which map the track runs through: surface, cave, sea, rainbow or fossil layer. */
     val map: RodeoMap = RodeoMap.SURFACE,
+    /** Gaps in the rainbow track. */
+    val gaps: List<RodeoGapUi> = emptyList(),
     val mounds: List<RodeoMoundUi> = emptyList(),
     val runnerMan: RodeoRunnerManUi? = null,
     /** The run's weather and time of day, drawn over the surface. */

@@ -63,7 +63,10 @@ internal abstract class RodeoVehicle(val kind: RodeoVehicleKind) {
     /** Only joins the rotation once every regular vehicle came by at least once. */
     open val special: Boolean = false
 
-    /** Too fast for the hills: only comes on a flat stretch, and the ground stays flat while it is around. */
+    /**
+     * Too fast (or too long) for the hills: only comes on a flat stretch, and the ground stays flat
+     * while it is around.
+     */
     open val needsFlatTrack: Boolean = false
 
     var phase = VehiclePhase.IDLE

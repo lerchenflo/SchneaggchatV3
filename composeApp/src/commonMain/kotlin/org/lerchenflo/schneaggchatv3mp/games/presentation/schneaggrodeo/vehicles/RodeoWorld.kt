@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicle
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.Fence
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.Horseshoe
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.Snail
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SnailState
 
@@ -22,6 +23,8 @@ internal interface RodeoWorld {
     val riderlessHop: Float
     /** Where the mountain ahead begins (see RodeoLandscape), or null if there is none. */
     val mountainX: Float?
+    /** The map the track runs through. */
+    val map: RodeoMap
 
     /** Places a fence at [x]; [gapAfter] is the free space to the next one (for snails and horseshoes in between). */
     fun addFence(x: Float, gapAfter: Float): Fence
@@ -43,6 +46,11 @@ internal interface RodeoWorld {
     fun escapePack()
     /** The pack falls back by [gap] (scared by a cowbell, ...). */
     fun scarePack(gap: Float)
+    /**
+     * Takes the run to [map] (the helicopter up to the rainbow, the drill down to the fossil layer):
+     * fades over to it; at the darkest moment the ride ends and horse and rider stand on the new map.
+     */
+    fun travelTo(map: RodeoMap)
 }
 
 /**

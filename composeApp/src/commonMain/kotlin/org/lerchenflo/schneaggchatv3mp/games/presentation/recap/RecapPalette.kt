@@ -42,6 +42,7 @@ object RecapPageThemes {
     val Sent = RecapPageTheme(Color(0xFF0C1033), Color(0xFF2B0A4E), RecapPalette.Pink, RecapPalette.Green, RecapPalette.Paper, RecapPalette.Pink)
     val Typing = RecapPageTheme(Color(0xFF00343A), Color(0xFF001B1F), RecapPalette.Aqua, RecapPalette.Lemon, RecapPalette.Paper, RecapPalette.Aqua)
     val Rhythm = RecapPageTheme(Color(0xFF3A0057), Color(0xFF1B0029), RecapPalette.Orange, RecapPalette.Lemon, RecapPalette.Paper, RecapPalette.Orange)
+    val UsageTime = RecapPageTheme(Color(0xFF002B5C), Color(0xFF00122B), RecapPalette.Sky, RecapPalette.Green, RecapPalette.Paper, RecapPalette.Sky)
     val Received = RecapPageTheme(Color(0xFF6B0F1A), Color(0xFF2E060B), RecapPalette.Lemon, RecapPalette.Coral, RecapPalette.Paper, RecapPalette.Coral)
     val TopContacts = RecapPageTheme(RecapPalette.Lemon, RecapPalette.Amber, RecapPalette.Ink, RecapPalette.Blue, RecapPalette.Ink, RecapPalette.Paper)
     val Reactions = RecapPageTheme(Color(0xFF7A0BC0), Color(0xFF3B0764), RecapPalette.Lilac, RecapPalette.Lemon, RecapPalette.Paper, RecapPalette.Lilac)

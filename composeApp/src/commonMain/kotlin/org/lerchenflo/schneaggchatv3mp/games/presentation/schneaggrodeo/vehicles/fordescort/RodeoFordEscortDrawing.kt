@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.fordescort
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -89,6 +92,8 @@ data class RodeoFordEscortUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x + 7.5f, x + 30.5f)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         when (layer) {
             // The scrapyard stands behind the track, the wreck ends up on its pile
@@ -102,7 +107,7 @@ data class RodeoFordEscortUi(
             // In front of the horse: its nose disappears behind the trunk it shoves
             RodeoLayer.FRONT -> {
                 puddles.forEach { drawPuddle(it, context) }
-                if (!onPile && !onLift) drawFordEscort(this@RodeoFordEscortUi, context)
+                if (!onPile && !onLift) onFootprint(context, footprint) { drawFordEscort(this@RodeoFordEscortUi, it) }
                 flyingParts.filter { !it.landed }.forEach { drawFlyingPart(it, context) }
                 bills.forEach { drawBill(it, context) }
             }
@@ -157,10 +162,12 @@ private fun DrawScope.drawFordEscort(car: RodeoFordEscortUi, context: RodeoDrawC
         if (car.hasDriver) {
             // Torso, arms on the wheel, head and hat above the door
             drawRoundRect(colors.primary, p(CAR_SEAT_X - 1.2f, 11.4f), Size(3f * unit, 4.6f * unit), CornerRadius(1f * unit))
-            drawLine(colors.primary, p(CAR_SEAT_X + 1.2f, 10.2f), p(24f, 9.2f), 1f * unit, StrokeCap.Round)
+            if (!context.cowboyLost(RodeoCowboyPart.ARM)) drawLine(colors.primary, p(CAR_SEAT_X + 1.2f, 10.2f), p(24f, 9.2f), 1f * unit, StrokeCap.Round)
             drawCircle(colors.onSurface, radius = 1.8f * unit, center = p(CAR_SEAT_X + 0.3f, 13.2f))
-            drawRoundRect(HAT_COLOR, p(CAR_SEAT_X - 2.9f, 15.4f), Size(6.4f * unit, 0.7f * unit), CornerRadius(0.35f * unit))
-            drawRoundRect(HAT_COLOR, p(CAR_SEAT_X - 1.5f, 17.8f), Size(3.6f * unit, 2.6f * unit), CornerRadius(0.8f * unit))
+            if (!context.cowboyLost(RodeoCowboyPart.HAT)) {
+                drawRoundRect(HAT_COLOR, p(CAR_SEAT_X - 2.9f, 15.4f), Size(6.4f * unit, 0.7f * unit), CornerRadius(0.35f * unit))
+                drawRoundRect(HAT_COLOR, p(CAR_SEAT_X - 1.5f, 17.8f), Size(3.6f * unit, 2.6f * unit), CornerRadius(0.8f * unit))
+            }
         }
 
         // The cash crate in the trunk, the bills in it sinking as they blow away

@@ -20,10 +20,10 @@ private const val SECTION_INTERVAL_RANDOM = 30f
 internal const val MOUNTAIN_UP = 560f
 internal const val MOUNTAIN_DOWN = 300f
 internal const val MOUNTAIN_WIDTH = MOUNTAIN_UP + MOUNTAIN_DOWN
-internal const val MOUNTAIN_HEIGHT = 85f
+internal const val MOUNTAIN_HEIGHT = 140f
 internal const val CABLE_STATION_MARGIN = 30f
 internal const val CABLE_FOOT_HEIGHT = 44f
-internal const val CABLE_PEAK_HEIGHT = 108f
+internal const val CABLE_PEAK_HEIGHT = 162f
 /** Units ahead of the valley station the mountain is placed, so the cable car passes first. */
 private const val MOUNTAIN_LEAD_MARGIN = 40f
 

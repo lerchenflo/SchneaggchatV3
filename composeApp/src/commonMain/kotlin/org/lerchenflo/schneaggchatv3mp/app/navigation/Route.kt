@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.app.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 
 sealed interface Route : NavKey {
@@ -31,12 +32,12 @@ sealed interface Route : NavKey {
     @Serializable
     data class ChatDetails(val chatId: String, val isGroup: Boolean): Route
 
-    /** Images and links shared in one chat. [showLinks] picks which of the two tabs opens first. */
+    /** Images, links and polls shared in one chat. [initialTab] picks which tab opens first. */
     @Serializable
     data class ChatSharedContent(
         val chatId: String,
         val isGroup: Boolean,
-        val showLinks: Boolean = false
+        val initialTab: SharedContentTab = SharedContentTab.IMAGES
     ): Route
 
     @Serializable

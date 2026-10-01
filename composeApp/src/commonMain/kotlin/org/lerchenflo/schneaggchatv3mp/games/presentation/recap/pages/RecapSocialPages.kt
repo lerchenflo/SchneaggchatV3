@@ -213,9 +213,22 @@ fun RecapReactionsPage(recap: RecapUi, visible: Boolean) {
                 fontWeight = FontWeight.Bold
             )
         }
+        // Poll votes are the other way to react to someone's message, so they live here too
+        if (recap.pollsCreated > 0 || recap.pollVotesCast > 0) {
+            Spacer(Modifier.height(20.dp))
+            RevealItem(visible, 3) {
+                PillFlow(
+                    pills = listOf(
+                        stringResource(Res.string.recap_polls_created, recap.pollsCreated.toInt()),
+                        stringResource(Res.string.recap_poll_votes_cast, recap.pollVotesCast.toInt())
+                    ),
+                    theme = theme
+                )
+            }
+        }
         if (recap.topEmojiGiven.isNotEmpty()) {
             Spacer(Modifier.height(28.dp))
-            RevealItem(visible, 3) {
+            RevealItem(visible, 4) {
                 EmojiRow(
                     title = stringResource(Res.string.recap_top_emoji_given),
                     emojis = recap.topEmojiGiven,
@@ -225,7 +238,7 @@ fun RecapReactionsPage(recap: RecapUi, visible: Boolean) {
         }
         if (recap.topEmojiReceived.isNotEmpty()) {
             Spacer(Modifier.height(16.dp))
-            RevealItem(visible, 4) {
+            RevealItem(visible, 5) {
                 EmojiRow(
                     title = stringResource(Res.string.recap_top_emoji_received),
                     emojis = recap.topEmojiReceived,
@@ -235,7 +248,7 @@ fun RecapReactionsPage(recap: RecapUi, visible: Boolean) {
         }
         recap.mostReactedMessage?.let { mostReacted ->
             Spacer(Modifier.height(24.dp))
-            RevealItem(visible, 5) {
+            RevealItem(visible, 6) {
                 RecapCard(theme = theme) {
                     RecapBody(
                         text = stringResource(Res.string.recap_most_reacted_message, mostReacted.reactionCount),
@@ -286,18 +299,6 @@ fun RecapSocialPage(recap: RecapUi, visible: Boolean) {
                     text = stringResource(Res.string.recap_friend_requests_sent, recap.friendRequestsSentThisYear.toInt()),
                     color = theme.onBackground.copy(alpha = 0.75f),
                     fontSize = 16.sp
-                )
-            }
-        }
-        if (recap.pollsCreated > 0 || recap.pollVotesCast > 0) {
-            Spacer(Modifier.height(24.dp))
-            RevealItem(visible, 3) {
-                PillFlow(
-                    pills = listOf(
-                        stringResource(Res.string.recap_polls_created, recap.pollsCreated.toInt()),
-                        stringResource(Res.string.recap_poll_votes_cast, recap.pollVotesCast.toInt())
-                    ),
-                    theme = theme
                 )
             }
         }

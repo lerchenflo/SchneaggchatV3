@@ -754,6 +754,27 @@
 
     <string name="poll_cannot_vote_on_unsent">You can not vote on an unsent poll</string>
 
+    <string name="poll_subpoll_screentitle">Sub poll</string>
+    <string name="poll_settings_subpolls">Sub polls</string>
+    <string name="poll_settings_subpolls_info">Add a follow-up poll to an option - it only opens for people who pick that option</string>
+    <string name="poll_settings_subpoll_visible_to_all">Visible to everyone</string>
+    <string name="poll_settings_subpoll_visible_to_all_info">People who did not pick this option can still look at the sub poll without answering. If off, only people who picked it see it</string>
+    <string name="poll_subpoll_add">Add sub poll</string>
+    <string name="poll_subpoll_edit">Edit sub poll</string>
+    <string name="poll_subpoll_remove">Remove sub poll</string>
+    <string name="poll_subpoll_untitled">Untitled sub poll</string>
+    <string name="poll_subpoll_error">Incomplete - tap to fix</string>
+    <string name="poll_subpoll_shown_for">Opens for everyone who picks "%1$s"</string>
+    <string name="poll_subpoll_done">Done</string>
+    <string name="poll_subpoll_too_many_options">Too many options in total (max %1$s across all sub polls)</string>
+    <string name="poll_subpoll_option_count">%1$s options</string>
+    <string name="poll_subpoll_pick_to_answer">Pick "%1$s" to answer</string>
+    <string name="poll_subpoll_expand">Show sub poll</string>
+    <string name="poll_subpoll_collapse">Hide sub poll</string>
+    <string name="poll_subpoll_clear_confirm_title">Remove your sub poll answers?</string>
+    <string name="poll_subpoll_clear_confirm_text">Your answers in "%1$s" will be removed.</string>
+    <string name="poll_subpoll_clear_confirm">Remove</string>
+
 
 
 
@@ -908,6 +929,18 @@
     <string name="recap_streak_label">Your longest daily streak</string>
     <string name="recap_most_active_month">%1$s was your loudest month</string>
     <string name="recap_first_message_ever">Your very first message: %1$s</string>
+    <string name="recap_usage_title">You were online for</string>
+    <string name="recap_usage_hours_label">hours on Schneaggchat</string>
+    <string name="recap_usage_minutes_label">minutes on Schneaggchat</string>
+    <string name="recap_usage_peak_month">%1$s was your most online month</string>
+    <string name="recap_usage_sessions">%1$s sessions</string>
+    <string name="recap_usage_avg_session">Ø %1$s per session</string>
+    <string name="recap_usage_longest_session">Longest: %1$s</string>
+    <string name="recap_usage_busiest_day">Most online day: %1$s (%2$s)</string>
+    <string name="recap_usage_busiest_hour">You usually logged on around %1$d:00</string>
+    <string name="recap_usage_duration_hm">%1$d h %2$d min</string>
+    <string name="recap_usage_duration_m">%1$d min</string>
+    <string name="recap_usage_tracking_note">Note: online time has only been recorded since %1$s %2$d, and every device counts separately.</string>
     <string name="recap_popular">You're kind of a big deal.</string>
     <string name="recap_inner_circle">Your Inner Circle.</string>
     
@@ -938,9 +971,9 @@
     <string name="recap_map_edited">%1$d entries edited</string>
     <string name="recap_map_all_time">%1$d created all-time</string>
     <string name="recap_games_title">Certified gamer.</string>
-    <string name="recap_games_rank">Rank #%1$d</string>
-    <string name="recap_games_score">Best score: %1$s</string>
-    <string name="recap_games_wins">Wins: %1$s</string>
+    <string name="recap_games_your_rank">In the global games ranking, all games together, you ranked</string>
+    <string name="recap_games_points">%1$s points from %2$d games</string>
+    <string name="recap_games_not_ranked">No leaderboard games from you this year. The games are waiting.</string>
 
     <string name="recap_betatester_title">Certified beta tester.</string>
     <string name="recap_betatester_your_rank">Out of everyone who ever broke Schneaggchat, you rank</string>
@@ -1500,6 +1533,15 @@
     <string name="shared_links">Links</string>
     <string name="no_shared_images">No images shared in this chat yet</string>
     <string name="no_shared_links">No links shared in this chat yet</string>
+
+    <string name="shared_messages">Messages</string>
+    <string name="no_shared_messages">No messages of this type in this chat yet</string>
+    <string name="shared_messages_type_text">Text messages</string>
+    <string name="shared_messages_type_image">Images</string>
+    <string name="shared_messages_type_poll">Polls</string>
+    <string name="shared_messages_type_audio">Voice messages</string>
+    <string name="shared_messages_type_system">System messages</string>
+    <string name="shared_polls_subpoll_count">%1$s sub polls</string>
     <string name="go_to_message">Go to message</string>
     <string name="copy_link">Copy link</string>
     <!-- Tools tab and two-stroke fuel mix calculator -->
@@ -1546,11 +1588,15 @@
     <string name="games_dartcounter_description">Count down a 301 or 501 leg</string>
     <string name="games_undercover_description">Unmask the impostor by describing your secret word</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
-    <string name="games_schneaggrodeo_description">Jump the fences and lasso the snails on your heels</string>
-    <string name="games_schneaggrodeo_instructions">Ride as far as you can while a pack of schneaggs chases you! The longer you ride, the faster and tougher it gets — until the pack catches up for good.\n\nTap (or press space) to jump, hold to jump higher. Knocking a pole or running into a snail makes your horse stumble and lets the pack close in — once it catches you, the ride is over.\n\nThrow the lasso (button or L) to catch snails for bonus points. Every 5 caught snails buy a super jump (button or J) over the next 5 fences.\n\nJump through the floating lucky horseshoes: each one absorbs your next crash (up to 3).\n\nFlags on the track show where the best rides ended, your own best in your accent color. Beat them!\n\nYour horse tires as you ride and with every crash — its hearts are painted on its side. The higher it is golden from the hooves up, the stronger it is. Catch carrots to feed it! Once its hearts are gone it throws you off and runs away, and you have to lasso a new horse. Wild horses on the track are stronger, jump higher and come fully rested: lasso one to switch. Mud slows your horse down, so jump over it.\n\nFriends ride along shortly before their own best: lasso them and they ride with you.</string>
+    <string name="games_schneaggrodeo_description">Jump the fences, lasso the snails and outrun the ravens</string>
+    <string name="games_schneaggrodeo_instructions">Ride as far as you can while a flock of ravens chases you. Tap (or press space) to jump the fences and throw the lasso to catch snails – they buy super jumps and more. Every mistake lets the ravens come closer; when they reach you they swoop down and peck off your hat, then an arm, then a leg – the fourth peck ends the ride.</string>
+    <string name="games_schneaggrodeo_start_easier">Easier</string>
+    <string name="games_schneaggrodeo_start_harder">Harder · 1.5× points</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lasso</string>
     <string name="games_schneaggrodeo_catch_horse">Catch your horse!</string>
+    <string name="games_schneaggrodeo_on_foot_hint">Tap to jump – tap again right as you land for a salto, three in a row for a triple jump that carries you faster! Lasso your horse once you are close.</string>
+    <string name="games_schneaggrodeo_on_foot_hint_keys">Space to jump – press again right as you land for a salto, three in a row for a triple jump that carries you faster! Lasso [L] your horse once you are close.</string>
     <string name="games_schneaggrodeo_snails">Snails: %1$d</string>
     <string name="games_schneaggrodeo_horseshoes">Horseshoes: %1$d</string>
     <string name="games_schneaggrodeo_plane_controls">Left half: fly up · Right half: fly down – dodge the buildings and clouds, grab the horseshoes!</string>
@@ -1559,16 +1605,31 @@
     <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
     <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
     <string name="games_schneaggrodeo_lasso_hint">Lasso it to hop on!</string>
+    <string name="games_schneaggrodeo_lasso_hint_horse">Lasso it to switch horses!</string>
+    <string name="games_schneaggrodeo_lasso_hint_friend">Lasso them to ride together!</string>
+    <string name="games_schneaggrodeo_lasso_hint_pizza">Lasso the pizza!</string>
+    <string name="games_schneaggrodeo_lasso_hint_kaesknoepfle">Lasso the Käsknöpfle!</string>
+    <string name="games_schneaggrodeo_lasso_hint_stanislaus">Lasso Stanislaus!</string>
+    <string name="games_schneaggrodeo_goodbye">Greetings</string>
     <string name="games_schneaggrodeo_golden_carriage">Golden carriage!</string>
     <string name="games_schneaggrodeo_golden_carriage_button">Golden carriage</string>
     <string name="games_schneaggrodeo_golden_carriage_controls">No input needed: the golden horses smash through every fence – 20 points for each!</string>
     <string name="games_schneaggrodeo_traffic_jam">Traffic jam!</string>
     <string name="games_schneaggrodeo_traffic_jam_controls">No input needed: your horse hops from car roof to car roof by itself – 15 points for every car!</string>
+    <string name="games_schneaggrodeo_helicopter">Helicopter!</string>
+    <string name="games_schneaggrodeo_helicopter_controls">Hold anywhere to climb – reach the rainbow up high before the ride is over!</string>
+    <string name="games_schneaggrodeo_helicopter_controls_keys">Hold Space / W to climb – reach the rainbow up high before the ride is over!</string>
+    <string name="games_schneaggrodeo_map_welcome">Welcome to</string>
+    <string name="games_schneaggrodeo_map_cave">The Cave</string>
+    <string name="games_schneaggrodeo_map_sea">The Open Sea</string>
+    <string name="games_schneaggrodeo_map_rainbow">The Rainbow</string>
+    <string name="games_schneaggrodeo_map_fossil">The Fossil Layer</string>
     <string name="games_schneaggrodeo_pirate_ship">Pirate ship!</string>
     <string name="games_schneaggrodeo_pirate_ship_controls">No input needed: the cannon fires at every shark on its own and the horse grabs the treasure chests – points for each!</string>
     <string name="games_schneaggrodeo_drill">Drill machine!</string>
-    <string name="games_schneaggrodeo_drill_controls">Hold anywhere: drill down to the gold · Let go: come back up – avoid the gray rocks!</string>
-    <string name="games_schneaggrodeo_drill_controls_keys">Hold Space / W: drill down to the gold · Let go: come back up – avoid the gray rocks!</string>
+    <string name="games_schneaggrodeo_drill_controls">Hold anywhere: drill down to the gold · Let go: come back up – avoid the gray rocks! Keep drilling at the bottom to break into the fossil layer.</string>
+    <string name="games_schneaggrodeo_drill_controls_keys">Hold Space / W: drill down to the gold · Let go: come back up – avoid the gray rocks! Keep drilling at the bottom to break into the fossil layer.</string>
+    <string name="games_schneaggrodeo_drill_boarding">Drill, baby, drill!</string>
     <string name="games_schneaggrodeo_double_points">×2 points</string>
     <string name="games_schneaggrodeo_train">Wälderbähnle</string>
     <string name="games_schneaggrodeo_milk_truck">Milchlaster</string>
@@ -1599,7 +1660,7 @@
     <string name="games_schneaggrodeo_balloon_controls">Hold to fire the burner and rise – grab the horseshoes!</string>
     <string name="games_schneaggrodeo_balloon_controls_keys">Hold space to fire the burner and rise – grab the horseshoes!</string>
     <string name="games_schneaggrodeo_cow">Kuah-Ritt</string>
-    <string name="games_schneaggrodeo_cow_controls">Nothing to do – just enjoy the ride! The cowbell scares the snails away.</string>
+    <string name="games_schneaggrodeo_cow_controls">Nothing to do – just enjoy the ride! The cowbell scares the ravens away.</string>
     <string name="games_schneaggrodeo_rowboat">Ruderboot</string>
     <string name="games_schneaggrodeo_rowboat_controls">Tap the Lasso button to catch the jumping fish – points for each one!</string>
     <string name="games_schneaggrodeo_uboat">U-Boot</string>
@@ -1611,7 +1672,7 @@
     <string name="games_schneaggrodeo_flamingo_controls">Tap to bounce high – grab the horseshoes!</string>
     <string name="games_schneaggrodeo_flamingo_controls_keys">Press space to bounce high – grab the horseshoes!</string>
     <string name="games_schneaggrodeo_mine_cart">Grubenhunt</string>
-    <string name="games_schneaggrodeo_mine_cart_controls">Hold on – the cart races down the rails and smashes the crates!</string>
+    <string name="games_schneaggrodeo_mine_cart_controls">Hold on – the cart races down the rails and smashes the stalagmites!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s rides with you!</string>
     <string name="games_schneaggrodeo_friend_joined">From now on you're riding for %1$s's highscore too: as soon as you leave the horse, your score so far counts for %1$s.</string>
 

@@ -69,6 +69,8 @@ internal class RodeoTrain : RodeoDeckVehicle(RodeoVehicleKind.TRAIN) {
     private var duckHeld = false
     private var duck = 0f
 
+    /** Engine and coach are too long to tilt as one piece over the hills. */
+    override val needsFlatTrack = true
     override val length = TRAIN_LENGTH
     override val passSpeed = TRAIN_PASS_SPEED
     override val deckHeight = TRAIN_ROOF

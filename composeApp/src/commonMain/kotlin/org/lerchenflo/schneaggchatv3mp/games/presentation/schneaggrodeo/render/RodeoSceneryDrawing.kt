@@ -22,15 +22,19 @@ private const val STAR_COUNT = 70
 private const val GROUND_STEP = 2f
 /** How far below the picture the earth reaches. */
 private const val EARTH_DEPTH = 200f
+/** How strongly the earth is shaded: faint under the sky, clearly set off from the rock wall in the cave. */
+private const val EARTH_SHADE = 0.06f
+private const val CAVE_EARTH_SHADE = 0.22f
 
 /**
  * The ground line over the hills, the earth under it shaded a little, and pebbles in it. [fill]
  * reaches far down, so the earth still covers the bottom while the picture follows a hill up.
+ * In the cave ([enclosed]) the earth is shaded stronger, so the floor stands out from the wall.
  */
-internal fun DrawScope.drawGround(context: RodeoDrawContext, distance: Float, speedBlur: Boolean = false) {
+internal fun DrawScope.drawGround(context: RodeoDrawContext, distance: Float, speedBlur: Boolean = false, enclosed: Boolean = false) {
     val unit = context.unit
     val color = context.colors.onSurfaceVariant
-    val fill = color.copy(alpha = 0.06f)
+    val fill = color.copy(alpha = if (enclosed) CAVE_EARTH_SHADE else EARTH_SHADE)
     val line = Path()
     var worldX = 0f
     var lowestY = 0f

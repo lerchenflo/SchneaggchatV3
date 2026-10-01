@@ -870,6 +870,9 @@ class NetworkUtils(
 
         val allowDeleteOptions: Boolean = false,
         val showCheckboxes: Boolean = true,
+
+        //Only read on sub polls: may users who didn't pick the parent option look at it
+        val visibleToAll: Boolean = true,
     )
 
     /**
@@ -880,6 +883,7 @@ class NetworkUtils(
         //Ids get assigned by the server
         val text: String,
         val maxVoters: Int? = null, // null = unlimited
+        val subPoll: PollCreateRequest? = null, //Follow-up poll for users who pick this option
     )
     
 
@@ -893,6 +897,7 @@ class NetworkUtils(
         val text: String?, //Pass if the id is null (New custom option with this text)
         val maxAllowedAnswers: Int?, //Pass if the user creates a custom entry and the poll supports restricting the entries for votes
         val selected: Boolean, //Did the user select or unselect this item
+        val parentOptionId: String? = null, //New custom option only: the option whose sub poll gets it (null = root poll)
     )
 
 

@@ -28,13 +28,15 @@ internal class RodeoMarkers {
         appliedBonus = min(bonusPoints * UNITS_PER_POINT, appliedBonus + MARKER_CATCH_UP_SPEED * dt)
     }
 
-    /** [ghosts] sorted by score; only the ones near the visible stretch become markers. */
-    fun ui(ghosts: List<RodeoGhostUi>, distance: Float, worldWidth: Float): List<RodeoMarkerUi> {
+    /**
+     * [ghosts] sorted by score; only the ones near the visible stretch become markers. Each unit
+     * ridden is worth [pointsFactor] times the normal points (see RodeoLevel).
+     */
+    fun ui(ghosts: List<RodeoGhostUi>, distance: Float, worldWidth: Float, pointsFactor: Float): List<RodeoMarkerUi> {
         // A marker's post stands where the horse's nose will be once the score reaches the entry.
         // Bonus points add score without distance, so markers move closer by the bonus (smoothly).
-        val effectiveDistance = distance + appliedBonus
         return ghosts.mapIndexedNotNull { index, ghost ->
-            val x = HORSE_X + HITBOX_RIGHT + ghost.score * UNITS_PER_POINT - effectiveDistance
+            val x = HORSE_X + HITBOX_RIGHT + (ghost.score * UNITS_PER_POINT - appliedBonus) / pointsFactor - distance
             if (x > -MARKER_VISIBLE_MARGIN && x < worldWidth + MARKER_VISIBLE_MARGIN) {
                 RodeoMarkerUi(
                     x = x,

@@ -4,7 +4,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoHor
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoWildHorseUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.LassoGrab
 import kotlin.math.max
-import kotlin.math.sin
 import kotlin.random.Random
 
 // Other horses on the track, galloping a bit slower than the rider so they drift into lasso range:
@@ -31,7 +30,6 @@ private const val FRIEND_MAX_DRIFT = 35f
 /** u/s a let-go horse trots back on its own, on top of falling back with the ground. */
 private const val RELEASED_DRIFT = 10f
 private const val WILD_GAIT_SPEED = 14f   // gait radians per second
-private const val GALLOP_ROCK_DEGREES = 2.5f
 /** Chance on a night run that the ghost horse comes instead of a wild one. */
 private const val GHOST_CHANCE = 0.4f
 
@@ -177,7 +175,7 @@ internal class RodeoWildHorses {
                 gaitPhase = horse.gaitPhase,
                 airborne = horse.height > 0f,
                 riderLean = if (horse.height > 0f) 1f else 0f,
-                pitchDegrees = if (horse.height > 0f) 0f else GALLOP_ROCK_DEGREES * sin(horse.gaitPhase + 0.8f),
+                pitchDegrees = if (horse.height > 0f) 0f else gallopRock(horse.gaitPhase),
                 pivotX = 12f,
                 pivotY = 12f,
                 hindLegScale = 1f,

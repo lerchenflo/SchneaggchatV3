@@ -203,3 +203,10 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
 enum class MessageMinimal {
     NONE, FIRST, MIDDLE, LAST
 }
+
+/**
+ * Whether the stored copy already reflects a server state newer than [serverLastChanged] (epoch
+ * millis), so an out-of-order response/push carrying that older state must not overwrite it.
+ */
+fun Message.isNewerThan(serverLastChanged: Long): Boolean =
+    (changeDate.toLongOrNull() ?: 0L) > serverLastChanged

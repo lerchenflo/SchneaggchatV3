@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.carriage
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
@@ -38,11 +40,13 @@ data class RodeoGoldenCarriageUi(
 
     override val lassoHint: RodeoLassoHintUi? = null
 
+    override val footprint get() = RodeoFootprint(x + 6f, x + CARRIAGE_BODY_LENGTH - 5f)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         when (layer) {
             RodeoLayer.BACK -> drawPullingHorse(x + PULL_HORSE_X + 3f, gait + 1.4f, context)
             RodeoLayer.BODY -> {
-                drawCarriage(this@RodeoGoldenCarriageUi, context)
+                onFootprint(context, footprint) { drawCarriage(this@RodeoGoldenCarriageUi, it) }
                 drawPullingHorse(x + PULL_HORSE_X, gait, context)
             }
             RodeoLayer.FRONT -> Unit
@@ -76,8 +80,10 @@ private fun DrawScope.drawPullingHorse(left: Float, gait: Float, context: RodeoD
         canopy = colors.secondary,
         friendShirt = colors.tertiary,
         headRing = colors.surfaceContainer,
+        rope = colors.tertiary,
+        pants = colors.secondary,
     )
-    drawHorseAndRider(left = left * unit, groundY = context.groundYAt(left + HOOVES_X), unit = unit, pose = pose, colors = horseColors, bodyLabel = null)
+    drawHorseAndRider(left = left * unit, groundY = context.groundYAt(left + HOOVES_X), unit = unit, pose = pose, colors = horseColors)
 }
 
 /** Big spoked wheels, a golden body with scrolls and a window with curtains, a crown and the shaft. */

@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.bull
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -11,6 +14,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoDrawContext
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoLayer
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.HAT_COLOR
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawCowboyHat
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.polygonPath
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoLassoHintUi
@@ -42,9 +46,11 @@ data class RodeoBullUi(
     override val lassoHint: RodeoLassoHintUi?,
 ) : RodeoVehicleUi {
 
+    override val footprint get() = RodeoFootprint(x + 6f, x + 23f)
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         if (layer != RodeoLayer.FRONT) return
-        drawBull(this@RodeoBullUi, context)
+        onFootprint(context, footprint) { drawBull(this@RodeoBullUi, it) }
         rideProgress?.let { drawBalanceGauge(this@RodeoBullUi, it, context) }
     }
 }
@@ -108,7 +114,10 @@ private fun DrawScope.drawBullRider(p: (Float, Float) -> Offset, lean: Float, co
     val unit = context.unit
     val colors = context.colors
     val hips = p(BULL_SEAT_X, BULL_SEAT_Y)
-    drawLine(colors.onSurface, hips, p(BULL_SEAT_X + 2f, BULL_SEAT_Y - 5f), 1.3f * unit, StrokeCap.Round)
+    if (!context.cowboyLost(RodeoCowboyPart.LEG)) {
+        drawLine(colors.onSurface, hips, p(BULL_SEAT_X + 2f, BULL_SEAT_Y - 5f), 1.3f * unit, StrokeCap.Round)
+        drawLine(HAT_COLOR, p(BULL_SEAT_X + 1.6f, BULL_SEAT_Y - 5.4f), p(BULL_SEAT_X + 3.4f, BULL_SEAT_Y - 5.5f), 1.4f * unit, StrokeCap.Round)
+    }
     rotate(RIDER_MAX_LEAN_DEGREES * lean, pivot = hips) {
         drawRoundRect(
             colors.primary,
@@ -117,10 +126,12 @@ private fun DrawScope.drawBullRider(p: (Float, Float) -> Offset, lean: Float, co
             CornerRadius(1f * unit)
         )
         // One hand on the rope, the other one waving high
-        drawLine(colors.primary, p(BULL_SEAT_X + 1f, BULL_SEAT_Y + 4.5f), p(BULL_SEAT_X + 4f, BULL_SEAT_Y + 1.5f), 1f * unit, StrokeCap.Round)
+        if (!context.cowboyLost(RodeoCowboyPart.ARM)) {
+            drawLine(colors.primary, p(BULL_SEAT_X + 1f, BULL_SEAT_Y + 4.5f), p(BULL_SEAT_X + 4f, BULL_SEAT_Y + 1.5f), 1f * unit, StrokeCap.Round)
+        }
         drawLine(colors.primary, p(BULL_SEAT_X - 1f, BULL_SEAT_Y + 5f), p(BULL_SEAT_X - 4f, BULL_SEAT_Y + 9f), 1f * unit, StrokeCap.Round)
         drawCircle(colors.onSurface, radius = 1.8f * unit, center = p(BULL_SEAT_X + 0.2f, BULL_SEAT_Y + 7.6f))
-        drawCowboyHat(p, BULL_SEAT_X - 3f, BULL_SEAT_Y + 9.6f, unit)
+        if (!context.cowboyLost(RodeoCowboyPart.HAT)) drawCowboyHat(p, BULL_SEAT_X - 3f, BULL_SEAT_Y + 9.6f, unit)
     }
 }
 

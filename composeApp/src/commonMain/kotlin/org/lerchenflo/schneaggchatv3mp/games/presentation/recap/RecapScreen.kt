@@ -69,6 +69,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapRhyth
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapSocialPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapTopContactsPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapTypingPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapUsageTimePage
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.recap_close
 import schneaggchatv3mp.composeapp.generated.resources.recap_hold_hint
@@ -215,24 +216,28 @@ private fun RecapScreenLoadingPreview() {
 
 // The recap story pages in display order. Pages without data are skipped when building the list.
 private enum class RecapPageKind {
-    INTRO, SENT, TYPING, RHYTHM, RECEIVED, TOP_CONTACTS, REACTIONS,
+    INTRO, USAGE_TIME, SENT, RECEIVED, TYPING, RHYTHM, REACTIONS, TOP_CONTACTS,
     SOCIAL, GROUPS, LEADERBOARD, MAP, MAP_LEADERBOARD, GAMES, BETA_TESTER, PASSWORD_RESET, DOWNTIME, OUTRO
 }
 
+// Story order: you -> your messages -> interactions -> your people -> community rankings -> extras.
 private fun buildPages(recap: RecapUi): List<RecapPageKind> = buildList {
     add(RecapPageKind.INTRO)
+    if (recap.usageMillisThisYear > 0) add(RecapPageKind.USAGE_TIME)
     add(RecapPageKind.SENT)
+    add(RecapPageKind.RECEIVED)
     if (recap.charactersTyped > 0) add(RecapPageKind.TYPING)
     if (recap.messagesSent > 0) add(RecapPageKind.RHYTHM)
-    add(RecapPageKind.RECEIVED)
+    if (recap.reactionsGiven > 0 || recap.reactionsReceived > 0 || recap.pollsCreated > 0 || recap.pollVotesCast > 0) {
+        add(RecapPageKind.REACTIONS)
+    }
     if (recap.topPartners.isNotEmpty()) add(RecapPageKind.TOP_CONTACTS)
-    if (recap.reactionsGiven > 0 || recap.reactionsReceived > 0) add(RecapPageKind.REACTIONS)
     add(RecapPageKind.SOCIAL)
     if (recap.groupsMemberOf > 0) add(RecapPageKind.GROUPS)
     if (recap.myRank != null || recap.leaderboardTop.isNotEmpty()) add(RecapPageKind.LEADERBOARD)
     if (recap.mapEntriesCreated > 0 || recap.mapEntriesEdited > 0 || recap.mapEntriesCreatedAllTime > 0) add(RecapPageKind.MAP)
     if (recap.myMapRank != null || recap.mapLeaderboardTop.isNotEmpty()) add(RecapPageKind.MAP_LEADERBOARD)
-    if (recap.games.isNotEmpty()) add(RecapPageKind.GAMES)
+    if (recap.myGamesRank != null || recap.gamesLeaderboardTop.isNotEmpty()) add(RecapPageKind.GAMES)
     add(RecapPageKind.BETA_TESTER)
     if (recap.passwordResetEmailsSentAllTime > 0) add(RecapPageKind.PASSWORD_RESET)
     // Downtime reasons are hardcoded for one year only
@@ -333,6 +338,7 @@ private fun RecapStories(
                     RecapPageKind.SENT -> RecapMessagesSentPage(recap, visible)
                     RecapPageKind.TYPING -> RecapTypingPage(recap, visible)
                     RecapPageKind.RHYTHM -> RecapRhythmPage(recap, visible)
+                    RecapPageKind.USAGE_TIME -> RecapUsageTimePage(recap, visible)
                     RecapPageKind.RECEIVED -> RecapMessagesReceivedPage(recap, visible)
                     RecapPageKind.TOP_CONTACTS -> RecapTopContactsPage(recap, visible)
                     RecapPageKind.REACTIONS -> RecapReactionsPage(recap, visible)

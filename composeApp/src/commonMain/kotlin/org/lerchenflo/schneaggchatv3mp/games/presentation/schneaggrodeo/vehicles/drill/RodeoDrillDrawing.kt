@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.drill
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -11,7 +12,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.GOLD_NUGGET
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.GOLD_SHINE
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.MINE_EARTH_LIGHT
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.EARTH_LIGHT
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.MINE_ROCK
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoDrawContext
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoLayer
@@ -74,13 +75,14 @@ data class RodeoDrillUi(
 private fun DrawScope.drawEarth(drill: RodeoDrillUi, context: RodeoDrawContext) {
     val unit = context.unit
     val top = context.p(0f, 0f).y
-    // Solid earth, darker than the mine's walls, with the track's edge on top
+    // Solid earth, darker than the cave walls, with the track's edge on top
     drawRect(EARTH_DEEP, Offset(0f, top), Size(size.width, EARTH_DEPTH * unit))
-    drawLine(MINE_EARTH_LIGHT, Offset(0f, top), Offset(size.width, top), 0.6f * unit)
+    drawLine(EARTH_LIGHT, Offset(0f, top), Offset(size.width, top), 0.6f * unit)
     listOf(6f, 14f, 25f, 36f).forEachIndexed { index, depth ->
         val y = context.p(0f, -depth).y
-        drawLine(MINE_EARTH_LIGHT, Offset(0f, y), Offset(size.width, y + (index % 2) * unit), 0.8f * unit)
+        drawLine(EARTH_LIGHT, Offset(0f, y), Offset(size.width, y + (index % 2) * unit), 0.8f * unit)
     }
+    drawFossilBand(context)
     // The tunnel stays open behind the machine
     clipRect(top = top) {
         drill.tunnel.forEach { piece ->
@@ -103,13 +105,34 @@ private fun DrawScope.drawEarth(drill: RodeoDrillUi, context: RodeoDrawContext) 
     }
 }
 
+/** Bones in the earth just below the deepest the machine gets: the fossil layer to break through to. */
+private fun DrawScope.drawFossilBand(context: RodeoDrawContext) {
+    val unit = context.unit
+    val bone = context.colors.onSurface.copy(alpha = 0.55f)
+    var x = 3f
+    var index = 0
+    while (x * unit < size.width) {
+        val depth = DRILL_FOSSIL_DEPTH + 2f * cloudNoise(index, 3)
+        val half = 1.6f + cloudNoise(index, 4)
+        val slant = (cloudNoise(index, 5) - 0.5f) * 1.6f
+        val start = context.p(x - half, -depth - slant)
+        val end = context.p(x + half, -depth + slant)
+        drawLine(bone, start, end, 0.6f * unit, StrokeCap.Round)
+        // The knobbly ends
+        drawCircle(bone, radius = 0.55f * unit, center = start)
+        drawCircle(bone, radius = 0.55f * unit, center = end)
+        x += 8f + 4f * cloudNoise(index, 6)
+        index++
+    }
+}
+
 /** Tracks, yellow body with a window and hatch (and the hat in it), exhaust pipe and the turning drill. */
 private fun DrawScope.drawMachine(drill: RodeoDrillUi, context: RodeoDrawContext) {
     val unit = context.unit
     fun p(x: Float, y: Float) = context.p(drill.x + x + drill.shake, drill.y + y)
     scale(DRILL_SCALE, pivot = context.p(drill.x, drill.y)) { drawMachineGrid(drill, context) }
     // The hat in the hatch, at its normal size
-    if (drill.hatInHatch) drawCowboyHat(::p, DRILL_HATCH_X * DRILL_SCALE - 3.2f, (DRILL_BODY_TOP + 1.6f) * DRILL_SCALE + 0.7f, unit)
+    if (drill.hatInHatch && !context.cowboyLost(RodeoCowboyPart.HAT)) drawCowboyHat(::p, DRILL_HATCH_X * DRILL_SCALE - 3.2f, (DRILL_BODY_TOP + 1.6f) * DRILL_SCALE + 0.7f, unit)
 }
 
 /** The machine on its own grid, scaled up by the caller. */

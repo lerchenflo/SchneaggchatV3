@@ -50,7 +50,7 @@ internal abstract class RodeoDeckVehicle(kind: RodeoVehicleKind) : RodeoVehicle(
         updateAlways(world, dt, scroll)
         when (phase) {
             VehiclePhase.IDLE -> Unit
-            VehiclePhase.APPROACH -> passBy(dt)
+            VehiclePhase.APPROACH -> approach(world, dt, scroll)
             VehiclePhase.BOARDING -> {
                 val progress = progressOf(phaseTime, boardSeconds)
                 x = boardingHop.slideX(rideX, progress)
@@ -84,6 +84,9 @@ internal abstract class RodeoDeckVehicle(kind: RodeoVehicleKind) : RodeoVehicle(
 
     /** Every frame in any phase, before the phase itself (particles, debris, ...). */
     protected open fun updateAlways(world: RodeoWorld, dt: Float, scroll: Float) = Unit
+
+    /** Before it is caught: rolls by at its pass speed, unless it does something else meanwhile. */
+    protected open fun approach(world: RodeoWorld, dt: Float, scroll: Float) = passBy(dt)
 
     /** Every frame while it slides under the horse. */
     protected open fun whileBoarding(world: RodeoWorld) = Unit

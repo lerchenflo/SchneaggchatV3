@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.rocket
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -173,8 +174,10 @@ private fun DrawScope.drawRocket(
             drawPath(polygon(26f to ROCKET_BODY_HEIGHT, 28f to ROCKET_BODY_HEIGHT + 3.5f, 29.5f to ROCKET_BODY_HEIGHT + 2f, 29f to ROCKET_BODY_HEIGHT), lineColor)
             drawPath(polygon(26.5f to ROCKET_BODY_HEIGHT + 3f, 27f to ROCKET_BODY_HEIGHT + 4.6f, 27.6f to ROCKET_BODY_HEIGHT + 3f), lineColor)
             drawCircle(lineColor, radius = 1.4f * unit, center = p(21.5f, ROCKET_BODY_HEIGHT + 1.6f))
-            drawRoundRect(HAT_COLOR, p(19.3f, ROCKET_BODY_HEIGHT + 3.3f), Size(4.4f * unit, 0.5f * unit), CornerRadius(0.25f * unit))
-            drawRoundRect(HAT_COLOR, p(20.3f, ROCKET_BODY_HEIGHT + 5f), Size(2.4f * unit, 1.8f * unit), CornerRadius(0.5f * unit))
+            if (!context.cowboyLost(RodeoCowboyPart.HAT)) {
+                drawRoundRect(HAT_COLOR, p(19.3f, ROCKET_BODY_HEIGHT + 3.3f), Size(4.4f * unit, 0.5f * unit), CornerRadius(0.25f * unit))
+                drawRoundRect(HAT_COLOR, p(20.3f, ROCKET_BODY_HEIGHT + 5f), Size(2.4f * unit, 1.8f * unit), CornerRadius(0.5f * unit))
+            }
         }
         drawArc(lineColor, 180f, 180f, useCenter = false, topLeft = domeTopLeft, size = domeSize, style = Stroke(width = 0.35f * unit))
         drawArc(bodyColor.copy(alpha = 0.6f), 205f, 40f, useCenter = false, topLeft = domeTopLeft + Offset(unit, unit), size = Size(domeSize.width - 2f * unit, domeSize.height - 2f * unit), style = Stroke(width = 0.5f * unit))

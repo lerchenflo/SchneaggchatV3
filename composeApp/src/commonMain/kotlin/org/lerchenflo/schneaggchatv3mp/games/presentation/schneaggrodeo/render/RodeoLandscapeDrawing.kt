@@ -2,9 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMushroomUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoSectionUi
@@ -14,7 +16,9 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.C
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MOUNTAIN_HEIGHT
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MOUNTAIN_UP
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MOUNTAIN_WIDTH
+import kotlin.math.PI
 import kotlin.math.floor
+import kotlin.math.sin
 
 // The landscape behind the track: mountains with the cable car's cable and stations, forests, and
 // the magic mushrooms growing on the track.
@@ -155,4 +159,34 @@ internal fun DrawScope.drawSlowMotionHaze(color: Color, unit: Float, distance: F
         )
         drawCircle(color.copy(alpha = 0.1f), radius = (4f + 3f * cloudNoise(index, 3)) * unit, center = center)
     }
+}
+
+/** Points along each edge of the wobbly outline. */
+private const val WOBBLE_STEPS = 24
+/** Ripples per unit along the outline (6 per edge); 9 full waves around, so they meet where they began. */
+private const val WOBBLE_WAVES = 0.75f * PI.toFloat()
+
+/**
+ * A mushroom works: a wavy band creeps in from every edge of the picture, [strength] 0..1 thick,
+ * rippling with [clock]; two bands in [outer] and [inner] color, out of step with each other.
+ */
+internal fun DrawScope.drawWobblyOutline(strength: Float, clock: Float, unit: Float, outer: Color, inner: Color) {
+    fun band(depth: Float, phase: Float) = Path().apply {
+        fillType = PathFillType.EvenOdd
+        addRect(Rect(Offset.Zero, size))
+        val w = size.width
+        val h = size.height
+        val deepest = depth * strength
+        // Inner edge, clockwise from the top left: how far in it reaches ripples along the edge
+        fun inset(along: Float) = deepest * (0.55f + 0.45f * sin(along * WOBBLE_WAVES + clock * 5f + phase))
+        fun along(from: Float, to: Float, step: Int) = from + (to - from) * step / WOBBLE_STEPS.toFloat()
+        moveTo(deepest, inset(0f))
+        for (i in 0..WOBBLE_STEPS) lineTo(along(deepest, w - deepest, i), inset(along(0f, 6f, i)))
+        for (i in 0..WOBBLE_STEPS) lineTo(w - inset(along(6f, 12f, i)), along(deepest, h - deepest, i))
+        for (i in 0..WOBBLE_STEPS) lineTo(along(w - deepest, deepest, i), h - inset(along(12f, 18f, i)))
+        for (i in 0..WOBBLE_STEPS) lineTo(inset(along(18f, 24f, i)), along(h - deepest, deepest, i))
+        close()
+    }
+    drawPath(band(3.2f * unit, 0f), outer.copy(alpha = 0.45f))
+    drawPath(band(1.8f * unit, PI.toFloat()), inner.copy(alpha = 0.55f))
 }

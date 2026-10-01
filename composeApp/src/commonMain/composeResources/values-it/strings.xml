@@ -753,6 +753,27 @@
 
     <string name="poll_cannot_vote_on_unsent">Non puoi votare in un sondaggio non inviato</string>
 
+    <string name="poll_subpoll_screentitle">Sottosondaggio</string>
+    <string name="poll_settings_subpolls">Sottosondaggi</string>
+    <string name="poll_settings_subpolls_info">Aggiungi un sondaggio di approfondimento a un'opzione - si apre solo per chi sceglie quell'opzione</string>
+    <string name="poll_settings_subpoll_visible_to_all">Visibile a tutti</string>
+    <string name="poll_settings_subpoll_visible_to_all_info">Chi non ha scelto questa opzione può comunque vedere il sottosondaggio senza rispondere. Se disattivato, lo vede solo chi l'ha scelta</string>
+    <string name="poll_subpoll_add">Aggiungi sottosondaggio</string>
+    <string name="poll_subpoll_edit">Modifica sottosondaggio</string>
+    <string name="poll_subpoll_remove">Rimuovi sottosondaggio</string>
+    <string name="poll_subpoll_untitled">Sottosondaggio senza titolo</string>
+    <string name="poll_subpoll_error">Incompleto - tocca per correggere</string>
+    <string name="poll_subpoll_shown_for">Si apre per chiunque scelga "%1$s"</string>
+    <string name="poll_subpoll_done">Fatto</string>
+    <string name="poll_subpoll_too_many_options">Troppe opzioni in totale (max %1$s in tutti i sottosondaggi)</string>
+    <string name="poll_subpoll_option_count">%1$s opzioni</string>
+    <string name="poll_subpoll_pick_to_answer">Scegli "%1$s" per rispondere</string>
+    <string name="poll_subpoll_expand">Mostra sottosondaggio</string>
+    <string name="poll_subpoll_collapse">Nascondi sottosondaggio</string>
+    <string name="poll_subpoll_clear_confirm_title">Rimuovere le risposte del sottosondaggio?</string>
+    <string name="poll_subpoll_clear_confirm_text">Le tue risposte in "%1$s" verranno rimosse.</string>
+    <string name="poll_subpoll_clear_confirm">Rimuovi</string>
+
 
 
     <string name="audio_playback_on_desktop_not_supported_yet">La riproduzione audio non è ancora supportata su Desktop</string>
@@ -902,6 +923,18 @@
     <string name="recap_streak_label">La tua serie giornaliera più lunga</string>
     <string name="recap_most_active_month">%1$s è stato il tuo mese più rumoroso</string>
     <string name="recap_first_message_ever">Il tuo primissimo messaggio: %1$s</string>
+    <string name="recap_usage_title">Sei stato online per</string>
+    <string name="recap_usage_hours_label">ore su Schneaggchat</string>
+    <string name="recap_usage_minutes_label">minuti su Schneaggchat</string>
+    <string name="recap_usage_peak_month">%1$s è stato il mese in cui sei stato più online</string>
+    <string name="recap_usage_sessions">%1$s sessioni</string>
+    <string name="recap_usage_avg_session">Ø %1$s per sessione</string>
+    <string name="recap_usage_longest_session">La più lunga: %1$s</string>
+    <string name="recap_usage_busiest_day">Giorno più online: %1$s (%2$s)</string>
+    <string name="recap_usage_busiest_hour">Di solito ti collegavi verso le %1$d:00</string>
+    <string name="recap_usage_duration_hm">%1$d h %2$d min</string>
+    <string name="recap_usage_duration_m">%1$d min</string>
+    <string name="recap_usage_tracking_note">Nota: il tempo online viene registrato solo da %1$s %2$d e ogni dispositivo conta separatamente.</string>
     <string name="recap_popular">Sei una specie di celebrità.</string>
     <string name="recap_inner_circle">La tua cerchia ristretta.</string>
 
@@ -932,9 +965,9 @@
     <string name="recap_map_edited">%1$d voci modificate</string>
     <string name="recap_map_all_time">%1$d create in totale</string>
     <string name="recap_games_title">Giocatore certificato.</string>
-    <string name="recap_games_rank">Posizione #%1$d</string>
-    <string name="recap_games_score">Miglior punteggio: %1$s</string>
-    <string name="recap_games_wins">Vittorie: %1$s</string>
+    <string name="recap_games_your_rank">Nella classifica globale dei giochi, tutti i giochi insieme, sei al</string>
+    <string name="recap_games_points">%1$s punti da %2$d giochi</string>
+    <string name="recap_games_not_ranked">Nessun gioco in classifica da parte tua quest'anno. I giochi ti aspettano.</string>
 
     <string name="recap_betatester_title">Beta tester certificato.</string>
     <string name="recap_betatester_your_rank">Tra tutti quelli che hanno mai rotto Schneaggchat, ti classifichi</string>
@@ -1494,6 +1527,15 @@
     <string name="shared_links">Link</string>
     <string name="no_shared_images">Nessuna immagine condivisa in questa chat</string>
     <string name="no_shared_links">Nessun link condiviso in questa chat</string>
+
+    <string name="shared_messages">Messaggi</string>
+    <string name="no_shared_messages">Nessun messaggio di questo tipo in questa chat</string>
+    <string name="shared_messages_type_text">Messaggi di testo</string>
+    <string name="shared_messages_type_image">Immagini</string>
+    <string name="shared_messages_type_poll">Sondaggi</string>
+    <string name="shared_messages_type_audio">Messaggi vocali</string>
+    <string name="shared_messages_type_system">Messaggi di sistema</string>
+    <string name="shared_polls_subpoll_count">%1$s sottosondaggi</string>
     <string name="go_to_message">Vai al messaggio</string>
     <string name="copy_link">Copia link</string>
     <!-- Tools tab and two-stroke fuel mix calculator -->
@@ -1540,11 +1582,15 @@
     <string name="games_dartcounter_description">Contare alla rovescia un leg da 301 o 501</string>
     <string name="games_undercover_description">Smascherare l'infiltrato descrivendo la parola segreta</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
-    <string name="games_schneaggrodeo_description">Saltare gli ostacoli e catturare con il lazo le lumache alle calcagna</string>
-    <string name="games_schneaggrodeo_instructions">Cavalca il più lontano possibile mentre un branco di schneagg ti insegue! Più a lungo cavalchi, più diventa veloce e difficile — finché il branco non ti raggiunge.\n\nTocca (o premi spazio) per saltare, tieni premuto per saltare più in alto. Se abbatti una barriera o urti una lumaca, il tuo cavallo inciampa e il branco si avvicina — quando ti raggiunge, la cavalcata è finita.\n\nLancia il lazo (pulsante o L) per catturare le lumache e ottenere punti bonus. Ogni 5 lumache catturate valgono un super salto (pulsante o J) sui prossimi 5 ostacoli.\n\nSalta attraverso i ferri di cavallo portafortuna sospesi: ognuno assorbe il tuo prossimo errore (fino a 3).\n\nLe bandierine sul percorso mostrano dove sono finite le cavalcate migliori, il tuo record nel tuo colore principale. Battile!\n\nIl tuo cavallo si stanca cavalcando e a ogni errore — i suoi cuori sono dipinti sul fianco. Più è dorato dagli zoccoli in su, più è forte. Prendi le carote per nutrirlo! Quando i cuori finiscono ti disarciona e scappa, e devi prendere al lazo un nuovo cavallo. I cavalli selvaggi sul percorso sono più forti, saltano più in alto e sono riposati: prendine uno al lazo per cambiare. Il fango rallenta il tuo cavallo, quindi saltalo.\n\nGli amici cavalcano poco prima del loro record: prendili al lazo e cavalcano con te.</string>
+    <string name="games_schneaggrodeo_description">Salta gli ostacoli, cattura le lumache con il lazo e sfuggi ai corvi</string>
+    <string name="games_schneaggrodeo_instructions">Cavalca il più lontano possibile mentre uno stormo di corvi ti insegue. Tocca (o premi spazio) per saltare le barriere e lancia il lazo per catturare le lumache – con loro compri super salti e altro. Ogni errore avvicina i corvi; quando ti raggiungono piombano giù e ti beccano via il cappello, poi un braccio, poi una gamba – la quarta beccata pone fine alla cavalcata.</string>
+    <string name="games_schneaggrodeo_start_easier">Più facile</string>
+    <string name="games_schneaggrodeo_start_harder">Più difficile · punti ×1,5</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lazo</string>
     <string name="games_schneaggrodeo_catch_horse">Prendi il tuo cavallo!</string>
+    <string name="games_schneaggrodeo_on_foot_hint">Tocca per saltare – tocca di nuovo proprio mentre atterri per un salto mortale, tre di fila per un triplo salto che ti fa andare più veloce! Prendi il cavallo con il lazo quando sei abbastanza vicino.</string>
+    <string name="games_schneaggrodeo_on_foot_hint_keys">Spazio per saltare – premi di nuovo proprio mentre atterri per un salto mortale, tre di fila per un triplo salto che ti fa andare più veloce! Prendi il cavallo con il lazo [L] quando sei abbastanza vicino.</string>
     <string name="games_schneaggrodeo_snails">Lumache: %1$d</string>
     <string name="games_schneaggrodeo_horseshoes">Ferri di cavallo: %1$d</string>
     <string name="games_schneaggrodeo_plane_controls">Metà sinistra: sali · Metà destra: scendi – evita palazzi e nuvole, prendi i ferri di cavallo!</string>
@@ -1553,16 +1599,31 @@
     <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
     <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
     <string name="games_schneaggrodeo_lasso_hint">Prendilo al lazo per salire!</string>
+    <string name="games_schneaggrodeo_lasso_hint_horse">Prendilo al lazo per cambiare cavallo!</string>
+    <string name="games_schneaggrodeo_lasso_hint_friend">Prendilo al lazo per cavalcare insieme!</string>
+    <string name="games_schneaggrodeo_lasso_hint_pizza">Prendi la pizza al lazo!</string>
+    <string name="games_schneaggrodeo_lasso_hint_kaesknoepfle">Prendi i Käsknöpfle al lazo!</string>
+    <string name="games_schneaggrodeo_lasso_hint_stanislaus">Prendi Stanislaus al lazo!</string>
+    <string name="games_schneaggrodeo_goodbye">Saluti</string>
     <string name="games_schneaggrodeo_golden_carriage">Carrozza d\'oro!</string>
     <string name="games_schneaggrodeo_golden_carriage_button">Carrozza d\'oro</string>
     <string name="games_schneaggrodeo_golden_carriage_controls">Non serve premere nulla: i cavalli d\'oro sfondano ogni recinto – 20 punti per ognuno!</string>
     <string name="games_schneaggrodeo_traffic_jam">Ingorgo!</string>
     <string name="games_schneaggrodeo_traffic_jam_controls">Non serve premere nulla: il tuo cavallo salta da solo da un tetto all\'altro – 15 punti per ogni auto!</string>
+    <string name="games_schneaggrodeo_helicopter">Elicottero!</string>
+    <string name="games_schneaggrodeo_helicopter_controls">Tieni premuto ovunque per salire – raggiungi l\'arcobaleno lassù prima che il volo finisca!</string>
+    <string name="games_schneaggrodeo_helicopter_controls_keys">Tieni premuto Spazio / W per salire – raggiungi l\'arcobaleno lassù prima che il volo finisca!</string>
+    <string name="games_schneaggrodeo_map_welcome">Benvenuto</string>
+    <string name="games_schneaggrodeo_map_cave">nella grotta</string>
+    <string name="games_schneaggrodeo_map_sea">in mare aperto</string>
+    <string name="games_schneaggrodeo_map_rainbow">sull\'arcobaleno</string>
+    <string name="games_schneaggrodeo_map_fossil">nello strato fossile</string>
     <string name="games_schneaggrodeo_pirate_ship">Nave pirata!</string>
     <string name="games_schneaggrodeo_pirate_ship_controls">Non serve premere nulla: il cannone spara da solo a ogni squalo e il cavallo afferra i forzieri – punti per ognuno!</string>
     <string name="games_schneaggrodeo_drill">Trivella!</string>
-    <string name="games_schneaggrodeo_drill_controls">Tieni premuto ovunque: trivella verso l\'oro · Rilascia: risali – evita le rocce grigie!</string>
-    <string name="games_schneaggrodeo_drill_controls_keys">Tieni premuto Spazio / W: trivella verso l\'oro · Rilascia: risali – evita le rocce grigie!</string>
+    <string name="games_schneaggrodeo_drill_controls">Tieni premuto ovunque: trivella verso l\'oro · Rilascia: risali – evita le rocce grigie! Continua a trivellare sul fondo per sfondare nello strato fossile.</string>
+    <string name="games_schneaggrodeo_drill_controls_keys">Tieni premuto Spazio / W: trivella verso l\'oro · Rilascia: risali – evita le rocce grigie! Continua a trivellare sul fondo per sfondare nello strato fossile.</string>
+    <string name="games_schneaggrodeo_drill_boarding">Drill, baby, drill!</string>
     <string name="games_schneaggrodeo_double_points">×2 punti</string>
     <string name="games_schneaggrodeo_train">Wälderbähnle</string>
     <string name="games_schneaggrodeo_milk_truck">Milchlaster</string>
@@ -1593,7 +1654,7 @@
     <string name="games_schneaggrodeo_balloon_controls">Tieni premuto per accendere il bruciatore – prendi i ferri di cavallo!</string>
     <string name="games_schneaggrodeo_balloon_controls_keys">Tieni premuto spazio per accendere il bruciatore – prendi i ferri di cavallo!</string>
     <string name="games_schneaggrodeo_cow">Kuah-Ritt</string>
-    <string name="games_schneaggrodeo_cow_controls">Niente da fare – goditi la cavalcata! Il campanaccio fa scappare le lumache.</string>
+    <string name="games_schneaggrodeo_cow_controls">Niente da fare – goditi la cavalcata! Il campanaccio fa scappare i corvi.</string>
     <string name="games_schneaggrodeo_rowboat">Ruderboot</string>
     <string name="games_schneaggrodeo_rowboat_controls">Tocca Lazo per prendere i pesci che saltano – punti per ognuno!</string>
     <string name="games_schneaggrodeo_uboat">U-Boot</string>
@@ -1605,7 +1666,7 @@
     <string name="games_schneaggrodeo_flamingo_controls">Tocca per rimbalzare in alto – prendi i ferri di cavallo!</string>
     <string name="games_schneaggrodeo_flamingo_controls_keys">Premi spazio per rimbalzare in alto – prendi i ferri di cavallo!</string>
     <string name="games_schneaggrodeo_mine_cart">Grubenhunt</string>
-    <string name="games_schneaggrodeo_mine_cart_controls">Tieniti forte – il carrello corre sui binari e distrugge le casse!</string>
+    <string name="games_schneaggrodeo_mine_cart_controls">Tieniti forte – il carrello corre sui binari e distrugge le stalagmiti!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s cavalca con te!</string>
     <string name="games_schneaggrodeo_friend_joined">Da adesso cavalchi anche per il record di %1$s: appena scendi da cavallo, i tuoi punti finora valgono anche per %1$s.</string>
 

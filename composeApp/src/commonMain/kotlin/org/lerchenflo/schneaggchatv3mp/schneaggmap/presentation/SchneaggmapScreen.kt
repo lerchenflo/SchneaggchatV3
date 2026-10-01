@@ -48,6 +48,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -69,6 +74,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.Schne
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
+import org.maplibre.compose.camera.CameraAnimation
 import org.maplibre.compose.camera.CameraMoveReason
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.interaction.ClickResult
@@ -97,12 +103,22 @@ import schneaggchatv3mp.composeapp.generated.resources.event_pick_location_title
 import schneaggchatv3mp.composeapp.generated.resources.event_use_this_location
 import kotlin.math.roundToInt
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val OWN_LOCATION_START_ZOOM = 14.0
 private const val OWN_LOCATION_CLICK_ZOOM = 16.0
 private const val ENTRY_FOCUS_ZOOM = 16.0
 
 private const val ZOOM_SNAP_RADIUS_DP = 64.0
+
+//Speed badge hysteresis: shows above the first speed, only hides again below the second, so GPS
+//noise around a single threshold can't make it flicker.
+private const val SPEED_BADGE_SHOW_MPS = 3.0
+private const val SPEED_BADGE_HIDE_MPS = 2.0
+
+//Follow mode skips re-centering for moves smaller than this (GPS jitter while standing still).
+private const val FOLLOW_MIN_MOVE_METERS = 2.0
+private val FOLLOW_ANIMATION_DURATION = 500.milliseconds
 
 @Composable
 fun SchneaggmapScreenRoot(
@@ -199,6 +215,9 @@ fun SchneaggmapScreen(
     //"Follow me" mode, toggled on by the locate button. Stops as soon as the user manually
     //pans/zooms the map - any GESTURE-driven camera move is treated as "I don't want to follow".
     var isFollowingLocation by remember { mutableStateOf(false) }
+    //Bumped on every locate tap, so a tap while already following still restarts the effect below
+    //(re-zooms onto the own location) instead of being a no-op true -> true.
+    var followRequest by remember { mutableStateOf(0) }
     LaunchedEffect(Unit) {
         snapshotFlow { mapState.cameraMoveReason }
             .collect { reason ->
@@ -207,25 +226,93 @@ fun SchneaggmapScreen(
                 }
             }
     }
-    LaunchedEffect(isFollowingLocation) {
+    LaunchedEffect(isFollowingLocation, followRequest) {
         if (!isFollowingLocation) return@LaunchedEffect
 
-        //Zoom in once when following starts, then keep re-centering on the latest location
-        //at whatever zoom the user leaves it at.
-        ownLocation?.position?.let { position ->
-            mapState.animateCameraPosition(CameraPosition(target = position, zoom = OWN_LOCATION_CLICK_ZOOM))
+        //Every newer camera command (zoom slider, compass tap, ...) cancels a running camera
+        //animation with a CancellationException. That must only abort this one animation, not the
+        //whole follow loop - ensureActive() still rethrows if this effect itself got cancelled.
+        suspend fun animateSafely(position: CameraPosition, animation: CameraAnimation) {
+            try {
+                mapState.animateCameraPosition(position, animation)
+            } catch (e: CancellationException) {
+                currentCoroutineContext().ensureActive()
+            }
         }
 
-        snapshotFlow { locationState.lastLocation }
-            .collect { location ->
-                location?.position?.let { position ->
-                    mapState.animateCameraPosition(mapState.cameraPosition.copy(target = position))
-                }
+        //Zoom in once when following starts (waiting for the first fix if there is none yet), then
+        //keep re-centering on the latest location at whatever zoom/bearing the user leaves it at.
+        val start = snapshotFlow { locationState.lastLocation?.position }.filterNotNull().first()
+        animateSafely(CameraPosition(target = start, zoom = OWN_LOCATION_CLICK_ZOOM), CameraAnimation.Fly())
+
+        snapshotFlow { locationState.lastLocation?.position }
+            .filterNotNull()
+            .collect { position ->
+                //Let another command (e.g. the compass turning back north) finish first - starting
+                //a re-center from its half-done camera would cancel it and freeze it midway.
+                snapshotFlow { mapState.isCameraMoving }.first { !it }
+
+                val current = mapState.cameraPosition
+                val movedMeters = approximateDistanceMeters(
+                    current.target.latitude, current.target.longitude,
+                    position.latitude, position.longitude
+                )
+                if (movedMeters < FOLLOW_MIN_MOVE_METERS) return@collect
+
+                animateSafely(current.copy(target = position), CameraAnimation.Ease(duration = FOLLOW_ANIMATION_DURATION))
             }
     }
 
 
+    //Speed badge visibility with hysteresis (see SPEED_BADGE_SHOW_MPS / SPEED_BADGE_HIDE_MPS)
+    var showSpeedBadge by remember { mutableStateOf(false) }
+    val speedMps = ownLocation?.distancePerSecond?.inMeters
+    LaunchedEffect(speedMps) {
+        showSpeedBadge = when {
+            speedMps == null -> false
+            speedMps > SPEED_BADGE_SHOW_MPS -> true
+            speedMps < SPEED_BADGE_HIDE_MPS -> false
+            else -> showSpeedBadge
+        }
+    }
+
     val bottomMapChrome: @Composable MapOverlayScope.() -> Unit = {
+
+        // Right edge: vertical zoom scrollbar. Its touch target is invisible but always mounted,
+        // so it is placed first - every button drawn after it (here and in the top bar) sits above
+        // it and keeps its taps where they overlap, e.g. on short/landscape screens.
+        MapZoomSlider(
+            zoom = mapState.cameraPosition.zoom,
+            onZoomChange = { newZoom ->
+                val currentTarget = mapState.cameraPosition.target
+                val snapRadiusMeters = ZOOM_SNAP_RADIUS_DP * mapState.metersPerDpAtTarget
+
+                //If a user is sitting near the current screen center, zoom onto them (like Snap Map);
+                //otherwise just zoom in/out around the current map center.
+                val nearestCandidate = zoomSnapCandidates.minByOrNull { position ->
+                    approximateDistanceMeters(
+                        currentTarget.latitude, currentTarget.longitude,
+                        position.latitude, position.longitude
+                    )
+                }
+                val snapTarget = nearestCandidate?.takeIf { position ->
+                    approximateDistanceMeters(
+                        currentTarget.latitude, currentTarget.longitude,
+                        position.latitude, position.longitude
+                    ) <= snapRadiusMeters
+                }
+
+                mapState.setCameraPosition(
+                    mapState.cameraPosition.copy(
+                        target = snapTarget ?: currentTarget,
+                        zoom = newZoom
+                    )
+                )
+            },
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 8.dp)
+        )
 
         if (!state.pickLocationMode) {
             //Bottom column
@@ -242,12 +329,22 @@ fun SchneaggmapScreen(
                 ) {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(2.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
 
-                        //Center to own location button
-                        ownLocation?.let {
+                        //Compass - lives here, not in the bottom row, where the speed badge covered it
+                        DisappearingCompassButton(
+                            size = 32.dp
+                        )
+
+                        //Center to own location button. Shown as soon as location is permitted - a
+                        //tap before the first fix starts following and zooms in once the fix arrives.
+                        if (state.locationPermissionGranted || ownLocation != null) {
                             SmallFloatingActionButton(
-                                onClick = { isFollowingLocation = true },
+                                onClick = {
+                                    isFollowingLocation = true
+                                    followRequest++
+                                },
                                 containerColor = MaterialTheme.colorScheme.surface,
                                 contentColor = MaterialTheme.colorScheme.onSurface,
                             ) {
@@ -315,15 +412,10 @@ fun SchneaggmapScreen(
 
                     }
 
-                    //compass
-                    DisappearingCompassButton(
-                        size = 32.dp
-                    )
-
                     //Round speed indicator
-                    ownLocation?.distancePerSecond?.let { speed ->
-                        if (speed.inMeters > 3) {
-                            val speedKmh = (speed.inMeters * 3.6).roundToInt()
+                    speedMps?.let { speed ->
+                        if (showSpeedBadge) {
+                            val speedKmh = (speed * 3.6).roundToInt()
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.TopCenter)
@@ -492,41 +584,6 @@ fun SchneaggmapScreen(
 
 
 
-
-        // Right edge: vertical zoom scrollbar, centered between the top and bottom rows so it
-        // never collides with the filter dropdown above or the snail-trail toggle below.
-        MapZoomSlider(
-            zoom = mapState.cameraPosition.zoom,
-            onZoomChange = { newZoom ->
-                val currentTarget = mapState.cameraPosition.target
-                val snapRadiusMeters = ZOOM_SNAP_RADIUS_DP * mapState.metersPerDpAtTarget
-
-                //If a user is sitting near the current screen center, zoom onto them (like Snap Map);
-                //otherwise just zoom in/out around the current map center.
-                val nearestCandidate = zoomSnapCandidates.minByOrNull { position ->
-                    approximateDistanceMeters(
-                        currentTarget.latitude, currentTarget.longitude,
-                        position.latitude, position.longitude
-                    )
-                }
-                val snapTarget = nearestCandidate?.takeIf { position ->
-                    approximateDistanceMeters(
-                        currentTarget.latitude, currentTarget.longitude,
-                        position.latitude, position.longitude
-                    ) <= snapRadiusMeters
-                }
-
-                mapState.setCameraPosition(
-                    mapState.cameraPosition.copy(
-                        target = snapTarget ?: currentTarget,
-                        zoom = newZoom
-                    )
-                )
-            },
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 8.dp)
-        )
 
         if (!state.pickLocationMode) {
             state.selectedEntry?.let { entry ->

@@ -248,6 +248,36 @@ interface MessageDao {
     ): Flow<List<MessageDto>>
 
     /**
+     * Every message of one [msgType] (a MessageType name) in one chat, newest first, for the shared
+     * content screen's message list. Readers are not joined - the list never reads them.
+     */
+    @Query("""
+        SELECT * FROM messages
+        WHERE (senderId = :userId OR receiverId = :userId)
+          AND groupMessage = :gruppe
+          AND msgType = :msgType
+          AND deleted = 0
+        ORDER BY CAST(sendDate AS INTEGER) DESC
+    """)
+    fun getMessagesOfTypeForChatFlow(
+        userId: String,
+        gruppe: Boolean,
+        msgType: String,
+    ): Flow<List<MessageDto>>
+
+    /** Number of (not deleted) messages in one chat, all types, for the chat details row. */
+    @Query("""
+        SELECT COUNT(*) FROM messages
+        WHERE (senderId = :userId OR receiverId = :userId)
+          AND groupMessage = :gruppe
+          AND deleted = 0
+    """)
+    fun getMessageCountForChatFlow(
+        userId: String,
+        gruppe: Boolean,
+    ): Flow<Int>
+
+    /**
      * Messages of one chat whose text might carry a url, newest first, for the shared content
      * screen's link list. The two LIKEs are only a cheap prefilter and have to stay as wide as the
      * regex in extractLinks, which is what decides whether a row really counts - 'www.' is in there

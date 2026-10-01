@@ -11,12 +11,17 @@ import kotlin.math.sin
 // How the horse looks in every situation. Pitch is in degrees (positive = nose down) around a
 // pivot in the horse's drawing grid (see drawHorseAndRider); the first matching situation wins.
 
-// The galloping horse rocks gently: nose down as the front legs land, up as the hind legs push off
+// The galloping horse rocks gently: nose down while the front legs carry it, up as the hind legs push off
 private const val GALLOP_ROCK_DEGREES = 2.5f
+/** Gait phase (radians) at which the front legs carry the horse (see the stride in drawHorseAndRider). */
+internal const val FRONT_SUPPORT_PHASE = 1.57f
 // Normal jumps tilt the horse: nose up on takeoff, level at the peak, nose down to land
 private const val JUMP_MAX_PITCH = 16f
 private const val JUMP_PITCH_BLEND_HEIGHT = 4f       // pitch fades in / out over this height above the ground
-private const val STUMBLE_MAX_PITCH = 24f            // nose down at the worst moment of a stumble
+private const val STUMBLE_MAX_PITCH = 13f            // nose down at the worst moment of a stumble
+/** How far the front legs buckle and the hat pops up in a stumble. */
+private const val STUMBLE_LEG_FOLD = 0.55f
+private const val STUMBLE_HAT_LIFT = 1.8f
 private const val BUCK_MAX_PITCH = 22f               // hindquarters up, nose down
 // The super jump wind-up rears the horse up on its pumped hind legs, front hooves pawing the air
 private const val SUPER_JUMP_HIND_LEG_GROWTH = 0.6f  // hind legs grow to 160 %
@@ -93,8 +98,8 @@ internal fun poseHorse(
             pitch = STUMBLE_MAX_PITCH * (dip + wobble)
             pivotX = 7f
             pivotY = 0f
-            frontLegFold = dip
-            hatLift = 3f * dip
+            frontLegFold = STUMBLE_LEG_FOLD * dip
+            hatLift = STUMBLE_HAT_LIFT * dip
         } else if (horse.height > 0f) {
             // Normal jump: tilts with the vertical speed, faded in and out near the ground so
             // takeoff and landing don't snap
@@ -105,7 +110,7 @@ internal fun poseHorse(
             // Riderless hop over a fence under the plane: level
             pitch = 0f
         } else {
-            pitch = GALLOP_ROCK_DEGREES * sin(horse.gaitPhase + 0.8f)
+            pitch = gallopRock(horse.gaitPhase)
         }
     }
     return RodeoHorsePose(
@@ -135,3 +140,6 @@ internal fun poseHorse(
         scale = scale,
     )
 }
+
+/** Pitch of the galloping horse at [gaitPhase]: rocks nose down while the front legs carry it. */
+internal fun gallopRock(gaitPhase: Float) = GALLOP_ROCK_DEGREES * sin(gaitPhase - FRONT_SUPPORT_PHASE)

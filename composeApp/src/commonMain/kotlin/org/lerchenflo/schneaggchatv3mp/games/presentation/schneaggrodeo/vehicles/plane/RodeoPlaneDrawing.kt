@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.plane
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -277,8 +278,10 @@ private fun DrawScope.drawPlane(
         // Pilot: head and hat sticking out of the cockpit
         if (plane.hasPilot) {
             drawCircle(pilotColor, radius = 1.6f * unit, center = p(PLANE_PILOT_X, 7.6f))
-            drawRoundRect(HAT_COLOR, p(PLANE_PILOT_X - 2.8f, 9.6f), Size(5.6f * unit, 0.6f * unit), CornerRadius(0.3f * unit))
-            drawRoundRect(HAT_COLOR, p(PLANE_PILOT_X - 1.5f, 11.6f), Size(3f * unit, 2.2f * unit), CornerRadius(0.7f * unit))
+            if (!context.cowboyLost(RodeoCowboyPart.HAT)) {
+                drawRoundRect(HAT_COLOR, p(PLANE_PILOT_X - 2.8f, 9.6f), Size(5.6f * unit, 0.6f * unit), CornerRadius(0.3f * unit))
+                drawRoundRect(HAT_COLOR, p(PLANE_PILOT_X - 1.5f, 11.6f), Size(3f * unit, 2.2f * unit), CornerRadius(0.7f * unit))
+            }
         }
 
         // Upper wing on top
