@@ -103,7 +103,7 @@ private fun DrawScope.drawBalloon(balloon: RodeoBalloonUi, context: RodeoDrawCon
         }
 
         // The cowboy peeking out of the basket
-        if (balloon.hasPilot) drawSeatedCowboy(::p, hipX = centerX - 0.8f, hipY = BASKET_HEIGHT - 2.4f, unit = unit, colors = colors)
+        if (balloon.hasPilot) drawSeatedCowboy(::p, hipX = centerX - 0.8f, hipY = BASKET_HEIGHT - 2.4f, unit = unit, colors = colors, wounds = context.cowboyWounds)
 
         // Wicker basket with weave lines
         drawRoundRect(WICKER, p(0f, BASKET_HEIGHT), Size(BASKET_WIDTH * unit, BASKET_HEIGHT * unit), CornerRadius(0.4f * unit))

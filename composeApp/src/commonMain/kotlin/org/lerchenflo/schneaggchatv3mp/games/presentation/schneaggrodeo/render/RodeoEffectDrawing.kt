@@ -2,9 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -74,6 +76,37 @@ internal fun DrawScope.drawLasso(hand: Offset, tip: Offset, unit: Float, color: 
         style = Stroke(width = 0.5f * unit, cap = StrokeCap.Round)
     )
     drawCircle(color, radius = 1.8f * unit, center = tip, style = Stroke(width = 0.5f * unit))
+}
+
+/** Dark all over the picture except a circle of [radius] round [center] (the cartoon ending). */
+internal fun DrawScope.drawSpotlight(center: Offset, radius: Float, color: Color) {
+    val dark = Path().apply {
+        fillType = PathFillType.EvenOdd
+        addRect(Rect(Offset.Zero, size))
+        if (radius > 0f) addOval(Rect(center, radius))
+    }
+    drawPath(dark, color)
+}
+
+/** A speech bubble with [layout] in it, its tail pointing down-left to [tail]. */
+internal fun DrawScope.drawSpeechBubble(layout: TextLayoutResult, tail: Offset, unit: Float, color: Color) {
+    val padX = 1.4f * unit
+    val padY = 0.8f * unit
+    val width = layout.size.width + padX * 2f
+    val height = layout.size.height + padY * 2f
+    val left = tail.x + 1.5f * unit
+    val top = tail.y - 2f * unit - height
+    drawRoundRect(color, Offset(left, top), Size(width, height), CornerRadius(height / 2f))
+    drawPath(
+        Path().apply {
+            moveTo(left + 1.5f * unit, top + height - 0.2f * unit)
+            lineTo(left + 4f * unit, top + height - 0.2f * unit)
+            lineTo(tail.x, tail.y)
+            close()
+        },
+        color = color
+    )
+    drawText(layout, topLeft = Offset(left + padX, top + padY))
 }
 
 /** A rounded label with a small pointer below, telling the player to lasso what is under it. */

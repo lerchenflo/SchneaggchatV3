@@ -6,6 +6,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.LEVEL_GOLD_COLOR
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoDrawContext
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoLayer
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.cloudNoise
@@ -35,13 +36,20 @@ data class RodeoMineCartUi(
     /** Drives the sparks while racing, else null. */
     val sparks: Float?,
     override val lassoHint: RodeoLassoHintUi?,
+    /** Rails across the whole picture (in the cave); off on the surface. */
+    val railsAcross: Boolean = true,
+    /** Heaped full of gold (the cart out of the gold mine on the surface). */
+    val gold: Boolean = false,
 ) : RodeoVehicleUi {
 
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         when (layer) {
-            RodeoLayer.BACK -> drawRails(railOffset, context)
+            RodeoLayer.BACK -> if (railsAcross) drawRails(railOffset, context)
             RodeoLayer.BODY -> drawCartInside(this@RodeoMineCartUi, context)
-            RodeoLayer.FRONT -> drawCartSide(this@RodeoMineCartUi, context)
+            RodeoLayer.FRONT -> {
+                if (gold) drawGoldHeap(this@RodeoMineCartUi, context)
+                drawCartSide(this@RodeoMineCartUi, context)
+            }
         }
     }
 }
@@ -62,6 +70,18 @@ private fun DrawScope.drawCartInside(cart: RodeoMineCartUi, context: RodeoDrawCo
     val unit = context.unit
     fun p(x: Float, y: Float) = context.p(cart.x + x, y)
     drawPath(polygonPath(::p, 1f to CART_RIM, CART_LENGTH - 1f to CART_RIM, CART_LENGTH - 2.5f to CART_FLOOR, 2.5f to CART_FLOOR), CART_IRON_DARK)
+}
+
+/** Gold nuggets heaped up over the cart's rim. */
+private fun DrawScope.drawGoldHeap(cart: RodeoMineCartUi, context: RodeoDrawContext) {
+    val unit = context.unit
+    fun p(x: Float, y: Float) = context.p(cart.x + x, y)
+    repeat(12) { index ->
+        val row = index / 6
+        val nuggetX = 3f + (index % 6) * 3.2f + row * 1.6f
+        val nuggetY = CART_RIM + 0.3f + row * 1.4f - 0.8f * kotlin.math.abs((index % 6) - 2.5f) / 2.5f
+        drawCircle(LEVEL_GOLD_COLOR, radius = (1.1f + 0.3f * cloudNoise(index, 71)) * unit, center = p(nuggetX, nuggetY))
+    }
 }
 
 /** Near side of the cart with rivets and rust streaks, its wheels on the rail, and sparks. */

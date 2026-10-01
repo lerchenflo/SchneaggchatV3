@@ -77,7 +77,11 @@ class SchneaggRodeoViewModel(
         when (action) {
             SchneaggRodeoAction.StartGame -> startGame()
             is SchneaggRodeoAction.OnLevelSelected -> _state.update { it.copy(level = action.level) }
-            SchneaggRodeoAction.RestartGame -> startGame()
+            SchneaggRodeoAction.RestartGame -> {
+                // Skipping the ending: the run still counts before the next one starts
+                if (_state.value.isEnding) gameOver()
+                startGame()
+            }
             SchneaggRodeoAction.StopGame -> stopGame()
             SchneaggRodeoAction.TogglePause -> togglePause()
             SchneaggRodeoAction.LeaveGame -> pauseAndPersist()
@@ -204,12 +208,13 @@ class SchneaggRodeoViewModel(
                 announcement = engine.announcement,
                 mapTitle = engine.mapTitle,
                 nextToBeat = ghosts.firstOrNull { ghost -> ghost.score > score },
+                isEnding = engine.isEnding,
             )
         }
     }
 
     private fun gameOver() {
-        // Caught by the pack: a friend riding along gets the final score too
+        // Pecked once too often by the ravens: a friend riding along gets the final score too
         engine.leaveHorse()
         handleEvents()
         saveSession.clear()
@@ -220,6 +225,7 @@ class SchneaggRodeoViewModel(
                 isPlaying = false,
                 isGameOver = true,
                 isPaused = false,
+                isEnding = false,
                 runTimeMillis = finalTimeMillis,
             )
         }

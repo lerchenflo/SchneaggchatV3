@@ -1,8 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGhostUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoFrame
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoSnapshot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.LassoGrab
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoTraffic
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
@@ -32,7 +34,7 @@ import kotlin.random.Random
 //            RodeoSuperJump    the super jump's wind-up and flight
 //            RodeoLasso        throwing, homing in, catching
 //            RodeoFall         thrown off: the cowboy on foot and back into the saddle
-//            RodeoPack         the chasing pack; the run ends once it catches up
+//            RodeoPack         the chasing ravens; the run ends once they catch up
 //            RodeoEffects      dust, splash, sparkle, vehicle banner
 //            RodeoMarkers      highscore posts along the track
 //            RodeoHorseStats   level, hearts and coat of a horse; RodeoHorse holds the ridden one's
@@ -82,10 +84,21 @@ private const val CARRIAGE_POINTS = 2500
 private const val KAESKNOEPFLE_SECONDS = 20f
 private const val KAESKNOEPFLE_POINTS = 20
 // Digging through a dirt mound in the cave turns up a find
-private const val DIG_GOLD_POINTS = 25
-private const val DIG_GOLD_CHANCE = 0.5f
-private const val DIG_CARROT_CHANCE = 0.2f
-private const val DIG_HORSESHOE_CHANCE = 0.15f
+// Digging down from the cave: the horse paws the ground with its front hooves, dirt flying, sinks
+// in and the fade takes them down to the fossil layer
+private const val DIG_SECONDS = 1.6f
+private const val DIG_PAW_SPEED = 9f
+private const val DIG_DIRT_INTERVAL = 0.18f
+private const val DIG_SINK_START = 0.9f
+private const val DIG_SINK_SPEED = 6f
+/** Where the loop grabs the shovel: its grip above the mound. */
+private const val SHOVEL_GRIP_X = 0.5f
+/** Where the mine cart comes out, from the gold mine way's left edge: in front of the tunnel mouth. */
+private const val MINE_CART_OFFSET = MAP_WAY_WIDTH - 8f
+/** Pawing the ground: front legs half lifted, nose down a little. */
+private const val DIG_LEG_RAISE = 0.6f
+private const val DIG_PITCH = 6f
+private const val SHOVEL_GRIP_Y = 7f
 // The pack keeps its distance around a new horse, so getting back up is never an instant loss
 /** At least this far back when an exhausted horse runs off: time to lasso the new one. */
 private const val EXHAUSTED_PACK_GAP = 22f
@@ -95,6 +108,18 @@ private const val NEW_HORSE_PACK_GAP = 30f
 private const val REMOUNT_PACK_GAP = 15f
 /** u/s the pack gains while the horse wades through mud. */
 private const val MUD_PACK_GAIN = 3f
+/** The cowboy's head above his feet on foot, and on the horse (horse grid, see drawHorseAndRider). */
+private const val COWBOY_HEAD_Y = 14f
+private const val RIDER_HEAD_X = 12.2f
+private const val RIDER_HEAD_Y = 23.6f
+/** Only a run with at least this many points gets the long ending; shorter ones end right away. */
+private const val LONG_ENDING_MIN_SCORE = 2500
+/** His head above the middle of his body, where he tumbles around. */
+private const val HEAD_ABOVE_MIDDLE = 5f
+/** The horse shies nervously before it gallops off at the end. */
+private const val WAITING_GAIT_SPEED = 4f
+/** How fast the rider twirls the lasso over his head (radians per second). */
+private const val LASSO_TWIRL_SPEED = 11f
 /**
  * A friend shows up this many seconds (at the current pace) before the run reaches their highscore,
  * whatever else is going on; they keep pace next to the rider until the run passes it.
@@ -133,8 +158,8 @@ internal sealed interface RodeoEvent {
 }
 
 /**
- * The Schneagg Rodeo simulation: a cowboy on a horse jumping show-jumping fences while a pack of
- * schneaggs chases him. Deliberately mutable and allocation-light - it is stepped every frame by
+ * The Schneagg Rodeo simulation: a cowboy on a horse jumping show-jumping fences while ravens
+ * chase him. Deliberately mutable and allocation-light - it is stepped every frame by
  * the ViewModel, which publishes an immutable [SchneaggRodeoFrame] built by [toFrame] afterwards.
  */
 internal class SchneaggRodeoEngine : RodeoWorld {
@@ -144,6 +169,15 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     private val course = RodeoCourse()
     private val horse = RodeoHorse()
     private val pack = RodeoPack()
+    private val death = RodeoDeath()
+    /** Seconds into digging down from the cave with the lassoed shovel; negative while not digging. */
+    private var digTime = -1f
+    private var digDirtIn = 0f
+    private var digTravelled = false
+    /** Digging or the long ending: the buttons do nothing meanwhile. */
+    private val inputLocked: Boolean get() = death.isActive || digTime >= 0f
+    /** A short run ends right away when the ravens get him: no long ending. */
+    private var caughtAtOnce = false
     private val lasso = RodeoLasso(course.snails)
     private val fall = RodeoFall()
     private val superJump = RodeoSuperJump()
@@ -181,6 +215,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     /** Collected lucky horseshoes; each one absorbs one crash. */
     var luckyCharms = 0
         private set
+    /** Hits the cowboy took from the ravens: hat, arm, leg (see RodeoCowboyPart), the next one ends the run. */
+    private var cowboyWounds = 0
     /** How far the ground has scrolled; runs away from [distance] while a vehicle races. */
     private var groundScroll = 0f
     /** Height of the riderless horse hopping the fences on its own while the cowboy flies. */
@@ -221,8 +257,14 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     /** The running cowboy is close enough to his horse to lasso it. */
     val canCatchHorse: Boolean get() = fall.horseInReach
 
-    /** True once the chasing pack reached the horse. */
-    val isCaught: Boolean get() = pack.hasCaughtUp
+    /**
+     * True once the run is over: the ravens pecked the cowboy one more time than he had parts to
+     * lose, and feasted on him until he was gone (see RodeoDeath).
+     */
+    val isCaught: Boolean get() = death.isOver || caughtAtOnce
+
+    /** The ravens are taking the cowboy away (the long ending of a good run). */
+    val isEnding: Boolean get() = death.isActive && !death.isOver
 
     /** Banner currently shown over the track, if any. */
     val announcement: RodeoVehicleKind? get() = effects.announcement
@@ -262,6 +304,9 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         course.reset()
         horse.reset()
         pack.reset()
+        death.reset()
+        caughtAtOnce = false
+        digTime = -1f
         lasso.reset()
         fall.reset()
         superJump.reset()
@@ -293,6 +338,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         bonusPoints = 0
         snailsCaught = 0
         luckyCharms = 0
+        cowboyWounds = 0
         groundScroll = 0f
         riderlessHop = 0f
         // Test mode starts right on the tested map
@@ -320,6 +366,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         markers.reset(bonusPoints)
         snailsCaught = snapshot.snailsCaught
         luckyCharms = snapshot.luckyCharms
+        // Saved while the ravens were feasting: one last chance
+        cowboyWounds = snapshot.cowboyWounds.coerceAtMost(RodeoCowboyPart.entries.size)
     }
 
     fun toSnapshot(): SchneaggRodeoSnapshot = SchneaggRodeoSnapshot(
@@ -339,6 +387,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         horseCoat = horse.coat,
         passengerId = passenger?.userId,
         passengerName = passenger?.username,
+        cowboyWounds = cowboyWounds,
         level = level.difficulty,
     )
 
@@ -358,7 +407,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     // --- Input
 
     fun jumpPressed() {
-        if (horse.jumpHeld) return // key repeat while holding
+        if (horse.jumpHeld || inputLocked) return // key repeat while holding
         horse.jumpHeld = true
         if (!fall.isInSaddle) {
             fall.jumpPressed()
@@ -379,6 +428,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     /** Steers the plane or the rocket down while held; does nothing on the horse. */
     fun divePressed() {
+        if (inputLocked) return
         ride?.onDive(true)
     }
 
@@ -388,14 +438,14 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     fun superJumpPressed() {
         // No super jump over the rainbow's gaps: it is made for fences
-        if (superJumpCharges <= 0 || !fall.isInSaddle || ride != null || superJump.isBusy || mapSwitch.map == RodeoMap.RAINBOW) return
+        if (inputLocked || superJumpCharges <= 0 || !fall.isInSaddle || ride != null || superJump.isBusy || mapSwitch.map == RodeoMap.RAINBOW) return
         // In the air it fires on landing, on the ground right away
         if (horse.isOnGround) startSuperJump() else superJump.queue()
     }
 
     /** Buys the rocket with saved-up snails. */
     fun rocketPressed() {
-        if (!rocketReady) return
+        if (!rocketReady || inputLocked) return
         snailsCaught -= SNAILS_PER_ROCKET
         bonusPoints += ROCKET_POINTS
         traffic.launchRocket(this)
@@ -403,13 +453,14 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     /** Buys the golden carriage with saved-up snails. */
     fun carriagePressed() {
-        if (!carriageReady) return
+        if (!carriageReady || inputLocked) return
         snailsCaught -= SNAILS_PER_CARRIAGE
         bonusPoints += CARRIAGE_POINTS
         traffic.sendCarriage(this)
     }
 
     fun lassoPressed() {
+        if (inputLocked) return
         val ride = ride
         if (ride != null && ride.onLassoButton(this)) return
         if (!lasso.isReady) return
@@ -428,6 +479,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
                 ?: wildHorses.takeIf { ride == null && !superJump.isActive }?.lassoGrab(reach, timeToCatch, ::wildHorseCaught)
                 ?: stanislaus.takeIf { ride == null && !superJump.isActive }?.lassoGrab(reach, timeToCatch, ::stanislausCaught)
                 ?: pizzaOvens.takeIf { ride == null && !superJump.isActive }?.lassoGrab(reach, timeToCatch, groundSpeed, ::stopFood)
+                ?: shovelGrab(reach, timeToCatch, groundSpeed).takeIf { ride == null && !superJump.isActive }
         }
     }
 
@@ -441,9 +493,74 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         trip.tick(realDt)
         // A slow-motion mushroom slows down the whole world, not the clock of the run
         val dt = realDt * trip.timeFactor
+        if (death.isActive) {
+            stepDeath(dt)
+            return
+        }
         mapSwitch.stepFade(realDt, ::switchMap)
+        if (digTime >= 0f) {
+            stepDig(dt)
+            return
+        }
         effects.tick(dt)
         if (fall.isInSaddle) stepRiding(dt) else stepOffTheHorse(dt)
+        if (pack.stepAttack(dt)) peckCowboy()
+    }
+
+    /** The ravens peck the next part off the cowboy; it flies away. Nothing left to lose: he is done for. */
+    private fun peckCowboy() {
+        cowboyWounds++
+        val part = RodeoCowboyPart.entries.getOrNull(cowboyWounds - 1)
+        if (part == null) {
+            die()
+            return
+        }
+        val (headX, headY) = cowboyHead()
+        val drop = when (part) {
+            RodeoCowboyPart.HAT -> -2f
+            RodeoCowboyPart.ARM -> 4f
+            RodeoCowboyPart.LEG -> 9f
+        }
+        effects.losePart(part, headX, headY - drop)
+    }
+
+    /**
+     * The end of the run: the ravens grab him, drop him into the mud and carry him off (see
+     * RodeoDeath), while the horse gallops off. Whatever carried him ends at once. A short run
+     * skips all that and ends right away.
+     */
+    private fun die() {
+        if (score < LONG_ENDING_MIN_SCORE) {
+            caughtAtOnce = true
+            return
+        }
+        val (headX, headY) = cowboyHead()
+        traffic.endRide()
+        lasso.reset()
+        superJump.reset()
+        horse.stopJumping()
+        horse.height = 0f
+        horse.inMud = false
+        riderlessHop = 0f
+        death.start(headX, headY - HEAD_ABOVE_MIDDLE)
+        pack.takeAway()
+    }
+
+    /** The world stands still while the ravens take him away; the horse shies, then gallops off. */
+    private fun stepDeath(dt: Float) {
+        effects.tick(dt)
+        pack.tick(dt)
+        val ranBefore = death.horseRun
+        death.step(dt) { x -> effects.dust(x) }
+        val ran = death.horseRun - ranBefore
+        if (ran > 0f) horse.gallop(ran) else horse.gaitPhase += dt * WAITING_GAIT_SPEED
+    }
+
+    /** Where the cowboy's head is: on the horse, on his own, or as a vehicle shows him. */
+    private fun cowboyHead(): Pair<Float, Float> {
+        val alone = fall.cowboyUi() ?: traffic.current?.cowboy(this)
+        if (alone != null) return alone.x to (alone.height + COWBOY_HEAD_Y)
+        return (HORSE_X + fall.horseOffset() + RIDER_HEAD_X) to (horseBase + RIDER_HEAD_Y)
     }
 
     private fun stepRiding(dt: Float) {
@@ -525,10 +642,10 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         eatMushrooms()
         collectGems()
         catchFireflies()
-        digMounds()
         wadeThroughMud(dt)
-        // Down a shaft (hooves on the ground), into the sea or up the ramp
-        mapSwitch.checkHorse(HORSE_X + HITBOX_LEFT, HORSE_X + HITBOX_RIGHT, onGround = ride == null && !superJump.isActive && horse.isOnGround)
+        // Into the sea or up the ramp; the gold mine sends its cart along
+        mapSwitch.checkHorse(HORSE_X + HITBOX_LEFT, HORSE_X + HITBOX_RIGHT)
+        sendMineEntranceCart()
 
         // Other horses: wild ones now and then, friends shortly before their highscore
         wildHorses.step(dt, scroll, course.fences, score.toLong())
@@ -835,6 +952,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         // starts over flat
         traffic.endRide()
         lasso.end()
+        digTime = -1f
         if (travelling) terrain.reset()
         travelling = false
         if (dropping || horse.height < 0f) effects.dust(HORSE_X + HOOVES_X)
@@ -952,25 +1070,73 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         effects.splash()
     }
 
-    /** Galloping through a dirt mound in the cave digs it up: gold, a carrot, a horseshoe or a snail. */
-    private fun digMounds() {
-        if (ride != null || !horse.isOnGround) return
-        course.mounds.removeAll { mound ->
-            val dug = mound.x + MOUND_HALF_WIDTH > HORSE_X + HITBOX_LEFT && mound.x - MOUND_HALF_WIDTH < HORSE_X + HITBOX_RIGHT
-            if (dug) {
-                effects.dust(mound.x)
-                val roll = Random.nextFloat()
-                when {
-                    roll < DIG_GOLD_CHANCE -> bonusPoints += DIG_GOLD_POINTS
-                    roll < DIG_GOLD_CHANCE + DIG_CARROT_CHANCE -> horse.feed()
-                    roll < DIG_GOLD_CHANCE + DIG_CARROT_CHANCE + DIG_HORSESHOE_CHANCE -> luckyCharms = min(MAX_LUCKY_CHARMS, luckyCharms + 1)
-                    else -> snailCaught()
-                }
-                effects.sparkle(mound.x, 6f)
+    /** The gold mine came up on the surface: its cart comes out to roll along beside the horse. */
+    private fun sendMineEntranceCart() {
+        if (mapSwitch.map != RodeoMap.SURFACE) return
+        val way = mapSwitch.mapWays.firstOrNull { it.destination == RodeoMap.CAVE && !it.cartSent } ?: return
+        // Another vehicle still around: tried again next frame
+        way.cartSent = traffic.sendMineEntranceCart(this, x = way.x + MINE_CART_OFFSET)
+    }
+
+    /** The shovel stuck in a dirt mound in the cave, for the lasso; it starts the dig down once it is back. */
+    private fun shovelGrab(reach: ClosedFloatingPointRange<Float>, timeToCatch: Float, groundSpeed: Float): LassoGrab? {
+        if (mapSwitch.map != RodeoMap.CAVE) return null
+        val mound = course.mounds
+            .filter { it.hasShovel && it.x + SHOVEL_GRIP_X - groundSpeed * timeToCatch in reach }
+            .minByOrNull { it.x }
+            ?: return null
+        return object : LassoGrab {
+            override val x: Float get() = mound.x + SHOVEL_GRIP_X
+            override val y: Float get() = SHOVEL_GRIP_Y
+            override fun catch(): Boolean {
+                if (!mound.hasShovel) return false
+                mound.hasShovel = false
+                mound.shovelX = x
+                mound.shovelY = y
+                return true
             }
-            dug
+            override fun follow(tipX: Float, tipY: Float) {
+                mound.shovelX = tipX
+                mound.shovelY = tipY
+            }
+            override fun release() {
+                mound.shovelX = null
+                startDigging()
+            }
         }
     }
+
+    /** The horse stops and digs down with its hooves, then horse and rider go down to the fossil layer. */
+    private fun startDigging() {
+        if (digTime >= 0f || death.isActive || mapSwitch.map != RodeoMap.CAVE || ride != null || !fall.isInSaddle) return
+        horse.stopJumping()
+        horse.height = 0f
+        digTime = 0f
+        digDirtIn = 0f
+        digTravelled = false
+        effects.sparkle(HORSE_X + HOOVES_X, 4f)
+    }
+
+    /** The world stands still while the horse digs; dirt flies off its hooves until the fade takes them down. */
+    private fun stepDig(dt: Float) {
+        digTime += dt
+        effects.tick(dt)
+        pack.tick(dt)
+        horse.gaitPhase += dt * DIG_PAW_SPEED
+        digDirtIn -= dt
+        if (digDirtIn <= 0f) {
+            digDirtIn = DIG_DIRT_INTERVAL
+            effects.splash()
+            effects.dust(HORSE_X + HOOVES_X + 4f)
+        }
+        if (digTime >= DIG_SECONDS && !digTravelled) {
+            digTravelled = true
+            travelTo(RodeoMap.FOSSIL)
+        }
+    }
+
+    /** How far horse and rider sank into the hole they dig. */
+    private val digSink: Float get() = if (digTime < 0f) 0f else max(0f, digTime - DIG_SINK_START) * DIG_SINK_SPEED
 
     private fun snailCaught() {
         snailsCaught++
@@ -1051,21 +1217,40 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     fun toFrame(): SchneaggRodeoFrame {
         val vehicle = traffic.current
         val shaking = ride?.shaking == true
+        val (headX, headY) = if (pack.isAttacking) cowboyHead() else (0f to 0f)
+        val dying = death.isActive
         return SchneaggRodeoFrame(
             distance = groundScroll,
             fences = course.fenceUis(),
             snails = course.snailUis(pack.clock),
-            pack = pack.ui(course.fences),
+            ravens = if (dying) pack.flockUi(death.flockX, death.flockY, death.ravensHold) else pack.ui(course.fences, headX, headY),
             horse = poseHorse(horse, superJump, fall, ride, horseBase, riderlessHop, runTimeSeconds, passenger, trip.horseScale)
-                .copy(ghost = wonders.isGhost),
+                .let { pose ->
+                    pose.copy(
+                        ghost = wonders.isGhost,
+                        riderWounds = cowboyWounds,
+                        hasRider = pose.hasRider && !dying,
+                        offsetX = pose.offsetX + death.horseRun,
+                        hasLasso = fall.isInSaddle && ride == null && !dying && digTime < 0f,
+                        frontLegRaise = if (digTime >= 0f) DIG_LEG_RAISE else pose.frontLegRaise,
+                        pitchDegrees = if (digTime >= 0f) pose.pitchDegrees + DIG_PITCH else pose.pitchDegrees,
+                        height = pose.height - digSink,
+                        lassoTwirl = runTimeSeconds * LASSO_TWIRL_SPEED,
+                        lassoThrow = lasso.throwProgress ?: -1f,
+                    )
+                },
             lasso = if (fall.isInSaddle) lasso.uiFromSaddle(horseBase) else fall.lassoUi(lasso),
             dust = effects.dustUi(),
             splashProgress = effects.splashProgress(),
             markers = markers.ui(ghosts, distance, worldWidth, level.pointsFactor),
-            cowboy = fall.cowboyUi() ?: vehicle?.cowboy(this),
+            cowboy = death.cowboyUi() ?: fall.cowboyUi() ?: vehicle?.cowboy(this),
             horseshoes = course.horseshoeUis(pack.clock),
             luckyCharms = luckyCharms,
             sparkle = effects.sparkleUi(),
+            cowboyWounds = cowboyWounds,
+            lostPart = effects.lostPartUi(),
+            mudSplash = death.splashUi(),
+            spotlight = death.spotlightUi(),
             vehicles = listOfNotNull(vehicle?.ui()),
             horseOnVehicle = ride?.carriesHorse == true,
             speedBlur = shaking,
@@ -1074,7 +1259,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             cameraY = cameraY(),
             space = vehicle?.space() ?: 0f,
             carrots = course.carrotUis(pack.clock),
-            mud = course.mudUis(),
+            mud = death.puddleUi()?.let { course.mudUis() + it } ?: course.mudUis(),
             inMud = horse.inMud && fall.isInSaddle,
             wildHorses = wildHorses.ui(),
             sections = landscape.ui(),
@@ -1107,6 +1292,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     /** How far the view pans up so the horse (or the vehicle) stays in the picture. */
     private fun cameraY(): Float {
+        death.camera()?.let { return it }
         traffic.current?.camera()?.let { return it }
         val visibleTop = WORLD_HEIGHT_UNITS - GROUND_OFFSET_UNITS - CAMERA_TOP_MARGIN
         // In the sea the view looks down into the deep water, unless the horse jumps high

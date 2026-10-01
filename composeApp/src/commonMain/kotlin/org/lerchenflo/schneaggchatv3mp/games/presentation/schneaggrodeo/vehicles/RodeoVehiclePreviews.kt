@@ -647,6 +647,8 @@ private fun NightWondersPreview() = RodeoPreviewTrack { context ->
         canopy = colors.secondary,
         friendShirt = colors.tertiary,
         headRing = colors.surfaceContainer,
+        rope = colors.tertiary,
+        pants = colors.secondary,
     )
     val pose = RodeoHorsePose(
         height = 0f, gaitPhase = 1f, airborne = false, riderLean = 0f, pitchDegrees = 0f,
@@ -678,6 +680,8 @@ private fun BridgePreview() {
             canopy = colors.secondary,
             friendShirt = colors.tertiary,
             headRing = colors.surfaceContainer,
+            rope = colors.tertiary,
+            pants = colors.secondary,
         )
         val pose = RodeoHorsePose(
             height = 0f, gaitPhase = 1f, airborne = false, riderLean = 0f, pitchDegrees = 0f,
@@ -709,6 +713,8 @@ private fun HelicopterCarryingPreview() = RodeoPreviewTrack(cameraDown = 22f) { 
         canopy = colors.secondary,
         friendShirt = colors.tertiary,
         headRing = colors.surfaceContainer,
+        rope = colors.tertiary,
+        pants = colors.secondary,
     )
     val heli = RodeoHelicopterUi(
         x = HORSE_X + 15f - HELI_CABIN_X, y = lift + HELI_ABOVE_HOOVES, rotor = 1.1f, carrying = true,

@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.cow
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
@@ -91,7 +92,9 @@ private fun DrawScope.drawCow(cow: RodeoCowUi, context: RodeoDrawContext) {
 
     if (cow.hasRider) {
         // Astride her back: a leg hanging down her side, holding on to her horn
-        drawLine(context.colors.onSurface, p(COW_SEAT_X, COW_SEAT_Y), p(COW_SEAT_X + 1.6f, 7.4f), 1f * unit, StrokeCap.Round)
-        drawSeatedCowboy(::p, hipX = COW_SEAT_X, hipY = COW_SEAT_Y, unit = unit, colors = context.colors, armToX = 18.8f, armToY = 14.4f)
+        if (!RodeoCowboyPart.LEG.isLostAt(context.cowboyWounds)) {
+            drawLine(context.colors.onSurface, p(COW_SEAT_X, COW_SEAT_Y), p(COW_SEAT_X + 1.6f, 7.4f), 1f * unit, StrokeCap.Round)
+        }
+        drawSeatedCowboy(::p, hipX = COW_SEAT_X, hipY = COW_SEAT_Y, unit = unit, colors = context.colors, armToX = 18.8f, armToY = 14.4f, wounds = context.cowboyWounds)
     }
 }

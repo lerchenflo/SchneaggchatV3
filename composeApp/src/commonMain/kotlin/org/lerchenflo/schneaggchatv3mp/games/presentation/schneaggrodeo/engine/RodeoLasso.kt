@@ -9,7 +9,7 @@ import kotlin.math.sin
 
 // The lasso flies out from the hand and back over LASSO_DURATION. Halfway (at the far end) it
 // decides whether it caught something; a catch dangles in the loop on the way back.
-private const val LASSO_RANGE = 37f
+private const val LASSO_RANGE = 39f
 private const val LASSO_DURATION = 0.45f   // out and back
 /** Counted from the throw, so the next throw is ready LASSO_COOLDOWN - LASSO_DURATION after the loop is back. */
 private const val LASSO_COOLDOWN = 0.52f
@@ -36,6 +36,8 @@ internal class RodeoLasso(private val snails: MutableList<Snail>) {
 
     val isOut: Boolean get() = time >= 0f
     val isReady: Boolean get() = !isOut && cooldown <= 0f
+    /** 0..1 through the throw (out and back), null while no lasso is out. */
+    val throwProgress: Float? get() = if (isOut) progressOf(time, LASSO_DURATION) else null
 
     fun reset() {
         time = -1f

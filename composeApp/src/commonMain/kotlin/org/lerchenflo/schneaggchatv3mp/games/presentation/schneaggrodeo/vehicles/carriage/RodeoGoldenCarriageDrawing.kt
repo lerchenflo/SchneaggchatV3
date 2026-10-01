@@ -80,6 +80,8 @@ private fun DrawScope.drawPullingHorse(left: Float, gait: Float, context: RodeoD
         canopy = colors.secondary,
         friendShirt = colors.tertiary,
         headRing = colors.surfaceContainer,
+        rope = colors.tertiary,
+        pants = colors.secondary,
     )
     drawHorseAndRider(left = left * unit, groundY = context.groundYAt(left + HOOVES_X), unit = unit, pose = pose, colors = horseColors)
 }

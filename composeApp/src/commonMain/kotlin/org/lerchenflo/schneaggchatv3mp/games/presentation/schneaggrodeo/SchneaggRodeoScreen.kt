@@ -56,6 +56,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.BackButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.game_restart
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_friend_joined
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_friend_joined_title
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_horseshoes
@@ -149,7 +150,7 @@ private fun FrameClock(running: Boolean, onFrame: (Float) -> Unit) {
 }
 
 /**
- * A cowboy on a horse jumps show-jumping fences while a pack of schneaggs chases him. The whole
+ * A cowboy on a horse jumps show-jumping fences while ravens chase him. The whole
  * play area is the jump button (see rodeoInput); the track fills the screen, with the counters,
  * the HUD and the buttons (see RodeoControls) floating on it. [frame] is read in the draw phase only.
  */
@@ -242,20 +243,35 @@ fun SchneaggRodeoScreen(
                             .padding(top = 60.dp)
                     )
 
-                    RodeoControls(
-                        superJumpCharges = state.superJumpCharges,
-                        isOnFoot = state.isOnFoot,
-                        canCatchHorse = state.canCatchHorse,
-                        ride = state.ride,
-                        rocketReady = state.rocketReady,
-                        carriageReady = state.carriageReady,
-                        showKeyHints = showKeyHints,
-                        enabled = state.isPlaying && !state.isPaused,
-                        onAction = onAction,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(OVERLAY_PADDING)
-                    )
+                    // Hidden during the ending, the restart button takes their corner
+                    if (!state.isEnding) {
+                        RodeoControls(
+                            superJumpCharges = state.superJumpCharges,
+                            isOnFoot = state.isOnFoot,
+                            canCatchHorse = state.canCatchHorse,
+                            ride = state.ride,
+                            rocketReady = state.rocketReady,
+                            carriageReady = state.carriageReady,
+                            showKeyHints = showKeyHints,
+                            enabled = state.isPlaying && !state.isPaused,
+                            onAction = onAction,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(OVERLAY_PADDING)
+                        )
+                    }
+
+                    // The ravens carry him off: the next run can start right away
+                    if (state.isEnding) {
+                        Button(
+                            onClick = { onAction(SchneaggRodeoAction.RestartGame) },
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(OVERLAY_PADDING)
+                        ) {
+                            Text(stringResource(Res.string.game_restart))
+                        }
+                    }
 
                     if (isStarted) {
                         Column(
@@ -393,8 +409,8 @@ private fun previewFrame(): SchneaggRodeoFrame {
             RodeoSnailUi(x = 105f, height = 13f, facingLeft = true, tiltDeg = 2f),
             RodeoSnailUi(x = 140f, height = 0f, facingLeft = true, tiltDeg = -2f),
         ),
-        pack = listOf(
-            RodeoSnailUi(x = 4f, height = 1f, facingLeft = false, tiltDeg = 4f),
+        ravens = listOf(
+            RodeoRavenUi(x = 6f, height = 10f, flap = 0.6f, tiltDeg = 4f),
         ),
         horse = RodeoHorsePose(
             height = 14f,

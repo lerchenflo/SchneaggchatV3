@@ -19,7 +19,7 @@ import kotlin.math.sin
 
 // Cow ride: a brown Vorarlberg cow ambles by, a big bell round her neck. Lasso her and the cowboy
 // swings over onto her back while the horse gallops on riderless. She trots through every fence,
-// and every time her bell rings the chasing snails get scared and fall back a bit - the last ring
+// and every time her bell rings the chasing ravens get scared and fall back a bit - the last ring
 // sends them all the way back. Then the cowboy jumps back into the saddle and she wanders off.
 
 // Shape, shared with the drawing (grid: x from the cow's tail end, y up from the ground)

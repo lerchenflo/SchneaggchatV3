@@ -138,10 +138,17 @@ internal fun hopOverFences(x: Float, fences: List<Fence>, reach: Float, clearanc
 }
 
 
-/** A dirt mound in the cave: galloping through it digs it up and turns up a find; [x] its center. */
 /** A gap in the rainbow track from [x] over [width]: hooves on the ground over it drop the horse through. */
 internal class Gap(override var x: Float, val width: Float) : OnTrack
 
+/**
+ * A dirt mound in the cave with a shovel stuck in it; [x] its center. Lasso the shovel and the horse
+ * digs down to the fossil layer (see SchneaggRodeoEngine.startDigging).
+ */
 internal class DigMound(override var x: Float) : OnTrack {
     val seed = Random.nextInt(1000)
+    var hasShovel = true
+    /** The shovel dangling from the lasso on its way back, if it is; null otherwise. */
+    var shovelX: Float? = null
+    var shovelY = 0f
 }

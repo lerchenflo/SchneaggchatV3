@@ -14,9 +14,9 @@ import kotlin.random.Random
 //  - the rainbow, high above the surface: a rainbow track with gaps to jump and stars to grab;
 //    missing a gap drops horse and rider back down to the surface
 //  - the fossil layer, deep below the cave: dinosaur bones instead of fences, ammonites to grab
-// The cave is reached through a shaft at the foot of a hill: gallop into it (hooves
-// on the ground) to go down, jump over it to stay up on the main track. The sea begins at the end
-// of a beach. After a while a ramp leads back up (out of the cave, or onto a harbour pier). The
+// The cave is reached from a gold mine behind the track at the foot of a hill: a mine cart full of
+// gold comes out and rolls along beside the horse for a while - lasso it and it rattles down into
+// the cave; leave it and it falls behind, the run stays up. The sea begins at the end of a beach. After a while a ramp leads back up (out of the cave, or onto a harbour pier). The
 // ground is shaped for each of them (see RodeoTerrain's TerrainFeature). Which map comes next is
 // shuffled per run, so every run goes somewhere else first.
 // The rainbow and the fossil layer are side trips only a vehicle gets to (see travelTo): fly the
@@ -68,6 +68,8 @@ enum class RodeoMap {
 internal class MapWay(override var x: Float, val destination: RodeoMap) : OnTrack {
     /** The horse went through; it only works once. */
     var used = false
+    /** The mine cart in front of a mine entrance was sent (see SchneaggRodeoEngine). */
+    var cartSent = false
 }
 
 internal class RodeoMapSwitch {
@@ -171,14 +173,14 @@ internal class RodeoMapSwitch {
     }
 
     /**
-     * Starts the fade once the horse's hitbox ([from]..[to]) is over a way: into a shaft only
-     * with the hooves [onGround] (jumping over it stays up), into the sea and out any way.
+     * Starts the fade once the horse's hitbox ([from]..[to]) is over a way: into the sea and out any
+     * way. The gold mine on the surface only sends the mine cart (see SchneaggRodeoEngine).
      */
-    fun checkHorse(from: Float, to: Float, onGround: Boolean) {
+    fun checkHorse(from: Float, to: Float) {
         if (fadeTime >= 0f) return
         mapWays.forEach { way ->
             val over = way.x < to && way.x + MAP_WAY_WIDTH > from
-            if (!way.used && over && (onGround || map.isAway || way.destination == RodeoMap.SEA)) {
+            if (!way.used && over && (map.isAway || way.destination == RodeoMap.SEA)) {
                 way.used = true
                 fadeTime = 0f
                 switched = false

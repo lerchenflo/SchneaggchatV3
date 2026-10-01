@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.drill
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -131,7 +132,7 @@ private fun DrawScope.drawMachine(drill: RodeoDrillUi, context: RodeoDrawContext
     fun p(x: Float, y: Float) = context.p(drill.x + x + drill.shake, drill.y + y)
     scale(DRILL_SCALE, pivot = context.p(drill.x, drill.y)) { drawMachineGrid(drill, context) }
     // The hat in the hatch, at its normal size
-    if (drill.hatInHatch) drawCowboyHat(::p, DRILL_HATCH_X * DRILL_SCALE - 3.2f, (DRILL_BODY_TOP + 1.6f) * DRILL_SCALE + 0.7f, unit)
+    if (drill.hatInHatch && !context.cowboyLost(RodeoCowboyPart.HAT)) drawCowboyHat(::p, DRILL_HATCH_X * DRILL_SCALE - 3.2f, (DRILL_BODY_TOP + 1.6f) * DRILL_SCALE + 0.7f, unit)
 }
 
 /** The machine on its own grid, scaled up by the caller. */

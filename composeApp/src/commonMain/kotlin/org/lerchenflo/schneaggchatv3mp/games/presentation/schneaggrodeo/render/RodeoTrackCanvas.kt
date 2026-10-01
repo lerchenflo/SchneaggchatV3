@@ -41,6 +41,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_candy
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_car_money
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_double_points
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_fence_height
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_goodbye
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_friend
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_horse
@@ -62,7 +63,7 @@ private const val MARKER_POST_HEIGHT_STAGGERED = 29f
 
 /**
  * The track: space and sky, ground, highscore markers, mud, fences,
- * snails, the chasing pack, other horses, vehicles, horse, rider and lasso - drawn back to front.
+ * snails, other horses, vehicles, horse, rider, the chasing ravens and lasso - drawn back to front.
  * [frame] and [people] are read in the draw phase only, so a new frame redraws the canvas without
  * recomposing anything.
  */
@@ -113,6 +114,9 @@ internal fun RodeoTrack(
     }
     val (vehicleHint, horseHint, friendHint, pizzaHint, knoepfleHint) = hintLayouts
     val stanislausHint = hintLayouts[5]
+    val goodbyeText = stringResource(Res.string.games_schneaggrodeo_goodbye)
+    val goodbyeStyle = MaterialTheme.typography.titleMedium.copy(color = themeColors.onSurface, fontWeight = FontWeight.Black)
+    val goodbyeLayout = remember(textMeasurer, goodbyeText, goodbyeStyle) { textMeasurer.measure(goodbyeText, goodbyeStyle) }
     val doublePointsText = stringResource(Res.string.games_schneaggrodeo_double_points)
     val doublePointsStyle = MaterialTheme.typography.titleMedium.copy(color = SNOW_COLOR, fontWeight = FontWeight.Black)
     val doublePointsLayout = remember(textMeasurer, doublePointsText, doublePointsStyle) {
@@ -136,7 +140,7 @@ internal fun RodeoTrack(
             val unit = size.height / WORLD_HEIGHT_UNITS
             val groundY = size.height - GROUND_OFFSET_UNITS * unit
             val terrain = world.terrain
-            val context = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = vehicleAssets, ground = terrain::heightAt)
+            val context = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = vehicleAssets, ground = terrain::heightAt, cowboyWounds = world.cowboyWounds)
             // Backdrops are fixed to the screen: the camera (and with it the hills) doesn't move them
             val screenContext = context.flat()
 
@@ -157,9 +161,9 @@ internal fun RodeoTrack(
             )
 
             // In the sea the snails are sharks or ride swim rings
-            fun drawSnailAt(snail: RodeoSnailUi, pack: Boolean = false) {
+            fun drawSnailAt(snail: RodeoSnailUi) {
                 when (world.map) {
-                    RodeoMap.SEA -> if (snail.runner || pack) {
+                    RodeoMap.SEA -> if (snail.runner) {
                         drawShark(snail, context)
                     } else {
                         drawSwimRing(snail, context)
@@ -183,9 +187,12 @@ internal fun RodeoTrack(
 
             // The whole picture rattles while a vehicle races, pans up with the horse and tilts with
             // the mountain around the horse's hooves
+            // At the end of a run the view zooms in on the cowboy carried off by the ravens
+            val spotlight = world.spotlight
             fun inWorld(block: DrawScope.() -> Unit) = withTransform({
                 translate(world.shakeX * unit, (world.shakeY + world.cameraY + world.terrainShift) * unit)
                 rotate(world.tiltDegrees, pivot = Offset((HORSE_X + 15f) * unit, context.groundYAt(HORSE_X + 15f)))
+                if (spotlight != null) scale(spotlight.zoom, spotlight.zoom, pivot = context.p(spotlight.x, spotlight.height))
             }, block)
 
             inWorld {
@@ -279,7 +286,6 @@ internal fun RodeoTrack(
                 }
 
                 world.snails.forEach { drawSnailAt(it) }
-                world.pack.forEach { drawSnailAt(it, pack = true) }
 
                 world.horseshoes.forEach { shoe ->
                     drawHorseshoe(
@@ -400,8 +406,26 @@ internal fun RodeoTrack(
                 }
 
                 world.cowboy?.let { cowboy ->
-                    drawCowboy(cowboy = cowboy, groundY = context.groundYAt(cowboy.x), unit = unit, color = colors.onSurface, shirtColor = colors.primary)
+                    drawCowboy(
+                        cowboy = cowboy,
+                        groundY = context.groundYAt(cowboy.x),
+                        unit = unit,
+                        color = colors.onSurface,
+                        shirtColor = colors.primary,
+                        scarfColor = colors.secondary,
+                        pantsColor = paint.horseColors.pants,
+                        wounds = world.cowboyWounds,
+                    )
                 }
+
+                // Mud splashing up where he fell at the end of the run
+                world.mudSplash?.let { splash ->
+                    drawLandingSplash(splash.x * unit, context.groundYAt(splash.x), unit * 2f, splash.progress, MUD_COLOR)
+                }
+
+                // The ravens fly in front of everything, swooping down onto the cowboy
+                world.ravens.forEach { drawRaven(it, context) }
+                world.lostPart?.let { drawLostPart(it, context, skin = colors.onSurface, shirt = colors.primary, pants = paint.horseColors.pants) }
 
                 // Wading through mud: brown spray keeps flying from the hooves
                 if (world.inMud) {
@@ -451,6 +475,18 @@ internal fun RodeoTrack(
             if (world.slowMotion) drawSlowMotionHaze(colors.tertiary, unit, world.distance)
             // Any mushroom: the edges of the picture wobble
             if (world.tripStrength > 0f) drawWobblyOutline(world.tripStrength, world.tripClock, unit, colors.tertiary, colors.primary)
+            // The end of a run: dark all round, closing in on the cowboy, who says goodbye
+            if (spotlight != null) {
+                val worldPoint = context.p(spotlight.x, spotlight.height)
+                val center = Offset(
+                    worldPoint.x + world.shakeX * unit,
+                    worldPoint.y + (world.shakeY + world.cameraY + world.terrainShift) * unit,
+                )
+                drawSpotlight(center, spotlight.radius * spotlight.zoom * unit, colors.scrim)
+                if (spotlight.sayGoodbye) {
+                    drawSpeechBubble(goodbyeLayout, center + Offset(3f * unit * spotlight.zoom, -4f * unit * spotlight.zoom), unit, colors.surfaceBright)
+                }
+            }
             // Switching maps fades through black
             if (world.fade > 0f) drawRect(colors.scrim.copy(alpha = world.fade))
         }

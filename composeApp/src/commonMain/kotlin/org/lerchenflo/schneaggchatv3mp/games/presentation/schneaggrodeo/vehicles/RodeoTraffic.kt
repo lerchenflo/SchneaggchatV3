@@ -45,9 +45,11 @@ internal class RodeoTraffic {
     )
     private val seaVehicles: List<RodeoVehicle> = listOf(RodeoRowboat(), RodeoUBoat(), RodeoOilTanker(), RodeoFlamingo(), RodeoPirateShip())
     private val caveVehicles: List<RodeoVehicle> = listOf(RodeoMineCart(), RodeoDrill())
+    /** Stands in front of the mine entrance on the surface, the way into the cave. */
+    private val mineEntranceCart = RodeoMineCart(toCave = true)
 
     /** Every vehicle of the game. */
-    private val all: List<RodeoVehicle> = surfaceVehicles + seaVehicles + caveVehicles + rocket + carriage + cableCar
+    private val all: List<RodeoVehicle> = surfaceVehicles + seaVehicles + caveVehicles + rocket + carriage + cableCar + mineEntranceCart
 
     /**
      * Which vehicles come along on which map; the rocket is bought with snails and the cable car
@@ -117,6 +119,13 @@ internal class RodeoTraffic {
     fun sendCableCar(world: RodeoWorld): Boolean = sendNow(cableCar, world)
 
 
+
+    /** Parks the mine cart at [x] in front of the mine entrance; false if another vehicle is still around. */
+    fun sendMineEntranceCart(world: RodeoWorld, x: Float): Boolean {
+        if (!sendNow(mineEntranceCart, world)) return false
+        mineEntranceCart.parkAt(x)
+        return true
+    }
 
     private fun sendNow(vehicle: RodeoVehicle, world: RodeoWorld): Boolean {
         if (!isClear) return false

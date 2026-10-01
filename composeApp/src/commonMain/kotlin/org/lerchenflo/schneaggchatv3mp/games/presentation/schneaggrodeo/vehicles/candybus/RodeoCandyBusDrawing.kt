@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.candybus
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
@@ -152,9 +153,11 @@ private fun DrawScope.drawCandyBus(bus: RodeoCandyBusUi, context: RodeoDrawConte
             // Shoulders, head and hat behind the wheel
             drawRoundRect(context.colors.primary, p(DRIVER_X - 1.7f, 19.8f), Size(3.4f * unit, 3f * unit), CornerRadius(1f * unit))
             drawCircle(lineColor, radius = 1.6f * unit, center = p(DRIVER_X, 21.2f))
-            drawRoundRect(HAT_COLOR, p(DRIVER_X - 2.6f, 23.2f), Size(5.2f * unit, 0.6f * unit), CornerRadius(0.3f * unit))
-            drawRoundRect(HAT_COLOR, p(DRIVER_X - 1.4f, 25.3f), Size(2.8f * unit, 2.3f * unit), CornerRadius(0.7f * unit))
-            drawLine(BUS_TRIM, p(DRIVER_X + 1.8f, 18f), p(DRIVER_X + 2.4f, 20.4f), 0.5f * unit, StrokeCap.Round)
+            if (!context.cowboyLost(RodeoCowboyPart.HAT)) {
+                drawRoundRect(HAT_COLOR, p(DRIVER_X - 2.6f, 23.2f), Size(5.2f * unit, 0.6f * unit), CornerRadius(0.3f * unit))
+                drawRoundRect(HAT_COLOR, p(DRIVER_X - 1.4f, 25.3f), Size(2.8f * unit, 2.3f * unit), CornerRadius(0.7f * unit))
+            }
+            if (!context.cowboyLost(RodeoCowboyPart.ARM)) drawLine(BUS_TRIM, p(DRIVER_X + 1.8f, 18f), p(DRIVER_X + 2.4f, 20.4f), 0.5f * unit, StrokeCap.Round)
         }
     }
 

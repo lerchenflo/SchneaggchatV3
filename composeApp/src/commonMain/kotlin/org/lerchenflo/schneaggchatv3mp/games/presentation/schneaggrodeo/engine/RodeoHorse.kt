@@ -10,12 +10,11 @@ internal const val JUMP_VELOCITY = 82f    // u/s
 private const val HOLD_GRAVITY_FACTOR = 0.3f
 private const val MAX_HOLD_SECONDS = 0.3f
 
-// Knocking a pole or running into a snail doesn't end the run - the horse stumbles for a moment
-// (and the chasing pack closes in, see RodeoPack).
-internal const val STUMBLE_SECONDS = 0.8f
+// Knocking a pole or running into a snail doesn't end the run - the horse stumbles for a moment,
+// without losing pace (and the chasing ravens close in, see RodeoPack).
+internal const val STUMBLE_SECONDS = 0.4f
 /** Hearts a crash costs. */
 private const val CRASH_LIVES = 0.5f
-private const val STUMBLE_SPEED_FACTOR = 0.55f
 
 private const val RIDER_LEAN_RESPONSE = 12f   // 1/s, how fast the rider follows the lean target
 private const val GALLOP_STRIDE = 0.12f       // gait radians per unit ridden
@@ -75,9 +74,9 @@ internal class RodeoHorse {
     val isExhausted: Boolean get() = lives <= 0f
     val stats: RodeoHorseStats get() = RodeoHorseStats(level, lives, coat)
 
-    /** Pace including a stumble, mud and the mountain. */
+    /** Pace including mud and the mountain. */
     val pace: Float
-        get() = speed * hillFactor * (if (stumble > 0f) STUMBLE_SPEED_FACTOR else 1f) * (if (inMud) MUD_SPEED_FACTOR else 1f) *
+        get() = speed * hillFactor * (if (inMud) MUD_SPEED_FACTOR else 1f) *
                 when (slope) {
                     Slope.FLAT -> 1f
                     Slope.UPHILL -> UPHILL_SPEED_FACTOR

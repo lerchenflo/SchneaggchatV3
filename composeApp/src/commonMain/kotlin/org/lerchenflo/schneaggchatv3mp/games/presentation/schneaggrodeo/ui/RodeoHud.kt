@@ -60,7 +60,7 @@ internal fun RodeoAnnouncementBanner(announcement: RodeoVehicleKind?, modifier: 
             shadowElevation = 4.dp
         ) {
             Text(
-                text = stringResource(shown.title),
+                text = stringResource(shown.boardingCall ?: shown.title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,

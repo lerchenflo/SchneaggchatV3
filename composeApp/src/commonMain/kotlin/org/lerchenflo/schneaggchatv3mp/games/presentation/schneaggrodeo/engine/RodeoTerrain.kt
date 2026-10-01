@@ -99,7 +99,7 @@ internal class TerrainBridge(override var x: Float) : OnTrack {
  * step apart, starting two steps before the feature's x (see [RodeoTerrain.addFeature]).
  */
 internal enum class TerrainFeature(val shape: List<Float>) {
-    /** Flat around the shaft at x, then a hill going up: jump the shaft to stay on the main track. */
+    /** Flat around the mine entrance at x, then a hill going up: the main track goes on over it. */
     SHAFT(listOf(0f, 0f, 0f, 0f, 9f, 18f, 24f)),
     /** Down a beach into the sea, which begins at x. */
     BEACH(listOf(0f, -6f, -12f, -14f, -14f, -14f)),

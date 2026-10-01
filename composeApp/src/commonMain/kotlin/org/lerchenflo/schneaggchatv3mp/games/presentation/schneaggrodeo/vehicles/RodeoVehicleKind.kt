@@ -27,6 +27,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_traff
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_pirate_ship
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_pirate_ship_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_drill
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_drill_boarding
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_golden_carriage
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_golden_carriage_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_drill_controls
@@ -77,6 +78,8 @@ enum class RodeoVehicleKind(
     val keepsButtons: Boolean = false,
     /** The lasso button's text while riding, if the vehicle uses it for something else. */
     val lassoLabel: StringResource? = null,
+    /** Shown in the boarding banner in place of [title], if given. */
+    val boardingCall: StringResource? = null,
 ) {
     PLANE(
         title = Res.string.games_schneaggrodeo_crash_pilot,
@@ -176,6 +179,7 @@ enum class RodeoVehicleKind(
         title = Res.string.games_schneaggrodeo_drill,
         rideHint = Res.string.games_schneaggrodeo_drill_controls,
         rideHintKeys = Res.string.games_schneaggrodeo_drill_controls_keys,
+        boardingCall = Res.string.games_schneaggrodeo_drill_boarding,
     ),
     /** Bought with snails, like the rocket. */
     GOLDEN_CARRIAGE(

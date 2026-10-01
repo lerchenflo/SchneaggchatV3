@@ -97,6 +97,8 @@ data class SchneaggRodeoState(
     val nextToBeat: RodeoGhostUi? = null,
     /** A lassoed friend just joined the ride: the run is paused to tell the player whose highscore it raises now. */
     val friendJoined: String? = null,
+    /** The ravens are carrying the cowboy off: a restart button lets the player skip the ending. */
+    val isEnding: Boolean = false,
 ) {
     /** Flying (plane, rocket): left half of the play area steers up, right half down. */
     val steers: Boolean get() = ride?.steers == true
@@ -114,6 +116,18 @@ data class RodeoFenceUi(
     val colorOffset: Int,
     val knocked: Boolean,
     val poleHeights: List<Float>,
+)
+
+/** A raven chasing the horse: [x] the middle of its body, [height] above the ground. */
+@Immutable
+data class RodeoRavenUi(
+    val x: Float,
+    val height: Float,
+    /** Wing beat: tips up at 1, down at -1. */
+    val flap: Float,
+    val tiltDeg: Float,
+    /** Flying back off after an attack. */
+    val facingLeft: Boolean = false,
 )
 
 /** [x] is the sprite center, [height] its underside above the ground. */
@@ -167,6 +181,45 @@ data class RodeoHorsePose(
     val passengerId: String? = null,
     /** Size of horse and rider, around the hooves: grown or shrunk by a magic mushroom. */
     val scale: Float = 1f,
+    /** What the ravens pecked off the rider (see RodeoCowboyPart); only the player's own cowboy. */
+    val riderWounds: Int = 0,
+    /** The rider twirls the lasso over his head with his free arm; only the player's own cowboy. */
+    val hasLasso: Boolean = false,
+    /** Turn of the twirling loop, radians. */
+    val lassoTwirl: Float = 0f,
+    /** 0..1 through a throw (the arm swings forward after the rope), negative while twirling. */
+    val lassoThrow: Float = -1f,
+)
+
+/** What the ravens peck off the cowboy, one per hit and in this order; the next hit ends the run. */
+enum class RodeoCowboyPart {
+    HAT, ARM, LEG;
+
+    /** With [wounds] hits taken this part is gone. */
+    fun isLostAt(wounds: Int) = wounds > ordinal
+}
+
+/**
+ * The end of a run: the picture goes dark except for a circle of [radius] round ([x], [height]),
+ * zoomed in by [zoom] around that point.
+ */
+@Immutable
+data class RodeoSpotlightUi(
+    val x: Float,
+    val height: Float,
+    val radius: Float,
+    val zoom: Float,
+    /** He waves goodbye with his greetings in a speech bubble. */
+    val sayGoodbye: Boolean,
+)
+
+/** A pecked-off [part] flying away from where it was ([x], [y]), spinning. */
+@Immutable
+data class RodeoLostPartUi(
+    val part: RodeoCowboyPart,
+    val x: Float,
+    val y: Float,
+    val progress: Float,
 )
 
 /**
@@ -183,6 +236,12 @@ data class RodeoCowboyUi(
     val hatLift: Float,
     val runPhase: Float? = null,
     val tuck: Float = 0f,
+    /** Gone limp like a rag doll: arms and legs flung about by [flail] (radians, see RodeoDeath). */
+    val limp: Boolean = false,
+    val flail: Float = 0f,
+    /** Carried off by the ravens: waves goodbye with his free arm, by this phase (radians). */
+    val waving: Float? = null,
+    val alpha: Float = 1f,
 )
 
 @Immutable
@@ -262,9 +321,18 @@ data class RodeoMapWayUi(
     val origin: RodeoMap = RodeoMap.SURFACE,
 )
 
-/** A dirt mound in the cave the horse digs through at a gallop; [x] its center. */
+/**
+ * A dirt mound in the cave, [x] its center, with a shovel stuck in it while [hasShovel]. A lassoed
+ * shovel dangles from the loop at [shovelX] / [shovelY] on its way back.
+ */
 @Immutable
-data class RodeoMoundUi(val x: Float, val seed: Int)
+data class RodeoMoundUi(
+    val x: Float,
+    val seed: Int,
+    val hasShovel: Boolean = true,
+    val shovelX: Float? = null,
+    val shovelY: Float = 0f,
+)
 
 /** A gap in the rainbow track from [x] over [width]. */
 @Immutable
@@ -395,7 +463,7 @@ data class SchneaggRodeoFrame(
     val distance: Float = 0f,
     val fences: List<RodeoFenceUi> = emptyList(),
     val snails: List<RodeoSnailUi> = emptyList(),
-    val pack: List<RodeoSnailUi> = emptyList(),
+    val ravens: List<RodeoRavenUi> = emptyList(),
     val horse: RodeoHorsePose = RodeoHorsePose(
         height = 0f,
         gaitPhase = 0f,
@@ -420,6 +488,13 @@ data class SchneaggRodeoFrame(
     /** Stored lucky charms; the horse shows a faint aura while it has any. */
     val luckyCharms: Int = 0,
     val sparkle: RodeoSparkleUi? = null,
+    /** Hits the cowboy took from the ravens (see RodeoCowboyPart). */
+    val cowboyWounds: Int = 0,
+    val lostPart: RodeoLostPartUi? = null,
+    /** Mud splashing up where the cowboy fell at the end of the run. */
+    val mudSplash: RodeoDustUi? = null,
+    /** Darkness closing in on the cowboy as the ravens carry him off. */
+    val spotlight: RodeoSpotlightUi? = null,
     val vehicles: List<RodeoVehicleUi> = emptyList(),
     /** The horse stands on the vehicle (and tilts along with it on the hills). */
     val horseOnVehicle: Boolean = false,

@@ -9,6 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoDee
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoFenceUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGapUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGemUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMapWayUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoHorsePose
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMoundUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMudUi
@@ -19,6 +20,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.F
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HOOVES_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MAP_WAY_WIDTH
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.TERRAIN_STEP
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.TerrainFeature
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainHeightAt
@@ -29,6 +31,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.S
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SEA_CAMERA_DOWN
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SNAIL_SIZE
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoPreviewTrack
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.minecart.RodeoMineCartUi
 
 // IDE previews of each map (surface, cave, sea, rainbow, fossil layer) in a typical moment: the ridden horse with the
 // map's fences, snails and pickups in front of it, drawn the way the track canvas dresses them per map.
@@ -43,6 +46,8 @@ private fun DrawScope.drawPreviewHorse(context: RodeoDrawContext) {
         canopy = colors.secondary,
         friendShirt = colors.tertiary,
         headRing = colors.surfaceContainer,
+        rope = colors.tertiary,
+        pants = colors.secondary,
     )
     val pose = RodeoHorsePose(
         height = 0f, gaitPhase = 1f, airborne = false, riderLean = 0f, pitchDegrees = 0f,
@@ -180,6 +185,26 @@ private fun RainbowEndPreview() {
     }
 }
 
+/** Where the mine entrance's way begins in the previews below. */
+private const val PREVIEW_MINE_AT = 64f
+
+/** The surface with the gold mine behind the track, its cart full of gold coming out to roll along. */
+@Preview
+@Composable
+private fun MineEntrancePreview() = RodeoPreviewTrack(
+    ground = previewFeature(TerrainFeature.SHAFT, PREVIEW_MINE_AT),
+) { context ->
+    val way = RodeoMapWayUi(x = PREVIEW_MINE_AT, width = MAP_WAY_WIDTH, exit = false, destination = RodeoMap.CAVE)
+    drawMineEntrance(way, context, distance = 30f)
+    val cart = RodeoMineCartUi(
+        x = PREVIEW_MINE_AT - 4f, wheelPhase = 0f, railOffset = 0f, sparks = null, lassoHint = null,
+        railsAcross = false, gold = true,
+    )
+    drawVehicle(cart, RodeoLayer.BODY, context)
+    drawVehicle(cart, RodeoLayer.FRONT, context)
+    drawPreviewHorse(context)
+}
+
 /** The fossil layer: rock in layers with fossils, bone fences, ammonites and snails. */
 @Preview
 @Composable
@@ -199,8 +224,11 @@ private fun FossilMapPreview() = RodeoPreviewTrack(
 }
 
 /** The ground of the rainbow sliding down to its end at [at], eased like the game's (see TerrainFeature.SLIDE_DOWN). */
-private fun previewSlide(at: Float): (Float) -> Float {
-    val heights = TerrainFeature.SLIDE_DOWN.shape
+private fun previewSlide(at: Float): (Float) -> Float = previewFeature(TerrainFeature.SLIDE_DOWN, at)
+
+/** The ground shaped for a way to another map at [at], eased like the game's (see RodeoTerrain.addFeature). */
+private fun previewFeature(feature: TerrainFeature, at: Float): (Float) -> Float {
+    val heights = feature.shape
     val xs = heights.indices.map { at - 2f * TERRAIN_STEP + it * TERRAIN_STEP }
     return { x -> terrainHeightAt(xs, heights, x) }
 }

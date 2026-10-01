@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.pocketbike
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import androidx.compose.runtime.Immutable
@@ -113,14 +114,21 @@ private fun DrawScope.drawPocketBike(bike: RodeoPocketBikeUi, context: RodeoDraw
             val pants = colors.onSurface
             val shirt = colors.primary
             // Legs folded up: thigh up to the knee at chin height, shin down to the foot peg
-            drawLine(pants, p(BIKE_SEAT_X, BIKE_SEAT_Y + 0.6f), p(6.2f, 8.4f), 1f * unit, StrokeCap.Round)
-            drawLine(pants, p(6.2f, 8.4f), p(4.8f, 2.6f), 0.9f * unit, StrokeCap.Round)
+            if (context.cowboyLost(RodeoCowboyPart.LEG)) {
+                drawLine(pants, p(BIKE_SEAT_X, BIKE_SEAT_Y + 0.6f), p(4.4f, 7.4f), 1f * unit, StrokeCap.Round)
+            } else {
+                drawLine(pants, p(BIKE_SEAT_X, BIKE_SEAT_Y + 0.6f), p(6.2f, 8.4f), 1f * unit, StrokeCap.Round)
+                drawLine(pants, p(6.2f, 8.4f), p(4.8f, 2.6f), 0.9f * unit, StrokeCap.Round)
+                drawLine(HAT_COLOR, p(4.4f, 2.4f), p(6.2f, 2.3f), 1.3f * unit, StrokeCap.Round)
+            }
             // Torso leaning forward, arm to the grip, head and hat
             drawLine(shirt, p(BIKE_SEAT_X, BIKE_SEAT_Y + 0.8f), p(4.6f, 11f), 2.4f * unit, StrokeCap.Round)
-            drawLine(shirt, p(4.9f, 10.2f), p(6.7f, 7f), 0.8f * unit, StrokeCap.Round)
+            if (!context.cowboyLost(RodeoCowboyPart.ARM)) drawLine(shirt, p(4.9f, 10.2f), p(6.7f, 7f), 0.8f * unit, StrokeCap.Round)
             drawCircle(colors.onSurface, radius = 1.6f * unit, center = p(5.2f, 12.8f))
-            drawRoundRect(HAT_COLOR, p(2.9f, 14.6f), Size(5.2f * unit, 0.6f * unit), CornerRadius(0.3f * unit))
-            drawRoundRect(HAT_COLOR, p(4f, 16.7f), Size(2.8f * unit, 2.2f * unit), CornerRadius(0.7f * unit))
+            if (!context.cowboyLost(RodeoCowboyPart.HAT)) {
+                drawRoundRect(HAT_COLOR, p(2.9f, 14.6f), Size(5.2f * unit, 0.6f * unit), CornerRadius(0.3f * unit))
+                drawRoundRect(HAT_COLOR, p(4f, 16.7f), Size(2.8f * unit, 2.2f * unit), CornerRadius(0.7f * unit))
+            }
         }
     }
 }

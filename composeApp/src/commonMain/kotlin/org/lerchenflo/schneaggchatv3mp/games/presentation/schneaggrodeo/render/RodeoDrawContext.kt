@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render
 
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.Offset
@@ -32,7 +33,12 @@ class RodeoDrawContext(
     val assets: RodeoVehicleAssets? = null,
     /** Height of the hills at world x (see engine/RodeoTerrain); everything stands on them. */
     val ground: (Float) -> Float = { 0f },
+    /** Hits the cowboy took from the ravens, for vehicles that draw him themselves (see RodeoCowboyPart). */
+    val cowboyWounds: Int = 0,
 ) {
+    /** The ravens pecked [part] off the cowboy: vehicles drawing him leave it out. */
+    fun cowboyLost(part: RodeoCowboyPart) = part.isLostAt(cowboyWounds)
+
     /** Canvas position of world point ([x], [y]), [y] above the ground at [x]. */
     fun p(x: Float, y: Float) = Offset(x * unit, groundY - (y + ground(x)) * unit)
 
@@ -40,10 +46,10 @@ class RodeoDrawContext(
     fun groundYAt(x: Float) = groundY - ground(x) * unit
 
     /** The same without the hills, for backdrops fixed to the screen. */
-    fun flat() = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = assets)
+    fun flat() = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = assets, cowboyWounds = cowboyWounds)
 
     /** The same with the ground level at [height] everywhere. */
-    fun leveled(height: Float) = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = assets, ground = { height })
+    fun leveled(height: Float) = RodeoDrawContext(groundY = groundY, unit = unit, colors = colors, assets = assets, ground = { height }, cowboyWounds = cowboyWounds)
 }
 
 /**

@@ -1588,8 +1588,8 @@
     <string name="games_dartcounter_description">Count down a 301 or 501 leg</string>
     <string name="games_undercover_description">Unmask the impostor by describing your secret word</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
-    <string name="games_schneaggrodeo_description">Jump the fences and lasso the snails on your heels</string>
-    <string name="games_schneaggrodeo_instructions">Ride as far as you can while a pack of schneaggs chases you. Tap (or press space) to jump the fences and throw the lasso to catch snails – they buy super jumps and more. Every mistake lets the pack come closer; once it catches you, the ride is over.</string>
+    <string name="games_schneaggrodeo_description">Jump the fences, lasso the snails and outrun the ravens</string>
+    <string name="games_schneaggrodeo_instructions">Ride as far as you can while a flock of ravens chases you. Tap (or press space) to jump the fences and throw the lasso to catch snails – they buy super jumps and more. Every mistake lets the ravens come closer; when they reach you they swoop down and peck off your hat, then an arm, then a leg – the fourth peck ends the ride.</string>
     <string name="games_schneaggrodeo_start_easier">Easier</string>
     <string name="games_schneaggrodeo_start_harder">Harder · 1.5× points</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
@@ -1610,6 +1610,7 @@
     <string name="games_schneaggrodeo_lasso_hint_pizza">Lasso the pizza!</string>
     <string name="games_schneaggrodeo_lasso_hint_kaesknoepfle">Lasso the Käsknöpfle!</string>
     <string name="games_schneaggrodeo_lasso_hint_stanislaus">Lasso Stanislaus!</string>
+    <string name="games_schneaggrodeo_goodbye">Greetings</string>
     <string name="games_schneaggrodeo_golden_carriage">Golden carriage!</string>
     <string name="games_schneaggrodeo_golden_carriage_button">Golden carriage</string>
     <string name="games_schneaggrodeo_golden_carriage_controls">No input needed: the golden horses smash through every fence – 20 points for each!</string>
@@ -1628,6 +1629,7 @@
     <string name="games_schneaggrodeo_drill">Drill machine!</string>
     <string name="games_schneaggrodeo_drill_controls">Hold anywhere: drill down to the gold · Let go: come back up – avoid the gray rocks! Keep drilling at the bottom to break into the fossil layer.</string>
     <string name="games_schneaggrodeo_drill_controls_keys">Hold Space / W: drill down to the gold · Let go: come back up – avoid the gray rocks! Keep drilling at the bottom to break into the fossil layer.</string>
+    <string name="games_schneaggrodeo_drill_boarding">Drill, baby, drill!</string>
     <string name="games_schneaggrodeo_double_points">×2 points</string>
     <string name="games_schneaggrodeo_train">Wälderbähnle</string>
     <string name="games_schneaggrodeo_milk_truck">Milchlaster</string>
@@ -1658,7 +1660,7 @@
     <string name="games_schneaggrodeo_balloon_controls">Hold to fire the burner and rise – grab the horseshoes!</string>
     <string name="games_schneaggrodeo_balloon_controls_keys">Hold space to fire the burner and rise – grab the horseshoes!</string>
     <string name="games_schneaggrodeo_cow">Kuah-Ritt</string>
-    <string name="games_schneaggrodeo_cow_controls">Nothing to do – just enjoy the ride! The cowbell scares the snails away.</string>
+    <string name="games_schneaggrodeo_cow_controls">Nothing to do – just enjoy the ride! The cowbell scares the ravens away.</string>
     <string name="games_schneaggrodeo_rowboat">Ruderboot</string>
     <string name="games_schneaggrodeo_rowboat_controls">Tap the Lasso button to catch the jumping fish – points for each one!</string>
     <string name="games_schneaggrodeo_uboat">U-Boot</string>

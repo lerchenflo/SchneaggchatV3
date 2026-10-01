@@ -1590,8 +1590,8 @@
     <string name="games_dartcounter_description">Ein 301er oder 501er Leg herunterzählen</string>
     <string name="games_undercover_description">Den Undercover-Spieler durch Umschreibungen entlarven</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
-    <string name="games_schneaggrodeo_description">Über die Hindernisse springen und die Schnecken mit dem Lasso fangen</string>
-    <string name="games_schneaggrodeo_instructions">Reite so weit du kannst, während dich eine Horde Schneaggs verfolgt. Tippe (oder drücke die Leertaste), um über die Zäune zu springen, und wirf das Lasso, um Schnecken zu fangen – damit kaufst du Supersprünge und mehr. Jeder Fehler bringt die Horde näher; erwischt sie dich, ist der Ritt vorbei.</string>
+    <string name="games_schneaggrodeo_description">Über die Hindernisse springen, Schnecken mit dem Lasso fangen und den Raben entkommen</string>
+    <string name="games_schneaggrodeo_instructions">Reite so weit du kannst, während dich ein Schwarm Raben verfolgt. Tippe (oder drücke die Leertaste), um über die Zäune zu springen, und wirf das Lasso, um Schnecken zu fangen – damit kaufst du Supersprünge und mehr. Jeder Fehler bringt die Raben näher; erreichen sie dich, stoßen sie herab und picken dir den Hut, dann einen Arm, dann ein Bein ab – der vierte Schnabelhieb beendet den Ritt.</string>
     <string name="games_schneaggrodeo_start_easier">Leichter</string>
     <string name="games_schneaggrodeo_start_harder">Schwerer · 1,5× Punkte</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
@@ -1612,6 +1612,7 @@
     <string name="games_schneaggrodeo_lasso_hint_pizza">Schnapp dir die Pizza mit dem Lasso!</string>
     <string name="games_schneaggrodeo_lasso_hint_kaesknoepfle">Schnapp dir die Käsknöpfle mit dem Lasso!</string>
     <string name="games_schneaggrodeo_lasso_hint_stanislaus">Fang Stanislaus mit dem Lasso!</string>
+    <string name="games_schneaggrodeo_goodbye">Grüße</string>
     <string name="games_schneaggrodeo_golden_carriage">Goldene Kutsche!</string>
     <string name="games_schneaggrodeo_golden_carriage_button">Goldene Kutsche</string>
     <string name="games_schneaggrodeo_golden_carriage_controls">Nichts drücken: Die goldenen Pferde brechen durch jeden Zaun – 20 Punkte für jeden!</string>
@@ -1630,6 +1631,7 @@
     <string name="games_schneaggrodeo_drill">Bohrmaschine!</string>
     <string name="games_schneaggrodeo_drill_controls">Irgendwo halten: nach unten zum Gold bohren · Loslassen: wieder hoch – weich den grauen Felsen aus! Ganz unten weiterbohren, um in die Fossilienschicht durchzubrechen.</string>
     <string name="games_schneaggrodeo_drill_controls_keys">Leertaste / W halten: nach unten zum Gold bohren · Loslassen: wieder hoch – weich den grauen Felsen aus! Ganz unten weiterbohren, um in die Fossilienschicht durchzubrechen.</string>
+    <string name="games_schneaggrodeo_drill_boarding">Drill, baby, drill!</string>
     <string name="games_schneaggrodeo_double_points">×2 Punkte</string>
     <string name="games_schneaggrodeo_train">Wälderbähnle</string>
     <string name="games_schneaggrodeo_milk_truck">Milchlaster</string>
@@ -1660,7 +1662,7 @@
     <string name="games_schneaggrodeo_balloon_controls">Gedrückt halten für den Brenner – schnapp dir die Hufeisen!</string>
     <string name="games_schneaggrodeo_balloon_controls_keys">Leertaste halten für den Brenner – schnapp dir die Hufeisen!</string>
     <string name="games_schneaggrodeo_cow">Kuah-Ritt</string>
-    <string name="games_schneaggrodeo_cow_controls">Nichts zu tun – genieß den Ritt! Die Kuhglocke vertreibt die Schnecken.</string>
+    <string name="games_schneaggrodeo_cow_controls">Nichts zu tun – genieß den Ritt! Die Kuhglocke vertreibt die Raben.</string>
     <string name="games_schneaggrodeo_rowboat">Ruderboot</string>
     <string name="games_schneaggrodeo_rowboat_controls">Tipp auf Lasso, um die springenden Fische zu fangen – Punkte für jeden!</string>
     <string name="games_schneaggrodeo_uboat">U-Boot</string>

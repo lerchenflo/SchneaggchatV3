@@ -44,10 +44,8 @@ private const val GEM_MIN_HEIGHT = 12f
 private const val GEM_MAX_HEIGHT = 34f
 /** Mushrooms grow in the damp cave too. */
 private const val CAVE_MUSHROOM_CHANCE = 0.2f
-/** Dirt mounds to dig through, where no mushroom grows. */
-private const val MOUND_CHANCE = 0.5f
-/** Half the width of a dirt mound; the horse digs it when its hitbox overlaps. */
-internal const val MOUND_HALF_WIDTH = 4f
+/** Dirt mounds with a shovel to lasso, where no mushroom grows; rare, they are the way down. */
+private const val MOUND_CHANCE = 0.15f
 
 // The sea: pearls float in the water, oil slicks slow the swimming horse
 private const val PEARL_CHANCE = 0.55f
@@ -394,7 +392,9 @@ internal class RodeoCourse {
 
     fun mushroomUis(): List<RodeoMushroomUi> = mushrooms.map { RodeoMushroomUi(x = it.x, seed = it.seed) }
 
-    fun moundUis(): List<RodeoMoundUi> = mounds.map { RodeoMoundUi(x = it.x, seed = it.seed) }
+    fun moundUis(): List<RodeoMoundUi> = mounds.map {
+        RodeoMoundUi(x = it.x, seed = it.seed, hasShovel = it.hasShovel, shovelX = it.shovelX, shovelY = it.shovelY)
+    }
 
     fun mudUis(): List<RodeoMudUi> = mud.map { RodeoMudUi(x = it.x, width = it.width, seed = it.seed) }
 }
