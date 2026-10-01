@@ -79,7 +79,6 @@ val germanCrosswordWords: List<GermanCrosswordEntry> = listOf(
     GermanCrosswordEntry("IGEL", "Stacheliger Gartenbewohner"),
     GermanCrosswordEntry("FUCHS", "Schlauer Waldbewohner"),
     GermanCrosswordEntry("WOLF", "Wilder Verwandter des Hundes"),
-    GermanCrosswordEntry("BAER", "Meister Petz"),
     GermanCrosswordEntry("HIRSCH", "Waldtier mit Geweih"),
     GermanCrosswordEntry("REH", "Scheues Waldtier"),
     GermanCrosswordEntry("HASE", "Langohr auf dem Feld"),

@@ -102,9 +102,6 @@
     <string name="cancel">abbreacha</string>
     <string name="version">Version: %1$s</string>
     <string name="app_broken">App isch kaputt</string>
-
-
-
     <string name="loadinginfo_messages">Nachrichta werrand glada...</string>
     <string name="loadinginfo_offline">Du bisch offline...</string>
     <string name="read">gleasa</string>
@@ -584,6 +581,7 @@
     <string name="dartcounter_segment_bull">Bull</string>
     <string name="dartcounter_darts_format">%1$d Darts</string>
     <string name="dartcounter_turn_total_format">= %1$d</string>
+    <string name="dartcounter_dart_slot_empty">–</string>
 
     <!-- Games: Undercover -->
     <string name="undercover_title">Undercover</string>
@@ -659,6 +657,13 @@
     
     <string name="undercover_rules_button">Regla</string>
     <string name="undercover_rules_close">Schlüßa</string>
+    <string name="undercover_cancel">Abbreacha</string>
+    <string name="undercover_sniff_button">Schnüffla - mi Wort nomml zoaga</string>
+    <string name="undercover_sniff_select_title">Wer will si Wort seaha?</string>
+    <string name="undercover_sniff_confirm_title">Bisch du %1$s?</string>
+    <string name="undercover_sniff_confirm_message">Nur %1$s darf jetzt Schoua</string>
+    <string name="undercover_sniff_confirm_yes">Jo, mi Wort azoaga</string>
+    <string name="undercover_sniff_hide">Verstecka</string>
 
     <string name="your_friends_wrote_this">~ Dine Freunde</string>
     <string name="show_logs">Logs aschoua</string>
@@ -716,6 +721,7 @@
     <string name="poll_answer_placeholder">Gib dine Antwort i ...</string>
     <string name="poll_answers_count">%1$s Antworta</string>
     <string name="poll_user_count">%1$s User</string>
+    <string name="poll_voter_you">du</string>
     <string name="poll_ends_in">Endet in: %1$s</string>
     <string name="poll_closed">Gschlossa</string>
 
@@ -748,6 +754,27 @@
 
     <string name="poll_cannot_vote_on_unsent">Du kannsch ned für a unversendete Umfrog abstimma</string>
 
+    <string name="poll_subpoll_screentitle">Unterumfrog</string>
+    <string name="poll_settings_subpolls">Unterumfroga</string>
+    <string name="poll_settings_subpolls_info">Füg na Optiona a Folgeumfrog dazua - sie öffnet sich nur für alle, die dia Option wähland</string>
+    <string name="poll_settings_subpoll_visible_to_all">Für alle sichtbar</string>
+    <string name="poll_settings_subpoll_visible_to_all_info">Wer dia Option ned gwählt hot, kann die Unterumfrog trotzdem aschoua, aber ned beantworta. Wenn us, seahand se nur dia, dia se gwählt hond.</string>
+    <string name="poll_subpoll_add">Unterumfrog dazuatua</string>
+    <string name="poll_subpoll_edit">Unterumfrog bearbeita</string>
+    <string name="poll_subpoll_remove">Unterumfrog entferna</string>
+    <string name="poll_subpoll_untitled">Unterumfrog ohne Titel</string>
+    <string name="poll_subpoll_error">Unvollständig - tippa zum Beheba</string>
+    <string name="poll_subpoll_shown_for">Öffnat sich für alle, die "%1$s" wähland</string>
+    <string name="poll_subpoll_done">Fertig</string>
+    <string name="poll_subpoll_too_many_options">Zu viele Optiona insgesamt (max.  %1$s über alle Unterumfroga</string>
+    <string name="poll_subpoll_option_count">%1$s Optiona</string>
+    <string name="poll_subpoll_pick_to_answer">Wähl "%1$s" zum Antworta</string>
+    <string name="poll_subpoll_expand">Unterumfrog azoaga</string>
+    <string name="poll_subpoll_collapse">Unterumfrog usblenda</string>
+    <string name="poll_subpoll_clear_confirm_title">Antworta vo da Unterumfrog entferna?</string>
+    <string name="poll_subpoll_clear_confirm_text">Dine Antworta in "%1$s" werrand entfernt.</string>
+    <string name="poll_subpoll_clear_confirm">Entferna</string>
+
 
 
 
@@ -759,11 +786,6 @@
 
 
     <!-- Bug Report Dialog -->
-
-
-
-
-
     <!-- Games: Yatzi -->
     <string name="games_yahtzee_title">Yahtzee</string>
     <string name="yatzi_setup_title">Yahtzee Einstellunga</string>
@@ -907,6 +929,18 @@
     <string name="recap_streak_label">Dine längste Tagesserie</string>
     <string name="recap_most_active_month">%1$s war din lütester Monat</string>
     <string name="recap_first_message_ever">Dine allererste Nochricht: %1$s</string>
+    <string name="recap_usage_title">Du warsch Online</string>
+    <string name="recap_usage_hours_label">Stunda uf Schneaggchat</string>
+    <string name="recap_usage_minutes_label">Minuta uf Schneaggchat</string>
+    <string name="recap_usage_peak_month">Im %1$s warsch du am meista online</string>
+    <string name="recap_usage_sessions">%1$s Sitzunga</string>
+    <string name="recap_usage_avg_session">Ø %1$s pro Sitzung</string>
+    <string name="recap_usage_longest_session">Längste: %1$s</string>
+    <string name="recap_usage_busiest_day">Am meista Online am %1$s (%2$s)</string>
+    <string name="recap_usage_busiest_hour">Meistens bisch du gegs %1$d:00 online ganga</string>
+    <string name="recap_usage_duration_hm">%1$d Std. %2$d Min.</string>
+    <string name="recap_usage_duration_m">%1$d Min.</string>
+    <string name="recap_usage_tracking_note">Hinweis: Die Online-Zit wird erst sit %1$s %2$d erfasst, und jeds Gerät zählt einzeln.</string>
     <string name="recap_popular">Du bisch am chatten.</string>
     <string name="recap_inner_circle">Din innerer Kreis.</string>
     
@@ -937,6 +971,9 @@
     <string name="recap_map_edited">%1$d Einträg bearbeitet</string>
     <string name="recap_map_all_time">%1$d insgesamt erstellt</string>
     <string name="recap_games_title">Profigamer</string>
+    <string name="recap_games_your_rank">Uf da globala Spiele-Rangliste vo allna Spiele zem landesch du uf Platz</string>
+    <string name="recap_games_points">%1$s us %2$d Spielen</string>
+    <string name="recap_games_not_ranked">Dieses Joar kua Ranglisten-Spiele von dir. Die Spiele wartand.</string>
 
     <string name="recap_betatester_title">Zertifizierter Beta-Tester</string>
     <string name="recap_betatester_your_rank">Vo allna, die Schneaggchat je fast zum Absturz brocht hond, bisch du uf Platz</string>
@@ -947,6 +984,20 @@
     <string name="recap_password_reset_label">Passwort-Reset-E-Mails gschickt</string>
     <string name="recap_password_reset_this_year">davon %1$d des Joar</string>
     <string name="recap_password_reset_subtitle">Schriebs da viellicht amol uf.</string>
+    <string name="recap_button">Recap %1$d</string>
+    <string name="settings_recap">Din Recap %1$d</string>
+    <string name="settings_recap_info">Din Joar uf Schneaggchat</string>
+    <string name="recap_downtime_title">Warum Schneaggchat %1$d offline war</string>
+    <string name="recap_downtime_subtitle">Nach Chaos sortiert, s größte Chaos zersch.</string>
+    <string name="recap_downtime_count">%1$d×</string>
+    <string name="recap_downtime_lightning">Blitzischlag</string>
+    <string name="recap_downtime_lightning_detail">Manchmol muss ma einfach loslo</string>
+    <string name="recap_downtime_isp_switch">Internetumstellung</string>
+    <string name="recap_downtime_isp_switch_detail">A1 hot denkt sie wissand was mir bruchand.</string>
+    <string name="recap_downtime_bad_internet">Schleachtes Internet</string>
+    <string name="recap_downtime_bad_internet_detail">Ned jede DSL-Leitung isch a guate.</string>
+    <string name="recap_downtime_proxy">Proxy-Config verhaut</string>
+    <string name="recap_downtime_proxy_detail">Es kann mol vorko oda</string>
 
     <string name="recap_outro_title">Des wars, %1$s.</string>
     <string name="recap_outro_subtitle">Bis nägsch Joar. Blieb schleimig</string>
@@ -1009,8 +1060,6 @@ Mealds, egal wie klenn.</string>
     <string name="contribute_later">Eventuell später</string>
 
     <!-- Roadmap -->
-
-
     <string name="custom_reaction">Eigne Reaktion</string>
     <string name="enter_reaction">Reaktion igia</string>
 
@@ -1050,8 +1099,33 @@ Mealds, egal wie klenn.</string>
     <string name="direction_w">W</string>
     <string name="direction_nw">NW</string>
 
+    <!-- Games: player selector -->
+    <string name="player_selector_title">Spieler uswähla</string>
+    <string name="player_selector_new_player">Neuer Spieler</string>
+    <string name="player_selector_add_player">Spieler dazuatua</string>
+    <string name="player_selector_tab_local">Lokale Spieler</string>
+    <string name="player_selector_tab_friends">Freunde</string>
+    <string name="player_selector_no_local_players">No kua lokale Spieler. Füg welle dazua!</string>
+    <string name="player_selector_no_friends">Kua Freunde verfügbar.</string>
+    <string name="player_selector_start_format">Start (%1$d)</string>
+    <string name="player_selector_delete_player">Spieler löscha</string>
+    <string name="player_selector_friend">Freund</string>
+
     <!-- Game highscores -->
+    <string name="highscores_board_german">Dütsch</string>
+    <string name="highscores_board_english">Englisch</string>
     <string name="highscores_title">Highscores</string>
+    <string name="highscore_upload_title">Highscores uffelada?</string>
+    <string name="game_reset_title">Spiel zrucksetza?</string>
+    <string name="game_reset_confirm">Zrucksetza</string>
+    <string name="game_reset_cancel">Abbreacha</string>
+    <string name="highscore_upload_confirm">Uffelada</string>
+    <string name="highscore_upload_decline">Ned uffelada</string>
+    <string name="highscore_upload_retry">Nomml versuacha</string>
+    <string name="highscore_upload_uploading">Wird uffeglada...</string>
+    <string name="highscore_upload_failed">Uffelada fehlgschlaga. Test di Internet oda lass los.</string>
+    <string name="highscore_upload_done">Highscores uffeglada</string>
+    <string name="highscore_upload_skipped_players">%1$d Spieler ohne Konto werrand ned uffeglada.</string>
     <string name="highscores_error">Highscores hond ned glada werra künna</string>
     <string name="highscores_empty">No kua Highscores</string>
     <string name="highscores_period_daily">Hüt</string>
@@ -1074,6 +1148,10 @@ Mealds, egal wie klenn.</string>
     <string name="difficulty_low">Niedrig</string>
     <string name="difficulty_medium">Mittel</string>
     <string name="difficulty_high">Hoch</string>
+    <string name="games_difficulty_info_hint">Gilt nur für Spiele mit Schwierigkeits-Symbol.</string>
+    <string name="games_difficulty_info_global">Schwierigkeit: %1$s</string>
+    <string name="games_difficulty_info_language">Sproch wird im Spiel usgwählt</string>
+    <string name="games_difficulty_info_countdown">Countdown (301/501) wird im Spiel gwählt</string>
     <string name="games_without_highscores">Spiel ohne Highscores</string>
 
     <!-- Morse challenge -->
@@ -1453,6 +1531,109 @@ Mealds, egal wie klenn.</string>
     <string name="shared_links">Links</string>
     <string name="no_shared_images">In deam Chat sind no kua Bilder teilt worra</string>
     <string name="no_shared_links">In deam Chat sind no kua Links teilt worra</string>
+
+    <string name="shared_messages">Nochrichta</string>
+    <string name="no_shared_messages">In deam Chat gits no kua Nochrichta vo derra Art</string>
+    <string name="shared_messages_type_text">Textnochrichta</string>
+    <string name="shared_messages_type_image">Bilder</string>
+    <string name="shared_messages_type_poll">Umfroga</string>
+    <string name="shared_messages_type_audio">Sprochnochrichta</string>
+    <string name="shared_messages_type_system">Systemnochrichta</string>
+    <string name="shared_polls_subpoll_count">%1$s Unterumfroga</string>
     <string name="go_to_message">Zur Nochricht springa</string>
     <string name="copy_link">Link kopiera</string>
+    <!-- Tools tab and two-stroke fuel mix calculator -->
+    <string name="games_tab_tools">Werkzüg</string>
+    <string name="tools_fuel_title">Gmischreachna</string>
+    <string name="tools_fuel_description">Ölmenge für s Benzingmisch bereachna</string>
+    <string name="tools_fuel_basis_title">Bekannte Menge</string>
+    <string name="tools_fuel_basis_petrol">Benzin</string>
+    <string name="tools_fuel_basis_mixture">Gmisch</string>
+    <string name="tools_fuel_basis_oil">Öl</string>
+    <string name="tools_fuel_amount_petrol">Benzin (l)</string>
+    <string name="tools_fuel_amount_mixture">Fertigs Gmisch (l)</string>
+    <string name="tools_fuel_amount_oil">Öl (ml)</string>
+    <string name="tools_fuel_amount_error">Menge größer als null igia</string>
+    <string name="tools_fuel_ratio_title">Mischungsverhältnis</string>
+    <string name="tools_fuel_ratio_preset">1:%1$d</string>
+    <string name="tools_fuel_ratio_custom">Eignes Verhältnis</string>
+    <string name="tools_fuel_ratio_error">Zwüscha %1$d und %2$d</string>
+    <string name="tools_fuel_result_petrol">Benzin</string>
+    <string name="tools_fuel_result_oil">Öl</string>
+    <string name="tools_fuel_result_total">Gesamt</string>
+    <string name="tools_fuel_unit_litres">%1$s l</string>
+    <string name="tools_fuel_unit_millilitres">%1$s ml</string>
+    <string name="tools_fuel_clear">Löscha</string>
+    <string name="tools_fuel_empty_hint">Menge igia, ums Gmisch zum seaha.</string>
+    <string name="highscores_retry">Nomml versuacha</string>
+    <!-- One-line game summaries for the game selector cards -->
+    <string name="games_schneaggrodeo_oil_tanker">Öltanker</string>
+    <string name="games_schneaggrodeo_oil_tanker_controls">Vollgas! Da Tanker fahrt drüba!</string>
+    <string name="games_schneaggrodeo_flamingo">Famingo</string>
+    <string name="games_schneaggrodeo_flamingo_controls">Tip zum jucka - fang d Hufeisen!</string>
+    <string name="games_schneaggrodeo_flamingo_controls_keys">Leertaste  drucka zum Jucka - schnapp da d Hufeisen!</string>
+    <string name="games_schneaggrodeo_mine_cart">Grubenhunt</string>
+    <string name="games_schneaggrodeo_mine_cart_controls">Heb di fest da Karra hoazt!</string>
+    <string name="games_schneaggrodeo_friend_joined_title">%1$s rittat mit!</string>
+    <string name="games_schneaggrodeo_friend_joined">Ab jetzt rittasch du o für da Highscore vo %1$s: Sobald du vom Pferd abstiegsch,, wird döt sin Highscore gsetzt.</string>
+
+    <!-- Feedback board -->
+    <string name="feedback_title">Feedback</string>
+    <string name="feedback_info">Über Features abstimma, Bugs mealda und seaha, was plant isch</string>
+    <string name="feedback_tab_features">Features</string>
+    <string name="feedback_tab_bugs">Bugs</string>
+    <string name="feedback_sort_top">Top</string>
+    <string name="feedback_sort_new">Neu</string>
+    <string name="feedback_filter_mine">Mine</string>
+    <string name="feedback_filter_tag">Tag</string>
+    <string name="feedback_filter_all_tags">Alle Tags</string>
+    <string name="feedback_status_requested">Gwünscht</string>
+    <string name="feedback_status_planned">Plant</string>
+    <string name="feedback_status_implemented">Implementiert</string>
+    <string name="feedback_status_open">Offa</string>
+    <string name="feedback_status_confirmed">Bestätigt</string>
+    <string name="feedback_status_fixed">Behoba</string>
+    <string name="feedback_tag_chat">Chat</string>
+    <string name="feedback_tag_groups">Gruppa</string>
+    <string name="feedback_tag_events">Events</string>
+    <string name="feedback_tag_map">Karta</string>
+    <string name="feedback_tag_games">Spiele</string>
+    <string name="feedback_tag_settings">Einstellunga</string>
+    <string name="feedback_tag_ui">Design</string>
+    <string name="feedback_tag_notifications">Benachrichtigunga</string>
+    <string name="feedback_tag_performance">Performance</string>
+    <string name="feedback_tag_other">Sunstigs</string>
+    <string name="feedback_vote_up">Uffevoten</string>
+    <string name="feedback_vote_down">Abevoten</string>
+    <string name="feedback_vote_didnt_know">Kenni ned</string>
+    <string name="feedback_vote_me_too">Hobi o</string>
+    <string name="feedback_vote_cant_repro">Ned reproduzierbar</string>
+    <string name="feedback_new_badge">Neu</string>
+    <string name="feedback_dev_comment">Entwickler</string>
+    <string name="feedback_empty">Do isch no nix.</string>
+    <string name="feedback_load_error">Die Liste hot ned glada werra künna. Versuachs später nomml.</string>
+    <string name="feedback_retry">Nomml versuacha</string>
+    <string name="feedback_create">Neuer Eintrag</string>
+    <string name="feedback_create_title_feature">Feature wünscha</string>
+    <string name="feedback_create_title_bug">Bug mealda</string>
+    <string name="feedback_field_title">Titel</string>
+    <string name="feedback_field_description">Beschreibung</string>
+    <string name="feedback_field_description_bug_hint">Was isch passiert und wie kann ma s nochstella</string>
+    <string name="feedback_field_location">Wo zum finda (optional)</string>
+    <string name="feedback_field_tags">Tags (1–3)</string>
+    <string name="feedback_submit">Abschicka</string>
+    <string name="feedback_created">Itrag erstellt</string>
+    <string name="feedback_bug_device_info_hint">Dine App-Version und Plattform werrand automatisch aghängt.</string>
+    <string name="feedback_where_to_find">Wo zum finda: %1$s</string>
+    <string name="feedback_seeded_author">Schneaggchat-Team</string>
+    <string name="feedback_unknown_user">Glöschter User</string>
+    <string name="feedback_comments">Kommentare</string>
+    <string name="feedback_no_comments">No kua Kommentare.</string>
+    <string name="feedback_comment_hint">Meh Infos oder an Kommentar dazuafüga...</string>
+    <string name="feedback_send_comment">Kommentar senda</string>
+    <string name="feedback_delete_entry">Eintrag löscha</string>
+    <string name="feedback_delete_entry_confirm">Dean Eintrag und alle Kommentare löscha?</string>
+    <string name="feedback_delete_comment_confirm">Dean Kommentar löscha?</string>
+    <string name="feedback_change_status">Status ändra</string>
+    <string name="feedback_details_load_error">Details hond ned glada werra künna.</string>
 </resources>

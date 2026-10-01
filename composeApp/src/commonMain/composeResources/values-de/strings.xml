@@ -988,7 +988,7 @@
     <string name="recap_password_reset_subtitle">Schreib es dir diesmal vielleicht auf.</string>
     <string name="recap_button">Recap %1$d</string>
     <string name="settings_recap">Dein Recap %1$d</string>
-    <string name="settings_recap_info">Dein Jahr auf Schneaggchat – nur noch ein paar Wochen verfügbar</string>
+    <string name="settings_recap_info">Dein Jahr auf Schneaggchat</string>
     <string name="recap_downtime_title">Warum Schneaggchat %1$d offline war</string>
     <string name="recap_downtime_subtitle">Nach Chaos sortiert, das größte Chaos zuerst.</string>
     <string name="recap_downtime_count">%1$d×</string>
@@ -1674,7 +1674,7 @@
     <string name="games_schneaggrodeo_flamingo_controls">Tippen zum Hochhüpfen – schnapp dir die Hufeisen!</string>
     <string name="games_schneaggrodeo_flamingo_controls_keys">Leertaste drücken zum Hochhüpfen – schnapp dir die Hufeisen!</string>
     <string name="games_schneaggrodeo_mine_cart">Grubenhunt</string>
-    <string name="games_schneaggrodeo_mine_cart_controls">Festhalten – der Hunt rast über die Schienen und zerlegt die Tropfsteine!</string>
+    <string name="games_schneaggrodeo_mine_cart_controls">Festhalten – der Kart rast über die Schienen und zerlegt die Tropfsteine!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s reitet mit!</string>
     <string name="games_schneaggrodeo_friend_joined">Ab jetzt reitest du auch für den Highscore von %1$s: Sobald du vom Pferd steigst, zählen deine bisherigen Punkte auch für %1$s.</string>
 
@@ -1690,7 +1690,7 @@
     <string name="feedback_filter_all_tags">Alle Tags</string>
     <string name="feedback_status_requested">Gewünscht</string>
     <string name="feedback_status_planned">Geplant</string>
-    <string name="feedback_status_implemented">Umgesetzt</string>
+    <string name="feedback_status_implemented">Implementiert</string>
     <string name="feedback_status_open">Offen</string>
     <string name="feedback_status_confirmed">Bestätigt</string>
     <string name="feedback_status_fixed">Behoben</string>
