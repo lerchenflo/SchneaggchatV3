@@ -11,9 +11,9 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import kotlin.math.sin
 import kotlin.random.Random
 
-// Mine cart ("Grubenhunt", the mine): a rusty mine cart rolls by on rails. Lasso it and the horse
+// Mine cart ("Grubenhunt", the cave): a rusty mine cart rolls by on rails. Lasso it and the horse
 // hops in. The cart races down the rails at twice the pace, sparks flying from its wheels, and
-// smashes every crate and rock pile in the way - points for each. Then the horse hops out again.
+// smashes every stalagmite in the way - points for each. Then the horse hops out again.
 
 // Shape, shared with the drawing (grid: x from the cart's rear, y up from the rails)
 internal const val CART_LENGTH = 22f
@@ -29,7 +29,7 @@ private const val CART_RIDE_X = HORSE_X + 2f
 private const val CART_SPEED_FACTOR = 2f
 private const val CART_LEAVE_SPEED = 80f
 private const val CART_RATTLE_DEGREES = 1.2f
-private const val CRATE_POINTS = 6
+private const val STALAGMITE_POINTS = 6
 private const val CART_FENCE_SECONDS = 0.5f
 
 internal class RodeoMineCart : RodeoDeckVehicle(RodeoVehicleKind.MINE_CART) {
@@ -85,11 +85,11 @@ internal class RodeoMineCart : RodeoDeckVehicle(RodeoVehicleKind.MINE_CART) {
         if (x > world.worldWidth) enter(VehiclePhase.IDLE)
     }
 
-    /** Crates and rock piles in front of the cart are smashed. */
+    /** Stalagmites in front of the cart are smashed. */
     private fun smash(world: RodeoWorld, points: Boolean) {
         world.clearTrack(x, x + CART_LENGTH) { fence ->
             world.dust(fence.x)
-            if (points) world.addBonusPoints(CRATE_POINTS)
+            if (points) world.addBonusPoints(STALAGMITE_POINTS)
         }
     }
 

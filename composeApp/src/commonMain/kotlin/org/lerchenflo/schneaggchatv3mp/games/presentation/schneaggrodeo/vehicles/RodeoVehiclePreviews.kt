@@ -28,7 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.R
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoWeather
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.cave
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawKiosk
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawMineBackdrop
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawCaveBackdrop
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawSeaBackdrop
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawTimeOfDay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawWaterOverlay
@@ -84,6 +84,14 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.trafficjam.RodeoTrafficJamUi
 import androidx.compose.ui.graphics.drawscope.translate
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.carriage.RodeoGoldenCarriageUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.helicopter.HELI_ABOVE_HOOVES
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.helicopter.HELI_CABIN_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.helicopter.HELI_SLING_Y
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.helicopter.RAINBOW_LIFT
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.helicopter.RodeoHelicopterUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoLayer
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawVehicle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoDeepThingUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMapWayUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoDeepKind
@@ -126,6 +134,7 @@ private fun RodeoVehiclePreviewTrack(vararg vehicles: RodeoVehicleUi) = RodeoPre
  * ground follows [ground] (hills, see engine/RodeoTerrain); the [sea] has no ground but water with the
  * seabed below and its surface over everything. The view looks down by [cameraDown] (negative) like in
  * the game. [backdrop] goes behind the ground, on the flat; [bridges] cut their gorges into it.
+ * Without [groundLine] there is no ground at all (the rainbow draws its own track).
  */
 @Composable
 internal fun RodeoPreviewTrack(
@@ -135,6 +144,7 @@ internal fun RodeoPreviewTrack(
     cameraDown: Float = 0f,
     backdrop: DrawScope.(RodeoDrawContext) -> Unit = {},
     bridges: List<RodeoBridgeUi> = emptyList(),
+    groundLine: Boolean = true,
     content: DrawScope.(RodeoDrawContext) -> Unit,
 ) {
     SchneaggchatTheme {
@@ -160,9 +170,10 @@ internal fun RodeoPreviewTrack(
             translate(top = cameraDown * unit) {
                 backdrop(context.flat())
                 when {
+                    !groundLine -> Unit
                     sea -> drawSeaBackdrop(distance = 0f, context = context.flat())
                     ground != null -> {
-                        drawWithGorges(bridges, context) { drawGround(context, distance = 0f) }
+                        drawWithGorges(bridges, context) { drawGround(context, distance = 0f, enclosed = enclosed) }
                         bridges.forEach {
                             drawGorge(it, context, distance = 0f)
                             drawBridge(it, context)
@@ -606,7 +617,7 @@ private fun DrillPreview() = RodeoVehiclePreviewTrack(
 private fun DrillDiggingPreview() = RodeoPreviewTrack(
     enclosed = true,
     cameraDown = -26f,
-    backdrop = { drawMineBackdrop(distance = 40f, context = it) },
+    backdrop = { drawCaveBackdrop(distance = 40f, context = it) },
 ) { context ->
     val drill = RodeoDrillUi(
         x = 20f, y = -26f, drillPhase = 0.6f, hatInHatch = true, earthVisible = true,
@@ -678,6 +689,40 @@ private fun BridgePreview() {
     }
 }
 
+/** Hovering by with the empty sling under its hook, waiting for the lasso. */
+@Preview
+@Composable
+private fun HelicopterPreview() = RodeoVehiclePreviewTrack(
+    RodeoHelicopterUi(x = 60f, y = 36f, rotor = 0.4f, carrying = false, slingY = null, rainbowAt = null, lassoHint = RodeoLassoHintUi(x = 79f, y = 51f)),
+)
+
+/** Carrying horse and rider up towards the rainbow, the view panned up after them. */
+@Preview
+@Composable
+private fun HelicopterCarryingPreview() = RodeoPreviewTrack(cameraDown = 22f) { context ->
+    val lift = 30f
+    val colors = context.colors
+    val horseColors = RodeoHorseColors(
+        body = colors.onSurface,
+        shirt = colors.primary,
+        glow = colors.primary,
+        canopy = colors.secondary,
+        friendShirt = colors.tertiary,
+        headRing = colors.surfaceContainer,
+    )
+    val heli = RodeoHelicopterUi(
+        x = HORSE_X + 15f - HELI_CABIN_X, y = lift + HELI_ABOVE_HOOVES, rotor = 1.1f, carrying = true,
+        slingY = lift + HELI_SLING_Y, rainbowAt = RAINBOW_LIFT, lassoHint = null,
+    )
+    drawVehicle(heli, RodeoLayer.BACK, context)
+    val pose = RodeoHorsePose(
+        height = lift, gaitPhase = 0.5f, airborne = true, riderLean = 0f, pitchDegrees = 2f,
+        pivotX = 12f, pivotY = 12f, hindLegScale = 1f, frontLegFold = 0f, hatLift = 0f, glow = 0f,
+    )
+    drawHorseAndRider(left = HORSE_X * context.unit, groundY = context.groundY - lift * context.unit, unit = context.unit, pose = pose, colors = horseColors)
+    drawVehicle(heli, RodeoLayer.FRONT, context)
+}
+
 @Preview
 @Composable
 private fun GoldenCarriagePreview() = RodeoVehiclePreviewTrack(
@@ -693,14 +738,7 @@ private fun previewGround(start: Float, heights: List<Float>): (Float) -> Float 
 /** The ground [feature] shapes, with the feature at world x [at] (see RodeoTerrain.addFeature). */
 private fun previewGround(feature: TerrainFeature, at: Float) = previewGround(at - 2f * TERRAIN_STEP, feature.shape)
 
-/** The mine shaft at the foot of a hill: gallop in, or jump it and ride on up the hill. */
-@Preview
-@Composable
-private fun MineShaftPreview() = RodeoPreviewTrack(ground = previewGround(TerrainFeature.SHAFT, at = 60f)) { context ->
-    drawMapWay(RodeoMapWayUi(x = 60f, width = 24f, exit = false, destination = RodeoMap.MINE), context, distance = 0f)
-}
-
-/** The cave shaft with its glowing crystals, at the foot of a hill too. */
+/** The cave shaft with its glowing crystals at the foot of a hill: gallop in, or jump it and ride on up the hill. */
 @Preview
 @Composable
 private fun CaveShaftPreview() = RodeoPreviewTrack(ground = previewGround(TerrainFeature.SHAFT, at = 60f)) { context ->
@@ -714,15 +752,15 @@ private fun BeachPreview() = RodeoPreviewTrack(ground = previewGround(TerrainFea
     drawMapWay(RodeoMapWayUi(x = 120f, width = 24f, exit = false, destination = RodeoMap.SEA), context, distance = 0f)
 }
 
-/** The plank ramp up to daylight, out of the mine (and the cave). */
+/** The plank ramp up to daylight, out of the cave. */
 @Preview
 @Composable
 private fun RampOutPreview() = RodeoPreviewTrack(
     enclosed = true,
     ground = previewGround(TerrainFeature.RAMP_UP, at = 150f),
-    backdrop = { drawMineBackdrop(distance = 40f, context = it) },
+    backdrop = { drawCaveBackdrop(distance = 40f, context = it) },
 ) { context ->
-    drawMapWay(RodeoMapWayUi(x = 126f, width = 24f, exit = true, destination = RodeoMap.SURFACE, origin = RodeoMap.MINE), context, distance = 0f)
+    drawMapWay(RodeoMapWayUi(x = 126f, width = 24f, exit = true, destination = RodeoMap.SURFACE, origin = RodeoMap.CAVE), context, distance = 0f)
 }
 
 /** The harbour pier out of the sea. */

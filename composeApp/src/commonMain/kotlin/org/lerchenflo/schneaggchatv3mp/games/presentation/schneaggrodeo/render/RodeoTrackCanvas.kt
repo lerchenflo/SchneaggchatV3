@@ -156,7 +156,7 @@ internal fun RodeoTrack(
                 outline = paint.snailOutline
             )
 
-            // Each map dresses the snails differently: sharks and swim rings in the sea, helmets in the mine
+            // In the sea the snails are sharks or ride swim rings
             fun drawSnailAt(snail: RodeoSnailUi, pack: Boolean = false) {
                 when (world.map) {
                     RodeoMap.SEA -> if (snail.runner || pack) {
@@ -165,22 +165,19 @@ internal fun RodeoTrack(
                         drawSwimRing(snail, context)
                         drawPlainSnail(snail)
                     }
-                    RodeoMap.MINE -> {
-                        drawPlainSnail(snail)
-                        drawMinerHelmet(snail, context)
-                    }
                     else -> drawPlainSnail(snail)
                 }
             }
 
             // Up in space (rocket) the sky turns dark and starry - fixed to the screen
             drawSpace(world.distance, unit, world.space)
-            // In the cave and the mine: rock or earth walls all around
+            // In the cave and the fossil layer: rock walls all around; on the rainbow: clouds below
             when (world.map) {
                 RodeoMap.CAVE -> drawCaveBackdrop(world.distance, screenContext)
+                RodeoMap.FOSSIL -> drawFossilBackdrop(world.distance, screenContext)
+                RodeoMap.RAINBOW -> drawRainbowBackdrop(world.distance, screenContext)
                 // The sea is drawn in the world, so the view can look down into it
                 RodeoMap.SEA -> Unit
-                RodeoMap.MINE -> drawMineBackdrop(world.distance, screenContext)
                 RodeoMap.SURFACE -> Unit
             }
 
@@ -217,12 +214,17 @@ internal fun RodeoTrack(
 
                 // In the sea the horse swims: no ground, the water's surface is drawn over everything.
                 // Gorges are cut out of the ground, a river at their bottom.
+                // On the rainbow the rainbow itself is the track, with gaps in it.
                 val bridges = world.terrain.bridges
-                if (world.map != RodeoMap.SEA) {
-                    drawWithGorges(bridges, context) { drawGround(context, world.distance, world.speedBlur) }
-                    bridges.forEach { drawGorge(it, context, world.distance) }
-                    // Plank bridges over the gorges, snowed over like the ground
-                    bridges.forEach { drawBridge(it, context) }
+                when (world.map) {
+                    RodeoMap.SEA -> Unit
+                    RodeoMap.RAINBOW -> drawRainbowTrack(context, world.gaps)
+                    else -> {
+                        drawWithGorges(bridges, context) { drawGround(context, world.distance, world.speedBlur, world.enclosed) }
+                        bridges.forEach { drawGorge(it, context, world.distance) }
+                        // Plank bridges over the gorges, snowed over like the ground
+                        bridges.forEach { drawBridge(it, context) }
+                    }
                 }
                 if (world.map == RodeoMap.SURFACE && world.weather == RodeoWeather.SNOW) drawSnowCover(context)
                 // Ways to the other maps: shafts, the beach, ramps back up
@@ -267,12 +269,12 @@ internal fun RodeoTrack(
 
                 world.fences.forEach { fence ->
                     val label = paint.heightLabels.getValue(fence.heightCm)
-                    // On the other maps the fences are stalagmites, buoys or crate stacks
+                    // On the other maps the fences are stalagmites, buoys or dinosaur bones
                     when (world.map) {
                         RodeoMap.CAVE -> drawStalagmite(fence, context, label)
                         RodeoMap.SEA -> drawBuoy(fence, context, label)
-                        RodeoMap.MINE -> drawCrateStack(fence, context, label)
-                        RodeoMap.SURFACE -> drawFence(fence, context, colors.onSurface, label)
+                        RodeoMap.FOSSIL -> drawBoneFence(fence, context, label)
+                        RodeoMap.SURFACE, RodeoMap.RAINBOW -> drawFence(fence, context, colors.onSurface, label)
                     }
                 }
 
@@ -293,7 +295,8 @@ internal fun RodeoTrack(
                 world.gems.forEach { gem ->
                     when (world.map) {
                         RodeoMap.SEA -> drawPearl(gem, context)
-                        RodeoMap.MINE -> drawNugget(gem, context)
+                        RodeoMap.FOSSIL -> drawAmmonite(gem, context)
+                        RodeoMap.RAINBOW -> drawStar(gem, context)
                         else -> drawGem(gem, context)
                     }
                 }

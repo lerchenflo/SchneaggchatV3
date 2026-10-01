@@ -48,6 +48,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GamePauseOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoTrack
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoAnnouncementBanner
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoMapTitle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoControls
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoSpeedometer
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.rodeoInput
@@ -228,6 +229,11 @@ fun SchneaggRodeoScreen(
                                 .padding(OVERLAY_PADDING)
                         )
                     }
+
+                    RodeoMapTitle(
+                        map = state.mapTitle,
+                        modifier = Modifier.fillMaxSize()
+                    )
 
                     RodeoAnnouncementBanner(
                         announcement = state.announcement,

@@ -39,7 +39,7 @@ import kotlin.random.Random
 //            RodeoWildHorses   other horses on the track: wild ones to switch to, friends to pick up
 //            RodeoLandscape    mountains and forests the track runs through; their vehicles come along
 //            RodeoMushrooms    magic mushrooms: giant, tiny or slow motion for a few seconds
-//            RodeoMapSwitch  the rare way to another map (cave, sea, mine) and back
+//            RodeoMapSwitch    the rare way to another map (cave, sea, rainbow, fossil layer) and back
 //            RodeoTerrain      the hills of the ground under the track
 //            RodeoTest         developer toggles to try out one vehicle or map on its own
 //            RodeoDeepSea      fish, whales and wrecks deep down in the open sea
@@ -81,7 +81,7 @@ private const val CARRIAGE_POINTS = 2500
 /** Seconds a bowl of Käsknöpfle keeps the horse full (no hearts drain). */
 private const val KAESKNOEPFLE_SECONDS = 20f
 private const val KAESKNOEPFLE_POINTS = 20
-// Digging through a dirt mound in the mine turns up a find
+// Digging through a dirt mound in the cave turns up a find
 private const val DIG_GOLD_POINTS = 25
 private const val DIG_GOLD_CHANCE = 0.5f
 private const val DIG_CARROT_CHANCE = 0.2f
@@ -119,6 +119,9 @@ private const val BRIDGE_CLEARANCE = 20f
 private const val UPHILL_TILT = -8f
 private const val DOWNHILL_TILT = 6f
 private const val TILT_RESPONSE = 4f
+/** Hooves this far inside a rainbow gap's edges drop the horse through; it falls this fast (u/s²). */
+private const val GAP_EDGE = 2f
+private const val GAP_DROP_GRAVITY = 260f
 
 /** What the ViewModel has to act on, collected during a frame (see [SchneaggRodeoEngine.drainEvents]). */
 internal sealed interface RodeoEvent {
@@ -198,6 +201,11 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     private var gorgeLook = 0f
     /** Test mode: seconds until the tested vehicle comes (again). */
     private var testVehicleIn = 0f
+    /** A vehicle (or a missed gap) is taking the run to another map; the ground starts over there. */
+    private var travelling = false
+    /** Missed a gap in the rainbow: horse and rider fall through, down to the surface. */
+    private var dropping = false
+    private var dropVelocity = 0f
 
     // --- Read by the ViewModel
 
@@ -218,6 +226,9 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     /** Banner currently shown over the track, if any. */
     val announcement: RodeoVehicleKind? get() = effects.announcement
+
+    /** The map whose name is shown big right after arriving there, if any. */
+    val mapTitle: RodeoMap? get() = mapSwitch.title
 
     /** Kind of the vehicle being ridden; the controls turn into a hint on how to ride it. */
     val rideKind: RodeoVehicleKind? get() = ride?.kind
@@ -267,6 +278,9 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         terrain.reset()
         deepSea.reset()
         testVehicleIn = 0f
+        travelling = false
+        dropping = false
+        dropVelocity = 0f
         flavor.roll()
         course.mudFactor = flavor.mudFactor
         tilt = 0f
@@ -355,7 +369,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             ride.onJump(true)
             return
         }
-        if (fall.isInSaddle && horse.isOnGround && !superJump.isActive) horse.jump()
+        if (fall.isInSaddle && horse.isOnGround && !superJump.isActive && !dropping) horse.jump()
     }
 
     fun jumpReleased() {
@@ -373,7 +387,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     }
 
     fun superJumpPressed() {
-        if (superJumpCharges <= 0 || !fall.isInSaddle || ride != null || superJump.isBusy) return
+        // No super jump over the rainbow's gaps: it is made for fences
+        if (superJumpCharges <= 0 || !fall.isInSaddle || ride != null || superJump.isBusy || mapSwitch.map == RodeoMap.RAINBOW) return
         // In the air it fires on landing, on the ground right away
         if (horse.isOnGround) startSuperJump() else superJump.queue()
     }
@@ -451,6 +466,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         if (ride == null) horse.tire(dt)
 
         if (!stepJumps(dt, ridden)) return // thrown off
+        if (dropping) dropThroughGap(dt) else fallIntoGaps()
         riderlessHop = if (ride?.horseRunsRiderless == true) hopOverFences(HORSE_X + 14f, course.fences, reach = 14f, clearance = 3f) else 0f
         // Rider eases into the forward seat on takeoff and back upright after landing
         horse.lean(dt, leaning = horse.height > 0f || ride?.riderLeans == true)
@@ -491,12 +507,15 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         // No new fences while a vehicle is ridden: it brings its own obstacles (or none). None on a
         // bridge either, and no mud or mushrooms on its planks.
         val bridgeComing = terrain.bridgeWithin(worldWidth - BRIDGE_CLEARANCE, worldWidth + BRIDGE_CLEARANCE)
-        course.scrollFences(scroll, ridden, worldWidth, horse.speed, elapsed, spawnFences = traffic.current?.blocksFences != true && !bridgeComing)
+        // The rainbow's last stretch down to its end has no gaps
+        val spawnFences = traffic.current?.blocksFences != true && !bridgeComing && (mapSwitch.map != RodeoMap.RAINBOW || mapSwitch.isClear)
+        course.scrollFences(scroll, ridden, worldWidth, horse.speed, elapsed, spawnFences)
         if (terrain.hasBridge) {
             course.mud.removeAll { it.x > worldWidth && terrain.bridgeWithin(it.x, it.x + it.width) }
             course.mushrooms.removeAll { it.x > worldWidth && terrain.bridgeWithin(it.x - 2f, it.x + 2f) }
         }
-        course.sendRunners(dt, worldWidth, elapsed)
+        // No runners on the rainbow: they would only fall through its gaps
+        if (mapSwitch.map != RodeoMap.RAINBOW) course.sendRunners(dt, worldWidth, elapsed)
         crashIntoFences()
         course.moveSnails(scroll, dt)
         crashIntoRunners()
@@ -551,7 +570,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         )
         sendTestVehicle(dt)
 
-        // Rarely a mine shaft opens up, when nothing else is going on; in the cave the way out comes
+        // Rarely a shaft or the beach opens up, when nothing else is going on; away the way out comes
         if (regular) mapSwitch.tick(dt, allowed = nothingAround && !terrain.hasBridge, shapeGround = terrain::addFeature)
         // Now and then a stop by the roadside, and very rarely Stanislaus running along
         pizzaOvens.tick(dt, worldWidth, allowed = onSurface && regular && !bridgeComing)
@@ -576,7 +595,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         markers.catchUp(dt, bonusPoints)
 
         // Out of hearts: bucks the cowboy off and runs away, once nothing else is going on
-        if (horse.isExhausted && ride == null && traffic.isClear && !superJump.isActive && horse.isOnGround) exhaustHorse()
+        // (not up on the rainbow: there is no ground to run after a new horse on)
+        if (horse.isExhausted && ride == null && traffic.isClear && !superJump.isActive && horse.isOnGround && mapSwitch.map != RodeoMap.RAINBOW) exhaustHorse()
     }
 
     /** Test mode: sends the tested vehicle right away, and again shortly after each ride. */
@@ -673,7 +693,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     }
 
     private fun shouldThrowCowboy(): Boolean =
-        traffic.isClear && !superJump.queued && fall.shouldThrow(horse.jumpPeak, pack.gap, elapsed)
+        traffic.isClear && !superJump.queued && mapSwitch.map != RodeoMap.RAINBOW && fall.shouldThrow(horse.jumpPeak, pack.gap, elapsed)
 
     private fun throwCowboy() {
         fall.start(elapsed)
@@ -703,7 +723,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
      * vehicle the vehicle deals with the track; the riderless horse under the plane hops everything
      * on its own.
      */
-    private val invulnerable: Boolean get() = superJump.isActive || ride != null || wonders.isGhost
+    private val invulnerable: Boolean get() = superJump.isActive || ride != null || wonders.isGhost || dropping
 
     private fun crashIntoFences() {
         if (invulnerable) return
@@ -811,6 +831,16 @@ internal class SchneaggRodeoEngine : RodeoWorld {
      * and friends on their horses come along; everything else stays behind.
      */
     private fun switchMap(map: RodeoMap) {
+        // A vehicle that took the run here (or a gap the horse fell through) stays behind; the ground
+        // starts over flat
+        traffic.endRide()
+        lasso.end()
+        if (travelling) terrain.reset()
+        travelling = false
+        if (dropping || horse.height < 0f) effects.dust(HORSE_X + HOOVES_X)
+        dropping = false
+        horse.height = maxOf(0f, horse.height)
+        horse.jumpPeak = 0f
         course.clearForNewMap(horse.speed, elapsed)
         course.map = map
         stanislaus.reset()
@@ -820,6 +850,23 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         wildHorses.horses.removeAll { it.friend == null }
         horse.inMud = false
         tilt = 0f
+    }
+
+    /** Hooves on the ground over a gap in the rainbow: horse and rider drop through, down to the surface. */
+    private fun fallIntoGaps() {
+        if (mapSwitch.map != RodeoMap.RAINBOW || ride != null || superJump.isActive || !horse.isOnGround) return
+        val hooves = HORSE_X + HOOVES_X
+        if (course.gaps.none { hooves > it.x + GAP_EDGE && hooves < it.x + it.width - GAP_EDGE }) return
+        dropping = true
+        dropVelocity = 0f
+        horse.stopJumping()
+        travelTo(RodeoMap.SURFACE)
+    }
+
+    /** Falling through the rainbow until the fade to the surface is at its darkest. */
+    private fun dropThroughGap(dt: Float) {
+        dropVelocity -= GAP_DROP_GRAVITY * dt
+        horse.height += dropVelocity * dt
     }
 
     /** Hooves on the ground in a puddle: the horse slows down and the pack gains on it. */
@@ -905,7 +952,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         effects.splash()
     }
 
-    /** Galloping through a dirt mound in the mine digs it up: gold, a carrot, a horseshoe or a snail. */
+    /** Galloping through a dirt mound in the cave digs it up: gold, a carrot, a horseshoe or a snail. */
     private fun digMounds() {
         if (ride != null || !horse.isOnGround) return
         course.mounds.removeAll { mound ->
@@ -939,6 +986,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     override val speed: Float get() = horse.speed
     override val horseHeight: Float get() = horse.height
     override val mountainX: Float? get() = landscape.mountain?.x
+    override val map: RodeoMap get() = mapSwitch.map
 
     override fun addFence(x: Float, gapAfter: Float): Fence = course.addFence(x, gapAfter, horse.speed, elapsed)
 
@@ -992,6 +1040,11 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     override fun scarePack(gap: Float) = pack.fallBack(gap)
 
+    override fun travelTo(map: RodeoMap) {
+        travelling = true
+        mapSwitch.travelTo(map)
+    }
+
     // --- Render model
 
     /** Immutable render model of the current world. */
@@ -1029,6 +1082,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             tiltDegrees = tilt,
             enclosed = mapSwitch.map.isEnclosed,
             map = mapSwitch.map,
+            gaps = course.gapUis(),
             mounds = course.moundUis(),
             runnerMan = stanislaus.ui(),
             weather = flavor.weather,

@@ -7,6 +7,9 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_ballo
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_balloon_controls_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_cow
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_cow_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_helicopter
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_helicopter_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_helicopter_controls_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_rowboat
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_rowboat_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_uboat
@@ -148,7 +151,7 @@ enum class RodeoVehicleKind(
         rideHint = Res.string.games_schneaggrodeo_flamingo_controls,
         rideHintKeys = Res.string.games_schneaggrodeo_flamingo_controls_keys,
     ),
-    /** The mine's vehicle. */
+    /** The cave's mine cart. */
     MINE_CART(
         title = Res.string.games_schneaggrodeo_mine_cart,
         rideHint = Res.string.games_schneaggrodeo_mine_cart_controls,
@@ -157,12 +160,18 @@ enum class RodeoVehicleKind(
         title = Res.string.games_schneaggrodeo_traffic_jam,
         rideHint = Res.string.games_schneaggrodeo_traffic_jam_controls,
     ),
+    /** Flies up to the rainbow (see RodeoMapSwitch). */
+    HELICOPTER(
+        title = Res.string.games_schneaggrodeo_helicopter,
+        rideHint = Res.string.games_schneaggrodeo_helicopter_controls,
+        rideHintKeys = Res.string.games_schneaggrodeo_helicopter_controls_keys,
+    ),
     /** The sea's pirate ship. */
     PIRATE_SHIP(
         title = Res.string.games_schneaggrodeo_pirate_ship,
         rideHint = Res.string.games_schneaggrodeo_pirate_ship_controls,
     ),
-    /** The mine's drill machine. */
+    /** The cave's drill machine; drills down to the fossil layer (see RodeoMapSwitch). */
     DRILL(
         title = Res.string.games_schneaggrodeo_drill,
         rideHint = Res.string.games_schneaggrodeo_drill_controls,

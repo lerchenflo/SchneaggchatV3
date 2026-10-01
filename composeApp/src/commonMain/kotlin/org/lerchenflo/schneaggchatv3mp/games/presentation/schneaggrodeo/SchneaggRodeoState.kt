@@ -91,6 +91,8 @@ data class SchneaggRodeoState(
     val speedKmh: Int = 0,
     /** Banner shown briefly over the track when the rider boards a vehicle. */
     val announcement: RodeoVehicleKind? = null,
+    /** Shown big over the track right after arriving on another map. */
+    val mapTitle: RodeoMap? = null,
     /** The lowest all-time highscore above the current score; null offline or once everything is beaten. */
     val nextToBeat: RodeoGhostUi? = null,
     /** A lassoed friend just joined the ride: the run is paused to tell the player whose highscore it raises now. */
@@ -121,7 +123,7 @@ data class RodeoSnailUi(
     val height: Float,
     val facingLeft: Boolean,
     val tiltDeg: Float,
-    /** A runner: drawn as a shark in the sea and with a helmet lamp in the mine. */
+    /** A runner: drawn as a shark in the sea. */
     val runner: Boolean = false,
 )
 
@@ -246,7 +248,7 @@ data class RodeoGemUi(
 )
 
 /**
- * A way to another map from [x] over [width]: a shaft into the mine or the cave, the beach into the
+ * A way to another map from [x] over [width]: a shaft into the cave, the beach into the
  * sea, or ([exit]) the ramp back up out of [origin].
  */
 @Immutable
@@ -260,9 +262,13 @@ data class RodeoMapWayUi(
     val origin: RodeoMap = RodeoMap.SURFACE,
 )
 
-/** A dirt mound in the mine the horse digs through at a gallop; [x] its center. */
+/** A dirt mound in the cave the horse digs through at a gallop; [x] its center. */
 @Immutable
 data class RodeoMoundUi(val x: Float, val seed: Int)
+
+/** A gap in the rainbow track from [x] over [width]. */
+@Immutable
+data class RodeoGapUi(val x: Float, val width: Float)
 
 /** Stanislaus running alongside (rare); [x] his center, [hop] his stride, [caught] dangling in the lasso. */
 @Immutable
@@ -441,10 +447,12 @@ data class SchneaggRodeoFrame(
     val tripStrength: Float = 0f,
     /** Seconds into the mushroom's effect, for the wobble. */
     val tripClock: Float = 0f,
-    /** In the cave or the mine (rock all around): the theme turned inside out. */
+    /** In the cave or the fossil layer (rock all around): the theme turned inside out. */
     val enclosed: Boolean = false,
-    /** Which map the track runs through: surface, cave, sea or mine. */
+    /** Which map the track runs through: surface, cave, sea, rainbow or fossil layer. */
     val map: RodeoMap = RodeoMap.SURFACE,
+    /** Gaps in the rainbow track. */
+    val gaps: List<RodeoGapUi> = emptyList(),
     val mounds: List<RodeoMoundUi> = emptyList(),
     val runnerMan: RodeoRunnerManUi? = null,
     /** The run's weather and time of day, drawn over the surface. */

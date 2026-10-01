@@ -10,13 +10,14 @@ import androidx.compose.ui.text.TextLayoutResult
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoFenceUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGemUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMapWayUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMoundUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.TERRAIN_STEP
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import kotlin.math.floor
 import kotlin.math.sin
 
 // The cave (see engine/RodeoMapSwitch): its backdrop, stalagmites standing in for the
-// fences, crystals, and the ways between the maps - the shafts in the track and the ramps back up.
+// fences, crystals, dirt mounds to dig through, and the ways between the maps - the shafts in the track and the ramps back up.
 // Colors come from the cave paint (RodeoPaint) plus a few fixed ones.
 
 private const val STALACTITE_SPACING = 7f
@@ -109,22 +110,39 @@ internal fun DrawScope.drawGem(gem: RodeoGemUi, context: RodeoDrawContext) {
     }
 }
 
+/** A dirt mound to dig through, with a shovel stuck in it. */
+internal fun DrawScope.drawMound(mound: RodeoMoundUi, context: RodeoDrawContext) {
+    val unit = context.unit
+    fun p(dx: Float, y: Float) = context.p(mound.x + dx, y)
+    // The shovel stuck in the top
+    val tilt = -15f + 30f * cloudNoise(mound.seed, 1)
+    rotate(tilt, pivot = p(0.5f, 3f)) {
+        drawLine(MINE_TIMBER, p(0.5f, 3f), p(0.5f, 9f), 0.4f * unit, StrokeCap.Round)
+        drawLine(MINE_TIMBER, p(-0.4f, 9f), p(1.4f, 9f), 0.4f * unit, StrokeCap.Round)
+        drawPath(polygonPath(::p, -0.4f to 3.4f, 1.4f to 3.4f, 1.2f to 1.6f, 0.5f to 1f, -0.2f to 1.6f), SHOVEL_STEEL)
+    }
+    drawArc(EARTH_LIGHT, 180f, 180f, useCenter = true, topLeft = p(-4f, 3.4f), size = Size(8f * unit, 6.8f * unit))
+    repeat(4) { index ->
+        drawCircle(EARTH_DARK, radius = (0.3f + 0.2f * cloudNoise(mound.seed, index)) * unit, center = p(-2.5f + index * 1.6f, 0.6f + 1.8f * cloudNoise(mound.seed, index + 5)))
+    }
+}
+
 /**
  * A way to another map: the shaft into the cave (a dark hole with glowing crystals round its rim),
- * the timber-framed mine shaft, the beach into the sea - or the way back: a ramp up to daylight out
- * of the cave and the mine, the harbour pier out of the sea.
+ * the beach into the sea - or the way back: a ramp up to daylight out
+ * of the cave, the harbour pier out of the sea.
  */
 internal fun DrawScope.drawMapWay(way: RodeoMapWayUi, context: RodeoDrawContext, distance: Float) {
     if (way.exit) {
         when (way.origin) {
             RodeoMap.SEA -> drawHarbourPier(way.x + way.width, context)
+            RodeoMap.RAINBOW -> drawRainbowLanding(way.x, way.width, context)
             else -> drawRampOut(way.x + way.width, context)
         }
         return
     }
     when (way.destination) {
         RodeoMap.SEA -> drawBeach(way.x, context, distance)
-        RodeoMap.MINE -> drawMineEntrance(way.x, way.width, context)
         else -> drawCaveShaft(way, context, distance)
     }
 }

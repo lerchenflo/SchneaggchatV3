@@ -16,7 +16,7 @@ import kotlin.random.Random
 // only the drawing lifts it onto the hills (see RodeoDrawContext.p). The camera follows the ground
 // under the horse, so the horse stays at the same height on screen.
 //
-// The ways to the other maps shape the ground too (see [TerrainFeature]): the mine or cave shaft
+// The ways to the other maps shape the ground too (see [TerrainFeature]): the cave shaft
 // lies flat at the foot of a hill, the beach runs down into the sea, and ramps lead back up.
 //
 // Now and then a hilly stretch starts with a gorge instead, a river at its bottom and a plank
@@ -103,8 +103,10 @@ internal enum class TerrainFeature(val shape: List<Float>) {
     SHAFT(listOf(0f, 0f, 0f, 0f, 9f, 18f, 24f)),
     /** Down a beach into the sea, which begins at x. */
     BEACH(listOf(0f, -6f, -12f, -14f, -14f, -14f)),
-    /** A ramp up that ends at x: out of the mine, the cave or the sea. */
+    /** A ramp up that ends at x: out of the cave, the fossil layer or the sea. */
     RAMP_UP(listOf(0f, 9f, 18f, 18f, 18f)),
+    /** The rainbow sliding down to its end at x. */
+    SLIDE_DOWN(listOf(0f, -9f, -18f, -18f, -18f)),
 }
 
 /** Height of the ground at [x] on a profile of control points ([xs] ascending) eased with a cosine. */

@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.trafficjam.RodeoTrafficJam
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.flamingo.RodeoFlamingo
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.fordescort.RodeoFordEscort
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.helicopter.RodeoHelicopter
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.milktruck.RodeoMilkTruck
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.minecart.RodeoMineCart
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.oiltanker.RodeoOilTanker
@@ -40,12 +41,13 @@ internal class RodeoTraffic {
     private val surfaceVehicles: List<RodeoVehicle> = listOf(
         RodeoPlane(), RodeoTrain(), RodeoMilkTruck(), RodeoFordEscort(), RodeoBull(), RodeoLawnTractor(),
         RodeoCandyBus(), RodeoPocketBike(), RodeoShoppingCart(), RodeoBalloon(), RodeoCow(), RodeoTrafficJam(),
+        RodeoHelicopter(),
     )
     private val seaVehicles: List<RodeoVehicle> = listOf(RodeoRowboat(), RodeoUBoat(), RodeoOilTanker(), RodeoFlamingo(), RodeoPirateShip())
-    private val mineVehicles: List<RodeoVehicle> = listOf(RodeoMineCart(), RodeoDrill())
+    private val caveVehicles: List<RodeoVehicle> = listOf(RodeoMineCart(), RodeoDrill())
 
     /** Every vehicle of the game. */
-    private val all: List<RodeoVehicle> = surfaceVehicles + seaVehicles + mineVehicles + rocket + carriage + cableCar
+    private val all: List<RodeoVehicle> = surfaceVehicles + seaVehicles + caveVehicles + rocket + carriage + cableCar
 
     /**
      * Which vehicles come along on which map; the rocket is bought with snails and the cable car
@@ -55,7 +57,7 @@ internal class RodeoTraffic {
     private val rotations: Map<RodeoMap, RodeoVehicleRotation> = mapOf(
         RodeoMap.SURFACE to RodeoVehicleRotation(surfaceVehicles),
         RodeoMap.SEA to RodeoVehicleRotation(seaVehicles, firstSeconds = 4f, intervalMin = 9f, intervalRandom = 6f),
-        RodeoMap.MINE to RodeoVehicleRotation(mineVehicles, firstSeconds = 6f, intervalMin = 12f, intervalRandom = 6f),
+        RodeoMap.CAVE to RodeoVehicleRotation(caveVehicles, firstSeconds = 6f, intervalMin = 12f, intervalRandom = 6f),
     )
     /** The map of the last frame; a new map restarts its rotation's timer. */
     private var lastMap = RodeoMap.SURFACE
@@ -152,6 +154,16 @@ internal class RodeoTraffic {
         if (!carrying && wasCarrying) onLeft()
         wasCarrying = carrying
         if (vehicle?.isActive == false) current = null
+    }
+
+    /**
+     * The run switched maps: the vehicle in the picture (and with it the ride that took the run
+     * there) stays behind, horse and rider stand on the new map's track.
+     */
+    fun endRide() {
+        current?.reset()
+        current = null
+        wasCarrying = false
     }
 
     fun releaseJump() = all.forEach { it.onJump(false) }

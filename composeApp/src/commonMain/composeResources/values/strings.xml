@@ -1615,11 +1615,19 @@
     <string name="games_schneaggrodeo_golden_carriage_controls">No input needed: the golden horses smash through every fence – 20 points for each!</string>
     <string name="games_schneaggrodeo_traffic_jam">Traffic jam!</string>
     <string name="games_schneaggrodeo_traffic_jam_controls">No input needed: your horse hops from car roof to car roof by itself – 15 points for every car!</string>
+    <string name="games_schneaggrodeo_helicopter">Helicopter!</string>
+    <string name="games_schneaggrodeo_helicopter_controls">Hold anywhere to climb – reach the rainbow up high before the ride is over!</string>
+    <string name="games_schneaggrodeo_helicopter_controls_keys">Hold Space / W to climb – reach the rainbow up high before the ride is over!</string>
+    <string name="games_schneaggrodeo_map_welcome">Welcome to</string>
+    <string name="games_schneaggrodeo_map_cave">The Cave</string>
+    <string name="games_schneaggrodeo_map_sea">The Open Sea</string>
+    <string name="games_schneaggrodeo_map_rainbow">The Rainbow</string>
+    <string name="games_schneaggrodeo_map_fossil">The Fossil Layer</string>
     <string name="games_schneaggrodeo_pirate_ship">Pirate ship!</string>
     <string name="games_schneaggrodeo_pirate_ship_controls">No input needed: the cannon fires at every shark on its own and the horse grabs the treasure chests – points for each!</string>
     <string name="games_schneaggrodeo_drill">Drill machine!</string>
-    <string name="games_schneaggrodeo_drill_controls">Hold anywhere: drill down to the gold · Let go: come back up – avoid the gray rocks!</string>
-    <string name="games_schneaggrodeo_drill_controls_keys">Hold Space / W: drill down to the gold · Let go: come back up – avoid the gray rocks!</string>
+    <string name="games_schneaggrodeo_drill_controls">Hold anywhere: drill down to the gold · Let go: come back up – avoid the gray rocks! Keep drilling at the bottom to break into the fossil layer.</string>
+    <string name="games_schneaggrodeo_drill_controls_keys">Hold Space / W: drill down to the gold · Let go: come back up – avoid the gray rocks! Keep drilling at the bottom to break into the fossil layer.</string>
     <string name="games_schneaggrodeo_double_points">×2 points</string>
     <string name="games_schneaggrodeo_train">Wälderbähnle</string>
     <string name="games_schneaggrodeo_milk_truck">Milchlaster</string>
@@ -1662,7 +1670,7 @@
     <string name="games_schneaggrodeo_flamingo_controls">Tap to bounce high – grab the horseshoes!</string>
     <string name="games_schneaggrodeo_flamingo_controls_keys">Press space to bounce high – grab the horseshoes!</string>
     <string name="games_schneaggrodeo_mine_cart">Grubenhunt</string>
-    <string name="games_schneaggrodeo_mine_cart_controls">Hold on – the cart races down the rails and smashes the crates!</string>
+    <string name="games_schneaggrodeo_mine_cart_controls">Hold on – the cart races down the rails and smashes the stalagmites!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s rides with you!</string>
     <string name="games_schneaggrodeo_friend_joined">From now on you're riding for %1$s's highscore too: as soon as you leave the horse, your score so far counts for %1$s.</string>
 

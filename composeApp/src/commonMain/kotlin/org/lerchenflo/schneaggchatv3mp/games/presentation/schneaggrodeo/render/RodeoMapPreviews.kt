@@ -7,6 +7,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCarrotUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoDeepThingUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoFenceUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGapUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGemUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoHorsePose
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMoundUi
@@ -17,6 +18,10 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoSna
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.FOREST_WIDTH
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HOOVES_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MAP_WAY_WIDTH
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.TERRAIN_STEP
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.TerrainFeature
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainHeightAt
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoDeepKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoTimeOfDay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoWeather
@@ -25,7 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.S
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SNAIL_SIZE
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoPreviewTrack
 
-// IDE previews of each map (surface, cave, sea, mine) in a typical moment: the ridden horse with the
+// IDE previews of each map (surface, cave, sea, rainbow, fossil layer) in a typical moment: the ridden horse with the
 // map's fences, snails and pickups in front of it, drawn the way the track canvas dresses them per map.
 
 /** The ridden horse at its spot on the track, mid-gallop. */
@@ -101,7 +106,7 @@ private fun SurfaceMapPreview() = SurfaceScene(snowyNight = false)
 @Composable
 private fun SurfaceSnowyNightPreview() = SurfaceScene(snowyNight = true)
 
-/** The cave: stalactites above, stalagmites for fences, glowing crystals and snails. */
+/** The cave: stalactites above, stalagmites for fences, glowing crystals, a dirt mound and snails. */
 @Preview
 @Composable
 private fun CaveMapPreview() = RodeoPreviewTrack(
@@ -116,6 +121,7 @@ private fun CaveMapPreview() = RodeoPreviewTrack(
     drawPreviewSnail(RUNNER, context)
     drawGem(RodeoGemUi(x = 90f, height = 20f, tiltDeg = 0f, hue = 0), context)
     drawGem(RodeoGemUi(x = 137f, height = 24f, tiltDeg = -15f, hue = 2), context)
+    drawMound(RodeoMoundUi(x = 42f, seed = 7), context)
     drawPreviewHorse(context)
 }
 
@@ -144,22 +150,57 @@ private fun SeaMapPreview() = RodeoPreviewTrack(sea = true, cameraDown = SEA_CAM
     drawPreviewHorse(context)
 }
 
-/** The mine: crate stacks (one wide with rocks), a gold nugget, a dirt mound with a shovel, snails with helmets. */
+/** The rainbow: the sea of clouds below, the rainbow track with two gaps, a star over one and a carrot. */
 @Preview
 @Composable
-private fun MineMapPreview() = RodeoPreviewTrack(
+private fun RainbowMapPreview() = RodeoPreviewTrack(
+    groundLine = false,
+    backdrop = { drawRainbowBackdrop(distance = 40f, context = it) },
+) { context ->
+    drawRainbowTrack(context, listOf(RodeoGapUi(x = 58f, width = 16f), RodeoGapUi(x = 120f, width = 22f)))
+    drawStar(RodeoGemUi(x = 66f, height = 16f, tiltDeg = 10f, hue = 0), context)
+    drawCarrot(RodeoCarrotUi(x = 100f, height = 16f, tiltDeg = -10f), context)
+    drawPreviewHorse(context)
+}
+
+/** The rainbow's end: sliding down into the cloud that takes the run back to the surface. */
+@Preview
+@Composable
+private fun RainbowEndPreview() {
+    val ground = previewSlide(at = 130f)
+    RodeoPreviewTrack(
+        groundLine = false,
+        ground = ground,
+        cameraDown = -10f,
+        backdrop = { drawRainbowBackdrop(distance = 40f, context = it) },
+    ) { context ->
+        drawRainbowTrack(context, emptyList())
+        drawRainbowLanding(x = 130f, width = MAP_WAY_WIDTH, context = context)
+        drawPreviewHorse(context)
+    }
+}
+
+/** The fossil layer: rock in layers with fossils, bone fences, ammonites and snails. */
+@Preview
+@Composable
+private fun FossilMapPreview() = RodeoPreviewTrack(
     enclosed = true,
     ground = { 0f },
-    backdrop = { drawMineBackdrop(distance = 40f, context = it) },
+    backdrop = { drawFossilBackdrop(distance = 40f, context = it) },
 ) { context ->
-    val label = context.assets!!.textMeasurer.measure("100 cm")
-    drawCrateStack(previewFence(x = 62f, width = 10f, heightCm = 100), context, label)
-    drawCrateStack(previewFence(x = 128f, width = 18f, heightCm = 100), context, label)
-    drawNugget(RodeoGemUi(x = 90f, height = 18f, tiltDeg = 10f, hue = 0), context)
-    drawMound(RodeoMoundUi(x = 40f, seed = 7), context)
-    listOf(CRAWLER, RUNNER).forEach {
-        drawPreviewSnail(it, context)
-        drawMinerHelmet(it, context)
-    }
+    val label = context.assets!!.textMeasurer.measure("120 cm")
+    drawBoneFence(previewFence(x = 62f, width = 10f, heightCm = 120), context, label)
+    drawBoneFence(previewFence(x = 128f, width = 18f, heightCm = 120), context, label)
+    drawPreviewSnail(CRAWLER, context)
+    drawPreviewSnail(RUNNER, context)
+    drawAmmonite(RodeoGemUi(x = 90f, height = 20f, tiltDeg = 0f, hue = 0), context)
+    drawAmmonite(RodeoGemUi(x = 137f, height = 24f, tiltDeg = 90f, hue = 0), context)
     drawPreviewHorse(context)
+}
+
+/** The ground of the rainbow sliding down to its end at [at], eased like the game's (see TerrainFeature.SLIDE_DOWN). */
+private fun previewSlide(at: Float): (Float) -> Float {
+    val heights = TerrainFeature.SLIDE_DOWN.shape
+    val xs = heights.indices.map { at - 2f * TERRAIN_STEP + it * TERRAIN_STEP }
+    return { x -> terrainHeightAt(xs, heights, x) }
 }

@@ -202,6 +202,7 @@ class SchneaggRodeoViewModel(
                 carriageReady = engine.carriageReady,
                 speedKmh = engine.speedKmh,
                 announcement = engine.announcement,
+                mapTitle = engine.mapTitle,
                 nextToBeat = ghosts.firstOrNull { ghost -> ghost.score > score },
             )
         }

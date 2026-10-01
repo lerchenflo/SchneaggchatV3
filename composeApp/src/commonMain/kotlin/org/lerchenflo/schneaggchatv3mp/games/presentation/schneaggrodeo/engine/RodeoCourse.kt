@@ -5,6 +5,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoFen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGemUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoHorseshoeUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMoundUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGapUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMudUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMushroomUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoSnailUi
@@ -43,17 +44,25 @@ private const val GEM_MIN_HEIGHT = 12f
 private const val GEM_MAX_HEIGHT = 34f
 /** Mushrooms grow in the damp cave too. */
 private const val CAVE_MUSHROOM_CHANCE = 0.2f
+/** Dirt mounds to dig through, where no mushroom grows. */
+private const val MOUND_CHANCE = 0.5f
+/** Half the width of a dirt mound; the horse digs it when its hitbox overlaps. */
+internal const val MOUND_HALF_WIDTH = 4f
 
 // The sea: pearls float in the water, oil slicks slow the swimming horse
 private const val PEARL_CHANCE = 0.55f
 private const val OIL_CHANCE = 0.3f
-// The mine: gold nuggets in the rock, dirt mounds to dig through
-private const val NUGGET_CHANCE = 0.45f
-private const val NUGGET_MIN_HEIGHT = 12f
-private const val NUGGET_MAX_HEIGHT = 26f
-private const val MOUND_CHANCE = 0.5f
-/** Half the width of a dirt mound; the horse digs it when its hitbox overlaps. */
-internal const val MOUND_HALF_WIDTH = 4f
+
+// The rainbow: gaps in place of the fences, as wide as the horse covers in this many seconds (a jump
+// lasts about half a second), and stars floating over them, caught mid-jump
+private const val GAP_SECONDS = 0.22f
+private const val GAP_RANDOM_SECONDS = 0.06f
+private const val GAP_MIN_WIDTH = 10f
+private const val GAP_MAX_WIDTH = 30f
+private const val STAR_CHANCE = 0.6f
+private const val STAR_HEIGHT = 16f
+// The fossil layer: ammonites in the rock, like the crystals in the cave
+private const val AMMONITE_CHANCE = 0.55f
 
 private const val OXER_WIDTH = 18f
 private const val FENCE_WIDTH = 10f
@@ -73,6 +82,7 @@ internal class RodeoCourse {
     val mud = mutableListOf<MudPatch>()
     val mushrooms = mutableListOf<Mushroom>()
     val gems = mutableListOf<Gem>()
+    val gaps = mutableListOf<Gap>()
     val mounds = mutableListOf<DigMound>()
     /** Chance of a mushroom per fence placed; the engine raises it in the forest. */
     var mushroomChance = MUSHROOM_CHANCE
@@ -99,6 +109,7 @@ internal class RodeoCourse {
         mushrooms.clear()
         gems.clear()
         mounds.clear()
+        gaps.clear()
         mushroomChance = MUSHROOM_CHANCE
         mudFactor = 1f
         map = RodeoMap.SURFACE
@@ -151,7 +162,11 @@ internal class RodeoCourse {
                     val height = GEM_MIN_HEIGHT + Random.nextFloat() * (GEM_MAX_HEIGHT - GEM_MIN_HEIGHT)
                     gems.add(Gem(x = gapStart + gapAfter * 0.45f, height = height))
                 }
-                if (Random.nextFloat() < CAVE_MUSHROOM_CHANCE) mushrooms.add(Mushroom(x = gapStart + gapAfter * 0.75f))
+                if (Random.nextFloat() < CAVE_MUSHROOM_CHANCE) {
+                    mushrooms.add(Mushroom(x = gapStart + gapAfter * 0.75f))
+                } else if (Random.nextFloat() < MOUND_CHANCE) {
+                    mounds.add(DigMound(x = gapStart + gapAfter * 0.7f))
+                }
             }
             RodeoMap.SEA -> {
                 // Pearls count like crystals; oil slicks work like mud
@@ -161,13 +176,11 @@ internal class RodeoCourse {
                 }
                 if (Random.nextFloat() < OIL_CHANCE) addPuddle(gapStart, gapAfter)
             }
-            RodeoMap.MINE -> {
-                if (Random.nextFloat() < NUGGET_CHANCE) {
-                    val height = NUGGET_MIN_HEIGHT + Random.nextFloat() * (NUGGET_MAX_HEIGHT - NUGGET_MIN_HEIGHT)
-                    gems.add(Gem(x = gapStart + gapAfter * 0.3f, height = height))
-                }
-                if (Random.nextFloat() < MOUND_CHANCE) mounds.add(DigMound(x = gapStart + gapAfter * 0.65f))
+            RodeoMap.FOSSIL -> if (Random.nextFloat() < AMMONITE_CHANCE) {
+                val height = GEM_MIN_HEIGHT + Random.nextFloat() * (GEM_MAX_HEIGHT - GEM_MIN_HEIGHT)
+                gems.add(Gem(x = gapStart + gapAfter * 0.45f, height = height))
             }
+            RodeoMap.RAINBOW -> Unit
             RodeoMap.SURFACE -> if (elapsed >= MUD_START_SECONDS && Random.nextFloat() < MUD_CHANCE * mudFactor) {
                 addPuddle(gapStart, gapAfter)
             } else if (Random.nextFloat() < mushroomChance) {
@@ -195,6 +208,7 @@ internal class RodeoCourse {
         mushrooms.clear()
         gems.clear()
         mounds.clear()
+        gaps.clear()
         nextFenceIn = RodeoDifficulty.randomFenceGap(speed, elapsed)
     }
 
@@ -212,13 +226,26 @@ internal class RodeoCourse {
         // of the visible width
         if (nextFenceIn < 0f && fences.isEmpty()) nextFenceIn = worldWidth * 0.6f
         fences.scrollAlong(scroll) { it.x + it.width < 0f }
+        gaps.scrollAlong(scroll) { it.x + it.width < 0f }
         if (!spawnFences) return
         nextFenceIn -= ridden
         if (nextFenceIn <= 0f) {
             val gap = RodeoDifficulty.randomFenceGap(speed, elapsed)
-            val fence = addFence(x = worldWidth, gapAfter = gap, speed = speed, elapsed = elapsed)
-            nextFenceIn = fence.width + gap
+            // On the rainbow a gap to jump takes the fence's place
+            val width = if (map == RodeoMap.RAINBOW) addGap(worldWidth, gap, speed) else addFence(x = worldWidth, gapAfter = gap, speed = speed, elapsed = elapsed).width
+            nextFenceIn = width + gap
         }
+    }
+
+    /** Places a gap in the rainbow at [x], maybe with a star over it; returns its width. */
+    private fun addGap(x: Float, gapAfter: Float, speed: Float): Float {
+        val width = (speed * (GAP_SECONDS + Random.nextFloat() * GAP_RANDOM_SECONDS)).coerceIn(GAP_MIN_WIDTH, GAP_MAX_WIDTH)
+        gaps.add(Gap(x = x, width = width))
+        if (Random.nextFloat() < STAR_CHANCE) gems.add(Gem(x = x + width / 2f, height = STAR_HEIGHT))
+        if (Random.nextFloat() < CARROT_CHANCE) {
+            carrots.add(Carrot(x = x + width + gapAfter / 2f, height = CARROT_MIN_HEIGHT))
+        }
+        return width
     }
 
     /** Sends a runner in from the right edge every now and then, once the warm-up is over. */
@@ -362,6 +389,8 @@ internal class RodeoCourse {
             hue = gem.hue,
         )
     }
+
+    fun gapUis(): List<RodeoGapUi> = gaps.map { RodeoGapUi(x = it.x, width = it.width) }
 
     fun mushroomUis(): List<RodeoMushroomUi> = mushrooms.map { RodeoMushroomUi(x = it.x, seed = it.seed) }
 

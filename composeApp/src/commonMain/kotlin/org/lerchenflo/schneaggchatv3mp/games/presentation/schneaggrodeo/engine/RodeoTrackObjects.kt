@@ -138,7 +138,10 @@ internal fun hopOverFences(x: Float, fences: List<Fence>, reach: Float, clearanc
 }
 
 
-/** A dirt mound in the mine: galloping through it digs it up and turns up a find; [x] its center. */
+/** A dirt mound in the cave: galloping through it digs it up and turns up a find; [x] its center. */
+/** A gap in the rainbow track from [x] over [width]: hooves on the ground over it drop the horse through. */
+internal class Gap(override var x: Float, val width: Float) : OnTrack
+
 internal class DigMound(override var x: Float) : OnTrack {
     val seed = Random.nextInt(1000)
 }

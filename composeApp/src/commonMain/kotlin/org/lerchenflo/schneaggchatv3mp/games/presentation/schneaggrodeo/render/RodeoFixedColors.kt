@@ -93,15 +93,13 @@ internal val CLAM_SHELL = Color(0xFFBCAAA4)
 internal val TREASURE_WOOD = Color(0xFF8D6E63)
 internal val TREASURE_GOLD = Color(0xFFFFC107)
 
-// The mine: earth walls, timber, crates, gold, helmets and dirt mounds
-internal val MINE_EARTH = Color(0xFF4E342E)
-internal val MINE_EARTH_LIGHT = Color(0xFF6D4C41)
+// Earth, timber, rock and gold: the dirt mounds in the cave and the drill
+internal val EARTH_DARK = Color(0xFF4E342E)
+internal val EARTH_LIGHT = Color(0xFF6D4C41)
 internal val MINE_TIMBER = Color(0xFF8D6E63)
-internal val CRATE_WOOD_LIGHT = Color(0xFFBCAAA4)
 internal val MINE_ROCK = Color(0xFF757575)
 internal val GOLD_NUGGET = Color(0xFFFFC107)
 internal val GOLD_SHINE = Color(0xFFFFF59D)
-internal val HELMET_YELLOW = Color(0xFFFDD835)
 internal val SHOVEL_STEEL = Color(0xFF9E9E9E)
 
 // Weather and time of day

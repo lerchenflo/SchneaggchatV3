@@ -1609,11 +1609,19 @@
     <string name="games_schneaggrodeo_golden_carriage_controls">Non serve premere nulla: i cavalli d\'oro sfondano ogni recinto – 20 punti per ognuno!</string>
     <string name="games_schneaggrodeo_traffic_jam">Ingorgo!</string>
     <string name="games_schneaggrodeo_traffic_jam_controls">Non serve premere nulla: il tuo cavallo salta da solo da un tetto all\'altro – 15 punti per ogni auto!</string>
+    <string name="games_schneaggrodeo_helicopter">Elicottero!</string>
+    <string name="games_schneaggrodeo_helicopter_controls">Tieni premuto ovunque per salire – raggiungi l\'arcobaleno lassù prima che il volo finisca!</string>
+    <string name="games_schneaggrodeo_helicopter_controls_keys">Tieni premuto Spazio / W per salire – raggiungi l\'arcobaleno lassù prima che il volo finisca!</string>
+    <string name="games_schneaggrodeo_map_welcome">Benvenuto</string>
+    <string name="games_schneaggrodeo_map_cave">nella grotta</string>
+    <string name="games_schneaggrodeo_map_sea">in mare aperto</string>
+    <string name="games_schneaggrodeo_map_rainbow">sull\'arcobaleno</string>
+    <string name="games_schneaggrodeo_map_fossil">nello strato fossile</string>
     <string name="games_schneaggrodeo_pirate_ship">Nave pirata!</string>
     <string name="games_schneaggrodeo_pirate_ship_controls">Non serve premere nulla: il cannone spara da solo a ogni squalo e il cavallo afferra i forzieri – punti per ognuno!</string>
     <string name="games_schneaggrodeo_drill">Trivella!</string>
-    <string name="games_schneaggrodeo_drill_controls">Tieni premuto ovunque: trivella verso l\'oro · Rilascia: risali – evita le rocce grigie!</string>
-    <string name="games_schneaggrodeo_drill_controls_keys">Tieni premuto Spazio / W: trivella verso l\'oro · Rilascia: risali – evita le rocce grigie!</string>
+    <string name="games_schneaggrodeo_drill_controls">Tieni premuto ovunque: trivella verso l\'oro · Rilascia: risali – evita le rocce grigie! Continua a trivellare sul fondo per sfondare nello strato fossile.</string>
+    <string name="games_schneaggrodeo_drill_controls_keys">Tieni premuto Spazio / W: trivella verso l\'oro · Rilascia: risali – evita le rocce grigie! Continua a trivellare sul fondo per sfondare nello strato fossile.</string>
     <string name="games_schneaggrodeo_double_points">×2 punti</string>
     <string name="games_schneaggrodeo_train">Wälderbähnle</string>
     <string name="games_schneaggrodeo_milk_truck">Milchlaster</string>
@@ -1656,7 +1664,7 @@
     <string name="games_schneaggrodeo_flamingo_controls">Tocca per rimbalzare in alto – prendi i ferri di cavallo!</string>
     <string name="games_schneaggrodeo_flamingo_controls_keys">Premi spazio per rimbalzare in alto – prendi i ferri di cavallo!</string>
     <string name="games_schneaggrodeo_mine_cart">Grubenhunt</string>
-    <string name="games_schneaggrodeo_mine_cart_controls">Tieniti forte – il carrello corre sui binari e distrugge le casse!</string>
+    <string name="games_schneaggrodeo_mine_cart_controls">Tieniti forte – il carrello corre sui binari e distrugge le stalagmiti!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s cavalca con te!</string>
     <string name="games_schneaggrodeo_friend_joined">Da adesso cavalchi anche per il record di %1$s: appena scendi da cavallo, i tuoi punti finora valgono anche per %1$s.</string>
 

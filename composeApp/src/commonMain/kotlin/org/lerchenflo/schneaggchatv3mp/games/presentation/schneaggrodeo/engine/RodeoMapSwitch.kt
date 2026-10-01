@@ -2,19 +2,27 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine
 
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMapWayUi
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.random.Random
 
 // The other maps: once in a long while the track leads somewhere else, each map with its own look,
 // obstacles, pickups and vehicles:
-//  - the cave ("Stollen"): stalagmites instead of fences, crystals, more mushrooms
-//  - the mine: rock piles, gold nuggets, dirt mounds to dig through, a mine cart and a drill
+//  - the cave ("Stollen"): stalagmites instead of fences, crystals, more mushrooms, dirt mounds to
+//    dig through, a mine cart and a drill
 //  - the open sea: the horse swims; buoys instead of fences, sharks, oil slicks, pearls, and boats,
 //    a U-boat, an oil tanker, a pirate ship and a flamingo to ride
-// The cave and the mine are reached through a shaft at the foot of a hill: gallop into it (hooves
+//  - the rainbow, high above the surface: a rainbow track with gaps to jump and stars to grab;
+//    missing a gap drops horse and rider back down to the surface
+//  - the fossil layer, deep below the cave: dinosaur bones instead of fences, ammonites to grab
+// The cave is reached through a shaft at the foot of a hill: gallop into it (hooves
 // on the ground) to go down, jump over it to stay up on the main track. The sea begins at the end
-// of a beach. After a while a ramp leads back up (out of the shaft, or onto a harbour pier). The
+// of a beach. After a while a ramp leads back up (out of the cave, or onto a harbour pier). The
 // ground is shaped for each of them (see RodeoTerrain's TerrainFeature). Which map comes next is
 // shuffled per run, so every run goes somewhere else first.
+// The rainbow and the fossil layer are side trips only a vehicle gets to (see travelTo): fly the
+// helicopter up high enough, or drill all the way down from the cave. They are short; the rainbow
+// ends sliding back down to the surface, the fossil layer with a ramp up into the cave, whose own
+// way out then comes soon.
 //
 // Switching maps fades to black; at the darkest moment the track is cleared and the other map
 // begins (see SchneaggRodeoEngine.switchMap).
@@ -23,9 +31,17 @@ import kotlin.random.Random
 private const val ENTRANCE_FIRST_SECONDS = 90f
 private const val ENTRANCE_INTERVAL_MIN = 150f
 private const val ENTRANCE_INTERVAL_RANDOM = 90f
-/** Game seconds on another map until the way out shows up; the big sea lasts longer. */
-private const val VISIT_SECONDS = 30f
+/** Game seconds on another map until the way out shows up. */
 private const val SEA_SECONDS = 60f
+/** The cave lasts longer, so the drill comes along and there is time to drill down to the fossil layer. */
+private const val CAVE_SECONDS = 60f
+/** The fossil layer lasts a while too; the rainbow up high is short. */
+private const val FOSSIL_SECONDS = 45f
+private const val RAINBOW_SECONDS = 25f
+/** Back in the cave from the fossil layer: seconds until the cave's way out shows up. */
+private const val CAVE_EXIT_AFTER_FOSSIL_SECONDS = 6f
+/** Real seconds the map's name is shown big after arriving on another map. */
+private const val TITLE_SECONDS = 2.4f
 /** Width of a way to another map: the shaft in the track, the end of the beach or the ramp. */
 internal const val MAP_WAY_WIDTH = 24f
 /** Height of the water surface in the sea: the horse swims with its legs below it. */
@@ -36,13 +52,16 @@ internal const val SEABED_Y = -30f
 private const val FADE_SECONDS = 1f
 
 enum class RodeoMap {
-    SURFACE, CAVE, SEA, MINE;
+    SURFACE, CAVE, SEA, RAINBOW, FOSSIL;
 
     /** Away from the surface, on one of the other maps. */
     val isAway: Boolean get() = this != SURFACE
 
-    /** Dark with rock all around (the open sea has the sky above it). */
-    val isEnclosed: Boolean get() = this == CAVE || this == MINE
+    /** Dark with rock all around (the open sea and the rainbow have the sky above them). */
+    val isEnclosed: Boolean get() = this == CAVE || this == FOSSIL
+
+    /** Where its way out leads: the side trips go back to where they started. */
+    val wayBack: RodeoMap get() = if (this == FOSSIL) CAVE else SURFACE
 }
 
 /** A way to another map: a shaft or the beach on the surface, the ramp back up; [x] its left edge. */
@@ -64,6 +83,11 @@ internal class RodeoMapSwitch {
     private var fadeTime = -1f
     private var switched = false
     private var switchTo = RodeoMap.SURFACE
+    /** Real seconds the map's name is still shown. */
+    private var titleTime = 0f
+
+    /** The map whose name is shown big right after arriving there, or null. */
+    val title: RodeoMap? get() = map.takeIf { titleTime > 0f }
 
     /** 0..1 how dark the picture is. */
     val fade: Float
@@ -78,7 +102,15 @@ internal class RodeoMapSwitch {
     val isDue: Boolean
         get() = isClear && if (map == RodeoMap.SURFACE) nextEntranceIn <= 0f else awayTime >= visitSeconds
 
-    private val visitSeconds: Float get() = if (map == RodeoMap.SEA) SEA_SECONDS else VISIT_SECONDS
+    private val visitSeconds: Float
+        get() = when (map) {
+            RodeoMap.SEA -> SEA_SECONDS
+            RodeoMap.CAVE -> CAVE_SECONDS
+            RodeoMap.FOSSIL -> FOSSIL_SECONDS
+            RodeoMap.RAINBOW -> RAINBOW_SECONDS
+            // The surface has no way out, only ways down
+            RodeoMap.SURFACE -> 0f
+        }
 
     fun reset() {
         map = RodeoMap.SURFACE
@@ -88,6 +120,7 @@ internal class RodeoMapSwitch {
         upcoming.clear()
         lastVisited = null
         fadeTime = -1f
+        titleTime = 0f
     }
 
     /** Test mode: the run is on [map] right away, with no way in or out. */
@@ -117,8 +150,13 @@ internal class RodeoMapSwitch {
         } else {
             awayTime += dt
             if (awayTime >= visitSeconds && allowed) {
-                // The ramp ends at the way out
-                mapWays.add(MapWay(x = shapeGround(TerrainFeature.RAMP_UP) - MAP_WAY_WIDTH, destination = RodeoMap.SURFACE))
+                // The ramp ends at the way out; the rainbow slides down to its end
+                val way = if (map == RodeoMap.RAINBOW) {
+                    MapWay(x = shapeGround(TerrainFeature.SLIDE_DOWN), destination = map.wayBack)
+                } else {
+                    MapWay(x = shapeGround(TerrainFeature.RAMP_UP) - MAP_WAY_WIDTH, destination = map.wayBack)
+                }
+                mapWays.add(way)
             }
         }
     }
@@ -126,7 +164,7 @@ internal class RodeoMapSwitch {
     /** The next map to visit: every one comes once in random order, never the same twice in a row. */
     private fun nextDestination(): RodeoMap {
         if (upcoming.isEmpty()) {
-            upcoming += listOf(RodeoMap.CAVE, RodeoMap.SEA, RodeoMap.MINE).shuffled()
+            upcoming += listOf(RodeoMap.CAVE, RodeoMap.SEA).shuffled()
             if (upcoming.first() == lastVisited) upcoming.add(upcoming.removeAt(0))
         }
         return upcoming.removeAt(0).also { lastVisited = it }
@@ -149,15 +187,27 @@ internal class RodeoMapSwitch {
         }
     }
 
+    /** A vehicle takes the run to [destination] (a side trip, or back from one): fades over to it. */
+    fun travelTo(destination: RodeoMap) {
+        if (fadeTime >= 0f) return
+        fadeTime = 0f
+        switched = false
+        switchTo = destination
+    }
+
     /** Moves the fade on by [realDt]; [onSwitch] fires once at its darkest with the new map. */
     fun stepFade(realDt: Float, onSwitch: (RodeoMap) -> Unit) {
+        titleTime = max(0f, titleTime - realDt)
         if (fadeTime < 0f) return
         fadeTime += realDt
         if (!switched && fadeTime >= FADE_SECONDS / 2f) {
             switched = true
+            val from = map
             map = switchTo
             mapWays.clear()
-            awayTime = 0f
+            // Back from the fossil layer the cave's way out comes soon
+            awayTime = if (from == RodeoMap.FOSSIL && map == RodeoMap.CAVE) CAVE_SECONDS - CAVE_EXIT_AFTER_FOSSIL_SECONDS else 0f
+            if (map.isAway) titleTime = TITLE_SECONDS
             onSwitch(map)
         }
         if (fadeTime >= FADE_SECONDS) fadeTime = -1f
