@@ -333,9 +333,12 @@ internal fun DrawScope.drawCowboy(
         rotate(cowboy.rotation, pivot = middle)
         if (cowboy.facingLeft) scale(-1f, 1f, pivot = middle)
     }) {
-        // Legs, torso and the arm holding the rope (reaching forward)
-        drawLine(color, p(-0.7f, 6f), p(-1.2f, 0f), 1.3f * unit, StrokeCap.Round)
-        drawLine(color, p(0.7f, 6f), p(1.2f, 0f), 1.3f * unit, StrokeCap.Round)
+        // Legs (swinging while he runs, pulled in for a salto), torso and the arm holding the rope
+        val swing = cowboy.runPhase?.let { sin(it) * 2.2f } ?: 0f
+        val lift = cowboy.runPhase?.let { cos(it) * 1.2f } ?: 0f
+        val tuck = cowboy.tuck
+        drawLine(color, p(-0.7f, 6f), p(-1.2f - swing + 2.5f * tuck, max(0f, -lift) + 3.5f * tuck), 1.3f * unit, StrokeCap.Round)
+        drawLine(color, p(0.7f, 6f), p(1.2f + swing + 1.5f * tuck, max(0f, lift) + 3.5f * tuck), 1.3f * unit, StrokeCap.Round)
         drawRoundRect(
             color = shirtColor,
             topLeft = p(-1.5f, 12f),

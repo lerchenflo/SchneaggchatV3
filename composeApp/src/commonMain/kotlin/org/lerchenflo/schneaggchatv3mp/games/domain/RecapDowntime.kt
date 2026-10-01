@@ -27,5 +27,5 @@ enum class DowntimeReason(
     LIGHTNING(Res.string.recap_downtime_lightning, Res.string.recap_downtime_lightning_detail, 1),
     ISP_SWITCH(Res.string.recap_downtime_isp_switch, Res.string.recap_downtime_isp_switch_detail, 1),
     BAD_INTERNET(Res.string.recap_downtime_bad_internet, Res.string.recap_downtime_bad_internet_detail, null),
-    PROXY_CONFIG(Res.string.recap_downtime_proxy, Res.string.recap_downtime_proxy_detail, 1),
+    PROXY_CONFIG(Res.string.recap_downtime_proxy, Res.string.recap_downtime_proxy_detail, 3),
 }

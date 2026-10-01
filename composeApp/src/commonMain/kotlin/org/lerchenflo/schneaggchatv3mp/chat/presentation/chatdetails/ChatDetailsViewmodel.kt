@@ -360,10 +360,8 @@ class ChatDetailsViewmodel(
             initialValue = 0
         )
 
-    val sharedPollCount: StateFlow<Int> = messageRepository
-        .getPollMessagesForChatFlow(chatId, isGroup)
-        .map { messages -> messages.count { it.poll != null } }
-        .flowOn(Dispatchers.Default)
+    val messageCount: StateFlow<Int> = messageRepository
+        .getMessageCountForChatFlow(chatId, isGroup)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),

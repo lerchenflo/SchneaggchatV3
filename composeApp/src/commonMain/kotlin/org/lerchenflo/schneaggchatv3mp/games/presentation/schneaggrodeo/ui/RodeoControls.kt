@@ -54,6 +54,8 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.rocket.SNAILS_PER_ROCKET
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_catch_horse
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_on_foot_hint
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_on_foot_hint_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_golden_carriage_button
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_rocket
@@ -79,6 +81,7 @@ private val COST_SNAIL_SIZE = 12.dp
 internal fun RodeoControls(
     superJumpCharges: Int,
     isOnFoot: Boolean,
+    canCatchHorse: Boolean,
     ride: RodeoVehicleKind?,
     rocketReady: Boolean,
     carriageReady: Boolean,
@@ -89,12 +92,24 @@ internal fun RodeoControls(
 ) {
     Box(modifier = modifier) {
         when {
-            isOnFoot -> CatchHorseButton(
-                showKeyHints = showKeyHints,
-                enabled = enabled,
-                onClick = { onAction(SchneaggRodeoAction.OnLassoClick) },
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
+            isOnFoot -> Column(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                RodeoHint(
+                    text = stringResource(
+                        if (showKeyHints) Res.string.games_schneaggrodeo_on_foot_hint_keys else Res.string.games_schneaggrodeo_on_foot_hint
+                    )
+                )
+                // Throwable any time; it pulses once the horse is in reach of the lasso
+                CatchHorseButton(
+                    showKeyHints = showKeyHints,
+                    enabled = enabled,
+                    inReach = canCatchHorse,
+                    onClick = { onAction(SchneaggRodeoAction.OnLassoClick) },
+                )
+            }
             ride != null -> {
                 // Buttons would swallow the taps; the whole play area is the control now
                 RodeoRideHint(
@@ -196,11 +211,12 @@ private fun LassoButton(
     }
 }
 
-/** Thrown off: the lasso is the way back into the saddle, so it pulses in the middle. */
+/** Thrown off: the lasso is the way back into the saddle, so it pulses in the middle once the horse is [inReach]. */
 @Composable
 private fun CatchHorseButton(
     showKeyHints: Boolean,
     enabled: Boolean,
+    inReach: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -217,8 +233,9 @@ private fun CatchHorseButton(
         modifier = modifier
             .heightIn(min = BUTTON_MIN_HEIGHT)
             .graphicsLayer {
-                scaleX = pulse
-                scaleY = pulse
+                val scale = if (inReach) pulse else 1f
+                scaleX = scale
+                scaleY = scale
             }
             .focusProperties { canFocus = false }
     ) {
@@ -294,8 +311,14 @@ private fun RodeoPowerButton(
 /** Tells how to ride the current vehicle, in place of (or next to) the buttons. */
 @Composable
 private fun RodeoRideHint(ride: RodeoVehicleKind, showKeyHints: Boolean, modifier: Modifier = Modifier) {
+    RodeoHint(text = stringResource(if (showKeyHints) ride.rideHintKeys else ride.rideHint), modifier = modifier)
+}
+
+/** A short hint on how to play, in a small box over the track. */
+@Composable
+private fun RodeoHint(text: String, modifier: Modifier = Modifier) {
     Text(
-        text = stringResource(if (showKeyHints) ride.rideHintKeys else ride.rideHint),
+        text = text,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier

@@ -31,10 +31,10 @@ import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_clean_re
 import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_exception_count
 import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_title
 import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_your_rank
-import schneaggchatv3mp.composeapp.generated.resources.recap_games_rank
-import schneaggchatv3mp.composeapp.generated.resources.recap_games_score
-import schneaggchatv3mp.composeapp.generated.resources.recap_games_wins
+import schneaggchatv3mp.composeapp.generated.resources.recap_games_not_ranked
+import schneaggchatv3mp.composeapp.generated.resources.recap_games_points
 import schneaggchatv3mp.composeapp.generated.resources.recap_games_title
+import schneaggchatv3mp.composeapp.generated.resources.recap_games_your_rank
 import schneaggchatv3mp.composeapp.generated.resources.recap_leaderboard_messages
 import schneaggchatv3mp.composeapp.generated.resources.recap_leaderboard_not_ranked
 import schneaggchatv3mp.composeapp.generated.resources.recap_leaderboard_title
@@ -211,6 +211,7 @@ fun RecapMapLeaderboardPage(recap: RecapUi, visible: Boolean) {
     }
 }
 
+/** The public global games ranking: every game together, percentile points per leaderboard. */
 @Composable
 fun RecapGamesPage(recap: RecapUi, visible: Boolean) {
     val theme = RecapPageThemes.Games
@@ -218,47 +219,48 @@ fun RecapGamesPage(recap: RecapUi, visible: Boolean) {
         RevealItem(visible, 0) {
             RecapHeadline(text = stringResource(Res.string.recap_games_title), color = theme.accent)
         }
-        Spacer(Modifier.height(24.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            recap.games.forEachIndexed { index, game ->
-                RevealItem(visible, index + 1) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(theme.onBackground.copy(alpha = 0.10f))
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "${game.gameName} · ${game.difficulty}",
-                                color = theme.onBackground,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Black,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Text(
-                                text = stringResource(
-                                    if (game.countsWins) Res.string.recap_games_wins else Res.string.recap_games_score,
-                                    game.bestScoreText ?: formatCount(game.bestScore)
-                                ),
-                                color = theme.onBackground.copy(alpha = 0.7f),
-                                fontSize = 14.sp
-                            )
-                        }
-                        Spacer(Modifier.width(12.dp))
-                        Text(
-                            text = stringResource(Res.string.recap_games_rank, game.rank),
-                            color = if (game.rank <= 3) theme.secondary else theme.accent,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Black,
-                            maxLines = 1
-                        )
-                    }
-                }
+        Spacer(Modifier.height(20.dp))
+        val rank = recap.myGamesRank
+        if (rank != null) {
+            RevealItem(visible, 1) {
+                RecapBody(
+                    text = stringResource(Res.string.recap_games_your_rank),
+                    color = theme.onBackground,
+                    fontSize = 19.sp
+                )
             }
+            RevealItem(visible, 2) {
+                RecapBigText(text = stringResource(Res.string.recap_rank_number, rank), color = theme.accent)
+            }
+            RevealItem(visible, 3) {
+                RecapBody(
+                    text = stringResource(
+                        Res.string.recap_games_points,
+                        formatCount(recap.myGamesPoints),
+                        recap.myGamesPlayed
+                    ),
+                    color = theme.onBackground.copy(alpha = 0.75f),
+                    fontSize = 17.sp
+                )
+            }
+        } else {
+            RevealItem(visible, 1) {
+                RecapBody(
+                    text = stringResource(Res.string.recap_games_not_ranked),
+                    color = theme.onBackground.copy(alpha = 0.85f),
+                    fontSize = 20.sp
+                )
+            }
+        }
+        if (recap.gamesLeaderboardTop.isNotEmpty()) {
+            Spacer(Modifier.height(28.dp))
+            RankList(
+                rows = recap.gamesLeaderboardTop,
+                visible = visible,
+                firstRevealIndex = 4,
+                theme = theme,
+                valueText = { formatCount(it.count) }
+            )
         }
     }
 }

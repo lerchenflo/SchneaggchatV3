@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
-import schneaggchatv3mp.composeapp.generated.resources.shared_polls
+import schneaggchatv3mp.composeapp.generated.resources.shared_messages
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
-import androidx.compose.material.icons.filled.Poll
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -159,7 +159,7 @@ fun ChatDetails(
     val connectedEvent by chatdetailsViewmodel.connectedEvent.collectAsStateWithLifecycle()
     val sharedImageCount by chatdetailsViewmodel.sharedImageCount.collectAsStateWithLifecycle()
     val sharedLinkCount by chatdetailsViewmodel.sharedLinkCount.collectAsStateWithLifecycle()
-    val sharedPollCount by chatdetailsViewmodel.sharedPollCount.collectAsStateWithLifecycle()
+    val messageCount by chatdetailsViewmodel.messageCount.collectAsStateWithLifecycle()
 
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
@@ -681,17 +681,17 @@ fun ChatDetails(
             )
 
             ListItem(
-                headlineContent = { Text(text = stringResource(Res.string.shared_polls)) },
-                trailingContent = { Text(text = sharedPollCount.toString()) },
+                headlineContent = { Text(text = stringResource(Res.string.shared_messages)) },
+                trailingContent = { Text(text = messageCount.toString()) },
                 leadingContent = {
                     Icon(
-                        imageVector = Icons.Default.Poll,
+                        imageVector = Icons.AutoMirrored.Filled.Chat,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
                 modifier = Modifier.clickable {
-                    chatdetailsViewmodel.navigateToSharedContent(SharedContentTab.POLLS)
+                    chatdetailsViewmodel.navigateToSharedContent(SharedContentTab.MESSAGES)
                 }
             )
 

@@ -2,7 +2,9 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,7 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -37,6 +41,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GamePauseOverlay
@@ -56,6 +61,8 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_horse
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_instructions
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_next_to_beat
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_snails
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_start_easier
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_start_harder
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_title
 
 /**
@@ -232,6 +239,7 @@ fun SchneaggRodeoScreen(
                     RodeoControls(
                         superJumpCharges = state.superJumpCharges,
                         isOnFoot = state.isOnFoot,
+                        canCatchHorse = state.canCatchHorse,
                         ride = state.ride,
                         rocketReady = state.rocketReady,
                         carriageReady = state.carriageReady,
@@ -280,7 +288,24 @@ fun SchneaggRodeoScreen(
                     GameStartOverlay(
                         title = stringResource(Res.string.games_schneaggrodeo_title),
                         explanation = stringResource(Res.string.games_schneaggrodeo_instructions),
-                        onStart = { onAction(SchneaggRodeoAction.StartGame) }
+                        onStart = { onAction(SchneaggRodeoAction.StartGame) },
+                        // One start button per level; all levels share one leaderboard
+                        options = {
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                OutlinedButton(onClick = {
+                                    onAction(SchneaggRodeoAction.OnLevelSelected(GameDifficulty.MEDIUM))
+                                    onAction(SchneaggRodeoAction.StartGame)
+                                }) {
+                                    Text(stringResource(Res.string.games_schneaggrodeo_start_easier))
+                                }
+                                Button(onClick = {
+                                    onAction(SchneaggRodeoAction.OnLevelSelected(GameDifficulty.HIGH))
+                                    onAction(SchneaggRodeoAction.StartGame)
+                                }) {
+                                    Text(stringResource(Res.string.games_schneaggrodeo_start_harder))
+                                }
+                            }
+                        },
                     )
                 }
 

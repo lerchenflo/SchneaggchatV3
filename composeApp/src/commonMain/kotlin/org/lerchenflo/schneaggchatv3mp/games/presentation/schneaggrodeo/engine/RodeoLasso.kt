@@ -12,7 +12,7 @@ import kotlin.math.sin
 private const val LASSO_RANGE = 37f
 private const val LASSO_DURATION = 0.45f   // out and back
 /** Counted from the throw, so the next throw is ready LASSO_COOLDOWN - LASSO_DURATION after the loop is back. */
-private const val LASSO_COOLDOWN = 0.6f
+private const val LASSO_COOLDOWN = 0.52f
 /** Extra reach at catch time, absorbs stumbles and speed changes. */
 private const val LASSO_CATCH_TOLERANCE = 6f
 
@@ -77,7 +77,7 @@ internal class RodeoLasso(private val snails: MutableList<Snail>) {
             ?.first
     }
 
-    /** Thrown on foot, back at the horse (see [stepToSaddle]). */
+    /** Thrown on foot, ahead at the horse (see [stepToSaddle]). */
     fun throwOnFoot() {
         startThrow()
     }
@@ -146,20 +146,27 @@ internal class RodeoLasso(private val snails: MutableList<Snail>) {
 
     /**
      * Moves a throw on foot on, from the cowboy's hand at [handX] / [handY] towards the saddle at
-     * [seatX] / [seatY]. Never misses: returns true once it caught the saddle (halfway through the
-     * throw); the throw is over then.
+     * [seatX] / [seatY] while it is [inReach], otherwise straight ahead as far as [reach]. Returns
+     * true once it caught the saddle (halfway through the throw, if it is in reach by then); the
+     * throw is over then. Out of reach the loop comes back empty.
      */
-    fun stepToSaddle(dt: Float, handX: Float, handY: Float, seatX: Float, seatY: Float): Boolean {
+    fun stepToSaddle(dt: Float, handX: Float, handY: Float, seatX: Float, seatY: Float, reach: Float, inReach: Boolean): Boolean {
         if (time < 0f) return false
         time += dt
         val progress = progressOf(time, LASSO_DURATION)
-        aimX = seatX
-        aimY = seatY
-        if (progress >= 0.5f) {
-            time = -1f
-            return true
+        if (!resolved) {
+            aimX = if (inReach) seatX else handX + reach
+            aimY = if (inReach) seatY else handY
+            if (progress >= 0.5f) {
+                resolved = true
+                if (inReach) {
+                    time = -1f
+                    return true
+                }
+            }
         }
         moveTip(handX, handY, progress)
+        if (progress >= 1f) time = -1f
         return false
     }
 

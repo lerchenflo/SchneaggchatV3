@@ -7,6 +7,9 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +25,11 @@ import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,6 +37,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
@@ -50,7 +60,9 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.image.FullscreenImageDialog
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.systemEventText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
@@ -63,13 +75,20 @@ import schneaggchatv3mp.composeapp.generated.resources.download
 import schneaggchatv3mp.composeapp.generated.resources.go_to_message
 import schneaggchatv3mp.composeapp.generated.resources.no_shared_images
 import schneaggchatv3mp.composeapp.generated.resources.no_shared_links
-import schneaggchatv3mp.composeapp.generated.resources.no_shared_polls
+import schneaggchatv3mp.composeapp.generated.resources.no_shared_messages
+import schneaggchatv3mp.composeapp.generated.resources.audio
+import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.poll_closed
 import schneaggchatv3mp.composeapp.generated.resources.poll_user_count
 import schneaggchatv3mp.composeapp.generated.resources.shared_content_title
 import schneaggchatv3mp.composeapp.generated.resources.shared_images
 import schneaggchatv3mp.composeapp.generated.resources.shared_links
-import schneaggchatv3mp.composeapp.generated.resources.shared_polls
+import schneaggchatv3mp.composeapp.generated.resources.shared_messages
+import schneaggchatv3mp.composeapp.generated.resources.shared_messages_type_audio
+import schneaggchatv3mp.composeapp.generated.resources.shared_messages_type_image
+import schneaggchatv3mp.composeapp.generated.resources.shared_messages_type_poll
+import schneaggchatv3mp.composeapp.generated.resources.shared_messages_type_system
+import schneaggchatv3mp.composeapp.generated.resources.shared_messages_type_text
 import schneaggchatv3mp.composeapp.generated.resources.shared_polls_subpoll_count
 
 @Composable
@@ -110,7 +129,7 @@ fun SharedContentScreen(
                 when (tab) {
                     SharedContentTab.IMAGES -> state.images.size
                     SharedContentTab.LINKS -> state.links.size
-                    SharedContentTab.POLLS -> state.polls.size
+                    SharedContentTab.MESSAGES -> state.messages.size
                 }
             },
             onSelect = { onAction(SharedContentAction.OnTabSelected(it)) },
@@ -137,11 +156,21 @@ fun SharedContentScreen(
                     }
                 }
 
-                SharedContentTab.POLLS -> {
-                    if (state.polls.isEmpty()) {
-                        EmptyHint(text = Res.string.no_shared_polls, isLoading = state.isLoading)
-                    } else {
-                        SharedPollList(polls = state.polls, onAction = onAction)
+                SharedContentTab.MESSAGES -> {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        MessageTypeDropdown(
+                            selected = state.messageType,
+                            onSelect = { onAction(SharedContentAction.OnMessageTypeSelected(it)) },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (state.messages.isEmpty()) {
+                                EmptyHint(text = Res.string.no_shared_messages, isLoading = state.isLoadingMessages)
+                            } else {
+                                SharedMessageList(messages = state.messages, onAction = onAction)
+                            }
+                        }
                     }
                 }
             }
@@ -306,68 +335,139 @@ private fun SharedLinkRow(
     }
 }
 
+/** Picks which message type the MESSAGES tab lists. */
 @Composable
-private fun SharedPollList(
-    polls: List<SharedPollItem>,
-    onAction: (SharedContentAction) -> Unit,
+private fun MessageTypeDropdown(
+    selected: MessageType,
+    onSelect: (MessageType) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(
-            items = polls,
-            key = { it.messageId ?: (it.title + it.sendDate) }
-        ) { poll ->
-            SharedPollRow(poll = poll, onAction = onAction)
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        OutlinedButton(onClick = { expanded = true }) {
+            Icon(
+                imageVector = selected.icon(),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(stringResource(selected.labelRes()))
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription = null
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            MessageType.entries.forEach { type ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(type.labelRes())) },
+                    leadingIcon = { Icon(type.icon(), contentDescription = null) },
+                    trailingIcon = if (type == selected) {
+                        { Icon(Icons.Default.Check, contentDescription = null) }
+                    } else null,
+                    onClick = {
+                        expanded = false
+                        onSelect(type)
+                    }
+                )
+            }
         }
     }
 }
 
-/** Tapping a poll jumps to it in the chat - voting happens there, with the full poll view. */
 @Composable
-private fun SharedPollRow(
-    poll: SharedPollItem,
+private fun SharedMessageList(
+    messages: List<SharedMessageItem>,
+    onAction: (SharedContentAction) -> Unit,
+) {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        items(
+            items = messages,
+            // localPK is unique for every stored row, sent or not
+            key = { it.localPK }
+        ) { message ->
+            SharedMessageRow(message = message, onAction = onAction)
+        }
+    }
+}
+
+/** Tapping a message jumps to it in the chat. */
+@Composable
+private fun SharedMessageRow(
+    message: SharedMessageItem,
     onAction: (SharedContentAction) -> Unit,
 ) {
     val annotationSources = rememberComboAnnotationSources()
+    val poll = message.poll
 
-    val details = buildList {
-        add(stringResource(Res.string.poll_user_count, poll.voterCount.toString()))
-        if (poll.subPollCount > 0) add(stringResource(Res.string.shared_polls_subpoll_count, poll.subPollCount.toString()))
-        if (poll.isClosed) add(stringResource(Res.string.poll_closed))
-    }.joinToString(" · ")
+    val headline = when (message.type) {
+        MessageType.SYSTEM -> message.systemEvent?.let { systemEventText(it) }.orEmpty()
+        MessageType.AUDIO -> stringResource(Res.string.audio)
+        MessageType.IMAGE -> message.text.ifBlank { stringResource(Res.string.image) }
+        else -> message.text
+    }
+
+    val pollDetails = poll?.let {
+        buildList {
+            add(stringResource(Res.string.poll_user_count, it.voterCount.toString()))
+            if (it.subPollCount > 0) add(stringResource(Res.string.shared_polls_subpoll_count, it.subPollCount.toString()))
+            if (it.isClosed) add(stringResource(Res.string.poll_closed))
+        }.joinToString(" · ")
+    }
 
     ListItem(
         headlineContent = {
             Text(
-                text = resolveComboAnnotationsToPlainText(poll.title, annotationSources),
-                maxLines = 2,
+                text = resolveComboAnnotationsToPlainText(headline, annotationSources),
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
         },
         supportingContent = {
             Column {
                 Text(
-                    text = poll.senderName + " · " + millisToString(
-                        millis = poll.sendDate,
+                    text = (if (message.type == MessageType.SYSTEM) "" else message.senderName + " · ") + millisToString(
+                        millis = message.sendDate,
                         format = "dd.MM.yyyy HH:mm"
                     ),
                     style = MaterialTheme.typography.bodySmall
                 )
-                Text(
-                    text = details,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (poll.isClosed) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
-                )
+                if (pollDetails != null) {
+                    Text(
+                        text = pollDetails,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (poll.isClosed) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         },
         leadingContent = {
-            Icon(
-                imageVector = Icons.Default.Poll,
-                contentDescription = null,
-                tint = if (poll.isClosed) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
-            )
+            val pictureUrl = message.pictureUrl
+            if (message.type == MessageType.IMAGE && !pictureUrl.isNullOrEmpty()) {
+                AsyncImage(
+                    model = pictureUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            } else {
+                Icon(
+                    imageVector = message.type.icon(),
+                    contentDescription = null,
+                    tint = if (poll?.isClosed == true) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary
+                )
+            }
         },
-        modifier = Modifier.clickable(enabled = poll.messageId != null) {
-            poll.messageId?.let { onAction(SharedContentAction.OnGoToMessageClick(it)) }
+        modifier = Modifier.clickable(enabled = message.messageId != null) {
+            message.messageId?.let { onAction(SharedContentAction.OnGoToMessageClick(it)) }
         }
     )
 }
@@ -419,5 +519,21 @@ private fun EmptyHint(text: StringResource, isLoading: Boolean) {
 private fun SharedContentTab.labelRes(): StringResource = when (this) {
     SharedContentTab.IMAGES -> Res.string.shared_images
     SharedContentTab.LINKS -> Res.string.shared_links
-    SharedContentTab.POLLS -> Res.string.shared_polls
+    SharedContentTab.MESSAGES -> Res.string.shared_messages
+}
+
+private fun MessageType.labelRes(): StringResource = when (this) {
+    MessageType.TEXT -> Res.string.shared_messages_type_text
+    MessageType.IMAGE -> Res.string.shared_messages_type_image
+    MessageType.POLL -> Res.string.shared_messages_type_poll
+    MessageType.AUDIO -> Res.string.shared_messages_type_audio
+    MessageType.SYSTEM -> Res.string.shared_messages_type_system
+}
+
+private fun MessageType.icon(): ImageVector = when (this) {
+    MessageType.TEXT -> Icons.AutoMirrored.Filled.Message
+    MessageType.IMAGE -> Icons.Default.Image
+    MessageType.POLL -> Icons.Default.Poll
+    MessageType.AUDIO -> Icons.Default.Mic
+    MessageType.SYSTEM -> Icons.Default.Info
 }

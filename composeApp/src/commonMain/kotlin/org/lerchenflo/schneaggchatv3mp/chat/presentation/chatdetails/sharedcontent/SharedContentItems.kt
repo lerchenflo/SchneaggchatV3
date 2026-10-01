@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent
 
 import androidx.compose.runtime.Immutable
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
 
 /**
  * One image shared in the chat, flattened for the grid. [messageId] is null for a message that has
@@ -28,14 +30,26 @@ data class SharedLinkItem(
 )
 
 /**
- * One poll sent in the chat. [messageId] is null for a poll that has not reached the server yet.
+ * One message of the MESSAGES tab. [text] is what the row shows as its headline: the text, the poll
+ * title or the image caption (empty for audio). [messageId] is null for a message that has not
+ * reached the server yet.
  */
 @Immutable
-data class SharedPollItem(
+data class SharedMessageItem(
     val messageId: String?,
-    val title: String,
+    val localPK: Long,
+    val type: MessageType,
+    val text: String,
+    val pictureUrl: String?,
+    val systemEvent: SystemEventMessage?,
     val senderName: String,
     val sendDate: Long,
+    val poll: SharedPollInfo?,
+)
+
+/** Poll summary for a [SharedMessageItem] of type POLL. */
+@Immutable
+data class SharedPollInfo(
     val voterCount: Int,
     val subPollCount: Int,
     val isClosed: Boolean,

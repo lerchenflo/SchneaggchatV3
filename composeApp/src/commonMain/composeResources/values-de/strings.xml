@@ -931,6 +931,18 @@
     <string name="recap_streak_label">Deine längste Tagesserie</string>
     <string name="recap_most_active_month">%1$s war dein lautester Monat</string>
     <string name="recap_first_message_ever">Deine allererste Nachricht: %1$s</string>
+    <string name="recap_usage_title">Du warst online für</string>
+    <string name="recap_usage_hours_label">Stunden auf Schneaggchat</string>
+    <string name="recap_usage_minutes_label">Minuten auf Schneaggchat</string>
+    <string name="recap_usage_peak_month">Im %1$s warst du am meisten online</string>
+    <string name="recap_usage_sessions">%1$s Sitzungen</string>
+    <string name="recap_usage_avg_session">Ø %1$s pro Sitzung</string>
+    <string name="recap_usage_longest_session">Längste: %1$s</string>
+    <string name="recap_usage_busiest_day">Online-reichster Tag: %1$s (%2$s)</string>
+    <string name="recap_usage_busiest_hour">Meistens bist du gegen %1$d:00 online gegangen</string>
+    <string name="recap_usage_duration_hm">%1$d Std. %2$d Min.</string>
+    <string name="recap_usage_duration_m">%1$d Min.</string>
+    <string name="recap_usage_tracking_note">Hinweis: Die Online-Zeit wird erst seit %1$s %2$d erfasst, und jedes Gerät zählt einzeln.</string>
     <string name="recap_popular">Du bist irgendwie eine große Nummer.</string>
     <string name="recap_inner_circle">Dein innerer Kreis.</string>
     
@@ -961,9 +973,9 @@
     <string name="recap_map_edited">%1$d Einträge bearbeitet</string>
     <string name="recap_map_all_time">%1$d insgesamt erstellt</string>
     <string name="recap_games_title">Zertifizierter Zocker.</string>
-    <string name="recap_games_rank">Rang #%1$d</string>
-    <string name="recap_games_score">Bester Punktestand: %1$s</string>
-    <string name="recap_games_wins">Siege: %1$s</string>
+    <string name="recap_games_your_rank">In der globalen Spiele-Rangliste, alle Spiele zusammen, landest du auf Platz</string>
+    <string name="recap_games_points">%1$s Punkte aus %2$d Spielen</string>
+    <string name="recap_games_not_ranked">Dieses Jahr keine Ranglisten-Spiele von dir. Die Spiele warten.</string>
 
     <string name="recap_betatester_title">Zertifizierter Beta-Tester.</string>
     <string name="recap_betatester_your_rank">Von allen, die Schneaggchat je fast zum Absturz gebracht haben, liegst du auf Platz</string>
@@ -1524,8 +1536,13 @@
     <string name="no_shared_images">In diesem Chat wurden noch keine Bilder geteilt</string>
     <string name="no_shared_links">In diesem Chat wurden noch keine Links geteilt</string>
 
-    <string name="shared_polls">Umfragen</string>
-    <string name="no_shared_polls">In diesem Chat gibt es noch keine Umfragen</string>
+    <string name="shared_messages">Nachrichten</string>
+    <string name="no_shared_messages">In diesem Chat gibt es noch keine Nachrichten dieser Art</string>
+    <string name="shared_messages_type_text">Textnachrichten</string>
+    <string name="shared_messages_type_image">Bilder</string>
+    <string name="shared_messages_type_poll">Umfragen</string>
+    <string name="shared_messages_type_audio">Sprachnachrichten</string>
+    <string name="shared_messages_type_system">Systemnachrichten</string>
     <string name="shared_polls_subpoll_count">%1$s Unterumfragen</string>
     <string name="go_to_message">Zur Nachricht springen</string>
     <string name="copy_link">Link kopieren</string>
@@ -1574,10 +1591,14 @@
     <string name="games_undercover_description">Den Undercover-Spieler durch Umschreibungen entlarven</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
     <string name="games_schneaggrodeo_description">Über die Hindernisse springen und die Schnecken mit dem Lasso fangen</string>
-    <string name="games_schneaggrodeo_instructions">Reite so weit du kannst, während dich eine Horde Schneaggs verfolgt! Je länger du reitest, desto schneller und härter wird es — bis die Horde dich doch einholt.\n\nTippe (oder drücke die Leertaste) zum Springen, halte gedrückt für höhere Sprünge. Reißt du eine Stange oder rennst in eine Schnecke, stolpert dein Pferd und die Horde holt auf — sobald sie dich erwischt, ist der Ritt vorbei.\n\nWirf das Lasso (Button oder L), um Schnecken für Bonuspunkte zu fangen. Für je 5 gefangene Schnecken gibt es einen Supersprung (Button oder J) über die nächsten 5 Hindernisse.\n\nSpring durch die schwebenden Glückshufeisen: Jedes fängt deinen nächsten Fehler ab (bis zu 3).\n\nFahnen auf der Strecke zeigen, wo die besten Ritte geendet haben, dein eigener Rekord in deiner Akzentfarbe. Schlag sie!\n\nDein Pferd wird beim Reiten und bei jedem Fehler müde — seine Herzen sind auf die Seite gemalt. Je höher es von den Hufen an golden ist, desto stärker ist es. Fang Karotten, um es zu füttern! Sind alle Herzen weg, wirft es dich ab und läuft davon, und du musst ein neues Pferd mit dem Lasso fangen. Wilde Pferde auf der Strecke sind stärker, springen höher und sind ausgeruht: Fang eins mit dem Lasso, um zu wechseln. Schlamm bremst dein Pferd, also spring drüber.\n\nFreunde reiten kurz vor ihrem eigenen Rekord mit: Fang sie mit dem Lasso und sie reiten bei dir mit.</string>
+    <string name="games_schneaggrodeo_instructions">Reite so weit du kannst, während dich eine Horde Schneaggs verfolgt. Tippe (oder drücke die Leertaste), um über die Zäune zu springen, und wirf das Lasso, um Schnecken zu fangen – damit kaufst du Supersprünge und mehr. Jeder Fehler bringt die Horde näher; erwischt sie dich, ist der Ritt vorbei.</string>
+    <string name="games_schneaggrodeo_start_easier">Leichter</string>
+    <string name="games_schneaggrodeo_start_harder">Schwerer · 1,5× Punkte</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lasso</string>
     <string name="games_schneaggrodeo_catch_horse">Fang dein Pferd!</string>
+    <string name="games_schneaggrodeo_on_foot_hint">Tippe zum Springen – tippe genau bei der Landung nochmal für einen Salto, dreimal hintereinander für einen Dreifachsprung, der dich schneller macht! Fang dein Pferd mit dem Lasso, sobald du nah genug bist.</string>
+    <string name="games_schneaggrodeo_on_foot_hint_keys">Leertaste zum Springen – drücke genau bei der Landung nochmal für einen Salto, dreimal hintereinander für einen Dreifachsprung, der dich schneller macht! Fang dein Pferd mit dem Lasso [L], sobald du nah genug bist.</string>
     <string name="games_schneaggrodeo_snails">Schnecken: %1$d</string>
     <string name="games_schneaggrodeo_horseshoes">Hufeisen: %1$d</string>
     <string name="games_schneaggrodeo_plane_controls">Linke Hälfte: steigen · Rechte Hälfte: sinken – weich Häusern und Wolken aus, schnapp die Hufeisen!</string>

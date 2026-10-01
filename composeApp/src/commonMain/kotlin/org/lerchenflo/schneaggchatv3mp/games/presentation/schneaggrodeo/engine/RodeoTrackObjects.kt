@@ -11,6 +11,8 @@ import kotlin.random.Random
 
 internal const val MIN_FENCE_CM = 50
 internal const val MAX_FENCE_CM = 170
+/** The highest fence of any level (the harder level goes above MAX_FENCE_CM, see RodeoLevel). */
+internal const val HIGHEST_FENCE_CM = 190
 private const val POLE_SPACING = 4f
 internal const val POLE_THICKNESS = 1.1f
 
@@ -54,7 +56,7 @@ internal class Fence(override var x: Float, val width: Float, val heightCm: Int,
 internal enum class SnailKind {
     /** Crawls slowly or sits on a fence - worth points when lassoed. */
     CRAWLER,
-    /** Sprints towards the horse and hops over fences - jump it or lasso it. */
+    /** Sprints towards the horse and hops over fences - lasso it, or the horse just kicks it away. */
     RUNNER
 }
 

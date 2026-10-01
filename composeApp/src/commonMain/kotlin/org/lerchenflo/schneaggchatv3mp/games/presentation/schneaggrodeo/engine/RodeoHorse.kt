@@ -13,6 +13,8 @@ private const val MAX_HOLD_SECONDS = 0.3f
 // Knocking a pole or running into a snail doesn't end the run - the horse stumbles for a moment
 // (and the chasing pack closes in, see RodeoPack).
 internal const val STUMBLE_SECONDS = 0.8f
+/** Hearts a crash costs. */
+private const val CRASH_LIVES = 0.5f
 private const val STUMBLE_SPEED_FACTOR = 0.55f
 
 private const val RIDER_LEAN_RESPONSE = 12f   // 1/s, how fast the rider follows the lean target
@@ -124,9 +126,9 @@ internal class RodeoHorse {
         lives = maxOf(0f, lives - factor * dt / secondsPerLifeOf(level))
     }
 
-    /** A crash costs a whole heart. */
+    /** A crash costs half a heart. */
     fun hurt() {
-        lives = maxOf(0f, lives - 1f)
+        lives = maxOf(0f, lives - CRASH_LIVES)
     }
 
     /** A carrot brings back a heart. */
@@ -160,7 +162,7 @@ internal class RodeoHorse {
 
     /** Speeds up towards [topSpeed] and recovers from a stumble. */
     fun accelerate(dt: Float, topSpeed: Float) {
-        speed = min(topSpeed, speed + ACCELERATION * dt)
+        speed = min(topSpeed, speed + RodeoDifficulty.acceleration * dt)
         stumble = countDown(stumble, dt)
     }
 

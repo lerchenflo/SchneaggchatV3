@@ -5,6 +5,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.b
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainHeightAt
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.terrainSlopeAt
 import androidx.compose.runtime.Immutable
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import androidx.compose.ui.graphics.ImageBitmap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoStopKind
@@ -15,6 +16,8 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles
 
 sealed interface SchneaggRodeoAction {
     data object StartGame : SchneaggRodeoAction
+    /** Picks the level of the next run on the start screen. */
+    data class OnLevelSelected(val level: GameDifficulty) : SchneaggRodeoAction
     /** Ends the current run without submitting a score and returns to the start screen. */
     data object StopGame : SchneaggRodeoAction
     data object RestartGame : SchneaggRodeoAction
@@ -63,6 +66,8 @@ data class RodeoPeopleUi(
 /** Everything around the track: HUD, controls and overlays. Changes a few times per second at most. */
 @Immutable
 data class SchneaggRodeoState(
+    /** Low / medium / high, picked on the start screen; all levels share one leaderboard. */
+    val level: GameDifficulty = GameDifficulty.MEDIUM,
     val isPlaying: Boolean = false,
     val isGameOver: Boolean = false,
     val isPaused: Boolean = false,
@@ -74,6 +79,8 @@ data class SchneaggRodeoState(
     val luckyCharms: Int = 0,
     /** Thrown off the horse: the lasso button is highlighted, it is the only way back up. */
     val isOnFoot: Boolean = false,
+    /** On foot and close enough to the horse to lasso it. */
+    val canCatchHorse: Boolean = false,
     /** The vehicle being ridden; the controls turn into a hint on how to ride it. */
     val ride: RodeoVehicleKind? = null,
     /** Enough snails saved up for the rocket, and nothing else going on. */
@@ -162,7 +169,8 @@ data class RodeoHorsePose(
 
 /**
  * The cowboy on his own after being thrown off: [x] is his center, [height] his feet above the
- * ground, [rotation] degrees clockwise around his middle (90 = flat on his back).
+ * ground, [rotation] degrees clockwise around his middle (90 = flat on his back). [runPhase] swings
+ * his legs while he runs (null: standing still), [tuck] pulls his knees in for a salto (0..1).
  */
 @Immutable
 data class RodeoCowboyUi(
@@ -171,6 +179,8 @@ data class RodeoCowboyUi(
     val rotation: Float,
     val facingLeft: Boolean,
     val hatLift: Float,
+    val runPhase: Float? = null,
+    val tuck: Float = 0f,
 )
 
 @Immutable

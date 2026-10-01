@@ -450,7 +450,7 @@
     <string name="unpin_chat">Pin entferna</string>
     <string name="mark_as_unread">als ungleasa markiera</string>
     <string name="mark_as_read">als gleasa markiera</string>
-    <string name="more_info">Mieh Informationa</string>
+    <string name="more_info">Mehr Informationa</string>
     <string name="edit_profile_picture">Profilbild bearbeita</string>
     <string name="profile_picture_add_photo">Foto hinzufüga</string>
 
@@ -937,8 +937,6 @@
     <string name="recap_map_edited">%1$d Einträg bearbeitet</string>
     <string name="recap_map_all_time">%1$d insgesamt erstellt</string>
     <string name="recap_games_title">Profigamer</string>
-    <string name="recap_games_rank">Rang #%1$d</string>
-    <string name="recap_games_score">Bester Punktestand: %1$s</string>
 
     <string name="recap_betatester_title">Zertifizierter Beta-Tester</string>
     <string name="recap_betatester_your_rank">Vo allna, die Schneaggchat je fast zum Absturz brocht hond, bisch du uf Platz</string>

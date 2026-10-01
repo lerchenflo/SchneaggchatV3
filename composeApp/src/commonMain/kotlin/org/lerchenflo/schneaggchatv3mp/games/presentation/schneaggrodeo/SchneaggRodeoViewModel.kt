@@ -28,6 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
 import org.lerchenflo.schneaggchatv3mp.games.domain.leaderboard
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoEvent
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoLevel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SchneaggRodeoEngine
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.WORLD_HEIGHT_UNITS
 
@@ -75,6 +76,7 @@ class SchneaggRodeoViewModel(
     fun onAction(action: SchneaggRodeoAction) {
         when (action) {
             SchneaggRodeoAction.StartGame -> startGame()
+            is SchneaggRodeoAction.OnLevelSelected -> _state.update { it.copy(level = action.level) }
             SchneaggRodeoAction.RestartGame -> startGame()
             SchneaggRodeoAction.StopGame -> stopGame()
             SchneaggRodeoAction.TogglePause -> togglePause()
@@ -110,8 +112,9 @@ class SchneaggRodeoViewModel(
         // Restarting from a paused run: a friend riding along still gets the score
         engine.leaveHorse()
         handleEvents()
-        engine.reset()
-        _state.value = SchneaggRodeoState(isPlaying = true)
+        val level = _state.value.level
+        engine.reset(RodeoLevel.of(level))
+        _state.value = SchneaggRodeoState(level = level, isPlaying = true)
         loadGhosts()
         publish()
     }
@@ -122,10 +125,11 @@ class SchneaggRodeoViewModel(
         handleEvents()
         ghostsJob?.cancel()
         saveSession.clear()
-        engine.reset()
+        val level = _state.value.level
+        engine.reset(RodeoLevel.of(level))
         ghosts = emptyList()
         engine.ghosts = emptyList()
-        _state.value = SchneaggRodeoState()
+        _state.value = SchneaggRodeoState(level = level)
         _frame.value = SchneaggRodeoFrame()
     }
 
@@ -192,6 +196,7 @@ class SchneaggRodeoViewModel(
                 superJumpCharges = engine.superJumpCharges,
                 luckyCharms = engine.luckyCharms,
                 isOnFoot = engine.isOnFoot,
+                canCatchHorse = engine.canCatchHorse,
                 ride = engine.rideKind,
                 rocketReady = engine.rocketReady,
                 carriageReady = engine.carriageReady,
@@ -309,7 +314,7 @@ class SchneaggRodeoViewModel(
     /** Brings a saved run back paused; frames only arrive again once the user resumes. */
     private fun restore(save: GameSave<SchneaggRodeoSnapshot>) {
         engine.restore(save.data)
-        _state.value = SchneaggRodeoState(isPlaying = true, isPaused = true)
+        _state.value = SchneaggRodeoState(level = save.data.level, isPlaying = true, isPaused = true)
         loadGhosts()
         publish()
     }
@@ -321,7 +326,7 @@ class SchneaggRodeoViewModel(
     }
 
     private companion object {
-        /** The game has no difficulty setting, so everything goes to its single board. */
+        /** All levels share one board: the level is picked inside the game, not by the app-wide difficulty. */
         val RODEO_BOARD = GameId.SCHNEAGG_RODEO.leaderboard.boards.first()
     }
 }

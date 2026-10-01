@@ -32,7 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.O
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoStopKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoWeather
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MAX_FENCE_CM
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HIGHEST_FENCE_CM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MIN_FENCE_CM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SNAIL_SIZE
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.WORLD_HEIGHT_UNITS
@@ -75,8 +75,8 @@ internal fun RodeoTrack(
 ) {
     val themeColors = MaterialTheme.colorScheme
     val textMeasurer = rememberTextMeasurer()
-    // Only 13 possible heights - resolved in composition since the canvas draws outside of it
-    val heightLabels = (MIN_FENCE_CM..MAX_FENCE_CM step 10).associateWith {
+    // Only 15 possible heights - resolved in composition since the canvas draws outside of it
+    val heightLabels = (MIN_FENCE_CM..HIGHEST_FENCE_CM step 10).associateWith {
         stringResource(Res.string.games_schneaggrodeo_fence_height, it)
     }
     // Text is laid out once per map and reused, instead of being measured again for every frame

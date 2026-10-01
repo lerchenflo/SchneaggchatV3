@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo
 
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 
 const val SCHNEAGG_RODEO_SNAPSHOT_VERSION = 1
 
@@ -30,4 +31,6 @@ data class SchneaggRodeoSnapshot(
     /** A lassoed friend riding along, if any. */
     val passengerId: String? = null,
     val passengerName: String? = null,
+    /** The level picked for the run; saves from before were all medium. */
+    val level: GameDifficulty = GameDifficulty.MEDIUM,
 )

@@ -8,6 +8,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
@@ -94,12 +95,16 @@ class MessageRepository(
         }
     }
 
-    /** Poll messages of one chat, newest first, without readers. */
-    fun getPollMessagesForChatFlow(chatId: String, gruppe: Boolean): Flow<List<Message>> {
-        return database.messageDao().getPollMessagesForChatFlow(chatId, gruppe).map { messages ->
+    /** Messages of one type in one chat, newest first, without readers. */
+    fun getMessagesOfTypeForChatFlow(chatId: String, gruppe: Boolean, type: MessageType): Flow<List<Message>> {
+        return database.messageDao().getMessagesOfTypeForChatFlow(chatId, gruppe, type.name).map { messages ->
             messages.map { it.toMessage() }
         }
     }
+
+    /** Number of messages in one chat, all types. */
+    fun getMessageCountForChatFlow(chatId: String, gruppe: Boolean): Flow<Int> =
+        database.messageDao().getMessageCountForChatFlow(chatId, gruppe)
 
     /** Messages of one chat that might carry a url, newest first, without readers. */
     fun getLinkCandidateMessagesForChatFlow(chatId: String, gruppe: Boolean): Flow<List<Message>> {

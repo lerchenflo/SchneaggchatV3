@@ -61,11 +61,10 @@ private const val MAX_FRAME_SECONDS = 0.05f
 
 // Rules: what running into things costs and what catching things gives
 private const val FENCE_CRASH_PENALTY = 12f   // pack gap lost
-private const val RUNNER_CRASH_PENALTY = 10f
 private const val CATCH_POINTS = 25           // per lassoed snail
 private const val CATCH_GAP_BONUS = 8f        // pack gap won per lassoed snail
 // Lucky horseshoes: jumping through one stores a lucky charm that absorbs the next crash (fence or
-// runner) - no stumble, no penalty. Collected between the horse's belly and the rider's hat.
+// bridge) - no stumble, no penalty. Collected between the horse's belly and the rider's hat.
 private const val HORSESHOE_REACH_BOTTOM = 12f
 private const val HORSESHOE_REACH_TOP = 30f
 private const val HORSESHOE_POINTS = 10
@@ -202,13 +201,17 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     // --- Read by the ViewModel
 
-    val score: Int get() = (distance / UNITS_PER_POINT).toInt() + bonusPoints
+    /** Distance points (more per unit on a harder level, see RodeoLevel.pointsFactor) plus bonus points. */
+    val score: Int get() = (distance * level.pointsFactor / UNITS_PER_POINT).toInt() + bonusPoints
 
     /** Super jumps cost snails: every full [SNAILS_PER_SUPER_JUMP] caught snails are one charge. */
     val superJumpCharges: Int get() = snailsCaught / SNAILS_PER_SUPER_JUMP
 
     /** The cowboy lies in the dirt or stands next to his horse - the lasso is his way back up. */
     val isOnFoot: Boolean get() = fall.isOnFoot
+
+    /** The running cowboy is close enough to his horse to lasso it. */
+    val canCatchHorse: Boolean get() = fall.horseInReach
 
     /** True once the chasing pack reached the horse. */
     val isCaught: Boolean get() = pack.hasCaughtUp
@@ -221,7 +224,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     /** What the speedometer shows: the horse's real pace, or the vehicle's. */
     val speedKmh: Int
-        get() = ride?.speedKmh(this) ?: if (fall.isInSaddle) (horse.pace * KMH_PER_UNIT_PER_SECOND).roundToInt() else 0
+        get() = ride?.speedKmh(this) ?: ((if (fall.isInSaddle) horse.pace else fall.groundSpeed) * KMH_PER_UNIT_PER_SECOND).roundToInt()
 
     /** Enough snails saved up for the rocket, and the track is clear for it. */
     val rocketReady: Boolean
@@ -239,8 +242,12 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     // --- Run lifecycle
 
-    /** Starts a fresh run. */
-    fun reset() {
+    /** The level of the current run (see RodeoLevel). */
+    val level: RodeoLevel get() = RodeoDifficulty.level
+
+    /** Starts a fresh run on [level]. */
+    fun reset(level: RodeoLevel = RodeoDifficulty.level) {
+        RodeoDifficulty.level = level
         course.reset()
         horse.reset()
         pack.reset()
@@ -287,7 +294,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
      * at the start of a run), since fences and snails are not persisted.
      */
     fun restore(snapshot: SchneaggRodeoSnapshot) {
-        reset()
+        reset(RodeoLevel.of(snapshot.level))
         horse.restore(snapshot.speed, RodeoHorseStats(snapshot.horseLevel, snapshot.horseLives, snapshot.horseCoat))
         passenger = snapshot.passengerId?.let { RodeoFriend(userId = it, username = snapshot.passengerName.orEmpty()) }
         pack.restore(snapshot.chaseGap)
@@ -318,6 +325,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         horseCoat = horse.coat,
         passengerId = passenger?.userId,
         passengerName = passenger?.username,
+        level = level.difficulty,
     )
 
     /** Events of the frames since the last call. */
@@ -338,6 +346,10 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     fun jumpPressed() {
         if (horse.jumpHeld) return // key repeat while holding
         horse.jumpHeld = true
+        if (!fall.isInSaddle) {
+            fall.jumpPressed()
+            return
+        }
         val ride = ride
         if (ride != null) {
             ride.onJump(true)
@@ -388,7 +400,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         if (!lasso.isReady) return
         if (ride != null && !ride.allowsLasso) return
         if (!fall.isInSaddle) {
-            // On foot the lasso is for the horse only, and only once he is back on his feet
+            // On foot the lasso is for the horse only; it catches it once he is close enough
             if (fall.canLasso) lasso.throwOnFoot()
             return
         }
@@ -464,7 +476,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             wonders.sendRainbow(worldWidth)
         }
         bonusPoints += wonders.step(
-            dt, scroll, ridden, worldWidth,
+            dt, scroll, ridden * level.pointsFactor, worldWidth,
             firefliesAllowed = flavor.timeOfDay == RodeoTimeOfDay.NIGHT && !mapSwitch.isAway && mapSwitch.isClear,
         )
         val targetTilt = when (horse.slope) {
@@ -509,7 +521,9 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         val nothingAround = horsesMayCome && wildHorses.isClear && landscape.isClear
         // A test run (see RodeoTest) only brings its vehicle
         val regular = !RodeoTest.isActive
-        wildHorses.sendWild(dt, worldWidth, horse.level, allowed = horsesMayCome && onSurface && regular, night = flavor.timeOfDay == RodeoTimeOfDay.NIGHT)
+        // The faster the run, the stronger the wild horses (see RodeoHorseStats.minLevelAt)
+        val wildBase = max(horse.level, RodeoHorseStats.minLevelAt(horse.speed) - 1)
+        wildHorses.sendWild(dt, worldWidth, wildBase, allowed = horsesMayCome && onSurface && regular, night = flavor.timeOfDay == RodeoTimeOfDay.NIGHT)
         // Friends come near their highscore no matter what else is going on
         if (regular) sendFriends()
 
@@ -562,7 +576,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         markers.catchUp(dt, bonusPoints)
 
         // Out of hearts: bucks the cowboy off and runs away, once nothing else is going on
-        if (horse.isExhausted && ride == null && !superJump.isActive && horse.isOnGround) exhaustHorse()
+        if (horse.isExhausted && ride == null && traffic.isClear && !superJump.isActive && horse.isOnGround) exhaustHorse()
     }
 
     /** Test mode: sends the tested vehicle right away, and again shortly after each ride. */
@@ -582,27 +596,55 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         }
     }
 
-    /** Off the horse the world stands still - only the cowboy, his horse and the snails move. */
+    /**
+     * Off the horse the cowboy runs after it: the world scrolls by at his pace (not at all while he
+     * lies in the dirt).
+     */
     private fun stepOffTheHorse(dt: Float) {
         pack.tick(dt)
-        // While the new horse is still on its way the pack waits
-        if (!fall.isWaitingForHorse) pack.approachStandingHorse(dt)
-        horse.gaitPhase += dt * 4f // nervous pacing
+        // The pack waits while he is off the horse
         lasso.cool(dt)
-        course.moveSnails(scroll = 0f, dt = dt)
-        wildHorses.step(dt, scroll = 0f, fences = course.fences, score = score.toLong())
         val remounted = fall.step(
             dt,
             lasso,
+            worldWidth,
             onLanded = { x -> effects.dust(x) },
-            onNewHorse = { horse.takeOver(RodeoHorseStats.replacement()) },
+            onNewHorse = { horse.takeOver(RodeoHorseStats.replacement(horse.speed)) },
         )
+        // Galloping or trotting ahead of him, or pacing nervously while it waits
+        if (fall.horseStride > 0f) horse.gallop(fall.horseStride) else horse.gaitPhase += dt * 4f
+        scrollOnFoot(fall.groundSpeed * dt, dt)
         if (remounted) {
             pack.keepAway(if (fall.hasNewHorse) NEW_HORSE_PACK_GAP else REMOUNT_PACK_GAP)
             lasso.reset()
             horse.remounted()
+            riderlessHop = 0f
             effects.splash()
         }
+    }
+
+    /** The world moves by [scroll] under the running cowboy: the track, the landscape and what is on it. */
+    private fun scrollOnFoot(scroll: Float, dt: Float) {
+        distance += scroll
+        groundScroll += scroll
+        landscape.scroll(scroll, worldWidth)
+        terrain.scroll(
+            scroll, worldWidth, elapsed,
+            keepFlat = traffic.needsFlatTrack || landscape.mountain != null || mapSwitch.isAway,
+        )
+        terrain.bearBridges(dt, load = fall.runnerX?.takeIf { fall.runnerHeight < 0.5f })
+        mapSwitch.scroll(scroll)
+        pizzaOvens.scroll(scroll)
+        deepSea.step(dt, scroll, worldWidth, active = mapSwitch.map == RodeoMap.SEA)
+        bonusPoints += wonders.step(dt, scroll, scroll * level.pointsFactor, worldWidth, firefliesAllowed = false)
+        // Fences come at his pace, so they are as far apart in time as on the horse
+        val bridgeComing = terrain.bridgeWithin(worldWidth - BRIDGE_CLEARANCE, worldWidth + BRIDGE_CLEARANCE)
+        course.scrollFences(scroll, scroll, worldWidth, COWBOY_RUN_SPEED, elapsed, spawnFences = !bridgeComing)
+        course.moveSnails(scroll, dt)
+        course.scrollPickups(scroll)
+        wildHorses.step(dt, scroll, course.fences, score.toLong())
+        // The riderless horse hops the fences on its own
+        riderlessHop = hopOverFences(HORSE_X + fall.horseOffset() + 14f, course.fences, reach = 14f, clearance = 3f)
     }
 
     /** Super jump or normal jump; returns false if the landing threw the cowboy off. */
@@ -675,6 +717,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         }
     }
 
+    /** Running into a snail on the ground is harmless: the horse just kicks it out of the way. */
     private fun crashIntoRunners() {
         if (invulnerable) return
         val hitBottom = horse.height + HITBOX_BOTTOM
@@ -685,7 +728,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
                     hitBottom < snail.height + SNAIL_BODY_HEIGHT
             if (hit) {
                 snail.knock()
-                if (!trip.tramples) crash(RUNNER_CRASH_PENALTY)
+                effects.dust(snail.x)
             }
         }
     }
@@ -783,7 +826,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     private fun wadeThroughMud(dt: Float) {
         horse.inMud = ride == null && !superJump.isActive && horse.isOnGround &&
                 course.mud.any { it.overlaps(HORSE_X + HITBOX_LEFT, HORSE_X + HITBOX_RIGHT) }
-        if (horse.inMud) pack.closeIn(MUD_PACK_GAIN * dt)
+        if (horse.inMud) pack.closeIn(MUD_PACK_GAIN * RodeoDifficulty.penaltyFactor(elapsed) * dt)
     }
 
     /** Sends in a friend whose highscore the run reaches in about [FRIEND_LEAD_SECONDS]. */
@@ -794,7 +837,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             if (!ghost.isFriend || ghost.isOwn || ghost.userId.isEmpty() || ghost.userId == passenger?.userId) continue
             val friend = RodeoFriend(userId = ghost.userId, username = ghost.username)
             if (wildHorses.wasShown(friend)) continue
-            val seconds = (ghost.score - score) * UNITS_PER_POINT / pace
+            val seconds = (ghost.score - score) * UNITS_PER_POINT / level.pointsFactor / pace
             if (seconds in 0f..FRIEND_LEAD_SECONDS) {
                 wildHorses.sendFriend(friend, max(seconds, FRIEND_MIN_ARRIVE_SECONDS), worldWidth, ghost.score)
                 return
@@ -932,7 +975,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         }
         horse.stumble()
         horse.hurt()
-        pack.closeIn(penalty)
+        pack.closeIn(penalty * RodeoDifficulty.penaltyFactor(elapsed))
         effects.dust(HORSE_X + 20f) // front hooves
         return true
     }
@@ -965,7 +1008,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             lasso = if (fall.isInSaddle) lasso.uiFromSaddle(horseBase) else fall.lassoUi(lasso),
             dust = effects.dustUi(),
             splashProgress = effects.splashProgress(),
-            markers = markers.ui(ghosts, distance, worldWidth),
+            markers = markers.ui(ghosts, distance, worldWidth, level.pointsFactor),
             cowboy = fall.cowboyUi() ?: vehicle?.cowboy(this),
             horseshoes = course.horseshoeUis(pack.clock),
             luckyCharms = luckyCharms,

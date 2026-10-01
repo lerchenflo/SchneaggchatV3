@@ -14,7 +14,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onSuccess
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.games.domain.EmojiCountUi
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameRecapUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.GroupActivityUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.LongestMessageUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.MessageTypeCountUi
@@ -28,10 +27,6 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
-import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterCountdown
-import org.lerchenflo.schneaggchatv3mp.games.domain.leaderboard
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.month_april
 import schneaggchatv3mp.composeapp.generated.resources.month_august
@@ -120,6 +115,14 @@ class RecapViewModel(
                 month = month,
                 monthName = monthName(month),
                 count = messaging.perMonth.find { it.month == month }?.count ?: 0L
+            )
+        }
+
+        val usageMonths = (1..12).map { month ->
+            MonthCountUi(
+                month = month,
+                monthName = monthName(month),
+                count = (usageTime.perMonth.find { it.month == month }?.millis ?: 0L) / 60_000L
             )
         }
 
@@ -212,23 +215,17 @@ class RecapViewModel(
             myMapRank = map.leaderboard.myRank,
             myMapContributions = map.leaderboard.myContributionCount,
 
-            games = games
-                .sortedBy { it.rank }
-                .map {
-                    val isDartCounter = it.game == GameId.DART_COUNTER.name
-                    GameRecapUi(
-                        gameName = it.game.lowercase().replaceFirstChar { c -> c.uppercase() },
-                        // Dart Counter boards are the countdown, not a difficulty
-                        difficulty = GameDifficulty.entries.find { d -> d.name == it.difficulty }
-                            ?.takeIf { isDartCounter }
-                            ?.let { d -> dartCounterCountdown(d).toString() }
-                            ?: it.difficulty,
-                        bestScore = it.bestScore,
-                        rank = it.rank,
-                        bestScoreText = if (isDartCounter) GameId.DART_COUNTER.leaderboard.formatScore(it.bestScore) else null,
-                        countsWins = GameId.entries.find { g -> g.name == it.game }?.leaderboard?.countsWins == true,
-                    )
-                },
+            gamesLeaderboardTop = gamesLeaderboard.top.take(5).map {
+                RankedRowUi(
+                    rank = it.rank,
+                    username = it.username,
+                    count = it.points,
+                    isMe = it.userId == account.userId
+                )
+            },
+            myGamesRank = gamesLeaderboard.myRank,
+            myGamesPoints = gamesLeaderboard.myPoints,
+            myGamesPlayed = gamesLeaderboard.myGamesPlayed,
 
             betaTesterRows = betaTester.all.map {
                 RankedRowUi(
@@ -243,6 +240,20 @@ class RecapViewModel(
 
             passwordResetEmailsSentThisYear = passwordResets.passwordResetEmailsSentThisYear,
             passwordResetEmailsSentAllTime = passwordResets.passwordResetEmailsSentAllTime,
+
+            usageMillisThisYear = usageTime.totalMillisThisYear,
+            usageSessionCount = usageTime.sessionCountThisYear,
+            usageAverageSessionMillis = usageTime.averageSessionMillis,
+            usageLongestSessionMillis = usageTime.longestSessionMillis,
+            usageBusiestDayFormatted = usageTime.busiestDay?.date?.let { iso ->
+                iso8601DateFormatter(iso).ifEmpty { iso }
+            },
+            usageBusiestDayMillis = usageTime.busiestDay?.millis ?: 0L,
+            usageBusiestHourOfDay = usageTime.busiestHourOfDay,
+            usagePerMonth = usageMonths,
+            usagePeakMonth = usageMonths.filter { it.count > 0 }.maxByOrNull { it.count },
+            usageTrackingSinceMonth = usageTime.trackingSince?.let { monthName(millisToString(it, "MM").toInt()) },
+            usageTrackingSinceYear = usageTime.trackingSince?.let { millisToString(it, "yyyy").toInt() },
         )
     }
 

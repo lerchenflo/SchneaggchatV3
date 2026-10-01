@@ -28,6 +28,8 @@ import schneaggchatv3mp.composeapp.generated.resources.game_tap_anywhere_to_star
 /**
  * Unified pre-game explanation screen shown before a run starts. Explains how
  * the game works; tapping anywhere starts the game instantly via [onStart].
+ * [options] (e.g. one start button per level) replace tapping anywhere: they go under the
+ * explanation and start the game themselves.
  */
 @Composable
 fun GameStartOverlay(
@@ -35,12 +37,13 @@ fun GameStartOverlay(
     explanation: String,
     onStart: () -> Unit,
     modifier: Modifier = Modifier,
+    options: (@Composable () -> Unit)? = null,
 ) {
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background.copy(alpha = 0.95f))
-            .pointerInput(Unit) { detectTapGestures { onStart() } },
+            .pointerInput(options == null) { if (options == null) detectTapGestures { onStart() } else detectTapGestures { } },
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -81,12 +84,16 @@ fun GameStartOverlay(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = stringResource(Res.string.game_tap_anywhere_to_start),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary
-            )
+            if (options != null) {
+                options()
+            } else {
+                Text(
+                    text = stringResource(Res.string.game_tap_anywhere_to_start),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }

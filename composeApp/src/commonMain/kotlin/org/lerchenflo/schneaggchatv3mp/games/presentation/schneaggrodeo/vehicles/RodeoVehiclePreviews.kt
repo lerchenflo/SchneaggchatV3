@@ -23,27 +23,13 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.d
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawPizzaOven
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawVehicles
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoPizzaOvenUi
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoFenceUi
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoGemUi
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMoundUi
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoMudUi
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoSnailUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoStopKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoTimeOfDay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoWeather
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.cave
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawBuoy
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawCrateStack
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawKiosk
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawMineBackdrop
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawMinerHelmet
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawMound
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawNugget
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawOilSlick
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawPearl
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawSeaBackdrop
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawShark
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawSwimRing
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawTimeOfDay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawWaterOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.drawWeather
@@ -142,7 +128,7 @@ private fun RodeoVehiclePreviewTrack(vararg vehicles: RodeoVehicleUi) = RodeoPre
  * the game. [backdrop] goes behind the ground, on the flat; [bridges] cut their gorges into it.
  */
 @Composable
-private fun RodeoPreviewTrack(
+internal fun RodeoPreviewTrack(
     enclosed: Boolean = false,
     ground: ((Float) -> Float)? = null,
     sea: Boolean = false,
@@ -505,43 +491,6 @@ private fun CowPreview() = RodeoVehiclePreviewTrack(
     RodeoCowUi(x = 40f, gait = 0.8f, hasRider = true, ring = 0.3f, lassoHint = null),
     RodeoCowUi(x = 120f, gait = 2f, hasRider = false, ring = null, lassoHint = RodeoLassoHintUi(x = 131f, y = 18f)),
 )
-
-/**
- * The open sea, the view looking down like in the game: buoys, a shark, a snail on its swim ring, an
- * oil slick, a pearl, life in the deep and the water over it all.
- */
-@Preview
-@Composable
-private fun SeaMapPreview() = RodeoPreviewTrack(sea = true, cameraDown = SEA_CAMERA_DOWN) { context ->
-    listOf(
-        RodeoDeepThingUi(x = 20f, y = -20f, kind = RodeoDeepKind.WHALE, seed = 4, time = 1f),
-        RodeoDeepThingUi(x = 70f, y = -10f, kind = RodeoDeepKind.FISH, seed = 1, time = 1f),
-        RodeoDeepThingUi(x = 105f, y = -8f, kind = RodeoDeepKind.JELLYFISH, seed = 2, time = 1f),
-        RodeoDeepThingUi(x = 130f, y = -18f, kind = RodeoDeepKind.SHARK, seed = 3, time = 1f),
-        RodeoDeepThingUi(x = 140f, y = SEABED_Y, kind = RodeoDeepKind.WRECK, seed = 5, time = 1f),
-    ).forEach { drawDeepThing(it, context) }
-    val label = context.assets!!.textMeasurer.measure("80 cm")
-    drawBuoy(RodeoFenceUi(x = 30f, width = 10f, heightCm = 80, top = 8f, colorOffset = 0, knocked = false, poleHeights = listOf(8f)), context, label)
-    drawBuoy(RodeoFenceUi(x = 100f, width = 18f, heightCm = 80, top = 8f, colorOffset = 0, knocked = false, poleHeights = listOf(8f)), context, label)
-    drawOilSlick(RodeoMudUi(x = 55f, width = 24f, seed = 3), context)
-    drawShark(RodeoSnailUi(x = 140f, height = 0f, facingLeft = true, tiltDeg = 0f, runner = true), context)
-    val crawler = RodeoSnailUi(x = 85f, height = 0f, facingLeft = true, tiltDeg = 0f)
-    drawSwimRing(crawler, context)
-    drawPearl(RodeoGemUi(x = 70f, height = 20f, tiltDeg = 0f, hue = 0), context)
-}
-
-/** The mine: crate stacks (one wide with rocks), a gold nugget, a dirt mound with a shovel, a helmet. */
-@Preview
-@Composable
-private fun MineMapPreview() = RodeoPreviewTrack(enclosed = true) { context ->
-    drawMineBackdrop(distance = 40f, context = context)
-    val label = context.assets!!.textMeasurer.measure("100 cm")
-    drawCrateStack(RodeoFenceUi(x = 30f, width = 10f, heightCm = 100, top = 10f, colorOffset = 0, knocked = false, poleHeights = listOf(10f)), context, label)
-    drawCrateStack(RodeoFenceUi(x = 110f, width = 18f, heightCm = 100, top = 10f, colorOffset = 0, knocked = false, poleHeights = listOf(10f)), context, label)
-    drawNugget(RodeoGemUi(x = 60f, height = 18f, tiltDeg = 10f, hue = 0), context)
-    drawMound(RodeoMoundUi(x = 80f, seed = 7), context)
-    drawMinerHelmet(RodeoSnailUi(x = 150f, height = 0f, facingLeft = true, tiltDeg = 0f, runner = true), context)
-}
 
 /** The boats on the sea's surface: the rowboat with a fish on the line, the U-boat surfaced, the flamingo. */
 @Preview

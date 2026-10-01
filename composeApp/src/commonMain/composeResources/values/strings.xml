@@ -929,6 +929,18 @@
     <string name="recap_streak_label">Your longest daily streak</string>
     <string name="recap_most_active_month">%1$s was your loudest month</string>
     <string name="recap_first_message_ever">Your very first message: %1$s</string>
+    <string name="recap_usage_title">You were online for</string>
+    <string name="recap_usage_hours_label">hours on Schneaggchat</string>
+    <string name="recap_usage_minutes_label">minutes on Schneaggchat</string>
+    <string name="recap_usage_peak_month">%1$s was your most online month</string>
+    <string name="recap_usage_sessions">%1$s sessions</string>
+    <string name="recap_usage_avg_session">Ø %1$s per session</string>
+    <string name="recap_usage_longest_session">Longest: %1$s</string>
+    <string name="recap_usage_busiest_day">Most online day: %1$s (%2$s)</string>
+    <string name="recap_usage_busiest_hour">You usually logged on around %1$d:00</string>
+    <string name="recap_usage_duration_hm">%1$d h %2$d min</string>
+    <string name="recap_usage_duration_m">%1$d min</string>
+    <string name="recap_usage_tracking_note">Note: online time has only been recorded since %1$s %2$d, and every device counts separately.</string>
     <string name="recap_popular">You're kind of a big deal.</string>
     <string name="recap_inner_circle">Your Inner Circle.</string>
     
@@ -959,9 +971,9 @@
     <string name="recap_map_edited">%1$d entries edited</string>
     <string name="recap_map_all_time">%1$d created all-time</string>
     <string name="recap_games_title">Certified gamer.</string>
-    <string name="recap_games_rank">Rank #%1$d</string>
-    <string name="recap_games_score">Best score: %1$s</string>
-    <string name="recap_games_wins">Wins: %1$s</string>
+    <string name="recap_games_your_rank">In the global games ranking, all games together, you ranked</string>
+    <string name="recap_games_points">%1$s points from %2$d games</string>
+    <string name="recap_games_not_ranked">No leaderboard games from you this year. The games are waiting.</string>
 
     <string name="recap_betatester_title">Certified beta tester.</string>
     <string name="recap_betatester_your_rank">Out of everyone who ever broke Schneaggchat, you rank</string>
@@ -1522,8 +1534,13 @@
     <string name="no_shared_images">No images shared in this chat yet</string>
     <string name="no_shared_links">No links shared in this chat yet</string>
 
-    <string name="shared_polls">Polls</string>
-    <string name="no_shared_polls">No polls in this chat yet</string>
+    <string name="shared_messages">Messages</string>
+    <string name="no_shared_messages">No messages of this type in this chat yet</string>
+    <string name="shared_messages_type_text">Text messages</string>
+    <string name="shared_messages_type_image">Images</string>
+    <string name="shared_messages_type_poll">Polls</string>
+    <string name="shared_messages_type_audio">Voice messages</string>
+    <string name="shared_messages_type_system">System messages</string>
     <string name="shared_polls_subpoll_count">%1$s sub polls</string>
     <string name="go_to_message">Go to message</string>
     <string name="copy_link">Copy link</string>
@@ -1572,10 +1589,14 @@
     <string name="games_undercover_description">Unmask the impostor by describing your secret word</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
     <string name="games_schneaggrodeo_description">Jump the fences and lasso the snails on your heels</string>
-    <string name="games_schneaggrodeo_instructions">Ride as far as you can while a pack of schneaggs chases you! The longer you ride, the faster and tougher it gets — until the pack catches up for good.\n\nTap (or press space) to jump, hold to jump higher. Knocking a pole or running into a snail makes your horse stumble and lets the pack close in — once it catches you, the ride is over.\n\nThrow the lasso (button or L) to catch snails for bonus points. Every 5 caught snails buy a super jump (button or J) over the next 5 fences.\n\nJump through the floating lucky horseshoes: each one absorbs your next crash (up to 3).\n\nFlags on the track show where the best rides ended, your own best in your accent color. Beat them!\n\nYour horse tires as you ride and with every crash — its hearts are painted on its side. The higher it is golden from the hooves up, the stronger it is. Catch carrots to feed it! Once its hearts are gone it throws you off and runs away, and you have to lasso a new horse. Wild horses on the track are stronger, jump higher and come fully rested: lasso one to switch. Mud slows your horse down, so jump over it.\n\nFriends ride along shortly before their own best: lasso them and they ride with you.</string>
+    <string name="games_schneaggrodeo_instructions">Ride as far as you can while a pack of schneaggs chases you. Tap (or press space) to jump the fences and throw the lasso to catch snails – they buy super jumps and more. Every mistake lets the pack come closer; once it catches you, the ride is over.</string>
+    <string name="games_schneaggrodeo_start_easier">Easier</string>
+    <string name="games_schneaggrodeo_start_harder">Harder · 1.5× points</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lasso</string>
     <string name="games_schneaggrodeo_catch_horse">Catch your horse!</string>
+    <string name="games_schneaggrodeo_on_foot_hint">Tap to jump – tap again right as you land for a salto, three in a row for a triple jump that carries you faster! Lasso your horse once you are close.</string>
+    <string name="games_schneaggrodeo_on_foot_hint_keys">Space to jump – press again right as you land for a salto, three in a row for a triple jump that carries you faster! Lasso [L] your horse once you are close.</string>
     <string name="games_schneaggrodeo_snails">Snails: %1$d</string>
     <string name="games_schneaggrodeo_horseshoes">Horseshoes: %1$d</string>
     <string name="games_schneaggrodeo_plane_controls">Left half: fly up · Right half: fly down – dodge the buildings and clouds, grab the horseshoes!</string>

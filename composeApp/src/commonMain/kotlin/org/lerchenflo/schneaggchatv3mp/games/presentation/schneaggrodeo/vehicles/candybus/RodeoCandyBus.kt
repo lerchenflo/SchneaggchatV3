@@ -95,7 +95,7 @@ internal class RodeoCandyBus : RodeoVehicle(RodeoVehicleKind.CANDY_BUS) {
     private var boardStartX = 0f
     private var wheelPhase = 0f
 
-    /** Premium: only joins once every regular vehicle came by. */
+    /** Premium: only joins once most regular vehicles came by (see RodeoVehicleRotation). */
     override val special = true
 
     override val length = BUS_LENGTH

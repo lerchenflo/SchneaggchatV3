@@ -11,8 +11,6 @@ import kotlin.math.sin
 internal const val CHASE_GAP_MAX = 45f     // pack distance behind the horse; starts here (off screen above ~26)
 private const val PACK_SIZE = 3
 private const val PACK_SPACING = 7f
-/** u/s the pack closes in while the cowboy is on foot (~8 s from the closest gap a fall allows). */
-private const val PACK_APPROACH_ON_FOOT = 4f
 /** Advance of [RodeoPack.clock] per second. */
 private const val CLOCK_SPEED = 10f
 
@@ -65,11 +63,6 @@ internal class RodeoPack {
     fun ride(dt: Float, rate: Float) {
         gap = min(CHASE_GAP_MAX, gap + rate * dt)
         if (gap <= 0f) gap = 0f
-    }
-
-    /** The cowboy is on foot: the pack closes in steadily. */
-    fun approachStandingHorse(dt: Float) {
-        gap = max(0f, gap - PACK_APPROACH_ON_FOOT * dt)
     }
 
     /** The pack hopping along behind the horse, hopping the fences too (off screen while the gap is large). */
