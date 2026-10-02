@@ -4,6 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -14,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.StateFlow
+import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
@@ -27,6 +32,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.text.TextMessageContentView
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.message_edited
 
 @Composable
 fun MessageContent(
@@ -112,6 +119,17 @@ fun MessageContent(
                     .padding(end = 6.dp)
             ) {
                 Row(){
+                    if (message.edited) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(Res.string.message_edited),
+                            modifier = Modifier
+                                .padding(end = 2.dp)
+                                .size(12.dp)
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+
                     //zit
                     Text(
                         text = millisToString(message.sendDate.toLong(), format = "HH:mm"),

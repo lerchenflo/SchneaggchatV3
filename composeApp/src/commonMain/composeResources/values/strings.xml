@@ -433,6 +433,7 @@
     <string name="reply">Reply</string>
     <string name="copy">Copy</string>
     <string name="edit">Edit</string>
+    <string name="message_edited">Edited</string>
     <string name="delete">Delete</string>
     <string name="message_details">Message details</string>
     <string name="readers">Readers</string>
