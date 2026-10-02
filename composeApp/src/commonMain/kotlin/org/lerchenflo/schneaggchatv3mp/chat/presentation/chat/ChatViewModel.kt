@@ -32,6 +32,7 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -765,12 +766,32 @@ class ChatViewModel(
             }
         }
 
+        //Set all messages read when this chat comes back on screen (e.g. back from ChatDetails).
+        //The collector below only marks read while the chat is visible, so messages that arrived
+        //meanwhile would otherwise stay unread until the next list change or app resume.
+        viewModelScope.launch {
+            OpenChatTracker.current.collectLatest { openChat ->
+                if (openChat != OpenChatTracker.OpenChat(chatId, isGroup)) return@collectLatest
+                if (!OpenChatTracker.isSeenAfterConfirmDelay(chatId = chatId, isGroup = isGroup)) return@collectLatest
+                if (SessionCache.isLoggedIn() && hasUnreadMessages()) {
+                    setAllMessagesRead()
+                }
+            }
+        }
+
         // Messages: keep displayItems in ChatState up to date, and set all messages read on change
         viewModelScope.launch {
             messageDisplayItemsFlow.collectLatest { displayItems ->
                 _state.update { it.copy(displayItems = displayItems) }
 
                 if (AppLifecycleManager.isAppInForeground) {
+                    // A message landing while the user is leaving the app (home swipe still
+                    // running, activity not yet paused) must not be marked read unseen - wait,
+                    // then require the chat to still be on screen. A newer emission cancels the
+                    // wait (collectLatest), and an abandoned read is retried by appResumedEvent.
+                    delay(OpenChatTracker.SEEN_CONFIRM_DELAY)
+                    if (!OpenChatTracker.isSeen(chatId = chatId, isGroup = isGroup)) return@collectLatest
+
                     val messageItems = displayItems.filterIsInstance<MessageDisplayItem.MessageItem>()
                     // Messages come back newest-first (see MessageDao.getMessagesByUserIdFlow),
                     // so the newest is the first MessageItem, not the last.

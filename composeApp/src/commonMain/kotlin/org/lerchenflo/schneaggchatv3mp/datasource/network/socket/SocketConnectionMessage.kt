@@ -1,10 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.socket
 
+import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
@@ -84,6 +85,13 @@ sealed interface SocketConnectionMessage {
      * [heading] are more revealing live driving telemetry, only sent when "Advanced location
      * sharing" is enabled.
      */
+    /** OUTBOUND: confirms a new [MessageChange] arrived, so the server drops its held push
+     * fallback for it. The server only waits for this from clients announcing it in the
+     * handshake (see SocketConnectionManager.ACK_SUPPORT_HEADER). */
+    @Serializable
+    @SerialName("messageack")
+    data class MessageAck(val messageId: String) : SocketConnectionMessage
+
     @Serializable
     @SerialName("locationupdate")
     data class LocationUpdate(
@@ -214,10 +222,14 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     // an open group chat never matched, so group messages notified even while that
                     // group chat was open and focused.
                     val chatId = if (message.groupMessage) message.receiverId else message.senderId
-                    if (OpenChatTracker.isChatOpen(chatId = chatId, isGroup = message.groupMessage)){
-                        if (!AppLifecycleManager.isAppInForeground) {
-                            println("Noti in current chat, but app is minimized, showing noti")
-                            NotificationManager.showNotification(message, fallbackGroupName = group?.name)
+                    if (OpenChatTracker.isSeen(chatId = chatId, isGroup = message.groupMessage)) {
+                        // Chat is on screen - but the user may be mid-way leaving the app. Only
+                        // stay silent if it is still on screen after the confirm delay. Own scope,
+                        // so the media fetch below is not held up by the wait.
+                        KoinPlatform.getKoin().get<ApplicationScope>().launch {
+                            if (!OpenChatTracker.isSeenAfterConfirmDelay(chatId = chatId, isGroup = message.groupMessage)) {
+                                NotificationManager.showNotification(message, fallbackGroupName = group?.name)
+                            }
                         }
                     } else {
                         NotificationManager.showNotification(message, fallbackGroupName = group?.name)
@@ -232,6 +244,14 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                         appRepository.getAudiosForMessageIds(listOf(socketMessage.message.messageId))
                         println("fething audio in Socketconecction")
                     }
+                }
+
+                // Stored and notified (or the seen-check scheduled) - tell the server, so it drops
+                // the push it holds back for this message. No ack means it pushes after a few seconds.
+                if (socketMessage.newMessage && !socketMessage.deleted) {
+                    val ack = SocketConnectionMessage.MessageAck(socketMessage.message.messageId)
+                    KoinPlatform.getKoin().get<SocketConnectionManager>()
+                        .sendMessage(AppJson.instance.encodeToString<SocketConnectionMessage>(ack))
                 }
             }
 
@@ -478,8 +498,9 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 userRepository.setOnlineFriendIds(socketMessage.onlineFriendIds.toSet())
             }
 
-            //Outbound-only - we send this ourselves, the server never echoes it back
+            //Outbound-only - we send these ourselves, the server never echoes them back
             is SocketConnectionMessage.LocationUpdate -> Unit
+            is SocketConnectionMessage.MessageAck -> Unit
 
         }
     } catch (e: Exception) {
