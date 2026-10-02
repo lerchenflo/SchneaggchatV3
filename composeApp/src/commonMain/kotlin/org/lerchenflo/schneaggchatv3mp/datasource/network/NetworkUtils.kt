@@ -942,6 +942,7 @@ class NetworkUtils(
         val sendDate: Long,
         val lastChanged: Long,
         val deleted: Boolean,
+        val edited: Boolean = false,
         val readers: List<ReaderResponse>,
         val reactions: List<ReactionResponse> = emptyList(),
         val version: Long = 0L,

@@ -26,6 +26,7 @@ fun NetworkUtils.MessageResponse.toDomainMessage(
     sendDate = sendDate.toString(),
     changeDate = lastChanged.toString(),
     deleted = deleted,
+    edited = edited,
     groupMessage = groupMessage,
     answerId = answerId,
     sent = true,

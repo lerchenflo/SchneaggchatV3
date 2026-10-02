@@ -2296,6 +2296,7 @@ class AppRepository(
                         messageRepository.upsertMessage(existing.copy(
                             content = request.data.content,
                             changeDate = request.data.lastChanged.toString(),
+                            edited = true,
                         ))
                     }
 

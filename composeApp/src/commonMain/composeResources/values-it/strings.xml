@@ -432,6 +432,7 @@
     <string name="reply">Rispondi</string>
     <string name="copy">Copia</string>
     <string name="edit">Modifica</string>
+    <string name="message_edited">Modificato</string>
     <string name="delete">Elimina</string>
     <string name="message_details">Dettagli messaggio</string>
     <string name="readers">Lettori</string>

@@ -60,6 +60,8 @@ data class MessageDto(
 
     var deleted: Boolean = false,
 
+    var edited: Boolean = false,
+
     var myMessage: Boolean, //Keep track if this is a message sent by me or not
     var readByMe: Boolean,
 

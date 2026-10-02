@@ -46,6 +46,7 @@ data class Message(
     var sendDate: String = "",
     var changeDate: String = "",
     var deleted: Boolean = false,
+    var edited: Boolean = false,
 
     var groupMessage: Boolean = false,
     var answerId: String? = null,
@@ -157,6 +158,7 @@ fun MessageDto.toMessage(readers: List<MessageReader> = emptyList()): Message = 
     sendDate = this.sendDate,
     changeDate = this.updatedAt,
     deleted = this.deleted,
+    edited = this.edited,
     groupMessage = this.groupMessage,
     answerId = this.answerId,
     sent = this.sent,
@@ -186,6 +188,7 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         sendDate = this.sendDate,
         updatedAt = this.changeDate,
         deleted = this.deleted,
+        edited = this.edited,
         groupMessage = this.groupMessage,
         answerId = this.answerId,
         sent = this.sent,
