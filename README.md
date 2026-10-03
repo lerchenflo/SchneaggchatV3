@@ -23,6 +23,10 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Chat: Bearbeitete Nachrichten zeigen Bearbeitungs-Icon neben Zeitstempel
+- Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit (mit Remote-Abmeldung)
+
+#### Bugfixes
+- Benachrichtigungen: Nachrichtenbenachrichtigungen auf Android behoben (konnten stillschweigend fehlschlagen)
 
 ### 3.0.18
 

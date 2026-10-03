@@ -294,19 +294,24 @@ class AppRepository(
      * offline too, the session then only dies with its expiry.
      *
      * The device's push token goes along, otherwise the server keeps sending notifications for the
-     * account this device just left.
+     * account this device just left. That also holds when the session is already dead (ended from
+     * another device's device list, refresh rejected): then only the push token is sent.
      *
      * Bounded by [LOGOUT_SERVER_CALL_TIMEOUT] - the HTTP client would otherwise let the user wait
      * up to its 30 s request timeout on a bad network before the local logout even starts. The
      * server side call is idempotent, so a cancelled attempt that still lands is harmless.
      */
     private suspend fun endServerSession(refreshToken: String?) {
-        if (refreshToken.isNullOrBlank() || !JwtUtils.isTokenDateValid(refreshToken)) return
+        val usableRefreshToken = refreshToken?.takeIf { it.isNotBlank() && JwtUtils.isTokenDateValid(it) }
 
         val finished = withTimeoutOrNull(LOGOUT_SERVER_CALL_TIMEOUT) {
+            // Inside the timeout: fetching the FCM token can hang offline
+            val notificationToken = KoinPlatform.getKoin().get<Notifier>().getToken()
+            if (usableRefreshToken == null && notificationToken.isNullOrBlank()) return@withTimeoutOrNull Unit
+
             networkUtils.logout(
-                refreshToken = refreshToken,
-                notificationToken = KoinPlatform.getKoin().get<Notifier>().getToken(),
+                refreshToken = usableRefreshToken,
+                notificationToken = notificationToken,
                 isAndroid = appVersion.isAndroid(),
             ).trackConnectivity()
                 .onError { loggingRepository.logWarning("Logout: server session not ended (${it.errorCode}): ${it.message}") }
@@ -1596,6 +1601,33 @@ class AppRepository(
             is NetworkResult.Success<*> -> {
                 return true
             }
+        }
+    }
+
+
+    /**
+     * Logged-in devices of the own account, or null when loading failed (error already sent).
+     */
+    suspend fun getSessions(): List<NetworkUtils.SessionResponse>? {
+        return when (val result = networkUtils.getSessions().trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                null
+            }
+            is NetworkResult.Success -> result.data
+        }
+    }
+
+    /**
+     * Logs one of the own devices out remotely.
+     */
+    suspend fun endSession(sessionId: String): Boolean {
+        return when (val result = networkUtils.endSession(sessionId).trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
+            is NetworkResult.Success<*> -> true
         }
     }
 

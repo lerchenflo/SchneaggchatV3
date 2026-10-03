@@ -234,6 +234,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.DeveloperSettings::class, Route.DeveloperSettings.serializer())
             subclass(Route.UserSettings::class, Route.UserSettings.serializer())
             subclass(Route.PrivacyAndSecuritySettings::class, Route.PrivacyAndSecuritySettings.serializer())
+            subclass(Route.LoggedInDevices::class, Route.LoggedInDevices.serializer())
             subclass(Route.NotificationSettings::class, Route.NotificationSettings.serializer())
             subclass(Route.AppearanceSettings::class, Route.AppearanceSettings.serializer())
             subclass(Route.MiscSettings::class, Route.MiscSettings.serializer())

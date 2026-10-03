@@ -1730,4 +1730,16 @@
     <string name="feedback_delete_comment_confirm">Delete this comment?</string>
     <string name="feedback_change_status">Change status</string>
     <string name="feedback_details_load_error">Couldn't load the details.</string>
+    <string name="logged_in_devices">Logged-in devices</string>
+    <string name="logged_in_devices_description">See where your account is logged in and log out devices</string>
+    <string name="logged_in_devices_this_device">This device</string>
+    <string name="logged_in_devices_last_active">Last active: %1$s</string>
+    <string name="logged_in_devices_since">Logged in since: %1$s</string>
+    <string name="logged_in_devices_unknown_device">Unknown device</string>
+    <string name="logged_in_devices_logout_device">Log out device</string>
+    <string name="logged_in_devices_logout_confirm">Log out %1$s? The device will be logged out within the next 15 minutes.</string>
+    <string name="logged_in_devices_logged_out">Device logged out</string>
+    <string name="logged_in_devices_load_error">Couldn't load your devices.</string>
+    <string name="logged_in_devices_retry">Retry</string>
+    <string name="email_check_hello">Hello %1$s!</string>
 </resources>

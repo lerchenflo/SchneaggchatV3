@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
@@ -58,6 +59,8 @@ import schneaggchatv3mp.composeapp.generated.resources.email_provider_warning
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
+import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices
+import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_description
 import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.privacy_and_security
 import schneaggchatv3mp.composeapp.generated.resources.privacy_group_legal
@@ -73,7 +76,8 @@ fun PrivacyAndSecuritySettings(
     modifier: Modifier = Modifier.fillMaxWidth(),
     viewModel: PrivacyAndSecurityViewModel,
     sharedSettingsViewmodel: SharedSettingsViewmodel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    navigateLoggedInDevices: () -> Unit
 ) {
     val ownuser = sharedSettingsViewmodel.ownUser
     val uriHandler = LocalUriHandler.current
@@ -146,15 +150,6 @@ fun PrivacyAndSecuritySettings(
                 }
             )
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Logout
-            SettingsOption(
-                icon = Icons.AutoMirrored.Default.ExitToApp,
-                text = stringResource(Res.string.logout),
-                onClick = { showLogoutDialog = true }
-            )
-
             // Group 2: Location & Privacy
             SettingsDivider(
                 title = stringResource(Res.string.privacy_group_location)
@@ -194,6 +189,25 @@ fun PrivacyAndSecuritySettings(
                         uriHandler.openUri(getPrivacyPolicyUrl(serverUrl))
                     }
                 }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Logged-in devices
+            SettingsOption(
+                icon = Icons.Default.Devices,
+                text = stringResource(Res.string.logged_in_devices),
+                subtext = stringResource(Res.string.logged_in_devices_description),
+                onClick = navigateLoggedInDevices
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Logout
+            SettingsOption(
+                icon = Icons.AutoMirrored.Default.ExitToApp,
+                text = stringResource(Res.string.logout),
+                onClick = { showLogoutDialog = true }
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)

@@ -433,6 +433,7 @@
     <string name="reply">Antworta</string>
     <string name="copy">Kopiera</string>
     <string name="edit">Bearbeita</string>
+    <string name="message_edited">Bearbeitet</string>
     <string name="delete">Löscha</string>
     <string name="message_details">Nochrichtadetails</string>
     <string name="readers">Leser</string>
@@ -1730,4 +1731,16 @@ Mealds, egal wie klenn.</string>
     <string name="feedback_delete_comment_confirm">Dean Kommentar löscha?</string>
     <string name="feedback_change_status">Status ändra</string>
     <string name="feedback_details_load_error">Details hond ned glada werra künna.</string>
+    <string name="logged_in_devices">Igloggte Geräte</string>
+    <string name="logged_in_devices_description">Luag, wo din Account igloggt isch, und logg Geräte us</string>
+    <string name="logged_in_devices_this_device">Des Gerät</string>
+    <string name="logged_in_devices_last_active">S letzte mol aktiv: %1$s</string>
+    <string name="logged_in_devices_since">Igloggt sit: %1$s</string>
+    <string name="logged_in_devices_unknown_device">Unbekanntes Gerät</string>
+    <string name="logged_in_devices_logout_device">Gerät uslogga</string>
+    <string name="logged_in_devices_logout_confirm">%1$s uslogga? S Gerät wird innerhalb vo da nächsta 15 Minuta usgloggt.</string>
+    <string name="logged_in_devices_logged_out">Gerät usgloggt</string>
+    <string name="logged_in_devices_load_error">Dine Geräte hond ned glada werra künna.</string>
+    <string name="logged_in_devices_retry">Nomml versuacha</string>
+    <string name="email_check_hello">Grüße %1$s!</string>
 </resources>
