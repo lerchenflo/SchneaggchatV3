@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
+import androidx.core.graphics.drawable.IconCompat
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -156,14 +157,17 @@ actual class Notifier(private val context: Context, private val permissionManage
     }
 
     private fun postMessageNotification(notifId: Int, record: ActiveConversation) {
-        val mePerson = Person.Builder().setName(ownDisplayName()).build()
+        //Every Person carries the app icon - without one, MessagingStyle draws a letter avatar
+        //(sender initial in a coloured circle) instead of the Schneaggchat logo.
+        val appIcon = IconCompat.createWithResource(context, context.applicationInfo.icon)
+        val mePerson = Person.Builder().setName(ownDisplayName()).setIcon(appIcon).build()
         val style = NotificationCompat.MessagingStyle(mePerson)
             .setGroupConversation(record.groupChat)
         if (record.groupChat) {
             record.groupName?.let { style.setConversationTitle(it) }
         }
         record.messages.forEach { message ->
-            val sender = message.senderName?.let { Person.Builder().setName(it).build() }
+            val sender = message.senderName?.let { Person.Builder().setName(it).setIcon(appIcon).build() }
             style.addMessage(message.text, message.timestamp, sender)
         }
 
