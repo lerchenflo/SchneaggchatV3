@@ -6,17 +6,25 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.wake.WakeAlarmService
+import kotlin.time.Duration.Companion.seconds
 
 class AppFirebaseMessagingService : FirebaseMessagingService() {
+
+    private companion object {
+        //A high priority FCM message buys roughly 10s of execution, stay well inside it
+        val NOTIFICATION_TIMEOUT = 8.seconds
+    }
 
     override fun onNewToken(token: String) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -36,42 +44,59 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
             return
         }
 
-        //Blocking on purpose: onMessageReceived already runs on a background thread, and FCM only
-        //keeps the process alive until it returns - work launched into a detached scope can be
-        //frozen or killed with the process before the notification is ever posted.
+        //Blocking on purpose: onMessageReceived runs on a worker thread, and returning hands the
+        //process back to the OS - a fire-and-forget coroutine could be frozen or killed before
+        //the notification is posted. The seen-check below can wait up to SEEN_CONFIRM_DELAY.
         runBlocking(Dispatchers.IO) {
             runCatching {
-                val languageService = KoinPlatform.getKoin().get<LanguageService>()
-                languageService.applyLanguage(languageService.getCurrentLanguage())
+                withTimeout(NOTIFICATION_TIMEOUT) { showNotification(decoded) }
+            }.onFailure { e -> logPushError(e) }
+        }
 
-                val notifier = KoinPlatform.getKoin().get<Notifier>()
-                val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
-
-                val content = resolveLocalizedContent(decoded) ?: return@runCatching
-
-                val suppressNotification = AppLifecycleManager.isAppInForeground
-                    && decoded is DecodedNotification.Message //Suppress only messages
-                    //Suppress only when the chat this notification belongs to is currently open on screen
-                    && decoded.chatTargetId?.let { OpenChatTracker.isChatOpen(chatId = it, isGroup = decoded.groupMessage) } == true
-
-                if (!suppressNotification) {
-                    notifier.showLocalNotification(content)
-                }
-
-                if (decoded is DecodedNotification.Message) {
-                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+        //The provisional row only speeds up an open chat, a later sync brings the message anyway
+        if (decoded is DecodedNotification.Message) {
+            KoinPlatform.getKoin().get<ApplicationScope>().launch {
+                runCatching {
+                    val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                     if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
                         // Instantly upsert a provisional row so an already-open (or now-opened)
-                        // chat shows the message before the sync below completes.
-                        appRepository.applyPushMessage(decoded)
+                        // chat shows the message before the sync completes.
+                        KoinPlatform.getKoin().get<AppRepository>().applyPushMessage(decoded)
                     }
-                }
-            }.onFailure { e ->
-                val description = "Error handling ${decoded::class.simpleName} push: ${e::class.simpleName}: ${e.message}"
-                println("[AppFirebaseMessagingService] $description")
-                runCatching {
-                    KoinPlatform.getKoin().get<LoggingRepository>().logError("[AppFirebaseMessagingService] $description")
-                }
+                }.onFailure { e -> logPushError(e) }
+            }
+        }
+    }
+
+    private suspend fun showNotification(decoded: DecodedNotification) {
+        val languageService = KoinPlatform.getKoin().get<LanguageService>()
+        languageService.applyLanguage(languageService.getCurrentLanguage())
+
+        //The server pushes a message the socket already delivered when the ack came too late -
+        //it is stored and was notified already. Not for reactions: their msgId is the existing
+        //message they react to.
+        if (decoded is DecodedNotification.Message && !decoded.reaction &&
+            KoinPlatform.getKoin().get<MessageRepository>().getMessageById(decoded.msgId) != null) {
+            return
+        }
+
+        val content = resolveLocalizedContent(decoded) ?: return
+
+        //Suppress only messages, and only when the chat they belong to is on screen and
+        //still is after the confirm delay - not while the user is leaving the app
+        val suppressNotification = decoded is DecodedNotification.Message
+            && decoded.chatTargetId?.let { OpenChatTracker.isSeenAfterConfirmDelay(chatId = it, isGroup = decoded.groupMessage) } == true
+
+        if (!suppressNotification) {
+            KoinPlatform.getKoin().get<Notifier>().showLocalNotification(content)
+        }
+    }
+
+    private fun logPushError(e: Throwable) {
+        println("[AppFirebaseMessagingService] Error handling push: ${e.message}")
+        KoinPlatform.getKoin().get<ApplicationScope>().launch {
+            runCatching {
+                KoinPlatform.getKoin().get<LoggingRepository>().logError("Handling push failed: ${e::class.simpleName}: ${e.message}")
             }
         }
     }

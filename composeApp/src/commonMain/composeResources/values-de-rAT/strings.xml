@@ -461,13 +461,6 @@
     <string name="no_friends_found_search">Freund ned gefunda?</string>
     <string name="no_friends">Keine Freunde</string>
 
-    <string name="car_nothing_nearby">Nix in da Nöhe</string>
-    <string name="car_back">Zruck</string>
-    <string name="car_filters_title">Filter</string>
-    <string name="car_filter_locations">Standorte</string>
-    <string name="car_filter_radar">Radars</string>
-    <string name="car_radar_added">Radar igfügt</string>
-
     <string name="message_delete_info">Willsch du dia Nochricht wirklich löscha?</string>
     <string name="chat_message_image">Nochrichtabild</string>
     <string name="chat_remove_image">Bild entferna</string>

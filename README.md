@@ -54,7 +54,6 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Profilbild-Dialog: Zoom und Animation
 - Freundschaftsanfragen: Bildvorschau für Profilbilder
 - Quick Reactions anpassen
-- Android Auto Support
 
 #### Bugfixes
 - Spiele: Sehr viele Bugfixes in fast allen Spielen

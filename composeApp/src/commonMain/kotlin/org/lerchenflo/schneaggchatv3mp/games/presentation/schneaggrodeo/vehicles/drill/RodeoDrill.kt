@@ -134,6 +134,7 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
         drilling = pressed && phase == VehiclePhase.RIDING
     }
 
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
     override fun update(world: RodeoWorld, dt: Float, scroll: Float) {
         finds.scrollAlong(scroll) { it.x < -ROCK_RADIUS }
         trail.replaceAll { (trailX, trailY) -> trailX - scroll to trailY }

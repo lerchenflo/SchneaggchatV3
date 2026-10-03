@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.socket
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.header
 import io.ktor.client.request.url
 import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
@@ -73,6 +74,9 @@ class SocketConnectionManager(
     }
 
     companion object {
+        /** Tells the server this client acks new messages (MessageAck), so it holds their push until then. */
+        const val ACK_SUPPORT_HEADER = "X-Socket-Acks"
+
         fun getSocketUrl(url: String): String {
             val cleanUrl = url.trimEnd('/')
 
@@ -378,6 +382,7 @@ private class SocketConnection(
             request = {
                 url(serverUrl)
                 accessToken?.let { bearerAuth(it) }
+                header(SocketConnectionManager.ACK_SUPPORT_HEADER, "1")
             }
         ) {
             session = this
