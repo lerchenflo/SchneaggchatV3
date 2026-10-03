@@ -24,6 +24,9 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Features
 - Chat: Bearbeitete Nachrichten zeigen Bearbeitungs-Icon neben Zeitstempel
 
+#### Bugfixes
+- Benachrichtigungen: Nachrichtenbenachrichtigungen auf Android behoben (konnten stillschweigend fehlschlagen)
+
 ### 3.0.18
 
 ##### Highlights

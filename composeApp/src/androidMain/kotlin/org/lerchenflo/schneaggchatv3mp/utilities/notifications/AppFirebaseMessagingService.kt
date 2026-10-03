@@ -5,6 +5,7 @@ import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
@@ -35,7 +36,10 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
             return
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        //Blocking on purpose: onMessageReceived already runs on a background thread, and FCM only
+        //keeps the process alive until it returns - work launched into a detached scope can be
+        //frozen or killed with the process before the notification is ever posted.
+        runBlocking(Dispatchers.IO) {
             runCatching {
                 val languageService = KoinPlatform.getKoin().get<LanguageService>()
                 languageService.applyLanguage(languageService.getCurrentLanguage())
@@ -43,7 +47,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
                 val notifier = KoinPlatform.getKoin().get<Notifier>()
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
 
-                val content = resolveLocalizedContent(decoded) ?: return@launch
+                val content = resolveLocalizedContent(decoded) ?: return@runCatching
 
                 val suppressNotification = AppLifecycleManager.isAppInForeground
                     && decoded is DecodedNotification.Message //Suppress only messages
@@ -63,7 +67,11 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
                     }
                 }
             }.onFailure { e ->
-                println("[AppFirebaseMessagingService] Error handling push: ${e.message}")
+                val description = "Error handling ${decoded::class.simpleName} push: ${e::class.simpleName}: ${e.message}"
+                println("[AppFirebaseMessagingService] $description")
+                runCatching {
+                    KoinPlatform.getKoin().get<LoggingRepository>().logError("[AppFirebaseMessagingService] $description")
+                }
             }
         }
     }

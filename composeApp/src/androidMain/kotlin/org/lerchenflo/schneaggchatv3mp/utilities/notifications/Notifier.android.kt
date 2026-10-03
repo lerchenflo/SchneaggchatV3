@@ -14,9 +14,11 @@ import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -34,6 +36,10 @@ const val EXTRA_FROM_NOTIFICATION = "from_notification"
 //and read aloud by Android Auto - bounded so a chat that's been unread for a while doesn't build
 //an ever-growing in-memory list.
 private const val MAX_HISTORY_PER_CHAT = 6
+
+//Upper bound for resolving our own display name from the database while building a notification -
+//a slow or stuck query must never keep a message notification from being posted.
+private const val OWN_NAME_LOOKUP_TIMEOUT_MS = 1_000L
 
 actual class Notifier(private val context: Context, private val permissionManager: PermissionManager) {
 
@@ -73,11 +79,21 @@ actual class Notifier(private val context: Context, private val permissionManage
         return permissionManager.checkNotificationPermission() == PermissionState.GRANTED
     }
 
+    //Synchronized: pushes (one coroutine each), the socket handler and the notification action
+    //receivers all reach this from different threads, and activeConversations is a plain map.
+    @Synchronized
     actual fun showLocalNotification(content: NotificationContent) {
         createChannelIfNeeded()
 
         if (content.chatId != null) {
-            showMessageNotification(content)
+            try {
+                showMessageNotification(content)
+            } catch (e: Exception) {
+                //Never drop a message because the MessagingStyle notification could not be built -
+                //fall back to a plain one and record why, so the failure shows up in the logs.
+                logError("Message notification failed, showing plain fallback: ${e::class.simpleName}: ${e.message}")
+                showPlainNotification(content)
+            }
         } else {
             showPlainNotification(content)
         }
@@ -87,7 +103,7 @@ actual class Notifier(private val context: Context, private val permissionManage
         val pendingIntent = PendingIntent.getActivity(
             context,
             content.id,
-            launchIntent(chatId = null, groupChat = false),
+            launchIntent(chatId = content.chatId, groupChat = content.groupChat),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -131,6 +147,7 @@ actual class Notifier(private val context: Context, private val permissionManage
     }
 
     /** Appends the reply we just sent to the conversation's history and re-posts, confirming to the user (and Android Auto) that it went out. */
+    @Synchronized
     fun appendSentReply(notifId: Int, replyText: String) {
         val record = activeConversations[notifId] ?: return
         record.messages.add(StyledMessage(text = replyText, timestamp = System.currentTimeMillis(), senderName = null))
@@ -256,7 +273,9 @@ actual class Notifier(private val context: Context, private val permissionManage
         val resolved = runCatching {
             runBlocking {
                 val ownId = SessionCache.requireLoggedIn()?.userId ?: return@runBlocking null
-                KoinPlatform.getKoin().get<UserRepository>().getUserFlow(ownId).first()?.displayName
+                withTimeoutOrNull(OWN_NAME_LOOKUP_TIMEOUT_MS) {
+                    KoinPlatform.getKoin().get<UserRepository>().getUserFlow(ownId).first()?.displayName
+                }
             }
         }.getOrNull()?.takeIf { it.isNotBlank() }
 
@@ -269,6 +288,12 @@ actual class Notifier(private val context: Context, private val permissionManage
             ?: "You"
     }
 
+    private fun logError(message: String) {
+        println("[Notifier] $message")
+        runCatching { runBlocking { KoinPlatform.getKoin().get<LoggingRepository>().logError("[Notifier] $message") } }
+    }
+
+    @Synchronized
     actual fun cancelNotification(id: Int) {
         activeConversations.remove(id)
         NotificationManagerCompat.from(context).cancel(id)
@@ -278,6 +303,7 @@ actual class Notifier(private val context: Context, private val permissionManage
         ids.forEach { cancelNotification(it) }
     }
 
+    @Synchronized
     actual fun cancelAllNotifications() {
         activeConversations.clear()
         NotificationManagerCompat.from(context).cancelAll()
