@@ -6,7 +6,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 ## Was macht Schneaggchat besonders
 - Vorarlbergerisch als Sprachoption
-- Umfragen mit eigenen Antworten
+- Umfragen mit eigenen Antworten + Unterumfragen
 - Userbeschreibungen (Freunde können gemeinsam einen Text über dich verfassen)
 - Nachrichten - Reaktionen (Auch mit Text)
 - Geburtstagsanzeige + Benachrichtigungen
