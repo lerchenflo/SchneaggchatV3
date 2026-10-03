@@ -150,25 +150,6 @@ fun PrivacyAndSecuritySettings(
                 }
             )
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Logged-in devices
-            SettingsOption(
-                icon = Icons.Default.Devices,
-                text = stringResource(Res.string.logged_in_devices),
-                subtext = stringResource(Res.string.logged_in_devices_description),
-                onClick = navigateLoggedInDevices
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Logout
-            SettingsOption(
-                icon = Icons.AutoMirrored.Default.ExitToApp,
-                text = stringResource(Res.string.logout),
-                onClick = { showLogoutDialog = true }
-            )
-
             // Group 2: Location & Privacy
             SettingsDivider(
                 title = stringResource(Res.string.privacy_group_location)
@@ -208,6 +189,25 @@ fun PrivacyAndSecuritySettings(
                         uriHandler.openUri(getPrivacyPolicyUrl(serverUrl))
                     }
                 }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Logged-in devices
+            SettingsOption(
+                icon = Icons.Default.Devices,
+                text = stringResource(Res.string.logged_in_devices),
+                subtext = stringResource(Res.string.logged_in_devices_description),
+                onClick = navigateLoggedInDevices
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Logout
+            SettingsOption(
+                icon = Icons.AutoMirrored.Default.ExitToApp,
+                text = stringResource(Res.string.logout),
+                onClick = { showLogoutDialog = true }
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)

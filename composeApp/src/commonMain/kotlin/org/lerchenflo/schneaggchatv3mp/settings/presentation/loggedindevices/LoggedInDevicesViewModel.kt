@@ -83,7 +83,7 @@ class LoggedInDevicesViewModel(
 // Device names carry a device id suffix (see AppVersion.getDeviceName actuals), e.g.
 // "Pixel 8 - androidId: 1a2b" or "iPhone 15 (iOS 17.5) - iPhone - vendorId: ABC" - only the
 // human-readable part is shown.
-private val deviceIdSuffix = Regex("""\s+-\s+(androidId|vendorId|macAddress):.*$""")
+private val deviceIdSuffix = Regex("""\s+-\s+(androidId|vendorId|installId|macAddress):.*$""")
 
 private fun NetworkUtils.SessionResponse.toLoggedInDevice(isCurrentDevice: Boolean): LoggedInDevice {
     val withoutId = deviceName?.replace(deviceIdSuffix, "")?.trim()
