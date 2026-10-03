@@ -77,6 +77,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.maplibre.compose.camera.CameraAnimation
 import org.maplibre.compose.camera.CameraMoveReason
 import org.maplibre.compose.camera.CameraPosition
+import org.maplibre.compose.camera.CameraUpdate
 import org.maplibre.compose.interaction.ClickResult
 import org.maplibre.compose.interaction.MapInteractions
 import org.maplibre.compose.location.LocationAccuracy
@@ -193,7 +194,7 @@ fun SchneaggmapScreen(
         val position = ownLocation?.position
         if (!hasAutoCentered && state.ownLocationShared && position != null) {
             hasAutoCentered = true
-            mapState.animateCameraPosition(CameraPosition(target = position, zoom = OWN_LOCATION_START_ZOOM))
+            mapState.animateCamera(CameraUpdate(target = position, zoom = OWN_LOCATION_START_ZOOM))
         }
     }
 
@@ -202,8 +203,8 @@ fun SchneaggmapScreen(
     LaunchedEffect(state.focusEntryTarget) {
         state.focusEntryTarget?.let { target ->
             hasAutoCentered = true
-            mapState.animateCameraPosition(
-                CameraPosition(
+            mapState.animateCamera(
+                CameraUpdate(
                     target = Position(longitude = target.long, latitude = target.lat),
                     zoom = ENTRY_FOCUS_ZOOM
                 )
@@ -234,7 +235,7 @@ fun SchneaggmapScreen(
         //whole follow loop - ensureActive() still rethrows if this effect itself got cancelled.
         suspend fun animateSafely(position: CameraPosition, animation: CameraAnimation) {
             try {
-                mapState.animateCameraPosition(position, animation)
+                mapState.animateCamera(position.toCameraUpdate(), animation)
             } catch (e: CancellationException) {
                 currentCoroutineContext().ensureActive()
             }
@@ -368,8 +369,8 @@ fun SchneaggmapScreen(
                             val loc = user.location ?: return@FriendLocationsPreview
                             isFollowingLocation = false
                             scope.launch {
-                                mapState.animateCameraPosition(
-                                    CameraPosition(
+                                mapState.animateCamera(
+                                    CameraUpdate(
                                         target = Position(longitude = loc.long, latitude = loc.lat),
                                         zoom = OWN_LOCATION_CLICK_ZOOM
                                     )
@@ -405,9 +406,9 @@ fun SchneaggmapScreen(
                         )
 
                         DisappearingScaleBar(
-                            metersPerDp = mapState.metersPerDpAtTarget,
+                            metersPerDp = { mapState.metersPerDpAtTarget },
                             color = MaterialTheme.colorScheme.background,
-                            zoom = mapState.cameraPosition.zoom
+                            zoom = { mapState.cameraPosition.zoom }
                         )
 
                     }
