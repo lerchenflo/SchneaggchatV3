@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,6 +56,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.change_email
+import schneaggchatv3mp.composeapp.generated.resources.email_check_hello
 import schneaggchatv3mp.composeapp.generated.resources.email_check_loading_data
 import schneaggchatv3mp.composeapp.generated.resources.email_check_problem
 import schneaggchatv3mp.composeapp.generated.resources.email_check_verified
@@ -76,7 +78,7 @@ fun EmailVerifiedCheckScreenRoot() {
     val serverUrl by preferencemanager.getServerUrlFlow().collectAsState(initial = BASE_SERVER_URL)
 
     if (state.userData == null || (state.userData != null && state.userData!!.emailVerifiedAt != null)) {
-        EmailCheckLoadingIndicator()
+        EmailCheckLoadingIndicator(username = state.userData?.name)
     } else{
         EmailNotVerifiedScreen(
             state = state,
@@ -87,28 +89,46 @@ fun EmailVerifiedCheckScreenRoot() {
 }
 
 @Composable
-fun EmailCheckLoadingIndicator() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+fun EmailCheckLoadingIndicator(username: String? = null) {
+    // Own user already synced -> a big full-screen greeting instead of the spinner
+    Crossfade(
+        targetState = username?.takeIf { it.isNotBlank() },
+        modifier = Modifier.fillMaxSize()
+    ) { greetedName ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
         ) {
-            RoundLoadingIndicator(
-                visible = true,
-                onClick = {},
-                size = 50.dp,
-                strokeWidth = 3.dp
-            )
+            if (greetedName != null) {
+                Text(
+                    text = stringResource(Res.string.email_check_hello, greetedName),
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Light,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    RoundLoadingIndicator(
+                        visible = true,
+                        onClick = {},
+                        size = 50.dp,
+                        strokeWidth = 3.dp
+                    )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = stringResource(Res.string.email_check_loading_data),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                    Text(
+                        text = stringResource(Res.string.email_check_loading_data),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }
@@ -331,5 +351,29 @@ private fun EmailnotverifiedPreview() {
             onAction = {  },
             onOpenFaq = {  }
         )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    apiLevel = 36
+)
+@Composable
+private fun EmailCheckLoadingIndicatorPreview() {
+    SchneaggchatTheme {
+        EmailCheckLoadingIndicator()
+    }
+}
+
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    apiLevel = 36
+)
+@Composable
+private fun EmailCheckLoadingIndicatorGreetingPreview() {
+    SchneaggchatTheme {
+        EmailCheckLoadingIndicator(username = "flo")
     }
 }

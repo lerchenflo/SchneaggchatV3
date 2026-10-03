@@ -1748,4 +1748,5 @@
     <string name="logged_in_devices_logged_out">Device logged out</string>
     <string name="logged_in_devices_load_error">Couldn't load your devices.</string>
     <string name="logged_in_devices_retry">Retry</string>
+    <string name="email_check_hello">Hello %1$s!</string>
 </resources>

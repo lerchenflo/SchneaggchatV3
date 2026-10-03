@@ -24,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.email_check_check_emails_snackbar
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
@@ -123,6 +124,11 @@ class EmailVerifiedCheckViewModel(
 
     var reroutingToChatselector = false
 
+    // True once the own user was missing locally while logged in, i.e. it only arrives with the
+    // sync after a fresh login - then the "Hello <name>" greeting is held briefly before rerouting.
+    // A normal app start already has the user, so it isn't slowed down.
+    private var ownUserCameFromSync = false
+
     init {
 
         applicationScope.launch {
@@ -149,10 +155,22 @@ class EmailVerifiedCheckViewModel(
 
                     if (reroutingToChatselector) return@collect
 
+                    if (user == null && SessionCache.authState.value is SessionCache.AuthState.LoggedIn) {
+                        ownUserCameFromSync = true
+                    }
+
+                    _state.update { cstate ->
+                        cstate.copy(
+                            userData = user,
+                            currentEmail = user?.email ?: cstate.currentEmail
+                        )
+                    }
+
                     if (user != null && user.emailVerifiedAt != null) {
                         println("Email verified in verify screen, rerouting to chatselector")
+                        reroutingToChatselector = true
+                        if (ownUserCameFromSync) delay(GREETING_DURATION)
                         runBlocking {
-                            reroutingToChatselector = true
                             navigator.navigate(
                                 destination = Route.ChatSelector,
                                 navigationOptions = Navigator.NavigationOptions(
@@ -169,16 +187,11 @@ class EmailVerifiedCheckViewModel(
                     if (user != null && user.emailVerifiedAt == null) {
                         SnackbarManager.showMessage(getString(Res.string.email_check_check_emails_snackbar), showTime = 6000)
                     }
-
-                    _state.update { cstate ->
-                        cstate.copy(
-                            userData = user,
-                            currentEmail = user?.email ?: cstate.currentEmail
-                        )
-                    }
                 }
         }
     }
 
-
+    private companion object {
+        val GREETING_DURATION = 1500.milliseconds
+    }
 }
