@@ -1731,4 +1731,15 @@
     <string name="feedback_delete_comment_confirm">Eliminare questo commento?</string>
     <string name="feedback_change_status">Cambia stato</string>
     <string name="feedback_details_load_error">Impossibile caricare i dettagli.</string>
+    <string name="logged_in_devices">Dispositivi connessi</string>
+    <string name="logged_in_devices_description">Vedi dove è connesso il tuo account e disconnetti i dispositivi</string>
+    <string name="logged_in_devices_this_device">Questo dispositivo</string>
+    <string name="logged_in_devices_last_active">Ultima attività: %1$s</string>
+    <string name="logged_in_devices_since">Connesso dal: %1$s</string>
+    <string name="logged_in_devices_unknown_device">Dispositivo sconosciuto</string>
+    <string name="logged_in_devices_logout_device">Disconnetti dispositivo</string>
+    <string name="logged_in_devices_logout_confirm">Disconnettere %1$s? Il dispositivo verrà disconnesso entro i prossimi 15 minuti.</string>
+    <string name="logged_in_devices_logged_out">Dispositivo disconnesso</string>
+    <string name="logged_in_devices_load_error">Impossibile caricare i tuoi dispositivi.</string>
+    <string name="logged_in_devices_retry">Riprova</string>
 </resources>

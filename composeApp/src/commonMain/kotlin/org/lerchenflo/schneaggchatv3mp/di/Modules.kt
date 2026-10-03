@@ -85,6 +85,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSett
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.notificationsettings.NotificationSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecurityViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.loggedindevices.LoggedInDevicesViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
@@ -332,6 +333,7 @@ val sharedmodule = module{
     viewModelOf(::UserSettingsViewModel)
 
     viewModelOf(::PrivacyAndSecurityViewModel)
+    viewModelOf(::LoggedInDevicesViewModel)
 
     viewModelOf(::NotificationSettingsViewModel)
 

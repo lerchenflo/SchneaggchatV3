@@ -1739,4 +1739,15 @@
     <string name="feedback_delete_comment_confirm">Diesen Kommentar löschen?</string>
     <string name="feedback_change_status">Status ändern</string>
     <string name="feedback_details_load_error">Details konnten nicht geladen werden.</string>
+    <string name="logged_in_devices">Angemeldete Geräte</string>
+    <string name="logged_in_devices_description">Sieh, wo dein Konto angemeldet ist, und melde Geräte ab</string>
+    <string name="logged_in_devices_this_device">Dieses Gerät</string>
+    <string name="logged_in_devices_last_active">Zuletzt aktiv: %1$s</string>
+    <string name="logged_in_devices_since">Angemeldet seit: %1$s</string>
+    <string name="logged_in_devices_unknown_device">Unbekanntes Gerät</string>
+    <string name="logged_in_devices_logout_device">Gerät abmelden</string>
+    <string name="logged_in_devices_logout_confirm">%1$s abmelden? Das Gerät wird innerhalb der nächsten 15 Minuten abgemeldet.</string>
+    <string name="logged_in_devices_logged_out">Gerät abgemeldet</string>
+    <string name="logged_in_devices_load_error">Deine Geräte konnten nicht geladen werden.</string>
+    <string name="logged_in_devices_retry">Erneut versuchen</string>
 </resources>

@@ -108,6 +108,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.Develop
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.notificationsettings.NotificationSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecuritySettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.loggedindevices.LoggedInDevicesScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
@@ -700,6 +701,14 @@ fun App() {
                                         PrivacyAndSecuritySettings(
                                             viewModel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(),
+                                            onBackClick = { scope.launch { navigator.navigateBack() } },
+                                            navigateLoggedInDevices = { scope.launch { navigator.navigate(Route.LoggedInDevices) } }
+                                        )
+                                    }
+
+                                    entry<Route.LoggedInDevices> {
+                                        LoggedInDevicesScreen(
+                                            viewModel = koinInject(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
