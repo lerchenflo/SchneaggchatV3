@@ -72,6 +72,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.ismoy.imagepickerkmp.config.CropConfig
 import io.github.ismoy.imagepickerkmp.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.picker.ImagePickerKMPConfig
@@ -165,6 +166,7 @@ fun ChatDetails(
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
     val iAmAdmin =
         (selectedChat as? ChatDetailsState.GroupDetails)?.members?.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
+    val dev = SessionCache.requireLoggedIn()?.developer ?: return
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
@@ -646,6 +648,16 @@ fun ChatDetails(
                     selectedChat.name
                 )
             )
+
+            HorizontalDivider()
+
+            if(isGroup && dev){
+                val groupDetails = selectedChat as? ChatDetailsState.GroupDetails
+                ExtentionsView(
+                    existingExtensions = groupDetails?.extensions,
+                    onExtensionAction = chatdetailsViewmodel::onExtensionAction
+                )
+            }
 
             HorizontalDivider()
 

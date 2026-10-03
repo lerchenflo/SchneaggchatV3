@@ -8,6 +8,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatExtension
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.groupextentions.ExtensionType
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 
@@ -76,6 +78,20 @@ class GroupRepository(
         val gwm: GroupWithMembersDto? = database.groupDao().getGroupWithMembersById(groupId)
         // toGroup() maps the DTO relation to a domain Group which carries members
         return gwm?.toGroup()?.members ?: emptyList()
+    }
+
+
+    suspend fun getExtensions(groupId: String): List<ChatExtension>{
+        // todo: create the entire backend of the extension feature
+        val demoExtensions = listOf<ChatExtension>(
+            ChatExtension(
+                type = ExtensionType.MONEYSPLIT
+            ),
+            ChatExtension(
+                type = ExtensionType.QUOTE
+            )
+        )
+        return demoExtensions
     }
 
     fun getGroupFlow(id: String): Flow<Group?> {

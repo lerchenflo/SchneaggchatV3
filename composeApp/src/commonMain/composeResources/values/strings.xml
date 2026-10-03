@@ -1730,4 +1730,14 @@
     <string name="feedback_delete_comment_confirm">Delete this comment?</string>
     <string name="feedback_change_status">Change status</string>
     <string name="feedback_details_load_error">Couldn't load the details.</string>
+
+    <!-- Chatextension -->
+    <string name="chatextensions">Chatextensions</string>
+    <string name="ext_add_extention">add Extension</string>
+    <string name="ext_money_split">MoneySplit</string>
+    <string name="ext_quote">Quote</string>
+    <string name="ext_tour_planner">Tour planner</string>
+    <string name="ext_text_document">shared Text Editor</string>
+
+
 </resources>

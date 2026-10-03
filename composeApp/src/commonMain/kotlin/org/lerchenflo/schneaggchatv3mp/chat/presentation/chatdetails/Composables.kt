@@ -17,14 +17,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddModerator
 import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -55,6 +58,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.groupextentions.ExtensionAction
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.groupextentions.ExtensionType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.FriendRequestAlert
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
@@ -67,8 +72,10 @@ import schneaggchatv3mp.composeapp.generated.resources.add_description_placehold
 import schneaggchatv3mp.composeapp.generated.resources.admin
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change
+import schneaggchatv3mp.composeapp.generated.resources.chatextensions
 import schneaggchatv3mp.composeapp.generated.resources.common_groups
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_member
+import schneaggchatv3mp.composeapp.generated.resources.ext_add_extention
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.groupmembers
 import schneaggchatv3mp.composeapp.generated.resources.make_admin
@@ -626,4 +633,90 @@ fun AddUserToGroupPopup(
             )
         }
     )
+}
+
+@Composable
+fun ExtentionsView(
+    existingExtensions: List<ChatExtension>?,
+    onExtensionAction: (ExtensionAction) -> Unit
+) {
+    var showAddMenu by remember { mutableStateOf(false) }
+
+    val availableTypes = remember(existingExtensions) {
+        val existingTypes = existingExtensions?.map { it.type }?.toSet().orEmpty()
+        ExtensionType.entries.filter { it !in existingTypes }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Text(stringResource(Res.string.chatextensions))
+
+        existingExtensions?.forEach { extension ->
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        onExtensionAction(
+                            ExtensionAction.OpenExtension(
+                                type = extension.type
+                            )
+                        )
+                    },
+                leadingContent = {
+                    Icon(
+                        imageVector = extension.type.getIcon(),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                headlineContent = {
+                    Text(extension.type.toUiText().asString())
+                }
+            )
+        }
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = availableTypes.isNotEmpty()) {
+                        showAddMenu = true
+                    },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                    )
+                },
+                headlineContent = {
+                    Text(stringResource(Res.string.ext_add_extention))
+                }
+            )
+
+            DropdownMenu(
+                expanded = showAddMenu,
+                onDismissRequest = { showAddMenu = false }
+            ) {
+                availableTypes.forEach { type ->
+                    DropdownMenuItem(
+                        text = { Text(type.toUiText().asString()) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = type.getIcon(),
+                                contentDescription = null,
+                            )
+                        },
+                        onClick = {
+                            showAddMenu = false
+                            onExtensionAction(
+                                ExtensionAction.AddExtension(type = type)
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    }
 }

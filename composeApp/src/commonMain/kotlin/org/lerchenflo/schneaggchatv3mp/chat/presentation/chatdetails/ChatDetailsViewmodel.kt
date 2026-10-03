@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.koin.core.resolution.ResolutionExtension
 import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -39,6 +40,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.groupextentions.ExtensionAction
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.groupextentions.ExtensionType
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
@@ -66,6 +70,10 @@ import schneaggchatv3mp.composeapp.generated.resources.wake_sent_users
 data class GroupMemberWithUser(
     val groupMember: GroupMember,
     val user: User?
+)
+
+data class ChatExtension(
+    val type: ExtensionType
 )
 
 /**
@@ -97,7 +105,8 @@ sealed interface ChatDetailsState {
 
     data class GroupDetails(
         val group: Group,
-        val members: List<GroupMemberWithUser> = emptyList()
+        val members: List<GroupMemberWithUser> = emptyList(),
+        val extensions: List<ChatExtension>
     ) : ChatDetailsState {
         override val name: String get() = group.name
         override val profilePictureUrl: String get() = group.profilePictureUrl
@@ -285,7 +294,8 @@ class ChatDetailsViewmodel(
             } else {
                 ChatDetailsState.GroupDetails(
                     group = group,
-                    members = getGroupMembersWithUsers(chatId)
+                    members = getGroupMembersWithUsers(chatId),
+                    extensions = getChatExtensions(chatId)
                 )
             }
         }
@@ -405,6 +415,22 @@ class ChatDetailsViewmodel(
             } else {
                 // todo was tuat ma mit lüt in ana gruppe wo ned in da userdatenbank sind?
                 GroupMemberWithUser(member, null)
+            }
+        }
+    }
+
+    private suspend fun getChatExtensions(groupId: String): List<ChatExtension>{
+        return groupRepository.getExtensions(groupId)
+    }
+
+    fun onExtensionAction(action: ExtensionAction) {
+
+        when (action) {
+            is ExtensionAction.OpenExtension -> {
+                // todo
+            }
+            is ExtensionAction.AddExtension -> {
+                // todo
             }
         }
     }
