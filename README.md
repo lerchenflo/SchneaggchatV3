@@ -28,6 +28,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Bugfixes
 - Benachrichtigungen: Nachrichtenbenachrichtigungen auf Android behoben (konnten stillschweigend fehlschlagen)
+- Übersetzungen verbessert
 
 ### 3.0.18
 

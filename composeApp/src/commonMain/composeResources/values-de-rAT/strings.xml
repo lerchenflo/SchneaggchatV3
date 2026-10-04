@@ -34,13 +34,13 @@
     <string name="login">Ilogga</string>
 
 
-    <string name="email_not_verified_screen_title">Du musch dine Email verifiziera vor du Schneaggchat verwenda kannsch.</string>
+    <string name="email_not_verified_screen_title">Du musch dine E-Mail verifiziera vor du Schneaggchat verwenda kannsch.</string>
     <string name="email_not_verified_email_has_been_sent1">Wenn du din Account grad erstellt hosch, isch an Bestätigungslink zu </string>
     <string name="email_not_verified_email_has_been_sent2"> unterwegs. Wenn du scho länger dabei bisch, musch an neua Link afordra.</string>
-    <string name="email_check_verified">Email - Verifizierung überprüfa</string>
+    <string name="email_check_verified">E-Mail-Verifizierung überprüfa</string>
     <string name="email_check_problem">Es tuat ned</string>
     <string name="email_check_loading_data">Account wird glada ...</string>
-    <string name="email_check_check_emails_snackbar">Bestätigungsemail gschickt. Bitte ou da Spam-Ordner prüfa. Es kann bis zu 2 Min go</string>
+    <string name="email_check_check_emails_snackbar">Bestätigungs-E-Mail gschickt. Bitte ou da Spam-Ordner prüfa. Es kann bis zu 2 Min go</string>
 
 
 
@@ -55,9 +55,9 @@
     <string name="password_forgotten">Passwort vergeassa?</string>
 
 
-    <string name="email">Email</string>
-    <string name="invalid_email">Du musch a richtige email agia</string>
-    <string name="email_provider_warning">Verwend ned so a Blödsinn Email sunsch wird din Account ghackt und du kannsch di Passwort num zrucksetza.</string>    <string name="sign_up">I hob no kuan Account</string>
+    <string name="email">E-Mail</string>
+    <string name="invalid_email">Du musch a richtige E-Mail agia</string>
+    <string name="email_provider_warning">Verwend ned so a Blödsinn E-Mail sunsch wird din Account ghackt und du kannsch din Passwort num zrucksetza.</string>    <string name="sign_up">I hob no kuan Account</string>
     <string name="loginsubtitle">Die beste App sowieso, mit lokala Sproch und loft überall</string>
     <string name="create_account">Account erstella</string>
     <string name="create_account_subtitle">beitreata</string>
@@ -84,7 +84,7 @@
     <string name="feature_disabled">Die Funktion homma abgstellt</string>
     <string name="cannot_be_empty">Des Feald darf ned leer si</string>
     <string name="password_needs_to_be_the_same">Du musch zwoamol s gliche igia</string>
-    <string name="email_exists">Es git scho an Account mit derra Email</string>
+    <string name="email_exists">Es git scho an Account mit derra E-Mail</string>
     <string name="username_exists">Es git scho an Account mit deam Nama</string>
     <string name="username_too_long">Din Nama isch z lang</string>
     <string name="username_too_short">Din Nama isch z kurz</string>
@@ -107,11 +107,11 @@
     <string name="read">gleasa</string>
     <string name="useMarkdown">Markdown-formatierung verwenda</string>
     <string name="markdownInfo">Des aktiviert Markdown im Chat, es kann aber si dassas denn kle laggt</string>
-    <string name="highlight_todays_message_timestamp">Hütige Zeitstempel hervorheba</string>
+    <string name="highlight_todays_message_timestamp">Hütige Zitstempel fürraheba</string>
     <string name="highlight_todays_message_timestamp_info">Markiert da Zitstempel vo hüt empfangana Nochrichta in da Chat-Uswahl grün</string>
     <string name="quick_reactions">Schneallreaktion</string>
     <string name="quick_reactions_info">Emojis, dia bem langa Drucka vo na Nochricht abota werrand. Zum Umsortiera züha.</string>
-    <string name="quick_reactions_empty">Kua Schnellreaktiona - du kannsch trotzdem bei jeda Nochricht a eigene Reaktion hinzufüga.</string>
+    <string name="quick_reactions_empty">Kua Schneallreaktiona - du kannsch trotzdem bei jeda Nochricht a eigene Reaktion dazuatua.</string>
     <string name="quick_reactions_reorder">Schneallreaktiona umsortiera</string>
     <string name="add_quick_reaction">Schneallreaktiona dazuatua</string>
     <string name="restore_defaults">Standard wiederherstella</string>
@@ -148,7 +148,7 @@
     <string name="app_broken_are_you_sure">Löscht alle Appdaten vom handy und startet d App neu.\nBisch da sicha dassd des willsch?</string>
     <string name="please_restart_app">Bitte start dine App neu</string>
     <string name="press_back_again_to_exit">Nomml zruck drucka zum Beenda</string>
-    <string name="verification_email_sent">Verifizierungsemail gschickt</string>
+    <string name="verification_email_sent">Verifizierungs-E-Mail gschickt</string>
     <string name="others_say_about">Freunde hond über %1$s gschrieba:</string>
     <string name="status_info">Der Text isch vo eam verfasst worra</string>
     <string name="description_info_user">Alle Freunde vo %1$s künnand dean Text bearbeita, aber %1$s kannan nur leasa.</string>
@@ -168,7 +168,7 @@
     <string name="no_description">Kua Beschreibung</string>
     <string name="remove_friend">Freund entferna</string>
     <string name="save">Speichra</string>
-    <string name="close">Schlüsa</string>
+    <string name="close">Schlüßa</string>
     <string name="you_sender">Du</string>
 
 
@@ -283,8 +283,8 @@
 
     <string name="user_settings">Account</string>
     <string name="user_settingsinfo">Änder din Profil</string>
-    <string name="emailinfo">Änder dine Email</string>
-    <string name="emailinfo_unverified">Verifizier dine Email</string>
+    <string name="emailinfo">Änder dine E-Mail</string>
+    <string name="emailinfo_unverified">Verifizier dine E-Mail</string>
 
     <string name="appearance_settings">Darstellung</string>
     <string name="appearance_settings_info">Darstellung vo da App ändra</string>
@@ -416,7 +416,7 @@
     <string name="tooltip_terms">Du musch die Bedingunga akzeptiera, sunsch kannsch die App ned verwenda</string>
     <string name="tooltip_group_name">Wähl an Nama für die Gruppa. Du kannsch an später ändra</string>
     <string name="tooltip_group_description">[Optional] Schrieb a Beschreibung für dia Gruppa. Sie kann später gändert werra</string>
-    <string name="tooltip_group_picture">Wähla a Gruppenprofilbild</string>
+    <string name="tooltip_group_picture">Wähl a Gruppenprofilbild</string>
 
 
     <string name="swipecardview_left">← Vorherige Sitta</string>
@@ -484,8 +484,8 @@
     <string name="current_phone_number">Dine aktuelle Telefonnummer: %1$s</string>
     <string name="phone_number_placeholder">Telefonnummer ...</string>
     <string name="invalid_phone_number">Des isch kua gültige Telefonnummer</string>
-    <string name="change_email">Email ändra</string>
-    <string name="resend_verification">Bestätigungsemail nomml schicka</string>
+    <string name="change_email">E-Mail ändra</string>
+    <string name="resend_verification">Bestätigungs-E-Mail nomml schicka</string>
 
 
     <string name="common_groups">Gemeinsame Gruppa (%1$s)</string>
@@ -609,14 +609,14 @@
     <string name="undercover_no_valid_starter">So loft des ned</string>
     <string name="undercover_continue">Witta</string>
     <string name="undercover_discussion_title">Fangan a stritta</string>
-    <string name="undercover_discussion_instructions">Jeda musses Wort beschrieba. Denn muss jemand usse gwählt wera.</string>
+    <string name="undercover_discussion_instructions">Jeda musses Wort beschrieba. Denn muss jemand usse gwählt werra.</string>
     <string name="undercover_start_voting">Fangan a voten</string>
     <string name="undercover_voting_title">Voting</string>
     <string name="undercover_eliminate">Eliminiera</string>
     <string name="undercover_eliminated_format">Eliminiert: %1$s</string>
     <string name="undercover_role_was_format">Er war: %1$s</string>
     <string name="undercover_mr_white_guess_title">Mr. White Rotet</string>
-    <string name="undercover_mr_white_guess_instructions">Mr. White isch eliminiert wora. Fasuachs Wort zum arota.</string>
+    <string name="undercover_mr_white_guess_instructions">Mr. White isch eliminiert worra. Fasuachs Wort zum arota.</string>
     <string name="undercover_word_guess_label">Din Guess</string>
     <string name="undercover_submit_guess">Kontrolliera lo</string>
     <string name="undercover_game_over">Spiel vorbei</string>
@@ -644,7 +644,7 @@
     <string name="undercover_rules_discussion_phase_text">Alta eig bini zful zum dean ganza scheiß übasetza. Es isch ned so deep ma voted jz hald dia usse wo ma denkt das sie Schlawiner sin. Denk oh kle drüba noch obs ned vlt sealb bisch... Zum voten künnt ma uf drei ufnand zoaga oda sowas.</string>
     
     <string name="undercover_rules_elimination_phase">Jz wöran Lüt tötet</string>
-    <string name="undercover_rules_elimination_phase_text">Wenns jz no ned gschnallt hosch kanni da oh num wittahelfa man. Wenn du mol usse gvoted wora bisch kannsch num mit voten eh klar. Wenn da Mr. White tötet wird hota a Chance des Wort fo da Zivis zum errota, schafft ers gwinnt er des Spiel! Sus hald ned und Zivis gwinnen. Ma wiederholt des usse voten solang bis nur no oan Zivi übrig isch (die Schlawiner gwinnen) oda hald alle Schalwiner (Undercover und Mr. Whites) dussa sin.</string>
+    <string name="undercover_rules_elimination_phase_text">Wenns jz no ned gschnallt hosch kanni da oh num wittahelfa man. Wenn du mol usse gvoted wora bisch kannsch num mit voten eh klar. Wenn da Mr. White tötet wird hota a Chance des Wort fo da Zivis zum errota, schafft ers gwinnt er des Spiel! Sus hald ned und Zivis gwinnen. Ma wiederholt des usse voten solang bis nur no oan Zivi übrig isch (die Schlawiner gwinnen) oda hald alle Schlawiner (Undercover und Mr. Whites) dussa sin.</string>
     
     <string name="undercover_rules_victory">Gwunna</string>
     <string name="undercover_rules_victory_text">Wenns jz no ned gschnallt hosch gang ham</string>
@@ -685,12 +685,12 @@
     <string name="poll_settings_infinite_custom_answers_warning">WARNUNG: Jeder darf so viele Antwortmöglichkeita erstella wie er mag</string>
     <string name="poll_settings_infinite_custom_and_selected_answers_warning">WARNUNG: Alle künnand tua und lo was se wennd!</string>
 
-    <string name="poll_settings_limitperentry">User pro Eintrag begrenza</string>
-    <string name="poll_settings_limitperentry_info">Leg fest, wie viele User maximal für uan Eintrag stimma künnand</string>
-    <string name="poll_option_maxvoters_withcount">Maxi. %1$s Nutzer für dean Eintrag</string>
+    <string name="poll_settings_limitperentry">User pro Itrag begrenza</string>
+    <string name="poll_settings_limitperentry_info">Leg fest, wie viele User maximal für uan Itrag stimma künnand</string>
+    <string name="poll_option_maxvoters_withcount">Maxi. %1$s Nutzer für dean Itrag</string>
 
     <string name="poll_settings_showcheckboxes">Checkboxa azoaga</string>
-    <string name="poll_settings_showcheckboxes_info">Wenn usgschalta, wird die Umfrog als einfache Liste ohne Abstimmung azoagt - nützlich für geteilte Lista wie a Einkaufsliste</string>
+    <string name="poll_settings_showcheckboxes_info">Wenn usgschalta, wird die Umfrog als uafache Liste ohne Abstimmung azoagt - nützlich für geteilte Lista wie a Einkaufsliste</string>
 
     <string name="poll_settings_allowdeleteoptions">Löscha vo Optiona erlauba</string>
     <string name="poll_settings_allowdeleteoptions_info">Erlaubt dir, jede Option zum löscha, und jedem Nutzer sine eigana Optiona zum löscha.</string>
@@ -737,9 +737,9 @@
 
     <string name="poll_option_claimed_count">%1$s/%2$s</string>
     <string name="poll_option_full">voll</string>
-    <string name="poll_haslimitedentries_info">Manche Einträg hond a begrente Anzahl an Stimma</string>
+    <string name="poll_haslimitedentries_info">Manche Iträg hond a begrenzte Anzahl an Stimma</string>
 
-    <string name="poll_listmode_info">Des isch a einfache Liste - kua Abstimmung</string>
+    <string name="poll_listmode_info">Des isch a uafache Liste - kua Abstimmung</string>
     <string name="poll_deleteoptions_info">Da Ersteller ka jede Option löscha, und Nutzer künnand alle vo eana erstellte Optiona löscha</string>
 
     <string name="poll_option_delete">Option löscha</string>
@@ -787,7 +787,7 @@
     <string name="yatzi_add_manage_players">Spielerverwaltung</string>
     <string name="yatzi_players">Spieler:</string>
     <string name="yatzi_start_game">Spiel starta</string>
-    <string name="yatzi_continue">Wittamaha</string>
+    <string name="yatzi_continue">Wittamacha</string>
     <string name="yatzi_restart">Neustarta</string>
     <string name="yatzi_new_game">Neus Spiel</string>
     <string name="yatzi_game_over">Fertig jetzt!</string>
@@ -838,7 +838,7 @@
     <string name="games_crossword_language_question">Wähl dine Rätselsproch</string>
     <string name="games_crossword_language_english">Englisch (NYT-Archiv)</string>
     <string name="games_crossword_language_german">Dütsch</string>
-    <string name="games_crossword_load_failed">Des tägliche Rätsel hot ned glada werra künna. Bitte prüf dine Internetverbindung und versuachs nomml.</string>
+    <string name="games_crossword_load_failed">S Rätsel hot ned glada werra künna. Bitte prüf dine Internetverbindung und versuachs nomml.</string>
     <string name="games_crossword_retry">Nomml versuacha</string>
     <string name="games_crossword_check">Antworta prüfa</string>
     <string name="games_crossword_restart">Neu starta</string>
@@ -860,14 +860,14 @@
     <string name="games_wordle_too_short">Zwenig Buchstaba</string>
     <string name="games_wordle_unknown_word">%1$s stoht ned in da Wortliste</string>
     <string name="games_wordle_delete">Buchstab löscha</string>
-    <string name="games_wordle_solved">Glöst in %1$d vo %2$d Versuchen · %3$s</string>
-    <string name="games_wordle_failed">Kua Versuche mehr! S Wort war %1$s</string>
+    <string name="games_wordle_solved">Glöst in %1$d vo %2$d Versuach · %3$s</string>
+    <string name="games_wordle_failed">Kua Versuache mehr! S Wort war %1$s</string>
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Tägliche Challenge (%1$s)</string>
     <string name="games_daily_reset">Es git a neue tägliche Challenge, din Fortschritt isch zruck gsetzt worra.</string>
     <string name="games_gridrush_title">Grid Rush</string>
-    <string name="games_gridrush_instructions">Züh a Linie durch benachbarte Fealda mit da glicha Farb — wenn du bi 2 oder meh Fealda loslosch, verschwindand se und die drübat rutschand abe. Räum s ganze Feald leer zum Gwinna!\n\nLängere Ketta bringand meh Punkte, und wer unterm Par blibt, kriagt an Bonus. Wenn sich kua zwoa glichfarbige Fealda meh berührand, isch da Versuach vorbei. Jeda spielt jeden Tag s gliche Feald — da Timer startet erst mit dim erschta Zug, also plan voraus!</string>
+    <string name="games_gridrush_instructions">Züh a Linie durch benachbarte Fealda mit da glicha Farb — wenn du bei 2 oder meh Fealda loslosch, verschwindand se und die drübat rutschand abe. Räum s ganze Feald leer zum Gwinna!\n\nLängere Ketta bringand meh Punkte, und wer unterm Par blibt, kriagt an Bonus. Wenn sich kua zwoa glichfarbige Fealda meh berührand, isch da Versuach vorbei. Jeda spielt jeden Tag s gliche Feald — da Timer startet erst mit dim erschta Zug, also plan voraus!</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
 
 
@@ -907,7 +907,7 @@
     <string name="recap_all_time_messages">%1$s Nochrichta insgesamt</string>
     <string name="recap_type_text">Texte</string>
     <string name="recap_type_image">Bilder</string>
-    <string name="recap_type_audio">Sprochnachrichta</string>
+    <string name="recap_type_audio">Sprochnochrichta</string>
     <string name="recap_type_poll">Umfroga</string>
     <string name="recap_typing_title">Dine Tastatur hots gspürt.</string>
     <string name="recap_characters_typed">Zeichen itippt</string>
@@ -985,7 +985,7 @@
     <string name="recap_downtime_subtitle">Nach Chaos sortiert, s größte Chaos zersch.</string>
     <string name="recap_downtime_count">%1$d×</string>
     <string name="recap_downtime_lightning">Blitzischlag</string>
-    <string name="recap_downtime_lightning_detail">Manchmol muss ma einfach loslo</string>
+    <string name="recap_downtime_lightning_detail">Manchmol muss ma uafach loslo</string>
     <string name="recap_downtime_isp_switch">Internetumstellung</string>
     <string name="recap_downtime_isp_switch_detail">A1 hot denkt sie wissand was mir bruchand.</string>
     <string name="recap_downtime_bad_internet">Schleachtes Internet</string>
@@ -1040,7 +1040,7 @@
     <string name="contribute_title">Gestalt Schneaggchat mit</string>
     <string name="contribute_message">Dia App wird nur besser, wenn du di mealdasch – und sie lebt nur witta, wenn wer d Kosta zahlt. Wähl unta uane vo da drü Möglichkeita.</string>
     <string name="contribute_bug_title">Fehler gfunda?</string>
-    <string name="contribute_bug_hint">Stürzt was ab, isch kaputt oder fühlt sich einfach falsch a?
+    <string name="contribute_bug_hint">Stürzt was ab, isch kaputt oder fühlt sich uafach falsch a?
 Mealds, egal wie klenn.</string>
     <string name="contribute_feature_title">Fehlt dir a Feature?</string>
     <string name="contribute_feature_hint">Säg was du dir wünschas, viele Features hond als Wunsch agfanga oder sind us andra Apps kopiert worra.</string>
@@ -1065,7 +1065,7 @@ Mealds, egal wie klenn.</string>
     <string name="schneaggmap_entry_title">Nama</string>
     <string name="schneaggmap_entry_description">Beschreibung</string>
 
-    <string name="schneaggmap_entry_delete">Dean Eintrag löscha. Er wird o für alle andra glöscht. Du kannschan num wiederherstella.</string>
+    <string name="schneaggmap_entry_delete">Dean Itrag löscha. Er wird o für alle andra glöscht. Du kannschan num wiederherstella.</string>
 
     <string name="latlong">Lat %1$s, Long %2$s</string>
     <string name="open_location_in_maps">In Maps öffna</string>
@@ -1114,8 +1114,8 @@ Mealds, egal wie klenn.</string>
     <string name="game_reset_message">S laufende Spiel und sin gspeicherta Fortschritt werrand verworfa. Spieler und Einstellunga blieband.</string>
     <string name="game_reset_confirm">Zrucksetza</string>
     <string name="game_reset_cancel">Abbreacha</string>
-    <string name="highscore_upload_message">Söllan d Ergebnisse vo all deana Spieler in d Highscores uffeglada werra? Ladat nur echte Spiele uffe – Testspiele versauand d Highscores.</string>
-    <string name="highscore_upload_wins_message">Söll jedem vo dena Gwinner a Sieg in d Highscores gschrieba werra? Ladat nur echte Spiele uffe – Testspiele versauand d Highscores.</string>
+    <string name="highscore_upload_message">Söllan d Ergebnisse vo allna Spieler in d Highscores uffeglada werra? Ladand nur echte Spiele uffe – Testspiele versauand d Highscores.</string>
+    <string name="highscore_upload_wins_message">Söll jedem vo dena Gwinner a Sieg in d Highscores gschrieba werra? Ladand nur echte Spiele uffe – Testspiele versauand d Highscores.</string>
     <string name="highscore_upload_confirm">Uffelada</string>
     <string name="highscore_upload_decline">Ned uffelada</string>
     <string name="highscore_upload_retry">Nomml versuacha</string>
@@ -1362,7 +1362,7 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_notification_settings_go_back">Gomma zruck zu da Einstellunga</string>
 
     <string name="ttt_settings_appearance">Darstellungs-Einstellunga</string>
-    <string name="ttt_settings_appearance_description">Do kannsch du dine Sproch (Österreichisch, Deutsch, Englisch) und s Design ändra.</string>
+    <string name="ttt_settings_appearance_description">Do kannsch du dine Sproch (Vori, Dütsch, Englisch, Italienisch) und s Design ändra.</string>
 
     <string name="ttt_appearance_settings_language">Sproch ändra</string>
     <string name="ttt_appearance_settings_language_description">Do kannsch du zwüschat Dütsch, Vori und Englisch wechsla.</string>
@@ -1458,7 +1458,7 @@ Mealds, egal wie klenn.</string>
 
     <!-- Privacy & Security -->
     <string name="privacy_and_security">Datenschutz &amp; Sicherheit</string>
-    <string name="privacy_and_security_info">Passwort, E-Mail. Standortfreigab und Kontodatenschutz</string>
+    <string name="privacy_and_security_info">Passwort, E-Mail, Standortfreigab und Kontodatenschutz</string>
     <string name="privacy_group_security">Sicherheit &amp; Authentifizierung</string>
     <string name="privacy_group_location">Standort &amp; Privatsphäre</string>
     <string name="privacy_group_legal">Daten &amp; Rechtliches</string>
@@ -1577,7 +1577,7 @@ Mealds, egal wie klenn.</string>
     <string name="games_oddoneout_description">S uane Feald finda, wo andersch isch</string>
     <string name="games_2048_description">Gliche Zahla bis 2048 zemmaschieba</string>
     <string name="games_crossword_description">S Gitter mit da Hinweis fülla</string>
-    <string name="games_wordle_description">S Wort mit fünf Buchstaba in sechs Versuach errota</string>
+    <string name="games_wordle_description">S Wort mit füf Buchstaba in sechs Versuach errota</string>
     <string name="games_yahtzee_description">Würfla und da Punkteblock fülla</string>
     <string name="games_dartcounter_description">A 301er oda 501er Leg abezella</string>
     <string name="games_undercover_description">Da Undercover entlarva, indeam du din geheims Wort umschriebsch</string>
@@ -1707,7 +1707,7 @@ Mealds, egal wie klenn.</string>
     <string name="feedback_empty">Do isch no nix.</string>
     <string name="feedback_load_error">Die Liste hot ned glada werra künna. Versuachs später nomml.</string>
     <string name="feedback_retry">Nomml versuacha</string>
-    <string name="feedback_create">Neuer Eintrag</string>
+    <string name="feedback_create">Neuer Itrag</string>
     <string name="feedback_create_title_feature">Feature wünscha</string>
     <string name="feedback_create_title_bug">Bug mealda</string>
     <string name="feedback_duplicate_warning">Bitte luag zersch in da Liste, obs dean Itrag scho git. Wenn jo, stimm döt ab oder kommentier.</string>
@@ -1726,8 +1726,8 @@ Mealds, egal wie klenn.</string>
     <string name="feedback_no_comments">No kua Kommentare.</string>
     <string name="feedback_comment_hint">Meh Infos oder an Kommentar dazuafüga...</string>
     <string name="feedback_send_comment">Kommentar senda</string>
-    <string name="feedback_delete_entry">Eintrag löscha</string>
-    <string name="feedback_delete_entry_confirm">Dean Eintrag und alle Kommentare löscha?</string>
+    <string name="feedback_delete_entry">Itrag löscha</string>
+    <string name="feedback_delete_entry_confirm">Dean Itrag und alle Kommentare löscha?</string>
     <string name="feedback_delete_comment_confirm">Dean Kommentar löscha?</string>
     <string name="feedback_change_status">Status ändra</string>
     <string name="feedback_details_load_error">Details hond ned glada werra künna.</string>

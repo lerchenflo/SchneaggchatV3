@@ -36,7 +36,7 @@
 
     <string name="email_not_verified_screen_title">Du musst deine Email verifizieren, bevor du Schneaggchat verwenden kannst.</string>
     <string name="email_not_verified_email_has_been_sent1">Wenn du deinen Account gerade erstellt hast, ist ein Bestätigungslink zu </string>
-    <string name="email_not_verified_email_has_been_sent2">unterwegs. Wenn du schon länger dabei bist, musst du einen neuen Link anfordern.</string>
+    <string name="email_not_verified_email_has_been_sent2"> unterwegs. Wenn du schon länger dabei bist, musst du einen neuen Link anfordern.</string>
     <string name="email_check_verified">Email - Verifizierung überprüfen</string>
     <string name="email_check_problem">Es funktioniert nicht</string>
     <string name="email_check_loading_data">Accountdaten werden geladen ...</string>
@@ -178,7 +178,7 @@
     <string name="theme_sel_desc">Ändere das Aussehen deiner App</string>
 
     <string name="camera">Kamera</string>
-    <string name="gallery">Gallerie</string>
+    <string name="gallery">Galerie</string>
     <string name="choose_image_source">Bildquelle auswählen</string>
     <string name="image_picker_error">Fehler: %1$s</string>
 
@@ -633,9 +633,7 @@
     <string name="undercover_rules_roles_text">Es gibt 3 Gruppen im Spiel: Zivilisten, Undercover und Mr. White. Die Mehrheit der Einwohner sind friedliebende Zivilisten. Es gibt bis zu zwei Gruppen von Betrügern: Undercover und Mr. White.</string>
     
     <string name="undercover_rules_secret_word">Dein geheimes Wort</string>
-    <string name="undercover_rules_secret_word_text">Zu Beginn des Spiels erhält jeder ein geheimes Wort. In jedem Spiel werden zwei geheime Wörter verwendet. Denken Sie daran, Ihr geheimes Wort vor den anderen geheim zu halten. Zivilisten erhalten dasselbe geheime Wort. Undercover-Agenten erhalten ein Wort, das sich leicht von dem der Zivilisten unterscheidet. Mr. Whites erhalten kein Wort. Zu diesem Zeitpunkt wissen Sie noch nicht, ob Sie ein Zivilist oder ein Undercover-Agent sind.
-
-Übersetzt mit DeepL.com (kostenlose Version)</string>
+    <string name="undercover_rules_secret_word_text">Zu Beginn des Spiels erhält jeder ein geheimes Wort. In jedem Spiel werden zwei geheime Wörter verwendet. Denken Sie daran, Ihr geheimes Wort vor den anderen geheim zu halten. Zivilisten erhalten dasselbe geheime Wort. Undercover-Agenten erhalten ein Wort, das sich leicht von dem der Zivilisten unterscheidet. Mr. Whites erhalten kein Wort. Zu diesem Zeitpunkt wissen Sie noch nicht, ob Sie ein Zivilist oder ein Undercover-Agent sind.</string>
     
     <string name="undercover_rules_gameplay">Spielzüge</string>
     
@@ -1363,7 +1361,7 @@
     <string name="ttt_notification_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
 
     <string name="ttt_settings_appearance">Darstellungs-Einstellungen</string>
-    <string name="ttt_settings_appearance_description">Hier kannst du deine Sprache (Österreichisch, Deutsch, Englisch) und dein Design ändern.</string>
+    <string name="ttt_settings_appearance_description">Hier kannst du deine Sprache (Österreichisch, Deutsch, Englisch, Italienisch) und dein Design ändern.</string>
 
     <string name="ttt_appearance_settings_language">Sprache ändern</string>
     <string name="ttt_appearance_settings_language_description">Hier kannst du zwischen Deutsch, Vorarlbergerisch und Englisch wechseln.</string>
