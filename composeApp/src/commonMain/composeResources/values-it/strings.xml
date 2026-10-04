@@ -1742,5 +1742,7 @@
     <string name="logged_in_devices_logged_out">Dispositivo disconnesso</string>
     <string name="logged_in_devices_load_error">Impossibile caricare i tuoi dispositivi.</string>
     <string name="logged_in_devices_retry">Riprova</string>
+    <string name="logged_in_devices_logout_all">Disconnetti tutti i dispositivi</string>
+    <string name="logged_in_devices_logout_all_confirm">Disconnettere tutti i dispositivi, incluso questo? Gli altri dispositivi verranno disconnessi entro i prossimi 15 minuti.</string>
     <string name="email_check_hello">Ciao %1$s!</string>
 </resources>

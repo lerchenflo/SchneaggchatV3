@@ -1750,5 +1750,7 @@
     <string name="logged_in_devices_logged_out">Gerät abgemeldet</string>
     <string name="logged_in_devices_load_error">Deine Geräte konnten nicht geladen werden.</string>
     <string name="logged_in_devices_retry">Erneut versuchen</string>
+    <string name="logged_in_devices_logout_all">Alle Geräte abmelden</string>
+    <string name="logged_in_devices_logout_all_confirm">Alle Geräte abmelden, auch dieses? Andere Geräte werden innerhalb der nächsten 15 Minuten abgemeldet.</string>
     <string name="email_check_hello">Hallo %1$s!</string>
 </resources>

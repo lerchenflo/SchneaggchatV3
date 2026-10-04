@@ -1748,5 +1748,7 @@
     <string name="logged_in_devices_logged_out">Device logged out</string>
     <string name="logged_in_devices_load_error">Couldn't load your devices.</string>
     <string name="logged_in_devices_retry">Retry</string>
+    <string name="logged_in_devices_logout_all">Log out all devices</string>
+    <string name="logged_in_devices_logout_all_confirm">Log out all devices, including this one? Other devices will be logged out within the next 15 minutes.</string>
     <string name="email_check_hello">Hello %1$s!</string>
 </resources>

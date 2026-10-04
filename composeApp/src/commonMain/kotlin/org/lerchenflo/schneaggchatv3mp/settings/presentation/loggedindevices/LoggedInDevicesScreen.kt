@@ -43,6 +43,8 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_last_active
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_load_error
+import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_logout_all
+import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_logout_all_confirm
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_logout_confirm
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_logout_device
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_retry
@@ -57,6 +59,7 @@ fun LoggedInDevicesScreen(
     onBackClick: () -> Unit
 ) {
     var deviceToLogout by remember { mutableStateOf<LoggedInDevice?>(null) }
+    var showLogoutAllDialog by remember { mutableStateOf(false) }
 
     Column {
         ActivityTitle(
@@ -99,6 +102,14 @@ fun LoggedInDevicesScreen(
 
                         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                     }
+
+                    item(key = "logout_all_devices") {
+                        SettingsOption(
+                            icon = Icons.AutoMirrored.Default.Logout,
+                            text = stringResource(Res.string.logged_in_devices_logout_all),
+                            onClick = { showLogoutAllDialog = true }
+                        )
+                    }
                 }
             }
         }
@@ -112,6 +123,14 @@ fun LoggedInDevicesScreen(
             ),
             onConfirm = { viewModel.logoutDevice(device) },
             onDismiss = { deviceToLogout = null }
+        )
+    }
+
+    if (showLogoutAllDialog) {
+        ConfirmationDialog(
+            message = stringResource(Res.string.logged_in_devices_logout_all_confirm),
+            onConfirm = { viewModel.logoutAllDevices() },
+            onDismiss = { showLogoutAllDialog = false }
         )
     }
 }

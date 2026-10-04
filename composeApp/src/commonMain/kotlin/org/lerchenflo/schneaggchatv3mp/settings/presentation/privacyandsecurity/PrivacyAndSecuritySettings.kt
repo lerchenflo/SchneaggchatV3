@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Key
@@ -61,6 +62,8 @@ import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_description
+import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_logout_all
+import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_logout_all_confirm
 import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.privacy_and_security
 import schneaggchatv3mp.composeapp.generated.resources.privacy_group_legal
@@ -86,6 +89,7 @@ fun PrivacyAndSecuritySettings(
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showChangeEmailPopup by remember { mutableStateOf(false) }
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
+    var showLogoutAllDialog by rememberSaveable { mutableStateOf(false) }
     var locationSharingDialogShown by remember { mutableStateOf(false) }
 
     Column {
@@ -212,6 +216,15 @@ fun PrivacyAndSecuritySettings(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+            // Logout all devices
+            SettingsOption(
+                icon = Icons.AutoMirrored.Default.Logout,
+                text = stringResource(Res.string.logged_in_devices_logout_all),
+                onClick = { showLogoutAllDialog = true }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
             // Delete Account
             DeleteButton(
                 text = stringResource(Res.string.delete_account),
@@ -276,6 +289,18 @@ fun PrivacyAndSecuritySettings(
             },
             onDismiss = {
                 showLogoutDialog = false
+            }
+        )
+    }
+
+    if (showLogoutAllDialog) {
+        ConfirmationDialog(
+            message = stringResource(Res.string.logged_in_devices_logout_all_confirm),
+            onConfirm = {
+                viewModel.logoutAllDevices()
+            },
+            onDismiss = {
+                showLogoutAllDialog = false
             }
         )
     }

@@ -326,7 +326,7 @@ class AppRepository(
      * still be ended best-effort; a throw anywhere after step 2 can no longer leave a session on
      * disk that the next start would silently pick up again.
      */
-    suspend fun logout(){
+    suspend fun logout(endSessionOnServer: Boolean = true){
         val refreshToken = authSessionManager.currentTokens()?.refreshToken
 
         try {
@@ -338,7 +338,7 @@ class AppRepository(
             SessionCache.logout() //Remove cached credentials (Userid)
         }
 
-        endServerSession(refreshToken) // best effort, bounded; the token is already gone locally
+        if (endSessionOnServer) endServerSession(refreshToken) // best effort, bounded; the token is already gone locally
 
         deleteAllAppData() // delete all app data when logging out
 
@@ -1621,6 +1621,32 @@ class AppRepository(
     /**
      * Logs one of the own devices out remotely.
      */
+    /**
+     * Logs the account out everywhere. Mirrors the server's allDevices logout: it ends every
+     * session (this device's too) and drops all push tokens, so this device then runs the normal
+     * local logout - without a second server call, the session is already gone.
+     *
+     * Unlike [logout] this is not best effort: if the server call fails, the other devices are
+     * still logged in, so the user stays logged in here too and sees the error.
+     * @return true if the account was logged out everywhere
+     */
+    suspend fun logoutAllDevices(): Boolean {
+        val refreshToken = authSessionManager.currentTokens()?.refreshToken
+            ?.takeIf { it.isNotBlank() && JwtUtils.isTokenDateValid(it) }
+
+        return when (val result = networkUtils.logoutAllDevices(refreshToken).trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                loggingRepository.logWarning("Logout all devices failed (${result.error.errorCode}): ${result.error.message}")
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
+            is NetworkResult.Success<*> -> {
+                logout(endSessionOnServer = false)
+                true
+            }
+        }
+    }
+
     suspend fun endSession(sessionId: String): Boolean {
         return when (val result = networkUtils.endSession(sessionId).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
