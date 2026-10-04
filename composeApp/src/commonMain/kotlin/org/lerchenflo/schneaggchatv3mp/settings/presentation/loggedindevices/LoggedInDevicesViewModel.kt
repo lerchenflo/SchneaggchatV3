@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
@@ -31,6 +33,7 @@ data class LoggedInDevice(
 class LoggedInDevicesViewModel(
     private val appRepository: AppRepository,
     private val appVersion: AppVersion,
+    private val navigator: Navigator,
 ) : ViewModel() {
 
     var devices by mutableStateOf<List<LoggedInDevice>>(emptyList())
@@ -75,6 +78,22 @@ class LoggedInDevicesViewModel(
             if (appRepository.endSession(device.id)) {
                 devices = devices.filterNot { it.id == device.id }
                 SnackbarManager.showMessage(getString(Res.string.logged_in_devices_logged_out))
+            }
+        }
+    }
+
+    private var isLoggingOutAllDevices = false
+
+    fun logoutAllDevices() {
+        if (isLoggingOutAllDevices) return
+        isLoggingOutAllDevices = true
+        viewModelScope.launch {
+            try {
+                if (appRepository.logoutAllDevices()) {
+                    navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
+                }
+            } finally {
+                isLoggingOutAllDevices = false
             }
         }
     }

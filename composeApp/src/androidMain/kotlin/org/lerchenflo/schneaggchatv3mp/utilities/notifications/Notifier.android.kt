@@ -6,6 +6,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
@@ -23,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import java.io.File
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.mark_as_read
 import schneaggchatv3mp.composeapp.generated.resources.reply
@@ -42,6 +45,16 @@ private const val MAX_HISTORY_PER_CHAT = 6
 //a slow or stuck query must never keep a message notification from being posted.
 private const val OWN_NAME_LOOKUP_TIMEOUT_MS = 1_000L
 
+//Same idea for resolving a sender's profile picture path - on timeout the default icon is used.
+private const val AVATAR_LOOKUP_TIMEOUT_MS = 1_000L
+
+//Edge length avatars are decoded to. Every message's Person carries its own copy of the bitmap
+//through the binder, so this stays small enough that a full history never nears the 1MB limit.
+private const val AVATAR_SIZE_PX = 128
+
+//Decoded avatars kept across notifications, so re-posting a chat doesn't decode the file again.
+private const val MAX_CACHED_AVATARS = 32
+
 actual class Notifier(private val context: Context, private val permissionManager: PermissionManager) {
 
     private data class StyledMessage(
@@ -50,6 +63,7 @@ actual class Notifier(private val context: Context, private val permissionManage
         //null means this message was sent by us (matches NotificationCompat.MessagingStyle's
         //convention: a message with no Person is attributed to the style's own "user").
         val senderName: String?,
+        val senderId: String?,
     )
 
     private data class ActiveConversation(
@@ -64,6 +78,15 @@ actual class Notifier(private val context: Context, private val permissionManage
     private val activeConversations = mutableMapOf<Int, ActiveConversation>()
 
     private var cachedOwnDisplayName: String? = null
+
+    private data class CachedAvatar(val path: String, val lastModified: Long, val length: Long, val icon: IconCompat)
+
+    //Keyed by user id, access-ordered so the least recently used avatar is evicted first. The file
+    //stamp in CachedAvatar invalidates an entry once the user's picture is replaced on disk.
+    private val avatarCache = object : LinkedHashMap<String, CachedAvatar>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CachedAvatar>): Boolean =
+            size > MAX_CACHED_AVATARS
+    }
 
     actual suspend fun getToken(): String? = suspendCancellableCoroutine { cont ->
         FirebaseMessaging.getInstance().token
@@ -84,34 +107,63 @@ actual class Notifier(private val context: Context, private val permissionManage
     //receivers all reach this from different threads, and activeConversations is a plain map.
     @Synchronized
     actual fun showLocalNotification(content: NotificationContent) {
-        createChannelIfNeeded()
+        try {
+            createChannelIfNeeded()
+        } catch (e: Throwable) {
+            logError("Creating the notification channel failed: ${e.describe()}")
+        }
 
         if (content.chatId != null) {
             try {
                 showMessageNotification(content)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 //Never drop a message because the MessagingStyle notification could not be built -
                 //fall back to a plain one and record why, so the failure shows up in the logs.
-                logError("Message notification failed, showing plain fallback: ${e::class.simpleName}: ${e.message}")
-                showPlainNotification(content)
+                logError("Message notification failed, showing plain fallback: ${e.describe()}")
+                showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat)
             }
         } else {
-            showPlainNotification(content)
+            showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat)
         }
     }
 
-    private fun showPlainNotification(content: NotificationContent) {
+    /**
+     * Plain notification, then - if even that throws - a bare one without resources or a content
+     * intent. Each failure is logged; this never throws.
+     */
+    private fun showPlainNotificationSafely(id: Int, title: String, body: String, chatId: String?, groupChat: Boolean) {
+        try {
+            showPlainNotification(id, title, body, chatId, groupChat)
+        } catch (e: Throwable) {
+            logError("Plain notification failed, showing bare fallback: ${e.describe()}")
+            try {
+                val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                    .setSmallIcon(android.R.drawable.ic_dialog_email)
+                    .setContentTitle(title)
+                    .setContentText(body)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setAutoCancel(true)
+                    .build()
+                @SuppressLint("MissingPermission")
+                NotificationManagerCompat.from(context).notify(id, notification)
+            } catch (e: Throwable) {
+                logError("Bare fallback notification failed: ${e.describe()}")
+            }
+        }
+    }
+
+    private fun showPlainNotification(id: Int, title: String, body: String, chatId: String?, groupChat: Boolean) {
         val pendingIntent = PendingIntent.getActivity(
             context,
-            content.id,
-            launchIntent(chatId = content.chatId, groupChat = content.groupChat),
+            id,
+            launchIntent(chatId = chatId, groupChat = groupChat),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(NotificationConfig.iconResId)
-            .setContentTitle(content.title)
-            .setContentText(content.body)
+            .setContentTitle(title)
+            .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
@@ -119,7 +171,7 @@ actual class Notifier(private val context: Context, private val permissionManage
         val notification = builder.build()
         if (runBlocking { hasPermission() }) {
             @SuppressLint("MissingPermission")
-            NotificationManagerCompat.from(context).notify(content.id, notification)
+            NotificationManagerCompat.from(context).notify(id, notification)
         }
     }
 
@@ -140,34 +192,65 @@ actual class Notifier(private val context: Context, private val permissionManage
                 text = content.body,
                 timestamp = content.timestampMillis.takeIf { it > 0 } ?: System.currentTimeMillis(),
                 senderName = content.senderName,
+                senderId = content.senderId,
             )
         )
         while (record.messages.size > MAX_HISTORY_PER_CHAT) record.messages.removeAt(0)
 
-        postMessageNotification(content.id, record)
+        postConversationSafely(content.id, record, fallbackTitle = content.title, fallbackBody = content.body)
     }
 
     /** Appends the reply we just sent to the conversation's history and re-posts, confirming to the user (and Android Auto) that it went out. */
     @Synchronized
     fun appendSentReply(notifId: Int, replyText: String) {
         val record = activeConversations[notifId] ?: return
-        record.messages.add(StyledMessage(text = replyText, timestamp = System.currentTimeMillis(), senderName = null))
+        record.messages.add(StyledMessage(text = replyText, timestamp = System.currentTimeMillis(), senderName = null, senderId = null))
         while (record.messages.size > MAX_HISTORY_PER_CHAT) record.messages.removeAt(0)
-        postMessageNotification(notifId, record)
+        postConversationSafely(notifId, record, fallbackTitle = record.groupName ?: ownDisplayName(), fallbackBody = replyText)
     }
 
-    private fun postMessageNotification(notifId: Int, record: ActiveConversation) {
-        //Every Person carries the app icon - without one, MessagingStyle draws a letter avatar
-        //(sender initial in a coloured circle) instead of the Schneaggchat logo.
+    /**
+     * Posts the MessagingStyle notification with profile pictures; if that throws (a broken
+     * picture, a too-large binder transaction, ...) retries with the default icon only, then falls
+     * back to a plain notification. Every failure is logged; this never throws.
+     */
+    private fun postConversationSafely(notifId: Int, record: ActiveConversation, fallbackTitle: String, fallbackBody: String) {
+        try {
+            postMessageNotification(notifId, record, withProfilePictures = true)
+            return
+        } catch (e: Throwable) {
+            logError("Message notification with profile pictures failed, retrying with default icon: ${e.describe()}")
+        }
+        try {
+            postMessageNotification(notifId, record, withProfilePictures = false)
+            return
+        } catch (e: Throwable) {
+            logError("Message notification with default icon failed, showing plain fallback: ${e.describe()}")
+        }
+        showPlainNotificationSafely(notifId, fallbackTitle, fallbackBody, record.chatId, record.groupChat)
+    }
+
+    private fun postMessageNotification(notifId: Int, record: ActiveConversation, withProfilePictures: Boolean) {
+        //Every Person carries an icon - without one, MessagingStyle draws a letter avatar (sender
+        //initial in a coloured circle). The app icon is the default whenever no picture resolves.
         val appIcon = IconCompat.createWithResource(context, context.applicationInfo.icon)
-        val mePerson = Person.Builder().setName(ownDisplayName()).setIcon(appIcon).build()
+        val resolvedAvatars = mutableMapOf<String, IconCompat>()
+        fun avatarFor(userId: String?): IconCompat {
+            if (!withProfilePictures || userId == null) return appIcon
+            return resolvedAvatars.getOrPut(userId) { profilePictureIcon(userId) ?: appIcon }
+        }
+
+        val ownId = runCatching { SessionCache.requireLoggedIn()?.userId }
+            .onFailure { logError("Resolving own user id for the notification avatar failed: ${it.describe()}") }
+            .getOrNull()
+        val mePerson = Person.Builder().setName(ownDisplayName()).setIcon(avatarFor(ownId)).build()
         val style = NotificationCompat.MessagingStyle(mePerson)
             .setGroupConversation(record.groupChat)
         if (record.groupChat) {
             record.groupName?.let { style.setConversationTitle(it) }
         }
         record.messages.forEach { message ->
-            val sender = message.senderName?.let { Person.Builder().setName(it).setIcon(appIcon).build() }
+            val sender = message.senderName?.let { Person.Builder().setName(it).setIcon(avatarFor(message.senderId)).build() }
             style.addMessage(message.text, message.timestamp, sender)
         }
 
@@ -292,6 +375,65 @@ actual class Notifier(private val context: Context, private val permissionManage
             ?: "You"
     }
 
+    /**
+     * The user's stored profile picture as a small square icon, or null when there is none (no
+     * user row, no picture downloaded yet, file missing) or it can't be read - the caller then
+     * uses the default icon. Failures are logged; this never throws.
+     */
+    private fun profilePictureIcon(userId: String): IconCompat? {
+        return try {
+            val path = runBlocking {
+                withTimeoutOrNull(AVATAR_LOOKUP_TIMEOUT_MS) {
+                    KoinPlatform.getKoin().get<UserRepository>().getUserById(userId)?.profilePictureUrl
+                }
+            }?.takeIf { it.isNotBlank() } ?: return null
+
+            val file = File(path)
+            if (!file.isFile || !file.canRead() || file.length() <= 0L) return null
+            val lastModified = file.lastModified()
+            val length = file.length()
+
+            avatarCache[userId]
+                ?.takeIf { it.path == path && it.lastModified == lastModified && it.length == length }
+                ?.let { return it.icon }
+
+            val bitmap = decodeAvatarBitmap(file)
+            if (bitmap == null) {
+                logError("Profile picture of $userId could not be decoded, using default icon")
+                return null
+            }
+            IconCompat.createWithBitmap(bitmap).also { icon ->
+                avatarCache[userId] = CachedAvatar(path, lastModified, length, icon)
+            }
+        } catch (e: Throwable) {
+            logError("Loading profile picture of $userId failed, using default icon: ${e.describe()}")
+            null
+        }
+    }
+
+    /** Decodes [file] subsampled, then centre-crops and scales it to an [AVATAR_SIZE_PX] square. */
+    private fun decodeAvatarBitmap(file: File): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+
+        var sampleSize = 1
+        while (minOf(bounds.outWidth, bounds.outHeight) / (sampleSize * 2) >= AVATAR_SIZE_PX) sampleSize *= 2
+        val decoded = BitmapFactory.decodeFile(
+            file.absolutePath,
+            BitmapFactory.Options().apply { inSampleSize = sampleSize }
+        ) ?: return null
+
+        val side = minOf(decoded.width, decoded.height)
+        val square = Bitmap.createBitmap(decoded, (decoded.width - side) / 2, (decoded.height - side) / 2, side, side)
+        val scaled = Bitmap.createScaledBitmap(square, AVATAR_SIZE_PX, AVATAR_SIZE_PX, true)
+        if (square !== scaled && square !== decoded) square.recycle()
+        if (decoded !== scaled) decoded.recycle()
+        return scaled
+    }
+
+    private fun Throwable.describe(): String = "${this::class.simpleName}: $message"
+
     private fun logError(message: String) {
         println("[Notifier] $message")
         runCatching { runBlocking { KoinPlatform.getKoin().get<LoggingRepository>().logError("[Notifier] $message") } }
@@ -310,6 +452,7 @@ actual class Notifier(private val context: Context, private val permissionManage
     @Synchronized
     actual fun cancelAllNotifications() {
         activeConversations.clear()
+        avatarCache.clear()
         NotificationManagerCompat.from(context).cancelAll()
     }
 

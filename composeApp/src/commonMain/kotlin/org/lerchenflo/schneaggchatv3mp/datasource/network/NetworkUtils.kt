@@ -286,6 +286,7 @@ class NetworkUtils(
         val refreshToken: String? = null,
         val notificationToken: String? = null,
         val isAndroid: Boolean? = null,
+        val allDevices: Boolean = false,
     )
 
     /**
@@ -315,6 +316,22 @@ class NetworkUtils(
      * One logged-in device of the own account.
      * [deviceName] is the raw name the device sent at login (incl. its id suffix).
      */
+    /**
+     * Ends every session of the own account on the server, this device's included, and removes
+     * all of the account's push tokens. Unlike [logout] this goes through the bearer client: the
+     * server identifies the account by the refresh token or, failing that, the access token - so
+     * it must not depend on the refresh token alone.
+     */
+    suspend fun logoutAllDevices(refreshToken: String?): NetworkResult<Unit, NetworkingError> {
+        return safePost<LogoutRequest, Unit>(
+            endpoint = "/auth/logout",
+            body = LogoutRequest(
+                refreshToken = refreshToken,
+                allDevices = true,
+            )
+        )
+    }
+
     @Serializable
     data class SessionResponse(
         val id: String,

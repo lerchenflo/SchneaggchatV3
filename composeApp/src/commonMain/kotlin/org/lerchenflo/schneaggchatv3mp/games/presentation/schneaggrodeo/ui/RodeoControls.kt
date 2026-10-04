@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -36,7 +37,11 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
@@ -44,6 +49,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -69,6 +75,12 @@ private val BUTTON_PADDING = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
 private val POWER_BUTTON_SIZE = 44.dp
 private val POWER_ICON_SIZE = 22.dp
 private val COST_SNAIL_SIZE = 12.dp
+/** The lasso button floats over the rider on the left, so it stays see-through and slim. */
+private const val LASSO_BUTTON_ALPHA = 0.35f
+private val LASSO_BUTTON_MIN_HEIGHT = 44.dp
+private val LASSO_BUTTON_PADDING = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+/** How long a hint on how to play stays before it fades away. */
+private const val HINT_VISIBLE_MILLIS = 3_000L
 
 /**
  * The buttons floating on the track: the lasso on the left, the small round buttons for what the
@@ -195,18 +207,25 @@ private fun LassoButton(
     modifier: Modifier = Modifier,
     label: StringResource? = null,
 ) {
+    val colors = MaterialTheme.colorScheme
     FilledTonalButton(
         onClick = { onAction(SchneaggRodeoAction.OnLassoClick) },
         enabled = enabled,
-        contentPadding = BUTTON_PADDING,
+        contentPadding = LASSO_BUTTON_PADDING,
+        // See-through so the rider behind it stays visible
+        colors = ButtonDefaults.filledTonalButtonColors(
+            containerColor = colors.secondaryContainer.copy(alpha = LASSO_BUTTON_ALPHA),
+            contentColor = colors.onSecondaryContainer,
+            disabledContainerColor = colors.onSurface.copy(alpha = LASSO_BUTTON_ALPHA / 3),
+        ),
         // Keeps keyboard focus on the play area so space / L keep working after a click
         modifier = modifier
-            .heightIn(min = BUTTON_MIN_HEIGHT)
+            .heightIn(min = LASSO_BUTTON_MIN_HEIGHT)
             .focusProperties { canFocus = false }
     ) {
         Text(
             text = stringResource(label ?: Res.string.games_schneaggrodeo_lasso) + keyHint("L", showKeyHints),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.labelLarge
         )
     }
 }
@@ -314,18 +333,30 @@ private fun RodeoRideHint(ride: RodeoVehicleKind, showKeyHints: Boolean, modifie
     RodeoHint(text = stringResource(if (showKeyHints) ride.rideHintKeys else ride.rideHint), modifier = modifier)
 }
 
-/** A short hint on how to play, in a small box over the track. */
+/** A short hint on how to play, in a small box over the track; fades away after a few seconds. */
 @Composable
 private fun RodeoHint(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    var visible by remember(text) { mutableStateOf(true) }
+    LaunchedEffect(text) {
+        delay(HINT_VISIBLE_MILLIS)
+        visible = false
+    }
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(),
+        exit = fadeOut(),
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f), RoundedCornerShape(8.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        textAlign = TextAlign.Center
-    )
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f), RoundedCornerShape(8.dp))
+                .padding(horizontal = 6.dp, vertical = 2.dp),
+            textAlign = TextAlign.Center
+        )
+    }
 }
 
 /** Key name appended to a button label on desktop, e.g. "Lasso [L]". */
