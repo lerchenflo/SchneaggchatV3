@@ -213,44 +213,70 @@ private fun TourStepLayer(controller: TapTargetController, step: TourStep, strin
         ),
         label = "tapTargetRingProgress",
     )
+    // The spotlight itself breathes so the eye finds it at once
+    val spotlightPulseProgress by ringTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "tapTargetSpotlightPulse",
+    )
     val ringColor = MaterialTheme.colorScheme.primary
 
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val density       = LocalDensity.current
+    val density = LocalDensity.current
+    val iconPaddingPx = with(density) { controller.tourSettings.iconPadding.toPx() }
+    val highlightedBounds = target.bounds.inflate(iconPaddingPx)
+
+    // Taps are handled on the parent, not the scrim: the bubble is a sibling above the scrim
+    // and its Surface would swallow a tap on it, so "tap anywhere" would not advance there
+    BoxWithConstraints(
+        Modifier
+            .fillMaxSize()
+            .pointerInput(step.id, highlightedBounds) {
+                detectTapGestures { offset ->
+                    if (!step.requireExactTap || highlightedBounds.contains(offset)) {
+                        controller.next()
+                    } else {
+                        wrongTapCount++
+                    }
+                }
+            }
+    ) {
         val screenWidthPx = with(density) { maxWidth.toPx() }
         val screenHeightPx = with(density) { maxHeight.toPx() }
         val edgePaddingPx = with(density) { 16.dp.toPx() }
-        val iconPaddingPx = with(density) { controller.tourSettings.iconPadding.toPx() }
         val cornerRadiusPx = with(density) { controller.tourSettings.cornerRadius.toPx() }
-        val highlightedBounds = target.bounds.inflate(iconPaddingPx)
         val ringInflatePx = with(density) { 10.dp.toPx() }
         val ringStrokePx = with(density) { 2.dp.toPx() }
+        val outlineStrokePx = with(density) { 3.dp.toPx() }
+        val spotlightInflatePx = with(density) { 6.dp.toPx() }
 
         // ── Scrim with punched-out spotlight ─────────────────────────
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(step.id) {
-                    detectTapGestures { offset ->
-                        if (!step.requireExactTap || highlightedBounds.contains(offset)) {
-                            controller.next()
-                        } else {
-                            wrongTapCount++
-                        }
-                    }
-                }
-        ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val pulse = spotlightPulse(spotlightPulseProgress, spotlightInflatePx)
+            val spotlight = highlightedBounds.inflate(pulse.inflatePx)
+            val spotlightCorner = CornerRadius(cornerRadiusPx + pulse.inflatePx, cornerRadiusPx + pulse.inflatePx)
             val scrim = Path().apply { addRect(size.toRect()) }
-            val hole = Path().apply {
-                addRoundRect(
-                    RoundRect(
-                        rect = highlightedBounds,
-                        cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx)
-                    )
-                )
-            }
+            val hole = Path().apply { addRoundRect(RoundRect(rect = spotlight, cornerRadius = spotlightCorner)) }
             val diff  = Path().apply { op(scrim, hole, PathOperation.Difference) }
             drawPath(diff, color = step.backgroundColor)
+            drawRoundRect(
+                color = ringColor,
+                topLeft = spotlight.topLeft,
+                size = spotlight.size,
+                cornerRadius = spotlightCorner,
+                alpha = pulse.fillAlpha,
+            )
+            drawRoundRect(
+                color = ringColor,
+                topLeft = spotlight.topLeft,
+                size = spotlight.size,
+                cornerRadius = spotlightCorner,
+                style = Stroke(width = outlineStrokePx),
+                alpha = pulse.outlineAlpha,
+            )
 
             // Draw a pulsing ring around the hole to signal "tap exactly here".
             if (step.tapHint == TapHint.EXACT) {
@@ -431,4 +457,17 @@ private fun FreeRoamTourBar(
             }
         }
     }
+}
+
+/** One frame of the breathing spotlight: how far it grows, how strong its fill and outline are. */
+internal data class SpotlightPulse(val inflatePx: Float, val fillAlpha: Float, val outlineAlpha: Float)
+
+/** [pulse] runs 0 (rest) to 1 (fully grown). */
+internal fun spotlightPulse(pulse: Float, maxInflatePx: Float): SpotlightPulse {
+    val p = pulse.coerceIn(0f, 1f)
+    return SpotlightPulse(
+        inflatePx = maxInflatePx * p,
+        fillAlpha = 0.18f * p,
+        outlineAlpha = 0.65f + 0.35f * p,
+    )
 }
