@@ -341,7 +341,7 @@
     <string name="events_empty">Noch keine Events. Erstelle selbst eines!</string>
     <string name="events_view_list">Liste</string>
     <string name="events_view_day">Tag</string>
-    <string name="events_view_upcoming">Bevorstehend</string>
+    <string name="events_view_upcoming">Bald</string>
     <string name="events_view_month">Monat</string>
     <string name="weekday_monday_short">Mo</string>
     <string name="weekday_tuesday_short">Di</string>

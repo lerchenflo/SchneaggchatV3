@@ -63,6 +63,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -473,7 +474,7 @@ fun PollDialog(
                                 text = {
                                     WheelDateTimePicker(
                                         modifier = Modifier.fillMaxWidth(),
-                                        rowCount = 3,
+                                        rows = WheelRows.Count(3),
                                         minDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
                                         textColor = MaterialTheme.colorScheme.onSurface,
                                         selectorProperties = WheelPickerDefaults.selectorProperties(

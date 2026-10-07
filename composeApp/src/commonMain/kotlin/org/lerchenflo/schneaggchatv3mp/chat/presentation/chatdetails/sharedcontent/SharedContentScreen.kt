@@ -125,6 +125,7 @@ fun SharedContentScreen(
             options = SharedContentTab.entries,
             selected = state.selectedTab,
             label = { stringResource(it.labelRes()) },
+            showLeadingIcon = false,
             count = { tab ->
                 when (tab) {
                     SharedContentTab.IMAGES -> state.images.size

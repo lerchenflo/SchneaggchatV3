@@ -55,6 +55,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -704,7 +705,7 @@ fun EventEditPopup(
             text = {
                 WheelDateTimePicker(
                     modifier = Modifier.fillMaxWidth(),
-                    rowCount = 3,
+                    rows = WheelRows.Count(3),
                     startDateTime = tempStartDateTime,
                     minDateTime = (Clock.System.now() + 5.minutes).toLocalDateTime(TimeZone.currentSystemDefault()),
                     textColor = MaterialTheme.colorScheme.onSurface,
@@ -749,7 +750,7 @@ fun EventEditPopup(
             text = {
                 WheelDateTimePicker(
                     modifier = Modifier.fillMaxWidth(),
-                    rowCount = 3,
+                    rows = WheelRows.Count(3),
                     startDateTime = tempEndDateTime,
                     minDateTime = Instant.fromEpochMilliseconds(currentEvent.startDate)
                         .toLocalDateTime(TimeZone.currentSystemDefault()),

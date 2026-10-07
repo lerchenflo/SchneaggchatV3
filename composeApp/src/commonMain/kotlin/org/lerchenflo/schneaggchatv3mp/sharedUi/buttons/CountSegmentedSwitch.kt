@@ -25,6 +25,7 @@ fun <T> CountSegmentedSwitch(
     count: (T) -> Int?,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
+    showLeadingIcon: Boolean = true
 ) {
     SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
         options.forEachIndexed { index, option ->
@@ -33,6 +34,7 @@ fun <T> CountSegmentedSwitch(
             SegmentedButton(
                 selected = option == selected,
                 onClick = { onSelect(option) },
+                icon = { if (showLeadingIcon) SegmentedButtonDefaults.Icon(option == selected) },
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size)
             ) {
                 Text(

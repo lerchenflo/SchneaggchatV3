@@ -50,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.darkokoa.datetimewheelpicker.WheelDatePicker
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -443,7 +444,7 @@ fun KeyValueView(
                                     minDate = LocalDate(1900, 1, 1),
                                     maxDate = maxPickableDate,
                                     dateFormatter = germanNumericDateFormatter(),
-                                    rowCount = 5,
+                                    rows = WheelRows.Count(5),
                                     textColor = MaterialTheme.colorScheme.onSurface,
                                     selectorProperties = WheelPickerDefaults.selectorProperties(
                                         enabled = true,

@@ -282,9 +282,10 @@ class SchneaggmapViewModel(
                 require(entry.name.isNotEmpty()) {return}
                 require(entry.locationData.isNotEmpty()) {return}
 
-                _state.update {
-                    it.copy(
-                        selectedEntry = null
+                _state.update { s ->
+                    s.copy(
+                        selectedEntry = null,
+                        enabledTypes = s.enabledTypes + entry.locationData.map { it.locationtype }
                     )
                 }
 

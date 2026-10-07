@@ -72,6 +72,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import io.github.ismoy.imagepickerkmp.config.CropConfig
 import io.github.ismoy.imagepickerkmp.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.picker.ImagePickerKMPConfig
@@ -1015,7 +1016,7 @@ private fun GroupExpiryPickerDialog(
                 )
                 WheelDateTimePicker(
                     modifier = Modifier.fillMaxWidth(),
-                    rowCount = 3,
+                    rows = WheelRows.Count(3),
                     startDateTime = pickedDateTime,
                     minDateTime = earliest.toLocalDateTime(timeZone),
                     textColor = MaterialTheme.colorScheme.onSurface,
