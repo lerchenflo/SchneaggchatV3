@@ -1,13 +1,16 @@
 package org.lerchenflo.schneaggchatv3mp.app.navigation
 
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.NavKey
 import org.jetbrains.compose.resources.stringResource
 import io.github.lerchenflo.taptarget.tapTarget
@@ -74,8 +77,16 @@ fun BottomAppBar(
                     }
                 },
                 label = {
+                    // Single line - long (translated) titles shrink instead of wrapping
                     Text(
-                        text = stringResource(data.title)
+                        text = stringResource(data.title),
+                        maxLines = 1,
+                        softWrap = false,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 8.sp,
+                            maxFontSize = LocalTextStyle.current.fontSize,
+                            stepSize = 0.5.sp
+                        )
                     )
                 }
             )
