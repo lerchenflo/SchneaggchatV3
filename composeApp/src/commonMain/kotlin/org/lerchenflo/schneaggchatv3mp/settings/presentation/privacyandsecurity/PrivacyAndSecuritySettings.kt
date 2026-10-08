@@ -2,6 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import schneaggchatv3mp.composeapp.generated.resources.yes
+import schneaggchatv3mp.composeapp.generated.resources.cancel
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -216,15 +221,6 @@ fun PrivacyAndSecuritySettings(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-            // Logout all devices
-            SettingsOption(
-                icon = Icons.AutoMirrored.Default.Logout,
-                text = stringResource(Res.string.logged_in_devices_logout_all),
-                onClick = { showLogoutAllDialog = true }
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
             // Delete Account
             DeleteButton(
                 text = stringResource(Res.string.delete_account),
@@ -282,13 +278,41 @@ fun PrivacyAndSecuritySettings(
     }
 
     if (showLogoutDialog) {
-        ConfirmationDialog(
-            message = stringResource(Res.string.are_you_sure_you_want_to_logout),
-            onConfirm = {
-                viewModel.logout()
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.logout()
+                    showLogoutDialog = false
+                }) {
+                    Text(stringResource(Res.string.yes))
+                }
             },
-            onDismiss = {
-                showLogoutDialog = false
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            },
+            text = {
+                Column {
+                    Text(stringResource(Res.string.are_you_sure_you_want_to_logout))
+
+                    // Hands over to the logout-all confirmation, which explains the 15 minute delay
+                    TextButton(
+                        onClick = {
+                            showLogoutDialog = false
+                            showLogoutAllDialog = true
+                        },
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.Logout,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(stringResource(Res.string.logged_in_devices_logout_all))
+                    }
+                }
             }
         )
     }

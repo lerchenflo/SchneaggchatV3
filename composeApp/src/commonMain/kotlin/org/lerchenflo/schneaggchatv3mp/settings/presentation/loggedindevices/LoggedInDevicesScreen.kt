@@ -36,6 +36,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.settings.data.DEVICETYPE
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
@@ -103,11 +104,14 @@ fun LoggedInDevicesScreen(
                         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                     }
 
+                    // Same look and place as "delete account" in Privacy & Security
                     item(key = "logout_all_devices") {
-                        SettingsOption(
-                            icon = Icons.AutoMirrored.Default.Logout,
+                        DeleteButton(
                             text = stringResource(Res.string.logged_in_devices_logout_all),
-                            onClick = { showLogoutAllDialog = true }
+                            onClick = { showLogoutAllDialog = true },
+                            modifier = Modifier
+                                .padding(top = 8.dp, bottom = 16.dp, start = 16.dp, end = 16.dp)
+                                .fillMaxWidth()
                         )
                     }
                 }
