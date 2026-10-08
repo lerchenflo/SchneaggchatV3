@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -77,8 +78,10 @@ private val POWER_ICON_SIZE = 22.dp
 private val COST_SNAIL_SIZE = 12.dp
 /** The lasso button floats over the rider on the left, so it stays see-through and slim. */
 private const val LASSO_BUTTON_ALPHA = 0.35f
-private val LASSO_BUTTON_MIN_HEIGHT = 44.dp
-private val LASSO_BUTTON_PADDING = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+// A fixed height: Material's 40 dp button minimum would win over a smaller heightIn. The touch
+// target stays 48 dp regardless (Surface's minimumInteractiveComponentSize).
+private val LASSO_BUTTON_HEIGHT = 32.dp
+private val LASSO_BUTTON_PADDING = PaddingValues(horizontal = 10.dp, vertical = 2.dp)
 /** How long a hint on how to play stays before it fades away. */
 private const val HINT_VISIBLE_MILLIS = 3_000L
 
@@ -220,12 +223,12 @@ private fun LassoButton(
         ),
         // Keeps keyboard focus on the play area so space / L keep working after a click
         modifier = modifier
-            .heightIn(min = LASSO_BUTTON_MIN_HEIGHT)
+            .height(LASSO_BUTTON_HEIGHT)
             .focusProperties { canFocus = false }
     ) {
         Text(
             text = stringResource(label ?: Res.string.games_schneaggrodeo_lasso) + keyHint("L", showKeyHints),
-            style = MaterialTheme.typography.labelLarge
+            style = MaterialTheme.typography.labelMedium
         )
     }
 }

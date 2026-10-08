@@ -82,6 +82,7 @@ import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCal
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.cchallenge.CChallengeScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
@@ -563,9 +564,11 @@ fun App() {
                     ) {
 
                         val online by SessionCache.onlineFlow.collectAsStateWithLifecycle()
+                        // Demo mode (developer setting) hides both bars, e.g. for store screenshots
+                        val demoMode by preferenceManager.getDemoModeFlow().collectAsStateWithLifecycle(initialValue = false)
 
                         //Show offline bar when offline
-                        if (!online) {
+                        if (!online && !demoMode) {
                             OfflineBar(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -575,7 +578,7 @@ fun App() {
                         val serverUrl by preferenceManager.getServerUrlFlow().collectAsStateWithLifecycle(initialValue = BASE_SERVER_URL)
 
                         //Show a persistent indicator while pinned to the test server (e.g. after logging in with the test account)
-                        if (serverUrl == BASE_SERVER_URL_TEST) {
+                        if (serverUrl == BASE_SERVER_URL_TEST && !demoMode) {
                             TestModeBar(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -820,6 +823,12 @@ fun App() {
 
                                     entry<Route.GridRush> {
                                         GridRushScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.CChallenge> {
+                                        CChallengeScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

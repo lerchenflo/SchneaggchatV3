@@ -2,6 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -17,6 +19,15 @@ class DevSettingsViewModel(
     private val navigator: Navigator,
     private val preferenceManager: Preferencemanager
 ): ViewModel() {
+
+    val demoMode = preferenceManager.getDemoModeFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    fun setDemoMode(enabled: Boolean) {
+        viewModelScope.launch {
+            preferenceManager.saveDemoMode(enabled)
+        }
+    }
 
     fun skipOnboardingTour() {
         viewModelScope.launch {
