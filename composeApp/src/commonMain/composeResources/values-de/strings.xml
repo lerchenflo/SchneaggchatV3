@@ -1771,4 +1771,6 @@
     <string name="games_cchallenge_bug_missing_quote">Dem String fehlt das schließende Anführungszeichen.</string>
     <string name="games_cchallenge_bug_keyword_typo">Ein Schlüsselwort ist falsch geschrieben, deshalb erkennt der Compiler es nicht.</string>
     <string name="games_cchallenge_bug_wrong_bracket">Ein Array-Index muss mit einer eckigen Klammer geschlossen werden, nicht mit einer runden.</string>
+    <string name="dev_settings_demo_mode">Demo-Modus</string>
+    <string name="dev_settings_demo_mode_desc">Blendet die Offline- und Testserver-Leiste aus, z. B. für Store-Screenshots</string>
 </resources>

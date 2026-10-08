@@ -564,9 +564,11 @@ fun App() {
                     ) {
 
                         val online by SessionCache.onlineFlow.collectAsStateWithLifecycle()
+                        // Demo mode (developer setting) hides both bars, e.g. for store screenshots
+                        val demoMode by preferenceManager.getDemoModeFlow().collectAsStateWithLifecycle(initialValue = false)
 
                         //Show offline bar when offline
-                        if (!online) {
+                        if (!online && !demoMode) {
                             OfflineBar(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -576,7 +578,7 @@ fun App() {
                         val serverUrl by preferenceManager.getServerUrlFlow().collectAsStateWithLifecycle(initialValue = BASE_SERVER_URL)
 
                         //Show a persistent indicator while pinned to the test server (e.g. after logging in with the test account)
-                        if (serverUrl == BASE_SERVER_URL_TEST) {
+                        if (serverUrl == BASE_SERVER_URL_TEST && !demoMode) {
                             TestModeBar(
                                 modifier = Modifier
                                     .fillMaxWidth()

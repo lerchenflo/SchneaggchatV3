@@ -118,6 +118,7 @@ class Preferencemanager(
         val SERVER_URL = stringPreferencesKey("server_url")
         val DEVELOPER_SETTINGS = booleanPreferencesKey("developer_settings")
         val MERGE_MAP_LOCATIONS = booleanPreferencesKey("merge_map_locations")
+        val DEMO_MODE = booleanPreferencesKey("demo_mode")
         val MERGE_MAP_USERS = booleanPreferencesKey("merge_map_users")
         val MAP_STYLE = intPreferencesKey("map_style")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
@@ -212,6 +213,15 @@ class Preferencemanager(
 
     fun getDevSettingsFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.DEVELOPER_SETTINGS] ?: false
+    }
+
+    // Demo mode: hides the offline and test-server bars, e.g. for store screenshots
+    suspend fun saveDemoMode(value: Boolean) {
+        prefs.edit { it[PrefsKeys.DEMO_MODE] = value }
+    }
+
+    fun getDemoModeFlow(): Flow<Boolean> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.DEMO_MODE] ?: false
     }
 
     // Merge map locations when zooming

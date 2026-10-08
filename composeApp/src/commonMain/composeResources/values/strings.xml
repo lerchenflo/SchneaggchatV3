@@ -1771,4 +1771,6 @@
     <string name="games_cchallenge_bug_missing_quote">The string is missing its closing quotation mark.</string>
     <string name="games_cchallenge_bug_keyword_typo">A keyword is misspelled, so the compiler does not recognize it.</string>
     <string name="games_cchallenge_bug_wrong_bracket">An array index must be closed with a square bracket, not a parenthesis.</string>
+    <string name="dev_settings_demo_mode">Demo mode</string>
+    <string name="dev_settings_demo_mode_desc">Hides the offline and test server bars, e.g. for store screenshots</string>
 </resources>

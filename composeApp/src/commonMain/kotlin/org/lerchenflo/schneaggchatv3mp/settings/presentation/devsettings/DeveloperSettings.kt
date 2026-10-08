@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.material.icons.automirrored.filled.Forward
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Replay
+import androidx.compose.material.icons.filled.Slideshow
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
@@ -35,6 +37,8 @@ import schneaggchatv3mp.composeapp.generated.resources.dev_settings_skip_tour
 import schneaggchatv3mp.composeapp.generated.resources.dev_settings_skip_tour_desc
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
+import schneaggchatv3mp.composeapp.generated.resources.dev_settings_demo_mode
+import schneaggchatv3mp.composeapp.generated.resources.dev_settings_demo_mode_desc
 
 @Composable
 fun DeveloperSettings(
@@ -47,6 +51,7 @@ fun DeveloperSettings(
 
     var showChangeServerUrlPopup by remember { mutableStateOf(false) }
     val tapTargetController = LocalTapTargetController.current
+    val demoMode by devSettingsViewModel.demoMode.collectAsStateWithLifecycle()
 
     Column {
 
@@ -75,6 +80,14 @@ fun DeveloperSettings(
                 switchchecked = sharedSettingsViewmodel.devSettingsEnabled,
                 onSwitchChange = { sharedSettingsViewmodel.updateDevSettings(it) },
                 icon = Icons.Default.Code
+            )
+
+            SettingsSwitch(
+                titletext = stringResource(Res.string.dev_settings_demo_mode),
+                infotext = stringResource(Res.string.dev_settings_demo_mode_desc),
+                switchchecked = demoMode,
+                onSwitchChange = { devSettingsViewModel.setDemoMode(it) },
+                icon = Icons.Default.Slideshow
             )
 
             SettingsDivider(

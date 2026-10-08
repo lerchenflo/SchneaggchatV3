@@ -1765,4 +1765,6 @@
     <string name="games_cchallenge_bug_missing_quote">Alla stringa mancano le virgolette di chiusura.</string>
     <string name="games_cchallenge_bug_keyword_typo">Una parola chiave è scritta male, quindi il compilatore non la riconosce.</string>
     <string name="games_cchallenge_bug_wrong_bracket">L'indice di un array va chiuso con una parentesi quadra, non con una tonda.</string>
+    <string name="dev_settings_demo_mode">Modalità demo</string>
+    <string name="dev_settings_demo_mode_desc">Nasconde le barre offline e del server di test, ad es. per gli screenshot dello store</string>
 </resources>
