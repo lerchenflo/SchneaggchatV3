@@ -202,6 +202,7 @@
 
     <string name="members">Membri</string>
     <string name="info">Info</string>
+    <string name="chat_details_actions">Azioni</string>
     <string name="at_least_members">hai bisogno di almeno %1$s membri nel tuo gruppo</string>
     <string name="group_name_missing">Fornisci un nome per il gruppo</string>
 

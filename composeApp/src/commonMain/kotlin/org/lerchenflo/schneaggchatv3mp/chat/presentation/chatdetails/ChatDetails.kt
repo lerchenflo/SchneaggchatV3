@@ -3,12 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 import schneaggchatv3mp.composeapp.generated.resources.shared_messages
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -36,8 +29,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -62,15 +53,9 @@ import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ismoy.imagepickerkmp.config.CropConfig
 import io.github.ismoy.imagepickerkmp.config.GalleryConfig
@@ -87,7 +72,6 @@ import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventDelet
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
-import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
@@ -112,7 +96,6 @@ import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.delete_event
 import schneaggchatv3mp.composeapp.generated.resources.delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.set_group_timer
-import schneaggchatv3mp.composeapp.generated.resources.change_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.group_timer_picker_title
 import schneaggchatv3mp.composeapp.generated.resources.group_timer_picker_info
 import schneaggchatv3mp.composeapp.generated.resources.ok
@@ -140,6 +123,27 @@ import schneaggchatv3mp.composeapp.generated.resources.today
 import schneaggchatv3mp.composeapp.generated.resources.wake_button
 import schneaggchatv3mp.composeapp.generated.resources.wake_reason_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.wake_reason_title
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
+import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
+import schneaggchatv3mp.composeapp.generated.resources.birthday_label
+import schneaggchatv3mp.composeapp.generated.resources.chat_details_actions
+import schneaggchatv3mp.composeapp.generated.resources.common_groups
+import schneaggchatv3mp.composeapp.generated.resources.edit_profile_picture
+import schneaggchatv3mp.composeapp.generated.resources.groupmembers
+import schneaggchatv3mp.composeapp.generated.resources.info
+import schneaggchatv3mp.composeapp.generated.resources.shared_content_title
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -269,230 +273,194 @@ fun ChatDetails(
     ) {
 
         ActivityTitle(
-            alternativeTitleComposable = if (isGroup) {
-                {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                showGroupRenameDialog = true
-                            },
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = selectedChat.name,
-                            modifier = Modifier
-                                // fill = false prevents the Text from forcing itself to be wide
-                                .weight(1f, fill = false)
-                                .padding(start = 10.dp),
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = null,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-
-
-                    }
-
-                }
-            } else {
-                {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                showNicknameDialog = true
-                            },
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        val baseFontSize = 24.sp
-                        val nicknameFontSize = baseFontSize * 0.8f
-
-                        Text(
-                            text = buildAnnotatedString {
-                                append(selectedChat.name)
-
-                                //Show nickname if set
-                                val nickName = (selectedChat as? ChatDetailsState.UserDetails)?.user?.nickName
-                                if (nickName != null) {
-                                    append(" (\"")
-
-                                    withStyle(
-                                        style = SpanStyle(
-                                            fontStyle = FontStyle.Italic,
-                                            fontSize = nicknameFontSize
-                                        )
-                                    ) {
-                                        append(nickName)
-                                    }
-
-                                    append("\")")
-                                }
-                            },
-                            modifier = Modifier
-                                .weight(1f, fill = false)
-                                .padding(start = 10.dp),
-                            fontSize = baseFontSize,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = null,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                    }
-                }
-            },
+            title = stringResource(Res.string.info),
             onBackClick = {
                 chatdetailsViewmodel.onBackClick()
             }
         )
 
-        HorizontalDivider()
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
         Column(
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
-            // Profile picture
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentWidth(Alignment.CenterHorizontally)
-            ) {
+            // Every row below is followed by its own divider, so section headers skip their top one
+            // and no two dividers ever stack, whichever optional rows are shown.
 
-                ProfilePictureView(
-                    filepath = selectedChat.profilePictureUrl,
-                    modifier = Modifier
-                        .size(200.dp) // Use square aspect ratio
-                        .padding(vertical = 10.dp)
-                        .clickable {
-                            profilePictureDialogShown = true
-                        }
-                )
-
-            }
-
-            // Status only for user
-            if (!isGroup) {
-                HorizontalDivider()
-
-                // Birthdate
-                (selectedChat as? ChatDetailsState.UserDetails)?.user?.birthDate?.let { birthDate ->
-
-                    val isToday = remember(birthDate) { isBirthdayToday(birthDate) }
-
-                    val infiniteTransition = rememberInfiniteTransition(label = "birthday")
-                    val animatedAlpha by infiniteTransition.animateFloat(
-                        initialValue = 0.7f,
-                        targetValue = 1f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(800, easing = EaseInOut),
-                            repeatMode = RepeatMode.Reverse
-                        ),
-                        label = "pulse"
-                    )
-
-                    ListItem(
-                        headlineContent = {
-                            val formattedDate = iso8601DateFormatter(
-                                iso8601Format = birthDate,
-                                format = "dd.MM."
-                            )
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = formattedDate,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
-                                )
-                                if (isToday) {
-                                    Surface(
-                                        shape = MaterialTheme.shapes.small,
-                                        color = MaterialTheme.colorScheme.primary,
-                                    ) {
-                                        Text(
-                                            text = "🎂 " + stringResource(Res.string.today),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.padding(
-                                                horizontal = 6.dp,
-                                                vertical = 2.dp
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        },
-                        leadingContent = {
-                            Icon(
-                                imageVector = Icons.Default.Cake,
-                                contentDescription = null,
-                                tint = if (isToday)
-                                    MaterialTheme.colorScheme.primary.copy(alpha = animatedAlpha)
-                                else
-                                    MaterialTheme.colorScheme.primary,
-                                modifier = if (isToday) Modifier.size(28.dp) else Modifier
-                            )
-                        },
-                        colors = ListItemDefaults.colors(
-                            containerColor = if (isToday)
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                            else
-                                Color.Transparent
-                        ),
-                        modifier = Modifier.clickable {
-                            chatdetailsViewmodel.navigateToBirthdays()
-                        },
-                    )
+            ChatDetailsHeader(
+                name = selectedChat.name,
+                nickName = (selectedChat as? ChatDetailsState.UserDetails)?.user?.nickName,
+                profilePictureUrl = selectedChat.profilePictureUrl,
+                showEditPictureBadge = isGroup,
+                editNameDescription = if (isGroup) stringResource(Res.string.change_group_name) else stringResource(Res.string.change_nickname),
+                onPictureClick = { profilePictureDialogShown = true },
+                onEditPictureClick = { showImagePickerDialog = true },
+                onNameClick = {
+                    if (isGroup) showGroupRenameDialog = true else showNicknameDialog = true
                 }
+            )
 
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                // Status
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Status, written by the user themselves
+            if (!isGroup) {
                 val statusInfoString = stringResource(Res.string.status_info)
 
-                selectedChat.status?.let {
-                    if (it.isNotEmpty()) {
-                        QuotedText(
-                            text = it,
-                            author = "~ " + selectedChat.name,
-                            onClick = {
-                                SnackbarManager.showMessage(statusInfoString)
+                selectedChat.status?.takeIf { it.isNotEmpty() }?.let { status ->
+                    QuotedText(
+                        text = status,
+                        author = "~ " + selectedChat.name,
+                        onClick = {
+                            SnackbarManager.showMessage(statusInfoString)
+                        }
+                    )
+
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                }
+            }
+
+            // Birthdate
+            if (!isGroup) {
+                (selectedChat as? ChatDetailsState.UserDetails)?.user?.birthDate?.let { birthDate ->
+                    val isToday = remember(birthDate) { isBirthdayToday(birthDate) }
+
+                    SettingsOption(
+                        icon = Icons.Default.Cake,
+                        text = stringResource(Res.string.birthday_label),
+                        subtext = iso8601DateFormatter(
+                            iso8601Format = birthDate,
+                            format = "dd.MM."
+                        ),
+                        highlighted = isToday,
+                        onClick = {
+                            chatdetailsViewmodel.navigateToBirthdays()
+                        },
+                        rightSideIcon = {
+                            if (isToday) {
+                                Surface(
+                                    shape = MaterialTheme.shapes.small,
+                                    color = MaterialTheme.colorScheme.primary,
+                                ) {
+                                    Text(
+                                        text = "🎂 " + stringResource(Res.string.today),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
                             }
+                        }
+                    )
+
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                }
+            }
+
+            // description for group and user
+            var showDescriptionChangeDialog by retain { mutableStateOf(false) } // retain dass ma es handy dräha kann (neue compose ding)
+
+            if (showDescriptionChangeDialog) {
+                ChangeDescription(
+                    onDismiss = { showDescriptionChangeDialog = false },
+                    currentDescription = selectedChat.description,
+                    descriptionText = chatdetailsViewmodel.descriptionText,
+                    updateDescriptionText = chatdetailsViewmodel::updateDescriptionText,
+                    updateDescription = chatdetailsViewmodel::updateDescription,
+                    isGroup = isGroup
+                )
+            }
+
+            SettingsOption(
+                icon = Icons.AutoMirrored.Filled.Notes,
+                text = if (isGroup) stringResource(Res.string.group_description) else stringResource(
+                    Res.string.others_say_about,
+                    selectedChat.name
+                ),
+                subtext = selectedChat.description
+                    .takeIf { !it.isNullOrBlank() }
+                    ?.replace("\\n", "\n")
+                    ?: stringResource(Res.string.no_description),
+                onClick = { showDescriptionChangeDialog = true },
+                rightSideIcon = {
+                    TooltipIconButton(
+                        if (isGroup) stringResource(Res.string.description_info_group) else stringResource(
+                            Res.string.description_info_user,
+                            selectedChat.name
                         )
-                    }
+                    )
+                }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Delete timer of a group chat. Every member sees the countdown; only admins can set,
+            // move or clear it - the server enforces the same rule on /groups/setexpiry, so a
+            // non-admin must not get a button that can only fail.
+            if (isGroup) {
+                val groupExpiresAt = (selectedChat as? ChatDetailsState.GroupDetails)?.group?.expiresAt
+
+                if (showExpiryPicker) {
+                    GroupExpiryPickerDialog(
+                        initialExpiresAt = groupExpiresAt,
+                        onConfirm = { newExpiresAt ->
+                            chatdetailsViewmodel.setGroupExpiry(newExpiresAt)
+                            showExpiryPicker = false
+                        },
+                        onDismiss = { showExpiryPicker = false }
+                    )
                 }
 
-                /*
-                DescriptionStatusRow(
-                    onClick = {
-                        SnackbarManager.showMessage(statusInfoString)
-                    },
-                    titleText = stringResource(Res.string.status),
-                    bodyText = chatDetails.status
-                        .takeIf { !it.isNullOrBlank() }
-                        ?.replace("\\n", "\n")
-                        ?: stringResource(Res.string.no_status),
-                    infoText = stringResource(Res.string.status_info)
-                )
+                if (showDecoupleExpiryConfirmation) {
+                    ConfirmationDialog(
+                        message = stringResource(Res.string.confirm_delete_group_timer),
+                        onConfirm = {
+                            chatdetailsViewmodel.setGroupExpiry(null)
+                        },
+                        onDismiss = {
+                            showDecoupleExpiryConfirmation = false
+                        }
+                    )
+                }
 
-                 */
+                if (groupExpiresAt != null) {
+                    SettingsOption(
+                        icon = Icons.Default.Schedule,
+                        text = groupExpiryText(expiresAt = groupExpiresAt),
+                        subtext = stringResource(
+                            Res.string.group_expires_at,
+                            millisToString(groupExpiresAt, format = "dd.MM.yyyy HH:mm")
+                        ),
+                        onClick = {
+                            if (iAmAdmin) showExpiryPicker = true
+                        },
+                        rightSideIcon = {
+                            if (iAmAdmin) {
+                                IconButton(onClick = { showDecoupleExpiryConfirmation = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = stringResource(Res.string.delete_group_timer),
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
+                    )
 
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                } else if (iAmAdmin) {
+                    SettingsOption(
+                        icon = Icons.Default.Schedule,
+                        text = stringResource(Res.string.set_group_timer),
+                        onClick = { showExpiryPicker = true }
+                    )
+
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                }
             }
 
             // Event this group was created for, if any
             if (isGroup) {
                 connectedEvent?.let { event ->
-                    HorizontalDivider()
-
                     val creatorProfilePictureUrl = (selectedChat as? ChatDetailsState.GroupDetails)
                         ?.members
                         ?.find { it.groupMember.userId == event.creatorId }
@@ -514,7 +482,7 @@ fun ChatDetails(
                     }
 
                     Row(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         EventItem(
@@ -535,171 +503,90 @@ fun ChatDetails(
                             }
                         }
                     }
+
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 }
             }
 
-            // Delete timer of a group chat. Every member sees the countdown; only admins can set,
-            // move or clear it - the server enforces the same rule on /groups/setexpiry, so a
-            // non-admin must not get a button that can only fail.
+            // Everything ever shared in this chat, one row per tab of the shared content screen
+            SettingsDivider(
+                title = stringResource(Res.string.shared_content_title),
+                showTopDivider = false
+            )
+
+            SettingsOption(
+                icon = Icons.Default.PhotoLibrary,
+                text = stringResource(Res.string.shared_images),
+                onClick = {
+                    chatdetailsViewmodel.navigateToSharedContent(SharedContentTab.IMAGES)
+                },
+                rightSideIcon = { CountLabel(sharedImageCount) }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            SettingsOption(
+                icon = Icons.Default.Link,
+                text = stringResource(Res.string.shared_links),
+                onClick = {
+                    chatdetailsViewmodel.navigateToSharedContent(SharedContentTab.LINKS)
+                },
+                rightSideIcon = { CountLabel(sharedLinkCount) }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            SettingsOption(
+                icon = Icons.AutoMirrored.Filled.Chat,
+                text = stringResource(Res.string.shared_messages),
+                onClick = {
+                    chatdetailsViewmodel.navigateToSharedContent(SharedContentTab.MESSAGES)
+                },
+                rightSideIcon = { CountLabel(messageCount) }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            //Group members / Common groups
             if (isGroup) {
-                val groupExpiresAt = (selectedChat as? ChatDetailsState.GroupDetails)?.group?.expiresAt
-
-                if (showExpiryPicker) {
-                    GroupExpiryPickerDialog(
-                        initialExpiresAt = groupExpiresAt,
-                        onConfirm = { newExpiresAt ->
-                            chatdetailsViewmodel.setGroupExpiry(newExpiresAt)
-                            showExpiryPicker = false
-                        },
-                        onDismiss = { showExpiryPicker = false }
-                    )
-                }
-
-                if (groupExpiresAt != null) {
-                    HorizontalDivider()
-
-                    if (showDecoupleExpiryConfirmation) {
-                        ConfirmationDialog(
-                            message = stringResource(Res.string.confirm_delete_group_timer),
-                            onConfirm = {
-                                chatdetailsViewmodel.setGroupExpiry(null)
-                            },
-                            onDismiss = {
-                                showDecoupleExpiryConfirmation = false
-                            }
-                        )
-                    }
-
-                    ListItem(
-                        headlineContent = {
-                            GroupExpiryCountdownText(expiresAt = groupExpiresAt)
-                        },
-                        supportingContent = {
-                            Text(
-                                text = stringResource(
-                                    Res.string.group_expires_at,
-                                    millisToString(groupExpiresAt, format = "dd.MM.yyyy HH:mm")
-                                ),
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        },
-                        leadingContent = {
-                            Icon(
-                                imageVector = Icons.Default.Schedule,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                (selectedChat as? ChatDetailsState.GroupDetails)?.let { groupDetails ->
+                    SettingsDivider(
+                        title = stringResource(Res.string.groupmembers, groupDetails.members.size),
+                        showTopDivider = false
                     )
 
                     if (iAmAdmin) {
-                        NormalButton(
-                            text = stringResource(Res.string.change_group_timer),
-                            onClick = { showExpiryPicker = true },
-                            modifier = Modifier.fillMaxWidth()
+                        // add partypeople
+                        SettingsOption(
+                            icon = Icons.Default.PersonAdd,
+                            text = stringResource(Res.string.add_users_to_group),
+                            onClick = {
+                                showAddMemberPopup = true
+                            }
                         )
-                        DeleteButton(
-                            text = stringResource(Res.string.delete_group_timer),
-                            onClick = { showDecoupleExpiryConfirmation = true },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+
+                        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+                        if (showAddMemberPopup) {
+                            AddUserToGroupPopup(
+                                onDismiss = { showAddMemberPopup = false },
+                                onSuccess = {
+                                    it.forEach { user ->
+                                        chatdetailsViewmodel.addMember(user.id)
+                                    }
+                                    showAddMemberPopup = false
+                                },
+                                availableUsers = availableMembers,
+                                selectedUsers = chatdetailsViewmodel.selectedNewMembers,
+                                searchterm = searchTerm,
+                                onSearchTermChange = chatdetailsViewmodel::onSearchTermChange,
+                                onUserSelected = chatdetailsViewmodel::onUserSelected,
+                                onUserDeselected = chatdetailsViewmodel::onUserDeSelected,
+                                isSelected = chatdetailsViewmodel::isItemSelected,
+                            )
+                        }
                     }
-                } else if (iAmAdmin) {
-                    HorizontalDivider()
-                    NormalButton(
-                        text = stringResource(Res.string.set_group_timer),
-                        onClick = { showExpiryPicker = true },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
 
-            HorizontalDivider()
-
-
-            // description for group and user
-            var showDescriptionChangeDialog by retain { mutableStateOf(false) } // retain dass ma es handy dräha kann (neue compose ding)
-
-            if (showDescriptionChangeDialog) {
-                ChangeDescription(
-                    onDismiss = { showDescriptionChangeDialog = false },
-                    currentDescription = selectedChat.description,
-                    descriptionText = chatdetailsViewmodel.descriptionText,
-                    updateDescriptionText = chatdetailsViewmodel::updateDescriptionText,
-                    updateDescription = chatdetailsViewmodel::updateDescription,
-                    isGroup = isGroup
-                )
-            }
-
-            DescriptionStatusRow(
-                onClick = { showDescriptionChangeDialog = true },
-                titleText = if (isGroup) stringResource(Res.string.group_description) else stringResource(
-                    Res.string.others_say_about,
-                    selectedChat.name
-                ),
-                bodyText = selectedChat.description
-                    .takeIf { !it.isNullOrBlank() }
-                    ?.replace("\\n", "\n")
-                    ?: stringResource(Res.string.no_description),
-                infoText = if (isGroup) stringResource(Res.string.description_info_group) else stringResource(
-                    Res.string.description_info_user,
-                    selectedChat.name
-                )
-            )
-
-            HorizontalDivider()
-
-            // Everything ever shared in this chat, one row per tab of the shared content screen
-            ListItem(
-                headlineContent = { Text(text = stringResource(Res.string.shared_images)) },
-                trailingContent = { Text(text = sharedImageCount.toString()) },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.PhotoLibrary,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                modifier = Modifier.clickable {
-                    chatdetailsViewmodel.navigateToSharedContent(SharedContentTab.IMAGES)
-                }
-            )
-
-            ListItem(
-                headlineContent = { Text(text = stringResource(Res.string.shared_links)) },
-                trailingContent = { Text(text = sharedLinkCount.toString()) },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Link,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                modifier = Modifier.clickable {
-                    chatdetailsViewmodel.navigateToSharedContent(SharedContentTab.LINKS)
-                }
-            )
-
-            ListItem(
-                headlineContent = { Text(text = stringResource(Res.string.shared_messages)) },
-                trailingContent = { Text(text = messageCount.toString()) },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Chat,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                modifier = Modifier.clickable {
-                    chatdetailsViewmodel.navigateToSharedContent(SharedContentTab.MESSAGES)
-                }
-            )
-
-            HorizontalDivider()
-
-            //Common groups / Common friends
-            if (isGroup) {
-                (selectedChat as? ChatDetailsState.GroupDetails)?.let { groupDetails ->
                     GroupMembersView(
                         members = groupDetails.members,
                         navigateToChat = chatdetailsViewmodel::navigateToChat,
@@ -708,70 +595,43 @@ fun ChatDetails(
                         sendFriendRequest = chatdetailsViewmodel::sendFriendRequest,
                         ownId = ownId
                     )
+
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 }
             } else {
                 (selectedChat as? ChatDetailsState.UserDetails)?.let { userDetails ->
                     if (userDetails.commonGroups.isNotEmpty()) {
+                        SettingsDivider(
+                            title = stringResource(Res.string.common_groups, userDetails.commonGroups.size),
+                            showTopDivider = false
+                        )
+
                         CommonGroupsView(
                             groups = userDetails.commonGroups,
                             viewmodel = chatdetailsViewmodel
                         )
+
+                        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                     }
                 }
             }
 
-            HorizontalDivider()
-
-
-            //Waking is Android only - the receiving alarm service has no iOS/Desktop counterpart.
-            //if (koinInject<AppVersion>().isAndroid()) {
-
-            //}
-            //Allow wakeup from everyone
-            NormalButton(
-                text = stringResource(Res.string.wake_button),
-                onClick = { showWakeReasonDialog = true },
-                primary = false,
-                showOutline = true,
-                modifier = Modifier
-                    .fillMaxWidth()
+            SettingsDivider(
+                title = stringResource(Res.string.chat_details_actions),
+                showTopDivider = false
             )
 
+            //Waking is Android only - the receiving alarm service has no iOS/Desktop counterpart.
+            //Allow wakeup from everyone
+            SettingsOption(
+                icon = Icons.Default.Alarm,
+                text = stringResource(Res.string.wake_button),
+                onClick = { showWakeReasonDialog = true }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             if (isGroup) {
-
-                if (iAmAdmin) {
-                    // add partypeople
-                    NormalButton(
-                        text = stringResource(Res.string.add_users_to_group),
-                        onClick = {
-                            showAddMemberPopup = true
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-
-                    if (showAddMemberPopup) {
-                        AddUserToGroupPopup(
-                            onDismiss = { showAddMemberPopup = false },
-                            onSuccess = {
-                                it.forEach { user ->
-                                    chatdetailsViewmodel.addMember(user.id)
-                                }
-                                showAddMemberPopup = false
-                            },
-                            availableUsers = availableMembers,
-                            selectedUsers = chatdetailsViewmodel.selectedNewMembers,
-                            searchterm = searchTerm,
-                            onSearchTermChange = chatdetailsViewmodel::onSearchTermChange,
-                            onUserSelected = chatdetailsViewmodel::onUserSelected,
-                            onUserDeselected = chatdetailsViewmodel::onUserDeSelected,
-                            isSelected = chatdetailsViewmodel::isItemSelected,
-                        )
-                    }
-
-                }
-
                 // Confirmation dialog for leaving group
                 if (showLeaveGroupConfirmation) {
                     ConfirmationDialog(
@@ -793,6 +653,7 @@ fun ChatDetails(
                         showLeaveGroupConfirmation = true
                     },
                     modifier = Modifier
+                        .padding(top = 8.dp, bottom = 16.dp, start = 16.dp, end = 16.dp)
                         .fillMaxWidth()
                 )
             } else {
@@ -819,10 +680,10 @@ fun ChatDetails(
                         showRemoveFriendConfirmation = true
                     },
                     modifier = Modifier
+                        .padding(top = 8.dp, bottom = 16.dp, start = 16.dp, end = 16.dp)
                         .fillMaxWidth()
                 )
             }
-
         }
     }
 
@@ -947,26 +808,122 @@ fun ChatDetails(
     }
 }
 
+/**
+ * Centered profile picture with the chat name below it. The name opens the rename (group) or
+ * nickname (user) dialog; [showEditPictureBadge] adds the same edit badge as the own profile in
+ * the user settings.
+ */
 @Composable
-private fun GroupExpiryCountdownText(
-    expiresAt: Long,
-    modifier: Modifier = Modifier
+private fun ChatDetailsHeader(
+    name: String,
+    nickName: String?,
+    profilePictureUrl: String,
+    showEditPictureBadge: Boolean,
+    editNameDescription: String,
+    onPictureClick: () -> Unit,
+    onEditPictureClick: () -> Unit,
+    onNameClick: () -> Unit,
 ) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp, horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier.size(160.dp)
+        ) {
+            ProfilePictureView(
+                filepath = profilePictureUrl,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .clickable { onPictureClick() }
+            )
+
+            if (showEditPictureBadge) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .align(Alignment.BottomEnd)
+                        .clip(CircleShape)
+                        .clickable { onEditPictureClick() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = stringResource(Res.string.edit_profile_picture),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .clickable { onNameClick() }
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.headlineSmall,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                // fill = false keeps the edit icon right next to a short name
+                modifier = Modifier.weight(1f, fill = false)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Icon(
+                imageVector = Icons.Default.Edit,
+                contentDescription = editNameDescription,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        if (!nickName.isNullOrBlank()) {
+            Text(
+                text = "\"$nickName\"",
+                style = MaterialTheme.typography.bodyMedium,
+                fontStyle = FontStyle.Italic,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun CountLabel(count: Int) {
+    Text(
+        text = count.toString(),
+        style = MaterialTheme.typography.titleMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
+@Composable
+private fun groupExpiryText(expiresAt: Long): String {
     val timeRemaining = rememberCountdownMillis(key = expiresAt) {
         expiresAt - Clock.System.now().toEpochMilliseconds()
     }
 
-    val text = if (timeRemaining > 0) {
+    return if (timeRemaining > 0) {
         stringResource(Res.string.group_expires_in, formatCountdown(timeRemaining))
     } else {
         stringResource(Res.string.group_expired)
     }
-
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = modifier
-    )
 }
 
 /**
