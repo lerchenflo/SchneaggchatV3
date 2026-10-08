@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.BedroomBaby
 import androidx.compose.material.icons.filled.Castle
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.GridOn
@@ -21,6 +22,8 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_2048_description
+import schneaggchatv3mp.composeapp.generated.resources.games_cchallenge_description
+import schneaggchatv3mp.composeapp.generated.resources.games_cchallenge_title
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_description
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_description
 import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_description
@@ -64,6 +67,15 @@ class GameSelectorViewModel : ViewModel() {
             route = Route.GridRush,
             inDev = GameId.GRIDRUSH.indev,
             gameId = GameId.GRIDRUSH,
+            daily = true
+        ),
+        GameScreenElement(
+            title = Res.string.games_cchallenge_title,
+            description = Res.string.games_cchallenge_description,
+            icon = Icons.Default.Code,
+            route = Route.CChallenge,
+            inDev = GameId.C_CHALLENGE.indev,
+            gameId = GameId.C_CHALLENGE,
             daily = true
         ),
         GameScreenElement(

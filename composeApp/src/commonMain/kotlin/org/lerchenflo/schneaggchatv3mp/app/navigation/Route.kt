@@ -130,6 +130,9 @@ sealed interface Route : NavKey {
     data object GridRush: Route
 
     @Serializable
+    data object CChallenge: Route
+
+    @Serializable
     data object OddOneOut: Route
 
     @Serializable

@@ -30,7 +30,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Benachrichtigungen: Nachrichtenbenachrichtigungen auf Android behoben (konnten stillschweigend fehlschlagen)
 - Chat: Lange Chats laden fix
 - Übersetzungen verbessert
-- Spiele: Schwierigkeitsauswahl scrollt mit, Spiele im Querformat wieder sichtbar
+- Spiele: Schwierigkeitsauswahl scrollt mit
+- neues Spiel: C Coding
 
 ### 3.0.18
 

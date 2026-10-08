@@ -31,7 +31,9 @@ enum class GameId(
     // Three-dart average x100 of a finished game; difficulty encodes the countdown (see dartCounterDifficulty)
     DART_COUNTER(sharedDevice = true),
     // Every submission is one win (score = 1); the server ranks the sum of wins (see countsWins)
-    UNDERCOVER(sharedDevice = true);
+    UNDERCOVER(sharedDevice = true),
+    // Daily C puzzle without a difficulty: 100 / 60 / 30 points for solving on the first / second / third try
+    C_CHALLENGE(daily = true);
 
     override val saveKey: String get() = name.lowercase()
 }
@@ -154,6 +156,12 @@ val GameId.leaderboard: LeaderboardSpec
         )
         // Levels are picked in the game and share a single board; the run time ranks equal scores
         GameId.SCHNEAGG_RODEO -> LeaderboardSpec(
+            scoreKind = ScoreKind.POINTS,
+            boardAxis = BoardAxis.NONE,
+            boards = listOf(GameDifficulty.MEDIUM),
+        )
+        // One daily puzzle for everyone, so a single board; the solve time ranks equal points
+        GameId.C_CHALLENGE -> LeaderboardSpec(
             scoreKind = ScoreKind.POINTS,
             boardAxis = BoardAxis.NONE,
             boards = listOf(GameDifficulty.MEDIUM),

@@ -82,6 +82,7 @@ import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCal
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.cchallenge.CChallengeScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
@@ -820,6 +821,12 @@ fun App() {
 
                                     entry<Route.GridRush> {
                                         GridRushScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.CChallenge> {
+                                        CChallengeScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
