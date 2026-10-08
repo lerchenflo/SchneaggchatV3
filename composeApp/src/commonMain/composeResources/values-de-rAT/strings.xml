@@ -203,6 +203,7 @@
 
     <string name="members">Mitglieder</string>
     <string name="info">Info</string>
+    <string name="chat_details_actions">Aktiona</string>
     <string name="at_least_members">Du bruchsch mindestens %1$s Mitglieder in da Gruppe</string>
     <string name="group_name_missing">Bitte gib an Gruppanama i</string>
 
@@ -1567,6 +1568,7 @@ Mealds, egal wie klenn.</string>
     <string name="highscore_upload_no_accounts">Niemand in deam Spiel hot an Account, drum isch nix uffeglada worra.</string>
     <string name="tools_coinflip_description">Kopf oder Zahl, wenns schneall go muss</string>
     <string name="tools_fingerpicker_description">Alle heband an Finger ufan Bildschirm, da Zufall wählt da Gewinner</string>
+    <!-- One-line game summaries for the game selector cards -->
     <string name="games_tab_solo">Allua</string>
     <string name="games_tab_multiplayer">Mitanand</string>
     <string name="games_tetris_description">Fallende Stüa zu volla Reiha zemmabaua</string>
@@ -1584,7 +1586,7 @@ Mealds, egal wie klenn.</string>
     <string name="games_schneaggrodeo_title">Schneagg Rodeo</string>
     <string name="games_schneaggrodeo_description">Über d Hindernis jucka, Schneagga mitam Lasso fanga und da Raba davo ritta</string>
     <string name="games_schneaggrodeo_instructions">Ritt so wit wie du kannsch, während di a Schwarm Raba verfolgt. Tipp (oder druck d Leertaste) zum über d Zün jucka, und wirf s Lasso zum Schneagga fanga – mit dena kofsch du Supersprüng und meh. Jeda Fehler bringt d Raba nöcher; wenn se di erwischand, isch s End vom Ritt.</string>
-    <string name="games_schneaggrodeo_start_easier">Liechter</string>
+    <string name="games_schneaggrodeo_start_easier">Leichter</string>
     <string name="games_schneaggrodeo_start_harder">Strenger · 1,5× Punkte</string>
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lasso</string>
@@ -1660,7 +1662,6 @@ Mealds, egal wie klenn.</string>
     <string name="games_schneaggrodeo_uboat">U-Boot</string>
     <string name="games_schneaggrodeo_uboat_controls">Heba: uftaucha · Loslo: abtaucha – weich da Mina us!</string>
     <string name="games_schneaggrodeo_uboat_controls_keys">Leertaste / W heba: uftaucha · Loslo: abtaucha – weich da Mina us!</string>
-    <!-- One-line game summaries for the game selector cards -->
     <string name="games_schneaggrodeo_oil_tanker">Öltanker</string>
     <string name="games_schneaggrodeo_oil_tanker_controls">Vollgas!</string>
     <string name="games_schneaggrodeo_flamingo">Flamingo</string>
