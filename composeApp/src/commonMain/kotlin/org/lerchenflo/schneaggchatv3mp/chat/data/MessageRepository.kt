@@ -82,11 +82,20 @@ class MessageRepository(
     }
 
 
-    fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean): Flow<List<Message>> {
-        return database.messageDao().getMessagesByUserIdFlow(userId, gruppe).map { messages ->
+    /** The newest [limit] messages of one chat, newest first, readers included. */
+    fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean, limit: Int): Flow<List<Message>> {
+        return database.messageDao().getMessagesByUserIdFlow(userId, gruppe, limit).map { messages ->
             messages.map { it.toMessage() }
         }
     }
+
+    /** Number of messages in one chat sent at or after [sinceMillis]. */
+    suspend fun getMessageCountSince(chatId: String, gruppe: Boolean, sinceMillis: Long): Int =
+        database.messageDao().getMessageCountSince(chatId, gruppe, sinceMillis)
+
+    /** Send date (epoch millis) of the oldest unread message in one chat, null when all are read. */
+    suspend fun getOldestUnreadSendDate(chatId: String, gruppe: Boolean): Long? =
+        database.messageDao().getOldestUnreadSendDate(chatId, gruppe)
 
     /** Every image shared in one chat, newest first, without readers. */
     fun getImageMessagesForChatFlow(chatId: String, gruppe: Boolean): Flow<List<Message>> {

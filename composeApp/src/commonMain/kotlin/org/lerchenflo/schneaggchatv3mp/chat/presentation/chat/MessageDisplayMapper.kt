@@ -37,15 +37,26 @@ class MessageDisplayMapper(
     private fun picturePathFor(userId: String): String =
         profilePicturePathCache.getOrPut(userId) { getProfilePicFilePath(userId) }
 
+    /**
+     * [olderReplyTargets] holds the replied-to messages that are not in [messages] (older than the
+     * loaded window), keyed by id, so a reply's preview survives the window cut.
+     */
     fun map(
         messages: List<Message>,
+        olderReplyTargets: Map<String, Message>,
         senderNames: Map<String, String>,
         groupMembers: List<GroupMember>,
         newMessagesBoundaryId: String?,
     ): List<MessageDisplayItem> {
         val groupMap = groupMembers.associateBy { it.userId }
+        val messagesById = messages.associateBy { it.id }
 
         fun resolveName(userId: String) = senderNames[userId] ?: groupMap[userId]?.memberName ?: "Unknown"
+
+        fun senderInfoFor(userId: String) = SenderInfo(
+            name = resolveName(userId),
+            color = groupMap[userId]?.color ?: 0
+        )
 
         // Find the LATEST message each user has read, so their avatar is placed only there
         // (not repeated on every earlier message they've also read).
@@ -101,10 +112,9 @@ class MessageDisplayMapper(
                 return@forEachIndexed
             }
 
-            val sender = SenderInfo(
-                name = resolveName(message.senderId),
-                color = groupMap[message.senderId]?.color ?: 0
-            )
+            val sender = senderInfoFor(message.senderId)
+
+            val replyMessage = message.answerId?.let { messagesById[it] ?: olderReplyTargets[it] }
 
             val resolvedReaders = message.readers.associate { reader ->
                 reader.readerId to resolveName(reader.readerId)
@@ -173,7 +183,9 @@ class MessageDisplayMapper(
                     messageMinimal = minimalState,
                     resolvedReaders = resolvedReaders,
                     resolvedReaderList = resolvedReaderList,
-                    resolvedReactions = resolvedReactions
+                    resolvedReactions = resolvedReactions,
+                    replyMessage = replyMessage,
+                    replySender = replyMessage?.let { senderInfoFor(it.senderId) },
                 )
             )
 

@@ -155,7 +155,7 @@ fun MessageDto.toMessage(readers: List<MessageReader> = emptyList()): Message = 
     audioPath = this.audioPath,
     senderId = this.senderId,
     receiverId = this.receiverId,
-    sendDate = this.sendDate,
+    sendDate = if (this.sendDate == 0L) "" else this.sendDate.toString(),
     changeDate = this.updatedAt,
     deleted = this.deleted,
     edited = this.edited,
@@ -185,7 +185,8 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         pictureUrl = this.pictureUrl,
         senderId = this.senderId,
         receiverId = this.receiverId,
-        sendDate = this.sendDate,
+        // Empty or malformed becomes 0, the same value the old CAST(sendDate AS INTEGER) gave it.
+        sendDate = this.sendDate.toLongOrNull() ?: 0L,
         updatedAt = this.changeDate,
         deleted = this.deleted,
         edited = this.edited,

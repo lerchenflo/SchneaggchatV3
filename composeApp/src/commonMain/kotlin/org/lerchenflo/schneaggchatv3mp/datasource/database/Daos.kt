@@ -188,14 +188,11 @@ interface MessageDao {
      * The inner query leans on SQLite's bare-column rule: when a grouped query selects MAX() of one
      * column, the other selected columns are taken from the very row that MAX matched, so localPK
      * is the newest message's own primary key.
-     *
-     * sendDate is epoch millis stored as TEXT, so it has to be compared numerically - comparing it
-     * as text would rank "9999" above "10000".
      */
     @Query("""
         SELECT * FROM messages WHERE localPK IN (
             SELECT localPK FROM (
-                SELECT localPK, MAX(CAST(sendDate AS INTEGER)) AS lastSendDate
+                SELECT localPK, MAX(sendDate) AS lastSendDate
                 FROM messages
                 GROUP BY
                     CASE
@@ -210,28 +207,73 @@ interface MessageDao {
     fun getLastMessagePerChatFlow(ownId: String): Flow<List<MessageDto>>
 
     /**
-     * Every message of one chat, newest first - the order the chat screen renders and relies on
-     * (see ChatViewModel.newestMessageId and MessageDisplayMapper, which read the newest message
-     * off the front and group consecutive messages by walking the list in this order).
+     * The newest [limit] messages of one chat, newest first - the order the chat screen renders and
+     * relies on (see ChatViewModel.newestMessageId and MessageDisplayMapper, which read the newest
+     * message off the front and group consecutive messages by walking the list in this order).
      *
-     * sendDate is epoch millis stored as TEXT, so it has to be compared numerically: a plain text
-     * sort orders by digit, which only agrees with time while every value has the same length, and
-     * silently misplaces any row that does not (an empty or zeroed sendDate, say).
+     * Limited because the chat screen re-runs this on every write to messages or readers: loading
+     * the whole history (readers included) and remapping it each time made long chats slow. The
+     * chat screen grows [limit] as the user scrolls up.
+     *
+     * Split into the sender and receiver arm on purpose: an OR over both can only be answered by
+     * collecting every row of the chat and sorting them all, LIMIT or not. Each arm on its own
+     * walks its (…, sendDate) index backwards and stops after [limit] rows, so only up to
+     * 2 * [limit] rows ever get sorted, however long the chat is.
      */
     @Transaction
-    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ORDER BY CAST(sendDate AS INTEGER) DESC")
-    fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>>
+    @Query("""
+        SELECT * FROM messages WHERE localPK IN (
+            SELECT localPK FROM (
+                SELECT localPK FROM messages
+                WHERE senderId = :userId AND groupMessage = :gruppe
+                ORDER BY sendDate DESC LIMIT :limit
+            )
+            UNION
+            SELECT localPK FROM (
+                SELECT localPK FROM messages
+                WHERE receiverId = :userId AND groupMessage = :gruppe
+                ORDER BY sendDate DESC LIMIT :limit
+            )
+        )
+        ORDER BY sendDate DESC
+        LIMIT :limit
+    """)
+    fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean, limit: Int): Flow<List<MessageWithReadersDto>>
 
-    /** One-shot counterpart of [getMessagesByUserIdFlow], same order. */
+    /**
+     * Number of messages in one chat sent at or after [sinceMillis] - how big the chat screen's
+     * window has to be so a given message (the oldest unread, a search hit) is inside it.
+     */
+    @Query("""
+        SELECT COUNT(*) FROM messages
+        WHERE (senderId = :userId OR receiverId = :userId)
+          AND groupMessage = :gruppe
+          AND sendDate >= :sinceMillis
+    """)
+    suspend fun getMessageCountSince(userId: String, gruppe: Boolean, sinceMillis: Long): Int
+
+    /**
+     * Send date of the oldest unread message in one chat, or null when everything is read. Same
+     * unread rule as ChatViewModel.captureNewMessagesBoundary: my own messages are always read.
+     */
+    @Query("""
+        SELECT MIN(sendDate) FROM messages
+        WHERE (senderId = :userId OR receiverId = :userId)
+          AND groupMessage = :gruppe
+          AND myMessage = 0
+          AND readByMe = 0
+    """)
+    suspend fun getOldestUnreadSendDate(userId: String, gruppe: Boolean): Long?
+
+    /** Every message of one chat, newest first, same order as [getMessagesByUserIdFlow]. */
     @Transaction
-    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ORDER BY CAST(sendDate AS INTEGER) DESC")
+    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ORDER BY sendDate DESC")
     suspend fun getMessagesByUserId(userId: String, gruppe: Boolean): List<MessageWithReadersDto>
 
     /**
      * Every image ever shared in one chat, newest first, for the chat's shared content screen.
      *
-     * Readers are deliberately not joined: the grid never reads them. sendDate is epoch millis
-     * stored as TEXT, so it has to be sorted numerically - as text "9999" would rank above "10000".
+     * Readers are deliberately not joined: the grid never reads them.
      */
     @Query("""
         SELECT * FROM messages
@@ -239,7 +281,7 @@ interface MessageDao {
           AND groupMessage = :gruppe
           AND msgType = :imageType
           AND deleted = 0
-        ORDER BY CAST(sendDate AS INTEGER) DESC
+        ORDER BY sendDate DESC
     """)
     fun getImageMessagesForChatFlow(
         userId: String,
@@ -257,7 +299,7 @@ interface MessageDao {
           AND groupMessage = :gruppe
           AND msgType = :msgType
           AND deleted = 0
-        ORDER BY CAST(sendDate AS INTEGER) DESC
+        ORDER BY sendDate DESC
     """)
     fun getMessagesOfTypeForChatFlow(
         userId: String,
@@ -291,7 +333,7 @@ interface MessageDao {
           AND groupMessage = :gruppe
           AND deleted = 0
           AND (content LIKE '%http%' OR content LIKE '%www.%')
-        ORDER BY CAST(sendDate AS INTEGER) DESC
+        ORDER BY sendDate DESC
     """)
     fun getLinkCandidateMessagesForChatFlow(
         userId: String,
