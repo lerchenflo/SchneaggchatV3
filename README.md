@@ -22,12 +22,13 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.19
 
 #### Features
-- Chat: Bearbeitete Nachrichten zeigen Bearbeitungs-Icon neben Zeitstempel
+- Chat: Bearbeitete Nachrichten zeigen Bearbeitungs-Icon neben Zeitstempel, neues, aufgeräumtes Design der Chat-Info passend zum Rest der App
 - Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit (mit Remote-Abmeldung und Alle Geräte abmelden Button)
 - Schneagg Rodeo verbessert
 
 #### Bugfixes
 - Benachrichtigungen: Nachrichtenbenachrichtigungen auf Android behoben (konnten stillschweigend fehlschlagen)
+- Chat: Lange Chats laden fix
 - Übersetzungen verbessert
 
 ### 3.0.18
