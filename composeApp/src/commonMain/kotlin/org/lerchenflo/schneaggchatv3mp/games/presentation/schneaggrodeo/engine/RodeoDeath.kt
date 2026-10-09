@@ -115,6 +115,13 @@ internal class RodeoDeath {
     fun reset() {
         isActive = false
         isOver = false
+        // The horse that ran off and the puddle he lay in stay behind with the old run
+        phase = DeathPhase.LIFT
+        phaseTime = 0f
+        landedTime = -1f
+        horseTime = 0f
+        horseSpeed = 0f
+        horseRun = 0f
     }
 
     /** The ravens grab him by his middle at [startX] / [startY]. */
