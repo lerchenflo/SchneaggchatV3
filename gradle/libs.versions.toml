@@ -36,13 +36,13 @@ room = "2.8.5"
 
 runtime = "1.12.1"
 sqlite = "2.7.1"
-datetime-wheel-picker = "1.4.0"
+datetime-wheel-picker = "1.5.0"
 
 koin-core = "4.2.2"
 koin-plugin = "1.2.1"
 koin-annotations = "4.2.2"
 ktor = "3.6.0"
-adaptive = "1.2.0"
+adaptive = "1.3.0"
 datastore = "1.2.1"
 
 mikepenz-markdown = "0.45.0"
@@ -60,7 +60,7 @@ espressoCore = "3.7.0"
 appcompat = "1.8.0"
 material = "1.14.0"
 
-ksafe = "3.2.0"
+ksafe = "3.3.0"
 
 #Schneaggmap
 map = "0.19.0"

@@ -342,7 +342,7 @@
     <string name="events_empty">No kua Events. Erstell seal uans!</string>
     <string name="events_view_list">Liste</string>
     <string name="events_view_day">Tag</string>
-    <string name="events_view_upcoming">Bald amol</string>
+    <string name="events_view_upcoming">Bald</string>
     <string name="events_view_month">Monat</string>
     <string name="weekday_monday_short">Mo</string>
     <string name="weekday_tuesday_short">Di</string>
@@ -1606,7 +1606,7 @@ Mealds, egal wie klenn.</string>
     <string name="games_schneaggrodeo_lasso_hint_pizza">Schnapp da d Pizza mitam Lasso!</string>
     <string name="games_schneaggrodeo_lasso_hint_kaesknoepfle">Schnapp da d Käsknöpfle mitam Lasso!</string>
     <string name="games_schneaggrodeo_lasso_hint_stanislaus">Fang da Stanislaus mitam Lasso!</string>
-    <string name="games_schneaggrodeo_goodbye">Pfiati</string>
+    <string name="games_schneaggrodeo_goodbye">Grüße</string>
     <string name="games_schneaggrodeo_golden_carriage">Goldige Kutscha!</string>
     <string name="games_schneaggrodeo_golden_carriage_button">Goldige Kutscha</string>
     <string name="games_schneaggrodeo_golden_carriage_controls">Nix drucka – 20 Punkte pro Zu!</string>
