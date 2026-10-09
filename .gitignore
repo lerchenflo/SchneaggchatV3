@@ -29,3 +29,5 @@ mapping.txt
 
 # Scratch/temp working files
 .scratch
+storeassets/demo/.last-backup-database.db*
+storeassets/preview/
