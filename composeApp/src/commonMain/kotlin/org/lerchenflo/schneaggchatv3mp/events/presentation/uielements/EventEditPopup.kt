@@ -130,7 +130,11 @@ fun EventEditPopup(
     // same one carrying new data, e.g. the coordinates picked on the map) is delivered. An
     // unkeyed remember would keep editing the previous event's stale copy. Keying on event.id
     // alone would not work: a not-yet-saved event has id == "" both before and after the map trip.
-    var currentEvent by remember(event) {
+    // Participations are left out of the key: the ViewModel tops up the creator's copy with the
+    // live participations while this popup is open, and every response from another user (seen,
+    // accepted, ...) would otherwise re-seed the draft from that pre-edit copy and wipe the edits.
+    val draftKey = event.copy(participations = emptyList())
+    var currentEvent by remember(draftKey) {
         mutableStateOf(event)
     }
 
@@ -142,11 +146,11 @@ fun EventEditPopup(
     // Only shown while the event has no group yet. Defaults to on for a brand-new event (matches
     // the previous always-create-a-group behavior) and off for an existing event that was
     // detached from its group - re-adding one is then an explicit choice.
-    var createGroup by remember(event) { mutableStateOf(isNewEvent) }
+    var createGroup by remember(draftKey) { mutableStateOf(isNewEvent) }
 
     // Separate toggle state so we can flip "has end date" off without losing the picker's
     // last-set value if the user re-enables it (avoids re-deriving a default every toggle)
-    var hasCloseDate by remember(event) {
+    var hasCloseDate by remember(draftKey) {
         mutableStateOf(event.closeDate != null)
     }
 
@@ -164,8 +168,8 @@ fun EventEditPopup(
 
     // Separate toggle + raw text state so the field can hold an in-progress or invalid entry
     // without collapsing currentEvent.maxUsers to null on every keystroke.
-    var limitParticipants by remember(event) { mutableStateOf(event.maxUsers != null) }
-    var maxUsersText by remember(event) { mutableStateOf(event.maxUsers?.toString() ?: "") }
+    var limitParticipants by remember(draftKey) { mutableStateOf(event.maxUsers != null) }
+    var maxUsersText by remember(draftKey) { mutableStateOf(event.maxUsers?.toString() ?: "") }
 
     LaunchedEffect(currentEvent.title) {
         if (titleError && currentEvent.title.isNotBlank()) {
