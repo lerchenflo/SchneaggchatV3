@@ -58,6 +58,8 @@ private const val GAP_RANDOM_SECONDS = 0.06f
 private const val GAP_MIN_WIDTH = 10f
 private const val GAP_MAX_WIDTH = 30f
 private const val STAR_CHANCE = 0.6f
+/** Riding seconds of solid rainbow after arriving up there, so the first gap never comes while the map's name still shows. */
+private const val RAINBOW_RUN_IN_SECONDS = 3f
 private const val STAR_HEIGHT = 16f
 // The fossil layer: ammonites in the rock, like the crystals in the cave
 private const val AMMONITE_CHANCE = 0.55f
@@ -195,7 +197,7 @@ internal class RodeoCourse {
 
     /**
      * Another map begins: everything on the track is gone (snails in the lasso stay with it), and
-     * the first fence comes after a normal gap.
+     * the first fence comes after a normal gap (on the rainbow after a solid run-in first).
      */
     fun clearForNewMap(speed: Float, elapsed: Float) {
         fences.clear()
@@ -208,6 +210,7 @@ internal class RodeoCourse {
         mounds.clear()
         gaps.clear()
         nextFenceIn = RodeoDifficulty.randomFenceGap(speed, elapsed)
+        if (map == RodeoMap.RAINBOW) nextFenceIn += speed * RAINBOW_RUN_IN_SECONDS
     }
 
     /** After a vehicle ride: the next fence comes no earlier than a normal gap. */
