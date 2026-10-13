@@ -45,7 +45,7 @@ fun interface AuthClock {
 }
 
 /**
- * Logging seam so every outcome can be asserted in tests and lands in `LoggingRepository` in the
+ * Logging seam so every outcome can be asserted in tests and lands in `Logger` in the
  * app. [debug] is for the high-frequency no-op paths (gate short-circuits) that must not flood
  * the persisted log; the real implementation only prints those. The manager reports from inside
  * its lock, so an implementation must not block the caller on I/O.

@@ -34,6 +34,17 @@ Outside the structural scope of the migration. Not fixed, listed for review.
 - [ ] **Two writers per table** (plan R5, deferred). `SocketConnectionMessage` (`C/datasource/network/socket/SocketConnectionMessage.kt:168-173`, ~26 calls) writes socket updates straight into the Room classes, bypassing `AppRepository` today and the new repositories after the migration. Route them through repository `apply*` methods (like `applyPushMessage`), which also brings them under the repositories' locks. Relevant for the chat migration, which rewrites both paths.
 - [ ] Service locator calls: `SocketConnectionMessage.kt:168-173` and the push handlers (`AppFirebaseMessagingService`, `MarkAsReadReceiver`, `ReplyReceiver`, `IosPushDelegateBridge`) resolve repositories via `KoinPlatform.getKoin().get<…>()`. The Android/iOS entry points need a lookup; `SocketConnectionMessage` could get its dependencies injected if that creates no Koin cycle.
 
+## Findings from migration Phase 0a (2026-10-14)
+
+Noticed while doing Phase 0a. Not fixed.
+
+- [ ] **Log timestamps print the wrong month.** `C/app/logging/RoomLoggingRepository.kt:26` formats the console timestamp with `timestamp.month.ordinal`, which is 0-based, so October prints as `09`. Only the console line is affected; `LogEntry.timeStamp` is stored as epoch millis.
+- [ ] `D/Logger` exposes `LogEntry` (a Room `@Entity`) and `LogType` from `C/app/logging/`, so the shared `datasource/domain` package imports from `app`. Move them to `D/model/` (or map `LogEntry` to a domain model) next time logging is touched.
+- [ ] `D/ErrorEvent` still carries `NetworkingError` (`C/datasource/network/util/`) and `UiText`. Both are free of Compose types themselves, but the event is UI-shaped. Goes away with the `Result<T, DataError>` follow-up (plan R6).
+- [ ] `SnackbarManager.showMessage` (`C/utilities/SnackbarManager.kt:32-33`) wraps the send in two nested `scope?.launch` calls; one is enough.
+- [ ] `AppLifecycleManager.setCarSessionActive(false)` (`C/app/AppLifecycleManager.kt:42-54`) emits `appBackgroundedEvent` every time it is called while the app is in the background, also when the car session was already off.
+- [ ] `composeApp/src/jvmTest/.../chat/ChatLoadingBenchmark.kt` calls itself a "temporary benchmark" but runs on every `jvmTest` (3 DB sizes up to 20k messages, 15 runs each). Remove it or move it out of the default test run.
+
 ## Deferred from the Android-standards review (plan §8, 2026-10-13)
 
 - [ ] **Auth invalidation in the data layer** (R8). Today `App.kt` reacts to `ActionChannel.AuthInvalidated` with error popup + `logout()` + navigate to Login. Target: `SessionTerminator` listens to `AuthEventSink` in the app scope, and `App.kt` only navigates when the auth state changes to logged out.

@@ -12,7 +12,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -36,7 +36,7 @@ class SignUpViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
     private val pictureManager: PictureManager,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val applicationScope: ApplicationScope,
     private val languageService: LanguageService
 ): ViewModel() {

@@ -39,6 +39,12 @@ object SnackbarManager {
         }
     }
 
+    /** Test-only (plan D19): forgets the scope from [init] and drops every queued snackbar. Never call it from app code. */
+    internal fun resetForTest() {
+        scope = null
+        while (_channel.tryReceive().isSuccess) Unit
+    }
+
 
 
 

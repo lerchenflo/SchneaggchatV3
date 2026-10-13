@@ -6,7 +6,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
@@ -25,7 +25,7 @@ class KtorAuthRefreshApi(
     private val plainHttpClient: HttpClient,
     private val preferencemanager: Preferencemanager,
     private val appVersion: AppVersion,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
 ) : AuthRefreshApi {
 
     @Serializable

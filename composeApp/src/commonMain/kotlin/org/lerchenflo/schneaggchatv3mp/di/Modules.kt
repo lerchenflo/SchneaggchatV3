@@ -4,10 +4,13 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.data.DefaultActionChannel
+import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.logging.RoomLoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
@@ -23,6 +26,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChatViewMode
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -106,12 +112,16 @@ val sharedmodule = module{
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
+    // App-wide error / action events (shown and handled by App.kt)
+    singleOf(::DefaultErrorChannel) bind ErrorChannel::class
+    singleOf(::DefaultActionChannel) bind ActionChannel::class
+
     // Session layer (see plans/AUTH_SESSION_REBUILD_PLAN.md). Construction order matters and is
     // cycle-free: the refresh API only needs the NOT_AUTHENTICATED client, the AUTHENTICATED
     // client needs the manager, NetworkUtils needs both clients.
     single<AuthSessionStore> { PreferenceAuthSessionStore(get()) }
     single<AuthRefreshApi> { KtorAuthRefreshApi(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get()) }
-    single<AuthEventSink> { AppAuthEventSink() }
+    single<AuthEventSink> { AppAuthEventSink(get(), get()) }
     single<AuthClock> { SystemAuthClock }
     single<AuthLog> { LoggingAuthLog(get(), get<ApplicationScope>()) }
     single {
@@ -140,13 +150,13 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::SettingsRepository)
     singleOf(::GroupRepository)
     singleOf(::UserRepository)
     singleOf(::MessageRepository)
-    singleOf(::LoggingRepository)
+    singleOf(::RoomLoggingRepository) bind Logger::class
     singleOf(::MapRepository)
     singleOf(::EventRepository)
     singleOf(::FeedbackRepository)

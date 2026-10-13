@@ -7,7 +7,7 @@ import org.koin.core.context.startKoin
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.setupImageLoader
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -42,7 +42,7 @@ fun startKoinAndroid(androidContext: Context) {
 }
 
 fun logCrash(throwable: Throwable) {
-    val loggingRepository = KoinPlatform.getKoin().get<LoggingRepository>()
+    val loggingRepository = KoinPlatform.getKoin().get<Logger>()
     runBlocking {
         loggingRepository.log(
             message = getFullStackTrace(throwable),

@@ -2,14 +2,11 @@
 
 package org.lerchenflo.schneaggchatv3mp.datasource
 
-import androidx.compose.runtime.Composable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -22,7 +19,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -30,7 +26,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
@@ -42,7 +37,6 @@ import org.lerchenflo.schneaggchatv3mp.TEST_ACCOUNT_USERNAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
@@ -68,13 +62,14 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.MAP
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.MESSAGES
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.USERS
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.trySendError
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.AudioContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.ImageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.PollContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
@@ -108,7 +103,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
@@ -143,7 +137,6 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
 import schneaggchatv3mp.composeapp.generated.resources.error_login_server_error
-import schneaggchatv3mp.composeapp.generated.resources.error_code_format
 import schneaggchatv3mp.composeapp.generated.resources.error_login_too_many_requests
 import schneaggchatv3mp.composeapp.generated.resources.eventssync
 import schneaggchatv3mp.composeapp.generated.resources.groupsync
@@ -180,72 +173,13 @@ class AppRepository(
     private val messageRepository: MessageRepository,
 
     val appVersion: AppVersion,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val mapRepository: MapRepository,
     private val eventRepository: EventRepository,
     private val languageService: LanguageService,
     private val authSessionManager: AuthSessionManager,
+    private val errorChannel: ErrorChannel,
 ) {
-    //Errorchannel for global error events (Show in every screen)
-    object ErrorChannel {
-
-        data class ErrorEvent (
-            val errorCode: Int? = null,
-            val errorMessage: String? = null,
-            val error: NetworkingError? = null,
-            val errorMessageUiText: UiText? = null,
-            val duration: Long = 5000L
-        ){
-            @Composable
-            fun toStringComposable(): String = buildString {
-                val code = errorCode ?: error?.errorCode
-                if (code != null) {
-                    appendLine(stringResource(Res.string.error_code_format, code.toString(), errorCodeToMessage(code)))
-                }
-
-                error?.message?.let { appendLine(it) }
-                errorMessage?.let { appendLine(it) }
-                errorMessageUiText?.let { appendLine(it.asString()) }
-            }
-        }
-
-        private val _channel = Channel<ErrorEvent>(capacity = Channel.BUFFERED)
-        val errors = _channel.receiveAsFlow()
-
-        suspend fun sendErrorSuspend(event: ErrorEvent) {
-            _channel.send(event) // suspending send
-        }
-
-        fun trySendError(event: ErrorEvent) {
-            _channel.trySend(event).onFailure {
-                println("Error when adding error event: $it")
-            }
-        }
-    }
-
-
-    object ActionChannel {
-
-        sealed interface ActionEvent {
-            /** Raised by AppAuthEventSink when the session died while it was active: toast, wipe, navigate to Login. */
-            data object AuthInvalidated : ActionEvent
-        }
-
-        private val _channel = Channel<ActionEvent>(capacity = Channel.BUFFERED)
-        val actions = _channel.receiveAsFlow()
-
-        suspend fun sendActionSuspend(event: ActionEvent) {
-            _channel.send(event) // suspending send
-        }
-
-        fun trySendAction(event: ActionEvent) {
-            _channel.trySend(event).onFailure {
-                println("Error when adding action event: $it")
-            }
-        }
-    }
-
-
     /*
     **************************************************************************
 
@@ -266,7 +200,7 @@ class AppRepository(
         return when (val result = networkUtils.sendEmailVerify().trackConnectivity()) {
             is NetworkResult.Error<NetworkingError> -> {
                 println("Send email verify: Error occured: ${result.error}")
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
             }
             is NetworkResult.Success<*> -> {
@@ -684,7 +618,7 @@ class AppRepository(
 
         when (result) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
             }
             is NetworkResult.Success<MapEntryResponse> -> {
                 mapRepository.upsertMapEntry(result.data.toMapEntry())
@@ -695,7 +629,7 @@ class AppRepository(
     suspend fun deleteMapEntry(entryId: String) : Boolean {
         return when (val result = networkUtils.deleteMapEntry(entryId).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
             }
             is NetworkResult.Success<*> -> {
@@ -768,7 +702,7 @@ class AppRepository(
 
         return when (result) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
             }
             is NetworkResult.Success<EventResponse> -> {
@@ -786,7 +720,7 @@ class AppRepository(
     suspend fun setEventParticipation(eventId: String, status: EventParticipationStatus): Boolean {
         return when (val result = networkUtils.setEventParticipation(eventId, status).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
             }
             is NetworkResult.Success<EventResponse> -> {
@@ -803,7 +737,7 @@ class AppRepository(
     suspend fun joinEvent(eventId: String): String? {
         return when (val response = networkUtils.joinEvent(eventId).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = response.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = response.error))
                 null
             }
             is NetworkResult.Success<EventJoinResponse> -> {
@@ -850,7 +784,7 @@ class AppRepository(
     suspend fun detachEvent(eventId: String, groupId: String? = null, deleteGroup: Boolean = false, deleteEvent: Boolean = false): Boolean {
         return when (val result = networkUtils.detachEvent(eventId, deleteGroup, deleteEvent).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
             }
             is NetworkResult.Success<*> -> {
@@ -1221,8 +1155,8 @@ class AppRepository(
 
         //Token is expired, send errormessage
         if (!tokenDateValid && tokensNotEmpty){
-            trySendError(
-                event = ErrorChannel.ErrorEvent(
+            errorChannel.trySendError(
+                event = ErrorEvent(
                     401,
                     errorMessageUiText = UiText.StringResourceText(Res.string.error_access_expired),
                     duration = 5000L,
@@ -1277,8 +1211,8 @@ class AppRepository(
                     else -> Res.string.error_invalid_credentials
                 }
 
-                sendErrorSuspend(
-                    ErrorChannel.ErrorEvent(
+                errorChannel.sendErrorSuspend(
+                    ErrorEvent(
                         errorMessageUiText = UiText.StringResourceText(messageRes),
                         duration = 5000L
                     )
@@ -1315,8 +1249,8 @@ class AppRepository(
             is NetworkResult.Error -> {
                 println("Error: ${response.error}")
 
-                sendErrorSuspend(
-                    ErrorChannel.ErrorEvent(
+                errorChannel.sendErrorSuspend(
+                    ErrorEvent(
                         error = response.error,
                         duration = 5000L
                     )
@@ -1517,8 +1451,8 @@ class AppRepository(
     suspend fun getAvailableUsers(searchTerm: String) : List<NewFriendsUserResponse> {
         return when (val response = networkUtils.getAvailableUsers(searchTerm).trackConnectivity()) {
             is NetworkResult.Error<NetworkingError> -> {
-                sendErrorSuspend(
-                    ErrorChannel.ErrorEvent(
+                errorChannel.sendErrorSuspend(
+                    ErrorEvent(
                         error = response.error
                     )
                 )
@@ -1537,7 +1471,7 @@ class AppRepository(
     suspend fun sendFriendRequest(friendId: String) : Boolean {
         when (val success = networkUtils.sendFriendRequest(friendId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -1553,7 +1487,7 @@ class AppRepository(
     suspend fun denyFriendRequest(friendId: String) : Boolean {
         when (val success = networkUtils.denyFriendRequest(friendId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -1567,7 +1501,7 @@ class AppRepository(
     suspend fun removeFriend(friendId: String) : Boolean {
         when (val success = networkUtils.removeFriend(friendId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -1581,7 +1515,7 @@ class AppRepository(
     suspend fun changeUsername(newUsername: String) : Boolean {
         when (val success = networkUtils.changeUsername(newUsername).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -1595,7 +1529,7 @@ class AppRepository(
     suspend fun changePassword(oldPassword: String, newPassword: String) : Boolean {
         when (val success = networkUtils.changePassword(oldPassword, newPassword).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -1611,7 +1545,7 @@ class AppRepository(
     suspend fun getSessions(): List<NetworkUtils.SessionResponse>? {
         return when (val result = networkUtils.getSessions().trackConnectivity()) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 null
             }
             is NetworkResult.Success -> result.data
@@ -1637,7 +1571,7 @@ class AppRepository(
         return when (val result = networkUtils.logoutAllDevices(refreshToken).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 loggingRepository.logWarning("Logout all devices failed (${result.error.errorCode}): ${result.error.message}")
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
             }
             is NetworkResult.Success<*> -> {
@@ -1650,7 +1584,7 @@ class AppRepository(
     suspend fun endSession(sessionId: String): Boolean {
         return when (val result = networkUtils.endSession(sessionId).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
             }
             is NetworkResult.Success<*> -> true
@@ -1661,7 +1595,7 @@ class AppRepository(
     suspend fun changeProfilePic(newPic: ByteArray) : Boolean {
         when (val success = networkUtils.changeProfilePic(newPic).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -1694,7 +1628,7 @@ class AppRepository(
             newPhoneNumber = newPhoneNumber,
         ).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 false
             }
             is NetworkResult.Success<*> -> {
@@ -1897,7 +1831,7 @@ class AppRepository(
                     }
 
                     println("Message senden error: ${serverrequest.error}")
-                    sendErrorSuspend(ErrorChannel.ErrorEvent(error = error))
+                    errorChannel.sendErrorSuspend(ErrorEvent(error = error))
 
                     when (content) {
                         is ImageContent -> {
@@ -2346,7 +2280,7 @@ class AppRepository(
                             sent = false
                         ))
                     }
-                    sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
+                    errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
                 }
                 is NetworkResult.Success<MessageResponse> -> {
                     val existing = messageRepository.getMessageById(request.data.messageId)
@@ -2375,7 +2309,7 @@ class AppRepository(
 
         when (request) {
             is NetworkResult.Error<NetworkingError> ->  {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<*> -> {
                 messageRepository.deleteMessage(messageId)
@@ -2387,7 +2321,7 @@ class AppRepository(
     suspend fun reactToMessage(messageId: String, content: String) {
         val  request = networkUtils.reactToMessage(messageId = messageId, content = content).trackConnectivity()
         when (request) {
-            is NetworkResult.Error -> sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
+            is NetworkResult.Error -> errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
             is NetworkResult.Success -> {
                 val existing = messageRepository.getMessageById(request.data.messageId)
                 if (existing != null) {
@@ -2413,7 +2347,7 @@ class AppRepository(
 
         when (request) {
             is NetworkResult.Error<NetworkingError> ->  {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<MessageResponse> -> {
                 val existing = messageRepository.getMessageById(request.data.messageId)
@@ -2437,7 +2371,7 @@ class AppRepository(
 
         when (request) {
             is NetworkResult.Error<NetworkingError> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<MessageResponse> -> {
                 val existing = messageRepository.getMessageById(request.data.messageId)
@@ -2483,7 +2417,7 @@ class AppRepository(
 
         return when (response){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = response.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = response.error))
                 null
             }
             is NetworkResult.Success<GroupResponse> -> {
@@ -2610,7 +2544,7 @@ class AppRepository(
     suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray) : Boolean {
         when (val success = networkUtils.changeGroupProfilePic(newPic, groupId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -2623,7 +2557,7 @@ class AppRepository(
     suspend fun changeGroupDescription(groupId: String, newDescription: String) : Boolean {
         when (val success = networkUtils.changeGroupDescription(newDescription, groupId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -2636,7 +2570,7 @@ class AppRepository(
     suspend fun changeGroupName(groupId: String, newName: String) : Boolean {
         when (val success = networkUtils.changeGroupName(newName, groupId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -2653,7 +2587,7 @@ class AppRepository(
             groupId = groupId
         ).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -2667,7 +2601,7 @@ class AppRepository(
     suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?) : Boolean {
         when (val success = networkUtils.changeGroupExpiry(groupId, expiresAt).trackConnectivity()){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
             }
             is NetworkResult.Success<*> -> {
@@ -2691,7 +2625,7 @@ class AppRepository(
     ): Boolean {
         return when (val result = networkUtils.shareLocation(friendId, share, shareSpeedHeading, snailTrail).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
             }
             is NetworkResult.Success<*> -> {
@@ -2729,7 +2663,7 @@ class AppRepository(
     suspend fun setWakePermission(friendId: String, allowWake: Boolean): Boolean {
         return when (val result = networkUtils.setWakePermission(friendId, allowWake).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
             }
             is NetworkResult.Success<*> -> {
@@ -2746,7 +2680,7 @@ class AppRepository(
     suspend fun setWakeGlobal(enabled: Boolean): Boolean {
         return when (val result = networkUtils.setWakeGlobal(enabled).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
             }
             is NetworkResult.Success<*> -> {

@@ -42,7 +42,6 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.BottomAppBar
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -71,6 +70,11 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.MessageCha
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionEvent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
@@ -138,7 +142,9 @@ fun App() {
     val languageService = koinInject<LanguageService>()
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
-    val loggingRepository = koinInject<LoggingRepository>()
+    val loggingRepository = koinInject<Logger>()
+    val errorChannel = koinInject<ErrorChannel>()
+    val actionChannel = koinInject<ActionChannel>()
 
     val globalViewModel = koinInject<GlobalViewModel>() //Init instantly for flow collections to start correctly
 
@@ -410,14 +416,14 @@ fun App() {
 
 
         ObserveAsEvents(
-            flow = AppRepository.ActionChannel.actions,
+            flow = actionChannel.actions,
         ) { action ->
             scope.launch {
                 when (action) {
-                    AppRepository.ActionChannel.ActionEvent.AuthInvalidated -> {
+                    ActionEvent.AuthInvalidated -> {
                         //Throwing an error message for the user
-                        AppRepository.ErrorChannel.trySendError(
-                            event = AppRepository.ErrorChannel.ErrorEvent(
+                        errorChannel.trySendError(
+                            event = ErrorEvent(
                                 401,
                                 errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
                                 duration = 5000L,
@@ -436,9 +442,9 @@ fun App() {
 
 
         //Error popup handling
-        var currentError by remember { mutableStateOf<AppRepository.ErrorChannel.ErrorEvent?>(null) }
+        var currentError by remember { mutableStateOf<ErrorEvent?>(null) }
         LaunchedEffect(Unit) {
-            AppRepository.ErrorChannel.errors.collect { error ->
+            errorChannel.errors.collect { error ->
                 //println("Error popup thrown: $error")
                 currentError = error
                 delay(error.duration.milliseconds)

@@ -11,7 +11,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 
 /**
  * Runs one HTTP call and maps its result - success body, HTTP error status, or thrown exception -
@@ -25,7 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
  * (see `AppRepository.sendMessage`) rather than on this helper avoiding the case.
  */
 suspend inline fun <reified R> safeNetworkCall(
-    loggingRepository: LoggingRepository,
+    loggingRepository: Logger,
     crossinline block: suspend () -> HttpResponse
 ): NetworkResult<R, NetworkingError> {
     return try {

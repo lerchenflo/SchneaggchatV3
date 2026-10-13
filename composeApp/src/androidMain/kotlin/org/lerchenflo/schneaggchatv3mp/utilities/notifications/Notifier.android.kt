@@ -21,7 +21,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -436,7 +436,7 @@ actual class Notifier(private val context: Context, private val permissionManage
 
     private fun logError(message: String) {
         println("[Notifier] $message")
-        runCatching { runBlocking { KoinPlatform.getKoin().get<LoggingRepository>().logError("[Notifier] $message") } }
+        runCatching { runBlocking { KoinPlatform.getKoin().get<Logger>().logError("[Notifier] $message") } }
     }
 
     @Synchronized

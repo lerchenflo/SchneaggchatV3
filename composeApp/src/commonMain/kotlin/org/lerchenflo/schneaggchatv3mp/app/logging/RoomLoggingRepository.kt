@@ -4,14 +4,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import kotlin.time.Clock
 
 private const val MAX_MESSAGE_LENGTH = 8000
 
-class LoggingRepository(
+class RoomLoggingRepository(
     private val database: AppDatabase
-){
-    suspend fun log(message: String, logType: LogType){
+) : Logger {
+    override suspend fun log(message: String, logType: LogType){
         // Some throwables (e.g. a deep StackOverflowError) produce stack traces with thousands
         // of lines. Rendering a message that large as a single Text in the logs viewer is what
         // used to crash the dialog when trying to view such an entry, so cap it here.
@@ -36,16 +37,16 @@ class LoggingRepository(
         }
     }
 
-    suspend fun logWarning(message: String) = log(message, LogType.WARNING)
-    suspend fun logError(message: String) = log(message, LogType.ERROR)
-    suspend fun logInfo(message: String) = log(message, LogType.INFO)
-    suspend fun logDebug(message: String) = log(message, LogType.DEBUG)
+    override suspend fun logWarning(message: String) = log(message, LogType.WARNING)
+    override suspend fun logError(message: String) = log(message, LogType.ERROR)
+    override suspend fun logInfo(message: String) = log(message, LogType.INFO)
+    override suspend fun logDebug(message: String) = log(message, LogType.DEBUG)
 
-    fun getLogs(): Flow<List<LogEntry>> {
+    override fun getLogs(): Flow<List<LogEntry>> {
         return database.logDao().getLogs()
     }
 
-    suspend fun clearLogs() {
+    override suspend fun clearLogs() {
         database.logDao().clearLogs()
     }
 }

@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -16,7 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 class SharedSettingsViewmodel(
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
-    private val loggingRepository: LoggingRepository
+    private val loggingRepository: Logger
 ) : ViewModel() {
 
     var serverUrl by mutableStateOf("")

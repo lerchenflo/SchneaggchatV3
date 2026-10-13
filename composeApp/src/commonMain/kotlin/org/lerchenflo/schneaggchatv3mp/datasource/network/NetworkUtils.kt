@@ -16,7 +16,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinRequest
@@ -67,7 +67,7 @@ class NetworkUtils(
     private val httpClient: HttpClient,
     private val authHttpClient: HttpClient, //For auth without the bearer
     private val preferenceManager: Preferencemanager,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val appVersion: AppVersion
 ) {
 

@@ -9,10 +9,12 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -24,7 +26,8 @@ class LoginViewModel(
     private val preferenceManager: Preferencemanager,
     private val navigator: Navigator,
     private val applicationScope: ApplicationScope,
-    private val loggingRepository: LoggingRepository
+    private val loggingRepository: Logger,
+    private val errorChannel: ErrorChannel,
 ): ViewModel() {
 
     var logs by mutableStateOf<List<LogEntry>>(emptyList())
@@ -92,8 +95,8 @@ class LoginViewModel(
         viewModelScope.launch {
             val online =  appRepository.testServer(preferenceManager.getServerUrl())
             if (!online){
-                AppRepository.ErrorChannel.sendErrorSuspend(
-                    event = AppRepository.ErrorChannel.ErrorEvent(
+                errorChannel.sendErrorSuspend(
+                    event = ErrorEvent(
                         errorCode = 408,
                         errorMessage = "ServerUrl: " + preferenceManager.getServerUrl(),
                         errorMessageUiText = UiText.StringResourceText(Res.string.server_not_reachable),

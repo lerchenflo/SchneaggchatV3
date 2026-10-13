@@ -11,7 +11,7 @@ import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -96,7 +96,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
         println("[AppFirebaseMessagingService] Error handling push: ${e.message}")
         KoinPlatform.getKoin().get<ApplicationScope>().launch {
             runCatching {
-                KoinPlatform.getKoin().get<LoggingRepository>().logError("Handling push failed: ${e::class.simpleName}: ${e.message}")
+                KoinPlatform.getKoin().get<Logger>().logError("Handling push failed: ${e::class.simpleName}: ${e.message}")
             }
         }
     }
@@ -122,7 +122,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
 
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
-                val loggingRepository = KoinPlatform.getKoin().get<LoggingRepository>()
+                val loggingRepository = KoinPlatform.getKoin().get<Logger>()
                 val who = if (wake.isGroupWake) "${wake.senderName} (${wake.groupName})" else wake.senderName
                 loggingRepository.logInfo("Woken by $who: ${wake.reason}")
             }

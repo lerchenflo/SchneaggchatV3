@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
@@ -22,7 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,
     private val securePrefs: KSafe,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
 ) {
 
     private val json = Json {

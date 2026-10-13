@@ -4,16 +4,16 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 
 /**
- * [AuthLog] on top of [LoggingRepository]. Persisting a line is three Room calls and the manager
+ * [AuthLog] on top of [Logger]. Persisting a line is three Room calls and the manager
  * reports from inside its lock, so the write is handed to [scope] instead of awaited, and a
  * failing write (database closed mid-logout, disk full) is printed rather than thrown: logging
  * must never block or break the session state machine.
  */
 class LoggingAuthLog(
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val scope: CoroutineScope,
 ) : AuthLog {
     // Console only: these fire on every suppressed/skipped attempt and would push the real

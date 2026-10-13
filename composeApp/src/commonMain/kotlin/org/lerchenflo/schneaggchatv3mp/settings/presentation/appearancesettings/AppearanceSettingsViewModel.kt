@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MAX_REACTION_LENGTH
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -19,7 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 class AppearanceSettingsViewModel(
     private val preferenceManager: Preferencemanager,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val languageService: LanguageService,
     private val appRepository: AppRepository,
 ): ViewModel() {

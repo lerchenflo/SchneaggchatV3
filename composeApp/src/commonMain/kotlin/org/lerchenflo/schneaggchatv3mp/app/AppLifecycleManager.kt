@@ -119,6 +119,11 @@ object AppLifecycleManager {
         _startupRoutingDone.value = true
     }
 
+    /** Test-only (plan D19): puts [startupRoutingDone] back to its initial `false`. Never call it from app code. */
+    internal fun resetStartupRoutingDoneForTest() {
+        _startupRoutingDone.value = false
+    }
+
     /**
      * Check if app is open (in foreground) when receiving notifications
      * @return true if app is in foreground, false if app is in background
