@@ -59,6 +59,8 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushViewm
 import org.lerchenflo.schneaggchatv3mp.games.presentation.cchallenge.CChallengeViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.data.CChallengeStreakRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutViewmodel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.ghettoguesser.GhettoGuesserViewModel
+import org.lerchenflo.schneaggchatv3mp.games.data.CommonsPhotoRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
@@ -157,6 +159,7 @@ val sharedmodule = module{
     // External puzzle archive fetch — no app auth, plain client
     single { CrosswordRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))) }
     single { WordleRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))) }
+    single { CommonsPhotoRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))) }
 
 
     // Socket Connection Manager
@@ -328,6 +331,8 @@ val sharedmodule = module{
     viewModelOf(::CrosswordViewmodel)
 
     viewModelOf(::WordleViewModel)
+
+    viewModelOf(::GhettoGuesserViewModel)
 
     viewModelOf(::PlayerSelectorViewModel)
     viewModelOf(::HighscoresViewModel)

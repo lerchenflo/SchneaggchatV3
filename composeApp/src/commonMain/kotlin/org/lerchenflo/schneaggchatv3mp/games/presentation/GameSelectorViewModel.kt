@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.House
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Search
@@ -29,6 +30,8 @@ import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_descrip
 import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_description
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_description
 import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_description
+import schneaggchatv3mp.composeapp.generated.resources.games_ghettoguesser_description
+import schneaggchatv3mp.composeapp.generated.resources.games_ghettoguesser_title
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_description
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_description
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_title
@@ -93,6 +96,14 @@ class GameSelectorViewModel : ViewModel() {
             route = Route.Crossword,
             inDev = GameId.CROSSWORD.indev,
             gameId = GameId.CROSSWORD
+        ),
+        GameScreenElement(
+            title = Res.string.games_ghettoguesser_title,
+            description = Res.string.games_ghettoguesser_description,
+            icon = Icons.Default.Map,
+            route = Route.GhettoGuesser,
+            // No server leaderboard yet, so no gameId; shown only in dev mode until then
+            inDev = true,
         ),
         GameScreenElement(
             title = Res.string.games_wordle_title,

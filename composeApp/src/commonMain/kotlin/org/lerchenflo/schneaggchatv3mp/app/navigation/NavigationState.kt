@@ -165,6 +165,7 @@ private val gameRoutes: Set<KClass<out NavKey>> = setOf(
     Route.GridRush::class,
     Route.CChallenge::class,
     Route.OddOneOut::class,
+    Route.GhettoGuesser::class,
     Route.SchneaggRodeo::class,
     Route.Recap::class,
     Route.CoinFlip::class,
@@ -221,6 +222,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.GridRush::class, Route.GridRush.serializer())
             subclass(Route.CChallenge::class, Route.CChallenge.serializer())
             subclass(Route.OddOneOut::class, Route.OddOneOut.serializer())
+            subclass(Route.GhettoGuesser::class, Route.GhettoGuesser.serializer())
             subclass(Route.SchneaggRodeo::class, Route.SchneaggRodeo.serializer())
             subclass(Route.Recap::class, Route.Recap.serializer())
             subclass(Route.CoinFlip::class, Route.CoinFlip.serializer())

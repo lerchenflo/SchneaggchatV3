@@ -86,6 +86,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.cchallenge.CChallengeS
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.ghettoguesser.GhettoGuesserScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusScreenRoot
@@ -835,6 +836,12 @@ fun App() {
 
                                     entry<Route.OddOneOut> {
                                         OddOneOutScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.GhettoGuesser> {
+                                        GhettoGuesserScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

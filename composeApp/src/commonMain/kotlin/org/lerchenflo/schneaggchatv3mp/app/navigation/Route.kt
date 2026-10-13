@@ -136,6 +136,9 @@ sealed interface Route : NavKey {
     data object OddOneOut: Route
 
     @Serializable
+    data object GhettoGuesser: Route
+
+    @Serializable
     data object SchneaggRodeo: Route
 
     @Serializable
