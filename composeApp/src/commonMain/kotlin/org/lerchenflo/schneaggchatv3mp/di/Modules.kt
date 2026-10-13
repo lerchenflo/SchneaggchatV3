@@ -32,6 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -90,7 +91,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.RoomMapDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
-import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.settings.data.DataStoreSettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettingsViewModel
@@ -157,7 +158,7 @@ val sharedmodule = module{
     single {
         AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
-    singleOf(::SettingsRepository)
+    singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
     singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
@@ -273,7 +274,7 @@ val sharedmodule = module{
             navigator = get(),
             mapRepository = get(),
             appRepository = get(),
-            preferenceManager = get(),
+            settingsRepository = get(),
             locationService = get(),
             userRepository = get(),
             eventRepository = get(),
@@ -299,7 +300,7 @@ val sharedmodule = module{
             eventRepository = get(),
             userRepository = get(),
             groupRepository = get(),
-            preferenceManager = get(),
+            settingsRepository = get(),
             pictureManager = get(),
             applicationScope = get(),
             initialEntryId = initialEntryId,

@@ -15,7 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
@@ -23,7 +23,7 @@ import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
 
 class LoginViewModel(
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
+    private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
     private val applicationScope: ApplicationScope,
     private val loggingRepository: Logger,
@@ -82,7 +82,7 @@ class LoginViewModel(
     fun updateServerUrl(newValue: String) {
         serverUrl = newValue
         viewModelScope.launch {
-            preferenceManager.saveServerUrl(newValue)
+            settingsRepository.saveServerUrl(newValue)
         }
     }
 
@@ -93,12 +93,12 @@ class LoginViewModel(
     init {
 
         viewModelScope.launch {
-            val online =  appRepository.testServer(preferenceManager.getServerUrl())
+            val online =  appRepository.testServer(settingsRepository.getServerUrl())
             if (!online){
                 errorChannel.sendErrorSuspend(
                     event = ErrorEvent(
                         errorCode = 408,
-                        errorMessage = "ServerUrl: " + preferenceManager.getServerUrl(),
+                        errorMessage = "ServerUrl: " + settingsRepository.getServerUrl(),
                         errorMessageUiText = UiText.StringResourceText(Res.string.server_not_reachable),
                         duration = 6000L
                     )
@@ -107,7 +107,7 @@ class LoginViewModel(
         }
 
         viewModelScope.launch {
-            serverUrl = preferenceManager.getServerUrl()
+            serverUrl = settingsRepository.getServerUrl()
         }
     }
 

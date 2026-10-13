@@ -9,7 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
 import kotlin.time.Clock
 
 @Stable

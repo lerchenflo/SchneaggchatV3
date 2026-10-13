@@ -17,7 +17,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -32,7 +31,6 @@ import kotlin.time.Instant
 
 class UserSettingsViewModel(
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
     private val pictureManager: PictureManager,
     private val navigator: Navigator,
     private val loggingRepository: Logger,

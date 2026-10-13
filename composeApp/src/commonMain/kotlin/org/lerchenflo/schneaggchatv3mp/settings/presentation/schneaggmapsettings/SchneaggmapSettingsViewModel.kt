@@ -11,7 +11,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 
 /** Draft per-friend location sharing settings edited in the dialog, only sent to the server on Save. */
@@ -24,7 +24,7 @@ data class FriendShareDraft(
 
 class SchneaggmapSettingsViewModel(
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
+    private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
 ) : ViewModel() {
@@ -45,7 +45,7 @@ class SchneaggmapSettingsViewModel(
 
     init {
         viewModelScope.launch { // Merge map locations when zooming
-            preferenceManager.getMergeMapLocationsFlow()
+            settingsRepository.getMergeMapLocationsFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting merge map locations preference: ${exception.message}")
                 }
@@ -55,7 +55,7 @@ class SchneaggmapSettingsViewModel(
         }
 
         viewModelScope.launch { // Merge map users when zooming
-            preferenceManager.getMergeMapUsersFlow()
+            settingsRepository.getMergeMapUsersFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting merge map users preference: ${exception.message}")
                 }
@@ -89,13 +89,13 @@ class SchneaggmapSettingsViewModel(
 
     fun updateMergeMapLocations(newValue: Boolean) {
         viewModelScope.launch {
-            appRepository.setMergeMapLocations(newValue)
+            settingsRepository.setMergeMapLocations(newValue)
         }
     }
 
     fun updateMergeMapUsers(newValue: Boolean) {
         viewModelScope.launch {
-            appRepository.setMergeMapUsers(newValue)
+            settingsRepository.setMergeMapUsers(newValue)
         }
     }
 

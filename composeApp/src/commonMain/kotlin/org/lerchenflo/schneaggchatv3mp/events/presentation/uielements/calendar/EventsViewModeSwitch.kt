@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.events_view_day
 import schneaggchatv3mp.composeapp.generated.resources.events_view_list

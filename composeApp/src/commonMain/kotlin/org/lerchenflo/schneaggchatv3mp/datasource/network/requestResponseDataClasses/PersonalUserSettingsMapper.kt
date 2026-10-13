@@ -1,0 +1,18 @@
+package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
+
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SyncedSettings
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+
+fun NetworkUtils.PersonalUserSettings.toSyncedSettings(): SyncedSettings = SyncedSettings(
+    mdFormat = mdFormat,
+    highlightTodaysMessageTimestamp = highlightTodaysMessageTimestamp,
+    theme = theme,
+    language = language,
+    mergeMapLocations = mergeMapLocations,
+    mergeMapUsers = mergeMapUsers,
+    mapStyle = mapStyle,
+    pinnedChats = pinnedChats,
+    quickReactions = quickReactions,
+    developerSettings = developerSettings,
+    lastContributePopupShown = lastContributePopupShown,
+)

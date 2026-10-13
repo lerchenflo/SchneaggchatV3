@@ -39,7 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.applySearchAndFilter
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -63,7 +63,7 @@ class ChatSelectorViewModel(
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
-    private val preferencemanager: Preferencemanager,
+    private val settingsRepository: SettingsRepository,
 ): ViewModel() {
 
     private val _notificationPermissionState = MutableStateFlow(PermissionState.GRANTED)
@@ -243,7 +243,7 @@ class ChatSelectorViewModel(
 
         val currentVersion = appRepository.appVersion.getVersionName()
 
-        if (preferencemanager.getLastStartedVersion() != currentVersion) {
+        if (settingsRepository.getLastStartedVersion() != currentVersion) {
             val changelog = appRepository.getChangeLog(currentVersion)
             if (changelog != null) {
                 // The version is only saved on dismiss, so a changelog that was never seen
@@ -251,24 +251,24 @@ class ChatSelectorViewModel(
                 _changelogPopup.value = changelog
             } else {
                 // Nothing to show (offline or no entry for this version)
-                preferencemanager.saveLastStartedVersion(currentVersion)
+                settingsRepository.saveLastStartedVersion(currentVersion)
             }
             return
         }
 
         val now = Clock.System.now().toEpochMilliseconds()
-        val lastShown = preferencemanager.getLastContributePopupShown()
+        val lastShown = settingsRepository.getLastContributePopupShown()
 
         when {
             // Never seeded on any device yet: seed the timestamp so the popup is due
             // one interval from now, not immediately. Normally already set server-side
             // (at registration, or by the migration for older accounts) and picked up by
             // the next sync — this only covers that sync not having landed yet.
-            lastShown == 0L -> appRepository.setLastContributePopupShown(now)
+            lastShown == 0L -> settingsRepository.setLastContributePopupShown(now)
 
             now - lastShown >= CONTRIBUTE_POPUP_INTERVAL_MILLIS -> {
                 _contributePopupShown.value = true
-                appRepository.setLastContributePopupShown(now)
+                settingsRepository.setLastContributePopupShown(now)
             }
         }
     }
@@ -276,7 +276,7 @@ class ChatSelectorViewModel(
     fun onChangelogDismiss() {
         _changelogPopup.value = null
         viewModelScope.launch {
-            preferencemanager.saveLastStartedVersion(appRepository.appVersion.getVersionName())
+            settingsRepository.saveLastStartedVersion(appRepository.appVersion.getVersionName())
         }
     }
 

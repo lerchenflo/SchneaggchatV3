@@ -24,7 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.Chat
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
@@ -42,7 +42,7 @@ class SchneaggmapViewModel(
     private val navigator: Navigator,
     private val mapRepository: MapLocalDataSource,
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
+    private val settingsRepository: SettingsRepository,
     private val locationService: LocationService,
     private val userRepository: UserLocalDataSource,
     private val eventRepository: EventLocalDataSource,
@@ -375,7 +375,7 @@ class SchneaggmapViewModel(
             is SchneaggmapAction.SelectMapStyle -> {
                 _state.update { it.copy(isMapStyleDropdownVisible = false) }
                 viewModelScope.launch {
-                    appRepository.setMapStyleSetting(action.style)
+                    settingsRepository.setMapStyleSetting(action.style)
                 }
             }
 
@@ -481,7 +481,7 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
-            preferenceManager.getMergeMapLocationsFlow()
+            settingsRepository.getMergeMapLocationsFlow()
                 .collectLatest { clustering ->
                     _state.update {
                         it.copy(
@@ -492,7 +492,7 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
-            preferenceManager.getMergeMapUsersFlow()
+            settingsRepository.getMergeMapUsersFlow()
                 .collectLatest { mergeUsers ->
                     _state.update {
                         it.copy(
@@ -503,7 +503,7 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
-            preferenceManager.getMapStyleSettingFlow()
+            settingsRepository.getMapStyleSettingFlow()
                 .collectLatest { style ->
                     _state.update { it.copy(mapStyle = style, mapStyleUrl = style.tileUrl) }
                 }

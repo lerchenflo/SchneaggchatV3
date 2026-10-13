@@ -55,7 +55,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
-import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
@@ -803,7 +803,7 @@ class ChatViewModel(
         }
 
         viewModelScope.launch {
-            settingsRepository.getUsemd()
+            settingsRepository.getUseMdFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("ChatViewModel: Problem getting MD preference: ${exception.message}")
                 }
@@ -813,7 +813,7 @@ class ChatViewModel(
         }
 
         viewModelScope.launch {
-            settingsRepository.getQuickReactions()
+            settingsRepository.getQuickReactionsFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("ChatViewModel: Problem getting quick reactions: ${exception.message}")
                 }

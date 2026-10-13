@@ -24,7 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -40,7 +40,7 @@ class NewChatViewModel (
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val shareUtils: ShareUtils,
-    private val preferencemanager: Preferencemanager
+    private val settingsRepository: SettingsRepository
 ): ViewModel() {
 
     private val _searchTerm = MutableStateFlow("")
@@ -162,7 +162,7 @@ class NewChatViewModel (
     fun onInviteFriendClick() {
 
         viewModelScope.launch {
-            val serverUrl = preferencemanager.getServerUrl()
+            val serverUrl = settingsRepository.getServerUrl()
             shareUtils.shareString(getString(Res.string.invitation_text) + "\n$serverUrl")
 
             if (appRepository.appVersion.isDesktop()) {

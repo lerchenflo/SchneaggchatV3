@@ -11,11 +11,11 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 
 class SharedSettingsViewmodel(
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
+    private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger
 ) : ViewModel() {
 
@@ -33,7 +33,7 @@ class SharedSettingsViewmodel(
 
     init {
         viewModelScope.launch { // Developer Settings
-            preferenceManager.getDevSettingsFlow()
+            settingsRepository.getDevSettingsFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting Developer Settings preference: ${exception.message}")
                 }
@@ -43,7 +43,7 @@ class SharedSettingsViewmodel(
         }
 
         viewModelScope.launch { // Server URL
-            preferenceManager.getServerUrlFlow()
+            settingsRepository.getServerUrlFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting Server URL preference: ${exception.message}")
                 }
@@ -67,7 +67,7 @@ class SharedSettingsViewmodel(
 
     fun updateDevSettings(newValue: Boolean){
         viewModelScope.launch {
-            appRepository.setDevSettings(newValue)
+            settingsRepository.setDevSettings(newValue)
             SessionCache.updateDeveloper(newValue)
         }
     }
@@ -76,7 +76,7 @@ class SharedSettingsViewmodel(
     fun updateServerUrl(newValue: String) {
         serverUrl = newValue
         viewModelScope.launch {
-            preferenceManager.saveServerUrl(newValue)
+            settingsRepository.saveServerUrl(newValue)
         }
     }
 

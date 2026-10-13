@@ -9,19 +9,17 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MAX_REACTION_LENGTH
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 class AppearanceSettingsViewModel(
-    private val preferenceManager: Preferencemanager,
+    private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger,
     private val languageService: LanguageService,
-    private val appRepository: AppRepository,
 ): ViewModel() {
 
     var markdownEnabeled by mutableStateOf(false)
@@ -42,7 +40,7 @@ class AppearanceSettingsViewModel(
 
     init {
         viewModelScope.launch { // Markdown
-            preferenceManager.getUseMdFlow()
+            settingsRepository.getUseMdFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting MD preference: ${exception.message}")
                 }
@@ -52,7 +50,7 @@ class AppearanceSettingsViewModel(
 
         }
         viewModelScope.launch { // Highlight Today's Message Timestamp
-            preferenceManager.getHighlightTodaysMessageTimestampFlow()
+            settingsRepository.getHighlightTodaysMessageTimestampFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting Highlight Today's Message Timestamp preference: ${exception.message}")
                 }
@@ -61,7 +59,7 @@ class AppearanceSettingsViewModel(
                 }
         }
         viewModelScope.launch { // Theme
-            preferenceManager.getThemeFlow()
+            settingsRepository.getThemeFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting Theme setting: ${exception.message}")
                 }
@@ -70,7 +68,7 @@ class AppearanceSettingsViewModel(
                 }
         }
         viewModelScope.launch { // Quick reactions
-            preferenceManager.getQuickReactionsFlow()
+            settingsRepository.getQuickReactionsFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting quick reactions: ${exception.message}")
                 }
@@ -93,13 +91,13 @@ class AppearanceSettingsViewModel(
 
     fun updateMarkdownSwitch(newValue: Boolean){
         viewModelScope.launch {
-            appRepository.setUseMd(newValue)
+            settingsRepository.setUseMd(newValue)
         }
     }
 
     fun updateHighlightTodaysMessageTimestamp(newValue: Boolean){
         viewModelScope.launch {
-            appRepository.setHighlightTodaysMessageTimestamp(newValue)
+            settingsRepository.setHighlightTodaysMessageTimestamp(newValue)
         }
     }
 
@@ -115,28 +113,28 @@ class AppearanceSettingsViewModel(
             .distinct()
 
         viewModelScope.launch {
-            appRepository.setQuickReactions(sanitized)
+            settingsRepository.setQuickReactions(sanitized)
         }
     }
 
     /** Back to DEFAULT_QUICK_REACTIONS, and keeps following that set if it changes in a later version. */
     fun restoreDefaultQuickReactions(){
         viewModelScope.launch {
-            appRepository.resetQuickReactions()
+            settingsRepository.resetQuickReactions()
         }
     }
 
 
     fun saveThemeSetting(theme: ThemeSetting){
         viewModelScope.launch {
-            appRepository.setThemeSetting(theme)
+            settingsRepository.setThemeSetting(theme)
         }
     }
 
 
     fun saveLanguageSetting(language: LanguageSetting){
         viewModelScope.launch {
-            appRepository.setLanguageSetting(language)
+            settingsRepository.setLanguageSetting(language)
         }
         println("System language: ${languageService.getSystemLanguage()}")
     }

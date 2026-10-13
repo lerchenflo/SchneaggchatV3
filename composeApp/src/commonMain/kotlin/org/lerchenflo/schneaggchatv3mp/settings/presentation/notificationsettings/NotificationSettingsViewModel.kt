@@ -14,7 +14,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.WakePermissionDraft
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -22,7 +21,6 @@ import kotlin.time.ExperimentalTime
 
 class NotificationSettingsViewModel(
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,

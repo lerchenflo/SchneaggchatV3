@@ -70,6 +70,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
@@ -100,6 +101,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toLocalPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
@@ -123,7 +125,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogParser
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -176,9 +177,9 @@ class AppRepository(
     private val loggingRepository: Logger,
     private val mapLocalDataSource: MapLocalDataSource,
     private val eventLocalDataSource: EventLocalDataSource,
-    private val languageService: LanguageService,
     private val authSessionManager: AuthSessionManager,
     private val errorChannel: ErrorChannel,
+    private val settingsRepository: SettingsRepository,
 ) {
     /*
     **************************************************************************
@@ -1376,7 +1377,7 @@ class AppRepository(
                                 profilePicsToGet += newUser.id
                             }
 
-                            applyServerSettings(newUser.settings)
+                            settingsRepository.applyServerSettings(newUser.settings.toSyncedSettings())
                         }
                         is UserResponse.SimpleUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
@@ -2708,68 +2709,38 @@ class AppRepository(
         return networkUtils.sendWake(targetId, isGroup, reason).trackConnectivity()
     }
 
-    // ─── Personal settings (theme, language, pinned chats, ...) ────────────────
-    // Synced across every device of this account via SelfUserResponse.settings. Push side:
-    // write the local preference first so the UI reacts instantly, then fire the partial-update
-    // request in the background and ignore its result - an offline edit is reconciled by the next
-    // /users/sync or UserChange socket push, which always wins (see applyServerSettings below).
+    // ─── Personal settings: moved to SettingsRepository ────────────────────────
+    // Thin delegates until every caller uses SettingsRepository directly (removed with this class).
 
-    /**
-     * Applies the server's settings onto local DataStore, overwriting whatever was there. Called
-     * from both the /users/sync SelfUserResponse branch and the UserChange socket push, so a
-     * settings change made on another device of the same account takes effect here without the
-     * user touching a setting themselves.
-     */
-    suspend fun applyServerSettings(settings: PersonalUserSettings) {
-        preferencemanager.applySyncedSettings(settings)
+    suspend fun applyServerSettings(settings: PersonalUserSettings) =
+        settingsRepository.applyServerSettings(settings.toSyncedSettings())
 
-        // Language has to go through LanguageService/LanguageManager to actually switch the
-        // platform locale (recreates the Activity on Android), so only touch it when it changed.
-        val newLanguage = LanguageSetting.entries.firstOrNull { it.name == settings.language } ?: LanguageSetting.SYSTEM
-        if (preferencemanager.getLanguageSetting() != newLanguage) {
-            languageService.applyLanguage(newLanguage)
-        }
-    }
+    suspend fun setUseMd(value: Boolean) = settingsRepository.setUseMd(value)
 
-    suspend fun setUseMd(value: Boolean) {
-        preferencemanager.saveUseMd(value)
-        networkUtils.updateSettings(UserSettingsRequest(mdFormat = value)).trackConnectivity()
-    }
+    suspend fun setDevSettings(value: Boolean) = settingsRepository.setDevSettings(value)
 
-    suspend fun setDevSettings(value: Boolean) {
-        preferencemanager.saveDevSettings(value)
-        networkUtils.updateSettings(UserSettingsRequest(developerSettings = value)).trackConnectivity()
-    }
+    suspend fun setHighlightTodaysMessageTimestamp(value: Boolean) =
+        settingsRepository.setHighlightTodaysMessageTimestamp(value)
 
-    suspend fun setHighlightTodaysMessageTimestamp(value: Boolean) {
-        preferencemanager.saveHighlightTodaysMessageTimestamp(value)
-        networkUtils.updateSettings(UserSettingsRequest(highlightTodaysMessageTimestamp = value)).trackConnectivity()
-    }
+    suspend fun setThemeSetting(theme: ThemeSetting) = settingsRepository.setThemeSetting(theme)
 
-    suspend fun setThemeSetting(theme: ThemeSetting) {
-        preferencemanager.saveThemeSetting(theme)
-        networkUtils.updateSettings(UserSettingsRequest(theme = theme.name)).trackConnectivity()
-    }
+    suspend fun setLanguageSetting(language: LanguageSetting) = settingsRepository.setLanguageSetting(language)
 
-    suspend fun setLanguageSetting(language: LanguageSetting) {
-        languageService.applyLanguage(language)
-        networkUtils.updateSettings(UserSettingsRequest(language = language.name)).trackConnectivity()
-    }
+    suspend fun setMergeMapLocations(value: Boolean) = settingsRepository.setMergeMapLocations(value)
 
-    suspend fun setMergeMapLocations(value: Boolean) {
-        preferencemanager.saveMergeMapLocations(value)
-        networkUtils.updateSettings(UserSettingsRequest(mergeMapLocations = value)).trackConnectivity()
-    }
+    suspend fun setMergeMapUsers(value: Boolean) = settingsRepository.setMergeMapUsers(value)
 
-    suspend fun setMergeMapUsers(value: Boolean) {
-        preferencemanager.saveMergeMapUsers(value)
-        networkUtils.updateSettings(UserSettingsRequest(mergeMapUsers = value)).trackConnectivity()
-    }
+    suspend fun setMapStyleSetting(style: MapStyleSetting) = settingsRepository.setMapStyleSetting(style)
 
-    suspend fun setMapStyleSetting(style: MapStyleSetting) {
-        preferencemanager.saveMapStyleSetting(style)
-        networkUtils.updateSettings(UserSettingsRequest(mapStyle = style.name)).trackConnectivity()
-    }
+    suspend fun setQuickReactions(reactions: List<String>) = settingsRepository.setQuickReactions(reactions)
+
+    suspend fun resetQuickReactions() = settingsRepository.resetQuickReactions()
+
+    suspend fun setLastContributePopupShown(epochMillis: Long) =
+        settingsRepository.setLastContributePopupShown(epochMillis)
+
+    // Pinned chats follow the same push pattern as the settings in SettingsRepository: write the
+    // local preference first, then fire the partial-update request and ignore its result.
 
     /** Pins or unpins a chat locally, then pushes the whole resulting list (server stores it wholesale). */
     suspend fun setPinnedChat(chatId: String, group: Boolean, pinned: Boolean) {
@@ -2779,27 +2750,6 @@ class AppRepository(
             preferencemanager.removePinnedChat(chatId)
         }
         networkUtils.updateSettings(UserSettingsRequest(pinnedChats = preferencemanager.getPinnedChats())).trackConnectivity()
-    }
-
-    /**
-     * Replaces the quick reaction list wholesale (server stores it as one value, like pinned chats).
-     * An empty list is a valid choice and is stored as such - use [resetQuickReactions] to go back
-     * to the app defaults.
-     */
-    suspend fun setQuickReactions(reactions: List<String>) {
-        preferencemanager.saveQuickReactions(reactions)
-        networkUtils.updateSettings(UserSettingsRequest(quickReactions = reactions)).trackConnectivity()
-    }
-
-    /** Clears the customised list so DEFAULT_QUICK_REACTIONS applies again, here and on every device. */
-    suspend fun resetQuickReactions() {
-        preferencemanager.clearQuickReactions()
-        networkUtils.updateSettings(UserSettingsRequest(resetQuickReactions = true)).trackConnectivity()
-    }
-
-    suspend fun setLastContributePopupShown(epochMillis: Long) {
-        preferencemanager.saveLastContributePopupShown(epochMillis)
-        networkUtils.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis))
     }
 
     /*

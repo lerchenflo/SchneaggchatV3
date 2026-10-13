@@ -30,11 +30,11 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.events.domain.hasEnded
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
@@ -56,7 +56,7 @@ class EventsViewModel(
     private val appRepository: AppRepository,
     private val userRepository: UserLocalDataSource,
     private val groupRepository: GroupLocalDataSource,
-    private val preferenceManager: Preferencemanager,
+    private val settingsRepository: SettingsRepository,
     private val pictureManager: PictureManager,
     private val applicationScope: ApplicationScope,
 
@@ -83,7 +83,7 @@ class EventsViewModel(
         eventRepository.getAllEventsFlow(),
         userRepository.getAllUsersFlow(),
         groupRepository.getAllGroupswithMembersFlow(),
-        preferenceManager.getMapStyleUrlFlow(),
+        settingsRepository.getMapStyleUrlFlow(),
     ) { currentState, events, users, groups, mapStyleUrl ->
         val friendsMap = users
             .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
@@ -112,7 +112,7 @@ class EventsViewModel(
             usersById = ownUser?.let { currentState.friendsById + (it.id to it) } ?: currentState.friendsById,
             birthdaysByMonthDay = buildBirthdaysByMonthDay(currentState.friendsById.values, ownUser)
         )
-    }.combine(preferenceManager.getEventsViewModeFlow()) { currentState, viewMode ->
+    }.combine(settingsRepository.getEventsViewModeFlow()) { currentState, viewMode ->
         // Persisted view mode is the single source of truth - OnViewModeChange only writes the
         // preference, so the switch survives app restarts and never flickers back to a default.
         currentState.copy(viewMode = viewMode)
@@ -318,7 +318,7 @@ class EventsViewModel(
 
             is EventsAction.OnViewModeChange -> {
                 viewModelScope.launch {
-                    preferenceManager.saveEventsViewMode(action.mode)
+                    settingsRepository.saveEventsViewMode(action.mode)
                 }
             }
 

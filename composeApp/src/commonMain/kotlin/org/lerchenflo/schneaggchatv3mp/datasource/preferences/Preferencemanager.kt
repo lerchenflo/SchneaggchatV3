@@ -17,7 +17,8 @@ import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SyncedSettings
 
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,
@@ -395,9 +396,9 @@ class Preferencemanager(
      * Overwrites every server-synced preference with the server's authoritative values, in one
      * DataStore edit so observers see a single coherent update. Language is deliberately excluded -
      * applying a new language has to go through LanguageService/LanguageManager to actually switch
-     * the platform locale, so AppRepository.applyServerSettings handles that field separately.
+     * the platform locale, so SettingsRepository.applyServerSettings handles that field separately.
      */
-    suspend fun applySyncedSettings(settings: NetworkUtils.PersonalUserSettings) {
+    suspend fun applySyncedSettings(settings: SyncedSettings) {
         val theme = ThemeSetting.entries.firstOrNull { it.name == settings.theme } ?: ThemeSetting.SYSTEM
         val mapStyle = MapStyleSetting.entries.firstOrNull { it.name == settings.mapStyle } ?: MapStyleSetting.LIBERTY
 

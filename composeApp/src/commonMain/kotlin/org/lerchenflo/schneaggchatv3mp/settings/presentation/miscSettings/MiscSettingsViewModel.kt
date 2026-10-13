@@ -12,14 +12,14 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 
 class MiscSettingsViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val applicationScope: ApplicationScope,
-    private val preferencemanager: Preferencemanager
+    private val settingsRepository: SettingsRepository
 ): ViewModel() {
 
     var logs by mutableStateOf<List<LogEntry>>(emptyList())
@@ -54,7 +54,7 @@ class MiscSettingsViewModel(
 
     fun resetOnboardingTour() {
         viewModelScope.launch {
-            preferencemanager.setOnboardingSeen(false)
+            settingsRepository.setOnboardingSeen(false)
         }
     }
 

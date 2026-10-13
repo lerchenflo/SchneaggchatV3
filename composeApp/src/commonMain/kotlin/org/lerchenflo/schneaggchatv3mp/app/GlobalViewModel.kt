@@ -23,7 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.hasEnded
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
@@ -42,7 +42,7 @@ import kotlin.time.Duration.Companion.minutes
 class GlobalViewModel(
     private val appRepository: AppRepository,
     private val eventRepository: EventLocalDataSource,
-    private val preferenceManager: Preferencemanager,
+    private val settingsRepository: SettingsRepository,
     private val socketConnectionManager: SocketConnectionManager,
     private val navigator: Navigator,
     private val locationService: LocationService,
@@ -206,7 +206,7 @@ class GlobalViewModel(
 
                 } else {
                     //Offline
-                    appRepository.testServer(preferenceManager.getServerUrl())
+                    appRepository.testServer(settingsRepository.getServerUrl())
 
                 }
 
@@ -312,7 +312,7 @@ class GlobalViewModel(
     fun startSocketConnection() {
         viewModelScope.launch {
             if (!socketConnectionManager.isConnectedNow() && SessionCache.isLoggedIn()){
-                val serverurl = SocketConnectionManager.getSocketUrl(preferenceManager.getServerUrl())
+                val serverurl = SocketConnectionManager.getSocketUrl(settingsRepository.getServerUrl())
                 socketConnectionManager.connect(
                     serverUrl = serverurl,
                     onError = {

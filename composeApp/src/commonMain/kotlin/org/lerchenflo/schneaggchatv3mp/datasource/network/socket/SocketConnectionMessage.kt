@@ -16,6 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
@@ -23,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
@@ -171,6 +173,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
     val groupLocalDataSource = KoinPlatform.getKoin().get<GroupLocalDataSource>()
     val mapLocalDataSource = KoinPlatform.getKoin().get<MapLocalDataSource>()
     val eventLocalDataSource = KoinPlatform.getKoin().get<EventLocalDataSource>()
+    val settingsRepository = KoinPlatform.getKoin().get<SettingsRepository>()
 
     try {
         val socketMessage = AppJson.instance.decodeFromString<SocketConnectionMessage>(message)
@@ -378,7 +381,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
                             }
 
-                            appRepository.applyServerSettings(newUser.settings)
+                            settingsRepository.applyServerSettings(newUser.settings.toSyncedSettings())
                         }
                     }
 

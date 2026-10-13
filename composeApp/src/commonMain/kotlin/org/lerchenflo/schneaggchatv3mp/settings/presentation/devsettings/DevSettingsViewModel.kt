@@ -9,7 +9,7 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.dev_settings_tour_skipped
@@ -17,21 +17,21 @@ import schneaggchatv3mp.composeapp.generated.resources.dev_settings_tour_skipped
 class DevSettingsViewModel(
     private val loggingRepository: Logger,
     private val navigator: Navigator,
-    private val preferenceManager: Preferencemanager
+    private val settingsRepository: SettingsRepository
 ): ViewModel() {
 
-    val demoMode = preferenceManager.getDemoModeFlow()
+    val demoMode = settingsRepository.getDemoModeFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     fun setDemoMode(enabled: Boolean) {
         viewModelScope.launch {
-            preferenceManager.saveDemoMode(enabled)
+            settingsRepository.saveDemoMode(enabled)
         }
     }
 
     fun skipOnboardingTour() {
         viewModelScope.launch {
-            preferenceManager.setOnboardingSeen(true)
+            settingsRepository.setOnboardingSeen(true)
             SnackbarManager.showMessage(getString(Res.string.dev_settings_tour_skipped))
         }
     }

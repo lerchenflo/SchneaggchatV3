@@ -30,7 +30,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf

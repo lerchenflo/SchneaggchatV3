@@ -54,6 +54,15 @@ Noticed while doing Phase 0b. Not fixed.
 - [ ] Stale KDoc examples in `C/chat/data/GroupLocalDataSource.kt:30-31, :41-42`: `chat.toGroup()?.groupMembers` and `getCommonGroups(chat.id)` (the function takes two ids) don't match the current code.
 - [ ] Other plans still name the platform files renamed in Phase 0b: `Notifier.android.kt` / `Notifier.jvm.kt` (`CHAT_BASED_MIGRATION_PLAN.md:231, :233, :304`, `ANDROID_AUTO_MAP_PLAN.md:28, :230`), `LocationService.android.kt` (`ANDROID_AUTO_MAP_PLAN.md:15`), `AppVersion.jvm` (`AUTH_SESSION_REBUILD_PLAN.md:27, :110`). They are now `AndroidNotifier.kt`, `DesktopNotifier.kt`, `AndroidLocationService.kt`, `DesktopAppVersion.kt`.
 
+## Findings from migration Phase 1a (2026-10-14)
+
+Noticed while doing Phase 1a (SettingsRepository). Not fixed.
+
+- [ ] **Phase 7 gap: more composables `koinInject<Preferencemanager>()` than plan §2.5 lists.** Besides `Login.kt`, `ChatSelector.kt` and `App.kt`: `C/chat/presentation/chatselector/MessageChatSelector.kt:65` (highlight flag), `C/login/presentation/emailverifiedcheck/EmailVerifiedCheckScreen.kt:77` (server URL), `C/login/presentation/signup/SignUp.kt:118` (server URL), `C/settings/presentation/usersettings/UserSettings.kt:105` (injected, never used). Phase 7 has to cover them too.
+- [ ] `C/login/presentation/signup/SignUp.kt:376` reads the server URL with `runBlocking { preferencemanager.getServerUrl() }` inside a composable, which blocks the UI thread.
+- [ ] The settings enums `ThemeSetting`, `LanguageSetting`, `MapStyleSetting` (`C/datasource/preferences/`) carry UI code (`toUiText()`, `getIcon(): ImageVector`). `D/SettingsRepository` exposes them, so `D/` reaches Compose icons through them, and 7 presentation files import them from `datasource.preferences`, which the Phase 7 grep flags. Move the UI mapping into presentation extensions and the enums (plus `PinnedChat`, used by `D/model/SyncedSettings`) to `D/model/`, in Phase 7 at the latest.
+- [ ] `C/settings/presentation/appearancesettings/AppearanceSettingsViewModel.kt:139` prints the system language with `println` on every language change (debug leftover).
+
 ## Deferred from the Android-standards review (plan §8, 2026-10-13)
 
 - [ ] **Auth invalidation in the data layer** (R8). Today `App.kt` reacts to `ActionChannel.AuthInvalidated` with error popup + `logout()` + navigate to Login. Target: `SessionTerminator` listens to `AuthEventSink` in the app scope, and `App.kt` only navigates when the auth state changes to logged out.
