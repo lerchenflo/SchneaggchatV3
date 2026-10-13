@@ -1,71 +1,106 @@
 # Repository Interface Migration Plan
 
-Splits the god object `AppRepository` (`C/datasource/AppRepository.kt`, ~2,990 lines, 14 constructor deps, used by ~30 files) into feature repositories and coordinators. Each one has an **interface in its feature's `domain` package**, so every ViewModel depends only on interfaces and can be unit-tested with in-memory fakes.
+Splits the god object `AppRepository` (`C/datasource/AppRepository.kt`, ~2,990 lines, 14 constructor deps, used by ~40 files) into feature repositories and coordinators. Each one has an **interface**, so every ViewModel depends only on interfaces and can be unit-tested with in-memory fakes.
 
-**Order**: this plan → `CHAT_BASED_MIGRATION_PLAN.md` → `E2E_ENCRYPTION_PLAN_V2.md`.
+**Order** (decided 2026-10-13): this plan → follow-ups in `plans/Todo.md` (NetworkUtils fix-up, unified NetworkUtils results, `Result<T, DataError>` conversion) → `CHAT_BASED_MIGRATION_PLAN.md` → `E2E_ENCRYPTION_PLAN_V2.md`.
 
 **Why first**: the chat migration rewrites the exact code paths this plan moves (send, sync, chat list, push apply). With interfaces and fakes in place first:
-- the chat migration changes signatures in one interface instead of in a 3k-line class;
-- ViewModel tests written here act as a safety net for that migration;
+- the follow-ups and the chat migration change signatures in one interface instead of in a 3k-line class;
+- ViewModel tests written here act as a safety net for both;
 - E2E gets a clean hook point (`MessageRepository` + `AuthRepository`) instead of a 15th constructor parameter on `AppRepository`.
 
-**Hard rule: purely structural.** No behavior changes, no new features, no API or DB changes. Keep return types as they are (`Boolean` / nullable / `NetworkResult`, see D3) (They need refactoring later on, this will be a seperate step. Write as a todo in a new Todo.md file, and also append the things from step 9 and the follow up plans (they will be implemented before the other plans). Also update the claude.md to always add findings into the todo that no thought is lost) and keep `(chatId, isGroup)` signatures. `chatId` is introduced by the chat migration, not here. Every phase compiles and ships on its own.
+**Hard rule: purely structural.** No behavior changes, no new features, no API or DB changes. Keep return types as they are (`Boolean` / nullable / `NetworkResult`, see D3); converting them is a follow-up in `plans/Todo.md`. Keep `(chatId, isGroup)` signatures; `chatId` is introduced by the chat migration, not here. Every phase compiles and runs on its own.
+Wiring changes the user asked for are in scope even though they go beyond moving code: injected channels (D10), interfaces for app-wide classes (D7, D8) and composables reading their data from ViewModels (§2.5). They change how things are wired, not what the app does.
+**One deliberate behavior change (D16, revised by R1)**: in Phase 3, the 11 user/group mutations stop calling the full `dataSync()`. Each calls its own repository's `syncUsers()` / `syncGroups()` instead. No cycle, no stale UI, no server dependency. Once `SchneaggchatV3server/Todo.md` confirms that every endpoint pushes over the socket, these own-sync calls can be removed too.
 
-Paths: `C/` = `composeApp/src/commonMain/kotlin/org/lerchenflo/schneaggchatv3mp/`. Line numbers verified 2026-10-11.
+**Android-standards review (2026-10-13, §8)**: an independent review checked this plan against the official Android architecture guidance and Now in Android. Its accepted changes (R1–R12) are worked into the sections below; §8 lists each one, plus the review's open questions and how they were decided while the user was away.
+
+**Findings**: anything noticed during the migration that is out of scope goes into `plans/Todo.md` (see CLAUDE.md), not into the migration commits.
+
+Paths: `C/` = `composeApp/src/commonMain/kotlin/org/lerchenflo/schneaggchatv3mp/`. Line numbers verified 2026-10-13.
 
 ---
 
-## 1. Current state (verified 2026-10-11)
+## 1. Current state (verified 2026-10-13)
 
 ### 1.1 `AppRepository`
-- Constructor (:171-187): `AppDatabase`, `NetworkUtils`, `Preferencemanager`, `PictureManager`, `AudioManager`, `UserRepository`, `GroupRepository`, `MessageRepository`, `AppVersion` (public `val`), `LoggingRepository`, `MapRepository`, `EventRepository`, `LanguageService`, `AuthSessionManager`.
-- Nested global objects `ErrorChannel` (:189-230) and `ActionChannel` (:233-252). They are used by `App.kt`, `LoginViewModel`, `AppAuthEventSink` and others.
+- Constructor (:171-187): `AppDatabase`, `NetworkUtils`, `Preferencemanager`, `PictureManager`, `AudioManager`, `UserRepository`, `GroupRepository`, `MessageRepository`, `AppVersion` (public `val`), `LoggingRepository`, `MapRepository`, `EventRepository`, `LanguageService`, `AuthSessionManager`. `Notifier` and `SocketConnectionManager` are pulled with `KoinPlatform.getKoin()` inside `logout` / `deleteAllAppData` / `endServerSession`.
+- Nested global objects `ErrorChannel` (:189-224) and `ActionChannel` (:227-246). Used by `AppAuthEventSink`, `App.kt`, `EventsViewModel`, `LoginViewModel` and `AppRepository` itself.
 - Rough responsibility buckets (function → line):
-  - **Auth/session**: `setNotificationToken` :257, `sendEmailVerify` :265, `onNewTokenPair` :1191, `loadSavedLoginConfig` :1212, `login` :1256, `createAccount` :1304, `changePassword` :1595, `getSessions` :1611, `logoutAllDevices` :1633, `endSession` :1650.
-  - **Teardown**: `deleteAllAppData` :282, `logout` :329.
+  - **Auth/session**: `setNotificationToken` :257, `sendEmailVerify` :265, `onNewTokenPair` :1191 (only called internally), `loadSavedLoginConfig` :1212, `login` :1256, `createAccount` :1304, `changePassword` :1595, `getSessions` :1611, `logoutAllDevices` :1633, `endSession` :1650.
+  - **Teardown**: `deleteAllAppData` :282, private `endServerSession` :304, `logout` :329. Neither deletes downloaded media (tracked in `plans/Todo.md`).
   - **App info**: `testServer` :357, `getChangeLog` :924, `getLatestGitHubVersionAsString` :940, `appVersion`.
-  - **Sync**: `dataSyncLock` :366, `dataSyncState` :423, `dataSync` :430, `userIdSync` :1345, `messageIdSync` :2089, `groupIdSync` :2526, `getMissingPics` :872, `getMissingAudios` :904, `executeSync` :2878.
+  - **Sync**: `dataSyncLock` :366, `dataSyncState` :423, `dataSync` :430, private `mapEntryIdSync` :632, private `eventIdSync` :710, `userIdSync` :1345, `messageIdSync(fetchMedia)` :2089, `groupIdSync` :2526 (returns removed group ids), `getMissingPics` :872, `getMissingAudios` :904.
+    - `dataSync` runs users / messages / groups / map / events in parallel, then purges the messages of removed groups (`messageRepository.deleteMessagesForGroup`, :593), then the MEDIA job (`getMissingPics` + `getMissingAudios`).
+    - `getMissingPics` covers **user, group and image-message** pictures, each in its own `launch`. `getMissingAudios` covers message audio only.
+    - `executeSync` (:2878) sits inside a commented-out block (:2871-2928) and calls `NetworkUtils` functions that no longer exist. Dead code: it is not moved and disappears with the class in Phase 8.
   - **Map/Event pass-throughs**: `upsertMapEntry` :663, `deleteMapEntry` :695, `upsertEvent` :736, `setEventParticipation` :786, `joinEvent` :803, `detachEvent` :850.
   - **Users/friends**: `getUserByIdFlow` :963, `getUserById` :969, `getFriends`/`getFriendsFlow` :985/:992, `getSnailTrailFlow` :1000, `getProfilePicturesForUserIds` :1498, `getAvailableUsers` :1517, `send/deny/removeFriend…` :1537-1567, `changeUsername` :1581, `changeProfilePic` :1661, `changeUserDetails` :1678, `setLocationSharing` :2686, `disableLocationSharingForAllFriends` :2717, `setWakePermission` :2729, `setWakeGlobal` :2746, `sendWake` :2769.
-  - **Chat list / search**: `getPendingFriends` :973, `getUnreadChatCountFlow` :1006, `getChatListFlow` :1018 (+ `chatKey` :2933), `getChatSelectorFlow` :1086, `getMessageSearchFlow` :1105, `setPinnedChat` :2841.
-  - **Messages**: `sendMessageLock` :1728, `sendMessage` :1738, `sendOfflineMessages` :1986, `applyPushMessage` :2198, `getPicturesForMessageIds` :2255, `getAudiosForMessageIds` :2270, `setAllChatMessagesRead` :2305, `editMessage` :2322, `deleteLocalMessage` :2367, `deleteMessage` :2371, `reactToMessage` :2387, `votePoll` :2409, `deletePollOption` :2433.
+  - **Chat list / search**: `getPendingFriends` :973, `getUnreadChatCountFlow` :1006, `getChatListFlow` :1018, `getChatSelectorFlow` :1086, `getMessageSearchFlow` :1105, `setPinnedChat` :2841.
+  - **Messages**: `MessageContent` :1719, `sendMessageLock` :1728, `sendMessage` :1738, `sendOfflineLock` :1978, `sendOfflineMessages` :1986, `messageSyncLock` :2080, `applyPushMessage` :2198, `getPicturesForMessageIds` :2255, `getAudiosForMessageIds` :2270, `setAllChatMessagesRead` :2305, `editMessage` :2322, `deleteLocalMessage` :2367, `deleteMessage` :2371, `reactToMessage` :2387, `votePoll` :2409, `deletePollOption` :2433.
   - **Groups**: `createGroup` :2471, `getProfilePicturesForGroupIds` :2595, `changeGroup*` :2610-2667.
   - **Settings**: `applyServerSettings` :2789, `setUseMd`…`setMapStyleSetting` :2800-2835, `setQuickReactions` :2855, `resetQuickReactions` :2861, `setLastContributePopupShown` :2866.
+- Nested types and file-level helpers that need a new home too:
+  - `DataSyncJobStatus` / `DataSyncJobType` / `DataSyncJobState` / `DataSyncState` (:368-424), read by `ChatSelector.kt` and `DataSyncDetailPopup.kt`.
+  - `SavedCredsResult` (:1204), returned by `loadSavedLoginConfig`.
+  - `MessageContent` (:1719), used by `ChatViewModel` and `ReplyReceiver` (9 uses).
+  - private `Message.chatKey` (:2933), private `sortedForChatSelector` (:2944), public `applySearchAndFilter` (:2972, imported by `ChatSelectorViewModel` from `datasource`).
+- Calls across buckets that shape the dependency graph:
+  - 11 user/group mutations call `dataSync()` after success: `sendFriendRequest` :1544, `denyFriendRequest` :1560, `removeFriend` :1574, `changeUsername` :1588, `changeProfilePic` :1668, `changeGroupProfilePic` :2617, `changeGroupDescription` :2630, `changeGroupName` :2643, `changeGroupMembers` :2660, `changeGroupExpiry` :2674. Moved verbatim this would be a UserRepository/GroupRepository ↔ DataSyncCoordinator cycle; resolved by D16.
+  - `logoutAllDevices` calls `logout(endSessionOnServer = false)` (:1644). Moved verbatim this would be an AuthRepository ↔ SessionTerminator cycle; resolved by D17.
+  - `userIdSync` calls `applyServerSettings` (:1445), so UserRepository depends on SettingsRepository.
+  - `setAllChatMessagesRead` calls `messageIdSync()` (:2317); both end up in MessageRepository.
 
 ### 1.2 Existing "repositories" are really local data sources
-`UserRepository`, `GroupRepository`, `MessageRepository`, `EventRepository`, `MapRepository` and `LoggingRepository` each wrap only `AppDatabase`. `SettingsRepository` wraps only `Preferencemanager`, and `FeedbackRepository` wraps only `NetworkUtils`. None of them has an interface. Under the android-data-layer skill naming, the Room-only ones are **local data sources**.
+`UserRepository`, `GroupRepository`, `MessageRepository`, `EventRepository`, `MapRepository` and `LoggingRepository` each wrap only `AppDatabase`. `SettingsRepository` (`C/settings/data/SettingsRepository.kt`: md flag, highlight flag, quick reactions, drafts) wraps only `Preferencemanager`, and `FeedbackRepository` wraps only `NetworkUtils`. None of them has an interface. Under the android-data-layer skill naming, the Room-only ones are **local data sources**.
 
-### 1.3 What ViewModels inject today (non-games)
-| ViewModel | Concrete data-layer deps |
+### 1.3 What ViewModels inject today
+| ViewModel | Data-layer / platform deps |
 |---|---|
-| `ChatViewModel` | AppRepository, MessageRepository, UserRepository, GroupRepository, SettingsRepository, LoggingRepository, PictureManager, AudioManager, PermissionManager |
-| `ChatDetailsViewmodel` | AppRepository, MessageRepository, UserRepository, GroupRepository, EventRepository, PictureManager |
-| `SharedContentViewModel` | MessageRepository, UserRepository, PictureManager |
-| `ChatSelectorViewModel` | AppRepository, Preferencemanager, LoggingRepository, PermissionManager |
-| `EventsViewModel` | AppRepository, EventRepository, GroupRepository, UserRepository, Preferencemanager, PictureManager |
-| `SchneaggmapViewModel` | AppRepository, MapRepository, EventRepository, UserRepository, Preferencemanager, LocationService |
-| `GlobalViewModel` | AppRepository, EventRepository, Preferencemanager, SocketConnectionManager, LocationService, BatteryService, AppVersion |
-| Settings VMs (8) | AppRepository, Preferencemanager, LoggingRepository, PermissionManager, PictureManager, AppVersion |
-| Login VMs (4) | AppRepository, Preferencemanager, LoggingRepository, LanguageService, PictureManager |
-| `NewChatViewModel`, `GroupCreatorViewModel`, `BirthdaysViewModel`, `FriendCompassViewModel` | AppRepository (+ LocationService) |
-| `FeedbackViewModel` | FeedbackRepository |
+| `ChatViewModel` | AppRepository, MessageRepository, UserRepository, GroupRepository, SettingsRepository, LoggingRepository, PictureManager, AudioManager, PermissionManager, Navigator, ApplicationScope |
+| `ChatDetailsViewmodel` | AppRepository, MessageRepository, UserRepository, GroupRepository, EventRepository, PictureManager, Navigator |
+| `SharedContentViewModel` | MessageRepository, UserRepository, PictureManager, Navigator |
+| `ChatSelectorViewModel` | AppRepository, Preferencemanager, LoggingRepository, PermissionManager, Navigator |
+| `EventsViewModel` | AppRepository, EventRepository, GroupRepository, UserRepository, Preferencemanager, PictureManager, Navigator, ApplicationScope |
+| `SchneaggmapViewModel` | AppRepository, MapRepository, EventRepository, UserRepository, Preferencemanager, LocationService, Navigator |
+| `GlobalViewModel` (Koin `single`) | AppRepository, EventRepository, Preferencemanager, SocketConnectionManager, LocationService, BatteryService, AppVersion, Navigator |
+| Settings VMs (Shared, Appearance, Privacy, Notification, User, LoggedInDevices, SchneaggmapSettings, Misc, Dev) | AppRepository (all but Dev), Preferencemanager, LoggingRepository, PermissionManager, PictureManager, AppVersion, LanguageService, Navigator, ApplicationScope |
+| Login VMs (Login, SignUp, EmailVerifiedCheck, AutoLoginCredChecker) | AppRepository, Preferencemanager, LoggingRepository, LanguageService, PictureManager, Navigator, ApplicationScope |
+| `NewChatViewModel` | AppRepository, Preferencemanager, LoggingRepository, ShareUtils, Navigator |
+| `GroupCreatorViewModel` | AppRepository, PictureManager, Navigator |
+| `BirthdaysViewModel` | AppRepository, Navigator |
+| `FriendCompassViewModel` | AppRepository, LocationService, Navigator |
+| `FeedbackViewModel` | FeedbackRepository, Navigator |
+| Games: `PlayerSelectorViewModel`, `SchneaggRodeoViewModel` | AppRepository (`getFriends`, `getFriendsFlow`, `getUserByIdFlow` only) |
 
 Notes on these dependencies:
-- `Preferencemanager` is injected into 13 ViewModels. They mostly read flows: server URL, theme, map style, merge flags, demo mode, events view mode, onboarding/last-started version.
-- `PictureManager`, `AudioManager`, `PermissionManager`, `LocationService`, `BatteryService` and `AppVersion` are **`expect class`es**, so `commonTest`/`jvmTest` can't fake them.
-- `Navigator` and `ApplicationScope` are plain classes. They can be used for real in tests (see D8).
+- `Preferencemanager` is injected into 14 ViewModels. They mostly read flows: server URL, theme, map style, merge flags, demo mode, events view mode, onboarding/last-started version.
+- `PictureManager`, `AudioManager`, `PermissionManager`, `LocationService`, `BatteryService`, `AppVersion` and `ShareUtils` are **`expect class`es**, so `commonTest`/`jvmTest` can't fake them. `LanguageService` is a plain class but wraps the `expect class LanguageManager`. `SessionTerminator` will need the `expect class Notifier`.
+- `Navigator`, `ApplicationScope` (hardcodes `Dispatchers.IO`) and `LanguageService` are plain classes.
 
 ### 1.4 Other `AppRepository` callers (not ViewModels)
-- `SocketConnectionMessage.kt`: calls `dataSync`, `applyServerSettings`, and the media fetches for message, user and group ids.
-- `Preferencemanager.kt`: calls `applyServerSettings`.
-- `AppAuthEventSink.kt`: uses the channels.
-- `App.kt`: `loadSavedLoginConfig`, `logout`, the channels, `appVersion`.
-- UI composables reading `appVersion` or `testServer`: `Login.kt`, `SettingsScreen.kt`, `ChatSelector.kt` (`dataSyncState`), `UrlChangeDialog.kt`.
+- `SocketConnectionMessage.kt` (resolves everything via `KoinPlatform.getKoin()`, :168-173): `getPicturesForMessageIds` / `getAudiosForMessageIds` (:240/:244), `getProfilePicturesForUserIds` (:295/:339/:378), `applyServerSettings` (:381), `getProfilePicturesForGroupIds` (:421), `dataSync` (:428).
+- `AppAuthEventSink.kt`: the channels.
+- `App.kt`: `loadSavedLoginConfig`, `logout` (on `AuthInvalidated`), the channels, `appVersion`. Also injects `Preferencemanager`, `LanguageService`, `LoggingRepository`.
+- Composables:
+  - `Login.kt`: `appVersion` (`VersionText`), plus `Preferencemanager` and `LanguageService` via `koinInject`.
+  - `SettingsScreen.kt`: `appVersion`.
+  - `ChatSelector.kt`: `dataSyncState`, `appVersion`, plus `Preferencemanager` via `koinInject`.
+  - `UrlChangeDialog.kt`: `testServer`. Hosted by `Login.kt` and `DeveloperSettings.kt`.
+  - `DataSyncDetailPopup.kt`: the `DataSync*` types.
+- Push entry points (all resolve `AppRepository` via `KoinPlatform.getKoin()`):
+  - `androidMain/…/AppFirebaseMessagingService.kt`: `setNotificationToken`, `applyPushMessage`.
+  - `androidMain/…/MarkAsReadReceiver.kt`: `setAllChatMessagesRead`.
+  - `androidMain/…/ReplyReceiver.kt`: `sendMessage` (`MessageContent.TextContent`), `setAllChatMessagesRead`.
+  - `iosMain/…/IosPushDelegateBridge.kt`: `setNotificationToken`, `applyPushMessage`, `messageIdSync`, `dataSync`.
+- There is **no** WorkManager job and no iOS background task.
+- KDoc references to `AppRepository`: `SafeNetworkCall.kt:25`, `Preferencemanager.kt:398`, `C/chat/data/UserRepository.kt:161`.
+- Static `KoinPlatform.getKoin().get<LoggingRepository>()` lookups: `AppFirebaseMessagingService.kt:99/:125`, `koinAndroidUtils.kt:45`, `Notifier.android.kt:439`.
 
 ### 1.5 Test setup
-- `commonTest` has `kotlin-test` + `kotlinx-coroutines-test`.
-- `jvmTest` has one benchmark using in-memory Room with `BundledSQLiteDriver`.
-- `ktor-client-mock` is in the catalog. Turbine and AssertK are not.
+- `commonTest` already has `kotlin-test`, `kotlinx-coroutines-test` and `ktor-client-mock`.
+- `jvmTest` has one benchmark (`ChatLoadingBenchmark.kt`) using in-memory Room with `BundledSQLiteDriver`.
+- Turbine and AssertK are not in the catalog.
 
 ---
 
@@ -75,32 +110,44 @@ Notes on these dependencies:
 ```
 ViewModel ──► domain interface (Repository / Coordinator)
                      ▲ implemented by
-              data impl ──► LocalDataSource (Room) / NetworkUtils / Preferencemanager / platform services
+              data impl ──► LocalDataSource (Room) / NetworkUtils / platform service interfaces
 Coordinator impl ──► Repository interfaces   (never the reverse)
+Composable ──► its ViewModel only            (exception: App.kt, see §2.5)
 ```
 Rules:
-- A ViewModel never imports anything from `data` or `datasource`: no `AppDatabase`, `NetworkUtils`, `Preferencemanager`, DAOs or DTOs.
+- A ViewModel never imports anything from a `data` package or from `datasource` (except `datasource/domain`): no `AppDatabase`, `NetworkUtils`, `Preferencemanager`, DAOs or DTOs.
+- A composable never `koinInject`s a data-layer class. It reads ViewModel state and sends actions (§2.5).
 - Repositories don't depend on each other in a cycle. Shared logic goes up into a coordinator.
-- Coordinators own the cross-repo locks: `dataSyncLock` → `DataSyncCoordinator`; `sendMessageLock`/`sendOfflineLock` → `MessageRepository`.
+- Coordinators only call repository interfaces: `sync*()`, `fetchMissing*()`, and narrow cleanup methods such as `MessageRepository.deleteMessagesForGroups(ids)`.
+- Coordinators own the cross-repo locks: `dataSyncLock` → `DataSyncCoordinator`; `sendMessageLock` / `sendOfflineLock` / `messageSyncLock` → `MessageRepository`.
 - One interface + one implementation per concept. Bind in Koin as `singleOf(::OfflineFirstMessageRepository) bind MessageRepository::class`.
+- **Work that must outlive a screen runs in the data layer (R2).** Repositories and coordinators take an `externalScope: CoroutineScope` (Koin binds the existing `ApplicationScope` instance) and run such work as `externalScope.async { … }.await()`. ViewModels call them from `viewModelScope` and never inject `ApplicationScope`. Tests pass `backgroundScope`.
+- **Interfaces in `D/` never expose network DTOs (R3).** `NetworkUtils.*` types used by ViewModels (`FriendshipStatus`, `GroupMemberAction`, `WakeOutcome`, `SessionResponse`, `NewFriendsUserResponse`, `PollCreateRequest`, `PollVoteOptionCreateRequest`, `PollVoteRequest`) get domain models + mappers in the phase that creates the interface exposing them.
+- **No hardcoded dispatchers in classes under test (R4).** `OfflineFirstChatListRepository` and `OfflineFirstMessageRepository` take `CoroutineDispatcher` constructor parameters (Koin named `Default` / `IO`) whose defaults keep today's behavior.
 
 ### 2.2 Target classes
+Interface packages follow **D4** (decided 2026-10-13), matching the module-structure skill rule "features never import from each other":
+- **Cross-feature interfaces** live in the shared package `datasource/domain/` (shortened to `D/` below), together with the types they expose.
+- **Feature-only interfaces** stay in their feature's `domain` package: `ChatListRepository`, `FeedbackRepository`.
+- `MapRepository` counts as shared, because `DataSyncCoordinator` (shared) calls it.
+- Implementations stay in the `data` packages listed below; Koin binds them. A feature `data` package importing `D/` is fine (feature → shared).
+- **Models move with their interface (R7).** A domain model that a `D/` interface exposes (`User`, `Group`, `Message`, `Event`, map entry models, …) moves to `D/model/` in the phase that creates that interface, as a mechanical package move. Otherwise the shared package would import a feature. Feature-only models (`ChatListItem`, `MessageDisplayItem`, …) stay in their feature.
 
-| Interface (`domain`) | Impl (`data`) | Takes over |
+| Interface | Impl | Takes over |
 |---|---|---|
-| `login/domain/AuthRepository` | `login/data/RemoteAuthRepository` | login, createAccount, loadSavedLoginConfig, onNewTokenPair, sendEmailVerify, changePassword, sessions, logoutAllDevices, endSession, setNotificationToken |
-| `app/domain/SessionTerminator` | `app/data/LocalSessionTerminator` | logout, deleteAllAppData (wipes DB, prefs, media, socket; calls `AuthRepository` for the server-side end) |
-| `app/domain/AppInfoRepository` | `app/data/RemoteAppInfoRepository` | testServer, getChangeLog, getLatestGitHubVersionAsString, app version string |
-| `chat/domain/UserRepository` | `chat/data/OfflineFirstUserRepository` | user/friend flows, friend requests, available users, username/pic/details changes, location sharing, wake permission/global/send, snail trail, online state (from the current local class), `syncUsers()` (= `userIdSync`), `fetchMissingProfilePictures(ids)` |
-| `chat/domain/GroupRepository` | `chat/data/OfflineFirstGroupRepository` | createGroup, changeGroup*, group flows/getters, `syncGroups()` (= `groupIdSync`), group pics |
-| `chat/domain/MessageRepository` | `chat/data/OfflineFirstMessageRepository` | sendMessage, sendOfflineMessages, edit/delete/react/poll, markRead, applyPushMessage, message flows/getters (from the current local class), `syncMessages()` (= `messageIdSync`), message media fetch, missing pics/audios |
-| `chat/domain/ChatListRepository` | `chat/data/OfflineFirstChatListRepository` | getChatListFlow (+ `chatKey`), getChatSelectorFlow, getMessageSearchFlow, getPendingFriends, getUnreadChatCountFlow, setPinnedChat |
-| `events/domain/EventRepository` | `events/data/OfflineFirstEventRepository` | upsertEvent, setEventParticipation, joinEvent, detachEvent, event flows, `syncEvents()` |
-| `schneaggmap/domain/MapRepository` | `schneaggmap/data/OfflineFirstMapRepository` | upsertMapEntry, deleteMapEntry, map flows, `syncMapEntries()` |
-| `settings/domain/SettingsRepository` | `settings/data/DataStoreSettingsRepository` | every `set*` from AppRepository + applyServerSettings + quick reactions + drafts + **every preference flow a ViewModel reads today** (replaces direct `Preferencemanager` injection) |
-| `app/domain/DataSyncCoordinator` | `app/data/DefaultDataSyncCoordinator` | dataSync (order, lock, `dataSyncState`), executeSync. Calls `sync*()` on the repos above. |
+| `D/AuthRepository` | `login/data/RemoteAuthRepository` | login, createAccount, loadSavedLoginConfig (+ `SavedCredsResult` → `D/`), onNewTokenPair (internal), sendEmailVerify, changePassword, sessions, endSession, setNotificationToken, `endServerSession` (with the existing 5 s timeout), `logoutAllDevicesOnServer()` (the server half of `logoutAllDevices`, D17) |
+| `D/SessionTerminator` | `app/data/LocalSessionTerminator` | logout, deleteAllAppData, `logoutAllDevices()` (calls `AuthRepository.logoutAllDevicesOnServer()`, then its own `logout(endSessionOnServer = false)`; D17). Moved verbatim: clears the session, DB, prefs, push token, socket and `SessionCache`, exactly like today. **No media wipe** (gap tracked in `plans/Todo.md`). Gets `AuthSessionManager` (`currentTokens`, `clearSession`), `AuthRepository`, `Notifier` and `SocketConnectionManager` by constructor instead of `KoinPlatform` |
+| `D/AppInfoRepository` | `app/data/RemoteAppInfoRepository` | testServer, getChangeLog, getLatestGitHubVersionAsString, app version string |
+| `D/UserRepository` | `chat/data/OfflineFirstUserRepository` | user/friend flows, friend requests, available users, username/pic/details changes, location sharing, wake permission/global/send, snail trail, online state (from the current local class), `syncUsers()` (= `userIdSync`, uses `SettingsRepository.applyServerSettings`), `getProfilePicturesForUserIds`, `fetchMissingProfilePictures()` (user part of `getMissingPics`). The mutations call `syncUsers()` instead of `dataSync()` (D16/R1) |
+| `D/GroupRepository` | `chat/data/OfflineFirstGroupRepository` | createGroup, changeGroup*, group flows/getters, `syncGroups(): List<String>` (= `groupIdSync`, returns the removed group ids), `getProfilePicturesForGroupIds`, `fetchMissingGroupPictures()` (group part of `getMissingPics`). The mutations call `syncGroups()` instead of `dataSync()` (D16/R1) |
+| `D/MessageRepository` | `chat/data/OfflineFirstMessageRepository` | sendMessage (+ `MessageContent` → `D/`), sendOfflineMessages, edit/delete/react/poll, markRead, applyPushMessage, message flows/getters (from the current local class), `syncMessages(fetchMedia: Boolean = true)` (= `messageIdSync`), message media fetch, `fetchMissingMessageMedia()` (image part of `getMissingPics` + `getMissingAudios`), `deleteMessagesForGroups(ids)`. Send and mark-read run in `externalScope` (R2), which replaces the `applicationScope.launch` in `ChatViewModel` |
+| `chat/domain/ChatListRepository` | `chat/data/OfflineFirstChatListRepository` | getChatListFlow (+ `chatKey`, `sortedForChatSelector`), getChatSelectorFlow, getMessageSearchFlow, getPendingFriends, getUnreadChatCountFlow, setPinnedChat. `applySearchAndFilter` moves to `chat/domain` (pure function, used by the ViewModel) |
+| `D/EventRepository` | `events/data/OfflineFirstEventRepository` | upsertEvent, setEventParticipation, joinEvent, detachEvent, event flows, `syncEvents()` (= `eventIdSync`) |
+| `D/MapRepository` | `schneaggmap/data/OfflineFirstMapRepository` | upsertMapEntry, deleteMapEntry, map flows, `syncMapEntries()` (= `mapEntryIdSync`) |
+| `D/SettingsRepository` | `settings/data/DataStoreSettingsRepository` | **absorbs the existing `settings/data/SettingsRepository`** (drafts, md flag, highlight flag, quick reactions) + every `set*` from AppRepository + applyServerSettings + `setLastContributePopupShown` + **every preference flow a ViewModel reads today** (replaces direct `Preferencemanager` injection) |
+| `D/DataSyncCoordinator` | `app/data/DefaultDataSyncCoordinator` | dataSync (order, lock, `dataSyncState`, purge of removed groups' messages, MEDIA job), `DataSync*` types → `D/`. The sync body runs in `externalScope` (R2), so callers in `viewModelScope` no longer need `applicationScope.launch` to keep it alive. A caller that leaves its screen no longer cancels a running sync |
 | `feedback/domain/FeedbackRepository` | `feedback/data/RemoteFeedbackRepository` | unchanged API, just gets an interface |
-| `app/logging/…/Logger` (see D9) | `RoomLoggingRepository` | log*, getLogs, clearLogs |
+| `D/Logger` (D9) | `app/logging/RoomLoggingRepository` | log*, getLogs, clearLogs |
 
 The existing Room-only classes get renamed to local data sources (D1). They stay internal to `data`:
 - `UserRepository` → `UserLocalDataSource` (interface) / `RoomUserDataSource`
@@ -109,123 +156,204 @@ The existing Room-only classes get renamed to local data sources (D1). They stay
 - `EventRepository` → `EventLocalDataSource` / `RoomEventDataSource`
 - `MapRepository` → `MapLocalDataSource` / `RoomMapDataSource`
 
-`NetworkUtils` (1,442 lines) stays one concrete remote data source in this plan (D2). Repository impls are tested against it through Ktor `MockEngine`.
+`NetworkUtils` (1,442 lines) stays one concrete remote data source in this plan (D2). Repository impls are tested against it through Ktor `MockEngine`. Splitting it is the first follow-up after this plan.
 
-### 2.3 Platform services → interfaces
-Every `expect class` a ViewModel injects becomes a common `interface` plus per-platform implementations: `PictureManager`, `AudioManager`, `PermissionManager`, `LocationService`, `BatteryService`, `AppVersion`.
-- Pattern: `interface PictureManager { … }` in `commonMain`, `class AndroidPictureManager(context) : PictureManager` in `androidMain`, and the same for iOS/JVM. Koin platform modules bind them.
-- Signatures stay identical, so call sites only change in Koin.
+### 2.3 Platform services → interfaces (D7, D8 revised by R9)
+- Every `expect class` that a ViewModel or repository injects becomes a common `interface` plus per-platform implementations: `PictureManager`, `AudioManager`, `PermissionManager`, `LocationService`, `BatteryService`, `AppVersion`, `ShareUtils`, `LanguageManager`, `Notifier` (9). KMP forces this; it matches NiA's `Notifier` / `NetworkMonitor` interfaces.
+  - Pattern: `interface PictureManager { … }` in `commonMain`, `class AndroidPictureManager(context) : PictureManager` in `androidMain`, and the same for iOS/JVM. Koin platform modules bind them.
+  - Signatures stay identical, so call sites only change in Koin.
+  - The `AppVersion` interface moves from `settings/data/` to `utilities/`, next to the other platform services (R11).
+- **No interfaces for `Navigator`, `ApplicationScope`, `LanguageService` (R9).** Google has no such rule, and NiA and the house navigation skill keep `Navigator` concrete. Tests use a real `Navigator`, a real `LanguageService` with a fake `LanguageManager`, and pass `backgroundScope` where a repository wants an `externalScope`. `ApplicationScope` stays the existing class, but ViewModels stop injecting it (R2).
 
-### 2.4 Global channels
-`AppRepository.ErrorChannel` / `ActionChannel` move unchanged to `app/events/ErrorChannel.kt` / `ActionChannel.kt`. Only the import changes. Turning them into injected buses is out of scope (D10).
+### 2.4 Global channels → injected (D10)
+- `AppRepository.ErrorChannel` / `ActionChannel` become interfaces in `D/` (`ErrorChannel`, `ActionChannel`, with `ErrorEvent` / `ActionEvent`) with one impl each, bound as Koin `single`s.
+- Same buffered `Channel`, same `send` / `trySend` semantics, so behavior doesn't change.
+- Callers get them injected: the new repositories, `AppAuthEventSink`, `App.kt`, `EventsViewModel`, `LoginViewModel`. Tests use fakes that record events.
+- `ErrorEvent` becomes free of Compose (R6). `toStringComposable()` turns into an extension function in `app/`, so `D/` has no Compose dependency.
+- Repositories writing into `ErrorChannel` is temporary (R6). The data layer should return errors to its caller; that goes away with the `Result<T, DataError>` follow-up.
+- Channels stay Channels (review question Q1). The house MVI skill uses a `Channel` for one-off events; turning the global error/action events into app-level state is in `plans/Todo.md`.
+
+### 2.5 Composables read from ViewModels (decided 2026-10-13, done in Phase 7)
+All of it happens in Phase 7, once every repository exists, so each composable is rewired only once, straight to its final interface (D21). Until then the composables keep using the `AppRepository` delegating shell.
+- `Login.kt` → `LoginViewModel`: version text, server URL, language.
+- `ChatSelector.kt` → `ChatSelectorViewModel`: `dataSyncState`, `isMobile` / `isDesktop`, preference flows.
+- `SettingsScreen.kt` → `SettingsViewModel`: version name and code.
+- `UrlChangeDialog.kt` takes state + callbacks. `testServer` runs in its two hosts, `LoginViewModel` and `DevSettingsViewModel`.
+- `DataSyncDetailPopup.kt`: only the type imports change.
+- **Exception `App.kt`**: as the root composable it keeps `koinInject`, but only of interfaces (`AuthRepository`, `SessionTerminator`, `AppVersion`, `Logger`, `SettingsRepository`, `LanguageService`, the channels). `GlobalViewModel` gets nothing new; splitting it is in `plans/Todo.md`.
 
 ---
 
 ## 3. Phases
 
-Each phase leaves the app compiling and behaving the same. During the move, `AppRepository` keeps thin delegating methods (`suspend fun login(...) = authRepository.login(...)`) so callers can be switched one by one. It is deleted in Phase 8.
+All phases go on **one long branch** (D11). Each phase still leaves the app compiling and behaving the same (except D16), and lands as its own commit(s), so a regression can be bisected to one phase. During the move, `AppRepository` keeps thin delegating methods (`suspend fun login(...) = authRepository.login(...)`) so callers can be switched one by one. It is deleted in Phase 8.
+
+**Verification per phase (D20)**: for this migration Claude may run the compile tasks (`:composeApp:compileKotlinJvm`, `:composeApp:compileDebugKotlinAndroid`, the iOS compile task) and `:composeApp:jvmTest`. No assemble, run or install tasks. The user still launches the app on Android, iOS and Desktop after each phase.
 
 ### Phase 0: Groundwork
-1. Move `ErrorChannel` / `ActionChannel` out (§2.4).
-2. Convert the six `expect class`es to interfaces (§2.3) and update the Koin platform modules.
-3. Test deps: add `turbine` + `assertk` to the version catalog and `commonTest`, and `ktor-client-mock` to `jvmTest` (D5). Add `commonTest/…/testutil/` with `MainDispatcherExtension`-style setup (`Dispatchers.setMain(UnconfinedTestDispatcher())`) and an in-memory Room builder for `jvmTest`.
-4. Rename the Room-only classes to `*LocalDataSource` / `Room*DataSource` (§2.2) with interfaces. This is mechanical, and the IDE rename covers it.
+1. Channels → injected interfaces in `D/` (§2.4). Switch all 5 callers.
+2. The 9 `expect class`es → interfaces (§2.3); the `AppVersion` interface lives in `utilities/` (R11). Update the Koin platform modules. `Navigator`, `ApplicationScope`, `LanguageService` stay concrete (R9).
+3. `LoggingRepository` → `D/Logger` + `RoomLoggingRepository` (D9), including the 4 static `KoinPlatform` lookups (§1.4).
+4. Test deps: add `turbine` + `assertk` to the version catalog and `commonTest` (D5). Add `commonTest/…/testutil/` with `Dispatchers.setMain(UnconfinedTestDispatcher())` setup, a helper that resets the global objects `SessionCache`, `SnackbarManager`, `AppLifecycleManager` and `IncomingDataManager` before each test (D19; tests therefore don't run in parallel), and an in-memory Room builder for `jvmTest`. Concurrency tests (locks, dedup, sync order) use `StandardTestDispatcher` with one shared scheduler per test instead of `UnconfinedTestDispatcher` (R12).
+6. `ErrorEvent` loses its `@Composable` member; `toStringComposable()` becomes an extension in `app/` (R6).
+5. Rename the Room-only classes to `*LocalDataSource` / `Room*DataSource` (§2.2) with interfaces. This is mechanical, and the IDE rename covers it.
 
 ### Phase 1: Low-risk pass-throughs
-- `SettingsRepository` interface + `DataStoreSettingsRepository`. Move all `set*`, `applyServerSettings`, quick reactions, `setLastContributePopupShown`, plus the preference flows from §1.3.
-- Switch the 13 ViewModels from `Preferencemanager` to `SettingsRepository`. `SocketConnectionMessage` and `Preferencemanager.applyServerSettings` point at the new class.
+- `SettingsRepository` interface + `DataStoreSettingsRepository`, absorbing the existing `settings/data/SettingsRepository`. Move all `set*`, `applyServerSettings`, quick reactions, `setLastContributePopupShown`, plus the preference flows from §1.3.
+- Switch the 14 ViewModels from `Preferencemanager` to `SettingsRepository` (incl. `DevSettingsViewModel` and `ChatViewModel`'s old `SettingsRepository`). `SocketConnectionMessage` (`applyServerSettings`) points at the new class. Update the KDoc at `Preferencemanager.kt:398`.
 - `MapRepository`, `EventRepository` (absorb the pass-throughs from :663-850) and `AppInfoRepository`.
 - `FeedbackRepository` interface (rename only).
-- Callers switched: Map, Events, Appearance/Misc/Map/Notification settings, `SharedSettingsViewmodel`, `LoggedInDevicesViewModel` (AppVersion), `ChatSelector`/`Login`/`SettingsScreen`/`UrlChangeDialog` (appVersion, testServer).
+- Models exposed by the new `D/` interfaces move to `D/model/` (R7), e.g. the event and map entry models.
+- `EventsViewModel`'s `applicationScope.launch { dataSync(…) }` (:285) stays until Phase 6 (R2).
+- Callers switched: Map, Events, Appearance/Misc/Map/Notification/Dev settings, `SharedSettingsViewmodel`, `LoggedInDevicesViewModel` (AppVersion), `GlobalViewModel` (`testServer`). Composables and `App.kt` wait for Phase 7 (§2.5).
 
 ### Phase 2: Auth + teardown
-- `AuthRepository` + `SessionTerminator`.
-- `logout` and `deleteAllAppData` need DB, prefs, socket and media cleanup, so they live in `SessionTerminator`. `AuthRepository.endServerSession()` is called inside it with the existing 5 s timeout.
-- `App.kt`, the 4 login VMs, `UserSettings`/`PrivacyAndSecurity`/`LoggedInDevices`/`MiscSettings` VMs and `EmailVerifiedCheckViewModel` are switched.
-- `AuthSessionManager` stays as-is; it's injected only into `AuthRepository`.
+- `AuthRepository` + `SessionTerminator` (§2.2). `logout` and `deleteAllAppData` move verbatim; no media wipe.
+- `logoutAllDevices` is split (D17): the server call becomes `AuthRepository.logoutAllDevicesOnServer()`, and `SessionTerminator.logoutAllDevices()` calls it and then `logout(endSessionOnServer = false)`. Same order as today, one-way dependency.
+- `AuthSessionManager` stays as-is and is injected into `AuthRepository` and `SessionTerminator`.
+- `SessionResponse` gets a domain model + mapper (R3).
+- Callers switched: the 4 login VMs, `UserSettings`/`PrivacyAndSecurity`/`LoggedInDevices`/`MiscSettings` VMs, `AppFirebaseMessagingService` and `IosPushDelegateBridge` (`setNotificationToken`). `App.kt` waits for Phase 7.
+- **Test on device**: login, logout, logout all devices, push token registration on Android and iOS.
 
 ### Phase 3: Users and groups
 - `UserRepository` (offline-first, wraps `UserLocalDataSource` + `NetworkUtils` + `PictureManager`) and `GroupRepository`.
 - `syncUsers()` / `syncGroups()` are moved from `userIdSync` / `groupIdSync` unchanged. `DataSyncCoordinator` doesn't exist yet, so `AppRepository.dataSync` calls them for now.
-- Callers switched: NewChat, GroupCreator, Birthdays, FriendCompass, ChatDetails (user/group parts), Notification/Map/Privacy settings, `GlobalViewModel` (friends), `SocketConnectionMessage` (profile pics).
+- **D16 / R1**: the 11 mutations (§1.1) call their own repository's `syncUsers()` (user mutations) or `syncGroups()` (group mutations) instead of the full `dataSync()`. Once `SchneaggchatV3server/Todo.md` confirms the socket pushes, these calls can go too.
+- `User`, `Group`, `GroupMember`, `SnailTrailPoint`, `UserLocation` and the other models these interfaces expose move to `D/model/` (R7). `FriendshipStatus`, `GroupMemberAction`, `WakeOutcome`, `NewFriendsUserResponse` get domain models + mappers (R3).
+- `getMissingPics` is split: its user part becomes `UserRepository.fetchMissingProfilePictures()`, its group part `GroupRepository.fetchMissingGroupPictures()`. `AppRepository.getMissingPics` calls both until Phase 6.
+- Callers switched: NewChat, GroupCreator, Birthdays, FriendCompass, ChatDetails (user/group parts), Notification/Map/Privacy settings, `GlobalViewModel` (friends, location sharing), `SocketConnectionMessage` (user and group pics), and the games `PlayerSelectorViewModel` / `SchneaggRodeoViewModel` (mechanical swap only; nothing else in `games/` is touched or used as reference).
 
 ### Phase 4: Chat list
-- `ChatListRepository` with `getChatListFlow` (+ `chatKey`), `getChatSelectorFlow`, `getMessageSearchFlow`, `getPendingFriends`, `getUnreadChatCountFlow`, `setPinnedChat`. It depends on the User/Group/Message **local data sources** for reads and on `SettingsRepository` for pins.
-- Callers: `ChatSelectorViewModel`, `GroupCreatorViewModel`, `NewChatViewModel`, `GlobalViewModel`.
+- `ChatListRepository` with `getChatListFlow` (+ `chatKey`, `sortedForChatSelector`), `getChatSelectorFlow`, `getMessageSearchFlow`, `getPendingFriends`, `getUnreadChatCountFlow`, `setPinnedChat`. It depends on the User/Group/Message **local data sources** for reads and on `SettingsRepository` for pins.
+- `applySearchAndFilter` moves to `chat/domain`.
+- Callers: `ChatSelectorViewModel`, `GroupCreatorViewModel`, `NewChatViewModel`, `GlobalViewModel` (unread count).
 - This is the class the chat migration later rewrites around `chatId`.
+- Takes a `CoroutineDispatcher` for its `flowOn(Dispatchers.Default)` calls (R4).
+
+### Phase 4.5: Send-path characterization tests (review Q2, decided 2026-10-13)
+Nobody can device-test during an unattended run, and message sending is due for a rebuild anyway (`plans/Todo.md`). So before Phase 5, write `jvmTest` tests (in-memory Room + Ktor `MockEngine`, `StandardTestDispatcher`) against the **current** `AppRepository` send path:
+- send success (local insert, server call, local row updated with the server id);
+- send-echo dedup by `clientMessageId` (the socket/sync copy doesn't create a second row);
+- offline queue retry (`sendOfflineMessages` sends unsent rows in order and stops on error).
+They must stay green after Phase 5 (c); then they point at `OfflineFirstMessageRepository`. They don't replace the device test after Phase 5, which stays on the user's checklist.
 
 ### Phase 5: Messages (highest risk)
-- `MessageRepository` takes over send (:1738-1976 incl. send-echo handling), offline queue, edit, delete, react, poll, mark-read, `applyPushMessage` and message media fetches, together with `sendMessageLock`, `sendOfflineLock` and `messageSyncLock`.
-- `syncMessages()` = `messageIdSync`.
-- `getMissingPics` / `getMissingAudios` move here too: they are message-media only, while profile pics already moved in Phase 3.
-- Callers: `ChatViewModel`, `ChatDetailsViewmodel`, `SharedContentViewModel`, `GlobalViewModel` (`sendOfflineMessages`), `SocketConnectionMessage`, push handlers. Also update the KDoc reference in `SafeNetworkCall.kt:25`.
-- Move order inside the phase: (a) reads + simple actions, (b) edit/delete/react/poll, (c) send + offline queue, (d) push apply. **Test send/offline/dedup manually on device after (c)** (`MESSAGE_SEND_SYNC_REBUILD_PLAN.md` invariants).
+- `MessageRepository` takes over send (:1738-1976 incl. send-echo handling), offline queue, edit, delete, react, poll, mark-read, `applyPushMessage` and message media fetches, together with `sendMessageLock`, `sendOfflineLock` and `messageSyncLock`. `MessageContent` moves to `D/`.
+- `syncMessages(fetchMedia)` = `messageIdSync(fetchMedia)`.
+- The image-message part of `getMissingPics` and all of `getMissingAudios` become `fetchMissingMessageMedia()`.
+- New `deleteMessagesForGroups(ids)` wraps the purge `dataSync` does today (:593), so the coordinator doesn't need a local data source.
+- R2: send and mark-read run inside `externalScope` in the repository; `ChatViewModel` drops `ApplicationScope` and calls them from `viewModelScope` (today: `ChatViewModel.kt:200, 289, 303, 320, 362`). Started work must still finish after the chat screen closes.
+- R4: the repository takes `CoroutineDispatcher` parameters for its `withContext(Dispatchers.IO)` (:1920).
+- R3: `PollCreateRequest`, `PollVoteOptionCreateRequest`, `PollVoteRequest` get domain models + mappers; `MessageContent` and `Message` live in `D/model/`.
+- The Phase 4.5 tests run after each sub-step.
+- Callers: `ChatViewModel`, `ChatDetailsViewmodel`, `SharedContentViewModel`, `GlobalViewModel` (`sendOfflineMessages`), `SocketConnectionMessage`, `AppFirebaseMessagingService` + `IosPushDelegateBridge` (`applyPushMessage`, `messageIdSync`), `MarkAsReadReceiver`, `ReplyReceiver`. Also update the KDoc reference in `SafeNetworkCall.kt:25`.
+- Move order inside the phase: (a) reads + simple actions, (b) edit/delete/react/poll, (c) send + offline queue, (d) push apply. **Test send/offline/dedup manually on device after (c)** (`MESSAGE_SEND_SYNC_REBUILD_PLAN.md` invariants), and push receive / reply / mark-as-read after (d).
 
 ### Phase 6: Sync coordinator
-- `DataSyncCoordinator` takes over `dataSync` (order, lock, `DataSyncState`/`DataSyncJobStatus`, logging) and `executeSync`. It only calls `sync*()` / `fetchMissing*()` on the repository interfaces.
-- `DataSyncState` moves to `app/domain` (it's read by `DataSyncDetailPopup`).
-- Callers: every VM that calls `dataSync` (Login, SignUp, Events, Map, UserSettings, EmailVerifiedCheck, Misc, Privacy, ChatSelector, GroupCreator, GlobalViewModel), `SocketConnectionMessage`, the Android WorkManager/iOS background entry points and `ChatSelector.kt` (`dataSyncState`).
+- `DataSyncCoordinator` takes over `dataSync`: order, lock, `DataSyncState` / `DataSyncJob*`, logging, the purge via `deleteMessagesForGroups`, and the MEDIA job via the three `fetchMissing*()` calls. Keep today's parallelism (`coroutineScope` + `launch` per kind).
+- The `DataSync*` types move to `D/`.
+- `executeSync` is dead code and is not moved.
+- R2: the sync body runs in `externalScope`. The `applicationScope.launch { dataSync(…) }` wrappers in `LoginViewModel`, `SignUpViewModel`, `EmailVerifiedCheckViewModel` (2×), `EventsViewModel` and `MiscSettingsViewModel` become plain calls from `viewModelScope`, and those ViewModels drop `ApplicationScope`. `EmailVerifiedCheckViewModel` keeps waiting for the sync result as today.
+- Callers: every VM that calls `dataSync` (Login, SignUp, Events, Map, UserSettings, EmailVerifiedCheck, Misc, Privacy, ChatSelector, GroupCreator, GlobalViewModel), `SocketConnectionMessage` and `IosPushDelegateBridge`. `ChatSelector.kt` (`dataSyncState`) and `DataSyncDetailPopup.kt` move in Phase 7. Update the KDoc at `C/chat/data/UserRepository.kt:161` (renamed in Phase 0).
 
-### Phase 7: Clean ViewModel boundary
-- Grep check: no file under `*/presentation/` imports `datasource.`, `.data.`, `AppDatabase`, `NetworkUtils` or `Preferencemanager`. Fix whatever is left. Known leftover: `ChatViewModel` imports `NetworkUtils.PollVoteRequest`, which moves to a domain model + mapper.
-- ViewModels stay on the existing `Navigator`, `ApplicationScope` and `LanguageService` (D8).
+### Phase 7: Composables + clean ViewModel boundary
+- Do §2.5 in one go: `Login.kt`, `ChatSelector.kt`, `SettingsScreen.kt`, `UrlChangeDialog.kt` (+ its hosts), `DataSyncDetailPopup.kt` read from their ViewModels; `App.kt` swaps to interfaces.
+- Grep check: no file under `*/presentation/` imports `datasource.` (except `datasource.domain`), `.data.`, `AppDatabase`, `NetworkUtils` or `Preferencemanager`, and no composable `koinInject`s a data-layer class (except the `App.kt` interfaces, §2.5). Fix whatever is left. Also: no ViewModel injects `ApplicationScope` (R2), and no presentation file uses a `NetworkUtils.*` type (R3). The grep doesn't catch ViewModels that still inject `LocationService` / `PictureManager` / `AudioManager` / `BatteryService`; those are a Todo item (R10).
 
 ### Phase 8: Delete `AppRepository`
-- Remove the delegating shells and the class, and update `di/Modules.kt`.
+- Remove the delegating shells and the class (incl. the commented-out `executeSync` block), and update `di/Modules.kt`.
 - Update the cross-plan references (§5).
 
-### Phase 9: Safety-net tests before the chat migration (D6)
-Write the tests the chat migration needs to be safe:
+### Phase 9: Safety-net tests before the follow-ups and the chat migration (D6)
 - **ViewModel tests with fakes**: `ChatSelectorViewModel` (list, search, pins, unread badge), `ChatViewModel` (send, edit, delete, react, mark read, offline state), `ChatDetailsViewmodel` (group edits, friend actions), `NewChatViewModel`, `GroupCreatorViewModel`.
 - **Repository tests** (`jvmTest`, in-memory Room + `MockEngine`):
   - `OfflineFirstChatListRepository`: DM vs group grouping, last message, unread count with friendship gating.
   - `OfflineFirstMessageRepository`: send success, send echo dedup by `clientMessageId`, offline queue retry, `applyPushMessage`.
-  - `DefaultDataSyncCoordinator`: order, lock re-entry, state transitions.
-- Fakes live in `commonTest/…/fakes/` (`FakeMessageRepository`, …) and are reused by the chat migration.
+  - `DefaultDataSyncCoordinator`: order, lock re-entry, state transitions, group purge after the parallel jobs.
+- Fakes live in `commonTest/…/fakes/` (`FakeMessageRepository`, `FakeErrorChannel`, the platform service fakes, …) and are reused by the follow-ups and the chat migration. `Navigator` is used for real (R9). Concurrency tests use `StandardTestDispatcher` (R12).
+- The Phase 4.5 send-path tests are already there; Phase 9 adds the rest.
 
 ---
 
 ## 4. Risks
 - **Send/sync regressions (Phase 5/6).** These are the paths that just got fixed (duplicate sends, event overwrite on read). Mitigation: move the code verbatim, no clean-ups in the same commit, device test after each sub-step, Phase 9 tests.
-- **Koin graph cycles.** Example: `SessionTerminator` → `AuthRepository` → … → `SessionTerminator`. Keep the dependency direction from §2.1. Koin fails at first resolve, so every phase needs a launch on all 3 platforms.
-- **iOS/Android background sync entry points** call `AppRepository` outside of Compose. Grep `androidMain`/`iosMain` in Phase 6.
-- **Merge conflicts** with other branches touching `AppRepository`. Land each phase as its own PR into `main` quickly.
+- **Unattended implementation.** Phases may be implemented while nobody can launch the app. Compile + `jvmTest` (D20) catch build errors and the tested paths only. Every "test on device" step is collected in the device-test checklist in `plans/Todo.md` for the user.
+- **Koin graph cycles.** The two known ones are resolved by D16 and D17. `SessionTerminator` now takes `Notifier` and `SocketConnectionManager` by constructor instead of `KoinPlatform`; `SocketConnectionManager` only needs the socket client and `AuthSessionManager` today, so no cycle, but recheck. Keep the dependency direction from §2.1. Koin fails at first resolve, so every phase needs a launch on all 3 platforms.
+- **Push entry points resolve classes at runtime** via `KoinPlatform.getKoin()` (§1.4). A missing binding fails only when a push, reply or mark-as-read arrives. Test those on Android and iOS after Phases 2 and 5.
+- **Merge conflicts on the long branch (D11).** `AppRepository` is a conflict magnet. Merge `main` into the branch after every phase and keep other work off `AppRepository` while the branch is open.
 - **Plan drift**: line numbers in the chat and E2E plans go stale (§5).
 
 ## 5. Cross-plan edits after Phase 8
 - `CHAT_BASED_MIGRATION_PLAN.md`:
   - §4.1 "AppRepository" bullet (:196) and §8.6 note (:343): re-point to `OfflineFirstMessageRepository` (send, send-echo, sync, push apply), `OfflineFirstChatListRepository` (`chatKey`, chat list, search) and `SocketConnectionMessage`.
-  - Add §4.4: "update fakes + Phase 9 tests to `chatId`".
+  - §4.4 "Tests to touch" already exists and says "No new tests unless requested". Extend it: update the fakes + Phase 9 tests to `chatId`.
+  - Note the new order (Todo follow-ups run before it).
 - `E2E_ENCRYPTION_PLAN_V2.md`:
   - :31 boundary sites → `MessageRepository` impl.
-  - :114 `E2eEncryptionManager` goes into `OfflineFirstMessageRepository` + `RemoteAuthRepository` constructors (not AppRepository), behind a `domain` interface so ViewModel/repository tests use `FakeE2eEncryptionManager`.
+  - :114 `E2eEncryptionManager` goes into `OfflineFirstMessageRepository` + `RemoteAuthRepository` constructors (not AppRepository), behind an interface so ViewModel/repository tests use `FakeE2eEncryptionManager`.
   - :117 `AppRepository.login` → `RemoteAuthRepository.login`.
 
 ## 6. Effort
-- Phases 0–8: ~4–6 sessions. Phase 5 alone is ~1–2.
+- Phases 0–8: ~8–10 sessions (Phase 0 grew with D7/D8/D10/D19, Phase 7 with §2.5). Phase 5 alone is ~1–2.
 - Phase 9: ~2 sessions.
-- Each phase is one PR. Verification needs a Gradle build plus a launch on Android, iOS and Desktop, which you do (no gradle runs from me unless asked).
+- One long branch, one or more commits per phase. After each phase Claude runs the compile tasks + `jvmTest` (D20); the user launches on Android, iOS and Desktop.
 
 ---
 
-## 7. Decisions (open, please answer)
+## 7. Decisions (all answered 2026-10-13)
 
-| # | Question | Recommendation |
+| # | Question | Answer |
 |---|---|---|
-| D1 | Rename the existing Room-only `*Repository` classes to `*LocalDataSource` / `Room*DataSource`, freeing the `*Repository` names for the real multi-source repos? | **Yes.** Matches the data-layer skill and avoids two `UserRepository` concepts. |
-| D2 | Split `NetworkUtils` into per-feature remote data sources now? | **No.** The chat migration rewrites the message/group endpoints anyway. Test repos via `MockEngine`. Revisit after E2E. |
-| D3 | Convert `Boolean` / nullable returns to `Result<T, DataError>` now? | **No.** Keeps this plan behavior-neutral. Convert per feature while the chat migration touches those methods anyway. |
-| D4 | Interfaces in each feature's `domain` package (`chat/domain`, `login/domain`, `settings/domain`, `events/domain`, `schneaggmap/domain`, `app/domain`)? | **Yes.** |
-| D5 | Test stack: the skill says JUnit5 + Turbine + AssertK, but JUnit5 doesn't run in KMP `commonTest`. Use `kotlin-test` as runner + Turbine + AssertK in `commonTest`, with Room/MockEngine tests in `jvmTest`? | **Yes.** |
-| D6 | Is Phase 9 (safety-net tests) part of this migration, before the chat migration starts? | **Yes.** It's the reason for doing this first. |
-| D7 | Convert the six `expect class` platform services to interfaces (§2.3)? | **Yes.** Without it, `ChatViewModel`, `ChatDetailsViewmodel` and the settings VMs can't be faked. |
-| D8 | Keep `Navigator`, `ApplicationScope` and `LanguageService` as concrete classes (used for real in tests)? | **Yes.** `ApplicationScope` gets a constructor parameter for the dispatcher/scope so tests can pass a `TestScope`. |
-| D9 | `LoggingRepository` → `Logger` interface (injected almost everywhere)? | **Yes**, done in Phase 0. |
-| D10 | Keep `ErrorChannel` / `ActionChannel` as global objects (just moved)? | **Yes for now.** Tests can collect from them. Injected buses are a later clean-up. |
-| D11 | One PR per phase into `main`, or one long-running branch? | **One PR per phase.** `AppRepository` is a conflict magnet. |
+| D1 | Rename the existing Room-only `*Repository` classes to `*LocalDataSource` / `Room*DataSource`? | **Yes.** |
+| D2 | Split `NetworkUtils` into per-feature remote data sources now? | **Not in this plan.** First follow-up after it, before the chat migration (`plans/Todo.md`). Repositories are tested via `MockEngine` meanwhile. |
+| D3 | Convert `Boolean` / nullable returns to `Result<T, DataError>` now? | **Not in this plan.** Follow-up after it, before the chat migration (`plans/Todo.md`). |
+| D4 | Where do the interfaces live? | **Shared + feature split**: cross-feature interfaces in `datasource/domain/`, feature-only ones (`ChatListRepository`, `FeedbackRepository`) in their feature `domain`. Follows the skill rule "features never import from each other" (§2.2). |
+| D5 | Test stack: `kotlin-test` runner + Turbine + AssertK in `commonTest`, Room/MockEngine tests in `jvmTest`? | **Yes.** |
+| D6 | Phase 9 (safety-net tests) part of this migration? | **Yes.** |
+| D7 | Convert the platform `expect class`es to interfaces? | **Yes, 9 of them**: the original six + `ShareUtils`, `LanguageManager`, `Notifier`. |
+| D8 | Keep `Navigator`, `ApplicationScope` and `LanguageService` concrete? | ~~Interfaces for all three~~ → **revised by R9 (user-confirmed 2026-10-13): all three stay concrete**; ViewModels stop injecting `ApplicationScope` (R2). |
+| D9 | `LoggingRepository` → `Logger` interface? | **Yes**, in Phase 0. |
+| D10 | Keep `ErrorChannel` / `ActionChannel` as global objects? | **No: injected in this plan** (Phase 0). |
+| D11 | One PR per phase, or one long-running branch? | **One long branch.** |
+| D12 | Should the migration add the missing media wipe on logout? | **No.** Logout moves verbatim; the wipe is a Todo item. |
+| D13 | Composables that `koinInject` data-layer classes? | **Move their data into their ViewModels** (§2.5). `App.kt` keeps `koinInject`, interfaces only. |
+| D14 | Split `GlobalViewModel` in this plan? | **No.** Todo item; it must not grow in this plan. |
+| D15 | Where do the deferred refactors run? | **Before** the chat and E2E plans (see Order). |
+| D16 | 11 user/group mutations call `dataSync()` after success (repo ↔ coordinator cycle). How to break it? | **Revised by R1 (user-confirmed 2026-10-13): call the repository's own `syncUsers()` / `syncGroups()` instead.** Remove those calls too once `SchneaggchatV3server/Todo.md` confirms the socket pushes. |
+| D17 | `logoutAllDevices` → `logout` (AuthRepository ↔ SessionTerminator cycle)? | **`SessionTerminator` owns `logoutAllDevices()`**; `AuthRepository` only keeps the server call. |
+| D18 | Move safety-net tests before Phase 5? | **Partly (user-confirmed 2026-10-13):** send-path characterization tests in Phase 4.5, run again after the change. Everything else stays in Phase 9. |
+| D19 | Global objects `SessionCache`, `SnackbarManager`, `AppLifecycleManager`, `IncomingDataManager`? | **Stay global**; Phase 0 adds a reset helper for tests. Injecting them is a Todo item. |
+| D20 | May Claude run Gradle during this migration? | **Yes: compile tasks + `jvmTest`** after each phase. No assemble/run/install. |
+| D21 | When do the composables move (§2.5)? | **Phase 7**, all at once, straight to the final interfaces. |
 
+Follow-ups and open items formerly listed here live in `plans/Todo.md`.
 
-## 8. Todos to ask the user about if this plan has been implemented
-- Fix up networkutils
-- unify the passed results from networkutils back to the callers
-- Ask the user about all the user things that have been deferred in this plan for later implementation
+---
+
+## 8. Android-standards review (2026-10-13)
+
+An independent agent checked the plan against developer.android.com (architecture guide, recommendations, data/domain/UI layer, offline-first, coroutines best practices and testing, modularization) and Now in Android. Sources: DL = …/topic/architecture/data-layer, OF = …/data-layer/offline-first, REC = …/topic/architecture/recommendations, SH = …/ui-layer/stateholders, EV = …/ui-layer/events, CBP = developer.android.com/kotlin/coroutines/coroutines-best-practices, CT = …/kotlin/coroutines/test.
+
+| # | Finding | Decision |
+|---|---|---|
+| R1 | D16 accepted stale UI; for online-only writes OF says "if successful, update the local data source". | **Applied** (user-confirmed): own `syncUsers()` / `syncGroups()` after each mutation. |
+| R2 | Work that must outlive a screen is launched from ViewModels via `applicationScope`; DL/CBP put it in the data layer with an injected `externalScope`. | **Applied** (user-confirmed): repositories/coordinator take `externalScope`; ViewModels drop `ApplicationScope` (Phases 5, 6). |
+| R3 | Network DTOs (`NetworkUtils.*`, 8 types in 9 presentation files) would leak into `D/` interfaces; OF and the house data-layer skill forbid that. | **Applied**: domain models + mappers in the phase that creates each interface. |
+| R4 | Hardcoded `Dispatchers.*` in classes Phase 9 tests (CBP: don't hardcode dispatchers). | **Applied** for ChatList and Message repositories, with defaults that keep today's behavior. |
+| R5 | `SocketConnectionMessage` writes to local data sources directly (DL: only the source of truth changes data). | **Deferred** (user-confirmed): routing through repositories adds locking; the chat migration rewrites the handler. `plans/Todo.md`. |
+| R6 | `ErrorEvent` has a `@Composable` member; repositories push UI errors (DL/EV: return errors to the caller). | **Applied**: `ErrorEvent` Compose-free; repository → `ErrorChannel` marked temporary until the `Result` follow-up. |
+| R7 | Shared `D/` interfaces would import models from the chat feature (NiA: `core:model`, core never depends on features). | **Applied**: models move with their interface to `D/model/`. |
+| R8 | `App.kt` handles `AuthInvalidated` with logout + navigation; SH/EV prefer a data-layer component and state-driven navigation; `GlobalViewModel` as an app-wide `single`. | **Deferred** (user-confirmed): navigation/behavior risk. `plans/Todo.md`; the `GlobalViewModel` split targets data-layer managers. |
+| R9 | Interfaces for `Navigator`, `ApplicationScope`, `LanguageService` go beyond Google/NiA practice. | **Applied** (user-confirmed): all three stay concrete. |
+| R10 | ViewModels inject `LocationService`, `PictureManager`, `AudioManager`, `BatteryService` (REC: ViewModels shouldn't talk to data sources like GPS). | **Deferred**: `plans/Todo.md` (location and media repositories). |
+| R11 | `AppVersion` interface package unspecified; it sits in `settings/data`. | **Applied**: `utilities/`. |
+| R12 | `UnconfinedTestDispatcher` everywhere (CT: `StandardTestDispatcher` for concurrency). | **Applied** for lock/dedup/sync-order tests. |
+
+Review questions:
+- **Q1 one-off events** (REC: don't send events from ViewModel to UI; house MVI skill uses `Channel`): **keep Channels**; app-level state for the global error/action events is a Todo item.
+- **Q2 test timing**: **send-path tests before Phase 5** (Phase 4.5), user-confirmed; message sending gets a rebuild later (Todo).
+- **Q3 work that must survive process death** (Google: WorkManager, not usable in KMP common code): **keep in-process app-scope work**; a platform background scheduler (WorkManager / BGTaskScheduler) is a Todo item.
+- **Q4 D8 interfaces**: see R9.
+
+What the review confirmed as right: `OfflineFirst*` / `Default*` repository interfaces bound in DI (as NiA's `DataModule`), `XLocalDataSource` + per-repository `syncX()` run by one orchestrator (as NiA's `Syncable` / `SyncManager`), `DataSyncCoordinator` in the data layer (it holds a lock and state, so not a use case), composables reading only from ViewModels, fakes over mocks with Turbine + AssertK.
+
