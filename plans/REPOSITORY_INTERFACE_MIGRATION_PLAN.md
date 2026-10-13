@@ -188,7 +188,7 @@ All of it happens in Phase 7, once every repository exists, so each composable i
 
 All phases go on **one long branch** (D11). Each phase still leaves the app compiling and behaving the same (except D16), and lands as its own commit(s), so a regression can be bisected to one phase. During the move, `AppRepository` keeps thin delegating methods (`suspend fun login(...) = authRepository.login(...)`) so callers can be switched one by one. It is deleted in Phase 8.
 
-**Verification per phase (D20)**: for this migration Claude may run the compile tasks (`:composeApp:compileKotlinJvm`, `:composeApp:compileDebugKotlinAndroid`, the iOS compile task) and `:composeApp:jvmTest`. No assemble, run or install tasks. The user still launches the app on Android, iOS and Desktop after each phase.
+**Verification per phase (D20)**: for this migration Claude may run the compile tasks (`:composeApp:compileKotlinJvm`, `:composeApp:compileAndroidMain`, `:composeApp:compileKotlinIosSimulatorArm64`) and `:composeApp:jvmTest`. No assemble, run or install tasks. The user still launches the app on Android, iOS and Desktop after each phase.
 
 ### Phase 0: Groundwork
 1. Channels → injected interfaces in `D/` (§2.4). Switch all 5 callers.
@@ -254,7 +254,7 @@ They must stay green after Phase 5 (c); then they point at `OfflineFirstMessageR
 - The `DataSync*` types move to `D/`.
 - `executeSync` is dead code and is not moved.
 - R2: the sync body runs in `externalScope`. The `applicationScope.launch { dataSync(…) }` wrappers in `LoginViewModel`, `SignUpViewModel`, `EmailVerifiedCheckViewModel` (2×), `EventsViewModel` and `MiscSettingsViewModel` become plain calls from `viewModelScope`, and those ViewModels drop `ApplicationScope`. `EmailVerifiedCheckViewModel` keeps waiting for the sync result as today.
-- Callers: every VM that calls `dataSync` (Login, SignUp, Events, Map, UserSettings, EmailVerifiedCheck, Misc, Privacy, ChatSelector, GroupCreator, GlobalViewModel), `SocketConnectionMessage` and `IosPushDelegateBridge`. `ChatSelector.kt` (`dataSyncState`) and `DataSyncDetailPopup.kt` move in Phase 7. Update the KDoc at `C/chat/data/UserRepository.kt:161` (renamed in Phase 0).
+- Callers: every VM that calls `dataSync` (Login, SignUp, Events, Map, UserSettings, EmailVerifiedCheck, Misc, Privacy, ChatSelector, GroupCreator, GlobalViewModel), `SocketConnectionMessage` and `IosPushDelegateBridge`. `ChatSelector.kt` (`dataSyncState`) and `DataSyncDetailPopup.kt` move in Phase 7. Update the KDoc on `updateUserLastSeenNow` in `C/chat/data/UserLocalDataSource.kt` (was `UserRepository.kt:161`, renamed in Phase 0).
 
 ### Phase 7: Composables + clean ViewModel boundary
 - Do §2.5 in one go: `Login.kt`, `ChatSelector.kt`, `SettingsScreen.kt`, `UrlChangeDialog.kt` (+ its hosts), `DataSyncDetailPopup.kt` read from their ViewModels; `App.kt` swaps to interfaces.

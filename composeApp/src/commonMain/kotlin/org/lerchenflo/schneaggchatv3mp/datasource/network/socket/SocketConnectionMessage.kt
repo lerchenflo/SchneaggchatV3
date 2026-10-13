@@ -7,9 +7,9 @@ import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
@@ -23,8 +23,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
@@ -166,11 +166,11 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
     //println("handling socket connection message: $message")
 
     val appRepository = KoinPlatform.getKoin().get<AppRepository>()
-    val userRepository = KoinPlatform.getKoin().get<UserRepository>()
-    val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
-    val groupRepository = KoinPlatform.getKoin().get<GroupRepository>()
-    val mapRepository = KoinPlatform.getKoin().get<MapRepository>()
-    val eventRepository = KoinPlatform.getKoin().get<EventRepository>()
+    val userLocalDataSource = KoinPlatform.getKoin().get<UserLocalDataSource>()
+    val messageLocalDataSource = KoinPlatform.getKoin().get<MessageLocalDataSource>()
+    val groupLocalDataSource = KoinPlatform.getKoin().get<GroupLocalDataSource>()
+    val mapLocalDataSource = KoinPlatform.getKoin().get<MapLocalDataSource>()
+    val eventLocalDataSource = KoinPlatform.getKoin().get<EventLocalDataSource>()
 
     try {
         val socketMessage = AppJson.instance.decodeFromString<SocketConnectionMessage>(message)
@@ -183,8 +183,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 // fully in parallel with our own sendMessage() calls, so a push for a message we
                 // just sent can land before that call's own HTTP response does - see AppRepository
                 // .messageIdSync for the matching fallback on the /messages/sync path.
-                val existing = messageRepository.getMessageById(socketMessage.message.messageId)
-                    ?: socketMessage.message.clientMessageId?.let { messageRepository.getMessageByClientMessageId(it) }
+                val existing = messageLocalDataSource.getMessageById(socketMessage.message.messageId)
+                    ?: socketMessage.message.clientMessageId?.let { messageLocalDataSource.getMessageByClientMessageId(it) }
                 val message = socketMessage.message.toDomainMessage(
                     ownId = ownId,
                     existingLocalPK = existing?.localPK ?: 0L,
@@ -197,11 +197,11 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 )
 
                 if (socketMessage.deleted) {
-                    messageRepository.deleteMessage(socketMessage.message.messageId)
+                    messageLocalDataSource.deleteMessage(socketMessage.message.messageId)
                 } else if (existing != null && existing.msgType == MessageType.POLL && existing.isNewerThan(socketMessage.message.lastChanged)) {
                     //Out-of-order poll push (two quick votes): the stored poll is already newer, keep it
                 } else {
-                    messageRepository.upsertMessage(message)
+                    messageLocalDataSource.upsertMessage(message)
                 }
 
                 //THis is a new message, show a notification
@@ -210,8 +210,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 if (socketMessage.newMessage && message.msgType != MessageType.SYSTEM) {
                     // resolve sender name (falling back to the sender's per-group nickname) and,
                     // for group messages, the group name shown alongside it
-                    val senderUser = userRepository.getUserById(message.senderId)
-                    val group = if (message.groupMessage) groupRepository.getGroupById(message.receiverId) else null
+                    val senderUser = userLocalDataSource.getUserById(message.senderId)
+                    val group = if (message.groupMessage) groupLocalDataSource.getGroupById(message.receiverId) else null
                     message.senderAsString = senderUser?.displayName
                         ?: group?.members?.find { it.userId == message.senderId }?.memberName
                         ?: ""
@@ -260,12 +260,12 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 println("Recieved socket connection update: Userchange")
 
                 if (socketMessage.deleted) {
-                    userRepository.deleteUser(socketMessage.user.id)
+                    userLocalDataSource.deleteUser(socketMessage.user.id)
                 } else {
                     when (val newUser = socketMessage.user) {
                         is NetworkUtils.UserResponse.SimpleUserResponse -> {
-                            val existing = userRepository.getUserById(newUser.id)
-                            userRepository.upsertUser(UserDto(
+                            val existing = userLocalDataSource.getUserById(newUser.id)
+                            userLocalDataSource.upsertUser(UserDto(
                                 id = newUser.id,
                                 updatedAt = newUser.updatedAt,
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
@@ -299,8 +299,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                         }
 
                         is NetworkUtils.UserResponse.FriendUserResponse -> {
-                            val existing = userRepository.getUserById(newUser.id)
-                            userRepository.upsertUser(UserDto(
+                            val existing = userLocalDataSource.getUserById(newUser.id)
+                            userLocalDataSource.upsertUser(UserDto(
                                 id = newUser.id,
                                 updatedAt = newUser.updatedAt,
                                 name = newUser.username,
@@ -340,8 +340,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                             }
                         }
                         is NetworkUtils.UserResponse.SelfUserResponse -> {
-                            val existing = userRepository.getUserById(newUser.id)
-                            userRepository.upsertUser(UserDto(
+                            val existing = userLocalDataSource.getUserById(newUser.id)
+                            userLocalDataSource.upsertUser(UserDto(
                                 id = newUser.id,
                                 updatedAt = newUser.updatedAt,
                                 name = newUser.username,
@@ -389,12 +389,12 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
             //A group got updated
             is SocketConnectionMessage.GroupChange -> {
                 if (socketMessage.deleted) {
-                    groupRepository.deleteGroup(socketMessage.group.id)
+                    groupLocalDataSource.deleteGroup(socketMessage.group.id)
                 } else {
 
-                    val existing = groupRepository.getGroupById(socketMessage.group.id)
+                    val existing = groupLocalDataSource.getGroupById(socketMessage.group.id)
 
-                    groupRepository.upsertGroup(Group(
+                    groupLocalDataSource.upsertGroup(Group(
                         id = socketMessage.group.id,
                         name = socketMessage.group.name,
                         profilePictureUrl = existing?.profilePictureUrl ?: "",
@@ -447,17 +447,17 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
             is SocketConnectionMessage.MapChange -> {
                 if (socketMessage.deleted) {
-                    mapRepository.deleteMapEntry(socketMessage.mapEntry.id)
+                    mapLocalDataSource.deleteMapEntry(socketMessage.mapEntry.id)
                 } else {
-                    mapRepository.upsertMapEntry(socketMessage.mapEntry.toMapEntry())
+                    mapLocalDataSource.upsertMapEntry(socketMessage.mapEntry.toMapEntry())
                 }
             }
 
             is SocketConnectionMessage.EventChange -> {
                 if (socketMessage.deleted) {
-                    eventRepository.deleteEvent(socketMessage.event.id)
+                    eventLocalDataSource.deleteEvent(socketMessage.event.id)
                 } else {
-                    eventRepository.upsertEvent(socketMessage.event.toEvent())
+                    eventLocalDataSource.upsertEvent(socketMessage.event.toEvent())
 
                     if (socketMessage.newEntry) {
                         NotificationManager.showNotification(
@@ -471,31 +471,31 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
             //A friend's location changed (live push) - position only, trail is untouched here
             is SocketConnectionMessage.FriendLocationChange -> {
-                userRepository.updateFriendLocation(socketMessage.friend)
+                userLocalDataSource.updateFriendLocation(socketMessage.friend)
             }
 
             //Initial snapshot of all friends' locations + their current trail, pushed once on connect
             is SocketConnectionMessage.FriendLocationsSnapshot -> {
-                userRepository.updateFriendLocations(socketMessage.friends)
+                userLocalDataSource.updateFriendLocations(socketMessage.friends)
             }
 
             //One new point appended to a friend's snail trail (~once/minute)
             is SocketConnectionMessage.SnailTrailPointAdded -> {
-                userRepository.appendSnailTrailPoint(socketMessage.userId, socketMessage.point)
+                userLocalDataSource.appendSnailTrailPoint(socketMessage.userId, socketMessage.point)
             }
 
             //A friend connected or disconnected (live push)
             is SocketConnectionMessage.FriendOnlineStatusChange -> {
-                userRepository.setFriendOnline(socketMessage.userId, socketMessage.online)
+                userLocalDataSource.setFriendOnline(socketMessage.userId, socketMessage.online)
                 if (!socketMessage.online) {
                     //Best-effort local lastSeen, corrected later by the server's authoritative value via dataSync
-                    userRepository.updateUserLastSeenNow(socketMessage.userId)
+                    userLocalDataSource.updateUserLastSeenNow(socketMessage.userId)
                 }
             }
 
             //Initial snapshot of all currently-online friends, pushed once on connect
             is SocketConnectionMessage.FriendOnlineStatusSnapshot -> {
-                userRepository.setOnlineFriendIds(socketMessage.onlineFriendIds.toSet())
+                userLocalDataSource.setOnlineFriendIds(socketMessage.onlineFriendIds.toSet())
             }
 
             //Outbound-only - we send these ourselves, the server never echoes them back

@@ -14,12 +14,23 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.SOCKET_PING_INTERVAL_M
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createAuthenticatedHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.DesktopAppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.DesktopAudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.DesktopLanguageManager
+import org.lerchenflo.schneaggchatv3mp.utilities.DesktopPermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.DesktopPictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.DesktopShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
+import org.lerchenflo.schneaggchatv3mp.utilities.battery.DesktopBatteryService
+import org.lerchenflo.schneaggchatv3mp.utilities.location.DesktopLocationService
+import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DesktopNotifier
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import java.util.concurrent.TimeUnit
 
@@ -54,32 +65,32 @@ val desktopKSafeModule = module {
 }
 
 val desktopVersionModule = module {
-    single { AppVersion() }
+    single<AppVersion> { DesktopAppVersion() }
 }
 
 val desktopPictureManagerModule = module {
-    single { PictureManager() }
+    single<PictureManager> { DesktopPictureManager() }
 }
 
 val desktopPermissionManagerModule = module {
-    single { PermissionManager() }
-    single { org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService() }
-    single { org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService() }
+    single<PermissionManager> { DesktopPermissionManager() }
+    single<LocationService> { DesktopLocationService() }
+    single<BatteryService> { DesktopBatteryService() }
 }
 
 
 val desktopAudioManagerModule = module {
-    single { AudioManager() }
+    single<AudioManager> { DesktopAudioManager() }
 }
 
 val desktopShareUtilsModule = module {
-    single { ShareUtils() }
+    single<ShareUtils> { DesktopShareUtils() }
 }
 
 val desktopLanguageManagerModule = module {
-    single { LanguageManager(get()) }
+    single<LanguageManager> { DesktopLanguageManager(get()) }
 }
 
 val desktopNotifierModule = module {
-    single { Notifier() }
+    single<Notifier> { DesktopNotifier() }
 }

@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
-expect class Notifier {
+interface Notifier {
     suspend fun getToken(): String?
     suspend fun removeToken()
     suspend fun hasPermission(): Boolean

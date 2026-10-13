@@ -12,9 +12,9 @@ import org.koin.mp.KoinPlatformTools
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
@@ -45,9 +45,9 @@ import kotlin.time.Clock
 fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     // getOrNull keeps @Previews (no Koin context) working — they just render raw text
     val koin = KoinPlatformTools.defaultContext().getOrNull() ?: return emptyList()
-    val mapRepository = remember(koin) { koin.get<MapRepository>() }
-    val userRepository = remember(koin) { koin.get<UserRepository>() }
-    val eventRepository = remember(koin) { koin.get<EventRepository>() }
+    val mapRepository = remember(koin) { koin.get<MapLocalDataSource>() }
+    val userRepository = remember(koin) { koin.get<UserLocalDataSource>() }
+    val eventRepository = remember(koin) { koin.get<EventLocalDataSource>() }
 
     val navigator = remember(koin) { koin.get<Navigator>() }
     val scope = rememberCoroutineScope()

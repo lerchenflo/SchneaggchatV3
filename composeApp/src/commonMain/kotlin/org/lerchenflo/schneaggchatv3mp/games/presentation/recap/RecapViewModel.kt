@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToUiText
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
@@ -58,8 +58,8 @@ sealed interface RecapAction {
 
 class RecapViewModel(
     private val networkUtils: NetworkUtils,
-    private val userRepository: UserRepository,
-    private val groupRepository: GroupRepository,
+    private val userRepository: UserLocalDataSource,
+    private val groupRepository: GroupLocalDataSource,
 ): ViewModel() {
 
     private val _state = MutableStateFlow(RecapState())

@@ -31,9 +31,9 @@ import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
@@ -43,7 +43,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -107,13 +107,13 @@ sealed interface ChatDetailsState {
 }
 
 class ChatDetailsViewmodel(
-    private val groupRepository: GroupRepository,
+    private val groupRepository: GroupLocalDataSource,
     private val navigator: Navigator,
-    private val userRepository: UserRepository,
+    private val userRepository: UserLocalDataSource,
     private val appRepository: AppRepository,
     private val pictureManager: PictureManager,
-    private val eventRepository: EventRepository,
-    private val messageRepository: MessageRepository,
+    private val eventRepository: EventLocalDataSource,
+    private val messageRepository: MessageLocalDataSource,
 
     val chatId: String,
     val isGroup: Boolean,

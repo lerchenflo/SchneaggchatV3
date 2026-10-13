@@ -37,9 +37,9 @@ import org.lerchenflo.schneaggchatv3mp.TEST_ACCOUNT_USERNAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
@@ -110,15 +110,15 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogParser
@@ -168,14 +168,14 @@ class AppRepository(
     private val pictureManager: PictureManager,
     private val audioManager: AudioManager,
 
-    private val userRepository: UserRepository,
-    private val groupRepository: GroupRepository,
-    private val messageRepository: MessageRepository,
+    private val userLocalDataSource: UserLocalDataSource,
+    private val groupLocalDataSource: GroupLocalDataSource,
+    private val messageLocalDataSource: MessageLocalDataSource,
 
     val appVersion: AppVersion,
     private val loggingRepository: Logger,
-    private val mapRepository: MapRepository,
-    private val eventRepository: EventRepository,
+    private val mapLocalDataSource: MapLocalDataSource,
+    private val eventLocalDataSource: EventLocalDataSource,
     private val languageService: LanguageService,
     private val authSessionManager: AuthSessionManager,
     private val errorChannel: ErrorChannel,
@@ -388,7 +388,7 @@ class AppRepository(
                 coroutineScope {
                     // Groups deleted this sync - purged again after awaitAll below, since the
                     // parallel messageJob could re-insert rows right after groupIdSync's own
-                    // inline purge (GroupRepository.deleteGroup) ran.
+                    // inline purge (GroupLocalDataSource.deleteGroup) ran.
                     val removedGroupIds = mutableListOf<String>()
 
                     // Launch all sync operations concurrently
@@ -524,7 +524,7 @@ class AppRepository(
                     // The message job runs in parallel and may have re-inserted rows just
                     // after groupIdSync's inline purge ran, so repeat it once everything
                     // has settled.
-                    removedGroupIds.forEach { messageRepository.deleteMessagesForGroup(it) }
+                    removedGroupIds.forEach { messageLocalDataSource.deleteMessagesForGroup(it) }
 
                     try {
                         updateSyncJob(
@@ -568,7 +568,7 @@ class AppRepository(
         val userId = SessionCache.requireLoggedIn() ?: return
 
 
-        val localEntries = mapRepository.getMapEntryChangeIds()
+        val localEntries = mapLocalDataSource.getMapEntryChangeIds()
         var currentPage = 0
         var moreEntries = true
         while (moreEntries) {
@@ -580,8 +580,8 @@ class AppRepository(
                 is NetworkResult.Error<*> -> { loggingRepository.logWarning("Map entry sync error: ${response.error}"); break }
                 is NetworkResult.Success -> {
                     //println("Map sync success, upserting ${response.data.updatedEntries} entrys")
-                    response.data.updatedEntries.forEach { mapRepository.upsertMapEntry(it.toMapEntry()) }
-                    response.data.deletedEntries.forEach { mapRepository.deleteMapEntry(it) }
+                    response.data.updatedEntries.forEach { mapLocalDataSource.upsertMapEntry(it.toMapEntry()) }
+                    response.data.deletedEntries.forEach { mapLocalDataSource.deleteMapEntry(it) }
                     moreEntries = response.data.moreEntries
                 }
             }
@@ -621,7 +621,7 @@ class AppRepository(
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
             }
             is NetworkResult.Success<MapEntryResponse> -> {
-                mapRepository.upsertMapEntry(result.data.toMapEntry())
+                mapLocalDataSource.upsertMapEntry(result.data.toMapEntry())
             }
         }
     }
@@ -633,7 +633,7 @@ class AppRepository(
                 false
             }
             is NetworkResult.Success<*> -> {
-                mapRepository.deleteMapEntry(entryId)
+                mapLocalDataSource.deleteMapEntry(entryId)
                 true
             }
         }
@@ -644,7 +644,7 @@ class AppRepository(
     private suspend fun eventIdSync() {
         val userId = SessionCache.requireLoggedIn() ?: return
 
-        val localEntries = eventRepository.getEventChangeIds()
+        val localEntries = eventLocalDataSource.getEventChangeIds()
         var currentPage = 0
         var moreEntries = true
         while (moreEntries) {
@@ -655,8 +655,8 @@ class AppRepository(
             when (response) {
                 is NetworkResult.Error<*> -> { loggingRepository.logWarning("Event sync error: ${response.error}"); break }
                 is NetworkResult.Success -> {
-                    response.data.updatedEvents.forEach { eventRepository.upsertEvent(it.toEvent()) }
-                    response.data.deletedEvents.forEach { eventRepository.deleteEvent(it) }
+                    response.data.updatedEvents.forEach { eventLocalDataSource.upsertEvent(it.toEvent()) }
+                    response.data.deletedEvents.forEach { eventLocalDataSource.deleteEvent(it) }
                     moreEntries = response.data.moreEntries
                 }
             }
@@ -706,7 +706,7 @@ class AppRepository(
                 false
             }
             is NetworkResult.Success<EventResponse> -> {
-                eventRepository.upsertEvent(result.data.toEvent())
+                eventLocalDataSource.upsertEvent(result.data.toEvent())
                 true
             }
         }
@@ -724,7 +724,7 @@ class AppRepository(
                 false
             }
             is NetworkResult.Success<EventResponse> -> {
-                eventRepository.upsertEvent(result.data.toEvent())
+                eventLocalDataSource.upsertEvent(result.data.toEvent())
                 true
             }
         }
@@ -744,11 +744,11 @@ class AppRepository(
                 // The joiner is not necessarily in the event's push audience (a stranger joining a
                 // public event is neither invited nor a friend of the creator), so their own
                 // ACCEPTED would otherwise only land on the next full sync
-                response.data.event?.let { eventRepository.upsertEvent(it.toEvent()) }
+                response.data.event?.let { eventLocalDataSource.upsertEvent(it.toEvent()) }
 
                 val groupResponse = response.data.groupResponse
 
-                groupRepository.upsertGroup(Group(
+                groupLocalDataSource.upsertGroup(Group(
                     id = groupResponse.id,
                     name = groupResponse.name,
                     profilePictureUrl = "",
@@ -789,10 +789,10 @@ class AppRepository(
             }
             is NetworkResult.Success<*> -> {
                 if (deleteEvent) {
-                    eventRepository.deleteEvent(eventId)
+                    eventLocalDataSource.deleteEvent(eventId)
                 }
                 if (deleteGroup && groupId != null) {
-                    groupRepository.deleteGroup(groupId)
+                    groupLocalDataSource.deleteGroup(groupId)
                 }
                 true
             }
@@ -805,7 +805,7 @@ class AppRepository(
      */
     suspend fun getMissingPics() = coroutineScope {
         // Check user profile pics
-        val users = userRepository.getAllUsers()
+        val users = userLocalDataSource.getAllUsers()
         val missingPpUserIds = users.filter { user ->
             !pictureManager.checkImageExists(user.profilePictureUrl)
         }.map { it.id }
@@ -815,7 +815,7 @@ class AppRepository(
         }
 
         // Check group profile pics
-        val groups = groupRepository.getAllGroups()
+        val groups = groupLocalDataSource.getAllGroups()
         val missingPpGroupIds = groups.filter { group ->
             !pictureManager.checkImageExists(group.profilePictureUrl)
         }.map { it.id }
@@ -825,7 +825,7 @@ class AppRepository(
         }
 
         // Check image messages
-        val messages = messageRepository.getImageMessages()
+        val messages = messageLocalDataSource.getImageMessages()
         val missingImageMessageIds = messages.filter { image ->
             image.id != null && !pictureManager.checkImageExists(image.pictureUrl ?: "")
         }.map { it.id!! }
@@ -837,7 +837,7 @@ class AppRepository(
 
     suspend fun getMissingAudios() = coroutineScope {
         // Check audio messages
-        val messages = messageRepository.getAudioMessages()
+        val messages = messageLocalDataSource.getAudioMessages()
         val missingAudioMessageIds = messages.filter { audio ->
             if (audio.id == null) return@filter false
             // Null/empty audioPath means the file was never downloaded — always treat as missing.
@@ -905,7 +905,7 @@ class AppRepository(
     }
 
     fun getPendingFriends(searchTerm: String): Flow<List<ChatListItem>> {
-        return userRepository.getAllUsersFlow(searchTerm)
+        return userLocalDataSource.getAllUsersFlow(searchTerm)
             .map { list ->
                 list.filter {
                     it.friendshipStatus == FriendshipStatus.PENDING
@@ -917,14 +917,14 @@ class AppRepository(
 
 
     suspend fun getFriends(searchTerm: String): List<User> {
-        return userRepository.getAllUsers().filter {
+        return userLocalDataSource.getAllUsers().filter {
             it.name.contains(searchTerm)
                     && it.friendshipStatus == FriendshipStatus.ACCEPTED
         }
     }
 
     fun getFriendsFlow(searchTerm: String): Flow<List<User>> {
-        return userRepository.getAllUsersFlow(searchTerm).map { users ->
+        return userLocalDataSource.getAllUsersFlow(searchTerm).map { users ->
             users.filter {
                 it.friendshipStatus == FriendshipStatus.ACCEPTED
             }
@@ -932,28 +932,28 @@ class AppRepository(
     }
 
     fun getSnailTrailFlow(userId: String): Flow<List<SnailTrailPoint>> {
-        return userRepository.getSnailTrailFlow(userId)
+        return userLocalDataSource.getSnailTrailFlow(userId)
     }
 
 
     /** Chats with unread messages, for the chat tab's nav bar badge. */
-    fun getUnreadChatCountFlow(): Flow<Int> = messageRepository.getUnreadChatCountFlow()
+    fun getUnreadChatCountFlow(): Flow<Int> = messageLocalDataSource.getUnreadChatCountFlow()
 
     /**
      * Every chat of the logged in user, unfiltered and sorted, for the chat selector.
      *
-     * Counters and last-message previews come straight out of SQL ([MessageRepository.getChatAggregatesFlow],
-     * [MessageRepository.getLastMessagePerChatFlow]) - one row per chat instead of the whole
+     * Counters and last-message previews come straight out of SQL ([MessageLocalDataSource.getChatAggregatesFlow],
+     * [MessageLocalDataSource.getLastMessagePerChatFlow]) - one row per chat instead of the whole
      * message table, so nothing here scales with the number of messages.
      *
      * Search and filter are deliberately not part of this flow: they run on the emitted list via
      * [applySearchAndFilter], so typing never re-subscribes to the database.
      */
     fun getChatListFlow(userId: String): Flow<List<ChatListItem>> {
-        val aggregatesFlow = messageRepository.getChatAggregatesFlow(userId)
-        val lastMessagesFlow = messageRepository.getLastMessagePerChatFlow(userId)
-        val usersFlow = userRepository.getAllUsersFlow()
-        val groupsFlow = groupRepository.getAllGroupswithMembersFlow()
+        val aggregatesFlow = messageLocalDataSource.getChatAggregatesFlow(userId)
+        val lastMessagesFlow = messageLocalDataSource.getLastMessagePerChatFlow(userId)
+        val usersFlow = userLocalDataSource.getAllUsersFlow()
+        val groupsFlow = groupLocalDataSource.getAllGroupswithMembersFlow()
         val pinnedFlow = preferencemanager.getPinnedChatsFlow()
 
         return combine(
@@ -1043,9 +1043,9 @@ class AppRepository(
         val loweredSearch = searchTerm.trim().lowercase()
         if (loweredSearch.length < MESSAGE_SEARCH_MIN_TERM_LENGTH) return flowOf(emptyList())
 
-        val messagesFlow = messageRepository.getAllMessages()
-        val usersFlow = userRepository.getAllUsersFlow()
-        val groupsFlow = groupRepository.getAllGroupswithMembersFlow()
+        val messagesFlow = messageLocalDataSource.getAllMessages()
+        val usersFlow = userLocalDataSource.getAllUsersFlow()
+        val groupsFlow = groupLocalDataSource.getAllGroupswithMembersFlow()
 
         return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
             val userIdMap = users.associateBy { it.id }
@@ -1280,7 +1280,7 @@ class AppRepository(
 
         SessionCache.requireLoggedIn() ?: return
 
-        val localusers = userRepository.getuserchangeid()
+        val localusers = userLocalDataSource.getuserchangeid()
 
         val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) }).trackConnectivity()
 
@@ -1437,7 +1437,7 @@ class AppRepository(
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
-                    userRepository.updateUserProfilePicUrl(userId, filepath)
+                    userLocalDataSource.updateUserProfilePicUrl(userId, filepath)
                 }
             }
         }
@@ -1858,7 +1858,7 @@ class AppRepository(
                         val existing =
                             database.messageDao().getMessageDtoById(serverrequest.data.messageId)
 
-                        messageRepository.upsertMessage(
+                        messageLocalDataSource.upsertMessage(
                             Message(
                                 localPK = localpkintern,
                                 id = serverrequest.data.messageId,
@@ -1929,7 +1929,7 @@ class AppRepository(
                 }
 
 
-                val messages = messageRepository.getUnsentMessages()
+                val messages = messageLocalDataSource.getUnsentMessages()
                 if (messages.isEmpty()) {
                     //println("OFFLINE MESSAGE SENDING: NO UNSENT MESSAGES")
                     return
@@ -1995,7 +1995,7 @@ class AppRepository(
                 )
 
 
-                val nextMessages = messageRepository.getUnsentMessages()
+                val nextMessages = messageLocalDataSource.getUnsentMessages()
                 if (nextMessages.firstOrNull()?.localPK == m.localPK) return
             }
 
@@ -2029,7 +2029,7 @@ class AppRepository(
 
         messageSyncLock.withLock {
 
-            var since = messageRepository.getLastSyncedMessageVersion()
+            var since = messageLocalDataSource.getLastSyncedMessageVersion()
             var moreMessages = true
 
             while (moreMessages) {
@@ -2050,12 +2050,12 @@ class AppRepository(
                         // Deletions can now arrive on any page, not just page 0. Apply them
                         // before the updates below so a crash mid-batch never leaves MAX(version)
                         // ahead of what was actually committed.
-                        messageRepository.deleteMessages(deletedMessages)
+                        messageLocalDataSource.deleteMessages(deletedMessages)
 
                         // The whole page goes in as one batch: every separate write would invalidate
                         // the message table again and re-run the chat selector's query chain.
                         val sortedUpdates = updatedMessages.sortedBy { it.version }
-                        val existingById = messageRepository
+                        val existingById = messageLocalDataSource
                             .getMessageDtosByIds(sortedUpdates.map { it.messageId })
                             .associateBy { it.id }
 
@@ -2068,11 +2068,11 @@ class AppRepository(
                         val unmatchedClientMessageIds = sortedUpdates
                             .filter { existingById[it.messageId] == null }
                             .mapNotNull { it.clientMessageId }
-                        val existingByClientMessageId = messageRepository
+                        val existingByClientMessageId = messageLocalDataSource
                             .getMessageDtosByClientMessageIds(unmatchedClientMessageIds)
                             .associateBy { it.clientMessageId }
 
-                        messageRepository.upsertMessages(
+                        messageLocalDataSource.upsertMessages(
                             sortedUpdates.map { messageResponse ->
                                 val existing = existingById[messageResponse.messageId]
                                     ?: messageResponse.clientMessageId?.let { existingByClientMessageId[it] }
@@ -2142,14 +2142,14 @@ class AppRepository(
         if (decoded.messageType != MessageType.TEXT) return
 
         // Never overwrite an already-synced or socket-delivered row.
-        if (messageRepository.getMessageById(decoded.msgId) != null) return
+        if (messageLocalDataSource.getMessageById(decoded.msgId) != null) return
 
         // Blank when the push came from a server that predates the plaintext `content` field.
         val content = decoded.content.ifBlank { return }
 
         val sendDate = (decoded.sendDate.takeIf { it > 0L } ?: getCurrentTimeMillisLong()).toString()
 
-        messageRepository.upsertMessage(
+        messageLocalDataSource.upsertMessage(
             Message(
                 id = decoded.msgId,
                 msgType = MessageType.TEXT,
@@ -2174,11 +2174,11 @@ class AppRepository(
 
     /** Applies a reaction push to an already-local message. Never creates a new row. */
     private suspend fun applyPushReaction(decoded: DecodedNotification.Message) {
-        val existing = messageRepository.getMessageById(decoded.msgId) ?: return
+        val existing = messageLocalDataSource.getMessageById(decoded.msgId) ?: return
 
         val emoji = decoded.content.ifBlank { return }
 
-        messageRepository.upsertMessage(
+        messageLocalDataSource.upsertMessage(
             existing.copy(
                 reactions = existing.reactions.filterNot { it.userId == decoded.senderId } +
                     Reaction(userId = decoded.senderId, content = emoji, reactedAt = getCurrentTimeMillisLong())
@@ -2195,7 +2195,7 @@ class AppRepository(
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
-                    messageRepository.updatePictureUrl(messageId, filepath)
+                    messageLocalDataSource.updatePictureUrl(messageId, filepath)
                 }
             }
         }
@@ -2214,7 +2214,7 @@ class AppRepository(
                     // Persist the bare filename, not the absolute container path: on iOS the
                     // container UUID in an absolute path changes across reinstalls/updates and
                     // would go stale. The absolute path is re-derived at use-time.
-                    messageRepository.updateAudioPath(messageId, savefilename)
+                    messageLocalDataSource.updateAudioPath(messageId, savefilename)
                 }
             }
         }
@@ -2257,9 +2257,9 @@ class AppRepository(
 
         if (message.id == null) {
             //edit a not sent message
-            val existing = messageRepository.getMessageById(message.localPK)
+            val existing = messageLocalDataSource.getMessageById(message.localPK)
             if (existing != null) {
-                messageRepository.upsertMessage(existing.copy(
+                messageLocalDataSource.upsertMessage(existing.copy(
                     content = newContent,
                     sent = false
                 ))
@@ -2273,9 +2273,9 @@ class AppRepository(
 
             when (request) {
                 is NetworkResult.Error<NetworkingError> ->  {
-                    val existing = messageRepository.getMessageById(message.localPK)
+                    val existing = messageLocalDataSource.getMessageById(message.localPK)
                     if (existing != null) {
-                        messageRepository.upsertMessage(existing.copy(
+                        messageLocalDataSource.upsertMessage(existing.copy(
                             content = newContent,
                             sent = false
                         ))
@@ -2283,9 +2283,9 @@ class AppRepository(
                     errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
                 }
                 is NetworkResult.Success<MessageResponse> -> {
-                    val existing = messageRepository.getMessageById(request.data.messageId)
+                    val existing = messageLocalDataSource.getMessageById(request.data.messageId)
                     if (existing != null) {
-                        messageRepository.upsertMessage(existing.copy(
+                        messageLocalDataSource.upsertMessage(existing.copy(
                             content = request.data.content,
                             changeDate = request.data.lastChanged.toString(),
                             edited = true,
@@ -2299,7 +2299,7 @@ class AppRepository(
     }
 
     suspend fun deleteLocalMessage(localpk: Long) {
-        messageRepository.deleteMessage(localpk)
+        messageLocalDataSource.deleteMessage(localpk)
     }
 
     suspend fun deleteMessage(messageId: String){
@@ -2312,7 +2312,7 @@ class AppRepository(
                 errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<*> -> {
-                messageRepository.deleteMessage(messageId)
+                messageLocalDataSource.deleteMessage(messageId)
             }
 
         }
@@ -2323,9 +2323,9 @@ class AppRepository(
         when (request) {
             is NetworkResult.Error -> errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
             is NetworkResult.Success -> {
-                val existing = messageRepository.getMessageById(request.data.messageId)
+                val existing = messageLocalDataSource.getMessageById(request.data.messageId)
                 if (existing != null) {
-                    messageRepository.upsertMessage(
+                    messageLocalDataSource.upsertMessage(
                         existing.copy(
                             reactions = request.data.reactions.map {
                                 Reaction(userId = it.userId, content = it.content)
@@ -2350,11 +2350,11 @@ class AppRepository(
                 errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<MessageResponse> -> {
-                val existing = messageRepository.getMessageById(request.data.messageId)
+                val existing = messageLocalDataSource.getMessageById(request.data.messageId)
                 //Skip a response older than what is stored - a socket push or a later vote's
                 //response may have landed first, and must not be rolled back
                 if (existing != null && !existing.isNewerThan(request.data.lastChanged)) {
-                    messageRepository.upsertMessage(existing.copy(
+                    messageLocalDataSource.upsertMessage(existing.copy(
                         poll = request.data.pollResponse?.toPollMessage(ownId),
                         changeDate = request.data.lastChanged.toString(),
                     ))
@@ -2374,11 +2374,11 @@ class AppRepository(
                 errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<MessageResponse> -> {
-                val existing = messageRepository.getMessageById(request.data.messageId)
+                val existing = messageLocalDataSource.getMessageById(request.data.messageId)
                 //Skip a response older than what is stored - a socket push or a later vote's
                 //response may have landed first, and must not be rolled back
                 if (existing != null && !existing.isNewerThan(request.data.lastChanged)) {
-                    messageRepository.upsertMessage(existing.copy(
+                    messageLocalDataSource.upsertMessage(existing.copy(
                         poll = request.data.pollResponse?.toPollMessage(ownId),
                         changeDate = request.data.lastChanged.toString(),
                     ))
@@ -2424,7 +2424,7 @@ class AppRepository(
 
                 val groupResponse = response.data
 
-                groupRepository.upsertGroup(Group(
+                groupLocalDataSource.upsertGroup(Group(
                     id = groupResponse.id,
                     name = groupResponse.name,
                     profilePictureUrl = "",
@@ -2462,7 +2462,7 @@ class AppRepository(
         val userId = SessionCache.requireLoggedIn() ?: return emptyList()
 
 
-        val localgroups = groupRepository.getgroupchangeid()
+        val localgroups = groupLocalDataSource.getgroupchangeid()
         val profilepicsToGet = mutableListOf<String>()
 
         val groupSyncResponse = networkUtils.groupIdSync(
@@ -2482,8 +2482,8 @@ class AppRepository(
                 //println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
 
                 groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
-                    val existing = groupRepository.getGroupById(groupResponse.id)
-                    groupRepository.upsertGroup(Group(
+                    val existing = groupLocalDataSource.getGroupById(groupResponse.id)
+                    groupLocalDataSource.upsertGroup(Group(
                         id = groupResponse.id,
                         name = groupResponse.name,
                         profilePictureUrl = existing?.profilePictureUrl ?: "",
@@ -2514,7 +2514,7 @@ class AppRepository(
 
                 deletedGroupIds = groupSyncResponse.data.deletedGroups
                 deletedGroupIds.forEach { id ->
-                    groupRepository.deleteGroup(id)
+                    groupLocalDataSource.deleteGroup(id)
                 }
             }
         }
@@ -2534,7 +2534,7 @@ class AppRepository(
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
-                    groupRepository.updateGroupProfilePicUrl(groupId, filepath)
+                    groupLocalDataSource.updateGroupProfilePicUrl(groupId, filepath)
                 }
             }
         }
@@ -2631,8 +2631,8 @@ class AppRepository(
             is NetworkResult.Success<*> -> {
                 // Optimistically reflect the new value locally so UI updates immediately;
                 // the next /users/sync or UserChange socket push reconciles the authoritative value.
-                userRepository.getUserById(friendId)?.let { friend ->
-                    userRepository.upsertUser(friend.copy(
+                userLocalDataSource.getUserById(friendId)?.let { friend ->
+                    userLocalDataSource.upsertUser(friend.copy(
                         locationShared = share,
                         shareSpeedHeading = shareSpeedHeading,
                         snailTrail = snailTrail,
@@ -2668,8 +2668,8 @@ class AppRepository(
             }
             is NetworkResult.Success<*> -> {
                 // Optimistic local write, reconciled by the next /users/sync or UserChange push.
-                userRepository.getUserById(friendId)?.let { friend ->
-                    userRepository.upsertUser(friend.copy(wakeupEnabled = allowWake).toDto())
+                userLocalDataSource.getUserById(friendId)?.let { friend ->
+                    userLocalDataSource.upsertUser(friend.copy(wakeupEnabled = allowWake).toDto())
                 }
                 true
             }
@@ -2685,8 +2685,8 @@ class AppRepository(
             }
             is NetworkResult.Success<*> -> {
                 SessionCache.requireLoggedIn()?.userId?.let { ownId ->
-                    userRepository.getUserById(ownId)?.let { own ->
-                        userRepository.upsertUser(own.copy(wakeupEnabled = enabled).toDto())
+                    userLocalDataSource.getUserById(ownId)?.let { own ->
+                        userLocalDataSource.upsertUser(own.copy(wakeupEnabled = enabled).toDto())
                     }
                 }
                 true

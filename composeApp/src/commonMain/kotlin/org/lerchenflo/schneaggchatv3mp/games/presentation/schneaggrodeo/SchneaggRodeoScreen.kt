@@ -52,7 +52,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.Rodeo
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoControls
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoSpeedometer
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.rodeoInput
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.BackButton
 import schneaggchatv3mp.composeapp.generated.resources.Res

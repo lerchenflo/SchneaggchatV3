@@ -25,13 +25,13 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
@@ -52,10 +52,10 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class EventsViewModel(
     private val navigator: Navigator,
-    private val eventRepository: EventRepository,
+    private val eventRepository: EventLocalDataSource,
     private val appRepository: AppRepository,
-    private val userRepository: UserRepository,
-    private val groupRepository: GroupRepository,
+    private val userRepository: UserLocalDataSource,
+    private val groupRepository: GroupLocalDataSource,
     private val preferenceManager: Preferencemanager,
     private val pictureManager: PictureManager,
     private val applicationScope: ApplicationScope,

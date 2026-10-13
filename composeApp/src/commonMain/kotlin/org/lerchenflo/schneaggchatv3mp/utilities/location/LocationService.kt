@@ -8,7 +8,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
  * Emits the current [DeviceLocation] whenever the device position changes.
  * Emits null on platforms that have no GPS (Desktop).
  */
-expect class LocationService {
+interface LocationService {
     /**
      * A cold Flow that emits location updates.
      * Collect this to receive position changes. The flow completes when

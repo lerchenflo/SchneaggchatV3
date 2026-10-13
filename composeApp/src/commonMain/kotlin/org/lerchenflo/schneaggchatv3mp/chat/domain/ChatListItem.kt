@@ -27,7 +27,7 @@ data class ChatListItem(
     // Optional phone number, shared with accepted friends. Null for groups.
     val phoneNumber: String? = null,
 
-    // Live "online right now" (never persisted, see UserRepository.onlineFriendIdsFlow) and the
+    // Live "online right now" (never persisted, see UserLocalDataSource.onlineFriendIdsFlow) and the
     // persisted last-seen timestamp (epoch millis) - both null/false when unknown.
     val isOnline: Boolean = false,
     val lastSeen: Long? = null,

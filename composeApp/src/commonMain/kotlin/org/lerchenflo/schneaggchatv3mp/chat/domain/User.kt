@@ -24,7 +24,7 @@ data class User(
     val requesterId: String? = null,
     val notisMuted: Boolean = false,
     // Epoch millis this friend was last seen online, null if unknown/never. Not to be confused
-    // with "online right now", which lives in UserRepository.onlineFriendIdsFlow and is never
+    // with "online right now", which lives in UserLocalDataSource.onlineFriendIdsFlow and is never
     // persisted.
     val lastSeen: Long? = null,
     val birthDate: String? = null, //YYYY-MM-dd

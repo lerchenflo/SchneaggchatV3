@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 /**
  * For all the platform specific Code for audio recording
  */
-expect class AudioManager {
+interface AudioManager {
     /**
      * initialize the Audio Player on Android (because Context is needed)
      */

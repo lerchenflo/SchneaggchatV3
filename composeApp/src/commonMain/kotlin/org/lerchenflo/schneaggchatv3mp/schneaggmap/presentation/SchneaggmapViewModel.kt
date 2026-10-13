@@ -21,15 +21,15 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.Chat
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
@@ -40,12 +40,12 @@ import kotlin.time.Clock
 
 class SchneaggmapViewModel(
     private val navigator: Navigator,
-    private val mapRepository: MapRepository,
+    private val mapRepository: MapLocalDataSource,
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
     private val locationService: LocationService,
-    private val userRepository: UserRepository,
-    private val eventRepository: EventRepository,
+    private val userRepository: UserLocalDataSource,
+    private val eventRepository: EventLocalDataSource,
 
     private val initialEntryId: String?,
     private val currentlyEditedEvent: Event?

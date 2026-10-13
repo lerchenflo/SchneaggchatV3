@@ -64,7 +64,7 @@ class ReplyReceiver : BroadcastReceiver() {
                 )
 
                 val notifId = NotificationManager.NotiId.HexString(chatId).asInt
-                KoinPlatform.getKoin().get<Notifier>().appendSentReply(notifId, replyText)
+                KoinPlatform.getKoin().get<AndroidNotifier>().appendSentReply(notifId, replyText)
             }.onFailure { e ->
                 println("[ReplyReceiver] Error sending reply: ${e.message}")
             }

@@ -8,6 +8,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.androidAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
@@ -15,12 +16,23 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.SOCKET_PING_INTERVAL_M
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createAuthenticatedHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AndroidAppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AndroidAudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.AndroidLanguageManager
+import org.lerchenflo.schneaggchatv3mp.utilities.AndroidPermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.AndroidPictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.AndroidShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.battery.AndroidBatteryService
+import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
+import org.lerchenflo.schneaggchatv3mp.utilities.location.AndroidLocationService
+import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.AndroidNotifier
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import java.util.concurrent.TimeUnit
 
@@ -61,33 +73,33 @@ val androidKsafeModule = module {
 }
 
 val androidVersionModule = module {
-    single { AppVersion(androidContext()) }
+    single<AppVersion> { AndroidAppVersion(androidContext()) }
 }
 
 val androidPictureManagerModule = module {
-    single { PictureManager(androidContext()) }
+    single<PictureManager> { AndroidPictureManager(androidContext()) }
 }
 
 val androidPermissionManagerModule = module {
-    single { PermissionManager(androidContext()) }
-    single { org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService(androidContext()) }
-    single { org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService(androidContext()) }
+    single<PermissionManager> { AndroidPermissionManager(androidContext()) }
+    single<LocationService> { AndroidLocationService(androidContext()) }
+    single<BatteryService> { AndroidBatteryService(androidContext()) }
 }
 
 
 
 val androidAudioManagerModule = module {
-    single { AudioManager(androidContext()) }
+    single<AudioManager> { AndroidAudioManager(androidContext()) }
 }
 
 val androidShareUtilsModule = module {
-    single { ShareUtils(androidContext()) }
+    single<ShareUtils> { AndroidShareUtils(androidContext()) }
 }
 
 val androidLanguageManagerModule = module {
-    single<LanguageManager> { LanguageManager(androidContext(), get()) }
+    single<LanguageManager> { AndroidLanguageManager(androidContext(), get()) }
 }
 
 val androidNotifierModule = module {
-    single { Notifier(androidContext(), get()) }
+    single { AndroidNotifier(androidContext(), get()) } bind Notifier::class
 }

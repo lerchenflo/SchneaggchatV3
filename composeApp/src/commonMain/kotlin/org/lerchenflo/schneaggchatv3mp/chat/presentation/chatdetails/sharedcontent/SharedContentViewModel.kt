@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.copyToClipboard
@@ -30,8 +30,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.extractLinks
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SharedContentViewModel(
-    private val messageRepository: MessageRepository,
-    private val userRepository: UserRepository,
+    private val messageRepository: MessageLocalDataSource,
+    private val userRepository: UserLocalDataSource,
     private val navigator: Navigator,
     private val pictureManager: PictureManager,
 

@@ -43,9 +43,9 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
@@ -73,9 +73,9 @@ import kotlin.time.TimeSource
 
 class ChatViewModel(
     private val appRepository: AppRepository,
-    private val messageRepository: MessageRepository,
-    private val userRepository: UserRepository,
-    private val groupRepository: GroupRepository,
+    private val messageRepository: MessageLocalDataSource,
+    private val userRepository: UserLocalDataSource,
+    private val groupRepository: GroupLocalDataSource,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,

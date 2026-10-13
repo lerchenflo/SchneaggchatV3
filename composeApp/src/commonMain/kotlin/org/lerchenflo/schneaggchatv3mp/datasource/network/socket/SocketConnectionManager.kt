@@ -35,7 +35,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshOutcome
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshReason
@@ -144,7 +144,7 @@ class SocketConnectionManager(
     private fun setConnectionState(newState: ConnectionState) {
         _connectionState.value = newState
         if (newState == ConnectionState.Disconnected) {
-            KoinPlatform.getKoin().get<UserRepository>().clearOnlineFriends()
+            KoinPlatform.getKoin().get<UserLocalDataSource>().clearOnlineFriends()
         }
     }
 

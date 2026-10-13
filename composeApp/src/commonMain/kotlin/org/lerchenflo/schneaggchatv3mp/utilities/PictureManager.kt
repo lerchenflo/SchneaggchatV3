@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 
 import androidx.compose.ui.graphics.ImageBitmap
 
-expect class PictureManager {
+interface PictureManager {
 
 
     /**

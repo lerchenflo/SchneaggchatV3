@@ -58,7 +58,7 @@ data class UserDto(
 
     // Epoch millis this friend was last seen online, null if unknown/never. Synced like any
     // other user field (via UserChange) - unrelated to live "online right now" presence, which
-    // is never persisted (see UserRepository.onlineFriendIdsFlow).
+    // is never persisted (see UserLocalDataSource.onlineFriendIdsFlow).
     var lastSeen: Long? = null,
 
     var birthDate: String? = null,

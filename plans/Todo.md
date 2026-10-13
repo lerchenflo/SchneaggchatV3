@@ -45,6 +45,15 @@ Noticed while doing Phase 0a. Not fixed.
 - [ ] `AppLifecycleManager.setCarSessionActive(false)` (`C/app/AppLifecycleManager.kt:42-54`) emits `appBackgroundedEvent` every time it is called while the app is in the background, also when the car session was already off.
 - [ ] `composeApp/src/jvmTest/.../chat/ChatLoadingBenchmark.kt` calls itself a "temporary benchmark" but runs on every `jvmTest` (3 DB sizes up to 20k messages, 15 runs each). Remove it or move it out of the default test run.
 
+## Findings from migration Phase 0b (2026-10-14)
+
+Noticed while doing Phase 0b. Not fixed.
+
+- [ ] **`@Transaction` outside a DAO does nothing.** Room only honours it on `@Dao` methods, but it sits on data-source methods: `C/chat/data/RoomUserDataSource.kt:26, :51, :90`, `C/chat/data/RoomGroupDataSource.kt:29, :34, :66, :81`, `C/chat/data/RoomMessageDataSource.kt:141, :193, :210`. So multi-statement writes are not atomic: `updateFriendLocations` (delete trail + insert points), `upsertMessageWithReaders` (upsert message + delete/insert readers), and without any annotation `deleteGroup` (4 deletes) and `deleteUser` (2 deletes). A crash or a concurrent read in between sees half-written data. Move them into `@Transaction` DAO methods or wrap them in a Room transaction.
+- [ ] `AndroidLocationService` (`composeApp/src/androidMain/.../utilities/location/AndroidLocationService.kt:33, :104, :108`) builds its own `AndroidPermissionManager(context)` three times instead of getting the Koin `PermissionManager` injected.
+- [ ] Stale KDoc examples in `C/chat/data/GroupLocalDataSource.kt:30-31, :41-42`: `chat.toGroup()?.groupMembers` and `getCommonGroups(chat.id)` (the function takes two ids) don't match the current code.
+- [ ] Other plans still name the platform files renamed in Phase 0b: `Notifier.android.kt` / `Notifier.jvm.kt` (`CHAT_BASED_MIGRATION_PLAN.md:231, :233, :304`, `ANDROID_AUTO_MAP_PLAN.md:28, :230`), `LocationService.android.kt` (`ANDROID_AUTO_MAP_PLAN.md:15`), `AppVersion.jvm` (`AUTH_SESSION_REBUILD_PLAN.md:27, :110`). They are now `AndroidNotifier.kt`, `DesktopNotifier.kt`, `AndroidLocationService.kt`, `DesktopAppVersion.kt`.
+
 ## Deferred from the Android-standards review (plan §8, 2026-10-13)
 
 - [ ] **Auth invalidation in the data layer** (R8). Today `App.kt` reacts to `ActionChannel.AuthInvalidated` with error popup + `logout()` + navigate to Login. Target: `SessionTerminator` listens to `AuthEventSink` in the app scope, and `App.kt` only navigates when the auth state changes to logged out.

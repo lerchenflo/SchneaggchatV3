@@ -12,9 +12,12 @@ import org.lerchenflo.schneaggchatv3mp.app.data.DefaultActionChannel
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.logging.RoomLoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.RoomGroupDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.RoomMessageDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.RoomUserDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsViewmodel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays.BirthdaysViewModel
@@ -76,15 +79,17 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.A
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.events.data.RoomEventDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackViewModel
 import org.lerchenflo.schneaggchatv3mp.feedback.data.FeedbackRepository
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.RoomMapDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassViewModel
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -153,12 +158,12 @@ val sharedmodule = module{
         AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::SettingsRepository)
-    singleOf(::GroupRepository)
-    singleOf(::UserRepository)
-    singleOf(::MessageRepository)
+    singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
+    singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
+    singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
     singleOf(::RoomLoggingRepository) bind Logger::class
-    singleOf(::MapRepository)
-    singleOf(::EventRepository)
+    singleOf(::RoomMapDataSource) bind MapLocalDataSource::class
+    singleOf(::RoomEventDataSource) bind EventLocalDataSource::class
     singleOf(::FeedbackRepository)
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
