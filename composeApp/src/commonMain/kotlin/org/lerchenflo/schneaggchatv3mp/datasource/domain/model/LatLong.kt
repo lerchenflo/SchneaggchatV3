@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
+package org.lerchenflo.schneaggchatv3mp.datasource.domain.model
 
 import kotlinx.serialization.Serializable
 

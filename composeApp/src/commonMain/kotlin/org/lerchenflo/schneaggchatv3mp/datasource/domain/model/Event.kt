@@ -1,7 +1,6 @@
-package org.lerchenflo.schneaggchatv3mp.events.domain
+package org.lerchenflo.schneaggchatv3mp.datasource.domain.model
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 

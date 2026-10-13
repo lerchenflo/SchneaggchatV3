@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.events.data
 
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
 
 /**
  * Local (Room) storage for events.

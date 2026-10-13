@@ -2,12 +2,12 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCl
 
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipation
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
-import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipation
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupDeleteDelay
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
 
 @Serializable
 data class EventResponse(

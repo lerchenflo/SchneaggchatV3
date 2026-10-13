@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.events.domain
+package org.lerchenflo.schneaggchatv3mp.datasource.domain.model
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Celebration
@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.*
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventType.*
 import schneaggchatv3mp.composeapp.generated.resources.Res
 
 

@@ -30,8 +30,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.events.domain.Event
-import org.lerchenflo.schneaggchatv3mp.events.domain.color
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.color
 import org.lerchenflo.schneaggchatv3mp.events.presentation.CalendarBirthday
 import org.lerchenflo.schneaggchatv3mp.events.presentation.birthdaysOn
 import org.lerchenflo.schneaggchatv3mp.utilities.monthNameResource

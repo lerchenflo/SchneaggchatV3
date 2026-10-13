@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.events.domain
+package org.lerchenflo.schneaggchatv3mp.datasource.domain.model
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Groups

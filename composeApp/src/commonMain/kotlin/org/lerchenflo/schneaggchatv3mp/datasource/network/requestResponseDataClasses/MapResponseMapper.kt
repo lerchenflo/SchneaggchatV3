@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
 
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapEntry
 
 // ─── MapEntry ─────────────────────────────────────────────────────────────────
 

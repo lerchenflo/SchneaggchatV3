@@ -10,6 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultActionChannel
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.data.RemoteAppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.app.logging.RoomLoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
@@ -30,8 +31,11 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
@@ -81,12 +85,15 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.Ema
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.events.data.OfflineFirstEventRepository
 import org.lerchenflo.schneaggchatv3mp.events.data.RoomEventDataSource
-import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackViewModel
-import org.lerchenflo.schneaggchatv3mp.feedback.data.FeedbackRepository
+import org.lerchenflo.schneaggchatv3mp.feedback.data.RemoteFeedbackRepository
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.OfflineFirstMapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.RoomMapDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassViewModel
@@ -156,7 +163,7 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
@@ -165,7 +172,10 @@ val sharedmodule = module{
     singleOf(::RoomLoggingRepository) bind Logger::class
     singleOf(::RoomMapDataSource) bind MapLocalDataSource::class
     singleOf(::RoomEventDataSource) bind EventLocalDataSource::class
-    singleOf(::FeedbackRepository)
+    singleOf(::OfflineFirstMapRepository) bind MapRepository::class
+    singleOf(::OfflineFirstEventRepository) bind EventRepository::class
+    singleOf(::RemoteAppInfoRepository) bind AppInfoRepository::class
+    singleOf(::RemoteFeedbackRepository) bind FeedbackRepository::class
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
     singleOf(::GameSaveRepository)

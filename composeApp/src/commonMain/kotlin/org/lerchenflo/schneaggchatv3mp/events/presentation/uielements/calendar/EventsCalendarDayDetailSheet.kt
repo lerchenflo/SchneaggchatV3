@@ -18,11 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.CalendarBirthday
-import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
-import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
-import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.goingUserIds
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.isUnseenBy
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.statusOf
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DateChip
 import org.lerchenflo.schneaggchatv3mp.utilities.toFormattedString

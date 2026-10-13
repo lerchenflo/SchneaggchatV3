@@ -257,7 +257,7 @@ They must stay green after Phase 5 (c); then they point at `OfflineFirstMessageR
 - Callers: every VM that calls `dataSync` (Login, SignUp, Events, Map, UserSettings, EmailVerifiedCheck, Misc, Privacy, ChatSelector, GroupCreator, GlobalViewModel), `SocketConnectionMessage` and `IosPushDelegateBridge`. `ChatSelector.kt` (`dataSyncState`) and `DataSyncDetailPopup.kt` move in Phase 7. Update the KDoc on `updateUserLastSeenNow` in `C/chat/data/UserLocalDataSource.kt` (was `UserRepository.kt:161`, renamed in Phase 0).
 
 ### Phase 7: Composables + clean ViewModel boundary
-- Do §2.5 in one go: `Login.kt`, `ChatSelector.kt`, `SettingsScreen.kt`, `UrlChangeDialog.kt` (+ its hosts), `DataSyncDetailPopup.kt` read from their ViewModels; `App.kt` swaps to interfaces.
+- Do §2.5 in one go: `Login.kt`, `ChatSelector.kt`, `SettingsScreen.kt`, `UrlChangeDialog.kt` (+ its hosts), `DataSyncDetailPopup.kt`, plus `MessageChatSelector.kt`, `EmailVerifiedCheckScreen.kt`, `SignUp.kt`, `UserSettings.kt` (they also `koinInject` `Preferencemanager`; found in Phase 1a) read from their ViewModels; `App.kt` swaps to interfaces. Grep for any other composable that `koinInject`s a data-layer class.
 - Grep check: no file under `*/presentation/` imports `datasource.` (except `datasource.domain`), `.data.`, `AppDatabase`, `NetworkUtils` or `Preferencemanager`, and no composable `koinInject`s a data-layer class (except the `App.kt` interfaces, §2.5). Fix whatever is left. Also: no ViewModel injects `ApplicationScope` (R2), and no presentation file uses a `NetworkUtils.*` type (R3). The grep doesn't catch ViewModels that still inject `LocationService` / `PictureManager` / `AudioManager` / `BatteryService`; those are a Todo item (R10).
 
 ### Phase 8: Delete `AppRepository`

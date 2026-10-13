@@ -40,10 +40,10 @@ import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
-import org.lerchenflo.schneaggchatv3mp.events.domain.icon
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.icon
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationType.entries
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.drawableRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.approximateDistanceMeters

@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.events.domain
+package org.lerchenflo.schneaggchatv3mp.datasource.domain.model
 
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource

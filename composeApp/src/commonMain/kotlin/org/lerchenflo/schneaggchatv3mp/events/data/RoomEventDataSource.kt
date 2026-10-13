@@ -6,7 +6,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
-import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
 
 class RoomEventDataSource(
     private val database: AppDatabase,

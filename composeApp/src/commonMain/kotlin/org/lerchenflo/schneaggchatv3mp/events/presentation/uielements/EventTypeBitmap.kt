@@ -14,8 +14,8 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
-import org.lerchenflo.schneaggchatv3mp.events.domain.icon
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.icon
 
 /**
  * Renders [type]'s Material icon onto a filled disc, so it can be sent as an event's group

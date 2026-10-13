@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.app.navigation
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
-import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
 
 sealed interface Route : NavKey {
 

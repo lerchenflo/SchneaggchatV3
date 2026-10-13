@@ -30,14 +30,14 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
-import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.events.domain.Event
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
-import org.lerchenflo.schneaggchatv3mp.events.domain.hasEnded
-import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
-import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.hasEnded
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.isUnseenBy
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.newEvent
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToLocalDate
@@ -52,7 +52,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class EventsViewModel(
     private val navigator: Navigator,
-    private val eventRepository: EventLocalDataSource,
+    private val eventRepository: EventRepository,
     private val appRepository: AppRepository,
     private val userRepository: UserLocalDataSource,
     private val groupRepository: GroupLocalDataSource,
@@ -157,7 +157,7 @@ class EventsViewModel(
                 val ownId = state.value.ownUserId
                 if (clickedEvent != null && ownId != null && clickedEvent.isUnseenBy(ownId)) {
                     viewModelScope.launch {
-                        appRepository.setEventParticipation(clickedEvent.id, EventParticipationStatus.SEEN)
+                        eventRepository.setEventParticipation(clickedEvent.id, EventParticipationStatus.SEEN)
                     }
                 }
             }
@@ -210,7 +210,7 @@ class EventsViewModel(
                         val profilePic = action.typeIcon?.let { pictureManager.encodeImageBitmap(it) }
                         val eventid = if (event.id == "") null else event.id
 
-                        val saved = appRepository.upsertEvent(
+                        val saved = eventRepository.upsertEvent(
                             eventId = eventid,
                             type = event.type,
                             title = event.title,
@@ -277,7 +277,7 @@ class EventsViewModel(
                     _state.update { it.copy(isJoiningEvent = true) }
 
                     try {
-                        val groupId = appRepository.joinEvent(
+                        val groupId = eventRepository.joinEvent(
                             action.eventId
                         )
 
@@ -303,7 +303,7 @@ class EventsViewModel(
 
             is EventsAction.OnDeleteEvent -> {
                 viewModelScope.launch {
-                    val success = appRepository.detachEvent(
+                    val success = eventRepository.detachEvent(
                         eventId = action.event.id,
                         groupId = action.event.groupId,
                         deleteGroup = action.deleteGroup,
@@ -361,7 +361,7 @@ class EventsViewModel(
 
 
     private suspend fun setParticipation(eventId: String, status: EventParticipationStatus): Boolean {
-        val success = appRepository.setEventParticipation(eventId, status)
+        val success = eventRepository.setEventParticipation(eventId, status)
         if (!success) {
             SnackbarManager.showMessage(getString(Res.string.event_participation_failed))
         }

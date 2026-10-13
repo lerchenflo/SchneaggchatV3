@@ -2,10 +2,10 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationGroup
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapEntry
 
 sealed interface SchneaggmapAction {
     data object OnBackClicked : SchneaggmapAction

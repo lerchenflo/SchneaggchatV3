@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
@@ -23,6 +24,7 @@ import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
 
 class LoginViewModel(
     private val appRepository: AppRepository,
+    private val appInfoRepository: AppInfoRepository,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
     private val applicationScope: ApplicationScope,
@@ -93,7 +95,7 @@ class LoginViewModel(
     init {
 
         viewModelScope.launch {
-            val online =  appRepository.testServer(settingsRepository.getServerUrl())
+            val online =  appInfoRepository.testServer(settingsRepository.getServerUrl())
             if (!online){
                 errorChannel.sendErrorSuspend(
                     event = ErrorEvent(

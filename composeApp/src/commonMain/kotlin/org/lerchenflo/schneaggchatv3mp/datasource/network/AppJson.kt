@@ -6,7 +6,7 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.AttributeValue
 
 /**
  * Deserializer for all polymorphic JSON objects

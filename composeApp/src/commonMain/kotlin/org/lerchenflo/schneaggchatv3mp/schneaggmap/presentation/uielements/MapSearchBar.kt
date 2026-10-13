@@ -38,11 +38,11 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.sortedTypes
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationGroup
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.drawableRes
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.sortedTypes
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import schneaggchatv3mp.composeapp.generated.resources.Res

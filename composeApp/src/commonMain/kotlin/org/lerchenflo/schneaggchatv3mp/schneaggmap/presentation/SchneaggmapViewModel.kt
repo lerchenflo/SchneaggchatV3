@@ -24,15 +24,15 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.Chat
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
-import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.events.domain.Event
-import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.newEvent
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.stringRes
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 import kotlin.time.Clock
@@ -40,12 +40,12 @@ import kotlin.time.Clock
 
 class SchneaggmapViewModel(
     private val navigator: Navigator,
-    private val mapRepository: MapLocalDataSource,
+    private val mapRepository: MapRepository,
     private val appRepository: AppRepository,
     private val settingsRepository: SettingsRepository,
     private val locationService: LocationService,
     private val userRepository: UserLocalDataSource,
-    private val eventRepository: EventLocalDataSource,
+    private val eventRepository: EventRepository,
 
     private val initialEntryId: String?,
     private val currentlyEditedEvent: Event?
@@ -293,7 +293,7 @@ class SchneaggmapViewModel(
 
                     println("Map upsert: $entry")
 
-                    appRepository.upsertMapEntry(
+                    mapRepository.upsertMapEntry(
                         entryId = entry.id.ifEmpty { null },
                         name = entry.name,
                         description = entry.description,
@@ -306,7 +306,7 @@ class SchneaggmapViewModel(
 
             is SchneaggmapAction.OnEntryPopupDelete -> {
                 viewModelScope.launch {
-                    appRepository.deleteMapEntry(action.entryId)
+                    mapRepository.deleteMapEntry(action.entryId)
                 }
 
                 _state.update {

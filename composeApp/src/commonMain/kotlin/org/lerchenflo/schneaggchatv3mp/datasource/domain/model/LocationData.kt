@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
+package org.lerchenflo.schneaggchatv3mp.datasource.domain.model
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.*
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationType.*
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.*
 

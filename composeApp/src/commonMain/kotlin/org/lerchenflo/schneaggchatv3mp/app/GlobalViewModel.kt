@@ -23,10 +23,11 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
-import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.events.domain.hasEnded
-import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.hasEnded
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
@@ -41,7 +42,8 @@ import kotlin.time.Duration.Companion.minutes
 @OptIn(ExperimentalCoroutinesApi::class)
 class GlobalViewModel(
     private val appRepository: AppRepository,
-    private val eventRepository: EventLocalDataSource,
+    private val eventRepository: EventRepository,
+    private val appInfoRepository: AppInfoRepository,
     private val settingsRepository: SettingsRepository,
     private val socketConnectionManager: SocketConnectionManager,
     private val navigator: Navigator,
@@ -206,7 +208,7 @@ class GlobalViewModel(
 
                 } else {
                     //Offline
-                    appRepository.testServer(settingsRepository.getServerUrl())
+                    appInfoRepository.testServer(settingsRepository.getServerUrl())
 
                 }
 

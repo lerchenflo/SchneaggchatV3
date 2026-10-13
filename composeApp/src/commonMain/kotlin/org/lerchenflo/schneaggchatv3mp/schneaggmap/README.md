@@ -44,7 +44,7 @@ server it is `List<String>`.
 
 ## Enums
 
-Defined in `model/AttributeOptions.kt` (server) and `domain/AttributeOptions.kt` (client). Constant names are
+Defined in `model/AttributeOptions.kt` (server) and `datasource/domain/model/AttributeOptions.kt` (client). Constant names are
 the stored values - **never rename a constant without a migration, only add new ones**.
 
 | Enum | Options | Used by |
@@ -120,7 +120,7 @@ re-sync it (map sync only sends entries newer than the client's copy).
 
 ## Icons (client only)
 
-`LocationType.drawableRes()` in `domain/LocationData.kt`. All icons are 1024x1024 transparent PNGs in a flat
+`LocationType.drawableRes()` in `datasource/domain/model/LocationData.kt`. All icons are 1024x1024 transparent PNGs in a flat
 style with bold black outlines.
 
 - New: `icon_food_austrian` (schnitzel + flag), `icon_climbingspot` (climbing wall, was the swimming icon),
@@ -138,7 +138,7 @@ standalone image and not referenced from code yet.
 
 **New enum attribute**
 1. Server: add the enum to `model/AttributeOptions.kt`, use `EnumDef(key, required, options = X.entries.map { it.name })`.
-2. Client: add the same enum to `domain/AttributeOptions.kt` implementing `AttributeOption` with a label per
+2. Client: add the same enum to `datasource/domain/model/AttributeOptions.kt` implementing `AttributeOption` with a label per
    option, use `EnumDef(key, required, options = X.entries)`.
 3. Add option labels to `values`, `values-de`, `values-it`.
 

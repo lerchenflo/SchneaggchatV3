@@ -16,7 +16,7 @@ import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.AndroidPermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import kotlin.math.PI

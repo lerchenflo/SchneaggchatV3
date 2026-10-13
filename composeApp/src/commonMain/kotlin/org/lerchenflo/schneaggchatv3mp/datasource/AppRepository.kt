@@ -29,8 +29,6 @@ import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
-import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_API_URL
-import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.TEST_ACCOUNT_USERNAME
@@ -67,9 +65,12 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.I
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.PollContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.FriendshipStatus
@@ -90,14 +91,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.SessionCheck
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toLocalPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
@@ -112,18 +106,15 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
-import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupDeleteDelay
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationData
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
-import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogParser
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -175,8 +166,9 @@ class AppRepository(
 
     val appVersion: AppVersion,
     private val loggingRepository: Logger,
-    private val mapLocalDataSource: MapLocalDataSource,
-    private val eventLocalDataSource: EventLocalDataSource,
+    private val mapRepository: MapRepository,
+    private val eventRepository: EventRepository,
+    private val appInfoRepository: AppInfoRepository,
     private val authSessionManager: AuthSessionManager,
     private val errorChannel: ErrorChannel,
     private val settingsRepository: SettingsRepository,
@@ -286,16 +278,15 @@ class AppRepository(
         SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
     }
 
-    /**
-     * Test the server endpoint
-     */
-    suspend fun testServer(serverUrl: String = BASE_SERVER_URL) : Boolean {
-        println("Testing server: $serverUrl")
-        return when(networkUtils.testServer(serverUrl).trackConnectivity()){
-            is NetworkResult.Error<*> -> false
-            is NetworkResult.Success<*> -> true
-        }
-    }
+    // ─── App info: moved to AppInfoRepository ──────────────────────────────────
+    // Thin delegates until every caller uses AppInfoRepository directly (removed with this class).
+
+    suspend fun testServer(serverUrl: String = BASE_SERVER_URL) : Boolean =
+        appInfoRepository.testServer(serverUrl)
+
+    suspend fun getChangeLog(version: String) : ChangelogEntry? = appInfoRepository.getChangeLog(version)
+
+    suspend fun getLatestGitHubVersionAsString(): String? = appInfoRepository.getLatestGitHubVersionAsString()
 
 
     val dataSyncLock = Mutex()
@@ -477,7 +468,7 @@ class AppRepository(
                                 status = DataSyncJobStatus.RUNNING,
                                 error = null
                             )
-                            mapEntryIdSync()
+                            mapRepository.syncMapEntries()
                             updateSyncJob(
                                 type = MAP,
                                 status = DataSyncJobStatus.SUCCESS,
@@ -502,7 +493,7 @@ class AppRepository(
                                 status = DataSyncJobStatus.RUNNING,
                                 error = null
                             )
-                            eventIdSync()
+                            eventRepository.syncEvents()
                             updateSyncJob(
                                 type = EVENTS,
                                 status = DataSyncJobStatus.SUCCESS,
@@ -562,38 +553,8 @@ class AppRepository(
         }
     }
 
-    // ─── Map sync (triggered only from map screen, not part of global dataSync) ─
-
-    private suspend fun mapEntryIdSync() {
-
-        val userId = SessionCache.requireLoggedIn() ?: return
-
-
-        val localEntries = mapLocalDataSource.getMapEntryChangeIds()
-        var currentPage = 0
-        var moreEntries = true
-        while (moreEntries) {
-            val response = networkUtils.mapSync(
-                entries = localEntries.map { IdTimeStamp(it.id, it.updatedAt) },
-                page = currentPage,
-            ).trackConnectivity()
-            when (response) {
-                is NetworkResult.Error<*> -> { loggingRepository.logWarning("Map entry sync error: ${response.error}"); break }
-                is NetworkResult.Success -> {
-                    //println("Map sync success, upserting ${response.data.updatedEntries} entrys")
-                    response.data.updatedEntries.forEach { mapLocalDataSource.upsertMapEntry(it.toMapEntry()) }
-                    response.data.deletedEntries.forEach { mapLocalDataSource.deleteMapEntry(it) }
-                    moreEntries = response.data.moreEntries
-                }
-            }
-            currentPage++
-        }
-    }
-
-
-
-    // ─── Map CRUD ─────────────────────────────────────────────────────────────
-    // WS broadcast handles local DB upsert/delete automatically after server write.
+    // ─── Map / Event: moved to MapRepository / EventRepository ─────────────────
+    // Thin delegates until every caller uses the repositories directly (removed with this class).
 
     suspend fun upsertMapEntry(
         entryId: String?,
@@ -602,71 +563,9 @@ class AppRepository(
         lat: Double,
         lon: Double,
         locationData: List<LocationData>,
-    ) {
+    ) = mapRepository.upsertMapEntry(entryId, name, description, lat, lon, locationData)
 
-
-
-        val result = networkUtils.upsertMapEntry(
-            MapEntryRequest(
-                entryId = entryId,
-                name = name,
-                description = description,
-                coordinates = LatLong(lat = lat, long = lon),
-                locationData = locationData,
-            )
-        ).trackConnectivity()
-
-
-        when (result) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-            }
-            is NetworkResult.Success<MapEntryResponse> -> {
-                mapLocalDataSource.upsertMapEntry(result.data.toMapEntry())
-            }
-        }
-    }
-
-    suspend fun deleteMapEntry(entryId: String) : Boolean {
-        return when (val result = networkUtils.deleteMapEntry(entryId).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                mapLocalDataSource.deleteMapEntry(entryId)
-                true
-            }
-        }
-    }
-
-    // ─── Event sync ───────────────────────────────────────────────────────────
-
-    private suspend fun eventIdSync() {
-        val userId = SessionCache.requireLoggedIn() ?: return
-
-        val localEntries = eventLocalDataSource.getEventChangeIds()
-        var currentPage = 0
-        var moreEntries = true
-        while (moreEntries) {
-            val response = networkUtils.eventSync(
-                entries = localEntries.map { IdTimeStamp(it.id, it.updatedAt) },
-                page = currentPage,
-            ).trackConnectivity()
-            when (response) {
-                is NetworkResult.Error<*> -> { loggingRepository.logWarning("Event sync error: ${response.error}"); break }
-                is NetworkResult.Success -> {
-                    response.data.updatedEvents.forEach { eventLocalDataSource.upsertEvent(it.toEvent()) }
-                    response.data.deletedEvents.forEach { eventLocalDataSource.deleteEvent(it) }
-                    moreEntries = response.data.moreEntries
-                }
-            }
-            currentPage++
-        }
-    }
-
-    // ─── Event CRUD ───────────────────────────────────────────────────────────
-    // WS broadcast handles local DB upsert/delete automatically after server write.
+    suspend fun deleteMapEntry(entryId: String) : Boolean = mapRepository.deleteMapEntry(entryId)
 
     suspend fun upsertEvent(
         eventId: String?,
@@ -682,123 +581,29 @@ class AppRepository(
         maxUsers: Int?,
         groupDeleteDelay: GroupDeleteDelay,
         profilePic: ByteArray? = null,
-    ): Boolean {
-        val result = networkUtils.upsertEvent(
-            EventRequest(
-                eventId = eventId,
-                type = type,
-                title = title,
-                description = description,
-                location = location,
-                startDate = startDate,
-                closeDate = closeDate,
-                invitedUsers = invitedUsers,
-                visibility = visibility,
-                maxUsers = maxUsers,
-                groupDeleteDelay = groupDeleteDelay,
-                createGroup = createGroup,
-            ),
-            profilePic = profilePic,
-        ).trackConnectivity()
+    ): Boolean = eventRepository.upsertEvent(
+        eventId = eventId,
+        type = type,
+        title = title,
+        description = description,
+        createGroup = createGroup,
+        location = location,
+        startDate = startDate,
+        closeDate = closeDate,
+        invitedUsers = invitedUsers,
+        visibility = visibility,
+        maxUsers = maxUsers,
+        groupDeleteDelay = groupDeleteDelay,
+        profilePic = profilePic,
+    )
 
-        return when (result) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<EventResponse> -> {
-                eventLocalDataSource.upsertEvent(result.data.toEvent())
-                true
-            }
-        }
-    }
+    suspend fun setEventParticipation(eventId: String, status: EventParticipationStatus): Boolean =
+        eventRepository.setEventParticipation(eventId, status)
 
-    /**
-     * Records how the current user responded to an event (opened it, accepted or dismissed it).
-     * The server answers with the full event, so the local row is fresh before the matching
-     * EventChange push even arrives.
-     */
-    suspend fun setEventParticipation(eventId: String, status: EventParticipationStatus): Boolean {
-        return when (val result = networkUtils.setEventParticipation(eventId, status).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<EventResponse> -> {
-                eventLocalDataSource.upsertEvent(result.data.toEvent())
-                true
-            }
-        }
-    }
+    suspend fun joinEvent(eventId: String): String? = eventRepository.joinEvent(eventId)
 
-    /**
-     * Joins the event, upserts the group belonging to the event and returns the group id
-     * @return The id of the group belonging to the event
-     */
-    suspend fun joinEvent(eventId: String): String? {
-        return when (val response = networkUtils.joinEvent(eventId).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = response.error))
-                null
-            }
-            is NetworkResult.Success<EventJoinResponse> -> {
-                // The joiner is not necessarily in the event's push audience (a stranger joining a
-                // public event is neither invited nor a friend of the creator), so their own
-                // ACCEPTED would otherwise only land on the next full sync
-                response.data.event?.let { eventLocalDataSource.upsertEvent(it.toEvent()) }
-
-                val groupResponse = response.data.groupResponse
-
-                groupLocalDataSource.upsertGroup(Group(
-                    id = groupResponse.id,
-                    name = groupResponse.name,
-                    profilePictureUrl = "",
-                    description = groupResponse.description,
-                    createDate = groupResponse.createdAt,
-                    updatedAt = groupResponse.updatedAt,
-                    profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
-                    expiresAt = groupResponse.expiresAt,
-                    notisMuted = false,
-                    members = groupResponse.members.map { groupMemberresp ->
-                        GroupMember(
-                            groupId = groupResponse.id,
-                            userId = groupMemberresp.userid,
-                            joinDate = groupMemberresp.joinedAt,
-                            admin = groupMemberresp.admin,
-                            color = groupMemberresp.color,
-                            memberName = groupMemberresp.memberName
-                        )
-                    }
-                ))
-                groupResponse.id
-            }
-        }
-    }
-
-    /**
-     * Breaks the event <-> group link. Both flags false detaches only - the event and its group
-     * both survive, and the local DB catches up via the `eventchange` WS broadcast. [groupId] only
-     * matters when [deleteGroup] is true - the local group delete here is just an optimistic fast
-     * path, the server's own group deletion + notifyGroupUpdate / group sync converge on the same
-     * result regardless.
-     */
-    suspend fun detachEvent(eventId: String, groupId: String? = null, deleteGroup: Boolean = false, deleteEvent: Boolean = false): Boolean {
-        return when (val result = networkUtils.detachEvent(eventId, deleteGroup, deleteEvent).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                if (deleteEvent) {
-                    eventLocalDataSource.deleteEvent(eventId)
-                }
-                if (deleteGroup && groupId != null) {
-                    groupLocalDataSource.deleteGroup(groupId)
-                }
-                true
-            }
-        }
-    }
+    suspend fun detachEvent(eventId: String, groupId: String? = null, deleteGroup: Boolean = false, deleteEvent: Boolean = false): Boolean =
+        eventRepository.detachEvent(eventId, groupId, deleteGroup, deleteEvent)
 
 
     /**
@@ -852,35 +657,6 @@ class AppRepository(
         //println("Missing audio ids: $missingAudioMessageIds -------------------------------------")
         if (missingAudioMessageIds.isNotEmpty()) {
             launch { getAudiosForMessageIds(missingAudioMessageIds) }
-        }
-    }
-
-
-    suspend fun getChangeLog(version: String) : ChangelogEntry? {
-        return when (val networkResult = networkUtils.getChangeLog("$GITHUB_URL/main/README.md")) {
-            is NetworkResult.Error<*> -> {
-                println("get changelog network error: ${networkResult.error.message}")
-                null
-            }
-            is NetworkResult.Success<*> -> {
-                val changelog = ChangelogParser.getParsedChangelog(networkResult.data.toString(), version)
-                changelog
-            }
-        }
-    }
-
-    /**
-     * Fetches the name of the current GitHub release
-     */
-    suspend fun getLatestGitHubVersionAsString(): String? {
-        return when (val networkResult = networkUtils.getGitHubVersionJson(GITHUB_LATEST_RELEASE_API_URL)) {
-            is NetworkResult.Error<*> -> {
-                println("get release json network error: ${networkResult.error.message}")
-                null
-            }
-            is NetworkResult.Success<*> -> {
-                networkResult.data.toString()
-            }
         }
     }
 

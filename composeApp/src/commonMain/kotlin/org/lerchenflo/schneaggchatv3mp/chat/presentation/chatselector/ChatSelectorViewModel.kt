@@ -39,6 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.applySearchAndFilter
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
@@ -60,6 +61,7 @@ private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
+    private val appInfoRepository: AppInfoRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
@@ -241,10 +243,10 @@ class ChatSelectorViewModel(
         // and the contribute timestamp is written to the server
         SessionCache.authState.first { it is SessionCache.AuthState.LoggedIn }
 
-        val currentVersion = appRepository.appVersion.getVersionName()
+        val currentVersion = appInfoRepository.getVersionName()
 
         if (settingsRepository.getLastStartedVersion() != currentVersion) {
-            val changelog = appRepository.getChangeLog(currentVersion)
+            val changelog = appInfoRepository.getChangeLog(currentVersion)
             if (changelog != null) {
                 // The version is only saved on dismiss, so a changelog that was never seen
                 // (process death before it appeared) shows again on the next start
@@ -276,7 +278,7 @@ class ChatSelectorViewModel(
     fun onChangelogDismiss() {
         _changelogPopup.value = null
         viewModelScope.launch {
-            settingsRepository.saveLastStartedVersion(appRepository.appVersion.getVersionName())
+            settingsRepository.saveLastStartedVersion(appInfoRepository.getVersionName())
         }
     }
 
@@ -290,13 +292,13 @@ class ChatSelectorViewModel(
 
     private suspend fun checkNewGitHubRelease(): String?{
         // get the github release name
-        val releaseJson = appRepository.getLatestGitHubVersionAsString()
+        val releaseJson = appInfoRepository.getLatestGitHubVersionAsString()
         println("github json: ${releaseJson}")
         val tagName = getTagName(releaseJson?:"") ?:"v0.0.0"
         println("github tag name: ${tagName}")
 
         // get the current app name
-        val appversion = appRepository.appVersion.getVersionName()
+        val appversion = appInfoRepository.getVersionName()
         println("app version: ${appversion}")
 
         // check if the GitHub version is newer than your version
