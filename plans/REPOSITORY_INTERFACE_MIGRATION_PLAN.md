@@ -237,6 +237,11 @@ Nobody can device-test during an unattended run, and message sending is due for 
 - offline queue retry (`sendOfflineMessages` sends unsent rows in order and stops on error).
 They must stay green after Phase 5 (c); then they point at `OfflineFirstMessageRepository`. They don't replace the device test after Phase 5, which stays on the user's checklist.
 
+**Done (2026-10-14).** `jvmTest/…/chat/data/`: `MessageSendTest` (5), `MessageSendEchoDedupTest` (3), `OfflineMessageQueueTest` (5). Notes for Phase 5:
+- Only `jvmTest/…/testutil/SendPathFixture.kt` builds the object under test and calls `sendMessage` / `sendOfflineMessages` / `messageIdSync` (it also holds the only `MessageContent` import). Retarget it there; the test classes stay unchanged.
+- The server is `testutil/FakeMessageServer` (MockEngine for `POST /messages/send/text` and `GET /messages/sync`). Any other request fails the test, and every `unusedDependency()` stub throws when called. If the moved code starts using one of them on the text path, give the fixture a fake.
+- Two tests run a send concurrently (sync before the send response; drain waits for a send in flight). They rely on the send suspending inside the MockEngine handler while holding `sendMessageLock`, and on the drain polling that lock with `delay`. With R2 (`externalScope`) the fixture is built in `@BeforeTest`, outside `runTest`, so `backgroundScope` is not available there; build the fixture inside the test or pass a scope of its own.
+
 ### Phase 5: Messages (highest risk)
 - `MessageRepository` takes over send (:1738-1976 incl. send-echo handling), offline queue, edit, delete, react, poll, mark-read, `applyPushMessage` and message media fetches, together with `sendMessageLock`, `sendOfflineLock` and `messageSyncLock`. `MessageContent` moves to `D/`.
 - `syncMessages(fetchMedia)` = `messageIdSync(fetchMedia)`.
