@@ -26,7 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
@@ -54,7 +54,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class EventsViewModel(
     private val navigator: Navigator,
     private val eventRepository: EventRepository,
-    private val appRepository: AppRepository,
+    private val appVersion: AppVersion,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
@@ -78,7 +78,7 @@ class EventsViewModel(
         (it as? SessionCache.AuthState.LoggedIn)?.userId
     }
 
-    private val _state = MutableStateFlow(EventsState(isMobile = appRepository.appVersion.isMobile(), selectedEvent = initialEntry))
+    private val _state = MutableStateFlow(EventsState(isMobile = appVersion.isMobile(), selectedEvent = initialEntry))
     val state = combine(
         _state,
         eventRepository.getAllEventsFlow(),
@@ -139,7 +139,7 @@ class EventsViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EventsState(isMobile = appRepository.appVersion.isMobile(), selectedEvent = initialEntry),
+        initialValue = EventsState(isMobile = appVersion.isMobile(), selectedEvent = initialEntry),
     )
 
     fun onAction(action: EventsAction) {

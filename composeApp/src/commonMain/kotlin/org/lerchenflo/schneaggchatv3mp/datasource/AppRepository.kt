@@ -25,9 +25,9 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PersonalU
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.AvailableUser
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncState
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DeviceSession

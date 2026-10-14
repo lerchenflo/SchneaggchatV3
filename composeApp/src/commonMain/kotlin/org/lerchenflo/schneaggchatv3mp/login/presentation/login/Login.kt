@@ -35,11 +35,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,22 +48,17 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.logging.formatAllLogs
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.getPasswordResetUrl
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.LogsDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
-import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
@@ -79,33 +72,13 @@ fun LoginScreen(
         .fillMaxSize()
 ){
     val viewModel = koinViewModel<LoginViewModel>()
-    val appRepository = koinInject<AppRepository>()
-    val preferencemanager = koinInject<Preferencemanager>()
+    val savedServerUrl by viewModel.savedServerUrl.collectAsStateWithLifecycle()
 
     SchneaggchatTheme {
 
         val uriHandler = LocalUriHandler.current
 
-        val languageService = koinInject<LanguageService>()
-
-        var showVoriLanguageDialog by remember { mutableStateOf(false) }
-
-        LaunchedEffect(Unit) {
-            val language = languageService.getCurrentLanguage()
-
-            if (language == LanguageSetting.SYSTEM) {
-                val systemlanguage = languageService.getSystemLanguage()
-                println("system language: $systemlanguage")
-
-                if (systemlanguage.trim().startsWith("de") || systemlanguage.trim().startsWith("DE")) {
-                    showVoriLanguageDialog = true
-                }
-            }
-        }
-
-        val scope = rememberCoroutineScope()
-
-        if (showVoriLanguageDialog) {
+        if (viewModel.showVoriLanguageDialog) {
             AlertDialog(
                 onDismissRequest = {},
                 title = { Text("Deutsche Systemsprache erkannt") },
@@ -117,10 +90,7 @@ fun LoginScreen(
 
                         Button(
                             onClick = {
-                                scope.launch {
-                                    languageService.applyLanguage(LanguageSetting.GERMAN)
-                                    showVoriLanguageDialog = false
-                                }
+                                viewModel.onLanguageSelected(LanguageSetting.GERMAN)
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -130,10 +100,7 @@ fun LoginScreen(
 
                         Button(
                             onClick = {
-                                scope.launch {
-                                    languageService.applyLanguage(LanguageSetting.VORI)
-                                    showVoriLanguageDialog = false
-                                }
+                                viewModel.onLanguageSelected(LanguageSetting.VORI)
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -174,8 +141,7 @@ fun LoginScreen(
                                             if (menuExpanded) {
                                                 menuExpanded = false
                                             } else {
-                                                val serverUrl = runBlocking { preferencemanager.getServerUrl() }
-                                                uriHandler.openUri(serverUrl)
+                                                uriHandler.openUri(savedServerUrl)
                                             }
                                         },
                                         onLongPress = {
@@ -192,6 +158,7 @@ fun LoginScreen(
 
                     FloatingActionButtonMenuItem(
                         onClick = {
+                            viewModel.resetServerCheck()
                             showUrlChangeDialog = true
                             menuExpanded = false
                         },
@@ -231,12 +198,19 @@ fun LoginScreen(
 
             if(showUrlChangeDialog){
                 UrlChangeDialog(
-                    onDismiss = {showUrlChangeDialog = false},
+                    onDismiss = {
+                        viewModel.resetServerCheck()
+                        showUrlChangeDialog = false
+                    },
                     onConfirm = {newserverurl ->
                         viewModel.updateServerUrl(newserverurl)
+                        viewModel.resetServerCheck()
                         showUrlChangeDialog = false
                                 },
-                    serverUrl = viewModel.serverUrl
+                    serverUrl = viewModel.serverUrl,
+                    checkStatus = viewModel.serverCheckStatus,
+                    onTestServer = { viewModel.testServer(it) },
+                    onUrlEdited = { viewModel.onServerUrlEdited() }
                 )
             }
 
@@ -299,12 +273,11 @@ fun LoginScreen(
                             passwordFocusRequester = passwordFocusRequester,
                             loginFocusRequester = loginFocusRequester,
                             onPasswordForgotClick = {
-                                val serverUrl = runBlocking { preferencemanager.getServerUrl() }
-                                uriHandler.openUri(getPasswordResetUrl(serverUrl))
+                                uriHandler.openUri(getPasswordResetUrl(savedServerUrl))
                             }
                         )
 
-                        VersionText(appRepository)
+                        VersionText(viewModel.versionName, viewModel.versionCode)
                     }
 
                 }
@@ -344,12 +317,11 @@ fun LoginScreen(
                                 passwordFocusRequester = passwordFocusRequester,
                                 loginFocusRequester = loginFocusRequester,
                                 onPasswordForgotClick = {
-                                    val baseUrl = runBlocking { preferencemanager.getServerUrl() }
-                                    uriHandler.openUri(getPasswordResetUrl(baseUrl))
+                                    uriHandler.openUri(getPasswordResetUrl(savedServerUrl))
                                 }
                             )
                         }
-                        VersionText(appRepository)
+                        VersionText(viewModel.versionName, viewModel.versionCode)
                     }
                 }
                 DeviceSizeConfiguration.TABLET_PORTRAIT,
@@ -386,12 +358,11 @@ fun LoginScreen(
                             passwordFocusRequester = passwordFocusRequester,
                             loginFocusRequester = loginFocusRequester,
                             onPasswordForgotClick = {
-                                val serverUrl = runBlocking { preferencemanager.getServerUrl() }
-                                uriHandler.openUri(getPasswordResetUrl(serverUrl))
+                                uriHandler.openUri(getPasswordResetUrl(savedServerUrl))
                             }
                         )
 
-                        VersionText(appRepository)
+                        VersionText(viewModel.versionName, viewModel.versionCode)
                     }
                 }
             }
@@ -402,9 +373,9 @@ fun LoginScreen(
 }
 
 @Composable
-fun VersionText(appRepository: AppRepository) {
+fun VersionText(versionName: String, versionCode: String) {
     Text(
-        text = stringResource(Res.string.version, appRepository.appVersion.getVersionName()) + " Buildnr: " + appRepository.appVersion.getVersionCode(),
+        text = stringResource(Res.string.version, versionName) + " Buildnr: " + versionCode,
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 16.dp),

@@ -41,8 +41,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.language

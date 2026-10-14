@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationGroup

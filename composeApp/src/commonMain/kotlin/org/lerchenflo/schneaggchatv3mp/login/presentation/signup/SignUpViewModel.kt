@@ -10,13 +10,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getMissingPasswordRequirements
@@ -39,11 +44,16 @@ class SignUpViewModel(
     private val navigator: Navigator,
     private val pictureManager: PictureManager,
     private val loggingRepository: Logger,
-    private val languageService: LanguageService
+    private val languageService: LanguageService,
+    settingsRepository: SettingsRepository,
 ): ViewModel() {
 
     var state by mutableStateOf(SignupState())
         private set
+
+    /** The saved server URL; the privacy policy link opens this server's page. */
+    val serverUrl: StateFlow<String> = settingsRepository.getServerUrlFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, BASE_SERVER_URL)
 
 
     fun onAction(action: SignupAction){

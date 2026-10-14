@@ -12,8 +12,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MAX_REACTION_LENGTH
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 class AppearanceSettingsViewModel(

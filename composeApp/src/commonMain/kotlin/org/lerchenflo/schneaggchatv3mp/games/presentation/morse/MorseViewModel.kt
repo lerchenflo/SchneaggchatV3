@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty

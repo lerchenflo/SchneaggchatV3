@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.morse
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
 
 const val MORSE_SNAPSHOT_VERSION = 1
 

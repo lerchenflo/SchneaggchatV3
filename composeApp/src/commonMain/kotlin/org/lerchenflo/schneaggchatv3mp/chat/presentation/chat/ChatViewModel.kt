@@ -49,7 +49,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
@@ -70,7 +70,7 @@ import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import kotlin.time.TimeSource
 
 class ChatViewModel(
-    private val appRepository: AppRepository,
+    private val appVersion: AppVersion,
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
@@ -904,7 +904,7 @@ class ChatViewModel(
     }
 
     private fun isDesktop(): Boolean{
-        return appRepository.appVersion.isDesktop()
+        return appVersion.isDesktop()
     }
 
 }

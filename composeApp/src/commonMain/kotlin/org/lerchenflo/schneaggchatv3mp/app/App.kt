@@ -69,14 +69,15 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswah
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.MessageChatSelector
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionEvent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
@@ -121,6 +122,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.SnackbarPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TestModeBar
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -138,9 +140,9 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 @Preview(showBackground = true)
 fun App() {
-    val preferenceManager = koinInject<Preferencemanager>()
+    val settingsRepository = koinInject<SettingsRepository>()
     val languageService = koinInject<LanguageService>()
-    val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
+    val themeSetting by settingsRepository.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
     val loggingRepository = koinInject<Logger>()
     val errorChannel = koinInject<ErrorChannel>()
@@ -148,7 +150,7 @@ fun App() {
 
     val globalViewModel = koinInject<GlobalViewModel>() //Init instantly for flow collections to start correctly
 
-    val isDeveloper by preferenceManager.getDevSettingsFlow().collectAsStateWithLifecycle(false)
+    val isDeveloper by settingsRepository.getDevSettingsFlow().collectAsStateWithLifecycle(false)
 
     // Apply saved language on app startup
     LaunchedEffect(Unit) {
@@ -166,8 +168,10 @@ fun App() {
         val scope = rememberCoroutineScope()
 
 
-        //Initialize global repository
-        val appRepository = koinInject<AppRepository>()
+        // Root composable: the one exception that may koinInject data-layer access, interfaces only (plan §2.5)
+        val authRepository = koinInject<AuthRepository>()
+        val sessionTerminator = koinInject<SessionTerminator>()
+        val appVersion = koinInject<AppVersion>()
 
         val navigationState = rememberNavigationState(
             startRoute = Route.AutoLoginCredChecker,
@@ -185,7 +189,7 @@ fun App() {
         LaunchedEffect(Unit) {
             if (sessionRestored) return@LaunchedEffect
             try {
-                val savedCreds = appRepository.loadSavedLoginConfig()
+                val savedCreds = authRepository.loadSavedLoginConfig()
                 if (savedCreds.credsSaved && savedCreds.emailVerified) {
                     AppLifecycleManager.notifyStartupRoutingDone()
                 } else {
@@ -202,7 +206,7 @@ fun App() {
             }
         }
 
-        val isMobile = remember { appRepository.appVersion.isMobile() }
+        val isMobile = remember { appVersion.isMobile() }
         val visibleTopLevelRoutes = remember(isMobile, isDeveloper, navigationState.topLevelRoute) {
             getVisibleTopLevelDestinations(
                 selectedKey = navigationState.topLevelRoute,
@@ -429,7 +433,7 @@ fun App() {
                                 duration = 5000L,
                             )
                         )
-                        appRepository.logout()
+                        sessionTerminator.logout()
                         navigator.navigate(
                             Route.Login,
                             navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
@@ -479,7 +483,7 @@ fun App() {
 
 
 
-        val tour = rememberOnboardingTour(appRepository.appVersion.isAndroid(), appRepository.appVersion.isDesktop())
+        val tour = rememberOnboardingTour(appVersion.isAndroid(), appVersion.isDesktop())
 
         val tourController = remember {
             TapTargetController(
@@ -510,7 +514,7 @@ fun App() {
                 },
                 onFinished = {
                     scope.launch {
-                        preferenceManager.setOnboardingSeen(true)
+                        settingsRepository.setOnboardingSeen(true)
                     }
                 },
                 tourSettings = TourSettings(
@@ -553,7 +557,7 @@ fun App() {
                                         navigator.navigate(it)
                                     }
                                 },
-                                mobile = appRepository.appVersion.isMobile(),
+                                mobile = appVersion.isMobile(),
                                 developer = isDeveloper,
                                 badgeCounts = badgeCounts,
                                 modifier = Modifier.fillMaxWidth()
@@ -571,7 +575,7 @@ fun App() {
 
                         val online by SessionCache.onlineFlow.collectAsStateWithLifecycle()
                         // Demo mode (developer setting) hides both bars, e.g. for store screenshots
-                        val demoMode by preferenceManager.getDemoModeFlow().collectAsStateWithLifecycle(initialValue = false)
+                        val demoMode by settingsRepository.getDemoModeFlow().collectAsStateWithLifecycle(initialValue = false)
 
                         //Show offline bar when offline
                         if (!online && !demoMode) {
@@ -581,7 +585,7 @@ fun App() {
                             )
                         }
 
-                        val serverUrl by preferenceManager.getServerUrlFlow().collectAsStateWithLifecycle(initialValue = BASE_SERVER_URL)
+                        val serverUrl by settingsRepository.getServerUrlFlow().collectAsStateWithLifecycle(initialValue = BASE_SERVER_URL)
 
                         //Show a persistent indicator while pinned to the test server (e.g. after logging in with the test account)
                         if (serverUrl == BASE_SERVER_URL_TEST && !demoMode) {

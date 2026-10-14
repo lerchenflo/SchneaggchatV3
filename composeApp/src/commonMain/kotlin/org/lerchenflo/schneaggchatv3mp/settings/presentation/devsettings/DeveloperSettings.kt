@@ -52,6 +52,7 @@ fun DeveloperSettings(
     var showChangeServerUrlPopup by remember { mutableStateOf(false) }
     val tapTargetController = LocalTapTargetController.current
     val demoMode by devSettingsViewModel.demoMode.collectAsStateWithLifecycle()
+    val serverCheckStatus by devSettingsViewModel.serverCheckStatus.collectAsStateWithLifecycle()
 
     Column {
 
@@ -99,6 +100,7 @@ fun DeveloperSettings(
                 text = stringResource(Res.string.change_server_url),
                 subtext = null,
                 onClick = {
+                    devSettingsViewModel.resetServerCheck()
                     showChangeServerUrlPopup = true
                 }
             )
@@ -146,12 +148,19 @@ fun DeveloperSettings(
 
         if (showChangeServerUrlPopup) {
             UrlChangeDialog(
-                onDismiss = { showChangeServerUrlPopup = false },
-                onConfirm = {
-                    sharedSettingsViewmodel.updateServerUrl(it)
+                onDismiss = {
+                    devSettingsViewModel.resetServerCheck()
                     showChangeServerUrlPopup = false
                 },
-                serverUrl = sharedSettingsViewmodel.serverUrl
+                onConfirm = {
+                    sharedSettingsViewmodel.updateServerUrl(it)
+                    devSettingsViewModel.resetServerCheck()
+                    showChangeServerUrlPopup = false
+                },
+                serverUrl = sharedSettingsViewmodel.serverUrl,
+                checkStatus = serverCheckStatus,
+                onTestServer = { devSettingsViewModel.testServer(it) },
+                onUrlEdited = { devSettingsViewModel.onServerUrlEdited() }
             )
         }
     }

@@ -3,10 +3,10 @@ package org.lerchenflo.schneaggchatv3mp.datasource.domain
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SyncedSettings
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
 
 /**
  * App preferences. The `set*` functions change a setting that is synced across every device of
@@ -70,6 +70,7 @@ interface SettingsRepository {
     fun getDemoModeFlow(): Flow<Boolean>
     suspend fun saveDemoMode(value: Boolean)
 
+    fun getOnboardingSeenFlow(): Flow<Boolean>
     suspend fun setOnboardingSeen(value: Boolean)
 
     suspend fun getLastStartedVersion(): String

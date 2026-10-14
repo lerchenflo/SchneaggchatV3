@@ -289,7 +289,7 @@ val sharedmodule = module{
 
     viewModel { (chatId: String, isGroup: Boolean) ->
         ChatViewModel(
-            appRepository = get(),
+            appVersion = get(),
             messageRepository = get(),
             userRepository = get(),
             groupRepository = get(),
@@ -359,7 +359,7 @@ val sharedmodule = module{
     viewModel { (initialEntryId: String?, initialEntry: Event?) ->
         EventsViewModel(
             navigator = get(),
-            appRepository = get(),
+            appVersion = get(),
             dataSyncCoordinator = get(),
             eventRepository = get(),
             userRepository = get(),

@@ -10,12 +10,12 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 
 class SharedSettingsViewmodel(
-    private val appRepository: AppRepository,
+    private val appVersion: AppVersion,
     private val userRepository: UserRepository,
     private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger
@@ -62,7 +62,7 @@ class SharedSettingsViewmodel(
             }
         }
 
-        isAndroid = appRepository.appVersion.isAndroid()
+        isAndroid = appVersion.isAndroid()
     }
 
     // Developer Settings

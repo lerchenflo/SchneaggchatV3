@@ -19,8 +19,8 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import io.github.lerchenflo.taptarget.tapTarget
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.LanguageSelector
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider

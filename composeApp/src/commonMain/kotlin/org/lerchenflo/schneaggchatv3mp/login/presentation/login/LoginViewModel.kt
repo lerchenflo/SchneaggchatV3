@@ -5,9 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -18,6 +26,10 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.CheckStatus
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
@@ -31,7 +43,43 @@ class LoginViewModel(
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val errorChannel: ErrorChannel,
+    private val languageService: LanguageService,
+    appVersion: AppVersion,
 ): ViewModel() {
+
+    // Shown in the version text under the login form
+    val versionName: String = appVersion.getVersionName()
+    val versionCode: String = appVersion.getVersionCode()
+
+    /** The server URL as saved right now; the website and password-reset links open this one. */
+    val savedServerUrl: StateFlow<String> = settingsRepository.getServerUrlFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, BASE_SERVER_URL)
+
+    // ─── Language: German system language -> offer Vorarlbergerisch ────────────
+    var showVoriLanguageDialog by mutableStateOf(false)
+        private set
+
+    init {
+        viewModelScope.launch {
+            val language = languageService.getCurrentLanguage()
+
+            if (language == LanguageSetting.SYSTEM) {
+                val systemlanguage = languageService.getSystemLanguage()
+                println("system language: $systemlanguage")
+
+                if (systemlanguage.trim().startsWith("de") || systemlanguage.trim().startsWith("DE")) {
+                    showVoriLanguageDialog = true
+                }
+            }
+        }
+    }
+
+    fun onLanguageSelected(language: LanguageSetting) {
+        viewModelScope.launch {
+            languageService.applyLanguage(language)
+            showVoriLanguageDialog = false
+        }
+    }
 
     var logs by mutableStateOf<List<LogEntry>>(emptyList())
         private set
@@ -87,6 +135,38 @@ class LoginViewModel(
         viewModelScope.launch {
             settingsRepository.saveServerUrl(newValue)
         }
+    }
+
+    // ─── Server test of the UrlChangeDialog ────────────────────────────────────
+    var serverCheckStatus by mutableStateOf<CheckStatus>(CheckStatus.Idle)
+        private set
+
+    // Child scope of viewModelScope for the running server tests, so closing the dialog cancels all of them
+    private val serverCheckScope = CoroutineScope(
+        viewModelScope.coroutineContext + SupervisorJob(viewModelScope.coroutineContext[Job])
+    )
+
+    fun testServer(serverUrl: String) {
+        if (serverCheckStatus == CheckStatus.Loading) return
+        serverCheckStatus = CheckStatus.Loading
+        serverCheckScope.launch {
+            val success = appInfoRepository.testServer(serverUrl)
+            ensureActive() // reset in the meantime: drop the result
+
+            serverCheckStatus = if (success){
+                CheckStatus.Success
+            } else CheckStatus.Error
+        }
+    }
+
+    fun onServerUrlEdited() {
+        serverCheckStatus = CheckStatus.Idle
+    }
+
+    /** The dialog opens or closes: drops running tests and their result, like the dialog's own state used to. */
+    fun resetServerCheck() {
+        serverCheckScope.coroutineContext.cancelChildren()
+        serverCheckStatus = CheckStatus.Idle
     }
 
 

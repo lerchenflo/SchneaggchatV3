@@ -8,11 +8,11 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Draft
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 /** [SettingsRepository] on top of the DataStore wrapper [Preferencemanager], pushing synced settings via [NetworkUtils]. */
@@ -187,6 +187,10 @@ class DataStoreSettingsRepository(
 
     override suspend fun saveDemoMode(value: Boolean) {
         preferencemanager.saveDemoMode(value)
+    }
+
+    override fun getOnboardingSeenFlow(): Flow<Boolean> {
+        return preferencemanager.getOnboardingSeenFlow()
     }
 
     override suspend fun setOnboardingSeen(value: Boolean) {

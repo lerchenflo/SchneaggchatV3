@@ -18,7 +18,10 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SyncedSettings
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
 
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,

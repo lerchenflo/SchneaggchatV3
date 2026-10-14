@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -39,12 +40,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.applySearchAndFilter
 import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncState
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -64,7 +66,7 @@ import kotlin.time.Duration.Companion.milliseconds
 private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
 
 class ChatSelectorViewModel(
-    private val appRepository: AppRepository,
+    private val appVersion: AppVersion,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val chatListRepository: ChatListRepository,
     private val messageRepository: MessageRepository,
@@ -92,6 +94,22 @@ class ChatSelectorViewModel(
     /** Desktop only: tag of a newer GitHub release, null if up to date. */
     private val _newVersionAvailable = MutableStateFlow<String?>(null)
     val newVersionAvailable: StateFlow<String?> = _newVersionAvailable.asStateFlow()
+
+    /** Progress of the full sync, for the sync icon and its detail popup. */
+    val dataSyncState: StateFlow<DataSyncState> = dataSyncCoordinator.dataSyncState
+
+    /** Desktop has a reload button and no notification permission banner. */
+    val isDesktop: Boolean = appVersion.isDesktop()
+
+    val onboardingCompleted: StateFlow<Boolean> = settingsRepository.getOnboardingSeenFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    val highlightTodaysTimestamp: StateFlow<Boolean> = settingsRepository.getHighlightTodaysMessageTimestampFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+
+    /** The server URL as saved right now; the website and donation links open this one. */
+    val serverUrl: StateFlow<String> = settingsRepository.getServerUrlFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, BASE_SERVER_URL)
 
     init {
         checkNotificationPermission()
@@ -123,7 +141,7 @@ class ChatSelectorViewModel(
             checkStartupPopups()
         }
 
-        if (appRepository.appVersion.isDesktop()) {
+        if (appVersion.isDesktop()) {
             viewModelScope.launch {
                 _newVersionAvailable.value = checkNewGitHubRelease()
             }
