@@ -5,15 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
@@ -24,12 +24,11 @@ import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
 
 
 class LoginViewModel(
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
     private val authRepository: AuthRepository,
     private val appInfoRepository: AppInfoRepository,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
-    private val applicationScope: ApplicationScope,
     private val loggingRepository: Logger,
     private val errorChannel: ErrorChannel,
 ): ViewModel() {
@@ -129,8 +128,10 @@ class LoginViewModel(
                     authRepository.login(username, password) { success ->
                         if (success) {
                             println("Login erfolgreich, triggering data sync")
-                            applicationScope.launch {
-                                appRepository.dataSync(reason = "loginSuccess")
+                            // UNDISPATCHED: the sync is started before the navigation below can clear
+                            // this ViewModel; it then runs in the app-wide scope (plan R2).
+                            viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                                dataSyncCoordinator.dataSync(reason = "loginSuccess")
                             }
                             viewModelScope.launch {
                                 navigator.navigate(Route.EmailVerifiedCheck, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))

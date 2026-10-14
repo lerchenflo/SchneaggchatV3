@@ -16,7 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
@@ -33,7 +33,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 class UserSettingsViewModel(
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
     private val sessionTerminator: SessionTerminator,
@@ -101,7 +101,7 @@ class UserSettingsViewModel(
 
         viewModelScope.launch {
             userRepository.changeUserDetails(newEmail = newEmail, userId = userId)
-            appRepository.dataSync(reason = "emailChanged")
+            dataSyncCoordinator.dataSync(reason = "emailChanged")
         }
     }
 
@@ -110,7 +110,7 @@ class UserSettingsViewModel(
             val userId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
             userRepository.changeUserDetails(newStatus = newStatus, userId = userId)
-            appRepository.dataSync(reason = "statusChanged")
+            dataSyncCoordinator.dataSync(reason = "statusChanged")
         }
     }
 
@@ -119,7 +119,7 @@ class UserSettingsViewModel(
 
         viewModelScope.launch {
             userRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId)
-            appRepository.dataSync(reason = "birthDateChanged")
+            dataSyncCoordinator.dataSync(reason = "birthDateChanged")
         }
     }
 
@@ -128,7 +128,7 @@ class UserSettingsViewModel(
 
         viewModelScope.launch {
             userRepository.changeUserDetails(newPhoneNumber = newPhoneNumber, userId = userId)
-            appRepository.dataSync(reason = "phoneNumberChanged")
+            dataSyncCoordinator.dataSync(reason = "phoneNumberChanged")
         }
     }
 

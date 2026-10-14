@@ -4,6 +4,7 @@ package org.lerchenflo.schneaggchatv3mp.events.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,13 +22,13 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
@@ -54,11 +55,11 @@ class EventsViewModel(
     private val navigator: Navigator,
     private val eventRepository: EventRepository,
     private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val settingsRepository: SettingsRepository,
     private val pictureManager: PictureManager,
-    private val applicationScope: ApplicationScope,
 
     private val initialEntryId: String? = null,
     private val initialEntry: Event? = null
@@ -282,8 +283,10 @@ class EventsViewModel(
                         )
 
                         if (groupId != null) {
-                            applicationScope.launch { //Launch in app scope to run while navigating away
-                                appRepository.dataSync("Started after joining event to get messages")
+                            // UNDISPATCHED: the sync is started before the navigation below can clear
+                            // this ViewModel; it then runs in the app-wide scope (plan R2).
+                            viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                                dataSyncCoordinator.dataSync("Started after joining event to get messages")
                             }
                             _state.update { it.copy(selectedEvent = null) }
                             navigator.navigate(Route.Chat(chatId = groupId, isGroup = true))

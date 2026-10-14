@@ -9,6 +9,7 @@ import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultActionChannel
+import org.lerchenflo.schneaggchatv3mp.app.data.DefaultDataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.data.LocalSessionTerminator
 import org.lerchenflo.schneaggchatv3mp.app.data.RemoteAppInfoRepository
@@ -39,6 +40,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
@@ -216,6 +218,19 @@ val sharedmodule = module{
     singleOf(::RemoteFeedbackRepository) bind FeedbackRepository::class
     singleOf(::RemoteAuthRepository) bind AuthRepository::class
     singleOf(::LocalSessionTerminator) bind SessionTerminator::class
+    // Explicit lambda for the scope: the sync runs in the app-wide scope, so it outlives the
+    // screen that started it (plan R2). Depends on repositories only, never the other way round.
+    single<DataSyncCoordinator> {
+        DefaultDataSyncCoordinator(
+            userRepository = get(),
+            groupRepository = get(),
+            messageRepository = get(),
+            mapRepository = get(),
+            eventRepository = get(),
+            loggingRepository = get(),
+            externalScope = get<ApplicationScope>(),
+        )
+    }
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
     singleOf(::GameSaveRepository)
@@ -321,7 +336,7 @@ val sharedmodule = module{
         SchneaggmapViewModel(
             navigator = get(),
             mapRepository = get(),
-            appRepository = get(),
+            dataSyncCoordinator = get(),
             settingsRepository = get(),
             locationService = get(),
             userRepository = get(),
@@ -345,12 +360,12 @@ val sharedmodule = module{
         EventsViewModel(
             navigator = get(),
             appRepository = get(),
+            dataSyncCoordinator = get(),
             eventRepository = get(),
             userRepository = get(),
             groupRepository = get(),
             settingsRepository = get(),
             pictureManager = get(),
-            applicationScope = get(),
             initialEntryId = initialEntryId,
             initialEntry = initialEntry
         )

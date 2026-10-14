@@ -20,7 +20,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationBadgeCounts
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
@@ -44,7 +44,7 @@ import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GlobalViewModel(
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
     private val chatListRepository: ChatListRepository,
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
@@ -130,7 +130,7 @@ class GlobalViewModel(
 
                             //println("App resumed and logged in, triggering sync...")
                             messageRepository.sendOfflineMessages(ownId)
-                            appRepository.dataSync(reason = "appResumed")
+                            dataSyncCoordinator.dataSync(reason = "appResumed")
 
                             //On resume clear all error notis
                             NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
@@ -268,7 +268,7 @@ class GlobalViewModel(
                     // the chat up to date must not queue behind that.
                     viewModelScope.launch {
                         messageRepository.sendOfflineMessages(ownId)
-                        appRepository.dataSync(reason = "notificationOpened")
+                        dataSyncCoordinator.dataSync(reason = "notificationOpened")
                     }
 
                     // Navigate to the chat that the notification belongs to. Switch to the chat

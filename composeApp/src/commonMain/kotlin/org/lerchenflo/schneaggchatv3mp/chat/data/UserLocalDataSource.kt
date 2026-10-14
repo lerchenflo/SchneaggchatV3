@@ -58,7 +58,7 @@ interface UserLocalDataSource {
 
     fun setFriendOnline(userId: String, online: Boolean)
 
-    /** Best-effort local timestamp for the moment a friend went offline. The next [dataSync][org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.dataSync]
+    /** Best-effort local timestamp for the moment a friend went offline. The next [dataSync][org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator.dataSync]
      * will overwrite this with the server's authoritative `lastSeen`. */
     suspend fun updateUserLastSeenNow(userId: String)
 

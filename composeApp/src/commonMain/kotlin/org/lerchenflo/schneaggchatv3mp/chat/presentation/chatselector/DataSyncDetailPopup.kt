@@ -30,14 +30,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.app.toUiText
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncJobStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncState
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
 
 @Composable
 fun DataSyncDetailPopup(
-    syncState: AppRepository.DataSyncState,
+    syncState: DataSyncState,
     onDismiss: () -> Unit
 ) {
 
@@ -89,30 +91,30 @@ fun DataSyncDetailPopup(
 
                             IconButton(
                                 onClick = {
-                                    if (jobState.status == AppRepository.DataSyncJobStatus.FAILED) {
+                                    if (jobState.status == DataSyncJobStatus.FAILED) {
                                         errorDetail = jobState.error
                                     }
                                 },
-                                enabled = jobState.status == AppRepository.DataSyncJobStatus.FAILED
+                                enabled = jobState.status == DataSyncJobStatus.FAILED
                             ) {
                                 when (jobState.status) {
-                                    AppRepository.DataSyncJobStatus.IDLE ->
+                                    DataSyncJobStatus.IDLE ->
                                         Icon(
                                             imageVector = Icons.Default.ModeStandby,
                                             contentDescription = null,
                                         )
-                                    AppRepository.DataSyncJobStatus.RUNNING ->
+                                    DataSyncJobStatus.RUNNING ->
                                         CircularProgressIndicator(
                                             modifier = Modifier.size(18.dp),
                                             strokeWidth = 2.dp,
                                         )
-                                    AppRepository.DataSyncJobStatus.SUCCESS ->
+                                    DataSyncJobStatus.SUCCESS ->
                                         Icon(
                                             imageVector = Icons.Default.Check,
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.primary
                                         )
-                                    AppRepository.DataSyncJobStatus.FAILED ->
+                                    DataSyncJobStatus.FAILED ->
                                         Icon(
                                             imageVector = Icons.Default.Error,
                                             contentDescription = null,

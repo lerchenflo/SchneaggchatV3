@@ -110,7 +110,7 @@ class OfflineFirstGroupRepository(
     // ─── Group sync ───────────────────────────────────────────────────────────
 
     /**
-     * The group mutations below run their own [syncGroups] outside AppRepository.dataSyncLock
+     * The group mutations below run their own [syncGroups] outside DataSyncCoordinator's dataSyncLock
      * (D16/R1), so a full sync and a mutation's sync could otherwise run /groups/sync at the same
      * time. This lock makes the second one wait. Lock order is always dataSyncLock -> this lock,
      * and nothing inside [syncGroups] calls [syncGroups] again (a Mutex is not reentrant).
@@ -119,7 +119,7 @@ class OfflineFirstGroupRepository(
 
     /**
      * @return the ids of groups deleted during this sync (left, removed, or the group itself
-     * got deleted) - used by AppRepository.dataSync to purge that group's messages once the
+     * got deleted) - used by DataSyncCoordinator.dataSync to purge that group's messages once the
      * parallel message job has settled.
      */
     override suspend fun syncGroups(): List<String> {
@@ -209,7 +209,7 @@ class OfflineFirstGroupRepository(
 
     /**
      * Get missing group profile pics (On ios after update installation, there are no more pictures).
-     * Group part of AppRepository.getMissingPics.
+     * Group part of the MEDIA job in DataSyncCoordinator.dataSync (was AppRepository.getMissingPics).
      */
     override suspend fun fetchMissingGroupPictures() {
         // Check group profile pics

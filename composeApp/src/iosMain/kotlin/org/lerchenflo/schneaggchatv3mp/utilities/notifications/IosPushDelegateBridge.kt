@@ -7,8 +7,8 @@ import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
@@ -76,7 +76,7 @@ class IosPushDelegateBridge {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                 if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
-                    KoinPlatform.getKoin().get<AppRepository>().dataSync(reason = "iosNotificationTap")
+                    KoinPlatform.getKoin().get<DataSyncCoordinator>().dataSync(reason = "iosNotificationTap")
                 }
             }
         }

@@ -149,6 +149,13 @@ Noticed while doing Phase 5c (push apply and mark-read moved to `OfflineFirstMes
 - [ ] `MarkAsReadReceiver`'s KDoc says it marks the chat read "locally and on the server" (`androidMain/…/utilities/notifications/MarkAsReadReceiver.kt:22`). Nothing is written locally any more: the server is the source of truth and the sync pulls the result back.
 - [ ] `D/MessageRepository.applyPushMessage` takes `utilities.notifications.DecodedNotification.Message`, the decoded push payload (`C/datasource/domain/MessageRepository.kt:127`). Kept as is (structural move). If `D/` should only expose `D/model` types, map it to a small domain model (msgId, sender, receiver/group, type, content, sendDate, answerId, reaction) at the two push entry points.
 
+## Findings from migration Phase 6 (2026-10-14)
+
+Noticed while doing Phase 6 (`dataSync` moved to `DefaultDataSyncCoordinator`). Not fixed.
+
+- [ ] Stale section comment in `C/schneaggmap/data/OfflineFirstMapRepository.kt:31`: says map sync is "triggered only from map screen, not part of global dataSync", but the full sync runs `syncMapEntries()` as its MAP job (`C/app/data/DefaultDataSyncCoordinator.kt:189`).
+- [ ] The commented-out resume handler in `C/app/GlobalViewModel.kt:173-174` (see the Phase 5b item) also calls `appRepository.dataSync`. `GlobalViewModel` no longer injects `AppRepository`, so the block can't be revived as is; delete it in Phase 8.
+
 ## Deferred from the Android-standards review (plan §8, 2026-10-13)
 
 - [ ] **Auth invalidation in the data layer** (R8). Today `App.kt` reacts to `ActionChannel.AuthInvalidated` with error popup + `logout()` + navigate to Login. Target: `SessionTerminator` listens to `AuthEventSink` in the app scope, and `App.kt` only navigates when the auth state changes to logged out.
@@ -165,6 +172,6 @@ Steps the plan asks to test on a real device, which nobody could do during the n
 - [ ] Phase 5: send text/image/audio/poll, offline send + reconnect (no duplicates), edit/delete/react/vote, push receive, notification reply, notification mark-as-read.
 - [ ] Phase 5b: send a text, an image, a voice message and a poll and leave the chat right away (back gesture); each must still arrive. The send now runs in the repository's `externalScope` and the ViewModel only waits for it.
 - [ ] Phase 5c: open a chat with unread messages and leave it right away; it must show as read in the chat list (and on a second device) once the sync ran. Also while a mark-read is still in flight: get a new message in the open chat, then leave at once; that message must end up read too. Plus push receive (Android FCM, iOS foreground and background push), notification reply and notification mark-as-read.
-- [ ] Phase 6: full sync on login, app resume, pull-to-refresh; sync status popup.
+- [ ] Phase 6: full sync on login, app resume, pull-to-refresh; sync status popup. The sync now runs in the coordinator's `externalScope`: after login, sign-up, joining an event, creating a group and "delete all app data", the screen closes right away and the sync must still finish (sync indicator in the chat selector, new chat/group messages show up).
 - [ ] Phase 7: login screen (version, server URL dialog), settings screen version, chat selector sync indicator.
 

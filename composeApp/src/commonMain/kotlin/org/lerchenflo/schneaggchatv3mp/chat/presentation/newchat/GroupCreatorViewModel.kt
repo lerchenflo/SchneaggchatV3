@@ -9,10 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -28,7 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.InputfieldState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -107,7 +105,7 @@ sealed interface GroupCreatorAction {
 }
 
 class GroupCreatorViewModel (
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
     private val chatListRepository: ChatListRepository,
     private val groupRepository: GroupRepository,
     private val pictureManager: PictureManager,
@@ -252,9 +250,10 @@ class GroupCreatorViewModel (
                 if (groupId != null) {
                     println("Group created: groupid: $groupId")
 
-                    //Launch sync
-                    CoroutineScope(Dispatchers.IO).launch {
-                        appRepository.dataSync(reason = "groupCreated")
+                    //Launch sync. UNDISPATCHED: it is started before the navigation below can clear
+                    //this ViewModel; it then runs in the app-wide scope (plan R2).
+                    viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                        dataSyncCoordinator.dataSync(reason = "groupCreated")
                     }
 
                     //Navigate directly into the new group chat, keeping only the chat selector below it

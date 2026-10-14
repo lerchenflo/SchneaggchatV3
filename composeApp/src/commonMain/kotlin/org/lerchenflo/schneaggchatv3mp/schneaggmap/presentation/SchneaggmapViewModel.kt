@@ -22,7 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.Chat
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SnailTrailPoint
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
@@ -41,7 +41,7 @@ import kotlin.time.Clock
 class SchneaggmapViewModel(
     private val navigator: Navigator,
     private val mapRepository: MapRepository,
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
     private val settingsRepository: SettingsRepository,
     private val locationService: LocationService,
     private val userRepository: UserRepository,
@@ -477,7 +477,7 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
-            appRepository.dataSync(reason = "mapInit")
+            dataSyncCoordinator.dataSync(reason = "mapInit")
         }
 
         viewModelScope.launch {

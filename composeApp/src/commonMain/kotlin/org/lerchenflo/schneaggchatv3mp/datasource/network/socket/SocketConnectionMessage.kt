@@ -13,7 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.isNewerThan
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
@@ -170,7 +170,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
     //println("handling socket connection message: $message")
 
-    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+    val dataSyncCoordinator = KoinPlatform.getKoin().get<DataSyncCoordinator>()
     val userLocalDataSource = KoinPlatform.getKoin().get<UserLocalDataSource>()
     val messageLocalDataSource = KoinPlatform.getKoin().get<MessageLocalDataSource>()
     val groupLocalDataSource = KoinPlatform.getKoin().get<GroupLocalDataSource>()
@@ -435,7 +435,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
             //Friend request was sent
             is SocketConnectionMessage.FriendRequest -> {
-                appRepository.dataSync(reason = "socketFriendRequest")
+                dataSyncCoordinator.dataSync(reason = "socketFriendRequest")
                 if (socketMessage.accepted) {
                     NotificationManager.showNotification(
                         titletext = getString(Res.string.new_friend_accepted_noti),

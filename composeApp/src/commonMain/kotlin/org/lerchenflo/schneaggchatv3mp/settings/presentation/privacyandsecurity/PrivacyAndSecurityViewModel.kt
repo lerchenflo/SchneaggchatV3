@@ -15,7 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
@@ -33,7 +33,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 class PrivacyAndSecurityViewModel(
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
     private val sessionTerminator: SessionTerminator,
@@ -118,7 +118,7 @@ class PrivacyAndSecurityViewModel(
 
         viewModelScope.launch {
             userRepository.changeUserDetails(newEmail = newEmail, userId = userId)
-            appRepository.dataSync(reason = "emailChanged")
+            dataSyncCoordinator.dataSync(reason = "emailChanged")
         }
     }
 

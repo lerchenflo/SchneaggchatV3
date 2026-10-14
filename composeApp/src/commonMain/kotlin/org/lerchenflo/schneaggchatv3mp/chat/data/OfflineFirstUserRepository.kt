@@ -85,7 +85,7 @@ class OfflineFirstUserRepository(
     // ─── User sync ────────────────────────────────────────────────────────────
 
     /**
-     * The user mutations below run their own [syncUsers] outside AppRepository.dataSyncLock
+     * The user mutations below run their own [syncUsers] outside DataSyncCoordinator's dataSyncLock
      * (D16/R1), so a full sync and a mutation's sync could otherwise run /users/sync at the same
      * time. This lock makes the second one wait. Lock order is always dataSyncLock -> this lock,
      * and nothing inside [syncUsers] calls [syncUsers] again (a Mutex is not reentrant).
@@ -266,7 +266,7 @@ class OfflineFirstUserRepository(
 
     /**
      * Get missing profile pics (On ios after update installation, there are no more pictures).
-     * User part of AppRepository.getMissingPics.
+     * User part of the MEDIA job in DataSyncCoordinator.dataSync (was AppRepository.getMissingPics).
      */
     override suspend fun fetchMissingProfilePictures() {
         // Check user profile pics

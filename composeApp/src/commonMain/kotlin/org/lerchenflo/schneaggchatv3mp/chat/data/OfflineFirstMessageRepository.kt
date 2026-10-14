@@ -153,8 +153,9 @@ class OfflineFirstMessageRepository(
 
     /**
      * Get missing message media (On ios after update installation, there are no more pictures).
-     * Image-message part of AppRepository.getMissingPics, then all of getMissingAudios - each in
-     * its own scope, so the audio check still starts once the image downloads are done.
+     * Image-message part of the MEDIA job in DataSyncCoordinator.dataSync (was AppRepository.getMissingPics),
+     * then all of getMissingAudios - each in its own scope, so the audio check still starts once the
+     * image downloads are done.
      */
     override suspend fun fetchMissingMessageMedia() {
         coroutineScope {
@@ -192,7 +193,7 @@ class OfflineFirstMessageRepository(
     // ─── Cleanup ──────────────────────────────────────────────────────────────
 
     /**
-     * The purge AppRepository.dataSync runs after its parallel jobs: the message job may have
+     * The purge DataSyncCoordinator.dataSync runs after its parallel jobs: the message job may have
      * re-inserted rows of a removed group right after the group sync's own inline purge.
      */
     override suspend fun deleteMessagesForGroups(groupIds: List<String>) {
@@ -695,7 +696,7 @@ class OfflineFirstMessageRepository(
      * Execute a message sync
      *
      * @param fetchMedia whether to immediately download images/audios for newly-synced
-     * messages. Disabled during the full data sync (`AppRepository.dataSync`) so that media
+     * messages. Disabled during the full data sync (`DataSyncCoordinator.dataSync`) so that media
      * downloads happen as part of the MEDIA job (and its progress indicator) instead of inside
      * the MESSAGES job.
      */
@@ -874,7 +875,7 @@ class OfflineFirstMessageRepository(
      * `readers` list.
      *
      * Writing it locally first used to lose a race against a parallel sync - opening a chat from
-     * a notification kicks off a `AppRepository.dataSync` at the same moment, and that sync
+     * a notification kicks off a `DataSyncCoordinator.dataSync` at the same moment, and that sync
      * re-fetched the message before the server had processed the read, resetting `readByMe` to
      * false again.
      *
@@ -897,7 +898,7 @@ class OfflineFirstMessageRepository(
                 return@async false
             }
 
-            // With media: unlike the MESSAGES job in `AppRepository.dataSync` there is no MEDIA job
+            // With media: unlike the MESSAGES job in `DataSyncCoordinator.dataSync` there is no MEDIA job
             // behind this call, so a picture or voice message first seen by this sync would otherwise
             // stay undownloaded until the next full sync gets around to the missing-media backfill.
             syncMessages()
