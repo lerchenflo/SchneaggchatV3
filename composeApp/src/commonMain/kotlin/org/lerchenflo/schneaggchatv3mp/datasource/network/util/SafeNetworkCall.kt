@@ -22,7 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
  * `response.body()` deserializes inside the try - a socket drop or serialization failure while
  * reading a successful reply lands in a catch below and comes back as an Error, even though the
  * server already committed the write. Callers that need idempotency rely on their own keys
- * (see `AppRepository.sendMessage`) rather than on this helper avoiding the case.
+ * (see `OfflineFirstMessageRepository.sendMessage`) rather than on this helper avoiding the case.
  */
 suspend inline fun <reified R> safeNetworkCall(
     loggingRepository: Logger,

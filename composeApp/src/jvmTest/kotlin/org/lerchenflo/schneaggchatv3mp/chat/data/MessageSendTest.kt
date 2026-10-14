@@ -13,6 +13,7 @@ import assertk.assertions.isTrue
 import assertk.assertions.matches
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
@@ -33,8 +34,8 @@ private val UUID_PATTERN = Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4
  * table before and after the server answers, and what each kind of server error does to the row.
  * They pin today's behavior, including the odd parts (see the KDoc of each test).
  *
- * Today the code under test is `AppRepository.sendMessage`; after Phase 5 it is
- * `OfflineFirstMessageRepository.sendMessage` behind the same calls ([SendPathFixture]).
+ * The code under test is `OfflineFirstMessageRepository.sendMessage` (`AppRepository.sendMessage`
+ * until Phase 5b), behind the calls of [SendPathFixture].
  */
 class MessageSendTest {
 
@@ -43,7 +44,15 @@ class MessageSendTest {
     @BeforeTest
     fun setUp() {
         resetGlobalState()
-        fixture = SendPathFixture()
+    }
+
+    /**
+     * `runTest` on a [StandardTestDispatcher] that first builds [fixture] inside the test, so the
+     * repository's `externalScope` is this test's `backgroundScope` (plan R2).
+     */
+    private fun runSendPathTest(testBody: suspend TestScope.() -> Unit) = runTest(StandardTestDispatcher()) {
+        fixture = SendPathFixture(this)
+        testBody()
     }
 
     @AfterTest
@@ -65,7 +74,7 @@ class MessageSendTest {
      */
     @Test
     fun `text send inserts a pending row first, then writes the server copy onto that row`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             var rowsWhileRequestInFlight: List<Message> = emptyList()
             fixture.server.onTextSend = { request ->
                 rowsWhileRequestInFlight = fixture.storedMessages()
@@ -109,7 +118,7 @@ class MessageSendTest {
 
     @Test
     fun `server error keeps the row queued with its clientMessageId and reports the error`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             fixture.server.onTextSend = { Reply.Fail(HttpStatusCode.InternalServerError) }
 
             fixture.sendText("Hello")
@@ -128,7 +137,7 @@ class MessageSendTest {
 
     @Test
     fun `dropped connection keeps the row queued and reports no internet`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             fixture.server.onTextSend = { Reply.ConnectionDrop }
 
             fixture.sendText("Hello")
@@ -142,7 +151,7 @@ class MessageSendTest {
         }
 
     @Test
-    fun `bad request deletes the local row`() = runTest(StandardTestDispatcher()) {
+    fun `bad request deletes the local row`() = runSendPathTest {
         fixture.server.onTextSend = { Reply.Fail(HttpStatusCode.BadRequest) }
 
         fixture.sendText("Hello")
@@ -155,7 +164,7 @@ class MessageSendTest {
     }
 
     @Test
-    fun `conflict deletes the local row`() = runTest(StandardTestDispatcher()) {
+    fun `conflict deletes the local row`() = runSendPathTest {
         fixture.server.onTextSend = { Reply.Fail(HttpStatusCode.Conflict) }
 
         fixture.sendText("Hello")

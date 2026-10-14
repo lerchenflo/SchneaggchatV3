@@ -26,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectio
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.hasEnded
@@ -45,6 +46,7 @@ import kotlin.time.Duration.Companion.minutes
 class GlobalViewModel(
     private val appRepository: AppRepository,
     private val chatListRepository: ChatListRepository,
+    private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
     private val eventRepository: EventRepository,
     private val appInfoRepository: AppInfoRepository,
@@ -127,7 +129,7 @@ class GlobalViewModel(
                             updateLocationTracking()
 
                             //println("App resumed and logged in, triggering sync...")
-                            appRepository.sendOfflineMessages(ownId)
+                            messageRepository.sendOfflineMessages(ownId)
                             appRepository.dataSync(reason = "appResumed")
 
                             //On resume clear all error notis
@@ -207,7 +209,7 @@ class GlobalViewModel(
                     // Session (re)establishment is owned by AuthSessionManager's own scheduler;
                     // raising a Login action from here every 5 s is what produced the refresh storm.
                     SessionCache.requireLoggedIn()?.userId?.let {
-                        appRepository.sendOfflineMessages(it)
+                        messageRepository.sendOfflineMessages(it)
                     }
 
                 } else {
@@ -265,7 +267,7 @@ class GlobalViewModel(
                     // again (ObserveAsEvents only collects from then on), and the sync that brings
                     // the chat up to date must not queue behind that.
                     viewModelScope.launch {
-                        appRepository.sendOfflineMessages(ownId)
+                        messageRepository.sendOfflineMessages(ownId)
                         appRepository.dataSync(reason = "notificationOpened")
                     }
 

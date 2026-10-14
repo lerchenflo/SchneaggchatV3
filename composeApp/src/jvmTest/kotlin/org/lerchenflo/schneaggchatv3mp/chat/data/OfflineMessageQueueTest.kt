@@ -13,6 +13,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
@@ -34,8 +35,8 @@ import kotlin.test.Test
  *
  * The queue is filled the way the app fills it: sends that fail with a retryable server error.
  *
- * Today the code under test is `AppRepository.sendOfflineMessages`; after Phase 5 it is
- * `OfflineFirstMessageRepository.sendOfflineMessages` behind the same call ([SendPathFixture]).
+ * The code under test is `OfflineFirstMessageRepository.sendOfflineMessages`
+ * (`AppRepository.sendOfflineMessages` until Phase 5b), behind the call of [SendPathFixture].
  */
 class OfflineMessageQueueTest {
 
@@ -44,7 +45,15 @@ class OfflineMessageQueueTest {
     @BeforeTest
     fun setUp() {
         resetGlobalState()
-        fixture = SendPathFixture()
+    }
+
+    /**
+     * `runTest` on a [StandardTestDispatcher] that first builds [fixture] inside the test, so the
+     * repository's `externalScope` is this test's `backgroundScope` (plan R2).
+     */
+    private fun runSendPathTest(testBody: suspend TestScope.() -> Unit) = runTest(StandardTestDispatcher()) {
+        fixture = SendPathFixture(this)
+        testBody()
     }
 
     @AfterTest
@@ -79,7 +88,7 @@ class OfflineMessageQueueTest {
      */
     @Test
     fun `drains the queue oldest row first and reuses each row's clientMessageId`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             val clientMessageIds = queueWhileServerIsDown("first", "second", "third")
 
             fixture.sendOfflineMessages()
@@ -101,7 +110,7 @@ class OfflineMessageQueueTest {
 
     @Test
     fun `stops at the first failing row and leaves it and every later row unsent`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             val clientMessageIds = queueWhileServerIsDown("first", "second", "third")
             fixture.server.onTextSend = { request ->
                 if (request.content == "second") Reply.Fail(HttpStatusCode.InternalServerError)
@@ -131,7 +140,7 @@ class OfflineMessageQueueTest {
     /** A rejected head is deleted (like a fresh send), so the head changes and the drain goes on. */
     @Test
     fun `a row the server rejects with bad request is deleted and the drain continues`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             queueWhileServerIsDown("rejected", "fine")
             fixture.server.onTextSend = { request ->
                 if (request.content == "rejected") Reply.Fail(HttpStatusCode.BadRequest)
@@ -149,7 +158,7 @@ class OfflineMessageQueueTest {
     /** Such a row could never be sent and would block the queue forever, so it is deleted unsent. */
     @Test
     fun `a poll row whose poll no longer decodes is dropped without a request`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             fixture.database.messageDao().insertMessageDto(
                 MessageDto(
                     msgType = MessageType.POLL,
@@ -179,7 +188,7 @@ class OfflineMessageQueueTest {
     @Test
     @OptIn(ExperimentalCoroutinesApi::class) // advanceTimeBy
     fun `drain waits for a send in flight instead of resending its row`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             val requestArrived = CompletableDeferred<MessageRequest>()
             val releaseResponse = CompletableDeferred<Unit>()
             fixture.server.onTextSend = { request ->

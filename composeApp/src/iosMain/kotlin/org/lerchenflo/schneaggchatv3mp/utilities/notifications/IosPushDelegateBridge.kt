@@ -9,6 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 class IosPushDelegateBridge {
@@ -35,7 +36,7 @@ class IosPushDelegateBridge {
                     (PayloadDecoder.decode(data) as? DecodedNotification.Message)?.let {
                         appRepository.applyPushMessage(it)
                     }
-                    appRepository.messageIdSync()
+                    KoinPlatform.getKoin().get<MessageRepository>().syncMessages()
                 }
             }
         }

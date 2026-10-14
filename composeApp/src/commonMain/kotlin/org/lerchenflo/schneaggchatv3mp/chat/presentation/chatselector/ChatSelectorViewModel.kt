@@ -42,6 +42,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
@@ -64,6 +65,7 @@ private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
     private val chatListRepository: ChatListRepository,
+    private val messageRepository: MessageRepository,
     private val authRepository: AuthRepository,
     private val appInfoRepository: AppInfoRepository,
     private val navigator: Navigator,
@@ -137,7 +139,7 @@ class ChatSelectorViewModel(
 
         refreshJob = viewModelScope.launch {
             try {
-                appRepository.sendOfflineMessages(ownId)
+                messageRepository.sendOfflineMessages(ownId)
                 appRepository.dataSync(reason = "chatSelectorRefresh")
             } catch (e: Exception) {
                 ensureActive()

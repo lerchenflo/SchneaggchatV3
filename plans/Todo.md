@@ -132,6 +132,15 @@ Noticed while doing Phase 5a (MessageRepository reads and actions). Not fixed.
 - [ ] The models moved to `D/model/` in Phase 5a carry Compose code, same as the Phase 1b item: `@Immutable` (`androidx.compose.runtime`) on `Message` and `MessageReader` (`C/datasource/domain/model/Message.kt:30`, `MessageReader.kt:5`), `PollVisibility.toUiText()` with compose resources (`C/datasource/domain/model/Poll.kt:164`). Move the UI mapping into presentation extensions; for `@Immutable` either keep a Compose-runtime-only dependency in `D/` or mark stability via the Compose compiler's stability config file.
 - [ ] `reactToMessage` stores the server's reactions without their `reactedAt` (`C/chat/data/OfflineFirstMessageRepository.kt:233-235`, moved verbatim), while `applyPushReaction` sets it. Any code that sorts or shows reactions by time sees 0 for them.
 
+## Findings from migration Phase 5b (2026-10-14)
+
+Noticed while doing Phase 5b (send, offline queue, message sync moved to `OfflineFirstMessageRepository`). Not fixed.
+
+- [ ] The send-path items above (Phase 4.5, Phase 5a) point at `C/datasource/AppRepository.kt` lines that moved verbatim to `C/chat/data/OfflineFirstMessageRepository.kt`: `requireNotNull(clientMessageId)` :352, `BadRequest`/`Conflict` delete :502, `ErrorEvent` on every failed attempt :507, success upsert without `clientMessageId` :534-565, offline image/audio fallbacks :633 / :649-650, drain stop condition :672.
+- [ ] Voice message send: `ChatViewModel` now launches the send in `viewModelScope` (plan R2), so `getAudioBytes(...)` (a blocking file read) runs on the main thread instead of `ApplicationScope`'s IO thread (`C/chat/presentation/chat/ChatViewModel.kt:325`). Moving it behind a `withContext(IO)` in the ViewModel would add a suspension before the send starts, so a closed screen could drop the message. Better: pass the recording path to the repository and read the file there on `ioDispatcher`.
+- [ ] `OfflineFirstMessageRepository.sendMessageLock` is public (`C/chat/data/OfflineFirstMessageRepository.kt:332`, was public on `AppRepository` too). Nothing outside the class uses it; make it private.
+- [ ] Commented-out resume handler in `C/app/GlobalViewModel.kt:173` still calls `appRepository.sendOfflineMessages`. Dead code; delete it with `AppRepository` in Phase 8.
+
 ## Deferred from the Android-standards review (plan §8, 2026-10-13)
 
 - [ ] **Auth invalidation in the data layer** (R8). Today `App.kt` reacts to `ActionChannel.AuthInvalidated` with error popup + `logout()` + navigate to Login. Target: `SessionTerminator` listens to `AuthEventSink` in the app scope, and `App.kt` only navigates when the auth state changes to logged out.
@@ -146,6 +155,7 @@ Steps the plan asks to test on a real device, which nobody could do during the n
 - [ ] Phase 2: login, logout, logout all devices, delete all app data, push token registration.
 - [ ] Phase 3: each of the 11 user/group mutations updates the UI right away (friend request send/deny/remove, username, profile pic, group pic/description/name/members/expiry).
 - [ ] Phase 5: send text/image/audio/poll, offline send + reconnect (no duplicates), edit/delete/react/vote, push receive, notification reply, notification mark-as-read.
+- [ ] Phase 5b: send a text, an image, a voice message and a poll and leave the chat right away (back gesture); each must still arrive. The send now runs in the repository's `externalScope` and the ViewModel only waits for it.
 - [ ] Phase 6: full sync on login, app resume, pull-to-refresh; sync status popup.
 - [ ] Phase 7: login screen (version, server URL dialog), settings screen version, chat selector sync indicator.
 

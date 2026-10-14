@@ -282,12 +282,12 @@ class ChatViewModel(
         }
 
 
-        // Sends run in the application scope (not viewModelScope) so an in-flight send survives
-        // leaving the chat screen
+        // An in-flight send survives leaving the chat screen: MessageRepository.sendMessage runs
+        // in the app-wide scope, so cancelling viewModelScope only stops waiting for it
         when (message) {
             is TextContent -> {
-                applicationScope.launch {
-                    appRepository.sendMessage(
+                viewModelScope.launch {
+                    messageRepository.sendMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
                         content = MessageContent.TextContent(message.textMessage.text),
@@ -300,8 +300,8 @@ class ChatViewModel(
 
             is SendMessageContent.ImageContent -> {
                 message.images.forEachIndexed { index, image ->
-                    applicationScope.launch {
-                        appRepository.sendMessage(
+                    viewModelScope.launch {
+                        messageRepository.sendMessage(
                             empfaenger = chatId,
                             gruppe = isGroup,
                             content = MessageContent.ImageContent(
@@ -317,8 +317,8 @@ class ChatViewModel(
             }
 
             is SendMessageContent.AudioContent -> {
-                applicationScope.launch {
-                    appRepository.sendMessage(
+                viewModelScope.launch {
+                    messageRepository.sendMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
                         content = MessageContent.AudioContent(
@@ -359,8 +359,8 @@ class ChatViewModel(
         val ownId = SessionCache.requireLoggedIn()?.userId ?: return
         val replyMessage = state.value.replyMessage
 
-        applicationScope.launch {
-            appRepository.sendMessage(
+        viewModelScope.launch {
+            messageRepository.sendMessage(
                 empfaenger = chatId,
                 gruppe = isGroup,
                 content = MessageContent.PollContent(poll),

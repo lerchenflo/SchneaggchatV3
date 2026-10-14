@@ -12,6 +12,7 @@ import assertk.assertions.isTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
@@ -29,9 +30,9 @@ import kotlin.test.Test
  * the message sync brings our own sent message back, with its `clientMessageId` echoed. However
  * the sync and the send response interleave, the chat must end up with exactly one row.
  *
- * Today the code under test is `AppRepository.sendMessage` / `messageIdSync` /
- * `sendOfflineMessages`; after Phase 5 it is `OfflineFirstMessageRepository` behind the same calls
- * ([SendPathFixture]).
+ * The code under test is `OfflineFirstMessageRepository.sendMessage` / `syncMessages` /
+ * `sendOfflineMessages` (on `AppRepository` until Phase 5b, `syncMessages` was `messageIdSync`),
+ * behind the calls of [SendPathFixture].
  */
 class MessageSendEchoDedupTest {
 
@@ -40,8 +41,16 @@ class MessageSendEchoDedupTest {
     @BeforeTest
     fun setUp() {
         resetGlobalState()
-        loginTestUser(OWN_USER_ID) // messageIdSync needs a session
-        fixture = SendPathFixture()
+        loginTestUser(OWN_USER_ID) // syncMessages needs a session
+    }
+
+    /**
+     * `runTest` on a [StandardTestDispatcher] that first builds [fixture] inside the test, so the
+     * repository's `externalScope` is this test's `backgroundScope` (plan R2).
+     */
+    private fun runSendPathTest(testBody: suspend TestScope.() -> Unit) = runTest(StandardTestDispatcher()) {
+        fixture = SendPathFixture(this)
+        testBody()
     }
 
     @AfterTest
@@ -57,7 +66,7 @@ class MessageSendEchoDedupTest {
     /** Also pins that the send left the sync cursor at 0: the sync asks `since=0`. */
     @Test
     fun `sync after the send response matches the row by server id`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             fixture.sendText("Hello")
             val sentRow = fixture.storedMessages().single()
 
@@ -81,7 +90,7 @@ class MessageSendEchoDedupTest {
      */
     @Test
     fun `sync before the send response merges into the pending row by clientMessageId`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             val requestArrived = CompletableDeferred<MessageRequest>()
             val releaseResponse = CompletableDeferred<Unit>()
             fixture.server.onTextSend = { request ->
@@ -126,7 +135,7 @@ class MessageSendEchoDedupTest {
      */
     @Test
     fun `sync completes a send whose response was lost, so the offline queue sends nothing`() =
-        runTest(StandardTestDispatcher()) {
+        runSendPathTest {
             fixture.server.onTextSend = { request ->
                 fixture.server.accept(request)
                 Reply.ConnectionDrop

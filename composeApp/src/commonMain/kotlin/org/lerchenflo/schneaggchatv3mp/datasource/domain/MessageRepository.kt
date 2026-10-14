@@ -2,12 +2,14 @@ package org.lerchenflo.schneaggchatv3mp.datasource.domain
 
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVote
 
 /**
  * Messages: reads come from the local database, edits, deletes, reactions and poll votes go to
- * the server first. Errors of the write calls are sent to the [ErrorChannel].
+ * the server first. Sends are stored locally first and queued while they can't be delivered.
+ * Errors of the write calls are sent to the [ErrorChannel].
  */
 interface MessageRepository {
 
@@ -73,4 +75,43 @@ interface MessageRepository {
     suspend fun votePoll(ownId: String, pollVote: PollVote)
 
     suspend fun deletePollOption(ownId: String, messageId: String, optionId: String)
+
+    // ─── Send / offline queue / sync ──────────────────────────────────────────
+
+    /**
+     * Sends a message: stores it as an unsent row, sends it to the server, then writes the
+     * server's copy onto that row. A failed send stays queued for [sendOfflineMessages], except
+     * when the server rejects it (bad request, conflict), which deletes the row.
+     *
+     * Runs in the app-wide scope: the send finishes even when the caller (e.g. a closed chat
+     * screen) is cancelled while it is in flight.
+     *
+     * @param localpk Local pk, only pass if already in db
+     * @param clientMessageId Send idempotency key of an already-queued message. REQUIRED when
+     * [localpk] is non-zero (a resend). Never pass this for a brand-new message.
+     */
+    suspend fun sendMessage(
+        ownId: String,
+        messageId: String?,
+        empfaenger: String,
+        gruppe: Boolean,
+        content: MessageContent,
+        answerid: String?,
+        localpk: Long = 0,
+        clientMessageId: String? = null,
+    )
+
+    /**
+     * Resends the unsent messages one by one, oldest first, and stops at the first one that is
+     * still unsent after its attempt. Waits for a send in flight before picking the next row.
+     */
+    suspend fun sendOfflineMessages(ownId: String)
+
+    /**
+     * Pulls every message change since the newest stored version from the server.
+     *
+     * @param fetchMedia whether to download the images/audios of the synced messages right away.
+     * The full data sync passes false and downloads them in its own media step.
+     */
+    suspend fun syncMessages(fetchMedia: Boolean = true)
 }

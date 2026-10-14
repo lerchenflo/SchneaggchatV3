@@ -190,8 +190,9 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
             is SocketConnectionMessage.MessageChange -> {
                 // Falls back to clientMessageId for our own message: dataSync/socket pushes run
                 // fully in parallel with our own sendMessage() calls, so a push for a message we
-                // just sent can land before that call's own HTTP response does - see AppRepository
-                // .messageIdSync for the matching fallback on the /messages/sync path.
+                // just sent can land before that call's own HTTP response does - see
+                // OfflineFirstMessageRepository.syncMessages for the matching fallback on the
+                // /messages/sync path.
                 val existing = messageLocalDataSource.getMessageById(socketMessage.message.messageId)
                     ?: socketMessage.message.clientMessageId?.let { messageLocalDataSource.getMessageByClientMessageId(it) }
                 val message = socketMessage.message.toDomainMessage(

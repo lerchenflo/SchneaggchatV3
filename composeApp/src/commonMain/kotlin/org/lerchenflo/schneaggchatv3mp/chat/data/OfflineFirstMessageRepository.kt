@@ -1,23 +1,48 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package org.lerchenflo.schneaggchatv3mp.chat.data
 
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent.AudioContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent.ImageContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent.PollContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent.TextContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageReader
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVote
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Reaction
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollOptionDeleteRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toLocalPollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toNewPoll
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
@@ -25,20 +50,34 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * [MessageRepository] on top of the local [MessageLocalDataSource] and the server via [NetworkUtils].
  * The media and write code is moved verbatim from AppRepository (getPicturesForMessageIds,
  * getAudiosForMessageIds, the image-message part of getMissingPics + getMissingAudios, editMessage,
- * deleteLocalMessage, deleteMessage, reactToMessage, votePoll, deletePollOption).
+ * deleteLocalMessage, deleteMessage, reactToMessage, votePoll, deletePollOption), and so are
+ * sendMessage, sendOfflineMessages and messageIdSync ([syncMessages]) with their three locks.
+ * The send path writes some rows through [AppDatabase.messageDao] directly, as it did there.
+ *
+ * @param externalScope app-wide scope (Koin passes `ApplicationScope`) that [sendMessage] runs in,
+ * so a send outlives the screen that started it (plan R2). Tests pass `backgroundScope`.
+ * @param ioDispatcher for the send's success branch, which ran on `Dispatchers.IO` (plan R4).
  */
 class OfflineFirstMessageRepository(
+    private val database: AppDatabase,
     private val messageLocalDataSource: MessageLocalDataSource,
     private val networkUtils: NetworkUtils,
     private val pictureManager: PictureManager,
     private val audioManager: AudioManager,
     private val loggingRepository: Logger,
     private val errorChannel: ErrorChannel,
+    private val externalScope: CoroutineScope,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : MessageRepository {
 
     // ─── Reads ────────────────────────────────────────────────────────────────
@@ -284,6 +323,473 @@ class OfflineFirstMessageRepository(
                         changeDate = request.data.lastChanged.toString(),
                     ))
                 }
+            }
+        }
+    }
+
+    // ─── Send / offline queue / sync ──────────────────────────────────────────
+
+    val sendMessageLock = Mutex()
+
+    /**
+     * @param localpk Local pk, only pass if already in db
+     * @param clientMessageId Send idempotency key of an already-queued message. REQUIRED when
+     * [localpk] is non-zero (a resend) - reusing the row's original key is the entire mechanism
+     * that lets the server recognize a retry; silently minting a new one here for a resend would
+     * defeat it. Never pass this for a brand-new message - one is minted below.
+     *
+     */
+    override suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long, clientMessageId: String?){
+
+        // externalScope (plan R2): started before the first suspension point, so the send
+        // finishes even when the caller (e.g. a closed chat screen) is cancelled meanwhile.
+        externalScope.async {
+            sendMessageLock.withLock {
+                var localpkintern = localpk
+
+                val senddate = getCurrentTimeMillisString()
+                val clientMessageIdIntern = if (localpkintern != 0L) { //Already upserted to db
+                    requireNotNull(clientMessageId) {
+                        "Resending an already-queued message (localPK=$localpkintern) must reuse its stored clientMessageId"
+                    }
+                } else {
+                    //Generate random uuid per message for server side checking, pass when sending.
+                    //Randomuuid because localpk will be reset on db drop, invisible despawned messages when multi device user
+                    Uuid.random().toString()
+                }
+
+                //Interne message macha die ned alles hot
+                val messageDto = when(content) {
+                    is PollContent -> {
+                        MessageDto(
+                            localPK = localpkintern,
+                            id = null,
+                            msgType = MessageType.POLL,
+                            content = "",
+                            poll = content.poll.toLocalPollMessage(ownId),
+                            senderId = ownId,
+                            receiverId = empfaenger,
+                            sendDate = senddate.toLong(),
+                            updatedAt = senddate,
+                            deleted = false,
+                            groupMessage = gruppe,
+                            answerId = answerid,
+                            sent = false,
+                            myMessage = true,
+                            readByMe = true,
+                            clientMessageId = clientMessageIdIntern
+                        )
+                    }
+                    is TextContent -> {
+                        MessageDto(
+                            localPK = localpkintern,
+                            id = messageId,
+                            msgType = MessageType.TEXT,
+                            content = content.message,
+                            senderId = ownId,
+                            receiverId = empfaenger,
+                            sendDate = senddate.toLong(),
+                            updatedAt = senddate,
+                            deleted = false,
+                            groupMessage = gruppe,
+                            answerId = answerid,
+                            sent = false,
+                            myMessage = true,
+                            readByMe = true,
+                            clientMessageId = clientMessageIdIntern
+                        )
+                    }
+
+                    is ImageContent -> {
+
+                        MessageDto(
+                            localPK = localpkintern,
+                            id = null,
+                            msgType = MessageType.IMAGE,
+                            content = content.text,
+                            senderId = ownId,
+                            receiverId = empfaenger,
+                            sendDate = senddate.toLong(),
+                            updatedAt = senddate,
+                            deleted = false,
+                            groupMessage = gruppe,
+                            answerId = answerid,
+                            sent = false,
+                            myMessage = true,
+                            readByMe = true,
+                            clientMessageId = clientMessageIdIntern
+                        )
+                    }
+
+                    is AudioContent -> {
+
+                        MessageDto(
+                            localPK = localpkintern,
+                            id = null,
+                            msgType = MessageType.AUDIO,
+                            //content = content.text,
+                            senderId = ownId,
+                            receiverId = empfaenger,
+                            sendDate = senddate.toLong(),
+                            updatedAt = senddate,
+                            deleted = false,
+                            groupMessage = gruppe,
+                            answerId = answerid,
+                            sent = false,
+                            myMessage = true,
+                            readByMe = true,
+                            clientMessageId = clientMessageIdIntern
+                        )
+                    }
+                }
+
+
+                //Nachricht hot scho a pk vo da db, also scho din
+                if (localpkintern == 0L){
+                    localpkintern = database.messageDao().insertMessageDto(messageDto)
+                    println("LocalPK: $localpkintern")
+                }
+
+
+                val serverrequest = when (content) {
+                    is PollContent -> {
+                        networkUtils.sendPollMessageToServer(
+                            empfaenger = empfaenger,
+                            gruppe = gruppe,
+                            content = content.poll.toPollCreateRequest(),
+                            answerid = answerid,
+                            clientMessageId = clientMessageIdIntern
+                        )
+                    }
+                    is TextContent -> {
+                        networkUtils.sendTextMessageToServer(
+                            messageId = messageId,
+                            empfaenger = empfaenger,
+                            gruppe = gruppe,
+                            content = content.message,
+                            answerid = answerid,
+                            clientMessageId = clientMessageIdIntern
+                        )
+                    }
+
+                    is ImageContent -> {
+                        networkUtils.sendImageMessageToServer(
+                            empfaenger = empfaenger,
+                            gruppe = gruppe,
+                            image = content.image,
+                            text = content.text,
+                            answerid = answerid,
+                            clientMessageId = clientMessageIdIntern
+                        )
+                    }
+
+                    is AudioContent -> {
+                        networkUtils.sendAudioMessageToServer(
+                            empfaenger = empfaenger,
+                            gruppe = gruppe,
+                            audio = content.audio,
+                            answerid = answerid,
+                            clientMessageId = clientMessageIdIntern
+                        )
+                    }
+                }.trackConnectivity()
+
+                when (serverrequest){
+                    is NetworkResult.Error<NetworkingError> -> {
+
+                        val error = serverrequest.error
+                        //If badrequest (not met servers specifications (should not happen)) or conflict (duplicate message) delete locally
+                        if (error is NetworkingError.BadRequest || error is NetworkingError.Conflict) {
+                            database.messageDao().deleteMessageDtoByPk(localpkintern)
+                        }
+
+                        println("Message senden error: ${serverrequest.error}")
+                        errorChannel.sendErrorSuspend(ErrorEvent(error = error))
+
+                        when (content) {
+                            is ImageContent -> {
+                                pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
+                                //ignore unsent audio or image, this should not happen anyway
+                            }
+
+                            is AudioContent -> {
+                                audioManager.saveAudioToStorage(
+                                    audioBytes = content.audio,
+                                    filename = "unsent_" + localpkintern + VOICEMSG_FILE_NAME
+                                )
+                            }
+
+                            else -> {}
+                        }
+
+                    }
+                    is NetworkResult.Success<MessageResponse> -> {
+                        withContext(ioDispatcher) {
+
+                            println("Messageid returned from server: ${serverrequest.data.messageId}")
+
+                            val existing =
+                                database.messageDao().getMessageDtoById(serverrequest.data.messageId)
+
+                            messageLocalDataSource.upsertMessage(
+                                Message(
+                                    localPK = localpkintern,
+                                    id = serverrequest.data.messageId,
+                                    msgType = serverrequest.data.msgType,
+
+                                    content = serverrequest.data.content,
+                                    poll = serverrequest.data.pollResponse?.toPollMessage(ownId),
+
+                                    senderId = serverrequest.data.senderId,
+                                    receiverId = serverrequest.data.receiverId,
+                                    sendDate = serverrequest.data.sendDate.toString(),
+                                    changeDate = serverrequest.data.lastChanged.toString(),
+                                    deleted = serverrequest.data.deleted,
+                                    groupMessage = serverrequest.data.groupMessage,
+                                    answerId = serverrequest.data.answerId,
+                                    sent = true,
+                                    myMessage = true,
+                                    readByMe = true,
+                                    pictureUrl = existing?.pictureUrl,
+                                    readers = serverrequest.data.readers.map {
+                                        MessageReader(
+                                            readerEntryId = 0L,
+                                            messageId = serverrequest.data.messageId,
+                                            readerId = it.userId,
+                                            readDate = it.readAt.toString()
+                                        )
+                                    },
+                                    // Bypasses /messages/sync - never let it advance the sync
+                                    // cursor (MAX(version) over the messages table).
+                                    version = existing?.version ?: 0L
+                                )
+                            )
+
+                            if (serverrequest.data.msgType == MessageType.IMAGE) {
+                                getPicturesForMessageIds(listOf(serverrequest.data.messageId))
+                                pictureManager.deletePicture("unsent_" + localpkintern + PICTURE_FILE_NAME)
+                            } else if (serverrequest.data.msgType == MessageType.AUDIO) {
+                                getAudiosForMessageIds(listOf(serverrequest.data.messageId))
+
+                                audioManager.deleteAudio("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
+                            }
+                        }
+                    }
+                }
+            }
+        }.await()
+
+    }
+
+
+    private val sendOfflineLock = Mutex()
+
+    /**
+     * Send offline messages. Locks this function, and calls the sendmessage for every message.
+     * No async, because multiple messages could be sent at the same time.
+     * Always wait for the send lock to be unlocked, that way there can not be an unsent message
+     * be retrieved from the db as unsent while it is already sending.
+     */
+    override suspend fun sendOfflineMessages(ownId: String){
+        sendOfflineLock.withLock {
+
+            while (true) {
+
+                while (sendMessageLock.isLocked) {
+                    //If the message sending lock is active, do not send offline messages
+                    //println("OFFLINE MESSAGE SENDING: Sending in progress, waiting for lock")
+                    delay(15.milliseconds)
+                }
+
+
+                val messages = messageLocalDataSource.getUnsentMessages()
+                if (messages.isEmpty()) {
+                    //println("OFFLINE MESSAGE SENDING: NO UNSENT MESSAGES")
+                    return
+                }
+
+                val m = messages.first()
+
+                //A poll row whose poll no longer decodes (the type converter returns null for it) can
+                //never be sent - drop it, or it would block the whole queue forever
+                if (m.msgType == MessageType.POLL && m.poll == null) {
+                    database.messageDao().deleteMessageDtoByPk(m.localPK)
+                    continue
+                }
+
+                sendMessage(
+                    empfaenger = m.receiverId,
+                    gruppe = m.groupMessage,
+                    content = when (m.msgType) {
+                        MessageType.TEXT -> {
+                            TextContent(m.content)
+                        }
+
+                        MessageType.IMAGE -> {
+                            val image =
+                                pictureManager.loadPictureFromStorage("unsent_" + m.localPK + PICTURE_FILE_NAME)
+
+                            if (image == null) {
+                                TextContent("Offline image sending failed")
+                            } else {
+                                ImageContent(
+                                    image = image,
+                                    text = m.content
+                                )
+                            }
+                        }
+
+                        MessageType.POLL -> {
+                            //Null-checked above. Rebuilt with the shared mapper so sub polls and
+                            //every other setting survive the resend
+                            PollContent(m.poll!!.toNewPoll())
+                        }
+
+                        MessageType.AUDIO -> {
+                            if(m.audioPath == null){
+                                TextContent("Offline audio sending failed")
+                            }
+                            val audio = getAudioBytes(
+                                audioManager.getRecordingPath("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
+                            )
+
+                            AudioContent(
+                                audio = audio
+                            )
+                        }
+
+                        MessageType.SYSTEM -> error("SYSTEM messages are server-authored and are never queued locally as unsent")
+                    },
+                    answerid = m.answerId,
+                    localpk = m.localPK,
+                    messageId = null,
+                    ownId = ownId,
+                    clientMessageId = m.clientMessageId
+                )
+
+
+                val nextMessages = messageLocalDataSource.getUnsentMessages()
+                if (nextMessages.firstOrNull()?.localPK == m.localPK) return
+            }
+
+
+        }
+    }
+
+
+    /**
+     * Serialises [syncMessages]'s paging loop. Two overlapping runs each read `since` from
+     * MAX(version) before the other has written its page, so the slower one can upsert an
+     * already-superseded copy of a message on top of the newer one - which is how a chat marked
+     * read came back unread again. Media downloads stay outside the lock, they only add files.
+     */
+    private val messageSyncLock = Mutex()
+
+    /**
+     * Execute a message sync
+     *
+     * @param fetchMedia whether to immediately download images/audios for newly-synced
+     * messages. Disabled during the full data sync (`AppRepository.dataSync`) so that media
+     * downloads happen as part of the MEDIA job (and its progress indicator) instead of inside
+     * the MESSAGES job.
+     */
+    override suspend fun syncMessages(fetchMedia: Boolean) {
+
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
+        val imagesToGet = mutableListOf<String>()
+        val audiosToGet = mutableListOf<String>()
+
+        messageSyncLock.withLock {
+
+            var since = messageLocalDataSource.getLastSyncedMessageVersion()
+            var moreMessages = true
+
+            while (moreMessages) {
+
+                val messageSyncResponse = networkUtils.messageSync(since = since).trackConnectivity()
+
+                when (messageSyncResponse) {
+                    is NetworkResult.Error<*> -> {
+                        loggingRepository.logWarning("messageid sync error: ${messageSyncResponse.error}")
+                        break // Stop on error, never advance past a batch we failed to fetch
+                    }
+
+                    is NetworkResult.Success<MessageSyncResponse> -> {
+                        val updatedMessages = messageSyncResponse.data.updatedMessages
+                        val deletedMessages = messageSyncResponse.data.deletedMessages
+                        moreMessages = messageSyncResponse.data.moreMessages
+
+                        // Deletions can now arrive on any page, not just page 0. Apply them
+                        // before the updates below so a crash mid-batch never leaves MAX(version)
+                        // ahead of what was actually committed.
+                        messageLocalDataSource.deleteMessages(deletedMessages)
+
+                        // The whole page goes in as one batch: every separate write would invalidate
+                        // the message table again and re-run the chat selector's query chain.
+                        val sortedUpdates = updatedMessages.sortedBy { it.version }
+                        val existingById = messageLocalDataSource
+                            .getMessageDtosByIds(sortedUpdates.map { it.messageId })
+                            .associateBy { it.id }
+
+                        // A message of our own can arrive here before our own sendMessage() call for
+                        // it has processed its response (dataSync runs fully in parallel with sends -
+                        // nothing serializes them). Falling back to the pending row's clientMessageId
+                        // (only ever populated on our own sends, and only ever echoed back to us by
+                        // the server for our own messages) merges onto that row instead of creating a
+                        // second, permanently-orphaned one.
+                        val unmatchedClientMessageIds = sortedUpdates
+                            .filter { existingById[it.messageId] == null }
+                            .mapNotNull { it.clientMessageId }
+                        val existingByClientMessageId = messageLocalDataSource
+                            .getMessageDtosByClientMessageIds(unmatchedClientMessageIds)
+                            .associateBy { it.clientMessageId }
+
+                        messageLocalDataSource.upsertMessages(
+                            sortedUpdates.map { messageResponse ->
+                                val existing = existingById[messageResponse.messageId]
+                                    ?: messageResponse.clientMessageId?.let { existingByClientMessageId[it] }
+                                messageResponse.toDomainMessage(
+                                    ownId = ownId,
+                                    existingLocalPK = existing?.localPK ?: 0L,
+                                    existingPictureUrl = existing?.pictureUrl,
+                                    existingAudioPath = existing?.audioPath,
+                                    version = messageResponse.version
+                                )
+                            }
+                        )
+
+                        sortedUpdates.forEach { messageResponse ->
+                            when (messageResponse.msgType) {
+                                MessageType.IMAGE -> imagesToGet += messageResponse.messageId
+                                MessageType.AUDIO -> audiosToGet += messageResponse.messageId
+                                else -> {}
+                            }
+                        }
+
+                        // Always trust the envelope's watermark, never max(updatedMessages) - a
+                        // page can be all deletions, in which case updatedMessages is empty but
+                        // newVersion still advances.
+                        since = messageSyncResponse.data.newVersion
+
+                        //println("MessageIdSync finished, new messages: ${updatedMessages.size}")
+                    }
+                }
+            }
+
+            //println("Messagesync completed")
+
+        }
+
+        if (fetchMedia) {
+            if (imagesToGet.isNotEmpty()) {
+                println("Images to fetch: ${imagesToGet.size}")
+                getPicturesForMessageIds(imagesToGet)
+            }
+
+            if (audiosToGet.isNotEmpty()) {
+                println("Audios to fetch: ${audiosToGet.size}")
+                getAudiosForMessageIds(audiosToGet)
             }
         }
     }

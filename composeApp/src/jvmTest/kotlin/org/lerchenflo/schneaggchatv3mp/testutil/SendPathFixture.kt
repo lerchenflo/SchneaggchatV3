@@ -1,12 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.testutil
 
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstMessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomMessageDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
@@ -29,18 +30,17 @@ const val FRIEND_ID = "friend"
  * - a real `Preferencemanager` on an in-memory DataStore (`NetworkUtils` only reads the server
  *   URL from it);
  * - a real [DefaultErrorChannel] and a [FakeLogger];
- * - a real [OfflineFirstMessageRepository] on the same data source and server (Phase 5a moved the
- *   message media, edit/delete/react/poll code there; the text send path doesn't call it yet);
  * - [unusedDependency] stubs for every constructor parameter the send path never touches. Text
  *   messages never use `PictureManager` / `AudioManager`, so they are stubs too.
  *
- * The object under test is today's [AppRepository] ([repository]). When Phase 5 moves
- * `sendMessage`, `sendOfflineMessages` and `messageIdSync` into `OfflineFirstMessageRepository`
- * and leaves delegates on `AppRepository`, only this builder changes; the tests stay as they are.
+ * The object under test is the [OfflineFirstMessageRepository] ([repository]); Phase 5b moved
+ * `sendMessage`, `sendOfflineMessages` and `messageIdSync` (now `syncMessages`) there from
+ * `AppRepository`. Its `externalScope` is `testScope.backgroundScope` and its `ioDispatcher` runs
+ * on `testScope.testScheduler` (plan R2, R4), so build the fixture inside `runTest`.
  *
  * Call [close] in `@AfterTest`.
  */
-class SendPathFixture(val ownUserId: String = OWN_USER_ID) {
+class SendPathFixture(testScope: TestScope, val ownUserId: String = OWN_USER_ID) {
 
     val server = FakeMessageServer(ownUserId)
 
@@ -66,39 +66,21 @@ class SendPathFixture(val ownUserId: String = OWN_USER_ID) {
         appVersion = unusedDependency(),
     )
 
-    private val messageRepository = OfflineFirstMessageRepository(
-        messageLocalDataSource = messageLocalDataSource,
-        networkUtils = networkUtils,
-        pictureManager = unusedDependency(),
-        audioManager = unusedDependency(),
-        loggingRepository = logger,
-        errorChannel = errorChannel,
-    )
-
-    val repository = AppRepository(
+    val repository = OfflineFirstMessageRepository(
         database = database,
+        messageLocalDataSource = messageLocalDataSource,
         networkUtils = networkUtils,
         pictureManager = unusedDependency(),
         audioManager = unusedDependency(),
-        messageLocalDataSource = messageLocalDataSource,
-        appVersion = unusedDependency(),
         loggingRepository = logger,
-        mapRepository = unusedDependency(),
-        eventRepository = unusedDependency(),
-        appInfoRepository = unusedDependency(),
-        authRepository = unusedDependency(),
-        sessionTerminator = unusedDependency(),
         errorChannel = errorChannel,
-        settingsRepository = unusedDependency(),
-        userRepository = unusedDependency(),
-        groupRepository = unusedDependency(),
-        chatListRepository = unusedDependency(),
-        messageRepository = messageRepository,
+        externalScope = testScope.backgroundScope,
+        ioDispatcher = StandardTestDispatcher(testScope.testScheduler),
     )
 
     // The three entry points under test, called exactly like the app calls them (ChatViewModel,
     // GlobalViewModel, dataSync). Kept here so a moved signature or a moved MessageContent
-    // (Phase 5) only changes this file.
+    // only changes this file.
 
     /** A new text message, as `ChatViewModel` sends it. */
     suspend fun sendText(
@@ -119,7 +101,7 @@ class SendPathFixture(val ownUserId: String = OWN_USER_ID) {
     suspend fun sendOfflineMessages() = repository.sendOfflineMessages(ownUserId)
 
     /** One message sync; needs a logged-in `SessionCache` ([loginTestUser]). */
-    suspend fun syncMessages() = repository.messageIdSync()
+    suspend fun syncMessages() = repository.syncMessages()
 
     /** Every row of the local messages table, oldest local row first. */
     suspend fun storedMessages(): List<Message> =

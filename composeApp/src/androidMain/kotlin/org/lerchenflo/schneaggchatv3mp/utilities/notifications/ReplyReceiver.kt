@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
@@ -41,6 +42,7 @@ class ReplyReceiver : BroadcastReceiver() {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                 val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
 
                 //The app process may have been started just for this broadcast
                 if (SessionCache.authState.value !is SessionCache.AuthState.LoggedIn) {
@@ -49,7 +51,7 @@ class ReplyReceiver : BroadcastReceiver() {
                 val ownId = (SessionCache.authState.value as? SessionCache.AuthState.LoggedIn)
                     ?.userId ?: return@runCatching
 
-                appRepository.sendMessage(
+                messageRepository.sendMessage(
                     ownId = ownId,
                     messageId = null,
                     empfaenger = chatId,
