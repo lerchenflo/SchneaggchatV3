@@ -3,8 +3,8 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ChatAggregateDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 
 /**

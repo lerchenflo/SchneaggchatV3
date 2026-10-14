@@ -5,11 +5,11 @@ import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageMinimal
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Reaction
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SystemEventMessage
 
 @Serializable
 @Entity(

@@ -31,7 +31,6 @@ import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMember
@@ -42,6 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.WakeOutcome
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
@@ -112,7 +112,7 @@ class ChatDetailsViewmodel(
     private val userRepository: UserRepository,
     private val pictureManager: PictureManager,
     private val eventRepository: EventRepository,
-    private val messageRepository: MessageLocalDataSource,
+    private val messageRepository: MessageRepository,
 
     val chatId: String,
     val isGroup: Boolean,

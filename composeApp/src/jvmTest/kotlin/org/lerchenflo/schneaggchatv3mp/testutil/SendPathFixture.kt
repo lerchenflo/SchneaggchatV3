@@ -2,8 +2,10 @@ package org.lerchenflo.schneaggchatv3mp.testutil
 
 import kotlinx.coroutines.flow.first
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
+import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstMessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomMessageDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -27,6 +29,8 @@ const val FRIEND_ID = "friend"
  * - a real `Preferencemanager` on an in-memory DataStore (`NetworkUtils` only reads the server
  *   URL from it);
  * - a real [DefaultErrorChannel] and a [FakeLogger];
+ * - a real [OfflineFirstMessageRepository] on the same data source and server (Phase 5a moved the
+ *   message media, edit/delete/react/poll code there; the text send path doesn't call it yet);
  * - [unusedDependency] stubs for every constructor parameter the send path never touches. Text
  *   messages never use `PictureManager` / `AudioManager`, so they are stubs too.
  *
@@ -62,6 +66,15 @@ class SendPathFixture(val ownUserId: String = OWN_USER_ID) {
         appVersion = unusedDependency(),
     )
 
+    private val messageRepository = OfflineFirstMessageRepository(
+        messageLocalDataSource = messageLocalDataSource,
+        networkUtils = networkUtils,
+        pictureManager = unusedDependency(),
+        audioManager = unusedDependency(),
+        loggingRepository = logger,
+        errorChannel = errorChannel,
+    )
+
     val repository = AppRepository(
         database = database,
         networkUtils = networkUtils,
@@ -80,6 +93,7 @@ class SendPathFixture(val ownUserId: String = OWN_USER_ID) {
         userRepository = unusedDependency(),
         groupRepository = unusedDependency(),
         chatListRepository = unusedDependency(),
+        messageRepository = messageRepository,
     )
 
     // The three entry points under test, called exactly like the app calls them (ChatViewModel,
@@ -97,7 +111,7 @@ class SendPathFixture(val ownUserId: String = OWN_USER_ID) {
         messageId = null,
         empfaenger = receiverId,
         gruppe = isGroup,
-        content = AppRepository.MessageContent.TextContent(text),
+        content = MessageContent.TextContent(text),
         answerid = answerId,
     )
 

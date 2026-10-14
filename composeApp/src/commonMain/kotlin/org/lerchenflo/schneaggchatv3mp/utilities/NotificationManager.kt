@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 
 import kotlinx.coroutines.runBlocking
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationContent
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.toNotificationContent

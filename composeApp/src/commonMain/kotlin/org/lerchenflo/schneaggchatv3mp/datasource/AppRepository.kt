@@ -27,22 +27,22 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.EVENTS
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.GROUPS
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.MAP
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.MESSAGES
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.USERS
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.AudioContent
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.ImageContent
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.PollContent
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.TextContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent.AudioContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent.ImageContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent.PollContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
@@ -52,6 +52,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
@@ -59,11 +60,9 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PersonalUserSettings
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollCreateRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollOptionDeleteRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toNewPoll
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toLocalPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSyncedSettings
@@ -82,6 +81,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationData
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVote
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SavedCredsResult
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
@@ -128,6 +128,7 @@ class AppRepository(
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val chatListRepository: ChatListRepository,
+    private val messageRepository: MessageRepository,
 ) {
     /*
     **************************************************************************
@@ -386,7 +387,7 @@ class AppRepository(
                     // The message job runs in parallel and may have re-inserted rows just
                     // after groupIdSync's inline purge ran, so repeat it once everything
                     // has settled.
-                    removedGroupIds.forEach { messageLocalDataSource.deleteMessagesForGroup(it) }
+                    messageRepository.deleteMessagesForGroups(removedGroupIds)
 
                     try {
                         updateSyncJob(
@@ -395,7 +396,6 @@ class AppRepository(
                             error = null
                         )
                         getMissingPics()
-                        getMissingAudios()
                         updateSyncJob(
                             type = DataSyncJobType.MEDIA,
                             status = DataSyncJobStatus.SUCCESS,
@@ -486,34 +486,8 @@ class AppRepository(
         // Check group profile pics (GroupRepository), in parallel with the parts below
         launch { groupRepository.fetchMissingGroupPictures() }
 
-        // Check image messages
-        val messages = messageLocalDataSource.getImageMessages()
-        val missingImageMessageIds = messages.filter { image ->
-            image.id != null && !pictureManager.checkImageExists(image.pictureUrl ?: "")
-        }.map { it.id!! }
-        
-        if (missingImageMessageIds.isNotEmpty()) {
-            launch { getPicturesForMessageIds(missingImageMessageIds) }
-        }
-    }
-
-    suspend fun getMissingAudios() = coroutineScope {
-        // Check audio messages
-        val messages = messageLocalDataSource.getAudioMessages()
-        val missingAudioMessageIds = messages.filter { audio ->
-            if (audio.id == null) return@filter false
-            // Null/empty audioPath means the file was never downloaded — always treat as missing.
-            // Without this guard, getRecordingPath("") returns filesDir itself, which exists as a
-            // directory, so checkAudioExists would wrongly return true and skip the download.
-            val filename = audio.audioPath?.substringAfterLast('/')?.takeIf { it.isNotEmpty() }
-                ?: return@filter true
-            !audioManager.checkAudioExists(audioManager.getRecordingPath(filename))
-        }.map { it.id!! }
-
-        //println("Missing audio ids: $missingAudioMessageIds -------------------------------------")
-        if (missingAudioMessageIds.isNotEmpty()) {
-            launch { getAudiosForMessageIds(missingAudioMessageIds) }
-        }
+        // Check image and audio messages (MessageRepository), in parallel with the parts above
+        launch { messageRepository.fetchMissingMessageMedia() }
     }
 
 
@@ -661,15 +635,6 @@ class AppRepository(
 
 
 
-    sealed class MessageContent {
-        data class TextContent(val message: String) : MessageContent()
-        data class ImageContent(val image: ByteArray, val text: String) : MessageContent()
-        data class AudioContent(val audio: ByteArray) : MessageContent()
-
-        data class PollContent(val poll: PollCreateRequest) : MessageContent()
-    }
-
-
     val sendMessageLock = Mutex()
 
     /**
@@ -794,7 +759,7 @@ class AppRepository(
                     networkUtils.sendPollMessageToServer(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
-                        content = content.poll,
+                        content = content.poll.toPollCreateRequest(),
                         answerid = answerid,
                         clientMessageId = clientMessageIdIntern
                     )
@@ -980,7 +945,7 @@ class AppRepository(
                         MessageType.POLL -> {
                             //Null-checked above. Rebuilt with the shared mapper so sub polls and
                             //every other setting survive the resend
-                            PollContent(m.poll!!.toCreateRequest())
+                            PollContent(m.poll!!.toNewPoll())
                         }
 
                         MessageType.AUDIO -> {
@@ -1197,39 +1162,12 @@ class AppRepository(
         )
     }
 
-    suspend fun getPicturesForMessageIds(ids: List<String>){
-        ids.forEach { messageId ->
-            val savefilename = messageId + PICTURE_FILE_NAME
+    // ─── Message media: moved to MessageRepository ─────────────────────────────
+    // Thin delegates until every caller uses MessageRepository directly (removed with this class).
 
-            when (val picture = networkUtils.getImageForImageMessage(messageId).trackConnectivity()) {
-                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Picture error for messageid $messageId")}
-                is NetworkResult.Success<ByteArray> -> {
-                    val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
+    suspend fun getPicturesForMessageIds(ids: List<String>) = messageRepository.getPicturesForMessageIds(ids)
 
-                    messageLocalDataSource.updatePictureUrl(messageId, filepath)
-                }
-            }
-        }
-    }
-
-    suspend fun getAudiosForMessageIds(ids: List<String>){
-        ids.forEach { messageId ->
-            val savefilename = messageId + VOICEMSG_FILE_NAME
-            //println("Fetching Audio for messageid $messageId")
-
-            when (val audio = networkUtils.getAudioForAudioMessage(messageId).trackConnectivity()) {
-                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Audio error for messageid $messageId")}
-                is NetworkResult.Success<ByteArray> -> {
-                    val filepath = audioManager.saveAudioToStorage(audio.data, savefilename)
-                    //println("Audio saved to $filepath")
-                    // Persist the bare filename, not the absolute container path: on iOS the
-                    // container UUID in an absolute path changes across reinstalls/updates and
-                    // would go stale. The absolute path is re-derived at use-time.
-                    messageLocalDataSource.updateAudioPath(messageId, savefilename)
-                }
-            }
-        }
-    }
+    suspend fun getAudiosForMessageIds(ids: List<String>) = messageRepository.getAudiosForMessageIds(ids)
 
 
     /**
@@ -1264,139 +1202,21 @@ class AppRepository(
     }
 
 
-    suspend fun editMessage(message: Message, newContent: String) {
+    // ─── Edit / delete / react / poll: moved to MessageRepository ──────────────
+    // Thin delegates until every caller uses MessageRepository directly (removed with this class).
 
-        if (message.id == null) {
-            //edit a not sent message
-            val existing = messageLocalDataSource.getMessageById(message.localPK)
-            if (existing != null) {
-                messageLocalDataSource.upsertMessage(existing.copy(
-                    content = newContent,
-                    sent = false
-                ))
-            }
+    suspend fun editMessage(message: Message, newContent: String) = messageRepository.editMessage(message, newContent)
 
-        } else {
-            val request = networkUtils.editMessage(
-                messageId = message.id!!,
-                newContent = newContent
-            ).trackConnectivity()
+    suspend fun deleteLocalMessage(localpk: Long) = messageRepository.deleteLocalMessage(localpk)
 
-            when (request) {
-                is NetworkResult.Error<NetworkingError> ->  {
-                    val existing = messageLocalDataSource.getMessageById(message.localPK)
-                    if (existing != null) {
-                        messageLocalDataSource.upsertMessage(existing.copy(
-                            content = newContent,
-                            sent = false
-                        ))
-                    }
-                    errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
-                }
-                is NetworkResult.Success<MessageResponse> -> {
-                    val existing = messageLocalDataSource.getMessageById(request.data.messageId)
-                    if (existing != null) {
-                        messageLocalDataSource.upsertMessage(existing.copy(
-                            content = request.data.content,
-                            changeDate = request.data.lastChanged.toString(),
-                            edited = true,
-                        ))
-                    }
+    suspend fun deleteMessage(messageId: String) = messageRepository.deleteMessage(messageId)
 
-                }
-            }
-        }
+    suspend fun reactToMessage(messageId: String, content: String) = messageRepository.reactToMessage(messageId, content)
 
-    }
+    suspend fun votePoll(ownId: String, pollVote: PollVote) = messageRepository.votePoll(ownId, pollVote)
 
-    suspend fun deleteLocalMessage(localpk: Long) {
-        messageLocalDataSource.deleteMessage(localpk)
-    }
-
-    suspend fun deleteMessage(messageId: String){
-        val request = networkUtils.deleteMessage(
-            messageId = messageId
-        ).trackConnectivity()
-
-        when (request) {
-            is NetworkResult.Error<NetworkingError> ->  {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
-            }
-            is NetworkResult.Success<*> -> {
-                messageLocalDataSource.deleteMessage(messageId)
-            }
-
-        }
-    }
-
-    suspend fun reactToMessage(messageId: String, content: String) {
-        val  request = networkUtils.reactToMessage(messageId = messageId, content = content).trackConnectivity()
-        when (request) {
-            is NetworkResult.Error -> errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
-            is NetworkResult.Success -> {
-                val existing = messageLocalDataSource.getMessageById(request.data.messageId)
-                if (existing != null) {
-                    messageLocalDataSource.upsertMessage(
-                        existing.copy(
-                            reactions = request.data.reactions.map {
-                                Reaction(userId = it.userId, content = it.content)
-                            },
-                            changeDate = request.data.lastChanged.toString()
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-
-
-    suspend fun votePoll(ownId: String, pollVoteRequest: PollVoteRequest) {
-        val request = networkUtils.votePoll(
-            pollVoteRequest
-        ).trackConnectivity()
-
-        when (request) {
-            is NetworkResult.Error<NetworkingError> ->  {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
-            }
-            is NetworkResult.Success<MessageResponse> -> {
-                val existing = messageLocalDataSource.getMessageById(request.data.messageId)
-                //Skip a response older than what is stored - a socket push or a later vote's
-                //response may have landed first, and must not be rolled back
-                if (existing != null && !existing.isNewerThan(request.data.lastChanged)) {
-                    messageLocalDataSource.upsertMessage(existing.copy(
-                        poll = request.data.pollResponse?.toPollMessage(ownId),
-                        changeDate = request.data.lastChanged.toString(),
-                    ))
-                }
-
-            }
-        }
-    }
-
-    suspend fun deletePollOption(ownId: String, messageId: String, optionId: String) {
-        val request = networkUtils.deletePollOption(
-            PollOptionDeleteRequest(messageId = messageId, optionId = optionId)
-        ).trackConnectivity()
-
-        when (request) {
-            is NetworkResult.Error<NetworkingError> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
-            }
-            is NetworkResult.Success<MessageResponse> -> {
-                val existing = messageLocalDataSource.getMessageById(request.data.messageId)
-                //Skip a response older than what is stored - a socket push or a later vote's
-                //response may have landed first, and must not be rolled back
-                if (existing != null && !existing.isNewerThan(request.data.lastChanged)) {
-                    messageLocalDataSource.upsertMessage(existing.copy(
-                        poll = request.data.pollResponse?.toPollMessage(ownId),
-                        changeDate = request.data.lastChanged.toString(),
-                    ))
-                }
-            }
-        }
-    }
+    suspend fun deletePollOption(ownId: String, messageId: String, optionId: String) =
+        messageRepository.deletePollOption(ownId, messageId, optionId)
 
 
     /*

@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
@@ -53,7 +54,7 @@ class ReplyReceiver : BroadcastReceiver() {
                     messageId = null,
                     empfaenger = chatId,
                     gruppe = groupChat,
-                    content = AppRepository.MessageContent.TextContent(replyText),
+                    content = MessageContent.TextContent(replyText),
                     answerid = null,
                 )
 

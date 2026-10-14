@@ -2,9 +2,9 @@ package org.lerchenflo.schneaggchatv3mp.datasource.database
 
 import androidx.room.TypeConverter
 import kotlinx.serialization.json.Json
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Reaction
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SystemEventMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipation
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventType
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventVisibility

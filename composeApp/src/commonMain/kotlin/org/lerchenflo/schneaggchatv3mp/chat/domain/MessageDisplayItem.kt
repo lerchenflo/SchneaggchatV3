@@ -1,6 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import androidx.compose.runtime.Immutable
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageMinimal
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SystemEventMessage
 
 /**
  * Sealed class representing different types of items that can be displayed in the chat screen.

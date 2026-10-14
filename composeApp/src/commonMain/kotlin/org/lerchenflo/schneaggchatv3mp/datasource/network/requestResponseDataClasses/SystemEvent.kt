@@ -1,9 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventParticipant
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SystemEventMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SystemEventParticipant
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SystemEventType
 
 fun SystemEventResponse.toSystemEventMessage(): SystemEventMessage {
     return SystemEventMessage(

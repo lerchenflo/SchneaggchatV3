@@ -43,17 +43,17 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPoll
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVote
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
@@ -73,7 +73,7 @@ import kotlin.time.TimeSource
 
 class ChatViewModel(
     private val appRepository: AppRepository,
-    private val messageRepository: MessageLocalDataSource,
+    private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val settingsRepository: SettingsRepository,
@@ -290,7 +290,7 @@ class ChatViewModel(
                     appRepository.sendMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
-                        content = AppRepository.MessageContent.TextContent(message.textMessage.text),
+                        content = MessageContent.TextContent(message.textMessage.text),
                         answerid = replyTo?.id,
                         messageId = null,
                         ownId = ownId,
@@ -304,7 +304,7 @@ class ChatViewModel(
                         appRepository.sendMessage(
                             empfaenger = chatId,
                             gruppe = isGroup,
-                            content = AppRepository.MessageContent.ImageContent(
+                            content = MessageContent.ImageContent(
                                 image = image,
                                 text = if (index == 0) message.text.text else ""
                             ),
@@ -321,7 +321,7 @@ class ChatViewModel(
                     appRepository.sendMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
-                        content = AppRepository.MessageContent.AudioContent(
+                        content = MessageContent.AudioContent(
                             audio = getAudioBytes(
                                 audioManager.getRecordingPath(message.audioPath.substringAfterLast('/'))
                             )
@@ -354,7 +354,7 @@ class ChatViewModel(
 
     }
 
-    private fun createPollMessage(poll: NetworkUtils.PollCreateRequest) {
+    private fun createPollMessage(poll: NewPoll) {
 
         val ownId = SessionCache.requireLoggedIn()?.userId ?: return
         val replyMessage = state.value.replyMessage
@@ -363,7 +363,7 @@ class ChatViewModel(
             appRepository.sendMessage(
                 empfaenger = chatId,
                 gruppe = isGroup,
-                content = AppRepository.MessageContent.PollContent(poll),
+                content = MessageContent.PollContent(poll),
                 answerid = replyMessage?.id,
                 messageId = null,
                 ownId = ownId
@@ -376,10 +376,10 @@ class ChatViewModel(
     private fun deleteMessage(message: Message) {
         viewModelScope.launch {
             if (message.id == null) {
-                appRepository.deleteLocalMessage(message.localPK)
+                messageRepository.deleteLocalMessage(message.localPK)
                 println("Offline message deleted")
             } else {
-                appRepository.deleteMessage(message.id!!)
+                messageRepository.deleteMessage(message.id!!)
                 println("Remote message deleted")
             }
         }
@@ -396,8 +396,8 @@ class ChatViewModel(
         when (action) {
             is MessageAction.VotePoll -> {
                 viewModelScope.launch {
-                    appRepository.votePoll(
-                        pollVoteRequest = PollVoteRequest(
+                    messageRepository.votePoll(
+                        pollVote = PollVote(
                             messageId = action.messageId,
                             id = action.optionId,
                             text = null,
@@ -411,9 +411,9 @@ class ChatViewModel(
 
             is MessageAction.AddCustomPollOption -> {
                 viewModelScope.launch {
-                    appRepository.votePoll(
+                    messageRepository.votePoll(
                         ownId = ownId,
-                        pollVoteRequest = PollVoteRequest(
+                        pollVote = PollVote(
                             messageId = action.messageId,
                             id = null,
                             text = action.text,
@@ -426,7 +426,7 @@ class ChatViewModel(
             }
             is MessageAction.DeletePollOption -> {
                 viewModelScope.launch {
-                    appRepository.deletePollOption(
+                    messageRepository.deletePollOption(
                         ownId = ownId,
                         messageId = action.messageId,
                         optionId = action.optionId
@@ -473,7 +473,7 @@ class ChatViewModel(
             is MessageAction.ReplyToMessage -> updateReplyMessage(action.message, action.sender)
             is MessageAction.ToggleReaction -> {
                 viewModelScope.launch {
-                    appRepository.reactToMessage(
+                    messageRepository.reactToMessage(
                         action.messageId,
                         action.reaction
                     )
@@ -495,7 +495,7 @@ class ChatViewModel(
             //Block empty edit
             if (content.textMessage.text.isBlank()) return@launch
 
-            appRepository.editMessage(
+            messageRepository.editMessage(
                 message = message,
                 newContent = content.textMessage.text
             )
@@ -729,8 +729,8 @@ class ChatViewModel(
                 val olderReplyTargets = if (missingReplyIds.isEmpty()) {
                     emptyMap()
                 } else {
-                    messageRepository.getMessageDtosByIds(missingReplyIds)
-                        .mapNotNull { dto -> dto.id?.let { id -> id to dto.toMessage() } }
+                    messageRepository.getMessagesByIds(missingReplyIds)
+                        .mapNotNull { message -> message.id?.let { id -> id to message } }
                         .toMap()
                 }
                 messages to olderReplyTargets

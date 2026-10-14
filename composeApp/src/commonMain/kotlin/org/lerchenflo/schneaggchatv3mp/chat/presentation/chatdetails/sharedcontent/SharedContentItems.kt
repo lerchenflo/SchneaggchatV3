@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent
 
 import androidx.compose.runtime.Immutable
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SystemEventMessage
 
 /**
  * One image shared in the chat, flattened for the grid. [messageId] is null for a message that has

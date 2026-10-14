@@ -5,10 +5,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPoll
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 @Stable
 data class ChatState(
@@ -37,7 +37,7 @@ sealed interface ChatAction {
     data object OnCancelReply : ChatAction
 
     data class OnImagesSelected(val results: List<GalleryPhotoResult>) : ChatAction
-    data class OnCreatePoll(val poll: NetworkUtils.PollCreateRequest) : ChatAction
+    data class OnCreatePoll(val poll: NewPoll) : ChatAction
 
     data object OnStartRecording : ChatAction
     data object OnStopRecording : ChatAction

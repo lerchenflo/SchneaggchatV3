@@ -2,18 +2,19 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCl
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPoll
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPollOption
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVoteOption
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVoter
 
 
 /**
  * Local echo of a poll that is still being sent, sub polls included. Option ids are fakes ("0", "0.1",
  * ...), unique across the whole tree, until the server response replaces them.
  */
-fun NetworkUtils.PollCreateRequest.toLocalPollMessage(ownId: String, idPrefix: String = ""): PollMessage {
+fun NewPoll.toLocalPollMessage(ownId: String, idPrefix: String = ""): PollMessage {
     return PollMessage(
         creatorId = ownId,
         title = title,
@@ -43,11 +44,11 @@ fun NetworkUtils.PollCreateRequest.toLocalPollMessage(ownId: String, idPrefix: S
 }
 
 /**
- * Inverse of [toLocalPollMessage]: the create request for a poll that is still unsent, sub polls
+ * Inverse of [toLocalPollMessage]: the [NewPoll] for a poll that is still unsent, sub polls
  * included - used when the offline queue resends it.
  */
-fun PollMessage.toCreateRequest(): NetworkUtils.PollCreateRequest {
-    return NetworkUtils.PollCreateRequest(
+fun PollMessage.toNewPoll(): NewPoll {
+    return NewPoll(
         title = title,
         description = description,
         maxAnswers = maxAnswers,
@@ -56,10 +57,10 @@ fun PollMessage.toCreateRequest(): NetworkUtils.PollCreateRequest {
         visibility = visibility,
         closeDate = expiresAt,
         voteOptions = voteOptions.map { option ->
-            NetworkUtils.PollVoteOptionCreateRequest(
+            NewPollOption(
                 text = option.text,
                 maxVoters = option.maxVoters,
-                subPoll = option.subPoll?.toCreateRequest(),
+                subPoll = option.subPoll?.toNewPoll(),
             )
         },
         allowDeleteOptions = allowDeleteOptions,

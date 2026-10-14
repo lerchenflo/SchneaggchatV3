@@ -11,10 +11,11 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
@@ -178,6 +179,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
     val settingsRepository = KoinPlatform.getKoin().get<SettingsRepository>()
     val userRepository = KoinPlatform.getKoin().get<UserRepository>()
     val groupRepository = KoinPlatform.getKoin().get<GroupRepository>()
+    val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
 
     try {
         val socketMessage = AppJson.instance.decodeFromString<SocketConnectionMessage>(message)
@@ -244,11 +246,11 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
                     //Only get image if the message is new
                     if (socketMessage.message.msgType == MessageType.IMAGE) {
-                        appRepository.getPicturesForMessageIds(listOf(socketMessage.message.messageId))
+                        messageRepository.getPicturesForMessageIds(listOf(socketMessage.message.messageId))
                     }
 
                     if (socketMessage.message.msgType == MessageType.AUDIO) {
-                        appRepository.getAudiosForMessageIds(listOf(socketMessage.message.messageId))
+                        messageRepository.getAudiosForMessageIds(listOf(socketMessage.message.messageId))
                         println("fething audio in Socketconecction")
                     }
                 }

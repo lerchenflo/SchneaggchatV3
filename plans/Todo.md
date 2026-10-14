@@ -123,6 +123,14 @@ Noticed while writing the send-path characterization tests (`composeApp/src/jvmT
 - [ ] Every failed attempt pushes an `ErrorEvent` popup (`C/datasource/AppRepository.kt:845`), including each offline-queue retry. A row that keeps failing shows the same popup on every resume / reconnect.
 - [ ] Edge case: a `BadRequest` / `Conflict` response deletes the row by local PK (`C/datasource/AppRepository.kt:840-842`) even when a parallel sync already merged the server copy into that row (sync before the send response). The message would then vanish locally, and the sync cursor is already past it. Only reachable if the server stores a message and still answers 4xx.
 
+## Findings from migration Phase 5a (2026-10-14)
+
+Noticed while doing Phase 5a (MessageRepository reads and actions). Not fixed.
+
+- [ ] **A failed edit of a sent message probably breaks the offline queue.** `editMessage`'s error branch (`C/chat/data/OfflineFirstMessageRepository.kt:178-186`, moved verbatim) stores the new text with `sent = false` on a message that already has a server id (e.g. edited while offline). The next drain (`GlobalViewModel` on resume/reconnect) picks it up as an unsent message and resends it with `localpk != 0` but no `clientMessageId` (the sent row lost it, see the Phase 4.5 item), so `sendMessage`'s `requireNotNull(clientMessageId)` (`C/datasource/AppRepository.kt:655`) throws out of `sendOfflineMessages`, which nothing catches (`C/app/GlobalViewModel.kt:130, :171, :268`): likely a crash on every resume until the row is gone. Before that guard existed it would have been resent as a new message. Not verified on a device. The edit should stay an edit (own "edit pending" flag or retry the edit), never turn into a send.
+- [ ] The models moved to `D/model/` in Phase 5a carry Compose code, same as the Phase 1b item: `@Immutable` (`androidx.compose.runtime`) on `Message` and `MessageReader` (`C/datasource/domain/model/Message.kt:30`, `MessageReader.kt:5`), `PollVisibility.toUiText()` with compose resources (`C/datasource/domain/model/Poll.kt:164`). Move the UI mapping into presentation extensions; for `@Immutable` either keep a Compose-runtime-only dependency in `D/` or mark stability via the Compose compiler's stability config file.
+- [ ] `reactToMessage` stores the server's reactions without their `reactedAt` (`C/chat/data/OfflineFirstMessageRepository.kt:233-235`, moved verbatim), while `applyPushReaction` sets it. Any code that sorts or shows reactions by time sees 0 for them.
+
 ## Deferred from the Android-standards review (plan §8, 2026-10-13)
 
 - [ ] **Auth invalidation in the data layer** (R8). Today `App.kt` reacts to `ActionChannel.AuthInvalidated` with error popup + `logout()` + navigate to Login. Target: `SessionTerminator` listens to `AuthEventSink` in the app scope, and `App.kt` only navigates when the auth state changes to logged out.

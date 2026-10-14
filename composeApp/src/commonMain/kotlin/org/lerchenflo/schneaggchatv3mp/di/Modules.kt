@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstGroupRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstMessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstUserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomGroupDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomMessageDataSource
@@ -43,6 +44,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
@@ -173,7 +175,7 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
@@ -181,6 +183,7 @@ val sharedmodule = module{
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
     singleOf(::OfflineFirstUserRepository) bind UserRepository::class
     singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
+    singleOf(::OfflineFirstMessageRepository) bind MessageRepository::class
     // Explicit lambda so the dispatcher keeps its default (Dispatchers.Default); tests pass their own (plan R4)
     single<ChatListRepository> {
         OfflineFirstChatListRepository(

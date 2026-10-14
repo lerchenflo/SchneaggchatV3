@@ -12,9 +12,9 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.wake.WakeAlarmService
@@ -77,7 +77,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
         //it is stored and was notified already. Not for reactions: their msgId is the existing
         //message they react to.
         if (decoded is DecodedNotification.Message && !decoded.reaction &&
-            KoinPlatform.getKoin().get<MessageLocalDataSource>().getMessageById(decoded.msgId) != null) {
+            KoinPlatform.getKoin().get<MessageRepository>().getMessageById(decoded.msgId) != null) {
             return
         }
 

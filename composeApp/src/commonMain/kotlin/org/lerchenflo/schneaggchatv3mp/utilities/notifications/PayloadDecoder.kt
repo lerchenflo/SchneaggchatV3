@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
 
 sealed interface DecodedNotification {
     data class Message(

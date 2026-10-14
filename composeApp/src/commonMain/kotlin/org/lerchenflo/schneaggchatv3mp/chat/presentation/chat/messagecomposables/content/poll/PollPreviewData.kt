@@ -13,12 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVoteOption
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVoter
 
 /**
  * Sample data for poll previews: a poll five levels deep (the maximum), with sub polls on several

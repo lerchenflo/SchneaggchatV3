@@ -69,8 +69,9 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPoll
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPollOption
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -223,10 +224,10 @@ class PollDraft(
         return valid
     }
 
-    fun toRequest(visibility: PollVisibility, closeDate: Long?): NetworkUtils.PollCreateRequest {
+    fun toRequest(visibility: PollVisibility, closeDate: Long?): NewPoll {
         val filledOptions = filledOptions()
 
-        return NetworkUtils.PollCreateRequest(
+        return NewPoll(
             title = title.text,
             description = description.text.ifEmpty { null },
             //A list-mode poll (no checkboxes) never votes, so maxAnswers must stay null - the server rejects it otherwise
@@ -250,7 +251,7 @@ class PollDraft(
             closeDate = closeDate,
             voteOptions = filledOptions
                 .map {
-                    NetworkUtils.PollVoteOptionCreateRequest(
+                    NewPollOption(
                         text = it.text.text,
                         //maxVoters is a voting concept - never sent on a list-mode poll
                         maxVoters = if (showCheckboxes && limitVotersPerEntry) it.maxVoters else null,
@@ -279,7 +280,7 @@ private data class PollEditorLevel(val draft: PollDraft, val depth: Int)
 @Composable
 fun PollDialog(
     onDismiss: () -> Unit = {},
-    onCreatePoll: (NetworkUtils.PollCreateRequest) -> Unit = {},
+    onCreatePoll: (NewPoll) -> Unit = {},
     initialDraft: PollDraft? = null, //Prefilled draft, used by previews
 ) {
     val rootDraft = remember { initialDraft ?: PollDraft() }
