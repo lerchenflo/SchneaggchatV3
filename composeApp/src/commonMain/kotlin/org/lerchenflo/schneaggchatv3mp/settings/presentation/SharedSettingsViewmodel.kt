@@ -9,12 +9,14 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 
 class SharedSettingsViewmodel(
     private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
     private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger
 ) : ViewModel() {
@@ -55,7 +57,7 @@ class SharedSettingsViewmodel(
         viewModelScope.launch { // Own user
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
-            appRepository.getUserByIdFlow(ownId).collect { value ->
+            userRepository.getUserByIdFlow(ownId).collect { value ->
                 ownUser = value
             }
         }

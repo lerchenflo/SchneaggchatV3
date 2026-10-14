@@ -26,14 +26,12 @@ import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
-import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
@@ -43,11 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.EVENTS
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.GROUPS
@@ -68,22 +62,19 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.NewFriendsUserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PersonalUserSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toLocalPollMessage
@@ -97,14 +88,19 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.AvailableUser
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DeviceSession
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventType
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationData
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SavedCredsResult
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SnailTrailPoint
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.WakeResult
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
@@ -153,6 +149,7 @@ class AppRepository(
     private val sessionTerminator: SessionTerminator,
     private val errorChannel: ErrorChannel,
     private val settingsRepository: SettingsRepository,
+    private val userRepository: UserRepository,
 ) {
     /*
     **************************************************************************
@@ -286,7 +283,7 @@ class AppRepository(
                                 status = DataSyncJobStatus.RUNNING,
                                 error = null
                             )
-                            userIdSync()
+                            userRepository.syncUsers()
                             updateSyncJob(
                                 type = USERS,
                                 status = DataSyncJobStatus.SUCCESS,
@@ -505,15 +502,8 @@ class AppRepository(
      * Get missing profile pics (On ios after update installation, there are no more pictures)
      */
     suspend fun getMissingPics() = coroutineScope {
-        // Check user profile pics
-        val users = userLocalDataSource.getAllUsers()
-        val missingPpUserIds = users.filter { user ->
-            !pictureManager.checkImageExists(user.profilePictureUrl)
-        }.map { it.id }
-        
-        if (missingPpUserIds.isNotEmpty()) {
-            launch { getProfilePicturesForUserIds(missingPpUserIds) }
-        }
+        // Check user profile pics (UserRepository), in parallel with the parts below
+        launch { userRepository.fetchMissingProfilePictures() }
 
         // Check group profile pics
         val groups = groupLocalDataSource.getAllGroups()
@@ -563,19 +553,6 @@ class AppRepository(
 
     **************************************************************************
      */
-    /**
-     * Get the currently logged in user as flow
-     */
-    fun getUserByIdFlow(userId: String): Flow<User?> {
-        return database.userDao().getUserbyIdFlow(userId).map { user ->
-            user?.toUser()
-        }
-    }
-
-    suspend fun getUserById(userId: String): User? {
-        return database.userDao().getUserbyId(userId)?.toUser()
-    }
-
     fun getPendingFriends(searchTerm: String): Flow<List<ChatListItem>> {
         return userLocalDataSource.getAllUsersFlow(searchTerm)
             .map { list ->
@@ -588,24 +565,18 @@ class AppRepository(
     }
 
 
-    suspend fun getFriends(searchTerm: String): List<User> {
-        return userLocalDataSource.getAllUsers().filter {
-            it.name.contains(searchTerm)
-                    && it.friendshipStatus == FriendshipStatus.ACCEPTED
-        }
-    }
+    // ─── Users / friends: moved to UserRepository ──────────────────────────────
+    // Thin delegates until every caller uses UserRepository directly (removed with this class).
 
-    fun getFriendsFlow(searchTerm: String): Flow<List<User>> {
-        return userLocalDataSource.getAllUsersFlow(searchTerm).map { users ->
-            users.filter {
-                it.friendshipStatus == FriendshipStatus.ACCEPTED
-            }
-        }
-    }
+    fun getUserByIdFlow(userId: String): Flow<User?> = userRepository.getUserByIdFlow(userId)
 
-    fun getSnailTrailFlow(userId: String): Flow<List<SnailTrailPoint>> {
-        return userLocalDataSource.getSnailTrailFlow(userId)
-    }
+    suspend fun getUserById(userId: String): User? = userRepository.getUserById(userId)
+
+    suspend fun getFriends(searchTerm: String): List<User> = userRepository.getFriends(searchTerm)
+
+    fun getFriendsFlow(searchTerm: String): Flow<List<User>> = userRepository.getFriendsFlow(searchTerm)
+
+    fun getSnailTrailFlow(userId: String): Flow<List<SnailTrailPoint>> = userRepository.getSnailTrailFlow(userId)
 
 
     /** Chats with unread messages, for the chat tab's nav bar badge. */
@@ -821,257 +792,24 @@ class AppRepository(
     **************************************************************************
      */
 
-    /**
-     * Execute a useridsync
-     */
-    suspend fun userIdSync() {
+    // ─── Users / friends: moved to UserRepository ──────────────────────────────
+    // Thin delegates until every caller uses UserRepository directly (removed with this class).
 
-        SessionCache.requireLoggedIn() ?: return
+    suspend fun userIdSync() = userRepository.syncUsers()
 
-        val localusers = userLocalDataSource.getuserchangeid()
+    suspend fun getProfilePicturesForUserIds(userIds: List<String>) =
+        userRepository.getProfilePicturesForUserIds(userIds)
 
-        val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) }).trackConnectivity()
+    suspend fun getAvailableUsers(searchTerm: String) : List<AvailableUser> =
+        userRepository.getAvailableUsers(searchTerm)
 
-        val profilePicsToGet = emptyList<String>().toMutableList()
+    suspend fun sendFriendRequest(friendId: String) : Boolean = userRepository.sendFriendRequest(friendId)
 
-        when (userSyncResponse) {
-            is NetworkResult.Error<*> -> {
-                loggingRepository.logWarning("userid sync error: ${userSyncResponse.error}")
-            }
-            is NetworkResult.Success<UserSyncResponse> -> {
-                //println("Userid sync response: ${userSyncResponse.data.toString()}")
+    suspend fun denyFriendRequest(friendId: String) : Boolean = userRepository.denyFriendRequest(friendId)
 
-                val updatedUsers = userSyncResponse.data.updatedUsers
-                val deletedUsers = userSyncResponse.data.deletedUsers
+    suspend fun removeFriend(friendId: String) : Boolean = userRepository.removeFriend(friendId)
 
-                updatedUsers.forEach { newUser ->
-                    when (newUser) {
-                        is UserResponse.FriendUserResponse -> {
-                            val existing = database.userDao().getUserbyId(newUser.id)
-                            database.userDao().upsert(UserDto(
-                                id = newUser.id,
-                                updatedAt = newUser.updatedAt,
-                                name = newUser.username,
-                                nickName = newUser.nickName,
-                                description = newUser.userDescription,
-                                status = newUser.userStatus,
-                                birthDate = newUser.birthDate,
-                                phoneNumber = newUser.phoneNumber,
-                                frienshipStatus = FriendshipStatus.ACCEPTED,
-                                requesterId = newUser.requesterId,
-
-                                // Preserve existing values:
-                                locationLat = existing?.locationLat,
-                                locationLong = existing?.locationLong,
-                                locationDate = existing?.locationDate,
-                                locationSpeed = existing?.locationSpeed,
-                                locationHeading = existing?.locationHeading,
-                                locationAltitude = existing?.locationAltitude,
-                                locationBattery = existing?.locationBattery,
-                                locationDistance24h = existing?.locationDistance24h,
-                                locationShared = newUser.shareLocation,
-                                shareSpeedHeading = newUser.shareSpeedHeading,
-                                snailTrail = newUser.shareSnailTrail,
-                                //On a friend's row this means "this friend may wake me"
-                                wakeupEnabled = newUser.allowWake,
-                                notisMuted = existing?.notisMuted ?: false,
-                                lastSeen = newUser.lastSeen,
-                                email = null,
-                                emailVerifiedAt = null,
-                                createdAt = null,
-                                //Local file path, the server never sends it. Clearing it here would
-                                //blank the picture on every unrelated user change (e.g. lastSeen)
-                                profilePictureUrl = existing?.profilePictureUrl ?: "",
-                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
-                            ))
-                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
-                                profilePicsToGet += newUser.id
-                            }
-                        }
-                        is UserResponse.SelfUserResponse -> {
-                            val existing = database.userDao().getUserbyId(newUser.id)
-                            database.userDao().upsert(UserDto(
-                                id = newUser.id,
-                                updatedAt = newUser.updatedAt,
-                                name = newUser.username,
-                                description = newUser.userDescription,
-                                status = newUser.userStatus,
-                                birthDate = newUser.birthDate,
-                                phoneNumber = newUser.phoneNumber,
-
-                                // Preserve existing values:
-                                locationLat = existing?.locationLat,
-                                locationLong = existing?.locationLong,
-                                locationDate = existing?.locationDate,
-                                locationSpeed = existing?.locationSpeed,
-                                locationHeading = existing?.locationHeading,
-                                locationAltitude = existing?.locationAltitude,
-                                locationBattery = existing?.locationBattery,
-                                locationDistance24h = existing?.locationDistance24h,
-                                locationShared = newUser.locationShared,
-                                //On my own row this is the master wake switch
-                                wakeupEnabled = newUser.allowWakeGlobal,
-                                frienshipStatus = null,
-                                requesterId = null,
-                                notisMuted = false,
-                                email = newUser.email,
-                                emailVerifiedAt = newUser.emailVerifiedAt,
-                                createdAt = newUser.createdAt,
-                                profilePictureUrl = existing?.profilePictureUrl ?: "",
-                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
-                                ))
-                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
-                                profilePicsToGet += newUser.id
-                            }
-
-                            settingsRepository.applyServerSettings(newUser.settings.toSyncedSettings())
-                        }
-                        is UserResponse.SimpleUserResponse -> {
-                            val existing = database.userDao().getUserbyId(newUser.id)
-                            database.userDao().upsert(UserDto(
-                                id = newUser.id,
-                                updatedAt = newUser.updatedAt,
-                                name = newUser.username,
-                                description = null,
-                                status = null,
-
-                                locationLat = null,
-                                locationLong = null,
-                                locationDate = null,
-                                locationShared = false,
-                                wakeupEnabled = false,
-                                frienshipStatus = newUser.friendShipStatus,
-                                requesterId = newUser.requesterId,
-                                notisMuted = false,
-                                birthDate = null,
-                                phoneNumber = null,
-                                email = null,
-                                emailVerifiedAt = null,
-                                createdAt = null,
-                                profilePictureUrl = existing?.profilePictureUrl ?: "",
-                                profilePicUpdatedAt = newUser.profilePicUpdatedAt
-                                ))
-
-                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
-                                profilePicsToGet += newUser.id
-                            }
-
-                        }
-                    }
-
-                }
-
-                //Delete all non existing users
-                deletedUsers.forEach { userId ->
-                    database.userDao().delete(userId)
-                }
-            }
-        }
-        //println("profilepics to get count: ${profilePicsToGet.size}")
-
-        if (profilePicsToGet.isNotEmpty()) {
-            getProfilePicturesForUserIds(profilePicsToGet)
-        }
-    }
-
-    /**
-     * Get the profile pics for all passed user ids from the server
-     */
-    suspend fun getProfilePicturesForUserIds(userIds: List<String>){
-        userIds.forEach { userId ->
-            val savefilename = userId + USERPROFILEPICTURE_FILE_NAME
-            when (val picture = networkUtils.getProfilePicForUserId(userId).trackConnectivity()) {
-                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for userid $userId")}
-                is NetworkResult.Success<ByteArray> -> {
-                    val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
-
-                    userLocalDataSource.updateUserProfilePicUrl(userId, filepath)
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Get all availavble users from the server
-     * @param searchTerm the searchterm which the user entered
-     */
-    suspend fun getAvailableUsers(searchTerm: String) : List<NewFriendsUserResponse> {
-        return when (val response = networkUtils.getAvailableUsers(searchTerm).trackConnectivity()) {
-            is NetworkResult.Error<NetworkingError> -> {
-                errorChannel.sendErrorSuspend(
-                    ErrorEvent(
-                        error = response.error
-                    )
-                )
-                emptyList()
-            }
-            is NetworkResult.Success<List<NewFriendsUserResponse>> -> {
-                response.data
-            }
-        }
-
-    }
-
-    /**
-     * Send or accept friend request from / to an userid
-     */
-    suspend fun sendFriendRequest(friendId: String) : Boolean {
-        when (val success = networkUtils.sendFriendRequest(friendId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                dataSync(reason = "friendRequestSent")
-                return true
-            }
-        }
-    }
-
-    /**
-     * deny a friendrequest from an userid / cancel an outgoing friend request to an userid
-     */
-    suspend fun denyFriendRequest(friendId: String) : Boolean {
-        when (val success = networkUtils.denyFriendRequest(friendId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                dataSync(reason = "friendRequestDenied")
-                return true
-            }
-        }
-    }
-
-
-    suspend fun removeFriend(friendId: String) : Boolean {
-        when (val success = networkUtils.removeFriend(friendId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                dataSync(reason = "friendRemoved")
-                return true
-            }
-        }
-    }
-
-
-    suspend fun changeUsername(newUsername: String) : Boolean {
-        when (val success = networkUtils.changeUsername(newUsername).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                dataSync(reason = "usernameChanged")
-                return true
-            }
-        }
-    }
+    suspend fun changeUsername(newUsername: String) : Boolean = userRepository.changeUsername(newUsername)
 
 
     // ─── Password / sessions: moved to AuthRepository and SessionTerminator ─────
@@ -1087,23 +825,9 @@ class AppRepository(
     suspend fun endSession(sessionId: String): Boolean = authRepository.endSession(sessionId)
 
 
-    suspend fun changeProfilePic(newPic: ByteArray) : Boolean {
-        when (val success = networkUtils.changeProfilePic(newPic).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                dataSync(reason = "profilePicChanged")
-                return true
-            }
-        }
-    }
+    suspend fun changeProfilePic(newPic: ByteArray) : Boolean = userRepository.changeProfilePic(newPic)
 
 
-    /**
-     * Change status and description. if userid = self then only status, else only description
-     */
     suspend fun changeUserDetails(
         userId: String,
         newStatus: String? = null,
@@ -1112,26 +836,15 @@ class AppRepository(
         newBirthDate: String? = null,
         newNickName: String? = null,
         newPhoneNumber: String? = null,
-        ) : Boolean {
-        return when (val success = networkUtils.changeProfile(
-            userId = userId,
-            newStatus = newStatus,
-            newDescription = newDescription,
-            newEmail = newEmail,
-            newBirthDate = newBirthDate,
-            newNickName = newNickName,
-            newPhoneNumber = newPhoneNumber,
-        ).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                //dataSync()
-                true
-            }
-        }
-    }
+    ) : Boolean = userRepository.changeUserDetails(
+        userId = userId,
+        newStatus = newStatus,
+        newDescription = newDescription,
+        newEmail = newEmail,
+        newBirthDate = newBirthDate,
+        newNickName = newNickName,
+        newPhoneNumber = newPhoneNumber,
+    )
 
 
 
@@ -2107,101 +1820,28 @@ class AppRepository(
     }
 
 
-    // Location data itself is now pushed/pulled over the WebSocket (see GlobalViewModel's
-    // location-tracking job and SocketConnectionMessage's LocationUpdate/FriendLocationChange/
-    // FriendLocationsSnapshot handling), not via HTTP.
+    // ─── Location sharing / wake: moved to UserRepository ──────────────────────
+    // Thin delegates until every caller uses UserRepository directly (removed with this class).
 
-    /** Per-friend toggle: what we share with this specific friend (location, speed/heading, snail trail). */
     suspend fun setLocationSharing(
         friendId: String,
         share: Boolean,
         shareSpeedHeading: Boolean = false,
         snailTrail: Boolean = false,
-    ): Boolean {
-        return when (val result = networkUtils.shareLocation(friendId, share, shareSpeedHeading, snailTrail).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                // Optimistically reflect the new value locally so UI updates immediately;
-                // the next /users/sync or UserChange socket push reconciles the authoritative value.
-                userLocalDataSource.getUserById(friendId)?.let { friend ->
-                    userLocalDataSource.upsertUser(friend.copy(
-                        locationShared = share,
-                        shareSpeedHeading = shareSpeedHeading,
-                        snailTrail = snailTrail,
-                    ).toDto())
-                }
-                true
-            }
-        }
-    }
+    ): Boolean = userRepository.setLocationSharing(friendId, share, shareSpeedHeading, snailTrail)
 
-    /**
-     * Disables location sharing towards every friend. User.locationShared is derived
-     * server-side from whether any friend has share=true, so this is the real way to turn
-     * sharing off entirely (there's no standalone global switch to write to anymore).
-     */
-    suspend fun disableLocationSharingForAllFriends(): Boolean {
-        return getFriends("").all { friend ->
-            setLocationSharing(friend.id, share = false, friend.shareSpeedHeading, friend.snailTrail)
-        }
-    }
+    suspend fun disableLocationSharingForAllFriends(): Boolean = userRepository.disableLocationSharingForAllFriends()
 
-    // ─── Wake ─────────────────────────────────────────────────────────────────
+    suspend fun setWakePermission(friendId: String, allowWake: Boolean): Boolean =
+        userRepository.setWakePermission(friendId, allowWake)
 
-    /**
-     * Per-friend toggle: may this friend wake us. Stored on the friend's local row as
-     * [UserDto.wakeupEnabled] - on our own row that same column is the master switch instead.
-     */
-    suspend fun setWakePermission(friendId: String, allowWake: Boolean): Boolean {
-        return when (val result = networkUtils.setWakePermission(friendId, allowWake).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                // Optimistic local write, reconciled by the next /users/sync or UserChange push.
-                userLocalDataSource.getUserById(friendId)?.let { friend ->
-                    userLocalDataSource.upsertUser(friend.copy(wakeupEnabled = allowWake).toDto())
-                }
-                true
-            }
-        }
-    }
+    suspend fun setWakeGlobal(enabled: Boolean): Boolean = userRepository.setWakeGlobal(enabled)
 
-    /** Master switch: while off nobody can wake us, whatever the per-friend toggles say. */
-    suspend fun setWakeGlobal(enabled: Boolean): Boolean {
-        return when (val result = networkUtils.setWakeGlobal(enabled).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                SessionCache.requireLoggedIn()?.userId?.let { ownId ->
-                    userLocalDataSource.getUserById(ownId)?.let { own ->
-                        userLocalDataSource.upsertUser(own.copy(wakeupEnabled = enabled).toDto())
-                    }
-                }
-                true
-            }
-        }
-    }
-
-
-    /**
-     * Ask the server to wake a friend or a group. A successful response can still report that
-     * nobody was reachable - see WakeOutcome. Errors are passed through rather than flattened,
-     * because the caller needs to tell "not friends" (403) apart from a plain network failure.
-     */
     suspend fun sendWake(
         targetId: String,
         isGroup: Boolean,
         reason: String,
-    ): NetworkResult<NetworkUtils.WakeResponse, NetworkingError> {
-        return networkUtils.sendWake(targetId, isGroup, reason).trackConnectivity()
-    }
+    ): NetworkResult<WakeResult, NetworkingError> = userRepository.sendWake(targetId, isGroup, reason)
 
     // ─── Personal settings: moved to SettingsRepository ────────────────────────
     // Thin delegates until every caller uses SettingsRepository directly (removed with this class).

@@ -26,12 +26,12 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
@@ -54,7 +54,7 @@ class EventsViewModel(
     private val navigator: Navigator,
     private val eventRepository: EventRepository,
     private val appRepository: AppRepository,
-    private val userRepository: UserLocalDataSource,
+    private val userRepository: UserRepository,
     private val groupRepository: GroupLocalDataSource,
     private val settingsRepository: SettingsRepository,
     private val pictureManager: PictureManager,
@@ -69,7 +69,7 @@ class EventsViewModel(
     // picks up the id once autologin finishes.
     private val ownUserFlow = SessionCache.authState.flatMapLatest { auth ->
         (auth as? SessionCache.AuthState.LoggedIn)
-            ?.let { appRepository.getUserByIdFlow(it.userId) }
+            ?.let { userRepository.getUserByIdFlow(it.userId) }
             ?: flowOf(null)
     }
 
@@ -86,7 +86,7 @@ class EventsViewModel(
         settingsRepository.getMapStyleUrlFlow(),
     ) { currentState, events, users, groups, mapStyleUrl ->
         val friendsMap = users
-            .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
+            .filter { it.friendshipStatus == FriendshipStatus.ACCEPTED }
             .associateBy { it.id }
 
         // Events arrive sorted by startDate ASC; groupBy/append below keep that encounter order,

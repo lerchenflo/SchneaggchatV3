@@ -21,12 +21,12 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.Chat
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.newEvent
 import org.jetbrains.compose.resources.getString
@@ -44,7 +44,7 @@ class SchneaggmapViewModel(
     private val appRepository: AppRepository,
     private val settingsRepository: SettingsRepository,
     private val locationService: LocationService,
-    private val userRepository: UserLocalDataSource,
+    private val userRepository: UserRepository,
     private val eventRepository: EventRepository,
 
     private val initialEntryId: String?,
@@ -521,13 +521,13 @@ class SchneaggmapViewModel(
 
         viewModelScope.launch {
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
-            appRepository.getUserByIdFlow(ownId).collectLatest { ownUser ->
+            userRepository.getUserByIdFlow(ownId).collectLatest { ownUser ->
                 _state.update { it.copy(ownLocationShared = ownUser?.locationShared ?: false, ownUser = ownUser) }
             }
         }
 
         viewModelScope.launch {
-            appRepository.getFriendsFlow("")
+            userRepository.getFriendsFlow("")
                 .collectLatest { userList ->
                     userList.mapNotNull {
                         if (it.isLocationValid()) {
@@ -556,7 +556,7 @@ class SchneaggmapViewModel(
                     if (!enabled || userIds.isEmpty()) {
                         flowOf(emptyMap<String, List<SnailTrailPoint>>())
                     } else {
-                        combine(userIds.map { id -> appRepository.getSnailTrailFlow(id).map { id to it } }) { pairs ->
+                        combine(userIds.map { id -> userRepository.getSnailTrailFlow(id).map { id to it } }) { pairs ->
                             pairs.toMap()
                         }
                     }

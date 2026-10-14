@@ -33,17 +33,18 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.WakeOutcome
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -109,7 +110,7 @@ sealed interface ChatDetailsState {
 class ChatDetailsViewmodel(
     private val groupRepository: GroupLocalDataSource,
     private val navigator: Navigator,
-    private val userRepository: UserLocalDataSource,
+    private val userRepository: UserRepository,
     private val appRepository: AppRepository,
     private val pictureManager: PictureManager,
     private val eventRepository: EventRepository,
@@ -141,7 +142,7 @@ class ChatDetailsViewmodel(
         MutableStateFlow<List<ChatListItem>>(emptyList())
     } else {
         combine(
-            _searchTerm.flatMapLatest { term -> appRepository.getFriendsFlow(term) },
+            _searchTerm.flatMapLatest { term -> userRepository.getFriendsFlow(term) },
             groupRepository.getGroupFlow(chatId),
             allGroupsWithMembers,
             _searchTerm
@@ -177,7 +178,7 @@ class ChatDetailsViewmodel(
     fun sendWake(reason: String) {
         viewModelScope.launch {
             val chatName = chatDetails.value.name
-            val result = appRepository.sendWake(
+            val result = userRepository.sendWake(
                 targetId = chatId,
                 isGroup = isGroup,
                 reason = reason
@@ -197,7 +198,7 @@ class ChatDetailsViewmodel(
             }
 
             val message = when (response.outcome) {
-                NetworkUtils.WakeOutcome.WOKEN -> {
+                WakeOutcome.WOKEN -> {
                     val base = if (isGroup) {
                         getString(Res.string.wake_sent_users, response.userCount, response.deviceCount)
                     } else {
@@ -210,11 +211,11 @@ class ChatDetailsViewmodel(
                     }
                 }
 
-                NetworkUtils.WakeOutcome.NOT_ALLOWED ->
+                WakeOutcome.NOT_ALLOWED ->
                     if (isGroup) getString(Res.string.wake_not_allowed_group)
                     else getString(Res.string.wake_not_allowed_user, chatName)
 
-                NetworkUtils.WakeOutcome.NO_DEVICES ->
+                WakeOutcome.NO_DEVICES ->
                     getString(Res.string.wake_no_devices, chatName)
             }
 
@@ -290,7 +291,7 @@ class ChatDetailsViewmodel(
             }
         }
     } else {
-        userRepository.getUserFlow(chatId).map { user ->
+        userRepository.getUserByIdFlow(chatId).map { user ->
             if (user == null) {
                 ChatDetailsState.Loading
             } else {
@@ -423,7 +424,7 @@ class ChatDetailsViewmodel(
             if (isGroup) {
                 appRepository.changeGroupDescription(chatId, descriptionText.text)
             }else {
-                appRepository.changeUserDetails(newStatus = null, newDescription =  descriptionText.text, userId = chatId)
+                userRepository.changeUserDetails(newStatus = null, newDescription =  descriptionText.text, userId = chatId)
             }
         }
     }
@@ -431,7 +432,7 @@ class ChatDetailsViewmodel(
     fun removeFriend() {
         if (!isGroup) {
             viewModelScope.launch {
-                if(appRepository.removeFriend(chatId)){
+                if(userRepository.removeFriend(chatId)){
                     navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                 }
             }
@@ -511,7 +512,7 @@ class ChatDetailsViewmodel(
 
     fun sendFriendRequest(id: String){
         CoroutineScope(Dispatchers.IO).launch { //Launch in coroutinescope to not access the db on main thread
-            val success = appRepository.sendFriendRequest(id)
+            val success = userRepository.sendFriendRequest(id)
             SnackbarManager.showMessage(
                 if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)
             )
@@ -527,7 +528,7 @@ class ChatDetailsViewmodel(
 
     fun updateNickname(newNickname: String) {
         viewModelScope.launch {
-            appRepository.changeUserDetails(
+            userRepository.changeUserDetails(
                 userId = chatId,
                 newNickName = newNickname
             )

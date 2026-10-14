@@ -8,11 +8,11 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
 import org.lerchenflo.schneaggchatv3mp.TEST_ACCOUNT_USERNAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DeviceSession
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SavedCredsResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -48,7 +48,7 @@ class RemoteAuthRepository(
     private val networkUtils: NetworkUtils,
     private val preferencemanager: Preferencemanager,
     private val authSessionManager: AuthSessionManager,
-    private val userLocalDataSource: UserLocalDataSource,
+    private val userRepository: UserRepository,
     private val appVersion: AppVersion,
     private val notifier: Notifier,
     private val loggingRepository: Logger,
@@ -161,7 +161,7 @@ class RemoteAuthRepository(
         var emailVerified = false
         if (credsSaved) {
             val userId = JwtUtils.getUserIdFromToken(tokens.refreshToken)
-            emailVerified = userLocalDataSource.getUserById(userId)?.emailVerifiedAt != null
+            emailVerified = userRepository.getUserById(userId)?.emailVerifiedAt != null
         }
 
         return SavedCredsResult(

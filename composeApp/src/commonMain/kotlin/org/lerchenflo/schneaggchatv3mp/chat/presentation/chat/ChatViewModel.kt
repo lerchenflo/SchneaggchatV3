@@ -45,7 +45,6 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
@@ -56,6 +55,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
@@ -74,7 +74,7 @@ import kotlin.time.TimeSource
 class ChatViewModel(
     private val appRepository: AppRepository,
     private val messageRepository: MessageLocalDataSource,
-    private val userRepository: UserLocalDataSource,
+    private val userRepository: UserRepository,
     private val groupRepository: GroupLocalDataSource,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
@@ -791,7 +791,7 @@ class ChatViewModel(
                 }
             } else {
                 combine(
-                    userRepository.getUserFlow(chatId),
+                    userRepository.getUserByIdFlow(chatId),
                     userRepository.onlineFriendIdsFlow
                 ) { user, onlineFriendIds ->
                     user?.toChatListItem(isOnline = chatId in onlineFriendIds)

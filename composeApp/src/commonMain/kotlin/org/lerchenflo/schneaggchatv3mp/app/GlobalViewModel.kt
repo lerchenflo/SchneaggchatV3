@@ -26,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectio
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.hasEnded
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
@@ -42,6 +43,7 @@ import kotlin.time.Duration.Companion.minutes
 @OptIn(ExperimentalCoroutinesApi::class)
 class GlobalViewModel(
     private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
     private val eventRepository: EventRepository,
     private val appInfoRepository: AppInfoRepository,
     private val settingsRepository: SettingsRepository,
@@ -280,7 +282,7 @@ class GlobalViewModel(
         viewModelScope.launch {
             SessionCache.authState.flatMapLatest { authState ->
                 if (authState is SessionCache.AuthState.LoggedIn) {
-                    appRepository.getUserByIdFlow(authState.userId)
+                    userRepository.getUserByIdFlow(authState.userId)
                 } else {
                     flowOf(null)
                 }
@@ -363,7 +365,7 @@ class GlobalViewModel(
                 // don't prompt again on every resume/sync; they can re-enable it manually.
                 println("Location tracking: Permission denied, disabling location sharing")
                 ownLocationShared = false
-                appRepository.disableLocationSharingForAllFriends()
+                userRepository.disableLocationSharingForAllFriends()
             }
 
             if (permission != PermissionState.GRANTED) {
@@ -382,7 +384,7 @@ class GlobalViewModel(
                     .collect { location ->
 
                         // Speed and heading are sent if any user in the friends list has shareSpeedHeading enabled
-                        val shareSpeedHeading = appRepository.getFriends("").any { it.shareSpeedHeading }
+                        val shareSpeedHeading = userRepository.getFriends("").any { it.shareSpeedHeading }
                         val update = SocketConnectionMessage.LocationUpdate(
                             lat = location.coordinates.lat,
                             long = location.coordinates.long,

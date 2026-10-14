@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 
 /**
  * Flat presentation model for a chat row (chat selector, member pickers, chat header).
@@ -14,7 +15,7 @@ data class ChatListItem(
     val profilePictureUrl: String = "",
     val status: String? = null,
     val description: String? = null,
-    val friendshipStatus: NetworkUtils.FriendshipStatus? = null,
+    val friendshipStatus: FriendshipStatus? = null,
     val requesterId: String? = null, //Requester of the friendship
 
     val unreadMessageCount: Int = 0,

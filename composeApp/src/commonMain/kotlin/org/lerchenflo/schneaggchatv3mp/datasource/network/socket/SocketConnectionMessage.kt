@@ -17,6 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
@@ -174,6 +175,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
     val mapLocalDataSource = KoinPlatform.getKoin().get<MapLocalDataSource>()
     val eventLocalDataSource = KoinPlatform.getKoin().get<EventLocalDataSource>()
     val settingsRepository = KoinPlatform.getKoin().get<SettingsRepository>()
+    val userRepository = KoinPlatform.getKoin().get<UserRepository>()
 
     try {
         val socketMessage = AppJson.instance.decodeFromString<SocketConnectionMessage>(message)
@@ -295,7 +297,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
                             //Update profile picture if user is new or the profile pic got updated
                             if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
-                                appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
+                                userRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
                             }
 
 
@@ -339,7 +341,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                             ))
                             //Update profile picture if user is new or the profile pic got updated
                             if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
-                                appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
+                                userRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
                             }
                         }
                         is NetworkUtils.UserResponse.SelfUserResponse -> {
@@ -378,7 +380,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
                             //Update profile picture if user is new or the profile pic got updated
                             if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
-                                appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
+                                userRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
                             }
 
                             settingsRepository.applyServerSettings(newUser.settings.toSyncedSettings())

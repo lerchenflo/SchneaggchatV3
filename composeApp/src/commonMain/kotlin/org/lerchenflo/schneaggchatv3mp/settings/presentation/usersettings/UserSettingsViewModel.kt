@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -33,6 +34,7 @@ import kotlin.time.Instant
 
 class UserSettingsViewModel(
     private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
     private val sessionTerminator: SessionTerminator,
     private val pictureManager: PictureManager,
@@ -53,7 +55,7 @@ class UserSettingsViewModel(
 
             val bytearray = pictureManager.downscaleImage(bytearrayfullsize)
 
-            val success = appRepository.changeProfilePic(bytearray)
+            val success = userRepository.changeProfilePic(bytearray)
 
             if (success) {
                 SnackbarManager.showMessage(getString(Res.string.please_restart_app)) //Des image caching vo coil isch so guat dassas sich ned abtöta loht. ma künnt profilbild mit datum speichra aber denn wirds ned überschrieba und unendlich speicherverbrauch
@@ -90,7 +92,7 @@ class UserSettingsViewModel(
         }
 
         viewModelScope.launch {
-            appRepository.changeUsername(newUsername)
+            userRepository.changeUsername(newUsername)
         }
     }
 
@@ -98,7 +100,7 @@ class UserSettingsViewModel(
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
         viewModelScope.launch {
-            appRepository.changeUserDetails(newEmail = newEmail, userId = userId)
+            userRepository.changeUserDetails(newEmail = newEmail, userId = userId)
             appRepository.dataSync(reason = "emailChanged")
         }
     }
@@ -107,7 +109,7 @@ class UserSettingsViewModel(
         viewModelScope.launch {
             val userId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
-            appRepository.changeUserDetails(newStatus = newStatus, userId = userId)
+            userRepository.changeUserDetails(newStatus = newStatus, userId = userId)
             appRepository.dataSync(reason = "statusChanged")
         }
     }
@@ -116,7 +118,7 @@ class UserSettingsViewModel(
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
         viewModelScope.launch {
-            appRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId)
+            userRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId)
             appRepository.dataSync(reason = "birthDateChanged")
         }
     }
@@ -125,7 +127,7 @@ class UserSettingsViewModel(
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
         viewModelScope.launch {
-            appRepository.changeUserDetails(newPhoneNumber = newPhoneNumber, userId = userId)
+            userRepository.changeUserDetails(newPhoneNumber = newPhoneNumber, userId = userId)
             appRepository.dataSync(reason = "phoneNumberChanged")
         }
     }

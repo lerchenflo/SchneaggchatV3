@@ -10,13 +10,13 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
 
 class PlayerSelectorViewModel(
     private val playerRepository: PlayerRepository,
-    private val appRepository: AppRepository
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlayerSelectorState())
@@ -34,8 +34,8 @@ class PlayerSelectorViewModel(
         viewModelScope.launch {
             // Yourself first, then the friends you can pick from
             val ownId = SessionCache.requireLoggedIn()?.userId
-            val ownUserFlow = if (ownId != null) appRepository.getUserByIdFlow(ownId) else flowOf(null)
-            val friendsFlow = appRepository.getFriendsFlow("")
+            val ownUserFlow = if (ownId != null) userRepository.getUserByIdFlow(ownId) else flowOf(null)
+            val friendsFlow = userRepository.getFriendsFlow("")
 
             ownUserFlow.combine(friendsFlow) { ownUser, friendsList ->
                 buildList {

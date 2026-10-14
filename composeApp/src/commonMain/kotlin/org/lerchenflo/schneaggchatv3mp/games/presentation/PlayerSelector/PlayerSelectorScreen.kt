@@ -55,7 +55,7 @@ import schneaggchatv3mp.composeapp.generated.resources.player_selector_start_for
 import schneaggchatv3mp.composeapp.generated.resources.player_selector_tab_friends
 import schneaggchatv3mp.composeapp.generated.resources.player_selector_tab_local
 import schneaggchatv3mp.composeapp.generated.resources.player_selector_title
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 

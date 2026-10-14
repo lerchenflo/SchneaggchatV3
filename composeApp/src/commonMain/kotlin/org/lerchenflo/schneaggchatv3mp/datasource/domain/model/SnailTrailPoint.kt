@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.domain
+package org.lerchenflo.schneaggchatv3mp.datasource.domain.model
 
 /** One sampled point of a friend's snail trail, as shared with us via `FriendLocationPayload`. */
 data class SnailTrailPoint(

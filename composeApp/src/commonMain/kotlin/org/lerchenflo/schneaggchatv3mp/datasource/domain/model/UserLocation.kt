@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.domain
+package org.lerchenflo.schneaggchatv3mp.datasource.domain.model
 
 /**
  * A user's last known location (domain-only; the Room entity keeps separate columns).

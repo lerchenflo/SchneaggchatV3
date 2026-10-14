@@ -12,15 +12,15 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.ageOnNextBirthday
 import org.lerchenflo.schneaggchatv3mp.utilities.daysUntilNextBirthday
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.nextBirthdayMonth
 
 class BirthdaysViewModel(
-    private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
     private val navigator: Navigator,
 ) : ViewModel() {
 
@@ -30,8 +30,8 @@ class BirthdaysViewModel(
     init {
         viewModelScope.launch {
             val ownId = SessionCache.requireLoggedIn()?.userId
-            val ownUserFlow = if (ownId != null) appRepository.getUserByIdFlow(ownId) else flowOf(null)
-            val friendsFlow = appRepository.getFriendsFlow("")
+            val ownUserFlow = if (ownId != null) userRepository.getUserByIdFlow(ownId) else flowOf(null)
+            val friendsFlow = userRepository.getFriendsFlow("")
 
             ownUserFlow.combine(friendsFlow) { ownUser, friends ->
                 buildList {

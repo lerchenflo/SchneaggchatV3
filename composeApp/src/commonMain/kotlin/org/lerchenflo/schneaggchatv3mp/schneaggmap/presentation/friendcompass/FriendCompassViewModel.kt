@@ -8,13 +8,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 
 class FriendCompassViewModel(
     targetUserId: String?,
     private val navigator: Navigator,
-    appRepository: AppRepository,
+    userRepository: UserRepository,
     locationService: LocationService,
 ) : ViewModel() {
 
@@ -25,7 +25,7 @@ class FriendCompassViewModel(
         val ownUserId = SessionCache.requireLoggedIn()?.userId
 
         viewModelScope.launch {
-            appRepository.getFriendsFlow("").collect { users ->
+            userRepository.getFriendsFlow("").collect { users ->
                 _state.update { currentState ->
                     currentState.copy(
                         friends = users.filter { it.isLocationValid() && it.id != ownUserId }

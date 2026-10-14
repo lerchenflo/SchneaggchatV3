@@ -9,9 +9,9 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 
 /** Draft per-friend location sharing settings edited in the dialog, only sent to the server on Save. */
@@ -23,7 +23,7 @@ data class FriendShareDraft(
 )
 
 class SchneaggmapSettingsViewModel(
-    private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
     private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
@@ -67,7 +67,7 @@ class SchneaggmapSettingsViewModel(
         viewModelScope.launch { // Global "share my location at all" switch (own user) - derived, read-only
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
-            appRepository.getUserByIdFlow(ownId)
+            userRepository.getUserByIdFlow(ownId)
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting own user for location sharing: ${exception.message}")
                 }
@@ -77,7 +77,7 @@ class SchneaggmapSettingsViewModel(
         }
 
         viewModelScope.launch { // Per-friend "share my location with them" switches
-            appRepository.getFriendsFlow("")
+            userRepository.getFriendsFlow("")
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting friends for location sharing: ${exception.message}")
                 }
@@ -113,11 +113,11 @@ class SchneaggmapSettingsViewModel(
             when {
                 newGlobalShare && !wasGlobalShared -> {
                     friendDrafts.forEach { draft ->
-                        appRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
+                        userRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
                     }
                 }
                 !newGlobalShare && wasGlobalShared -> {
-                    appRepository.disableLocationSharingForAllFriends()
+                    userRepository.disableLocationSharingForAllFriends()
                 }
                 else -> {
                     friendDrafts.forEach { draft ->
@@ -126,7 +126,7 @@ class SchneaggmapSettingsViewModel(
                                 friend.shareSpeedHeading != draft.shareSpeedHeading ||
                                 friend.snailTrail != draft.snailTrail
                         if (changed) {
-                            appRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
+                            userRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
                         }
                     }
                 }

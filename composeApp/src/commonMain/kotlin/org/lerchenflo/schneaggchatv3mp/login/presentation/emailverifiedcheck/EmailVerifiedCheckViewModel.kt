@@ -22,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.email_check_check_emails_snackbar
@@ -34,6 +35,7 @@ import kotlin.time.Instant
 
 class EmailVerifiedCheckViewModel(
     private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
     private val sessionTerminator: SessionTerminator,
     private val navigator: Navigator,
@@ -69,7 +71,7 @@ class EmailVerifiedCheckViewModel(
 
         state.value.userData?.let { user ->
             viewModelScope.launch {
-                appRepository.changeUserDetails(newEmail = newEmail, userId = user.id)
+                userRepository.changeUserDetails(newEmail = newEmail, userId = user.id)
                 showEmailDialog(false)
                 resendEmail()
             }
@@ -150,7 +152,7 @@ class EmailVerifiedCheckViewModel(
                 .flatMapLatest { authState ->
                     //println("AUTHSTATE CHANGED: $authState")
                     if (authState is SessionCache.AuthState.LoggedIn) {
-                        appRepository.getUserByIdFlow(userId = authState.userId)
+                        userRepository.getUserByIdFlow(userId = authState.userId)
                     } else {
                         flowOf(null) // emit null and stop when logged out
                     }

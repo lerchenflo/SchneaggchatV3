@@ -14,11 +14,12 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.FriendShareDraft
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -33,6 +34,7 @@ import kotlin.time.Instant
 
 class PrivacyAndSecurityViewModel(
     private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
     private val sessionTerminator: SessionTerminator,
     private val settingsRepository: SettingsRepository,
@@ -56,7 +58,7 @@ class PrivacyAndSecurityViewModel(
         viewModelScope.launch { // Global location sharing status
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
-            appRepository.getUserByIdFlow(ownId)
+            userRepository.getUserByIdFlow(ownId)
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting own user for location sharing: ${exception.message}")
                 }
@@ -66,7 +68,7 @@ class PrivacyAndSecurityViewModel(
         }
 
         viewModelScope.launch { // Friends for per-friend location sharing
-            appRepository.getFriendsFlow("")
+            userRepository.getFriendsFlow("")
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting friends for privacy settings: ${exception.message}")
                 }
@@ -115,7 +117,7 @@ class PrivacyAndSecurityViewModel(
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
         viewModelScope.launch {
-            appRepository.changeUserDetails(newEmail = newEmail, userId = userId)
+            userRepository.changeUserDetails(newEmail = newEmail, userId = userId)
             appRepository.dataSync(reason = "emailChanged")
         }
     }
@@ -127,11 +129,11 @@ class PrivacyAndSecurityViewModel(
             when {
                 newGlobalShare && !wasGlobalShared -> {
                     friendDrafts.forEach { draft ->
-                        appRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
+                        userRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
                     }
                 }
                 !newGlobalShare && wasGlobalShared -> {
-                    appRepository.disableLocationSharingForAllFriends()
+                    userRepository.disableLocationSharingForAllFriends()
                 }
                 else -> {
                     friendDrafts.forEach { draft ->
@@ -140,7 +142,7 @@ class PrivacyAndSecurityViewModel(
                                 friend.shareSpeedHeading != draft.shareSpeedHeading ||
                                 friend.snailTrail != draft.snailTrail
                         if (changed) {
-                            appRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
+                            userRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
                         }
                     }
                 }

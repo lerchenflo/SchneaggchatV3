@@ -16,6 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.RoomLoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstUserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomGroupDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomMessageDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomUserDataSource
@@ -40,6 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -167,11 +169,12 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
+    singleOf(::OfflineFirstUserRepository) bind UserRepository::class
     singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
     singleOf(::RoomLoggingRepository) bind Logger::class
     singleOf(::RoomMapDataSource) bind MapLocalDataSource::class
@@ -304,7 +307,7 @@ val sharedmodule = module{
         FriendCompassViewModel(
             targetUserId = targetUserId,
             navigator = get(),
-            appRepository = get(),
+            userRepository = get(),
             locationService = get()
         )
     }

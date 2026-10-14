@@ -23,8 +23,10 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.AvailableUser
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -37,6 +39,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class NewChatViewModel (
     private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val shareUtils: ShareUtils,
@@ -50,8 +53,8 @@ class NewChatViewModel (
         _searchTerm.value = newValue
     }
 
-    private val _availableChats = MutableStateFlow<List<NetworkUtils.NewFriendsUserResponse>>(emptyList())
-    val availableChats: StateFlow<List<NetworkUtils.NewFriendsUserResponse>> = _availableChats.asStateFlow()
+    private val _availableChats = MutableStateFlow<List<AvailableUser>>(emptyList())
+    val availableChats: StateFlow<List<AvailableUser>> = _availableChats.asStateFlow()
 
 
     private val _pendingFriends = MutableStateFlow<List<ChatListItem>>(emptyList())
@@ -83,7 +86,7 @@ class NewChatViewModel (
 
     private suspend fun loadAvailableUsers(searchTerm: String) {
         try {
-            val response = appRepository.getAvailableUsers(searchTerm)
+            val response = userRepository.getAvailableUsers(searchTerm)
             println("reloading users: $response")
             _availableChats.value = response
                 .sortedByDescending { it.commonFriendCount }
@@ -97,7 +100,7 @@ class NewChatViewModel (
 
     fun addFriend(friendId: String) {
         CoroutineScope(Dispatchers.IO).launch { //Launch in coroutinescope to not access the db on main thread
-            val success = appRepository.sendFriendRequest(friendId)
+            val success = userRepository.sendFriendRequest(friendId)
             SnackbarManager.showMessage(
                 if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)
             )
@@ -120,20 +123,20 @@ class NewChatViewModel (
 
     fun acceptFriend(friendId: String){
         viewModelScope.launch {
-            appRepository.sendFriendRequest(friendId)
+            userRepository.sendFriendRequest(friendId)
         }
         dismissPendingFriendDialog()
     }
 
     fun denyFriend(friendId: String){
         viewModelScope.launch {
-            appRepository.denyFriendRequest(friendId)
+            userRepository.denyFriendRequest(friendId)
         }
         dismissPendingFriendDialog()
     }
 
     fun onPendingFriendRequestClick(selectedChat: ChatListItem) {
-        if (selectedChat.friendshipStatus != NetworkUtils.FriendshipStatus.PENDING) {
+        if (selectedChat.friendshipStatus != FriendshipStatus.PENDING) {
             //You are already friends with this person, open the chat
             viewModelScope.launch {
                 navigator.navigate(Route.Chat(chatId = selectedChat.id, isGroup = selectedChat.isGroup), navigationOptions = Navigator.NavigationOptions(removeAllScreensByClass = listOf(Route.NewChat::class)))

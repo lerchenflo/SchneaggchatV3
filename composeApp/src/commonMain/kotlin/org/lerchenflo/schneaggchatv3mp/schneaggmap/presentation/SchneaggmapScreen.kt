@@ -60,7 +60,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import io.github.lerchenflo.taptarget.tapTarget
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.UserLocation
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.CoordinateView

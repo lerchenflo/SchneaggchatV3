@@ -53,13 +53,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText.StringResourceText
-import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.accepted
-import schneaggchatv3mp.composeapp.generated.resources.blocked
-import schneaggchatv3mp.composeapp.generated.resources.declined
-import schneaggchatv3mp.composeapp.generated.resources.pending
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -397,14 +390,7 @@ class NetworkUtils(
         PENDING,
         ACCEPTED,
         DECLINED,
-        BLOCKED;
-
-        fun toUiText(): UiText = when (this) {
-            PENDING -> StringResourceText(Res.string.pending)
-            ACCEPTED -> StringResourceText(Res.string.accepted)
-            DECLINED -> StringResourceText(Res.string.declined)
-            BLOCKED -> StringResourceText(Res.string.blocked)
-        }
+        BLOCKED
     }
 
 
