@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 
 /**

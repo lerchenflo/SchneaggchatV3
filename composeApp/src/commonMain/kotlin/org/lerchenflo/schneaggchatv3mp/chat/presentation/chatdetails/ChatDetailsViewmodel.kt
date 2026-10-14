@@ -31,18 +31,17 @@ import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMember
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.WakeOutcome
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
@@ -108,10 +107,9 @@ sealed interface ChatDetailsState {
 }
 
 class ChatDetailsViewmodel(
-    private val groupRepository: GroupLocalDataSource,
+    private val groupRepository: GroupRepository,
     private val navigator: Navigator,
     private val userRepository: UserRepository,
-    private val appRepository: AppRepository,
     private val pictureManager: PictureManager,
     private val eventRepository: EventRepository,
     private val messageRepository: MessageLocalDataSource,
@@ -126,7 +124,7 @@ class ChatDetailsViewmodel(
     val searchterm = _searchTerm.asStateFlow()
 
     /** All groups the user is in, kept around to expand a selected group into its member friends. */
-    private val allGroupsWithMembers: StateFlow<List<Group>> = groupRepository.getAllGroupswithMembersFlow()
+    private val allGroupsWithMembers: StateFlow<List<Group>> = groupRepository.getAllGroupsFlow()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -143,7 +141,7 @@ class ChatDetailsViewmodel(
     } else {
         combine(
             _searchTerm.flatMapLatest { term -> userRepository.getFriendsFlow(term) },
-            groupRepository.getGroupFlow(chatId),
+            groupRepository.getGroupByIdFlow(chatId),
             allGroupsWithMembers,
             _searchTerm
         ) { friends, group, allGroups, term ->
@@ -280,7 +278,7 @@ class ChatDetailsViewmodel(
      * - For users: user with common groups
      */
     val chatDetails: StateFlow<ChatDetailsState> = if (isGroup) {
-        groupRepository.getGroupFlow(chatId).map { group ->
+        groupRepository.getGroupByIdFlow(chatId).map { group ->
             if (group == null) {
                 ChatDetailsState.Loading
             } else {
@@ -422,7 +420,7 @@ class ChatDetailsViewmodel(
     fun updateDescription(){
         viewModelScope.launch {
             if (isGroup) {
-                appRepository.changeGroupDescription(chatId, descriptionText.text)
+                groupRepository.changeGroupDescription(chatId, descriptionText.text)
             }else {
                 userRepository.changeUserDetails(newStatus = null, newDescription =  descriptionText.text, userId = chatId)
             }
@@ -441,8 +439,8 @@ class ChatDetailsViewmodel(
 
     fun changeAdminStatus(member: GroupMember){
         viewModelScope.launch{
-            appRepository.changeGroupMembers(
-                action = if(member.admin) NetworkUtils.GroupMemberAction.REMOVE_ADMIN else NetworkUtils.GroupMemberAction.MAKE_ADMIN,
+            groupRepository.changeGroupMembers(
+                action = if(member.admin) GroupMemberAction.REMOVE_ADMIN else GroupMemberAction.MAKE_ADMIN,
                 memberId = member.userId,
                 groupId = member.groupId
             )
@@ -459,7 +457,7 @@ class ChatDetailsViewmodel(
             val downscaledimage = pictureManager.downscaleImage(bytearray)
 
             //println("Downscaled image size: ${downscaledimage.size}")
-            val success = appRepository.changeGroupProfilePic(
+            val success = groupRepository.changeGroupProfilePic(
                 groupId = chatId,
                 newPic = downscaledimage
             )
@@ -472,8 +470,8 @@ class ChatDetailsViewmodel(
 
     fun addMember(userId: String){
         viewModelScope.launch {
-            appRepository.changeGroupMembers(
-                action = NetworkUtils.GroupMemberAction.ADD_USER,
+            groupRepository.changeGroupMembers(
+                action = GroupMemberAction.ADD_USER,
                 memberId = userId,
                 groupId = chatId
             )
@@ -482,8 +480,8 @@ class ChatDetailsViewmodel(
 
     fun removeMember(memberId: String){
         viewModelScope.launch {
-            appRepository.changeGroupMembers(
-                action = NetworkUtils.GroupMemberAction.REMOVE_USER,
+            groupRepository.changeGroupMembers(
+                action = GroupMemberAction.REMOVE_USER,
                 memberId = memberId,
                 groupId = chatId
             )
@@ -496,7 +494,7 @@ class ChatDetailsViewmodel(
 
     fun updateGroupName(name: String){
         viewModelScope.launch {
-            appRepository.changeGroupName(chatId, name)
+            groupRepository.changeGroupName(chatId, name)
         }
     }
 
@@ -506,7 +504,7 @@ class ChatDetailsViewmodel(
      */
     fun setGroupExpiry(expiresAt: Long?) {
         viewModelScope.launch {
-            appRepository.changeGroupExpiry(chatId, expiresAt)
+            groupRepository.changeGroupExpiry(chatId, expiresAt)
         }
     }
 

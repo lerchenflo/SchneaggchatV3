@@ -16,6 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.RoomLoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstGroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstUserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomGroupDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomMessageDataSource
@@ -37,6 +38,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
@@ -169,10 +171,11 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
+    singleOf(::OfflineFirstGroupRepository) bind GroupRepository::class
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
     singleOf(::OfflineFirstUserRepository) bind UserRepository::class
     singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
@@ -266,7 +269,6 @@ val sharedmodule = module{
             groupRepository = get(),
             navigator = get(),
             userRepository = get(),
-            appRepository = get(),
             pictureManager = get(),
             eventRepository = get(),
             messageRepository = get(),

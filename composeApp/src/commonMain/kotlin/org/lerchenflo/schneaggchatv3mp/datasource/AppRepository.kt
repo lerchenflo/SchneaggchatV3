@@ -24,7 +24,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
-import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -33,8 +32,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
@@ -58,16 +55,13 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PersonalUserSettings
@@ -94,6 +88,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipatio
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventType
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationData
@@ -150,6 +145,7 @@ class AppRepository(
     private val errorChannel: ErrorChannel,
     private val settingsRepository: SettingsRepository,
     private val userRepository: UserRepository,
+    private val groupRepository: GroupRepository,
 ) {
     /*
     **************************************************************************
@@ -335,7 +331,7 @@ class AppRepository(
                                 status = DataSyncJobStatus.RUNNING,
                                 error = null
                             )
-                            removedGroupIds += groupIdSync()
+                            removedGroupIds += groupRepository.syncGroups()
                             updateSyncJob(
                                 type = GROUPS,
                                 status = DataSyncJobStatus.SUCCESS,
@@ -505,15 +501,8 @@ class AppRepository(
         // Check user profile pics (UserRepository), in parallel with the parts below
         launch { userRepository.fetchMissingProfilePictures() }
 
-        // Check group profile pics
-        val groups = groupLocalDataSource.getAllGroups()
-        val missingPpGroupIds = groups.filter { group ->
-            !pictureManager.checkImageExists(group.profilePictureUrl)
-        }.map { it.id }
-        
-        if (missingPpGroupIds.isNotEmpty()) {
-            launch { getProfilePicturesForGroupIds(missingPpGroupIds) }
-        }
+        // Check group profile pics (GroupRepository), in parallel with the parts below
+        launch { groupRepository.fetchMissingGroupPictures() }
 
         // Check image messages
         val messages = messageLocalDataSource.getImageMessages()
@@ -1606,218 +1595,36 @@ class AppRepository(
 
 
 
-    /**
-     * Create a group
-     * @return the id of the created group to directly open the chat
-     */
+    // ─── Groups: moved to GroupRepository ─────────────────────────────────────
+    // Thin delegates until every caller uses GroupRepository directly (removed with this class).
+
     suspend fun createGroup(
         name: String,
         description: String,
         memberIds: List<String>,
         profilePic: ByteArray
-    ) : String? {
-        val response = networkUtils.createGroup(
-            name = name,
-            description = description,
-            memberIds = memberIds,
-            profilePicBytes = profilePic
-        ).trackConnectivity()
+    ) : String? = groupRepository.createGroup(name, description, memberIds, profilePic)
 
-        return when (response){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = response.error))
-                null
-            }
-            is NetworkResult.Success<GroupResponse> -> {
+    suspend fun groupIdSync(): List<String> = groupRepository.syncGroups()
 
-                val groupResponse = response.data
+    suspend fun getProfilePicturesForGroupIds(groupIds: List<String>) =
+        groupRepository.getProfilePicturesForGroupIds(groupIds)
 
-                groupLocalDataSource.upsertGroup(Group(
-                    id = groupResponse.id,
-                    name = groupResponse.name,
-                    profilePictureUrl = "",
-                    description = groupResponse.description,
-                    createDate = groupResponse.createdAt,
-                    updatedAt = groupResponse.updatedAt,
-                    profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
-                    expiresAt = groupResponse.expiresAt,
-                    notisMuted = false,
-                    members = groupResponse.members.map { groupMemberresp ->
-                        GroupMember(
-                            groupId = groupResponse.id,
-                            userId = groupMemberresp.userid,
-                            joinDate = groupMemberresp.joinedAt,
-                            admin = groupMemberresp.admin,
-                            color = groupMemberresp.color,
-                            memberName = groupMemberresp.memberName
-                        )
-                    }
-                ))
+    suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray) : Boolean =
+        groupRepository.changeGroupProfilePic(groupId, newPic)
 
-                response.data.id
-            }
-        }
-    }
+    suspend fun changeGroupDescription(groupId: String, newDescription: String) : Boolean =
+        groupRepository.changeGroupDescription(groupId, newDescription)
 
+    suspend fun changeGroupName(groupId: String, newName: String) : Boolean =
+        groupRepository.changeGroupName(groupId, newName)
 
-    /**
-     * @return the ids of groups deleted during this sync (left, removed, or the group itself
-     * got deleted) - used by [dataSync] to purge that group's messages once the parallel
-     * message job has settled.
-     */
-    suspend fun groupIdSync(): List<String> {
-
-        val userId = SessionCache.requireLoggedIn() ?: return emptyList()
-
-
-        val localgroups = groupLocalDataSource.getgroupchangeid()
-        val profilepicsToGet = mutableListOf<String>()
-
-        val groupSyncResponse = networkUtils.groupIdSync(
-            groupIds = localgroups.map {
-                IdTimeStamp(it.id, it.updatedAt)
-            }
-        ).trackConnectivity()
-
-        var deletedGroupIds: List<String> = emptyList()
-
-        when (groupSyncResponse) {
-            is NetworkResult.Error<*> -> {
-                loggingRepository.logWarning("groupid sync error: ${groupSyncResponse.error}")
-            }
-
-            is NetworkResult.Success<GroupSyncResponse> -> {
-                //println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
-
-                groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
-                    val existing = groupLocalDataSource.getGroupById(groupResponse.id)
-                    groupLocalDataSource.upsertGroup(Group(
-                        id = groupResponse.id,
-                        name = groupResponse.name,
-                        profilePictureUrl = existing?.profilePictureUrl ?: "",
-                        description = groupResponse.description,
-                        createDate = groupResponse.createdAt,
-                        updatedAt = groupResponse.updatedAt,
-                        profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
-                        expiresAt = groupResponse.expiresAt,
-                        notisMuted = existing?.notisMuted ?: false,
-                        members = groupResponse.members.map { groupMemberresp ->
-                            GroupMember(
-                                groupId = groupResponse.id,
-                                userId = groupMemberresp.userid,
-                                joinDate = groupMemberresp.joinedAt,
-                                admin = groupMemberresp.admin,
-                                color = groupMemberresp.color,
-                                memberName = groupMemberresp.memberName
-                                )
-                        }
-                    ))
-
-                    //Update profile picture if group is new or the profile pic got updated
-                    if (existing == null || existing.profilePicUpdatedAt < groupResponse.profilePicUpdatedAt) {
-                        profilepicsToGet += groupResponse.id
-                    }
-                }
-
-
-                deletedGroupIds = groupSyncResponse.data.deletedGroups
-                deletedGroupIds.forEach { id ->
-                    groupLocalDataSource.deleteGroup(id)
-                }
-            }
-        }
-
-        if (profilepicsToGet.isNotEmpty()) {
-            getProfilePicturesForGroupIds(profilepicsToGet)
-        }
-
-        return deletedGroupIds
-    }
-
-    suspend fun getProfilePicturesForGroupIds(groupIds: List<String>){
-        groupIds.forEach { groupId ->
-            val savefilename = groupId + GROUPPROFILEPICTURE_FILE_NAME
-            when (val picture = networkUtils.getProfilePicForGroupId(groupId).trackConnectivity()) {
-                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for groupid $groupId")}
-                is NetworkResult.Success<ByteArray> -> {
-                    val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
-
-                    groupLocalDataSource.updateGroupProfilePicUrl(groupId, filepath)
-                }
-            }
-        }
-    }
-
-
-    suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray) : Boolean {
-        when (val success = networkUtils.changeGroupProfilePic(newPic, groupId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                dataSync(reason = "groupProfilePicChanged")
-                return true
-            }
-        }
-    }
-
-    suspend fun changeGroupDescription(groupId: String, newDescription: String) : Boolean {
-        when (val success = networkUtils.changeGroupDescription(newDescription, groupId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                dataSync(reason = "groupDescriptionChanged")
-                return true
-            }
-        }
-    }
-
-    suspend fun changeGroupName(groupId: String, newName: String) : Boolean {
-        when (val success = networkUtils.changeGroupName(newName, groupId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                dataSync(reason = "groupNameChanged")
-                return true
-            }
-        }
-    }
-
-    suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String) : Boolean {
-        when (val success = networkUtils.changeGroupMembers(
-            action = action,
-            memberId = memberId,
-            groupId = groupId
-        ).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                dataSync(reason = "groupMembersChanged")
-                return true
-            }
-        }
-    }
+    suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String) : Boolean =
+        groupRepository.changeGroupMembers(action, memberId, groupId)
 
     /** Pass null for [expiresAt] to clear the expiry (group never auto-expires). */
-    suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?) : Boolean {
-        when (val success = networkUtils.changeGroupExpiry(groupId, expiresAt).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                dataSync(reason = "groupExpiryChanged")
-                return true
-            }
-        }
-    }
+    suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?) : Boolean =
+        groupRepository.changeGroupExpiry(groupId, expiresAt)
 
 
     // ─── Location sharing / wake: moved to UserRepository ──────────────────────

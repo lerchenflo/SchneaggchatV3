@@ -28,6 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.InputfieldState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -106,6 +107,7 @@ sealed interface GroupCreatorAction {
 
 class GroupCreatorViewModel (
     private val appRepository: AppRepository,
+    private val groupRepository: GroupRepository,
     private val pictureManager: PictureManager,
 
     private val navigator: Navigator
@@ -235,7 +237,7 @@ class GroupCreatorViewModel (
             state = state.copy(isLoading = true)
 
             try {
-                val groupId = appRepository.createGroup(
+                val groupId = groupRepository.createGroup(
                     name = state.groupname.text,
                     description = state.groupdescription.text,
                     memberIds = state.selectedUsers.map { member ->

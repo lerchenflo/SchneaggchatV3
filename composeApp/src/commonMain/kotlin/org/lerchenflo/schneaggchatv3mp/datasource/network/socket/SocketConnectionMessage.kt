@@ -11,11 +11,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
@@ -28,6 +27,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMember
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
@@ -176,6 +177,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
     val eventLocalDataSource = KoinPlatform.getKoin().get<EventLocalDataSource>()
     val settingsRepository = KoinPlatform.getKoin().get<SettingsRepository>()
     val userRepository = KoinPlatform.getKoin().get<UserRepository>()
+    val groupRepository = KoinPlatform.getKoin().get<GroupRepository>()
 
     try {
         val socketMessage = AppJson.instance.decodeFromString<SocketConnectionMessage>(message)
@@ -423,7 +425,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
                     //Update profile picture if group is new or the profile pic got updated
                     if (existing == null || existing.profilePicUpdatedAt < socketMessage.group.profilePicUpdatedAt) {
-                        appRepository.getProfilePicturesForGroupIds(listOf(socketMessage.group.id))
+                        groupRepository.getProfilePicturesForGroupIds(listOf(socketMessage.group.id))
                     }
                 }
             }

@@ -50,8 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMember
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.FriendRequestAlert
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus

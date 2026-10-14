@@ -43,7 +43,6 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
@@ -54,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
@@ -75,7 +75,7 @@ class ChatViewModel(
     private val appRepository: AppRepository,
     private val messageRepository: MessageLocalDataSource,
     private val userRepository: UserRepository,
-    private val groupRepository: GroupLocalDataSource,
+    private val groupRepository: GroupRepository,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
@@ -786,7 +786,7 @@ class ChatViewModel(
         // Chat partner (user or group) for the top bar, kept up to date from the database.
         viewModelScope.launch {
             val chatPartnerFlow = if (isGroup) {
-                groupRepository.getGroupFlow(chatId).map { group ->
+                groupRepository.getGroupByIdFlow(chatId).map { group ->
                     group?.toChatListItem()
                 }
             } else {

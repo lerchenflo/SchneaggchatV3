@@ -25,11 +25,11 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
@@ -55,7 +55,7 @@ class EventsViewModel(
     private val eventRepository: EventRepository,
     private val appRepository: AppRepository,
     private val userRepository: UserRepository,
-    private val groupRepository: GroupLocalDataSource,
+    private val groupRepository: GroupRepository,
     private val settingsRepository: SettingsRepository,
     private val pictureManager: PictureManager,
     private val applicationScope: ApplicationScope,
@@ -82,7 +82,7 @@ class EventsViewModel(
         _state,
         eventRepository.getAllEventsFlow(),
         userRepository.getAllUsersFlow(),
-        groupRepository.getAllGroupswithMembersFlow(),
+        groupRepository.getAllGroupsFlow(),
         settingsRepository.getMapStyleUrlFlow(),
     ) { currentState, events, users, groups, mapStyleUrl ->
         val friendsMap = users

@@ -1,23 +1,8 @@
-package org.lerchenflo.schneaggchatv3mp.chat.domain
+package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
-
-data class Group(
-    val id: String,
-    val name: String,
-    val profilePictureUrl: String,
-    val description: String,
-    val createDate: Long,
-
-    val updatedAt: Long,
-    val profilePicUpdatedAt: Long,
-
-    val expiresAt: Long? = null,
-
-    val notisMuted: Boolean = false,
-    val members: List<GroupMember>
-)
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMember
 
 fun GroupWithMembersDto.toGroup(): Group = Group(
     id = this.group.id,
@@ -50,4 +35,25 @@ fun Group.toDto(): GroupWithMembersDto = GroupWithMembersDto(
     members = this.members.map { member ->
         member.toDto()
     }
+)
+
+fun GroupMemberDto.toGroupMember(): GroupMember = GroupMember(
+    localPk = localPk,
+    groupId = groupId,
+    userId = userId,
+    joinDate = joinDate,
+    admin = admin,
+    color = color,
+    memberName = memberName
+)
+
+/** Convert domain GroupMember -> persistence/transport GroupMemberDto */
+fun GroupMember.toDto(): GroupMemberDto = GroupMemberDto(
+    localPk = localPk,
+    groupId = groupId,
+    userId = userId,
+    joinDate = joinDate,
+    admin = admin,
+    color = color,
+    memberName = memberName
 )

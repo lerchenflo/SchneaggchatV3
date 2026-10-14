@@ -3,6 +3,8 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
@@ -83,155 +85,165 @@ class OfflineFirstUserRepository(
     // ─── User sync ────────────────────────────────────────────────────────────
 
     /**
+     * The user mutations below run their own [syncUsers] outside AppRepository.dataSyncLock
+     * (D16/R1), so a full sync and a mutation's sync could otherwise run /users/sync at the same
+     * time. This lock makes the second one wait. Lock order is always dataSyncLock -> this lock,
+     * and nothing inside [syncUsers] calls [syncUsers] again (a Mutex is not reentrant).
+     */
+    private val userSyncLock = Mutex()
+
+    /**
      * Execute a useridsync
      */
     override suspend fun syncUsers() {
+        userSyncLock.withLock {
 
-        SessionCache.requireLoggedIn() ?: return
+            SessionCache.requireLoggedIn() ?: return
 
-        val localusers = userLocalDataSource.getuserchangeid()
+            val localusers = userLocalDataSource.getuserchangeid()
 
-        val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) }).trackConnectivity()
+            val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) }).trackConnectivity()
 
-        val profilePicsToGet = emptyList<String>().toMutableList()
+            val profilePicsToGet = emptyList<String>().toMutableList()
 
-        when (userSyncResponse) {
-            is NetworkResult.Error<*> -> {
-                loggingRepository.logWarning("userid sync error: ${userSyncResponse.error}")
-            }
-            is NetworkResult.Success<UserSyncResponse> -> {
-                //println("Userid sync response: ${userSyncResponse.data.toString()}")
+            when (userSyncResponse) {
+                is NetworkResult.Error<*> -> {
+                    loggingRepository.logWarning("userid sync error: ${userSyncResponse.error}")
+                }
+                is NetworkResult.Success<UserSyncResponse> -> {
+                    //println("Userid sync response: ${userSyncResponse.data.toString()}")
 
-                val updatedUsers = userSyncResponse.data.updatedUsers
-                val deletedUsers = userSyncResponse.data.deletedUsers
+                    val updatedUsers = userSyncResponse.data.updatedUsers
+                    val deletedUsers = userSyncResponse.data.deletedUsers
 
-                updatedUsers.forEach { newUser ->
-                    when (newUser) {
-                        is UserResponse.FriendUserResponse -> {
-                            val existing = database.userDao().getUserbyId(newUser.id)
-                            database.userDao().upsert(UserDto(
-                                id = newUser.id,
-                                updatedAt = newUser.updatedAt,
-                                name = newUser.username,
-                                nickName = newUser.nickName,
-                                description = newUser.userDescription,
-                                status = newUser.userStatus,
-                                birthDate = newUser.birthDate,
-                                phoneNumber = newUser.phoneNumber,
-                                frienshipStatus = NetworkUtils.FriendshipStatus.ACCEPTED,
-                                requesterId = newUser.requesterId,
+                    updatedUsers.forEach { newUser ->
+                        when (newUser) {
+                            is UserResponse.FriendUserResponse -> {
+                                val existing = database.userDao().getUserbyId(newUser.id)
+                                database.userDao().upsert(UserDto(
+                                    id = newUser.id,
+                                    updatedAt = newUser.updatedAt,
+                                    name = newUser.username,
+                                    nickName = newUser.nickName,
+                                    description = newUser.userDescription,
+                                    status = newUser.userStatus,
+                                    birthDate = newUser.birthDate,
+                                    phoneNumber = newUser.phoneNumber,
+                                    frienshipStatus = NetworkUtils.FriendshipStatus.ACCEPTED,
+                                    requesterId = newUser.requesterId,
 
-                                // Preserve existing values:
-                                locationLat = existing?.locationLat,
-                                locationLong = existing?.locationLong,
-                                locationDate = existing?.locationDate,
-                                locationSpeed = existing?.locationSpeed,
-                                locationHeading = existing?.locationHeading,
-                                locationAltitude = existing?.locationAltitude,
-                                locationBattery = existing?.locationBattery,
-                                locationDistance24h = existing?.locationDistance24h,
-                                locationShared = newUser.shareLocation,
-                                shareSpeedHeading = newUser.shareSpeedHeading,
-                                snailTrail = newUser.shareSnailTrail,
-                                //On a friend's row this means "this friend may wake me"
-                                wakeupEnabled = newUser.allowWake,
-                                notisMuted = existing?.notisMuted ?: false,
-                                lastSeen = newUser.lastSeen,
-                                email = null,
-                                emailVerifiedAt = null,
-                                createdAt = null,
-                                //Local file path, the server never sends it. Clearing it here would
-                                //blank the picture on every unrelated user change (e.g. lastSeen)
-                                profilePictureUrl = existing?.profilePictureUrl ?: "",
-                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
-                            ))
-                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
-                                profilePicsToGet += newUser.id
-                            }
-                        }
-                        is UserResponse.SelfUserResponse -> {
-                            val existing = database.userDao().getUserbyId(newUser.id)
-                            database.userDao().upsert(UserDto(
-                                id = newUser.id,
-                                updatedAt = newUser.updatedAt,
-                                name = newUser.username,
-                                description = newUser.userDescription,
-                                status = newUser.userStatus,
-                                birthDate = newUser.birthDate,
-                                phoneNumber = newUser.phoneNumber,
-
-                                // Preserve existing values:
-                                locationLat = existing?.locationLat,
-                                locationLong = existing?.locationLong,
-                                locationDate = existing?.locationDate,
-                                locationSpeed = existing?.locationSpeed,
-                                locationHeading = existing?.locationHeading,
-                                locationAltitude = existing?.locationAltitude,
-                                locationBattery = existing?.locationBattery,
-                                locationDistance24h = existing?.locationDistance24h,
-                                locationShared = newUser.locationShared,
-                                //On my own row this is the master wake switch
-                                wakeupEnabled = newUser.allowWakeGlobal,
-                                frienshipStatus = null,
-                                requesterId = null,
-                                notisMuted = false,
-                                email = newUser.email,
-                                emailVerifiedAt = newUser.emailVerifiedAt,
-                                createdAt = newUser.createdAt,
-                                profilePictureUrl = existing?.profilePictureUrl ?: "",
-                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
+                                    // Preserve existing values:
+                                    locationLat = existing?.locationLat,
+                                    locationLong = existing?.locationLong,
+                                    locationDate = existing?.locationDate,
+                                    locationSpeed = existing?.locationSpeed,
+                                    locationHeading = existing?.locationHeading,
+                                    locationAltitude = existing?.locationAltitude,
+                                    locationBattery = existing?.locationBattery,
+                                    locationDistance24h = existing?.locationDistance24h,
+                                    locationShared = newUser.shareLocation,
+                                    shareSpeedHeading = newUser.shareSpeedHeading,
+                                    snailTrail = newUser.shareSnailTrail,
+                                    //On a friend's row this means "this friend may wake me"
+                                    wakeupEnabled = newUser.allowWake,
+                                    notisMuted = existing?.notisMuted ?: false,
+                                    lastSeen = newUser.lastSeen,
+                                    email = null,
+                                    emailVerifiedAt = null,
+                                    createdAt = null,
+                                    //Local file path, the server never sends it. Clearing it here would
+                                    //blank the picture on every unrelated user change (e.g. lastSeen)
+                                    profilePictureUrl = existing?.profilePictureUrl ?: "",
+                                    profilePicUpdatedAt = newUser.profilePicUpdatedAt,
                                 ))
-                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
-                                profilePicsToGet += newUser.id
+                                if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
+                                    profilePicsToGet += newUser.id
+                                }
                             }
+                            is UserResponse.SelfUserResponse -> {
+                                val existing = database.userDao().getUserbyId(newUser.id)
+                                database.userDao().upsert(UserDto(
+                                    id = newUser.id,
+                                    updatedAt = newUser.updatedAt,
+                                    name = newUser.username,
+                                    description = newUser.userDescription,
+                                    status = newUser.userStatus,
+                                    birthDate = newUser.birthDate,
+                                    phoneNumber = newUser.phoneNumber,
 
-                            settingsRepository.applyServerSettings(newUser.settings.toSyncedSettings())
-                        }
-                        is UserResponse.SimpleUserResponse -> {
-                            val existing = database.userDao().getUserbyId(newUser.id)
-                            database.userDao().upsert(UserDto(
-                                id = newUser.id,
-                                updatedAt = newUser.updatedAt,
-                                name = newUser.username,
-                                description = null,
-                                status = null,
+                                    // Preserve existing values:
+                                    locationLat = existing?.locationLat,
+                                    locationLong = existing?.locationLong,
+                                    locationDate = existing?.locationDate,
+                                    locationSpeed = existing?.locationSpeed,
+                                    locationHeading = existing?.locationHeading,
+                                    locationAltitude = existing?.locationAltitude,
+                                    locationBattery = existing?.locationBattery,
+                                    locationDistance24h = existing?.locationDistance24h,
+                                    locationShared = newUser.locationShared,
+                                    //On my own row this is the master wake switch
+                                    wakeupEnabled = newUser.allowWakeGlobal,
+                                    frienshipStatus = null,
+                                    requesterId = null,
+                                    notisMuted = false,
+                                    email = newUser.email,
+                                    emailVerifiedAt = newUser.emailVerifiedAt,
+                                    createdAt = newUser.createdAt,
+                                    profilePictureUrl = existing?.profilePictureUrl ?: "",
+                                    profilePicUpdatedAt = newUser.profilePicUpdatedAt,
+                                    ))
+                                if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
+                                    profilePicsToGet += newUser.id
+                                }
 
-                                locationLat = null,
-                                locationLong = null,
-                                locationDate = null,
-                                locationShared = false,
-                                wakeupEnabled = false,
-                                frienshipStatus = newUser.friendShipStatus,
-                                requesterId = newUser.requesterId,
-                                notisMuted = false,
-                                birthDate = null,
-                                phoneNumber = null,
-                                email = null,
-                                emailVerifiedAt = null,
-                                createdAt = null,
-                                profilePictureUrl = existing?.profilePictureUrl ?: "",
-                                profilePicUpdatedAt = newUser.profilePicUpdatedAt
-                                ))
-
-                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
-                                profilePicsToGet += newUser.id
+                                settingsRepository.applyServerSettings(newUser.settings.toSyncedSettings())
                             }
+                            is UserResponse.SimpleUserResponse -> {
+                                val existing = database.userDao().getUserbyId(newUser.id)
+                                database.userDao().upsert(UserDto(
+                                    id = newUser.id,
+                                    updatedAt = newUser.updatedAt,
+                                    name = newUser.username,
+                                    description = null,
+                                    status = null,
 
+                                    locationLat = null,
+                                    locationLong = null,
+                                    locationDate = null,
+                                    locationShared = false,
+                                    wakeupEnabled = false,
+                                    frienshipStatus = newUser.friendShipStatus,
+                                    requesterId = newUser.requesterId,
+                                    notisMuted = false,
+                                    birthDate = null,
+                                    phoneNumber = null,
+                                    email = null,
+                                    emailVerifiedAt = null,
+                                    createdAt = null,
+                                    profilePictureUrl = existing?.profilePictureUrl ?: "",
+                                    profilePicUpdatedAt = newUser.profilePicUpdatedAt
+                                    ))
+
+                                if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
+                                    profilePicsToGet += newUser.id
+                                }
+
+                            }
                         }
+
                     }
 
-                }
-
-                //Delete all non existing users
-                deletedUsers.forEach { userId ->
-                    database.userDao().delete(userId)
+                    //Delete all non existing users
+                    deletedUsers.forEach { userId ->
+                        database.userDao().delete(userId)
+                    }
                 }
             }
-        }
-        //println("profilepics to get count: ${profilePicsToGet.size}")
+            //println("profilepics to get count: ${profilePicsToGet.size}")
 
-        if (profilePicsToGet.isNotEmpty()) {
-            getProfilePicturesForUserIds(profilePicsToGet)
+            if (profilePicsToGet.isNotEmpty()) {
+                getProfilePicturesForUserIds(profilePicsToGet)
+            }
         }
     }
 
