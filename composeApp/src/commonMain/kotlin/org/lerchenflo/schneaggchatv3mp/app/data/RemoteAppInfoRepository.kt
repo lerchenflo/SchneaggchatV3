@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.app.data
 
 import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_API_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity

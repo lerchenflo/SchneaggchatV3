@@ -7,7 +7,7 @@ import org.koin.core.context.startKoin
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.setupImageLoader
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import java.io.PrintWriter
 import java.io.StringWriter
 

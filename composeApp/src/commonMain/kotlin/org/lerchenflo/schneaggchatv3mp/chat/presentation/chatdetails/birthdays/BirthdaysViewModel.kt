@@ -12,8 +12,8 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.ageOnNextBirthday
 import org.lerchenflo.schneaggchatv3mp.utilities.daysUntilNextBirthday
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday

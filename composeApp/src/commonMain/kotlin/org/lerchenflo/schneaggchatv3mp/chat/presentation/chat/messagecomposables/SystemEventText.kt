@@ -2,8 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposable
 
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SystemEventMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SystemEventType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventType
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.system_admin_granted
 import schneaggchatv3mp.composeapp.generated.resources.system_admin_revoked

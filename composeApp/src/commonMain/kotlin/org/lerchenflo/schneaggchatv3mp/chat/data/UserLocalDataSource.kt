@@ -3,8 +3,8 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SnailTrailPoint
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.FriendLocationPayload
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.FriendLocationSnapshotEntry
@@ -58,7 +58,7 @@ interface UserLocalDataSource {
 
     fun setFriendOnline(userId: String, online: Boolean)
 
-    /** Best-effort local timestamp for the moment a friend went offline. The next [dataSync][org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator.dataSync]
+    /** Best-effort local timestamp for the moment a friend went offline. The next [dataSync][org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator.dataSync]
      * will overwrite this with the server's authoritative `lastSeen`. */
     suspend fun updateUserLastSeenNow(userId: String)
 

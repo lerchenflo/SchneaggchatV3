@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 
 /**
  * A single row on the birthdays screen - a friend (or the own user) whose next birthday is

@@ -1,12 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.testutil
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMember
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 
 // Builders for the domain models the tests need, with every field a test usually doesn't care
 // about filled in. Ids double as names unless a name is given.

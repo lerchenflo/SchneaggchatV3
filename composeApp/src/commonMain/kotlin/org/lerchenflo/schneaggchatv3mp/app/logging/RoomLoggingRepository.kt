@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import kotlin.time.Clock
 
 private const val MAX_MESSAGE_LENGTH = 8000

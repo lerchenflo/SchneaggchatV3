@@ -8,13 +8,13 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
 import org.lerchenflo.schneaggchatv3mp.TEST_ACCOUNT_USERNAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DeviceSession
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SavedCredsResult
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.login.domain.DeviceSession
+import org.lerchenflo.schneaggchatv3mp.login.domain.SavedCredsResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
@@ -277,7 +277,7 @@ class RemoteAuthRepository(
 
     /**
      * The server half of the account-wide logout (the local half is
-     * [org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator.logoutAllDevices]).
+     * [org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator.logoutAllDevices]).
      * Not best effort: if the server call fails, the other devices are still logged in.
      * @return true if the server logged the account out everywhere
      */

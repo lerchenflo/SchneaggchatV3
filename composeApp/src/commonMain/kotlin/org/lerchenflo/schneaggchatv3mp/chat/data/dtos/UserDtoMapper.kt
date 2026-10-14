@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.UserLocation
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toFriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toNetworkFriendshipStatus
 

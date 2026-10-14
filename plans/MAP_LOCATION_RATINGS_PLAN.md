@@ -176,7 +176,7 @@ suspend fun getMapRatingImage(imageId: String, thumb: Boolean): NetworkResult<By
 
 ### 4.3 Repositories
 
-Keep the existing split: **`MapLocalDataSource` = Room only, `OfflineFirstMapRepository` (interface `datasource/domain/MapRepository`) = network + sync + writes into `MapLocalDataSource`** (same as map entries today).
+Keep the existing split: **`MapLocalDataSource` = Room only, `OfflineFirstMapRepository` (interface `schneaggmap/domain/MapRepository`) = network + sync + writes into `MapLocalDataSource`** (same as map entries today).
 
 `MapLocalDataSource` additions: `getRatingChangeIds()`, `upsertRating()`, `deleteRating(id)`, `deleteRatingsForEntry(entryId)`, `getRatingsForEntryFlow(entryId)`, `getRatingSummariesFlow()`, `getOwnRatingsFlow(userId)`. `deleteMapEntry(id)` also calls `deleteRatingsForEntry(id)`.
 

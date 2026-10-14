@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos

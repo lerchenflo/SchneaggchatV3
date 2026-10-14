@@ -2,13 +2,13 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.data
 
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationData
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapEntry
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest

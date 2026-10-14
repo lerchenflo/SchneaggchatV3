@@ -34,10 +34,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipationStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.icon
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.labelRes
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.events.domain.icon
+import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res

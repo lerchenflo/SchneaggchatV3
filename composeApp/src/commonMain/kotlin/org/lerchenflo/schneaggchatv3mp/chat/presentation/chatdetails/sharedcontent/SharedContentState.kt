@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 
 /** The things a chat can have shared in it, one tab each. */
 @Serializable

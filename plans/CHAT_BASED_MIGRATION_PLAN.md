@@ -196,7 +196,7 @@ No server-enforced gate in this release. Old clients fail with errors until upda
   - `deleteMessagesForGroup` (:357), `deleteReadersForGroupMessages` (:423), `getCommonGroupsWithMembers` (:476-485) → chat-based.
 - **Repositories**: `chat/data/GroupRepository.kt:27-72` → `ChatRepository` (incl. `getDirectChatIdForUser(userId): String?` via `partnerUserId`); `MessageRepository.kt:79-125` chat-scoped wrappers take `chatId` only.
 - **Former `AppRepository` code** (`AppRepository` was split up and deleted by `REPOSITORY_INTERFACE_MIGRATION_PLAN.md`; line numbers as of its Phase 8):
-  - `OfflineFirstMessageRepository` (`C/chat/data/OfflineFirstMessageRepository.kt`, interface `C/datasource/domain/MessageRepository.kt`):
+  - `OfflineFirstMessageRepository` (`C/chat/data/OfflineFirstMessageRepository.kt`, interface `C/chat/domain/MessageRepository.kt`):
     - `sendMessage(chatId, …)` (:349-589); send-echo (:533-584) maps `chatId`.
     - `sendOfflineMessages` (:600-684) uses `m.chatId`.
     - `syncMessages` (was `messageIdSync`, :703-802): plain version stream; new `chatBackfill(chatId)` per §3.3.

@@ -1,6 +1,7 @@
 # Repository Interface Migration Plan
 
 **Status: implemented** (Phases 0–9, branch `macci`, 2026-10-14); the device tests are still open (checklist in `plans/Todo.md`).
+**Update 2026-10-14:** decision D4 was replaced — the `D/` interfaces and models (`datasource/domain/`) moved to the domain package of the feature that holds each implementation (commit "feature-domain move"); features import each other's `domain/` only.
 
 Splits the god object `AppRepository` (`C/datasource/AppRepository.kt`, ~2,990 lines, 14 constructor deps, used by ~40 files) into feature repositories and coordinators. Each one has an **interface**, so every ViewModel depends only on interfaces and can be unit-tested with in-memory fakes.
 

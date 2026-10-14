@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 
 data class EmailVerifiedCheckState(
     val userData: User? = null,

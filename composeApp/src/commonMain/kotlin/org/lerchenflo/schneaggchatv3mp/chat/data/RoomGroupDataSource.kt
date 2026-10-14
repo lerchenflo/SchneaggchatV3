@@ -4,8 +4,8 @@ import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMember
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toGroup
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase

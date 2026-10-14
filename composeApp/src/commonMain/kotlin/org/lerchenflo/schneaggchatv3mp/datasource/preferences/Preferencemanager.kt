@@ -14,14 +14,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapStyleSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SyncedSettings
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,

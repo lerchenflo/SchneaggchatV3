@@ -3,8 +3,8 @@ package org.lerchenflo.schneaggchatv3mp.fakes
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.ActionChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.ActionEvent
 
 /**
  * [ActionChannel] that records every event in [sent] (whether or not anybody collects [actions]).

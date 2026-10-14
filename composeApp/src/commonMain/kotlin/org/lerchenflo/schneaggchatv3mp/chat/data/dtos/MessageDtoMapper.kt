@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 
 fun MessageWithReadersDto.toMessage(): Message = this.messageDto.toMessage(
     readers = this.readers.map { readerDto ->

@@ -12,9 +12,9 @@ import org.koin.mp.KoinPlatformTools
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title

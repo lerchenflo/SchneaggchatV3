@@ -9,9 +9,9 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DeviceSession
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.login.domain.DeviceSession
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager

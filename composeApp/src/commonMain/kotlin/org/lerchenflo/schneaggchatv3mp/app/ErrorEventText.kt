@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.app
 
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_code_format

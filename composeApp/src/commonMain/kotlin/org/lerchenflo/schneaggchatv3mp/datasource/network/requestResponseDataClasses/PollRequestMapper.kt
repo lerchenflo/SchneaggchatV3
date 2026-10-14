@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPoll
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPollOption
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVote
+import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPoll
+import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPollOption
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVote
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 // ─── Poll create ─────────────────────────────────────────────────────────────

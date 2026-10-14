@@ -15,8 +15,8 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.testutil.FRIEND_ID
 import org.lerchenflo.schneaggchatv3mp.testutil.FakeMessageServer.Reply

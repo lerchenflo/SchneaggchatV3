@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMember
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 
 fun GroupWithMembersDto.toGroup(): Group = Group(
     id = this.group.id,

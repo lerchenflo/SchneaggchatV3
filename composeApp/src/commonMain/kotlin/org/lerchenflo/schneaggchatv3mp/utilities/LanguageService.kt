@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import kotlinx.coroutines.flow.Flow
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 class LanguageService(

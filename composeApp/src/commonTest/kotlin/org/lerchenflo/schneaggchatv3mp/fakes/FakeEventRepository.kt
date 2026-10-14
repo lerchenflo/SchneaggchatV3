@@ -3,13 +3,13 @@ package org.lerchenflo.schneaggchatv3mp.fakes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipationStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventType
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventVisibility
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupDeleteDelay
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
 /**
  * In-memory [EventRepository]. The reads serve [events] (the connected event of a group comes

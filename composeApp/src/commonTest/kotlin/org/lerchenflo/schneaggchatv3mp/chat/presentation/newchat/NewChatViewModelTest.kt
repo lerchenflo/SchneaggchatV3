@@ -13,8 +13,8 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.AvailableUser
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.domain.AvailableUser
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAppVersion
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeChatListRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger

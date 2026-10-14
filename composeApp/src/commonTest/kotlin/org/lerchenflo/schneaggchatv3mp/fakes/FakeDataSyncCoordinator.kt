@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.fakes
 
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncState
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
 
 /** [DataSyncCoordinator] that records every [dataSync] reason and runs [onDataSync]. */
 class FakeDataSyncCoordinator : DataSyncCoordinator {

@@ -5,11 +5,11 @@ import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapStyleSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Event
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
 import kotlin.time.Clock
 
 @Stable

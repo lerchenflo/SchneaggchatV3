@@ -3,10 +3,10 @@ package org.lerchenflo.schneaggchatv3mp.fakes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Group
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMember
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
 
 /**
  * In-memory [GroupRepository]. The reads serve [groups]; the writes are recorded and answer with

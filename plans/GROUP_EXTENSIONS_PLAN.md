@@ -35,7 +35,7 @@ The discriminator names and property names must be identical on both sides becau
 ### 1.3 Client sync plumbing
 
 - `DataSyncCoordinator.dataSync()` (`app/data/DefaultDataSyncCoordinator.kt`, was `AppRepository.dataSync()`) runs one `async` job per `DataSyncJobType` (`USERS, GROUPS, MESSAGES, MAP, EVENTS, MEDIA`) and reports progress through `DataSyncState`.
-- Each feature has a thin Room-only local data source (`MapLocalDataSource`, `EventLocalDataSource`) exposing `getXChangeIds()`, `upsertX()`, `deleteX()`, `getAllXFlow()`; the network calls live in `NetworkUtils`, orchestration in an offline-first repository behind an interface in `datasource/domain/` (`OfflineFirstMapRepository`, `OfflineFirstEventRepository`; `AppRepository` is gone, see `REPOSITORY_INTERFACE_MIGRATION_PLAN.md`).
+- Each feature has a thin Room-only local data source (`MapLocalDataSource`, `EventLocalDataSource`) exposing `getXChangeIds()`, `upsertX()`, `deleteX()`, `getAllXFlow()`; the network calls live in `NetworkUtils`, orchestration in an offline-first repository behind an interface in the feature's `domain/` (`OfflineFirstMapRepository`, `OfflineFirstEventRepository`; `AppRepository` is gone, see `REPOSITORY_INTERFACE_MIGRATION_PLAN.md`).
 - Socket handling is one `when` in `SocketConnectionMessage.kt:172-468`; `MapChange`/`EventChange` just upsert/delete the local row.
 - Group removal purge: `RoomGroupDataSource.deleteGroup` (`chat/data/RoomGroupDataSource.kt:47`) deletes messages + readers for the group, and `dataSync` repeats the purge after all jobs finished (`DefaultDataSyncCoordinator.kt:237`, via `MessageRepository.deleteMessagesForGroups`) because the message job runs in parallel.
 - Room DB is at version 82 with `fallbackToDestructiveMigration(dropAllTables = true)`; a schema change is a version bump + full re-sync.
@@ -307,7 +307,7 @@ groupextensions/
     dtos/GroupExtensionDto.kt      @Entity("group_extensions"), index on ownerId
     dtos/GroupExtensionItemDto.kt  @Entity("group_extension_items"), indices on extensionId and ownerId
     GroupExtensionLocalDataSource.kt          Room-only, same shape as EventLocalDataSource
-    OfflineFirstGroupExtensionRepository.kt   network + sync + CRUD (§4.3), implements datasource/domain/GroupExtensionRepository
+    OfflineFirstGroupExtensionRepository.kt   network + sync + CRUD (§4.3), implements groupextensions/domain/GroupExtensionRepository
   presentation/
     ExtensionListSection.kt        composable used inside ChatDetails (list + "add" button)
     AddExtensionDialog.kt          type picker + title (+ currency field when SPLIT)
@@ -337,7 +337,7 @@ datasource/network/requestResponseDataClasses/
 ### 4.3 Network + sync
 
 - `NetworkUtils`: `groupExtensionSync(since)`, `upsertGroupExtension(request)`, `deleteGroupExtension(id)`, `upsertGroupExtensionItems(list)`, `deleteGroupExtensionItem(id)` - all through the existing `safeGet/safePost/safeDelete`.
-- `GroupExtensionRepository` (interface in `datasource/domain/`, since `DataSyncCoordinator` calls it) / `OfflineFirstGroupExtensionRepository`, and `DefaultDataSyncCoordinator` (`AppRepository` is gone):
+- `GroupExtensionRepository` (interface in `groupextensions/domain/`, the feature that holds the implementation; `DataSyncCoordinator` imports it from there) / `OfflineFirstGroupExtensionRepository`, and `DefaultDataSyncCoordinator` (`AppRepository` is gone):
   - `DataSyncJobType.GROUP_EXTENSIONS` + default `DataSyncJobState` entry + a new `async` job in `DefaultDataSyncCoordinator.dataSync` calling `groupExtensionRepository.syncGroupExtensions()`.
   - `syncGroupExtensions()` copies the `syncMessages` loop (`OfflineFirstMessageRepository`, was `messageIdSync`): `since = dao.getLastSyncedVersion()`, apply deletions first, then upserts sorted by version, `since = response.newVersion`, loop while `moreEntries`.
   - CRUD wrappers `upsertGroupExtension(...)`, `deleteGroupExtension(id)`, `upsertGroupExtensionItems(...)`, `deleteGroupExtensionItem(id)` following the `upsertEvent` shape: network first, on success upsert/delete locally, on error `errorChannel.sendErrorSuspend(ErrorEvent(error = error))`.

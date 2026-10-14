@@ -4,8 +4,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.ActionChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.ActionEvent
 
 class DefaultActionChannel : ActionChannel {
 

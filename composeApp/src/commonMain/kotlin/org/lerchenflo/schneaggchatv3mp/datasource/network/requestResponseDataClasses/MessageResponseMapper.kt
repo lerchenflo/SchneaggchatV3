@@ -1,9 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageReader
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Reaction
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 fun NetworkUtils.MessageResponse.toDomainMessage(

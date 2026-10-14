@@ -54,7 +54,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.logging.formatAllLogs
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.getPasswordResetUrl
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.LogsDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog

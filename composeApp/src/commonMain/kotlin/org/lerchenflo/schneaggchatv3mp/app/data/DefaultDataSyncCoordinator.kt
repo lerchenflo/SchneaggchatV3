@@ -14,21 +14,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncJobStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncJobType
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncJobType.EVENTS
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncJobType.GROUPS
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncJobType.MAP
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncJobType.MESSAGES
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncJobType.USERS
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DataSyncState
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobStatus
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.EVENTS
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.GROUPS
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.MAP
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.MESSAGES
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.USERS
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
 
 /**
  * [DataSyncCoordinator] running the repositories' own syncs. Moved verbatim from AppRepository

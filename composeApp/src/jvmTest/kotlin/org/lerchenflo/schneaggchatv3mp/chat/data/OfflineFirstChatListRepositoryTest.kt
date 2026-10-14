@@ -22,9 +22,9 @@ import kotlinx.coroutines.test.runTest
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient

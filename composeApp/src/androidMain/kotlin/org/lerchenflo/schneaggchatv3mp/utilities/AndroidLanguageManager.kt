@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 
 import android.content.Context
 import android.os.LocaleList
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import java.util.Locale
 

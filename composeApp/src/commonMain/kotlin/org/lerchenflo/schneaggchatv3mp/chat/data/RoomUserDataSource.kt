@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.SnailTrailPointDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SnailTrailPoint
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate

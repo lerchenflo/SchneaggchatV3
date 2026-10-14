@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.data
 
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 
 /**
  * Local (Room) storage for map entries.

@@ -69,9 +69,9 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPoll
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPollOption
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPoll
+import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPollOption
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle

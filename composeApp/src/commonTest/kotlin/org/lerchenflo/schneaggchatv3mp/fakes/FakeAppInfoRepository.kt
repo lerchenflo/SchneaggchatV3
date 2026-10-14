@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.fakes
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 
 /** [AppInfoRepository] answering with the values set on it; nothing goes over the network. */

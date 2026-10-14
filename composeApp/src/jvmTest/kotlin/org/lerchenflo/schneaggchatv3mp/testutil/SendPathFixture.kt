@@ -6,8 +6,8 @@ import kotlinx.coroutines.test.TestScope
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstMessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomMessageDataSource
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient

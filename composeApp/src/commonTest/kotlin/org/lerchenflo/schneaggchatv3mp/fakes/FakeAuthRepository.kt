@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.fakes
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DeviceSession
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SavedCredsResult
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.login.domain.DeviceSession
+import org.lerchenflo.schneaggchatv3mp.login.domain.SavedCredsResult
 
 /**
  * [AuthRepository] that records the calls and answers with [result] / [sessions] /

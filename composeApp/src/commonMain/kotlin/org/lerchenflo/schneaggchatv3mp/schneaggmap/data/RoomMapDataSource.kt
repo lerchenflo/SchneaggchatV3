@@ -7,7 +7,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.database.MapEntryDao
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 
 class RoomMapDataSource(
     private val database: AppDatabase,

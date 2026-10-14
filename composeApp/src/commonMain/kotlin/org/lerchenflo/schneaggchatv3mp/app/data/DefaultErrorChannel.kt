@@ -4,8 +4,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 
 //Errorchannel for global error events (Show in every screen)
 class DefaultErrorChannel : ErrorChannel {

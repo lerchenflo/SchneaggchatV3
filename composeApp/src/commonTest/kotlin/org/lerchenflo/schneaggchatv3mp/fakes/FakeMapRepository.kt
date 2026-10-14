@@ -2,9 +2,9 @@ package org.lerchenflo.schneaggchatv3mp.fakes
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationData
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 
 /** In-memory [MapRepository]. The reads serve [entries]; the writes are recorded only. */
 class FakeMapRepository : MapRepository {

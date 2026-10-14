@@ -26,8 +26,8 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.DataSyncCoordinator
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.InputfieldState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import schneaggchatv3mp.composeapp.generated.resources.Res

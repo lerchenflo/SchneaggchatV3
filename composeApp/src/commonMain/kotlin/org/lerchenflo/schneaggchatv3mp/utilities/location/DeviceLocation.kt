@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.location
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
 /**
  * A single GPS fix from [LocationService.getLocationFlow], with metadata beyond plain coordinates.

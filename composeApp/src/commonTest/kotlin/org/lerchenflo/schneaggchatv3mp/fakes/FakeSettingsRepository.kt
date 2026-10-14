@@ -6,12 +6,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapStyleSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SyncedSettings
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 
 /**

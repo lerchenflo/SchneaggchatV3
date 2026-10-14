@@ -1,0 +1,144 @@
+package org.lerchenflo.schneaggchatv3mp.chat.domain
+
+import androidx.compose.runtime.Immutable
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
+import kotlinx.serialization.Serializable
+import kotlin.time.Clock
+import kotlin.time.Instant
+
+@Serializable
+data class Reaction(val userId: String, val content: String, val reactedAt: Long = 0L)
+
+enum class MessageType {
+    TEXT,
+    IMAGE,
+    POLL,
+    AUDIO,
+    SYSTEM
+}
+
+
+/**
+ * Declared @Immutable so Compose can skip recomposing a message row whose content is unchanged
+ * instead of always treating it as unstable (the compiler can't infer stability on its own here
+ * because the fields below are `var`, needed for Room/DTO mapping). This is only true as long as
+ * nothing mutates a Message instance once it's reached a live chat composition - see
+ * MessageDisplayMapper, which is the only place in the chat display path that used to do that.
+ */
+@Immutable
+data class Message(
+    var localPK: Long = 0L,
+    var id: String? = null,
+    var msgType: MessageType,
+
+    var content: String = "",
+    var poll: PollMessage? = null,
+    var systemEvent: SystemEventMessage? = null,
+    var pictureUrl: String? = null,
+    var audioPath: String? = null,
+
+    var senderId: String,
+    var receiverId: String,
+    var sendDate: String = "",
+    var changeDate: String = "",
+    var deleted: Boolean = false,
+    var edited: Boolean = false,
+
+    var groupMessage: Boolean = false,
+    var answerId: String? = null,
+    var sent: Boolean = false,
+    var myMessage: Boolean,
+    var readByMe: Boolean,
+    var senderAsString: String = "",
+    var minimizeMessage: MessageMinimal = MessageMinimal.NONE,
+    var senderColor: Int = 0,
+    var readers : List<MessageReader>,
+    var reactions: List<Reaction> = emptyList(),
+    var version: Long = 0L,
+    var clientMessageId: String? = null,
+) {
+    fun isPicture(): Boolean = msgType == MessageType.IMAGE
+    fun isAudio(): Boolean = msgType == MessageType.AUDIO
+
+    fun isText() : Boolean = msgType == MessageType.TEXT
+
+    fun getSendDateAsLong(): Long = sendDate.toLongOrNull() ?: 0L
+
+    fun wasSentToday(): Boolean =
+        Clock.System.todayIn(TimeZone.currentSystemDefault()) == Instant.fromEpochMilliseconds(getSendDateAsLong()).toLocalDateTime(
+        TimeZone.currentSystemDefault()).date
+
+    fun isReadById(id: String): Boolean =
+        readers.any { it.readerId == id }
+
+    fun isGroupMessage(): Boolean = groupMessage
+
+    /**
+     * Was this message sent into this chat?
+     * @param chatID id of the chat (group id or user id)
+     * @param gruppe true if chatID refers to a group
+     */
+    fun isThisChatMessage(ownId: String, chatID: String, gruppe: Boolean): Boolean {
+        return if (gruppe) {
+            receiverId == chatID && groupMessage
+        } else {
+            if (myMessage && receiverId == chatID && !groupMessage) {
+                true
+            } else if (senderId == chatID &&
+                receiverId == ownId &&
+                !groupMessage
+            ) {
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    override fun toString(): String {
+        val contentPreview = if (content.length > 50) {
+            content.take(50) + "..."
+        } else {
+            content
+        }
+
+        return buildString {
+            appendLine("Message {")
+            appendLine("  id: $id")
+            appendLine("  type: $msgType")
+            appendLine("  from: ${senderAsString.ifEmpty { senderId }}")
+            appendLine("  to: $receiverId")
+            appendLine("  content: '$contentPreview'")
+            appendLine("  myMessage: $myMessage")
+            appendLine("  readByMe: $readByMe")
+            appendLine("  sent: $sent")
+            appendLine("  groupMessage: $groupMessage")
+            appendLine("  deleted: $deleted")
+            appendLine("  readers: ${readers.size}")
+            appendLine("  sendDate:\t\t $sendDate")
+            appendLine("  lastChanged:\t $changeDate")
+
+            if (answerId != null) {
+                appendLine("  answerId: $answerId")
+            }
+
+            appendLine("Poll: $poll")
+            appendLine("SystemEvent: $systemEvent")
+            append("}")
+        }
+    }
+}
+
+
+enum class MessageMinimal {
+    NONE, FIRST, MIDDLE, LAST
+}
+
+/**
+ * Whether the stored copy already reflects a server state newer than [serverLastChanged] (epoch
+ * millis), so an out-of-order response/push carrying that older state must not overwrite it.
+ */
+fun Message.isNewerThan(serverLastChanged: Long): Boolean =
+    (changeDate.toLongOrNull() ?: 0L) > serverLastChanged

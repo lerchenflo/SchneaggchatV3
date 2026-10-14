@@ -39,10 +39,10 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationGroup
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationType
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.sortedTypes
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.stringRes
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.sortedTypes
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import schneaggchatv3mp.composeapp.generated.resources.Res

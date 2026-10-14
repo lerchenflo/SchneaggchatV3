@@ -5,7 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,

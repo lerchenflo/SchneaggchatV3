@@ -1,10 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.auth
 
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionEvent
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.ActionChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.ActionEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText

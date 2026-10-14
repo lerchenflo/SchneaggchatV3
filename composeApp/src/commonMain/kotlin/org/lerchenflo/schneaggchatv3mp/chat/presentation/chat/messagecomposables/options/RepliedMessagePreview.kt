@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources

@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
 
 @Composable

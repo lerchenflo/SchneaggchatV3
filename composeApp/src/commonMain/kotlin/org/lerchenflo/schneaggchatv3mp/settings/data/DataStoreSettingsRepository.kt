@@ -1,18 +1,18 @@
 package org.lerchenflo.schneaggchatv3mp.settings.data
 
 import kotlinx.coroutines.flow.Flow
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SyncedSettings
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Draft
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 /** [SettingsRepository] on top of the DataStore wrapper [Preferencemanager], pushing synced settings via [NetworkUtils]. */

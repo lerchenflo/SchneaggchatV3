@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.testutil
 
 import io.ktor.client.HttpClient
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.fakes.FakePreferencesDataStore

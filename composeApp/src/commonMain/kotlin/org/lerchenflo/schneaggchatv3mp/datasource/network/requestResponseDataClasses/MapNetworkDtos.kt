@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationData
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 
 @Serializable
 data class MapEntryResponse(

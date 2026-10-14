@@ -1,9 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.AvailableUser
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.WakeOutcome
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.WakeResult
+import org.lerchenflo.schneaggchatv3mp.chat.domain.AvailableUser
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeOutcome
+import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 // ─── Friendship status ───────────────────────────────────────────────────────

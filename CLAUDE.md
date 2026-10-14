@@ -42,6 +42,8 @@ di/                — Koin DI modules
 utilities/         — Shared helpers
 ```
 
+Repository interfaces + their models live in the domain/ of the feature that holds the implementation (data/); features may import each other's domain/ only.
+
 ## Build Commands
 
 ```bash

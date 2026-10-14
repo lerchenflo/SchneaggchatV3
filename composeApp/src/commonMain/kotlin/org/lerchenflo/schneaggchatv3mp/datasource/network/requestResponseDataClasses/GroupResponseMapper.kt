@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 // ─── Group member action ─────────────────────────────────────────────────────

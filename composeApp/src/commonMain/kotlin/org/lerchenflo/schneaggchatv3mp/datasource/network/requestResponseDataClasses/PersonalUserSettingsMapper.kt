@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
 
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SyncedSettings
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 fun NetworkUtils.PersonalUserSettings.toSyncedSettings(): SyncedSettings = SyncedSettings(
