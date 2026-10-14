@@ -16,6 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getMissingPasswordRequirements
@@ -34,6 +35,7 @@ import schneaggchatv3mp.composeapp.generated.resources.you_need_to_select_a_prof
 
 class SignUpViewModel(
     private val appRepository: AppRepository,
+    private val authRepository: AuthRepository,
     private val navigator: Navigator,
     private val pictureManager: PictureManager,
     private val loggingRepository: Logger,
@@ -216,7 +218,7 @@ class SignUpViewModel(
 
                 if (state.isInputComplete()) {
                     var accCreationSuccessful = false
-                    appRepository.createAccount(
+                    authRepository.createAccount(
                         username = state.usernameState.text,
                         email = state.emailState.text,
                         password = state.passwordState.text,
@@ -232,7 +234,7 @@ class SignUpViewModel(
                     }
 
                     if (accCreationSuccessful){
-                        appRepository.login(state.usernameState.text, state.passwordState.text) { success ->
+                        authRepository.login(state.usernameState.text, state.passwordState.text) { success ->
                             if (success){
                                 applicationScope.launch {
                                     appRepository.dataSync(reason = "signUpSuccess")

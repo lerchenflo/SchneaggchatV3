@@ -4,7 +4,6 @@ package org.lerchenflo.schneaggchatv3mp.datasource
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -24,14 +23,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
-import org.jetbrains.compose.resources.getString
-import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
-import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
-import org.lerchenflo.schneaggchatv3mp.TEST_ACCOUNT_USERNAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -66,12 +60,14 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.P
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
@@ -85,9 +81,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PersonalU
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
-import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.SessionCheck
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
@@ -96,51 +89,41 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toLocalPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSyncedSettings
-import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DeviceSession
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventType
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LatLong
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.LocationData
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SavedCredsResult
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
-import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotification
-import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
-import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
-import schneaggchatv3mp.composeapp.generated.resources.error_login_server_error
-import schneaggchatv3mp.composeapp.generated.resources.error_login_too_many_requests
 import schneaggchatv3mp.composeapp.generated.resources.eventssync
 import schneaggchatv3mp.composeapp.generated.resources.groupsync
-import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 import schneaggchatv3mp.composeapp.generated.resources.mapsync
 import schneaggchatv3mp.composeapp.generated.resources.mediasync
 import schneaggchatv3mp.composeapp.generated.resources.messagesync
-import schneaggchatv3mp.composeapp.generated.resources.offline
 import schneaggchatv3mp.composeapp.generated.resources.usersync
 import kotlin.collections.map
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -149,9 +132,6 @@ import kotlin.uuid.Uuid
 //scanned, and how many hits are kept so a common word cannot build a list of thousands of rows.
 private const val MESSAGE_SEARCH_MIN_TERM_LENGTH = 2
 private const val MESSAGE_SEARCH_RESULT_LIMIT = 50
-
-//How long a logout waits for the server to drop the session before continuing to log out locally.
-private val LOGOUT_SERVER_CALL_TIMEOUT = 5.seconds
 
 class AppRepository(
     private val database: AppDatabase,
@@ -169,7 +149,8 @@ class AppRepository(
     private val mapRepository: MapRepository,
     private val eventRepository: EventRepository,
     private val appInfoRepository: AppInfoRepository,
-    private val authSessionManager: AuthSessionManager,
+    private val authRepository: AuthRepository,
+    private val sessionTerminator: SessionTerminator,
     private val errorChannel: ErrorChannel,
     private val settingsRepository: SettingsRepository,
 ) {
@@ -181,102 +162,16 @@ class AppRepository(
     **************************************************************************
      */
 
-    suspend fun setNotificationToken(token: String) {
-        if (token.isEmpty()) return
+    // ─── Auth / teardown: moved to AuthRepository and SessionTerminator ────────
+    // Thin delegates until every caller uses the interfaces directly (removed with this class).
 
-        val android = appVersion.isAndroid()
-        //println("Sending notification token to server... Android: $android")
-        networkUtils.setNotificationToken(token, android).trackConnectivity()
-    }
+    suspend fun setNotificationToken(token: String) = authRepository.setNotificationToken(token)
 
-    suspend fun sendEmailVerify() : Boolean{
-        return when (val result = networkUtils.sendEmailVerify().trackConnectivity()) {
-            is NetworkResult.Error<NetworkingError> -> {
-                println("Send email verify: Error occured: ${result.error}")
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                true
-            }
-        }
-    }
+    suspend fun sendEmailVerify() : Boolean = authRepository.sendEmailVerify()
 
+    suspend fun deleteAllAppData() = sessionTerminator.deleteAllAppData()
 
-    /**
-     * Delete all app data (for example on appdatadelete or logout)
-     */
-    suspend fun deleteAllAppData(){
-
-        preferencemanager.saveLastStartedVersion("") //Show Changelog on next startup
-
-        database.allDatabaseDao().clearAll() //Drop all database tables
-        KoinPlatform.getKoin().get<Notifier>().removeToken() //Remove notificationTOken
-        SessionCache.logout() //Remove saved credentials from cache, but not from storage
-    }
-
-    /**
-     * Ends the session on the server before the client forgets the refresh token, so the token is
-     * actually dead instead of staying valid until it expires. Best effort: a logout must succeed
-     * offline too, the session then only dies with its expiry.
-     *
-     * The device's push token goes along, otherwise the server keeps sending notifications for the
-     * account this device just left. That also holds when the session is already dead (ended from
-     * another device's device list, refresh rejected): then only the push token is sent.
-     *
-     * Bounded by [LOGOUT_SERVER_CALL_TIMEOUT] - the HTTP client would otherwise let the user wait
-     * up to its 30 s request timeout on a bad network before the local logout even starts. The
-     * server side call is idempotent, so a cancelled attempt that still lands is harmless.
-     */
-    private suspend fun endServerSession(refreshToken: String?) {
-        val usableRefreshToken = refreshToken?.takeIf { it.isNotBlank() && JwtUtils.isTokenDateValid(it) }
-
-        val finished = withTimeoutOrNull(LOGOUT_SERVER_CALL_TIMEOUT) {
-            // Inside the timeout: fetching the FCM token can hang offline
-            val notificationToken = KoinPlatform.getKoin().get<Notifier>().getToken()
-            if (usableRefreshToken == null && notificationToken.isNullOrBlank()) return@withTimeoutOrNull Unit
-
-            networkUtils.logout(
-                refreshToken = usableRefreshToken,
-                notificationToken = notificationToken,
-                isAndroid = appVersion.isAndroid(),
-            ).trackConnectivity()
-                .onError { loggingRepository.logWarning("Logout: server session not ended (${it.errorCode}): ${it.message}") }
-        }
-
-        if (finished == null) loggingRepository.logWarning("Logout: server session not ended (timeout)")
-    }
-
-    /**
-     * Logout order (AUTH_SESSION_REBUILD_PLAN R11): credentials first, everything else after.
-     * The refresh token is read into a local before it is cleared so the server-side session can
-     * still be ended best-effort; a throw anywhere after step 2 can no longer leave a session on
-     * disk that the next start would silently pick up again.
-     */
-    suspend fun logout(endSessionOnServer: Boolean = true){
-        val refreshToken = authSessionManager.currentTokens()?.refreshToken
-
-        try {
-            authSessionManager.clearSession() // mirror + durable credentials + generation, before anything can fail
-        } catch (e: Exception) {
-            currentCoroutineContext().ensureActive()
-            loggingRepository.logError("Logout: clearing the session threw (${e.message}); continuing with the wipe")
-        } finally {
-            SessionCache.logout() //Remove cached credentials (Userid)
-        }
-
-        if (endSessionOnServer) endServerSession(refreshToken) // best effort, bounded; the token is already gone locally
-
-        deleteAllAppData() // delete all app data when logging out
-
-        preferencemanager.clearAll() //Delete all app data to force login again (retries the token delete too)
-
-        KoinPlatform.getKoin().get<Notifier>().removeToken() //Remove notification token
-
-        KoinPlatform.getKoin().get<SocketConnectionManager>().close() //Close socket connection
-
-        SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
-    }
+    suspend fun logout(endSessionOnServer: Boolean = true) = sessionTerminator.logout(endSessionOnServer)
 
     // ─── App info: moved to AppInfoRepository ──────────────────────────────────
     // Thin delegates until every caller uses AppInfoRepository directly (removed with this class).
@@ -894,123 +789,17 @@ class AppRepository(
      */
 
 
-    /**
-     * Seeds the session after a password login or registration. Persists the pair (throws if
-     * that fails, so the login reports failure) and updates every derived view through the
-     * session manager - the only writer of token storage.
-     */
-    suspend fun onNewTokenPair(tokenPair: TokenPair){
-        try {
-            authSessionManager.onLoggedIn(tokenPair)
-            SessionCache.updateOnline(true)
-        } catch (e: Exception) {
-            currentCoroutineContext().ensureActive()
-            loggingRepository.logError("Token save failed: ${e.message}")
-            throw e // Re-throw to maintain existing error handling behavior
-        }
-    }
+    // ─── Login / registration: moved to AuthRepository ─────────────────────────
+    // Thin delegates until every caller uses AuthRepository directly (removed with this class).
+    // onNewTokenPair is private to RemoteAuthRepository now (it had no caller outside login).
 
-
-
-    data class SavedCredsResult(
-        val credsSaved: Boolean,
-        val emailVerified: Boolean
-    )
-
-    /**
-     * Function to load all initial data on app start
-     */
-    suspend fun loadSavedLoginConfig(): SavedCredsResult {
-        val tokens = preferencemanager.getTokens()
-
-        val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
-
-        // Classifies the stored pair without a network call: a valid refresh token hydrates
-        // SessionCache (and schedules a refresh if the access token is stale), an expired or
-        // unreadable one is cleared so nothing can retry against it.
-        val tokenDateValid = authSessionManager.ensureSession() is SessionCheck.Active
-
-        //Token is expired, send errormessage
-        if (!tokenDateValid && tokensNotEmpty){
-            errorChannel.trySendError(
-                event = ErrorEvent(
-                    401,
-                    errorMessageUiText = UiText.StringResourceText(Res.string.error_access_expired),
-                    duration = 5000L,
-                )
-            )
-        }
-
-        val credsSaved = tokenDateValid && tokensNotEmpty
-
-        if (credsSaved){
-            println("Tokens are saved in local storage, autologin permitted")
-
-            // ensureSession() already hydrated SessionCache through the session manager's sink;
-            // only the developer flag lives outside the token pair.
-            SessionCache.updateDeveloper(preferencemanager.getDevSettings())
-        }
-
-        var emailVerified = false
-        if (credsSaved) {
-            val userId = JwtUtils.getUserIdFromToken(tokens.refreshToken)
-            emailVerified = getUserById(userId)?.emailVerifiedAt != null
-        }
-
-        return SavedCredsResult(
-            credsSaved = credsSaved,
-            emailVerified = emailVerified
-        )
-    }
-
+    suspend fun loadSavedLoginConfig(): SavedCredsResult = authRepository.loadSavedLoginConfig()
 
     suspend fun login(
         username: String,
         password: String,
         onResult: (Boolean) -> Unit
-    ) {
-        //Overwrite the server url for the test account to always connect to it
-        if (username.lowercase().trim() == TEST_ACCOUNT_USERNAME) {
-            preferencemanager.saveServerUrl(BASE_SERVER_URL_TEST)
-        }
-
-        when(val result = networkUtils.login(username.trim(), password).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                println("Error: ${result.error}")
-
-                // Only a genuine 401 means wrong credentials - rate limiting, server errors and
-                // being offline are not the user's fault and shouldn't be reported as such.
-                val messageRes = when (result.error) {
-                    is NetworkingError.TooManyRequests -> Res.string.error_login_too_many_requests
-                    is NetworkingError.NoInternetConnection,
-                    is NetworkingError.NetworkTimeout -> Res.string.offline
-                    is NetworkingError.ServerError -> Res.string.error_login_server_error
-                    else -> Res.string.error_invalid_credentials
-                }
-
-                errorChannel.sendErrorSuspend(
-                    ErrorEvent(
-                        errorMessageUiText = UiText.StringResourceText(messageRes),
-                        duration = 5000L
-                    )
-                )
-
-                onResult(false)
-            }
-            is NetworkResult.Success<TokenPair> -> {
-                withContext(NonCancellable) {
-                    onNewTokenPair(result.data)
-                }
-
-                // onLoggedIn() hydrated SessionCache through the session manager's sink; only the
-                // developer flag lives outside the token pair.
-                SessionCache.updateDeveloper(preferencemanager.getDevSettings())
-
-                onResult(true)
-            }
-        }
-    }
-
+    ) = authRepository.login(username, password, onResult)
 
     suspend fun createAccount(
         username: String,
@@ -1021,25 +810,7 @@ class AppRepository(
         phoneNumber: String? = null,
         language: String? = null,
         onResult: (Boolean) -> Unit
-    ) {
-        when(val response = networkUtils.register(username, password, email, birthdate, profilePic, phoneNumber, language).trackConnectivity()){
-            is NetworkResult.Error -> {
-                println("Error: ${response.error}")
-
-                errorChannel.sendErrorSuspend(
-                    ErrorEvent(
-                        error = response.error,
-                        duration = 5000L
-                    )
-                )
-
-                onResult(false)
-            }
-            is NetworkResult.Success<*> -> {
-                onResult(true)
-            }
-        }
-    }
+    ) = authRepository.createAccount(username, email, password, birthdate, profilePic, phoneNumber, language, onResult)
 
 
     /*
@@ -1303,70 +1074,17 @@ class AppRepository(
     }
 
 
-    suspend fun changePassword(oldPassword: String, newPassword: String) : Boolean {
-        when (val success = networkUtils.changePassword(oldPassword, newPassword).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                return true
-            }
-        }
-    }
+    // ─── Password / sessions: moved to AuthRepository and SessionTerminator ─────
+    // Thin delegates until every caller uses the interfaces directly (removed with this class).
 
+    suspend fun changePassword(oldPassword: String, newPassword: String) : Boolean =
+        authRepository.changePassword(oldPassword, newPassword)
 
-    /**
-     * Logged-in devices of the own account, or null when loading failed (error already sent).
-     */
-    suspend fun getSessions(): List<NetworkUtils.SessionResponse>? {
-        return when (val result = networkUtils.getSessions().trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                null
-            }
-            is NetworkResult.Success -> result.data
-        }
-    }
+    suspend fun getSessions(): List<DeviceSession>? = authRepository.getSessions()
 
-    /**
-     * Logs one of the own devices out remotely.
-     */
-    /**
-     * Logs the account out everywhere. Mirrors the server's allDevices logout: it ends every
-     * session (this device's too) and drops all push tokens, so this device then runs the normal
-     * local logout - without a second server call, the session is already gone.
-     *
-     * Unlike [logout] this is not best effort: if the server call fails, the other devices are
-     * still logged in, so the user stays logged in here too and sees the error.
-     * @return true if the account was logged out everywhere
-     */
-    suspend fun logoutAllDevices(): Boolean {
-        val refreshToken = authSessionManager.currentTokens()?.refreshToken
-            ?.takeIf { it.isNotBlank() && JwtUtils.isTokenDateValid(it) }
+    suspend fun logoutAllDevices(): Boolean = sessionTerminator.logoutAllDevices()
 
-        return when (val result = networkUtils.logoutAllDevices(refreshToken).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                loggingRepository.logWarning("Logout all devices failed (${result.error.errorCode}): ${result.error.message}")
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                logout(endSessionOnServer = false)
-                true
-            }
-        }
-    }
-
-    suspend fun endSession(sessionId: String): Boolean {
-        return when (val result = networkUtils.endSession(sessionId).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> true
-        }
-    }
+    suspend fun endSession(sessionId: String): Boolean = authRepository.endSession(sessionId)
 
 
     suspend fun changeProfilePic(newPic: ByteArray) : Boolean {

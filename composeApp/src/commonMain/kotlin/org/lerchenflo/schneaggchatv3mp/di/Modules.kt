@@ -10,6 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultActionChannel
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.data.LocalSessionTerminator
 import org.lerchenflo.schneaggchatv3mp.app.data.RemoteAppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.app.logging.RoomLoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -32,10 +33,12 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
@@ -80,6 +83,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
+import org.lerchenflo.schneaggchatv3mp.login.data.RemoteAuthRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
@@ -163,7 +167,7 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
@@ -176,6 +180,8 @@ val sharedmodule = module{
     singleOf(::OfflineFirstEventRepository) bind EventRepository::class
     singleOf(::RemoteAppInfoRepository) bind AppInfoRepository::class
     singleOf(::RemoteFeedbackRepository) bind FeedbackRepository::class
+    singleOf(::RemoteAuthRepository) bind AuthRepository::class
+    singleOf(::LocalSessionTerminator) bind SessionTerminator::class
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
     singleOf(::GameSaveRepository)

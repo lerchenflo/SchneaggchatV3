@@ -26,8 +26,8 @@ Deferred on purpose, because that plan is purely structural. Run **after** that 
 
 Outside the structural scope of the migration. Not fixed, listed for review.
 
-- [ ] **Logout leaves downloaded media on the device.** `logout` / `deleteAllAppData` (`C/datasource/AppRepository.kt:282`, `:329`) wipe DB, prefs, push token and socket, but never delete profile pictures, image messages or voice messages saved by `PictureManager` / `AudioManager`. The next account on the same device can still find the previous account's files on disk. Decided: not part of the migration (plan D12), `SessionTerminator` moves logout verbatim.
-- [ ] **"Delete all app data" in Misc settings deletes less than its name says.** `MiscSettingsViewModel.deleteAllAppData` calls `AppRepository.deleteAllAppData`, which clears the DB but keeps preferences (except last started version) and all media.
+- [ ] **Logout leaves downloaded media on the device.** `logout` / `deleteAllAppData` (since Phase 2 in `C/app/data/LocalSessionTerminator.kt`) wipe DB, prefs, push token and socket, but never delete profile pictures, image messages or voice messages saved by `PictureManager` / `AudioManager`. The next account on the same device can still find the previous account's files on disk. Decided: not part of the migration (plan D12), `SessionTerminator` moves logout verbatim.
+- [ ] **"Delete all app data" in Misc settings deletes less than its name says.** `MiscSettingsViewModel.deleteAllAppData` calls `SessionTerminator.deleteAllAppData` (was `AppRepository.deleteAllAppData` before Phase 2), which clears the DB but keeps preferences (except last started version) and all media.
 - [ ] **Split `GlobalViewModel`** (414 lines, 8 deps: sync triggers, socket, location, battery, unread count, offline send). It must not grow during the migration (plan D14). It is registered as an app-wide Koin `single`; per the Android review (plan R8) the target is data-layer managers in the app scope, not more ViewModels.
 - [ ] Stale comment: map sync is described as "triggered only from map screen, not part of global dataSync", but `dataSync` runs it as its MAP job. Since Phase 1b the comment sits in the moved copy, `C/schneaggmap/data/OfflineFirstMapRepository.kt:31` (`syncMapEntries`).
 - [ ] `setLastContributePopupShown` (`C/datasource/AppRepository.kt:2866`) is the only settings setter without `.trackConnectivity()` on its `updateSettings` call.
@@ -73,6 +73,13 @@ Noticed while doing Phase 1b (Event, Map, AppInfo, Feedback repositories). Not f
 - [ ] `syncEvents()` / `syncMapEntries()` (`C/events/data/OfflineFirstEventRepository.kt:48`, `C/schneaggmap/data/OfflineFirstMapRepository.kt:35`) keep an unused `val userId = SessionCache.requireLoggedIn() ?: return`; only the early return matters.
 - [ ] `feedback/domain/FeedbackRepository` returns `NetworkResult` / `EmptyResult` / `NetworkingError` from `C/datasource/network/util/`, so the feature's domain package depends on network types. Goes away with the `Result<T, DataError>` follow-up.
 - [ ] Other plans still name the old model paths (now `C/datasource/domain/model/`): `EVENT_RSVP_PLAN.md:20, :131, :132` (`events/domain/…`), `MAP_LOCATION_RATINGS_PLAN.md:39, :157` (`schneaggmap/domain/…`), `GROUP_EXTENSIONS_PLAN.md:318` (`schneaggmap/domain/`).
+
+## Findings from migration Phase 2 (2026-10-14)
+
+Noticed while doing Phase 2 (AuthRepository, SessionTerminator). Not fixed.
+
+- [ ] `C/chat/presentation/chatselector/ChatSelectorViewModel.kt:94` pulls `Notifier` from `KoinPlatform.getKoin()` inside a ViewModel to read the push token, then hands it to `AuthRepository.setNotificationToken`. Inject it, or give `AuthRepository` a method that reads the token itself, so the ViewModel only triggers the registration.
+- [ ] `D/AuthRepository.login` / `createAccount` (`C/datasource/domain/AuthRepository.kt:16-32`) report the result through an `onResult: (Boolean) -> Unit` callback instead of a return value; `SignUpViewModel` copies it into a local `var` (`C/login/presentation/signup/SignUpViewModel.kt:220`). Return the result directly with the `Result<T, DataError>` follow-up.
 
 ## Deferred from the Android-standards review (plan §8, 2026-10-13)
 

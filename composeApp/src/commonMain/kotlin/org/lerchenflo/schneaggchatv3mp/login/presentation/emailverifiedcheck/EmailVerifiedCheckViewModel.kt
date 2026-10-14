@@ -20,6 +20,8 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.email_check_check_emails_snackbar
@@ -32,6 +34,8 @@ import kotlin.time.Instant
 
 class EmailVerifiedCheckViewModel(
     private val appRepository: AppRepository,
+    private val authRepository: AuthRepository,
+    private val sessionTerminator: SessionTerminator,
     private val navigator: Navigator,
     private val applicationScope: ApplicationScope
 ) : ViewModel() {
@@ -87,7 +91,7 @@ class EmailVerifiedCheckViewModel(
 
             try {
                 lastEmailVerificationTime = Clock.System.now()
-                appRepository.sendEmailVerify()
+                authRepository.sendEmailVerify()
             } finally {
                 _state.update { it.copy(isResendingEmail = false) }
             }
@@ -96,7 +100,7 @@ class EmailVerifiedCheckViewModel(
 
     private fun logout() {
         viewModelScope.launch {
-            appRepository.logout()
+            sessionTerminator.logout()
             navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
         }
     }

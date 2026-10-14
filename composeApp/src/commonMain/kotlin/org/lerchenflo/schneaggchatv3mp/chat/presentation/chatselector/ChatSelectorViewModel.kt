@@ -40,6 +40,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.applySearchAndFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
@@ -61,6 +62,7 @@ private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
+    private val authRepository: AuthRepository,
     private val appInfoRepository: AppInfoRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
@@ -94,7 +96,7 @@ class ChatSelectorViewModel(
             //println("Chatselector notificationtoken: $token")
 
             if (!token.isNullOrEmpty()) {
-                appRepository.setNotificationToken(token)
+                authRepository.setNotificationToken(token)
             }
         }
 

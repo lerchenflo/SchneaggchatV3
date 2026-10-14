@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
@@ -24,6 +25,7 @@ import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
 
 class LoginViewModel(
     private val appRepository: AppRepository,
+    private val authRepository: AuthRepository,
     private val appInfoRepository: AppInfoRepository,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
@@ -124,7 +126,7 @@ class LoginViewModel(
                 try {
 
                     // Use the sharedViewModel's login function with a callback
-                    appRepository.login(username, password) { success ->
+                    authRepository.login(username, password) { success ->
                         if (success) {
                             println("Login erfolgreich, triggering data sync")
                             applicationScope.launch {

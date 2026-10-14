@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.wake.WakeAlarmService
@@ -29,7 +30,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
-                KoinPlatform.getKoin().get<AppRepository>().setNotificationToken(token)
+                KoinPlatform.getKoin().get<AuthRepository>().setNotificationToken(token)
             }
         }
     }

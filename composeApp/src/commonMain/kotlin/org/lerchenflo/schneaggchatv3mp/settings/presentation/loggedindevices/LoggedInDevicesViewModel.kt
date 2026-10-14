@@ -9,8 +9,9 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.DeviceSession
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -31,7 +32,8 @@ data class LoggedInDevice(
 )
 
 class LoggedInDevicesViewModel(
-    private val appRepository: AppRepository,
+    private val authRepository: AuthRepository,
+    private val sessionTerminator: SessionTerminator,
     private val appVersion: AppVersion,
     private val navigator: Navigator,
 ) : ViewModel() {
@@ -54,7 +56,7 @@ class LoggedInDevicesViewModel(
             isLoading = true
             loadFailed = false
 
-            val sessions = appRepository.getSessions()
+            val sessions = authRepository.getSessions()
             if (sessions == null) {
                 loadFailed = true
             } else {
@@ -75,7 +77,7 @@ class LoggedInDevicesViewModel(
         if (device.isCurrentDevice) return // The own device logs out via the normal logout
 
         viewModelScope.launch {
-            if (appRepository.endSession(device.id)) {
+            if (authRepository.endSession(device.id)) {
                 devices = devices.filterNot { it.id == device.id }
                 SnackbarManager.showMessage(getString(Res.string.logged_in_devices_logged_out))
             }
@@ -89,7 +91,7 @@ class LoggedInDevicesViewModel(
         isLoggingOutAllDevices = true
         viewModelScope.launch {
             try {
-                if (appRepository.logoutAllDevices()) {
+                if (sessionTerminator.logoutAllDevices()) {
                     navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                 }
             } finally {
@@ -104,7 +106,7 @@ class LoggedInDevicesViewModel(
 // human-readable part is shown.
 private val deviceIdSuffix = Regex("""\s+-\s+(androidId|vendorId|installId|macAddress):.*$""")
 
-private fun NetworkUtils.SessionResponse.toLoggedInDevice(isCurrentDevice: Boolean): LoggedInDevice {
+private fun DeviceSession.toLoggedInDevice(isCurrentDevice: Boolean): LoggedInDevice {
     val withoutId = deviceName?.replace(deviceIdSuffix, "")?.trim()
     // iOS appends the generic UIDevice.name ("iPhone") after the marketing name - drop it
     val readableName = if (deviceType == DEVICETYPE.IOS) withoutId?.substringBefore(" - ") else withoutId

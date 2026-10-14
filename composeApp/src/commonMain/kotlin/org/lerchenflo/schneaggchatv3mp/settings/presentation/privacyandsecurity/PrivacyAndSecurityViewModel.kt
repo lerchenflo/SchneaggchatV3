@@ -16,6 +16,8 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.FriendShareDraft
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
@@ -31,6 +33,8 @@ import kotlin.time.Instant
 
 class PrivacyAndSecurityViewModel(
     private val appRepository: AppRepository,
+    private val authRepository: AuthRepository,
+    private val sessionTerminator: SessionTerminator,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
@@ -81,7 +85,7 @@ class PrivacyAndSecurityViewModel(
             isChangingPassword = true
 
             try {
-                val success = appRepository.changePassword(oldPassword, newPassword)
+                val success = authRepository.changePassword(oldPassword, newPassword)
                 if (success) {
                     SnackbarManager.showMessage(getString(Res.string.password_changed_successfully))
                     onFinished(true)
@@ -102,7 +106,7 @@ class PrivacyAndSecurityViewModel(
 
         lastEmailVerificationTime = Clock.System.now()
         viewModelScope.launch {
-            appRepository.sendEmailVerify()
+            authRepository.sendEmailVerify()
             SnackbarManager.showMessage(getString(Res.string.verification_email_sent))
         }
     }
@@ -154,7 +158,7 @@ class PrivacyAndSecurityViewModel(
 
     fun logout() {
         viewModelScope.launch {
-            appRepository.logout()
+            sessionTerminator.logout()
             navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
         }
     }
@@ -166,7 +170,7 @@ class PrivacyAndSecurityViewModel(
         isLoggingOutAllDevices = true
         viewModelScope.launch {
             try {
-                if (appRepository.logoutAllDevices()) {
+                if (sessionTerminator.logoutAllDevices()) {
                     navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                 }
             } finally {

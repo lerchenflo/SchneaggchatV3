@@ -10,11 +10,11 @@ import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 
 class AutoLoginCredCheckerViewModel(
-    private val appRepository: AppRepository,
+    private val authRepository: AuthRepository,
     private val navigator: Navigator
 ) : ViewModel() {
 
@@ -35,7 +35,7 @@ class AutoLoginCredCheckerViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            val savedCreds = appRepository.loadSavedLoginConfig()
+            val savedCreds = authRepository.loadSavedLoginConfig()
 
             if (SessionCache.isLoggedIn()) {
                 // User got logged in when loading the saved config
