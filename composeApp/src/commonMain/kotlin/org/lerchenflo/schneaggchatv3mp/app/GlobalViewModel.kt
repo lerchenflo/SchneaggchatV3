@@ -170,8 +170,8 @@ class GlobalViewModel(
 
                 if (SessionCache.isLoggedIn()) {
                     //println("App resumed and logged in, triggering sync...")
-                    appRepository.sendOfflineMessages(ownId)
-                    appRepository.dataSync(reason = "appResumed")
+                    messageRepository.sendOfflineMessages(ownId)
+                    dataSyncCoordinator.dataSync(reason = "appResumed")
 
                     //On resume clear all error notis
                     NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)

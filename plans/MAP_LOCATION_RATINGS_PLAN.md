@@ -40,10 +40,10 @@ V3 keeps the V2 semantics (one rating per user per entry, whole-star input, half
 | Client Room | `schneaggmap/data/dtos/MapEntryDto.kt`, `datasource/database/Daos.kt:431 MapEntryDao` | DB version **84**, `fallbackToDestructiveMigration(dropAllTables = true)` (`CreateDatabase.kt:12`), `RoomTypeConverters.stringListToString` exists (:121) |
 | Client wire | `datasource/network/requestResponseDataClasses/MapNetworkDtos.kt` + `MapResponseMapper.kt` | `MapEntryResponse`, `MapSyncResponse`, `MapEntryRequest` |
 | Client network | `datasource/network/NetworkUtils.kt:1138-1160` | `mapSync`, `upsertMapEntry`, `deleteMapEntry`; `safePostMultipart` (:112) + `appendProfilePic` (:129) |
-| Client sync | `datasource/AppRepository.kt:629 mapEntryIdSync()` | Runs inside `dataSync(reason = "mapInit")` job type `MAP`, triggered from `SchneaggmapViewModel.kt:479` on map open |
-| Client CRUD | `AppRepository.kt:660-702` | Network call → on success write to `MapRepository` (Room) |
+| Client sync | `schneaggmap/data/OfflineFirstMapRepository.kt:33 syncMapEntries()` (was `AppRepository.mapEntryIdSync()`) | Runs inside `dataSync(reason = "mapInit")` job type `MAP` (`app/data/DefaultDataSyncCoordinator.kt:189`), triggered from `SchneaggmapViewModel.kt:479` on map open |
+| Client CRUD | `OfflineFirstMapRepository.kt:64-107` | Network call → on success write to `MapLocalDataSource` (Room) |
 | Client socket | `datasource/network/socket/SocketConnectionMessage.kt:65,420` | `MapChange` → `mapRepository.upsertMapEntry` / `deleteMapEntry` |
-| Client image download | `AppRepository.kt:2241 getPicturesForMessageIds` | `networkUtils.getImageForImageMessage(id)` → `pictureManager.savePictureToStorage(bytes, id + PICTURE_FILE_NAME)` → path into Room; `getMissingPics()` (:873) only fetches when `checkImageExists()` is false |
+| Client image download | `chat/data/OfflineFirstMessageRepository.kt:120 getPicturesForMessageIds` | `networkUtils.getImageForImageMessage(id)` → `pictureManager.savePictureToStorage(bytes, id + PICTURE_FILE_NAME)` → path into Room; `fetchMissingMessageMedia()` (:160) only fetches when `checkImageExists()` is false |
 | Client image display | `chat/.../ImageMessageContentView.kt`, `FullScreenImageDialog.kt`, `sharedUi/picture/ProfilePictureView.kt` | Coil3 `AsyncImage(model = absoluteFilePath)`; `AppImageLoader.kt` caps parallel decodes at 3 |
 | Client image pick | `chat/presentation/newchat/GroupCreator.kt:230` | `rememberImagePickerKMP(ImagePickerKMPConfig(galleryConfig = GalleryConfig(...)))` → `loadBytes()` → `pictureManager.downscaleImage(bytes, 500_000)` |
 | Client info sheet | `schneaggmap/presentation/uielements/MapEntryInfoCard.kt` | `ModalBottomSheet`; `EntryTitleView` has the literal `//TODO: Small row with ratings` (line ~270) |
@@ -176,12 +176,12 @@ suspend fun getMapRatingImage(imageId: String, thumb: Boolean): NetworkResult<By
 
 ### 4.3 Repositories
 
-Keep the existing split: **`MapRepository` = Room only, `AppRepository` = network + sync + writes into `MapRepository`** (same as map entries today).
+Keep the existing split: **`MapLocalDataSource` = Room only, `OfflineFirstMapRepository` (interface `datasource/domain/MapRepository`) = network + sync + writes into `MapLocalDataSource`** (same as map entries today).
 
-`MapRepository` additions: `getRatingChangeIds()`, `upsertRating()`, `deleteRating(id)`, `deleteRatingsForEntry(entryId)`, `getRatingsForEntryFlow(entryId)`, `getRatingSummariesFlow()`, `getOwnRatingsFlow(userId)`. `deleteMapEntry(id)` also calls `deleteRatingsForEntry(id)`.
+`MapLocalDataSource` additions: `getRatingChangeIds()`, `upsertRating()`, `deleteRating(id)`, `deleteRatingsForEntry(entryId)`, `getRatingsForEntryFlow(entryId)`, `getRatingSummariesFlow()`, `getOwnRatingsFlow(userId)`. `deleteMapEntry(id)` also calls `deleteRatingsForEntry(id)`.
 
-`AppRepository` additions:
-- `mapRatingIdSync()` - clone of `mapEntryIdSync()`; called right after it inside the `MAP` sync job so the map's existing `dataSync(reason = "mapInit")` trigger covers both.
+`OfflineFirstMapRepository` additions (and the matching `MapRepository` interface methods):
+- `syncMapRatings()` - clone of `syncMapEntries()`; `DefaultDataSyncCoordinator` calls it right after `syncMapEntries()` inside the `MAP` sync job so the map's existing `dataSync(reason = "mapInit")` trigger covers both.
 - `upsertMapRating(entryId, stars, text, keepImageIds, newImages: List<ByteArray>)` and `deleteMapRating(entryId)` - clone of the map CRUD pair (`sendErrorSuspend` on error, upsert/delete Room on success).
 - `getMapRatingImagePath(imageId: String, thumb: Boolean): String?` - the **lazy loader**: `pictureManager.getMapRatingImageFilePath(imageId, thumb)`; if `checkImageExists` → return path; else download via `getMapRatingImage`, `savePictureToStorage(bytes, fileName)`, return path; `null` on error (logged with `loggingRepository.logWarning`). No Room column needed - the file name is derived from the id, exactly like profile pictures.
 - `clearAll()`/logout path: clear the new table.
@@ -190,7 +190,7 @@ Keep the existing split: **`MapRepository` = Room only, `AppRepository` = networ
 
 ### 4.4 Socket
 
-`SocketConnectionMessage.MapRatingChange` + handler next to `MapChange` (:420): `deleted` → `mapRepository.deleteRating(id)` else `upsertRating(toMapEntryRating())`. `MapChange(deleted = true)` already routes through `mapRepository.deleteMapEntry`, which now cascades.
+`SocketConnectionMessage.MapRatingChange` + handler next to `MapChange` (:420): `deleted` → `mapLocalDataSource.deleteRating(id)` else `upsertRating(toMapEntryRating())`. `MapChange(deleted = true)` already routes through `mapLocalDataSource.deleteMapEntry`, which now cascades.
 
 ---
 
@@ -256,7 +256,7 @@ Save validation (mirrors server): `draftStars in 1..5` else inline error, text t
 ### 5.4 Navigation + DI
 
 - `Route.MapEntryRatings(entryId: String)` in `Route.kt`; `entry<Route.MapEntryRatings>` in `App.kt` next to `Route.SchneaggmapSettings` (:670), inside the map tab so back returns to the map.
-- `di/Modules.kt`: `viewModel { (entryId: String) -> MapEntryRatingsViewModel(entryId = entryId, navigator = get(), mapRepository = get(), appRepository = get(), pictureManager = get()) }`.
+- `di/Modules.kt`: `viewModel { (entryId: String) -> MapEntryRatingsViewModel(entryId = entryId, navigator = get(), mapRepository = get(), pictureManager = get()) }`.
 
 ### 5.5 Strings (`values/strings.xml` + `values-de` + `values-it`; never `values-de-rAT`)
 
@@ -269,7 +269,7 @@ Save validation (mirrors server): `draftStars in 1..5` else inline error, text t
 | # | Phase | Repo | Deliverable |
 |---|---|---|---|
 | 1 | Server data + endpoints | server | Model, repository, service, controller (4 endpoints), `ImageManager` map dir + thumbnail, docker volume, cascade on entry delete, `LogType`s, socket message + `notifyMapRatingUpdate`, security-check pass |
-| 2 | Client data | client | Domain, Room entity/DAO/version 85, wire DTOs + mappers, `NetworkUtils`, `MapRepository`, `AppRepository` sync/CRUD/lazy image loader, `PictureManager` path fn (3 actuals), socket handler, logout clear |
+| 2 | Client data | client | Domain, Room entity/DAO/version 85, wire DTOs + mappers, `NetworkUtils`, `MapLocalDataSource`, `MapRepository` / `OfflineFirstMapRepository` sync/CRUD/lazy image loader, `DefaultDataSyncCoordinator` `MAP` job, `PictureManager` path fn (3 actuals), socket handler, logout clear |
 | 3 | Client UI | client | `StarRatingBar`, summary row in `MapEntryInfoCard`, ratings screen (state/action/VM/screen + 3 uielements), route + `App.kt` entry + Koin, strings en/de/it |
 | 4 | Optional follow-ups | both | "My ratings" list in map settings (V2 parity, `getOwnRatingsFlow` already planned); average badge on map markers; local image cache eviction; FCM for ratings on own entries |
 | post | Agents | client | `readme-changelog-updater`, then `string-resource-extractor` |

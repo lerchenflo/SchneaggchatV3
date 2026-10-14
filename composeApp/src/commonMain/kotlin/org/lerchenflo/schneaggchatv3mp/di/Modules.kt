@@ -34,7 +34,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedconte
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChatViewModel
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ActionChannel
@@ -176,9 +175,6 @@ val sharedmodule = module{
 
 
     //Repository
-    single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
-    }
     singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
     singleOf(::OfflineFirstGroupRepository) bind GroupRepository::class
