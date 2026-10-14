@@ -12,7 +12,6 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -62,7 +61,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
                     if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
                         // Instantly upsert a provisional row so an already-open (or now-opened)
                         // chat shows the message before the sync completes.
-                        KoinPlatform.getKoin().get<AppRepository>().applyPushMessage(decoded)
+                        KoinPlatform.getKoin().get<MessageRepository>().applyPushMessage(decoded)
                     }
                 }.onFailure { e -> logPushError(e) }
             }

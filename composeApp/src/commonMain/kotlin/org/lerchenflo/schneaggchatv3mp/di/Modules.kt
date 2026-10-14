@@ -175,7 +175,7 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
@@ -184,7 +184,7 @@ val sharedmodule = module{
     singleOf(::OfflineFirstUserRepository) bind UserRepository::class
     singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
     // Explicit lambda so the dispatcher keeps its default (Dispatchers.IO); tests pass their own (plan R4).
-    // Sends run in the app-wide scope, so they outlive the screen that started them (plan R2).
+    // Sends and mark-read run in the app-wide scope, so they outlive the screen that started them (plan R2).
     single<MessageRepository> {
         OfflineFirstMessageRepository(
             database = get(),
@@ -284,7 +284,6 @@ val sharedmodule = module{
             pictureManager = get(),
             permissionsManager = get(),
             audioManager = get(),
-            applicationScope = get(),
             chatId = chatId,
             isGroup = isGroup
         )

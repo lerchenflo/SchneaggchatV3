@@ -1,10 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.domain
 
 import kotlinx.coroutines.flow.Flow
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MarkReadGuard
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.PollVote
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotification
 
 /**
  * Messages: reads come from the local database, edits, deletes, reactions and poll votes go to
@@ -114,4 +116,41 @@ interface MessageRepository {
      * The full data sync passes false and downloads them in its own media step.
      */
     suspend fun syncMessages(fetchMedia: Boolean = true)
+
+    // ─── Push apply / mark read ───────────────────────────────────────────────
+
+    /**
+     * Stores a message delivered by push (FCM/APNs) as a provisional row, so an open chat shows
+     * it before the next sync; a reaction push updates the stored message. Never overwrites an
+     * existing row and never advances the sync cursor - follow up with [syncMessages].
+     */
+    suspend fun applyPushMessage(decoded: DecodedNotification.Message)
+
+    /**
+     * Marks a whole chat read on the server, then pulls the result back through [syncMessages].
+     * Nothing is written locally before that.
+     *
+     * Runs in the app-wide scope: the request and the sync finish even when the caller is
+     * cancelled while they are in flight.
+     *
+     * @return true when the server accepted the read. False (offline, error) means nothing
+     * changed anywhere and the caller is expected to try again later.
+     */
+    suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String): Boolean
+
+    /**
+     * Fire-and-forget [setAllChatMessagesRead] for a chat screen that may close right away.
+     * Returns at once; the request runs in the app-wide scope, including the wait behind a
+     * request of the same [guard] that is still in flight.
+     *
+     * Requests of one [guard] run one after another. Each one calls [readNewestMessageId] once it
+     * holds the lock and is skipped when [MarkReadGuard.lastMarkedReadMessageId] already covers
+     * it; that id only advances when the server accepted the read (reset to null otherwise).
+     */
+    fun markChatReadInBackground(
+        chatid: String,
+        gruppe: Boolean,
+        guard: MarkReadGuard,
+        readNewestMessageId: () -> String?,
+    )
 }

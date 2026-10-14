@@ -24,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MarkReadGuard
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent.AudioContent
@@ -51,7 +52,9 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotification
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -61,11 +64,14 @@ import kotlin.uuid.Uuid
  * The media and write code is moved verbatim from AppRepository (getPicturesForMessageIds,
  * getAudiosForMessageIds, the image-message part of getMissingPics + getMissingAudios, editMessage,
  * deleteLocalMessage, deleteMessage, reactToMessage, votePoll, deletePollOption), and so are
- * sendMessage, sendOfflineMessages and messageIdSync ([syncMessages]) with their three locks.
+ * sendMessage, sendOfflineMessages and messageIdSync ([syncMessages]) with their three locks,
+ * applyPushMessage and setAllChatMessagesRead. [markChatReadInBackground] is ChatViewModel's
+ * mark-read block (serialised + deduplicated per [MarkReadGuard]).
  * The send path writes some rows through [AppDatabase.messageDao] directly, as it did there.
  *
- * @param externalScope app-wide scope (Koin passes `ApplicationScope`) that [sendMessage] runs in,
- * so a send outlives the screen that started it (plan R2). Tests pass `backgroundScope`.
+ * @param externalScope app-wide scope (Koin passes `ApplicationScope`) that [sendMessage],
+ * [setAllChatMessagesRead] and [markChatReadInBackground] run in, so they outlive the screen
+ * that started them (plan R2). Tests pass `backgroundScope`.
  * @param ioDispatcher for the send's success branch, which ran on `Dispatchers.IO` (plan R4).
  */
 class OfflineFirstMessageRepository(
@@ -790,6 +796,140 @@ class OfflineFirstMessageRepository(
             if (audiosToGet.isNotEmpty()) {
                 println("Audios to fetch: ${audiosToGet.size}")
                 getAudiosForMessageIds(audiosToGet)
+            }
+        }
+    }
+
+    // ─── Push apply / mark read ───────────────────────────────────────────────
+
+    /**
+     * Instantly upserts a message delivered via push notification (FCM/APNs) into Room, so a
+     * chat opened before the next sync already shows it. Never overwrites an existing row and
+     * never advances the sync cursor (version stays 0, the same trick
+     * [MessageRepository.syncMessages] and the socket handler rely on) - the caller is still
+     * expected to follow up with [MessageRepository.syncMessages], which replaces this
+     * provisional row with the authoritative one (readers, reactions, real version).
+     */
+    override suspend fun applyPushMessage(decoded: DecodedNotification.Message) {
+        if (SessionCache.requireLoggedIn()?.userId == null) return
+
+        if (decoded.reaction) {
+            applyPushReaction(decoded)
+            return
+        }
+
+        // Only TEXT pushes carry enough content for a useful provisional row - IMAGE/AUDIO/POLL
+        // wait for the real sync + media fetch instead of flashing an empty bubble.
+        if (decoded.messageType != MessageType.TEXT) return
+
+        // Never overwrite an already-synced or socket-delivered row.
+        if (messageLocalDataSource.getMessageById(decoded.msgId) != null) return
+
+        // Blank when the push came from a server that predates the plaintext `content` field.
+        val content = decoded.content.ifBlank { return }
+
+        val sendDate = (decoded.sendDate.takeIf { it > 0L } ?: getCurrentTimeMillisLong()).toString()
+
+        messageLocalDataSource.upsertMessage(
+            Message(
+                id = decoded.msgId,
+                msgType = MessageType.TEXT,
+                content = content,
+                senderId = decoded.senderId,
+                // Group chat is identified by groupId, not the push's receiverId (the
+                // recipient user) - see NotificationContentResolver.resolveMessage.
+                receiverId = if (decoded.groupMessage) decoded.groupId else decoded.receiverId,
+                groupMessage = decoded.groupMessage,
+                answerId = decoded.answerId.ifBlank { null },
+                sendDate = sendDate,
+                changeDate = sendDate,
+                sent = true,
+                myMessage = false,
+                readByMe = false,
+                readers = emptyList(),
+                reactions = emptyList(),
+                version = 0L,
+            )
+        )
+    }
+
+    /** Applies a reaction push to an already-local message. Never creates a new row. */
+    private suspend fun applyPushReaction(decoded: DecodedNotification.Message) {
+        val existing = messageLocalDataSource.getMessageById(decoded.msgId) ?: return
+
+        val emoji = decoded.content.ifBlank { return }
+
+        messageLocalDataSource.upsertMessage(
+            existing.copy(
+                reactions = existing.reactions.filterNot { it.userId == decoded.senderId } +
+                    Reaction(userId = decoded.senderId, content = emoji, reactedAt = getCurrentTimeMillisLong())
+            )
+        )
+    }
+
+    /**
+     * Marks a whole chat read. The server is the single source of truth for read state: nothing
+     * is written to Room here, the call only tells the server and then pulls the result back
+     * through [MessageRepository.syncMessages], which rewrites `readByMe` from the authoritative
+     * `readers` list.
+     *
+     * Writing it locally first used to lose a race against a parallel sync - opening a chat from
+     * a notification kicks off a `AppRepository.dataSync` at the same moment, and that sync
+     * re-fetched the message before the server had processed the read, resetting `readByMe` to
+     * false again.
+     *
+     * The pull is not optional: the server deliberately excludes the acting user from its own
+     * MessageChange socket fan-out, so this device never hears about its own read receipt.
+     *
+     * @return true when the server accepted the read. False (offline, error) means nothing
+     * changed anywhere and the caller is expected to try again later.
+     */
+    override suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String): Boolean {
+
+        // externalScope (plan R2): started before the first suspension point, so the request and
+        // the sync behind it finish even when the caller (e.g. a closed chat screen) is cancelled.
+        return externalScope.async {
+            SessionCache.requireLoggedIn() ?: return@async false
+
+            val result = networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong()).trackConnectivity()
+            if (result !is NetworkResult.Success) {
+                loggingRepository.logWarning("Setting chat $chatid read failed: ${(result as? NetworkResult.Error<*>)?.error}")
+                return@async false
+            }
+
+            // With media: unlike the MESSAGES job in `AppRepository.dataSync` there is no MEDIA job
+            // behind this call, so a picture or voice message first seen by this sync would otherwise
+            // stay undownloaded until the next full sync gets around to the missing-media backfill.
+            syncMessages()
+            true
+        }.await()
+    }
+
+    /**
+     * Moved from ChatViewModel.setAllMessagesRead, which ran this block in `applicationScope`
+     * (plan R2): leaving the chat must not cancel the request, a request still queued behind
+     * the lock, or the sync that pulls the server's read receipt back in.
+     */
+    override fun markChatReadInBackground(
+        chatid: String,
+        gruppe: Boolean,
+        guard: MarkReadGuard,
+        readNewestMessageId: () -> String?,
+    ) {
+        externalScope.launch {
+            guard.mutex.withLock {
+                val newestMessageId = readNewestMessageId()
+                //Whoever held the lock before us may already have covered this exact state.
+                if (newestMessageId != null && newestMessageId == guard.lastMarkedReadMessageId) {
+                    return@withLock
+                }
+
+                val accepted = setAllChatMessagesRead(
+                    chatid = chatid,
+                    gruppe = gruppe,
+                    timestamp = getCurrentTimeMillisString()
+                )
+                guard.lastMarkedReadMessageId = if (accepted) newestMessageId else null
             }
         }
     }

@@ -30,13 +30,13 @@ class IosPushDelegateBridge {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                 if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
-                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                    val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
                     // A foreground push never reaches the NSE queue, so upsert directly here
                     // before the sync below - mirrors AppFirebaseMessagingService on Android.
                     (PayloadDecoder.decode(data) as? DecodedNotification.Message)?.let {
-                        appRepository.applyPushMessage(it)
+                        messageRepository.applyPushMessage(it)
                     }
-                    KoinPlatform.getKoin().get<MessageRepository>().syncMessages()
+                    messageRepository.syncMessages()
                 }
             }
         }
@@ -52,10 +52,10 @@ class IosPushDelegateBridge {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                 if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
-                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                    val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
                     SharedNotificationDefaults.takePendingPushMessages().forEach { raw ->
                         (PayloadDecoder.decode(raw) as? DecodedNotification.Message)?.let {
-                            appRepository.applyPushMessage(it)
+                            messageRepository.applyPushMessage(it)
                         }
                     }
                 }

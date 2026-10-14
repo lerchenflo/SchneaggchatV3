@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -41,7 +40,6 @@ class ReplyReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
-                val appRepository = KoinPlatform.getKoin().get<AppRepository>()
                 val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
 
                 //The app process may have been started just for this broadcast
@@ -60,7 +58,7 @@ class ReplyReceiver : BroadcastReceiver() {
                     answerid = null,
                 )
 
-                appRepository.setAllChatMessagesRead(
+                messageRepository.setAllChatMessagesRead(
                     chatid = chatId,
                     gruppe = groupChat,
                     timestamp = getCurrentTimeMillisString()

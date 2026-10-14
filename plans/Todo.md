@@ -141,6 +141,14 @@ Noticed while doing Phase 5b (send, offline queue, message sync moved to `Offlin
 - [ ] `OfflineFirstMessageRepository.sendMessageLock` is public (`C/chat/data/OfflineFirstMessageRepository.kt:332`, was public on `AppRepository` too). Nothing outside the class uses it; make it private.
 - [ ] Commented-out resume handler in `C/app/GlobalViewModel.kt:173` still calls `appRepository.sendOfflineMessages`. Dead code; delete it with `AppRepository` in Phase 8.
 
+## Findings from migration Phase 5c (2026-10-14)
+
+Noticed while doing Phase 5c (push apply and mark-read moved to `OfflineFirstMessageRepository`). Not fixed.
+
+- [ ] `MarkReadGuard.lastMarkedReadMessageId` is written on an IO thread under the guard's lock (`C/chat/data/OfflineFirstMessageRepository.kt:932`) and read on the main thread without it (`C/chat/presentation/chat/ChatViewModel.kt:868`). Same as before the move (a plain `var` in the ViewModel, written from `ApplicationScope`). No `@Volatile`, so the main thread may see a stale id for a moment; worst case one extra or one skipped trigger that the next emission or app resume corrects.
+- [ ] `MarkAsReadReceiver`'s KDoc says it marks the chat read "locally and on the server" (`androidMain/…/utilities/notifications/MarkAsReadReceiver.kt:22`). Nothing is written locally any more: the server is the source of truth and the sync pulls the result back.
+- [ ] `D/MessageRepository.applyPushMessage` takes `utilities.notifications.DecodedNotification.Message`, the decoded push payload (`C/datasource/domain/MessageRepository.kt:127`). Kept as is (structural move). If `D/` should only expose `D/model` types, map it to a small domain model (msgId, sender, receiver/group, type, content, sendDate, answerId, reaction) at the two push entry points.
+
 ## Deferred from the Android-standards review (plan §8, 2026-10-13)
 
 - [ ] **Auth invalidation in the data layer** (R8). Today `App.kt` reacts to `ActionChannel.AuthInvalidated` with error popup + `logout()` + navigate to Login. Target: `SessionTerminator` listens to `AuthEventSink` in the app scope, and `App.kt` only navigates when the auth state changes to logged out.
@@ -156,6 +164,7 @@ Steps the plan asks to test on a real device, which nobody could do during the n
 - [ ] Phase 3: each of the 11 user/group mutations updates the UI right away (friend request send/deny/remove, username, profile pic, group pic/description/name/members/expiry).
 - [ ] Phase 5: send text/image/audio/poll, offline send + reconnect (no duplicates), edit/delete/react/vote, push receive, notification reply, notification mark-as-read.
 - [ ] Phase 5b: send a text, an image, a voice message and a poll and leave the chat right away (back gesture); each must still arrive. The send now runs in the repository's `externalScope` and the ViewModel only waits for it.
+- [ ] Phase 5c: open a chat with unread messages and leave it right away; it must show as read in the chat list (and on a second device) once the sync ran. Also while a mark-read is still in flight: get a new message in the open chat, then leave at once; that message must end up read too. Plus push receive (Android FCM, iOS foreground and background push), notification reply and notification mark-as-read.
 - [ ] Phase 6: full sync on login, app resume, pull-to-refresh; sync status popup.
 - [ ] Phase 7: login screen (version, server URL dialog), settings screen version, chat selector sync indicator.
 

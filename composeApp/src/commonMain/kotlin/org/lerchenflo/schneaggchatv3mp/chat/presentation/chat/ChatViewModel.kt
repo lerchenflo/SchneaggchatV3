@@ -32,17 +32,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
-import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MarkReadGuard
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.NewPoll
@@ -82,7 +80,6 @@ class ChatViewModel(
     private val pictureManager: PictureManager,
     private val permissionsManager: PermissionManager,
     private val audioManager: AudioManager,
-    private val applicationScope: ApplicationScope,
 
     val chatId: String,
     val isGroup: Boolean,
@@ -121,20 +118,10 @@ class ChatViewModel(
     private var newMessagesBoundaryComputed = false
     private val newMessagesBoundaryId = MutableStateFlow<String?>(null)
 
-    // Guards setAllMessagesRead(): without this it re-runs (and hits the network) on every
-    // single messageDisplayItemsFlow emission, including ones with nothing unread - which then
-    // re-emits the messages flow and reprocesses the whole list again.
-    //
-    // Only set once the server has actually accepted the read. A failed or lost attempt leaves it
-    // null so the next emission retries - the read state itself lives on the server now, so a
-    // chat can legitimately come back unread after we already asked once.
-    private var lastMarkedReadMessageId: String? = null
-
-    // Serialises the requests instead of dropping overlapping ones: a message arriving while a
-    // request is in flight would otherwise be swallowed by the guard and then left unread, because
-    // the in-flight run finishes by advancing lastMarkedReadMessageId past it. Queued callers
-    // re-check under the lock, so the redundant ones cost nothing.
-    private val markReadMutex = Mutex()
+    // Guards setAllMessagesRead() (lastMarkedReadMessageId + the lock that serialises the
+    // requests, see MarkReadGuard). Owned by this screen, so the dedup lives as long as it does;
+    // the requests themselves run in the repository's app-wide scope.
+    private val markReadGuard = MarkReadGuard()
 
     /**
      * Centralized action handler for all chat-screen user interactions.
@@ -185,7 +172,7 @@ class ChatViewModel(
     /**
      * Asks the server to mark this chat read. Nothing is written locally - the repository pulls
      * the server's answer back in, which is what finally flips `readByMe` (see
-     * [AppRepository.setAllChatMessagesRead]).
+     * [MessageRepository.setAllChatMessagesRead]).
      */
     fun setAllMessagesRead() {
 
@@ -195,24 +182,15 @@ class ChatViewModel(
         //single cancel by chatId clears it - no need to enumerate individual message ids.
         NotificationManager.removeMessageNotifications(listOf(NotificationManager.NotiId.HexString(chatId).asInt))
 
-        //applicationScope, not viewModelScope: leaving the chat must not cancel the request or
-        //the sync that pulls the server's read receipt back in.
-        applicationScope.launch {
-            markReadMutex.withLock {
-                val newestMessageId = newestMessageId()
-                //Whoever held the lock before us may already have covered this exact state.
-                if (newestMessageId != null && newestMessageId == lastMarkedReadMessageId) {
-                    return@withLock
-                }
-
-                val accepted = appRepository.setAllChatMessagesRead(
-                    chatid = chatId,
-                    gruppe = isGroup,
-                    timestamp = getCurrentTimeMillisString()
-                )
-                lastMarkedReadMessageId = if (accepted) newestMessageId else null
-            }
-        }
+        //App-wide scope (in the repository), not viewModelScope: leaving the chat must not cancel
+        //the request, a request still queued behind the lock, or the sync that pulls the server's
+        //read receipt back in.
+        messageRepository.markChatReadInBackground(
+            chatid = chatId,
+            gruppe = isGroup,
+            guard = markReadGuard,
+            readNewestMessageId = ::newestMessageId,
+        )
     }
 
     /** Newest message currently on screen - the list is newest-first (see MessageDao.getMessagesByUserIdFlow). */
@@ -887,7 +865,7 @@ class ChatViewModel(
                     // lastMarkedReadMessageId is advanced by setAllMessagesRead() itself, and only
                     // if the server accepted - so a sync that brings this chat back unread retries
                     // instead of being swallowed by the guard.
-                    if (hasUnread && newestMessageId != lastMarkedReadMessageId) {
+                    if (hasUnread && newestMessageId != markReadGuard.lastMarkedReadMessageId) {
                         setAllMessagesRead()
                     }
                 }

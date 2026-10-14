@@ -17,13 +17,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.MessageType
-import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.EVENTS
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.GROUPS
@@ -41,12 +38,10 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PersonalUserSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
@@ -67,7 +62,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.WakeResult
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotification
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.eventssync
@@ -81,10 +75,6 @@ import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 
 class AppRepository(
-    private val networkUtils: NetworkUtils,
-
-    private val messageLocalDataSource: MessageLocalDataSource,
-
     val appVersion: AppVersion,
     private val loggingRepository: Logger,
     private val mapRepository: MapRepository,
@@ -614,70 +604,14 @@ class AppRepository(
     suspend fun messageIdSync(fetchMedia: Boolean = true) = messageRepository.syncMessages(fetchMedia)
 
 
-    /**
-     * Instantly upserts a message delivered via push notification (FCM/APNs) into Room, so a
-     * chat opened before the next sync already shows it. Never overwrites an existing row and
-     * never advances the sync cursor (version stays 0, the same trick
-     * [MessageRepository.syncMessages] and the socket handler rely on) - the caller is still
-     * expected to follow up with [MessageRepository.syncMessages], which replaces this
-     * provisional row with the authoritative one (readers, reactions, real version).
-     */
-    suspend fun applyPushMessage(decoded: DecodedNotification.Message) {
-        if (SessionCache.requireLoggedIn()?.userId == null) return
+    // ─── Push apply / mark read: moved to MessageRepository ────────────────────
+    // Thin delegates until every caller uses MessageRepository directly (removed with this class).
 
-        if (decoded.reaction) {
-            applyPushReaction(decoded)
-            return
-        }
+    suspend fun applyPushMessage(decoded: DecodedNotification.Message) = messageRepository.applyPushMessage(decoded)
 
-        // Only TEXT pushes carry enough content for a useful provisional row - IMAGE/AUDIO/POLL
-        // wait for the real sync + media fetch instead of flashing an empty bubble.
-        if (decoded.messageType != MessageType.TEXT) return
+    suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String): Boolean =
+        messageRepository.setAllChatMessagesRead(chatid, gruppe, timestamp)
 
-        // Never overwrite an already-synced or socket-delivered row.
-        if (messageLocalDataSource.getMessageById(decoded.msgId) != null) return
-
-        // Blank when the push came from a server that predates the plaintext `content` field.
-        val content = decoded.content.ifBlank { return }
-
-        val sendDate = (decoded.sendDate.takeIf { it > 0L } ?: getCurrentTimeMillisLong()).toString()
-
-        messageLocalDataSource.upsertMessage(
-            Message(
-                id = decoded.msgId,
-                msgType = MessageType.TEXT,
-                content = content,
-                senderId = decoded.senderId,
-                // Group chat is identified by groupId, not the push's receiverId (the
-                // recipient user) - see NotificationContentResolver.resolveMessage.
-                receiverId = if (decoded.groupMessage) decoded.groupId else decoded.receiverId,
-                groupMessage = decoded.groupMessage,
-                answerId = decoded.answerId.ifBlank { null },
-                sendDate = sendDate,
-                changeDate = sendDate,
-                sent = true,
-                myMessage = false,
-                readByMe = false,
-                readers = emptyList(),
-                reactions = emptyList(),
-                version = 0L,
-            )
-        )
-    }
-
-    /** Applies a reaction push to an already-local message. Never creates a new row. */
-    private suspend fun applyPushReaction(decoded: DecodedNotification.Message) {
-        val existing = messageLocalDataSource.getMessageById(decoded.msgId) ?: return
-
-        val emoji = decoded.content.ifBlank { return }
-
-        messageLocalDataSource.upsertMessage(
-            existing.copy(
-                reactions = existing.reactions.filterNot { it.userId == decoded.senderId } +
-                    Reaction(userId = decoded.senderId, content = emoji, reactedAt = getCurrentTimeMillisLong())
-            )
-        )
-    }
 
     // ─── Message media: moved to MessageRepository ─────────────────────────────
     // Thin delegates until every caller uses MessageRepository directly (removed with this class).
@@ -685,39 +619,6 @@ class AppRepository(
     suspend fun getPicturesForMessageIds(ids: List<String>) = messageRepository.getPicturesForMessageIds(ids)
 
     suspend fun getAudiosForMessageIds(ids: List<String>) = messageRepository.getAudiosForMessageIds(ids)
-
-
-    /**
-     * Marks a whole chat read. The server is the single source of truth for read state: nothing
-     * is written to Room here, the call only tells the server and then pulls the result back
-     * through [MessageRepository.syncMessages], which rewrites `readByMe` from the authoritative
-     * `readers` list.
-     *
-     * Writing it locally first used to lose a race against a parallel sync - opening a chat from
-     * a notification kicks off a [dataSync] at the same moment, and that sync re-fetched the
-     * message before the server had processed the read, resetting `readByMe` to false again.
-     *
-     * The pull is not optional: the server deliberately excludes the acting user from its own
-     * MessageChange socket fan-out, so this device never hears about its own read receipt.
-     *
-     * @return true when the server accepted the read. False (offline, error) means nothing
-     * changed anywhere and the caller is expected to try again later.
-     */
-    suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String): Boolean {
-        SessionCache.requireLoggedIn() ?: return false
-
-        val result = networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong()).trackConnectivity()
-        if (result !is NetworkResult.Success) {
-            loggingRepository.logWarning("Setting chat $chatid read failed: ${(result as? NetworkResult.Error<*>)?.error}")
-            return false
-        }
-
-        // With media: unlike the MESSAGES job in [dataSync] there is no MEDIA job behind this
-        // call, so a picture or voice message first seen by this sync would otherwise stay
-        // undownloaded until the next full sync gets around to the missing-media backfill.
-        messageRepository.syncMessages()
-        return true
-    }
 
 
     // ─── Edit / delete / react / poll: moved to MessageRepository ──────────────
