@@ -1,5 +1,7 @@
 # Repository Interface Migration Plan
 
+**Status: implemented** (Phases 0–9, branch `macci`, 2026-10-14); the device tests are still open (checklist in `plans/Todo.md`).
+
 Splits the god object `AppRepository` (`C/datasource/AppRepository.kt`, ~2,990 lines, 14 constructor deps, used by ~40 files) into feature repositories and coordinators. Each one has an **interface**, so every ViewModel depends only on interfaces and can be unit-tested with in-memory fakes.
 
 **Order** (decided 2026-10-13): this plan → follow-ups in `plans/Todo.md` (NetworkUtils fix-up, unified NetworkUtils results, `Result<T, DataError>` conversion) → `CHAT_BASED_MIGRATION_PLAN.md` → `E2E_ENCRYPTION_PLAN_V2.md`.
@@ -344,6 +346,43 @@ They must stay green after Phase 5 (c); then they point at `OfflineFirstMessageR
   - `DefaultDataSyncCoordinator`: order, lock re-entry, state transitions, group purge after the parallel jobs.
 - Fakes live in `commonTest/…/fakes/` (`FakeMessageRepository`, `FakeErrorChannel`, the platform service fakes, …) and are reused by the follow-ups and the chat migration. `Navigator` is used for real (R9). Concurrency tests use `StandardTestDispatcher` (R12).
 - The Phase 4.5 send-path tests are already there; Phase 9 adds the rest.
+
+**Done (2026-10-14, commit "Phase 9").** `jvmTest` runs 80 tests (was 14).
+- Fakes in `commonTest/…/fakes/`, one per interface the tested classes need, mirroring its signatures: `FakeMessageRepository`, `FakeUserRepository`, `FakeGroupRepository`, `FakeChatListRepository`, `FakeSettingsRepository`, `FakeDataSyncCoordinator`, `FakeAuthRepository`, `FakeAppInfoRepository`, `FakeEventRepository`, `FakeMapRepository`, `FakeErrorChannel`, `FakeActionChannel`, and for the platform services `FakeAppVersion`, `FakeNotifier`, `FakePermissionManager`, `FakePictureManager`, `FakeAudioManager`, `FakeShareUtils`. Reads serve public `MutableStateFlow`s. Writes are recorded in a thread-safe `CallLog`, which can also wait for a call made on another thread. The sync/send entry points run replaceable `on…` hooks, so a test can hold a call on a gate or make it fail. No fakes for `SessionTerminator` or `LanguageManager`: nothing tested here needs them.
+- `commonTest/…/testutil/`:
+  - `TestViewModelStore` + `runViewModelTest`: clear the ViewModels the way a screen does, then wait for their coroutines. Needed because a cancelled `flowOn(Dispatchers.Default)` producer otherwise resumed on the next test's `Dispatchers.Main`.
+  - `awaitMatching`: Turbine with a wall-clock timeout, for the ViewModel flows that hop to `Dispatchers.Default`.
+  - `startTestKoin`: a global Koin with only a `Notifier`, for the `KoinPlatform` lookups in `ChatSelectorViewModel` and `NotificationManager`.
+  - `TestModels.kt`: model builders.
+  - `resetGlobalState()` now also resets `OpenChatTracker`.
+- `jvmTest/…/testutil/TestNetworkUtils.kt` builds the real `NetworkUtils` on a `MockEngine` client; `SendPathFixture` uses it now.
+- ViewModel tests (`commonTest`, `MainDispatcherRule` + `resetGlobalState()`):
+  - `ChatSelectorViewModelTest` (10): list, login switch, in-memory search, unread filter, debounced message search, pin toggle, pending-request badge, refresh order and re-entry, push token.
+  - `ChatViewModelTest` (12): send (reply, blank, logged out), edit, delete (sent vs. queued), reaction, message order, mark-read on resume (guard, notification cancel), partner online state, draft.
+  - `ChatDetailsViewmodelTest` (10): group details, group edits, member actions and picker, user details, friend removal, nickname/description, friend request, wake.
+  - `NewChatViewModelTest` (8).
+  - `GroupCreatorViewModelTest` (6) is in `jvmTest`, because the group picture goes through the platform `GalleryPhotoResult.loadBytes()`.
+- `DefaultDataSyncCoordinatorTest` (7) is in `commonTest`, not `jvmTest`. The coordinator depends only on interfaces, so fakes replace Room and `MockEngine`. It covers:
+  - the five jobs, then the purge, then the MEDIA job, and the message sync without media;
+  - the purge waiting for the parallel message sync;
+  - state transitions, and a failed job plus the reset on the next run;
+  - lock re-entry;
+  - a cancelled caller (R2);
+  - logged out.
+  It runs on one `StandardTestDispatcher` with `externalScope = backgroundScope` and is driven with `runCurrent()`, because `advanceUntilIdle()` stops once only background work is left.
+- `jvmTest` repository tests:
+  - `OfflineFirstChatListRepositoryTest` (6): DM vs. group, last message and counters (incl. unsent), unread badge gating (accepted friends and stored groups only, no SYSTEM lines), pin order, `setPinnedChat` push, pending requests.
+  - `MessagePushApplyTest` (7): `applyPushMessage`.
+  - The Phase 4.5 tests already built `OfflineFirstMessageRepository` directly (since Phase 5b) and stay unchanged.
+- Verified: the three compile tasks, plus `compileTestKotlinIosSimulatorArm64`, which compiles the shared tests for iOS. Kotlin/Native rejects `,` in backtick test names, so the names were changed. The iOS test task itself was not run. Three full `jvmTest` runs and five more runs of the new tests were all green; no flaky test.
+- Not covered:
+  - `ChatViewModel`: image/audio/poll sends, recording, paging, and the auto mark-read on a list change (a 1.5 s delay after an emission from a `Default` thread; racy without a dispatcher seam).
+  - Chat selector startup popups and the desktop update check.
+  - Chat details: group picture, event detach, shared-content counts.
+  - Chat list message search.
+  - Every other ViewModel and repository (Todo "Add tests to everything").
+- Production code: unchanged, no test seams added.
+- Bugs: no tested path misbehaved; the unread-badge friendship gating is correct. What the tests ran into is in Todo "Findings from migration Phase 9", e.g. a 25-character group name that can't be created but shows no error (pinned by a test), a lost update in `GroupCreatorViewModel`'s name validation, `runBlocking` in `ChatViewModel`, and a check-then-act in the sync lock.
 
 ---
 
