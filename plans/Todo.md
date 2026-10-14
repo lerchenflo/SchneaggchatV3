@@ -18,6 +18,7 @@ Deferred on purpose, because that plan is purely structural. Run **after** that 
 - [ ] Unify the results `NetworkUtils` passes back to its callers (one error shape instead of a mix of `NetworkResult`, `Boolean` and `null`).
 - [ ] Return types: convert the `Boolean` / nullable / raw `NetworkResult` returns of the new repositories to `Result<T, DataError>` (plan D3). With it, stop repositories from writing into `ErrorChannel`; they return the error and the ViewModel maps it to UI (plan R6).
 - [ ] Ask the user about every user-facing behavior the plan deferred for later.
+- [ ] **Add tests to everything** (user, 2026-10-14; tackle later). Beyond the Phase 4.5 send-path tests and the Phase 9 safety net: cover every repository, coordinator and ViewModel with fakes (`commonTest`) and the Room/Ktor paths with in-memory Room + `MockEngine` (`jvmTest`).
 - [ ] Inject the global objects `SessionCache`, `SnackbarManager`, `AppLifecycleManager`, `IncomingDataManager` instead of using them statically (plan D19). Until then tests reset them and can't run in parallel.
 - [ ] **Rebuild message sending** (user, 2026-10-13: "message sending is trashed anyway"). The migration moves it verbatim and only guards it with the Phase 4.5 characterization tests.
 - [ ] Split `OfflineFirstMessageRepository` after the move. It inherits ~1,100 lines (send, offline queue, sync, push apply, actions, media) and becomes the next god class. Candidates: a sender, a sync part, a push/action part.
