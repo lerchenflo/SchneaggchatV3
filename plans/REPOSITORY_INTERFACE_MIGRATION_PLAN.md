@@ -123,7 +123,7 @@ Rules:
 - One interface + one implementation per concept. Bind in Koin as `singleOf(::OfflineFirstMessageRepository) bind MessageRepository::class`.
 - **Work that must outlive a screen runs in the data layer (R2).** Repositories and coordinators take an `externalScope: CoroutineScope` (Koin binds the existing `ApplicationScope` instance) and run such work as `externalScope.async { … }.await()`. ViewModels call them from `viewModelScope` and never inject `ApplicationScope`. Tests pass `backgroundScope`.
 - **Interfaces in `D/` never expose network DTOs (R3).** `NetworkUtils.*` types used by ViewModels (`FriendshipStatus`, `GroupMemberAction`, `WakeOutcome`, `SessionResponse`, `NewFriendsUserResponse`, `PollCreateRequest`, `PollVoteOptionCreateRequest`, `PollVoteRequest`) get domain models + mappers in the phase that creates the interface exposing them.
-- **No hardcoded dispatchers in classes under test (R4).** `OfflineFirstChatListRepository` and `OfflineFirstMessageRepository` take `CoroutineDispatcher` constructor parameters (Koin named `Default` / `IO`) whose defaults keep today's behavior.
+- **No hardcoded dispatchers in classes under test (R4).** `OfflineFirstChatListRepository` and `OfflineFirstMessageRepository` take `CoroutineDispatcher` constructor parameters whose defaults keep today's behavior. Koin relies on the defaults (explicit lambda with named arguments, no dispatcher binding; decided in Phase 4); tests pass their own dispatcher.
 
 ### 2.2 Target classes
 Interface packages follow **D4** (decided 2026-10-13), matching the module-structure skill rule "features never import from each other":

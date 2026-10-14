@@ -5,6 +5,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.SyncedSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 
 /**
@@ -56,6 +57,14 @@ interface SettingsRepository {
 
     suspend fun getLastContributePopupShown(): Long
     suspend fun setLastContributePopupShown(epochMillis: Long)
+
+    // ─── Pinned chats (synced) ─────────────────────────────────────────────────
+    // Local reads and writes only, newest pin first. ChatListRepository.setPinnedChat writes
+    // here and then pushes the whole list to the server itself.
+    fun getPinnedChatsFlow(): Flow<List<PinnedChat>>
+    suspend fun getPinnedChats(): List<PinnedChat>
+    suspend fun addPinnedChat(chat: PinnedChat)
+    suspend fun removePinnedChat(chatId: String)
 
     // ─── This device only ──────────────────────────────────────────────────────
     fun getDemoModeFlow(): Flow<Boolean>

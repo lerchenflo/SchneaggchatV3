@@ -103,6 +103,15 @@ Noticed while doing Phase 3b (GroupRepository, sync locks). Not fixed.
 - [ ] `C/games/presentation/recap/RecapViewModel.kt:62` also injects `GroupLocalDataSource` (only `getGroupById`). Swap it to `GroupRepository.getGroupById` (mechanical, games) before the Phase 7 presentation grep.
 - [ ] `C/chat/presentation/newchat/GroupCreatorViewModel.kt:254` starts the post-create `dataSync` in an unscoped `CoroutineScope(Dispatchers.IO).launch`, same pattern as the friend requests in the Phase 3a item above. Phase 6 (R2) turns it into a plain call.
 
+## Findings from migration Phase 4 (2026-10-14)
+
+Noticed while doing Phase 4 (ChatListRepository). Not fixed.
+
+- [ ] **`chat/domain` imports a presentation enum.** `ChatFilter` lives in `C/chat/presentation/chatselector/ChatSelectorViewModel.kt:416` and carries UI code (`toUiText()`, `getIcon(): ImageVector`), but `C/chat/domain/ChatListRepository.kt:4` (`getChatSelectorFlow`) and `C/chat/domain/ChatListSearch.kt:3` (`applySearchAndFilter`, moved verbatim) need it. Move the enum to `chat/domain` and its UI mapping into presentation extensions, in Phase 7 at the latest.
+- [ ] `D/SettingsRepository` now also exposes `PinnedChat` (`C/datasource/preferences/`) through the pin methods added in Phase 4 (`C/datasource/domain/SettingsRepository.kt:64-67`). Covered by the Phase 1a item that moves `PinnedChat` to `D/model/`.
+- [ ] `ChatSelectorViewModel` hardcodes `.flowOn(Dispatchers.Default)` on top of the repository flows (`C/chat/presentation/chatselector/ChatSelectorViewModel.kt:333, :349, :374`). The repository flows already run on the injected dispatcher (R4); in the Phase 9 ViewModel tests these hops leave the test scheduler. Drop them or inject the dispatcher.
+- [ ] `C/chat/data/OfflineFirstChatListRepository.kt:120` falls back to the hardcoded English sender name `"Unknown"` for group last-message previews (moved verbatim from `getChatListFlow`). Needs a string resource, resolved in the UI rather than the data layer.
+
 ## Deferred from the Android-standards review (plan §8, 2026-10-13)
 
 - [ ] **Auth invalidation in the data layer** (R8). Today `App.kt` reacts to `ActionChannel.AuthInvalidated` with error popup + `logout()` + navigate to Login. Target: `SessionTerminator` listens to `AuthEventSink` in the app scope, and `App.kt` only navigates when the auth state changes to logged out.

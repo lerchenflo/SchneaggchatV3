@@ -22,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.AvailableUser
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.model.FriendshipStatus
@@ -39,6 +40,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class NewChatViewModel (
     private val appRepository: AppRepository,
+    private val chatListRepository: ChatListRepository,
     private val userRepository: UserRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
@@ -77,7 +79,7 @@ class NewChatViewModel (
         viewModelScope.launch {
             searchterm
                 .collectLatest {
-                    appRepository.getPendingFriends(it).collectLatest { pendingfriendsList ->
+                    chatListRepository.getPendingFriends(it).collectLatest { pendingfriendsList ->
                         _pendingFriends.value = pendingfriendsList
                     }
                 }

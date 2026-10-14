@@ -35,10 +35,11 @@ import org.lerchenflo.schneaggchatv3mp.datasource.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
+import org.lerchenflo.schneaggchatv3mp.chat.domain.applySearchAndFilter
 import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.applySearchAndFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.SettingsRepository
@@ -62,6 +63,7 @@ private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
+    private val chatListRepository: ChatListRepository,
     private val authRepository: AuthRepository,
     private val appInfoRepository: AppInfoRepository,
     private val navigator: Navigator,
@@ -102,7 +104,7 @@ class ChatSelectorViewModel(
 
         viewModelScope.launch {
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
-            appRepository.getPendingFriends("").collectLatest { list ->
+            chatListRepository.getPendingFriends("").collectLatest { list ->
                 val size = list.filter {
                     it.requesterId != ownId
                 }.size
@@ -232,7 +234,7 @@ class ChatSelectorViewModel(
 
     fun pinUnpinChat(chat: ChatListItem) {
         viewModelScope.launch {
-            appRepository.setPinnedChat(chat.id, group = chat.isGroup, pinned = chat.pinned <= 0L)
+            chatListRepository.setPinnedChat(chat.id, group = chat.isGroup, pinned = chat.pinned <= 0L)
         }
     }
 
@@ -326,7 +328,7 @@ class ChatSelectorViewModel(
             val loggedIn = authState as? SessionCache.AuthState.LoggedIn
                 ?: return@flatMapLatest flowOf(emptyList())
 
-            appRepository.getChatListFlow(userId = loggedIn.userId)
+            chatListRepository.getChatListFlow(userId = loggedIn.userId)
         }
         .flowOn(Dispatchers.Default)
         .distinctUntilChanged()
@@ -364,7 +366,7 @@ class ChatSelectorViewModel(
             val loggedIn = authState as? SessionCache.AuthState.LoggedIn
                 ?: return@flatMapLatest flowOf(emptyList<MessageSearchResult>())
 
-            appRepository.getMessageSearchFlow(
+            chatListRepository.getMessageSearchFlow(
                 searchTerm = term,
                 userId = loggedIn.userId
             )

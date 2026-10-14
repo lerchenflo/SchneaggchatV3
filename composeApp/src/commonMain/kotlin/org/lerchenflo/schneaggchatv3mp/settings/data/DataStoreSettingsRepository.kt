@@ -10,6 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Draft
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
@@ -157,6 +158,25 @@ class DataStoreSettingsRepository(
     override suspend fun setLastContributePopupShown(epochMillis: Long) {
         preferencemanager.saveLastContributePopupShown(epochMillis)
         networkUtils.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis))
+    }
+
+    // ─── Pinned chats ──────────────────────────────────────────────────────────
+    // Local only: ChatListRepository.setPinnedChat pushes the resulting list to the server.
+
+    override fun getPinnedChatsFlow(): Flow<List<PinnedChat>> {
+        return preferencemanager.getPinnedChatsFlow()
+    }
+
+    override suspend fun getPinnedChats(): List<PinnedChat> {
+        return preferencemanager.getPinnedChats()
+    }
+
+    override suspend fun addPinnedChat(chat: PinnedChat) {
+        preferencemanager.addPinnedChat(chat)
+    }
+
+    override suspend fun removePinnedChat(chatId: String) {
+        preferencemanager.removePinnedChat(chatId)
     }
 
     // ─── This device only ──────────────────────────────────────────────────────

@@ -26,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.domain.GroupRepository
@@ -107,6 +108,7 @@ sealed interface GroupCreatorAction {
 
 class GroupCreatorViewModel (
     private val appRepository: AppRepository,
+    private val chatListRepository: ChatListRepository,
     private val groupRepository: GroupRepository,
     private val pictureManager: PictureManager,
 
@@ -139,7 +141,7 @@ class GroupCreatorViewModel (
                     val loggedIn = authState as? SessionCache.AuthState.LoggedIn
                         ?: return@flatMapLatest flowOf(emptyList())
 
-                    appRepository.getChatSelectorFlow(
+                    chatListRepository.getChatSelectorFlow(
                         searchTerm = searchTerm,
                         userId = loggedIn.userId,
                         filter = ChatFilter.NONE

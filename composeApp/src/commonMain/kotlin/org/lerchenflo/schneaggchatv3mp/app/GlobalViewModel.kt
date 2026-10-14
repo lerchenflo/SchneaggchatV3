@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationBadgeCounts
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
@@ -43,6 +44,7 @@ import kotlin.time.Duration.Companion.minutes
 @OptIn(ExperimentalCoroutinesApi::class)
 class GlobalViewModel(
     private val appRepository: AppRepository,
+    private val chatListRepository: ChatListRepository,
     private val userRepository: UserRepository,
     private val eventRepository: EventRepository,
     private val appInfoRepository: AppInfoRepository,
@@ -70,7 +72,7 @@ class GlobalViewModel(
     /** Unread/unseen counts behind the bottom navigation bar's badges. */
     val navigationBadgeCounts: StateFlow<NavigationBadgeCounts> = combine(
         SessionCache.authState,
-        appRepository.getUnreadChatCountFlow(),
+        chatListRepository.getUnreadChatCountFlow(),
         eventRepository.getAllEventsFlow(),
         badgeClock,
     ) { authState, unreadChats, events, nowMillis ->
