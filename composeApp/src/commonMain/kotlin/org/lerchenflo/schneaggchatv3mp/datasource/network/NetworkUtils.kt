@@ -1,18 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 import io.ktor.client.HttpClient
-import io.ktor.client.request.delete
-import io.ktor.client.request.forms.FormBuilder
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.put
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -65,143 +56,35 @@ class NetworkUtils(
 ) {
 
 
-    // Base methods that return HttpResponse
-    private suspend inline fun <reified T> get(endpoint: String): HttpResponse {
-        return httpClient.get(preferenceManager.buildServerUrl(endpoint))
-    }
+    private val server = ServerClient(httpClient, preferenceManager, loggingRepository)
 
-    private suspend inline fun <reified T> post(endpoint: String, body: T): HttpResponse {
-        return httpClient.post(preferenceManager.buildServerUrl(endpoint)) {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
-    }
+    // Without the bearer token, see authHttpClient
+    private val authServer = ServerClient(authHttpClient, preferenceManager, loggingRepository)
 
-    private suspend inline fun <reified T> put(endpoint: String, body: T): HttpResponse {
-        return httpClient.put(preferenceManager.buildServerUrl(endpoint)) {
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
-    }
-
-    private suspend inline fun delete(endpoint: String): HttpResponse {
-        return httpClient.delete(preferenceManager.buildServerUrl(endpoint))
-    }
-
-    private suspend inline fun <reified R> safeCall(
-        crossinline block: suspend () -> HttpResponse
-    ): NetworkResult<R, NetworkingError> = safeNetworkCall(loggingRepository, block)
-
-    // Now all the safe methods use the single safeCall function
-    private suspend inline fun <reified T> safeGet(endpoint: String): NetworkResult<T, NetworkingError> {
-        return safeCall {
-            httpClient.get(preferenceManager.buildServerUrl(endpoint))
-        }
-    }
-
-    private suspend inline fun <reified T, reified R> safePost(
-        endpoint: String,
-        body: T
-    ): NetworkResult<R, NetworkingError> {
-        return safeCall {
-            httpClient.post(preferenceManager.buildServerUrl(endpoint)) {
+    /** GETs [url] as given (not a server endpoint), without the bearer token. */
+    private suspend inline fun <reified R> safeAuthGet(url: String): NetworkResult<R, NetworkingError> {
+        return safeNetworkCall(loggingRepository) {
+            authHttpClient.get(url) {
                 contentType(ContentType.Application.Json)
                 setBody(body)
             }
         }
     }
-
-    private suspend inline fun <reified R> safePostMultipart(
-        endpoint: String,
-        client: HttpClient = httpClient,
-        crossinline parts: FormBuilder.() -> Unit
-    ): NetworkResult<R, NetworkingError> {
-        return safeCall {
-            client.post(preferenceManager.buildServerUrl(endpoint)) {
-                setBody(MultiPartFormDataContent(formData { parts() }))
-            }
-        }
-    }
-
-    private fun FormBuilder.appendProfilePic(
-        bytes: ByteArray,
-        fileName: String = "profile.jpg",
-        contentType: String = "image/jpeg"
-    ) {
-        append("profilepic", bytes, Headers.build {
-            append(HttpHeaders.ContentType, contentType)
-            append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
-        })
-    }
-
-    private suspend inline fun <reified T, reified R> safePut(
-        endpoint: String,
-        body: T
-    ): NetworkResult<R, NetworkingError> {
-        return safeCall {
-            httpClient.put(preferenceManager.buildServerUrl(endpoint)) {
-                contentType(ContentType.Application.Json)
-                setBody(body)
-            }
-        }
-    }
-
-    private suspend inline fun <reified T> safeDelete(endpoint: String): NetworkResult<T, NetworkingError> {
-        return safeCall {
-            httpClient.delete(preferenceManager.buildServerUrl(endpoint))
-        }
-    }
-
-    private suspend inline fun <reified T, reified R> safeAuthPost(
-        endpoint: String,
-        body: T
-    ): NetworkResult<R, NetworkingError> {
-        return safeCall {
-            authHttpClient.post(preferenceManager.buildServerUrl(endpoint)) {
-                contentType(ContentType.Application.Json)
-                setBody(body)
-            }
-        }
-    }
-
-    private suspend inline fun <reified R> safeAuthGet(
-        endpoint: String,
-        url: String? = null
-    ): NetworkResult<R, NetworkingError> {
-
-        val serverUrl = url ?: preferenceManager.buildServerUrl(endpoint)
-
-
-        return safeCall {
-            authHttpClient.get(serverUrl) {
-                contentType(ContentType.Application.Json)
-                setBody(body)
-            }
-        }
-    }
-
-
 
 
     suspend fun testServer(serverUrl: String) : NetworkResult<String, NetworkingError> {
-        return safeCall {
+        return safeNetworkCall(loggingRepository) {
             authHttpClient.get("$serverUrl/public/test")
         }
     }
 
 
     suspend fun getChangeLog(githubUrl: String) : NetworkResult<String, NetworkingError> {
-        return safeAuthGet(
-            endpoint = "",
-            url = githubUrl
-        )
+        return safeAuthGet(url = githubUrl)
     }
 
     suspend fun getGitHubVersionJson(url: String) : NetworkResult<String, NetworkingError> {
-        return safeAuthGet(
-            endpoint = "",
-            url = url
-        )
+        return safeAuthGet(url = url)
     }
 
 
@@ -231,7 +114,7 @@ class NetworkUtils(
 
 
     suspend fun login(username: String, password: String): NetworkResult<TokenPair, NetworkingError> {
-        return safeAuthPost<LoginRequest, TokenPair>(
+        return authServer.safePost<LoginRequest, TokenPair>(
             endpoint = "/auth/login",
             body = LoginRequest(username = username, password = password, deviceName = appVersion.getDeviceName(), deviceType = appVersion.getDeviceType())
         )
@@ -247,9 +130,8 @@ class NetworkUtils(
         language: String? = null,
         fileName: String = "profile.jpg"
     ): NetworkResult<Unit, NetworkingError> {
-        return safePostMultipart(
+        return authServer.safePostMultipart(
             endpoint = "/auth/register",
-            client = authHttpClient,
             parts = {
                 append("username", username)
                 append("password", password)
@@ -267,7 +149,7 @@ class NetworkUtils(
     }
 
     suspend fun sendEmailVerify(): NetworkResult<Unit, NetworkingError> {
-        return safePost<String, Unit>(
+        return server.safePost<String, Unit>(
             endpoint = "/users/verificationemail",
             body = ""
         )
@@ -295,7 +177,7 @@ class NetworkUtils(
         notificationToken: String?,
         isAndroid: Boolean,
     ): NetworkResult<Unit, NetworkingError> {
-        return safeAuthPost<LogoutRequest, Unit>(
+        return authServer.safePost<LogoutRequest, Unit>(
             endpoint = "/auth/logout",
             body = LogoutRequest(
                 refreshToken = refreshToken,
@@ -316,7 +198,7 @@ class NetworkUtils(
      * it must not depend on the refresh token alone.
      */
     suspend fun logoutAllDevices(refreshToken: String?): NetworkResult<Unit, NetworkingError> {
-        return safePost<LogoutRequest, Unit>(
+        return server.safePost<LogoutRequest, Unit>(
             endpoint = "/auth/logout",
             body = LogoutRequest(
                 refreshToken = refreshToken,
@@ -335,14 +217,14 @@ class NetworkUtils(
     )
 
     suspend fun getSessions(): NetworkResult<List<SessionResponse>, NetworkingError> {
-        return safeGet(endpoint = "/sessions")
+        return server.safeGet(endpoint = "/sessions")
     }
 
     /**
      * Logs one of the own devices out remotely.
      */
     suspend fun endSession(sessionId: String): NetworkResult<Unit, NetworkingError> {
-        return safeDelete(endpoint = "/sessions/$sessionId")
+        return server.safeDelete(endpoint = "/sessions/$sessionId")
     }
 
     @Serializable
@@ -352,7 +234,7 @@ class NetworkUtils(
     )
 
     suspend fun setNotificationToken(token: String, isAndroid: Boolean) : NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/setnotificationtoken",
             body = NotificationTokenRequest(
                 token = token,
@@ -376,7 +258,7 @@ class NetworkUtils(
     data class IdTimeStamp(val id: String, val timeStamp: String)
 
     suspend fun getProfilePicForUserId(userId: String) : NetworkResult<ByteArray, NetworkingError> {
-        return safeGet(
+        return server.safeGet(
             endpoint = "/users/profilepic/$userId"
         )
     }
@@ -549,14 +431,14 @@ class NetworkUtils(
     )
 
     suspend fun updateSettings(request: UserSettingsRequest): NetworkResult<Unit, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/settings",
             body = request
         )
     }
 
     suspend fun userIdSync(userIds: List<IdTimeStamp>) : NetworkResult<UserSyncResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/sync",
             body = userIds
         )
@@ -570,34 +452,34 @@ class NetworkUtils(
     )
 
     suspend fun getAvailableUsers(searchterm: String) : NetworkResult<List<NewFriendsUserResponse>, NetworkingError> {
-        return safeGet(
+        return server.safeGet(
             endpoint = "/users/availableusers?searchterm=$searchterm"
         )
     }
 
     suspend fun sendFriendRequest(friendId: String) : NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/addfriend/$friendId",
             body = ""
         )
     }
 
     suspend fun denyFriendRequest(friendId: String) : NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/denyfriend/$friendId",
             body = ""
         )
     }
 
     suspend fun removeFriend(friendId: String) : NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/removefriend/$friendId",
             body = ""
         )
     }
 
     suspend fun changeUsername(newUsername: String) : NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/changeusername",
             body = newUsername
         )
@@ -610,7 +492,7 @@ class NetworkUtils(
     )
 
     suspend fun changePassword(oldPassword: String, newPassword: String) : NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/changepassword",
             body = PasswordChangeRequest(
                 oldPassword = oldPassword,
@@ -620,7 +502,7 @@ class NetworkUtils(
     }
 
     suspend fun changeProfilePic(newProfilePic: ByteArray, fileName: String = "profile.jpg"): NetworkResult<Unit, NetworkingError> {
-        return safePostMultipart(
+        return server.safePostMultipart(
             endpoint = "/users/setprofilepic",
             parts = { appendProfilePic(newProfilePic, fileName) }
         )
@@ -638,7 +520,7 @@ class NetworkUtils(
     )
 
     suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?, newPhoneNumber: String? = null): NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/changeprofile",
             body = UserRequest(
                 userId = userId,
@@ -705,7 +587,7 @@ class NetworkUtils(
 
 
     suspend fun getProfilePicForGroupId(groupId: String) : NetworkResult<ByteArray, NetworkingError> {
-        return safeGet(
+        return server.safeGet(
             endpoint = "/groups/profilepic/$groupId"
         )
     }
@@ -740,7 +622,7 @@ class NetworkUtils(
         memberIds: List<String>, //Userids
         profilePicBytes: ByteArray,
     ): NetworkResult<GroupResponse, NetworkingError> {
-        return safePostMultipart(
+        return server.safePostMultipart(
             endpoint = "/groups/create",
             parts = {
                 append("name", name)
@@ -758,7 +640,7 @@ class NetworkUtils(
     )
 
     suspend fun groupIdSync(groupIds: List<IdTimeStamp>) : NetworkResult<GroupSyncResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/groups/sync",
             body = groupIds
         )
@@ -766,21 +648,21 @@ class NetworkUtils(
 
 
     suspend fun changeGroupProfilePic(newProfilePic: ByteArray, groupId: String, fileName: String = "profile.jpg"): NetworkResult<Unit, NetworkingError> {
-        return safePostMultipart(
+        return server.safePostMultipart(
             endpoint = "/groups/setprofilepic?groupid=$groupId",
             parts = { appendProfilePic(newProfilePic, fileName) }
         )
     }
 
     suspend fun changeGroupDescription(newDescription: String, groupId: String) : NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/groups/setdescription?groupid=$groupId",
             body = newDescription
         )
     }
 
     suspend fun changeGroupName(newName: String, groupId: String) : NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/groups/setGroupName?groupid=$groupId",
             body = newName
         )
@@ -802,7 +684,7 @@ class NetworkUtils(
     )
     
     suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/groups/changemembers",
             body = GroupActionRequest(
                 action = action,
@@ -820,7 +702,7 @@ class NetworkUtils(
 
     //Pass null to clear the expiry (group never auto-expires)
     suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): NetworkResult<Any, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/groups/setexpiry",
             body = SetGroupExpiryRequest(
                 groupId = groupId,
@@ -932,7 +814,7 @@ class NetworkUtils(
 
 
     suspend fun votePoll(pollVoteRequest: PollVoteRequest) : NetworkResult<MessageResponse, NetworkingError>{
-        return safePost(
+        return server.safePost(
             endpoint = "/messages/pollvote",
             body = pollVoteRequest,
         )
@@ -948,7 +830,7 @@ class NetworkUtils(
     )
 
     suspend fun deletePollOption(request: PollOptionDeleteRequest) : NetworkResult<MessageResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/messages/polloption/delete",
             body = request,
         )
@@ -1007,7 +889,7 @@ class NetworkUtils(
 
         println("MessageRequest: $messageRequest")
 
-        return safePost(
+        return server.safePost(
             endpoint = "/messages/send/text",
             body = messageRequest
         )
@@ -1032,24 +914,11 @@ class NetworkUtils(
             clientMessageId = clientMessageId,
         )
 
-        return safePostMultipart(
+        return server.safePostMultipart(
             endpoint = "/messages/send/image",
             parts = {
-                append(
-                    key = "image",
-                    value = image,
-                    headers = Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(HttpHeaders.ContentDisposition, "filename=\"image.jpg\"")
-                    }
-                )
-                append(
-                    key = "request",
-                    value = AppJson.instance.encodeToString(ImageMessageRequest.serializer(), messageRequest),
-                    headers = Headers.build {
-                        append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    }
-                )
+                appendFile(key = "image", bytes = image, fileName = "image.jpg", contentType = "image/jpeg")
+                appendJsonPart(key = "request", serializer = ImageMessageRequest.serializer(), value = messageRequest)
             }
         )
     }
@@ -1071,24 +940,11 @@ class NetworkUtils(
             clientMessageId = clientMessageId,
         )
 
-        return safePostMultipart(
+        return server.safePostMultipart(
             endpoint = "/messages/send/audio",
             parts = {
-                append(
-                    key = "audio",
-                    value = audio,
-                    headers = Headers.build {
-                        append(HttpHeaders.ContentType, "audio/mp4")
-                        append(HttpHeaders.ContentDisposition, "filename=\"message_audio.m4a\"")
-                    }
-                )
-                append(
-                    key = "request",
-                    value = AppJson.instance.encodeToString(AudioMessageRequest.serializer(), messageRequest),
-                    headers = Headers.build {
-                        append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    }
-                )
+                appendFile(key = "audio", bytes = audio, fileName = "message_audio.m4a", contentType = "audio/mp4")
+                appendJsonPart(key = "request", serializer = AudioMessageRequest.serializer(), value = messageRequest)
             }
         )
     }
@@ -1106,7 +962,7 @@ class NetworkUtils(
 
         println("PollMessageRequest: $pollRequest")
 
-        return safePost(
+        return server.safePost(
             endpoint = "/messages/send/poll",
             body = pollRequest
         )
@@ -1125,13 +981,13 @@ class NetworkUtils(
     )
 
     suspend fun messageSync(since: Long) : NetworkResult<MessageSyncResponse, NetworkingError>{
-        return safeGet(
+        return server.safeGet(
             endpoint = "/messages/sync?since=$since&page_size=400",
         )
     }
 
     suspend fun setMessagesRead(chatId: String, group: Boolean, timeStamp: Long) : NetworkResult<String, NetworkingError>{
-        return safePost(
+        return server.safePost(
             endpoint = "/messages/setread?userid=$chatId&group=$group&timestamp=$timeStamp",
             body = "",
         )
@@ -1145,7 +1001,7 @@ class NetworkUtils(
     )
 
     suspend fun editMessage(messageId: String, newContent: String): NetworkResult<MessageResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/messages/edit",
             body = EditMessageRequest(
                 messageId = messageId,
@@ -1155,7 +1011,7 @@ class NetworkUtils(
     }
 
     suspend fun deleteMessage(messageId: String): NetworkResult<Any, NetworkingError> {
-        return safeDelete(
+        return server.safeDelete(
             endpoint = "/messages/delete?messageid=$messageId"
         )
     }
@@ -1167,20 +1023,20 @@ class NetworkUtils(
     )
 
     suspend fun reactToMessage(messageId: String, content: String): NetworkResult<MessageResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/messages/react",
             body = ReactionRequest(messageId = messageId, content = content)
         )
     }
 
     suspend fun getImageForImageMessage(messageId: String) : NetworkResult<ByteArray, NetworkingError> {
-        return safeGet(
+        return server.safeGet(
             endpoint = "/messages/images/$messageId"
         )
     }
 
     suspend fun getAudioForAudioMessage(messageId: String) : NetworkResult<ByteArray, NetworkingError> {
-        return safeGet(
+        return server.safeGet(
             endpoint = "/messages/audios/$messageId"
         )
     }
@@ -1191,7 +1047,7 @@ class NetworkUtils(
         entries: List<IdTimeStamp>,
         page: Int,
     ): NetworkResult<MapSyncResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/map/sync?page=$page&page_size=400",
             body = entries,
         )
@@ -1200,13 +1056,13 @@ class NetworkUtils(
     suspend fun upsertMapEntry(
         request: MapEntryRequest,
     ): NetworkResult<MapEntryResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/map/upsert",
             body = request)
     }
 
     suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkingError> {
-        return safeDelete(endpoint = "/map/delete?entryid=$entryId")
+        return server.safeDelete(endpoint = "/map/delete?entryid=$entryId")
     }
 
     // ─── Events ───────────────────────────────────────────────────────────────
@@ -1215,7 +1071,7 @@ class NetworkUtils(
         entries: List<IdTimeStamp>,
         page: Int,
     ): NetworkResult<EventSyncResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/events/sync?page=$page&page_size=400",
             body = entries,
         )
@@ -1225,16 +1081,10 @@ class NetworkUtils(
         request: EventRequest,
         profilePic: ByteArray? = null,
     ): NetworkResult<EventResponse, NetworkingError> {
-        return safePostMultipart(
+        return server.safePostMultipart(
             endpoint = "/events/upsert",
             parts = {
-                append(
-                    key = "request",
-                    value = AppJson.instance.encodeToString(EventRequest.serializer(), request),
-                    headers = Headers.build {
-                        append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    }
-                )
+                appendJsonPart(key = "request", serializer = EventRequest.serializer(), value = request)
                 profilePic?.let {
                     appendProfilePic(it, fileName = "eventtype.png", contentType = "image/png")
                 }
@@ -1245,7 +1095,7 @@ class NetworkUtils(
     suspend fun joinEvent(
         eventId: String
     ): NetworkResult<EventJoinResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/events/join",
             body = EventJoinRequest(
                 eventId = eventId
@@ -1257,7 +1107,7 @@ class NetworkUtils(
         eventId: String,
         status: EventParticipationStatus,
     ): NetworkResult<EventResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/events/participation",
             body = EventParticipationRequest(
                 eventId = eventId,
@@ -1267,7 +1117,7 @@ class NetworkUtils(
     }
 
     suspend fun detachEvent(eventId: String, deleteGroup: Boolean = false, deleteEvent: Boolean = false): NetworkResult<Unit, NetworkingError> {
-        return safeDelete(endpoint = "/events/delete?eventid=$eventId&deletegroup=$deleteGroup&deleteevent=$deleteEvent")
+        return server.safeDelete(endpoint = "/events/delete?eventid=$eventId&deletegroup=$deleteGroup&deleteevent=$deleteEvent")
     }
 
     // Location data itself is now pushed/pulled over the WebSocket (see SocketConnectionMessage:
@@ -1289,7 +1139,7 @@ class NetworkUtils(
         shareSpeedHeading: Boolean = false,
         shareSnailTrail: Boolean = false,
     ): NetworkResult<Unit, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/sharelocation",
             body = LocationShareRequest(friendId, share, shareSpeedHeading, shareSnailTrail)
         )
@@ -1305,7 +1155,7 @@ class NetworkUtils(
 
     /** Per-friend toggle: may this friend wake us (play an alarm on our devices). */
     suspend fun setWakePermission(friendId: String, allowWake: Boolean): NetworkResult<Unit, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/setwakepermission",
             body = WakePermissionRequest(friendId, allowWake)
         )
@@ -1318,7 +1168,7 @@ class NetworkUtils(
 
     /** Master switch: while off nobody can wake us, whatever the per-friend toggles say. */
     suspend fun setWakeGlobal(enabled: Boolean): NetworkResult<Unit, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/users/setwakeglobal",
             body = WakeGlobalRequest(enabled)
         )
@@ -1352,7 +1202,7 @@ class NetworkUtils(
 
     /** Wake a friend or a group - plays an alarm on every consenting Android device. */
     suspend fun sendWake(targetId: String, isGroup: Boolean, reason: String): NetworkResult<WakeResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/wake/send",
             body = WakeRequest(targetId, isGroup, reason)
         )
@@ -1361,18 +1211,18 @@ class NetworkUtils(
     // ─── Games ────────────────────────────────────────────────────────────────
 
     suspend fun getGameHighscores(gameId: String, difficulty: String, period: String): NetworkResult<HighscoresResponse, NetworkingError> {
-        return safeGet(endpoint = "/games/highscores?gameid=$gameId&difficulty=$difficulty&period=$period")
+        return server.safeGet(endpoint = "/games/highscores?gameid=$gameId&difficulty=$difficulty&period=$period")
     }
 
     /** Cross-game leaderboard: percentile points summed over every board the user played. */
     suspend fun getGlobalRanking(period: String): NetworkResult<GlobalRankingResponse, NetworkingError> {
-        return safeGet(endpoint = "/games/globalranking?period=$period")
+        return server.safeGet(endpoint = "/games/globalranking?period=$period")
     }
 
     suspend fun submitGameScore(
         request: SubmitGameScoreRequest,
     ): NetworkResult<GameScoreResponse, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/games/upsert",
             body = request)
     }
@@ -1380,7 +1230,7 @@ class NetworkUtils(
     suspend fun submitGameScoresBatch(
         request: SubmitGameScoresBatchRequest,
     ): NetworkResult<List<GameScoreResponse>, NetworkingError> {
-        return safePost(
+        return server.safePost(
             endpoint = "/games/upsertbatch",
             body = request)
     }
@@ -1389,40 +1239,40 @@ class NetworkUtils(
 
     suspend fun getRecap(year: Int? = null): NetworkResult<RecapResponse, NetworkingError> {
         val endpoint = if (year != null) "/recap?year=$year" else "/recap"
-        return safeGet(endpoint)
+        return server.safeGet(endpoint)
     }
 
     // ─── Feedback ─────────────────────────────────────────────────────────────
 
     suspend fun getFeedbackList(type: FeedbackType): NetworkResult<FeedbackListResponse, NetworkingError> {
-        return safeGet(endpoint = "/feedback/list?type=${type.name}")
+        return server.safeGet(endpoint = "/feedback/list?type=${type.name}")
     }
 
     suspend fun getFeedbackDetails(entryId: String): NetworkResult<FeedbackEntryDetailResponse, NetworkingError> {
-        return safeGet(endpoint = "/feedback/details?entryid=$entryId")
+        return server.safeGet(endpoint = "/feedback/details?entryid=$entryId")
     }
 
     suspend fun createFeedback(request: FeedbackCreateRequest): NetworkResult<FeedbackEntryResponse, NetworkingError> {
-        return safePost(endpoint = "/feedback/create", body = request)
+        return server.safePost(endpoint = "/feedback/create", body = request)
     }
 
     suspend fun voteFeedback(request: FeedbackVoteRequest): NetworkResult<FeedbackEntryResponse, NetworkingError> {
-        return safePost(endpoint = "/feedback/vote", body = request)
+        return server.safePost(endpoint = "/feedback/vote", body = request)
     }
 
     suspend fun commentFeedback(request: FeedbackCommentRequest): NetworkResult<FeedbackCommentResponse, NetworkingError> {
-        return safePost(endpoint = "/feedback/comment", body = request)
+        return server.safePost(endpoint = "/feedback/comment", body = request)
     }
 
     suspend fun deleteFeedback(entryId: String): NetworkResult<Unit, NetworkingError> {
-        return safeDelete(endpoint = "/feedback/delete?entryid=$entryId")
+        return server.safeDelete(endpoint = "/feedback/delete?entryid=$entryId")
     }
 
     suspend fun deleteFeedbackComment(commentId: String): NetworkResult<Unit, NetworkingError> {
-        return safeDelete(endpoint = "/feedback/deletecomment?commentid=$commentId")
+        return server.safeDelete(endpoint = "/feedback/deletecomment?commentid=$commentId")
     }
 
     suspend fun setFeedbackStatus(request: FeedbackStatusRequest): NetworkResult<FeedbackEntryResponse, NetworkingError> {
-        return safePost(endpoint = "/feedback/status", body = request)
+        return server.safePost(endpoint = "/feedback/status", body = request)
     }
 }
