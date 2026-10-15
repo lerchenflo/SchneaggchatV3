@@ -119,6 +119,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.GroupExtensionScreenRoot
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
 import schneaggchatv3mp.composeapp.generated.resources.ttt_hint_tap_anywhere
@@ -627,6 +628,11 @@ fun App() {
                                             chatId = route.chatId,
                                             isGroup = route.isGroup,
                                             initialTab = route.initialTab
+                                        )
+                                    }
+                                    entry<Route.GroupExtension> { route ->
+                                        GroupExtensionScreenRoot(
+                                            extensionId = route.extensionId
                                         )
                                     }
                                     entry<Route.Birthdays> {

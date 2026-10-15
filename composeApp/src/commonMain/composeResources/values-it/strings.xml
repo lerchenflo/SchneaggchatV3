@@ -1724,4 +1724,14 @@
     <string name="feedback_delete_comment_confirm">Eliminare questo commento?</string>
     <string name="feedback_change_status">Cambia stato</string>
     <string name="feedback_details_load_error">Impossibile caricare i dettagli.</string>
+
+    <!-- Group extensions -->
+    <string name="group_extensions_title">Estensioni della chat</string>
+    <string name="group_extension_add">Aggiungi estensione</string>
+    <string name="group_extension_type_shared_text">Editor di testo condiviso</string>
+    <string name="group_extension_type_split">Dividi le spese</string>
+    <string name="group_extension_type_quotes">Citazioni</string>
+    <string name="group_extension_type_route_planner">Pianificatore di tour</string>
+    <string name="group_extension_not_found">Questa estensione non esiste più.</string>
+    <string name="group_extension_under_construction">%1$s è ancora in costruzione.</string>
 </resources>

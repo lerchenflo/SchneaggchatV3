@@ -4,6 +4,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
+import org.koin.core.module.dsl.bind
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
@@ -69,6 +70,9 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.Ema
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.DemoGroupExtensionRepository
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.GroupExtensionViewModel
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackViewModel
@@ -146,6 +150,7 @@ val sharedmodule = module{
     singleOf(::LoggingRepository)
     singleOf(::MapRepository)
     singleOf(::EventRepository)
+    singleOf(::DemoGroupExtensionRepository) { bind<GroupExtensionRepository>() }
     singleOf(::FeedbackRepository)
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
@@ -231,8 +236,18 @@ val sharedmodule = module{
             pictureManager = get(),
             eventRepository = get(),
             messageRepository = get(),
+            groupExtensionRepository = get(),
             chatId = chatId,
             isGroup = isGroup
+        )
+    }
+
+    // Explicit lambda because the runtime extensionId can't be resolved by viewModelOf
+    viewModel { (extensionId: String) ->
+        GroupExtensionViewModel(
+            groupExtensionRepository = get(),
+            navigator = get(),
+            extensionId = extensionId
         )
     }
 

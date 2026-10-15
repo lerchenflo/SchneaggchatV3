@@ -1732,4 +1732,14 @@
     <string name="feedback_delete_comment_confirm">Diesen Kommentar löschen?</string>
     <string name="feedback_change_status">Status ändern</string>
     <string name="feedback_details_load_error">Details konnten nicht geladen werden.</string>
+
+    <!-- Group extensions -->
+    <string name="group_extensions_title">Chat-Erweiterungen</string>
+    <string name="group_extension_add">Erweiterung hinzufügen</string>
+    <string name="group_extension_type_shared_text">Gemeinsamer Texteditor</string>
+    <string name="group_extension_type_split">Geld aufteilen</string>
+    <string name="group_extension_type_quotes">Zitate</string>
+    <string name="group_extension_type_route_planner">Tourenplaner</string>
+    <string name="group_extension_not_found">Diese Erweiterung existiert nicht mehr.</string>
+    <string name="group_extension_under_construction">%1$s ist noch in Arbeit.</string>
 </resources>

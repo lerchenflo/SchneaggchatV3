@@ -72,7 +72,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.ismoy.imagepickerkmp.config.CropConfig
 import io.github.ismoy.imagepickerkmp.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.picker.ImagePickerKMPConfig
@@ -97,6 +96,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.ExtensionListSection
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.formatCountdown
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.rememberCountdownMillis
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
@@ -161,12 +161,13 @@ fun ChatDetails(
     val sharedImageCount by chatdetailsViewmodel.sharedImageCount.collectAsStateWithLifecycle()
     val sharedLinkCount by chatdetailsViewmodel.sharedLinkCount.collectAsStateWithLifecycle()
     val messageCount by chatdetailsViewmodel.messageCount.collectAsStateWithLifecycle()
+    val groupExtensions by chatdetailsViewmodel.groupExtensions.collectAsStateWithLifecycle()
 
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
     val iAmAdmin =
         (selectedChat as? ChatDetailsState.GroupDetails)?.members?.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
-    val dev = SessionCache.requireLoggedIn()?.developer ?: return
+    val isDeveloper = SessionCache.requireLoggedIn()?.developer == true
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
@@ -651,15 +652,15 @@ fun ChatDetails(
 
             HorizontalDivider()
 
-            if(isGroup && dev){
-                val groupDetails = selectedChat as? ChatDetailsState.GroupDetails
-                ExtentionsView(
-                    existingExtensions = groupDetails?.extensions,
-                    onExtensionAction = chatdetailsViewmodel::onExtensionAction
+            // Developer only until the extension backend exists
+            if (isGroup && isDeveloper) {
+                ExtensionListSection(
+                    extensions = groupExtensions,
+                    onAction = chatdetailsViewmodel::onExtensionAction
                 )
-            }
 
-            HorizontalDivider()
+                HorizontalDivider()
+            }
 
             // Everything ever shared in this chat, one row per tab of the shared content screen
             ListItem(

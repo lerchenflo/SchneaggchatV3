@@ -22,11 +22,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
-import org.koin.core.resolution.ResolutionExtension
 import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -40,15 +40,15 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.groupextentions.ExtensionAction
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.groupextentions.ExtensionType
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.ExtensionListAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -70,10 +70,6 @@ import schneaggchatv3mp.composeapp.generated.resources.wake_sent_users
 data class GroupMemberWithUser(
     val groupMember: GroupMember,
     val user: User?
-)
-
-data class ChatExtension(
-    val type: ExtensionType
 )
 
 /**
@@ -105,8 +101,7 @@ sealed interface ChatDetailsState {
 
     data class GroupDetails(
         val group: Group,
-        val members: List<GroupMemberWithUser> = emptyList(),
-        val extensions: List<ChatExtension>
+        val members: List<GroupMemberWithUser> = emptyList()
     ) : ChatDetailsState {
         override val name: String get() = group.name
         override val profilePictureUrl: String get() = group.profilePictureUrl
@@ -123,6 +118,7 @@ class ChatDetailsViewmodel(
     private val pictureManager: PictureManager,
     private val eventRepository: EventRepository,
     private val messageRepository: MessageRepository,
+    private val groupExtensionRepository: GroupExtensionRepository,
 
     val chatId: String,
     val isGroup: Boolean,
@@ -294,8 +290,7 @@ class ChatDetailsViewmodel(
             } else {
                 ChatDetailsState.GroupDetails(
                     group = group,
-                    members = getGroupMembersWithUsers(chatId),
-                    extensions = getChatExtensions(chatId)
+                    members = getGroupMembersWithUsers(chatId)
                 )
             }
         }
@@ -419,18 +414,25 @@ class ChatDetailsViewmodel(
         }
     }
 
-    private suspend fun getChatExtensions(groupId: String): List<ChatExtension>{
-        return groupRepository.getExtensions(groupId)
-    }
+    /** Extensions of this group, only groups own extensions for now. */
+    val groupExtensions: StateFlow<List<GroupExtension>> = (
+        if (isGroup) groupExtensionRepository.getExtensionsForOwnerFlow(chatId)
+        else flowOf(emptyList())
+    ).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
-    fun onExtensionAction(action: ExtensionAction) {
-
+    fun onExtensionAction(action: ExtensionListAction) {
         when (action) {
-            is ExtensionAction.OpenExtension -> {
-                // todo
+            is ExtensionListAction.OnExtensionClick -> {
+                viewModelScope.launch {
+                    navigator.navigate(Route.GroupExtension(extensionId = action.extensionId))
+                }
             }
-            is ExtensionAction.AddExtension -> {
-                // todo
+            is ExtensionListAction.OnAddExtensionClick -> {
+                // todo: AddExtensionDialog (title + per-type settings), GROUP_EXTENSIONS_PLAN.md phase 3
             }
         }
     }

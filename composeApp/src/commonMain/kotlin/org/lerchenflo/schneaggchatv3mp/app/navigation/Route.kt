@@ -41,6 +41,11 @@ sealed interface Route : NavKey {
     ): Route
 
     @Serializable
+    data class GroupExtension(
+        val extensionId: String
+    ): Route
+
+    @Serializable
     data object Birthdays: Route
 
     // openRequestId makes every deep link into the map a distinct NavKey. Without it, opening the
