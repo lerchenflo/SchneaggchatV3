@@ -3,11 +3,10 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCl
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPoll
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPollOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVote
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 // ─── Poll create ─────────────────────────────────────────────────────────────
 
-fun NewPoll.toPollCreateRequest(): NetworkUtils.PollCreateRequest = NetworkUtils.PollCreateRequest(
+fun NewPoll.toPollCreateRequest(): PollCreateRequest = PollCreateRequest(
     title = title,
     description = description,
     maxAnswers = maxAnswers,
@@ -21,8 +20,8 @@ fun NewPoll.toPollCreateRequest(): NetworkUtils.PollCreateRequest = NetworkUtils
     visibleToAll = visibleToAll,
 )
 
-fun NewPollOption.toPollVoteOptionCreateRequest(): NetworkUtils.PollVoteOptionCreateRequest =
-    NetworkUtils.PollVoteOptionCreateRequest(
+fun NewPollOption.toPollVoteOptionCreateRequest(): PollVoteOptionCreateRequest =
+    PollVoteOptionCreateRequest(
         text = text,
         maxVoters = maxVoters,
         subPoll = subPoll?.toPollCreateRequest(),
@@ -30,7 +29,7 @@ fun NewPollOption.toPollVoteOptionCreateRequest(): NetworkUtils.PollVoteOptionCr
 
 // ─── Poll vote ───────────────────────────────────────────────────────────────
 
-fun PollVote.toPollVoteRequest(): NetworkUtils.PollVoteRequest = NetworkUtils.PollVoteRequest(
+fun PollVote.toPollVoteRequest(): PollVoteRequest = PollVoteRequest(
     messageId = messageId,
     id = id,
     text = text,

@@ -20,6 +20,7 @@ import io.ktor.serialization.kotlinx.json.json
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshOutcome
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshReason
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
 
 /**
  * Client without authentication: login, registration, token refresh, logout, external fetches.
@@ -91,7 +92,7 @@ fun createAuthenticatedHttpClient(
     }
 }
 
-private fun NetworkUtils.TokenPair.toBearerTokens() = BearerTokens(accessToken, refreshToken)
+private fun TokenPair.toBearerTokens() = BearerTokens(accessToken, refreshToken)
 
 private fun authenticatedRequestSucceededHook(authSession: AuthSessionManager) =
     createClientPlugin("AuthenticatedRequestSucceededHook") {

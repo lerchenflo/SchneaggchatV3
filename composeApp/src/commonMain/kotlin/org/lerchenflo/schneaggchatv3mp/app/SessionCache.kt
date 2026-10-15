@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
 
 /**
  * Singleton session cache that combines Compose-friendly mutable state and
@@ -30,7 +30,7 @@ object SessionCache {
 
         data class LoggedIn(
             val userId: String,
-            val tokens: NetworkUtils.TokenPair,
+            val tokens: TokenPair,
             val developer: Boolean = false,
         ) : AuthState()
     }
@@ -45,7 +45,7 @@ object SessionCache {
     var authStateValue: AuthState by mutableStateOf(AuthState.LoggedOut)
         private set
 
-    fun login(tokens: NetworkUtils.TokenPair, developer: Boolean = false) {
+    fun login(tokens: TokenPair, developer: Boolean = false) {
         val state = AuthState.LoggedIn(
             userId = userIdOf(tokens),
             tokens = tokens,
@@ -61,7 +61,7 @@ object SessionCache {
      * without going through the login/refresh network path - this keeps them from fabricating a
      * `LoggedIn(userId = "")` state out of empty or stale tokens. Returns whether login happened.
      */
-    fun loginIfValid(tokens: NetworkUtils.TokenPair, developer: Boolean = false): Boolean {
+    fun loginIfValid(tokens: TokenPair, developer: Boolean = false): Boolean {
         if (!JwtUtils.isTokenDateValid(tokens.refreshToken)) return false
         login(tokens, developer)
         return true
@@ -72,7 +72,7 @@ object SessionCache {
         authStateValue = AuthState.LoggedOut
     }
 
-    fun updateTokens(newTokens: NetworkUtils.TokenPair) {
+    fun updateTokens(newTokens: TokenPair) {
         val userId = userIdOf(newTokens)
         _authState.update { currentState ->
             when (currentState) {
@@ -122,7 +122,7 @@ object SessionCache {
 
     // Both tokens carry the same subject; the refresh token is the fallback for a truncated
     // access token so a session never ends up as LoggedIn(userId = "").
-    private fun userIdOf(tokens: NetworkUtils.TokenPair): String =
+    private fun userIdOf(tokens: TokenPair): String =
         JwtUtils.getUserIdFromToken(tokens.accessToken).ifBlank { JwtUtils.getUserIdFromToken(tokens.refreshToken) }
 
 

@@ -36,10 +36,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVote
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toLocalPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toNewPoll
@@ -58,9 +54,13 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotificati
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollOptionDeleteRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.MessageRemoteDataSource
 
 /**
- * [MessageRepository] on top of the local [MessageLocalDataSource] and the server via [NetworkUtils].
+ * [MessageRepository] on top of the local [MessageLocalDataSource] and the server via [MessageRemoteDataSource].
  * The media and write code is moved verbatim from AppRepository (getPicturesForMessageIds,
  * getAudiosForMessageIds, the image-message part of getMissingPics + getMissingAudios, editMessage,
  * deleteLocalMessage, deleteMessage, reactToMessage, votePoll, deletePollOption), and so are
@@ -77,7 +77,7 @@ import kotlin.uuid.Uuid
 class OfflineFirstMessageRepository(
     private val database: AppDatabase,
     private val messageLocalDataSource: MessageLocalDataSource,
-    private val networkUtils: NetworkUtils,
+    private val messageRemoteDataSource: MessageRemoteDataSource,
     private val pictureManager: PictureManager,
     private val audioManager: AudioManager,
     private val loggingRepository: Logger,
@@ -121,7 +121,7 @@ class OfflineFirstMessageRepository(
         ids.forEach { messageId ->
             val savefilename = messageId + PICTURE_FILE_NAME
 
-            when (val picture = networkUtils.getImageForImageMessage(messageId).trackConnectivity()) {
+            when (val picture = messageRemoteDataSource.getImageForImageMessage(messageId).trackConnectivity()) {
                 is NetworkResult.Error<*> -> {loggingRepository.logWarning("Picture error for messageid $messageId")}
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
@@ -137,7 +137,7 @@ class OfflineFirstMessageRepository(
             val savefilename = messageId + VOICEMSG_FILE_NAME
             //println("Fetching Audio for messageid $messageId")
 
-            when (val audio = networkUtils.getAudioForAudioMessage(messageId).trackConnectivity()) {
+            when (val audio = messageRemoteDataSource.getAudioForAudioMessage(messageId).trackConnectivity()) {
                 is NetworkResult.Error<*> -> {loggingRepository.logWarning("Audio error for messageid $messageId")}
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = audioManager.saveAudioToStorage(audio.data, savefilename)
@@ -215,7 +215,7 @@ class OfflineFirstMessageRepository(
             }
 
         } else {
-            val request = networkUtils.editMessage(
+            val request = messageRemoteDataSource.editMessage(
                 messageId = message.id!!,
                 newContent = newContent
             ).trackConnectivity()
@@ -252,7 +252,7 @@ class OfflineFirstMessageRepository(
     }
 
     override suspend fun deleteMessage(messageId: String){
-        val request = networkUtils.deleteMessage(
+        val request = messageRemoteDataSource.deleteMessage(
             messageId = messageId
         ).trackConnectivity()
 
@@ -268,7 +268,7 @@ class OfflineFirstMessageRepository(
     }
 
     override suspend fun reactToMessage(messageId: String, content: String) {
-        val  request = networkUtils.reactToMessage(messageId = messageId, content = content).trackConnectivity()
+        val  request = messageRemoteDataSource.reactToMessage(messageId = messageId, content = content).trackConnectivity()
         when (request) {
             is NetworkResult.Error -> errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
             is NetworkResult.Success -> {
@@ -288,7 +288,7 @@ class OfflineFirstMessageRepository(
     }
 
     override suspend fun votePoll(ownId: String, pollVote: PollVote) {
-        val request = networkUtils.votePoll(
+        val request = messageRemoteDataSource.votePoll(
             pollVote.toPollVoteRequest()
         ).trackConnectivity()
 
@@ -312,7 +312,7 @@ class OfflineFirstMessageRepository(
     }
 
     override suspend fun deletePollOption(ownId: String, messageId: String, optionId: String) {
-        val request = networkUtils.deletePollOption(
+        val request = messageRemoteDataSource.deletePollOption(
             PollOptionDeleteRequest(messageId = messageId, optionId = optionId)
         ).trackConnectivity()
 
@@ -460,7 +460,7 @@ class OfflineFirstMessageRepository(
 
                 val serverrequest = when (content) {
                     is PollContent -> {
-                        networkUtils.sendPollMessageToServer(
+                        messageRemoteDataSource.sendPollMessageToServer(
                             empfaenger = empfaenger,
                             gruppe = gruppe,
                             content = content.poll.toPollCreateRequest(),
@@ -469,7 +469,7 @@ class OfflineFirstMessageRepository(
                         )
                     }
                     is TextContent -> {
-                        networkUtils.sendTextMessageToServer(
+                        messageRemoteDataSource.sendTextMessageToServer(
                             messageId = messageId,
                             empfaenger = empfaenger,
                             gruppe = gruppe,
@@ -480,7 +480,7 @@ class OfflineFirstMessageRepository(
                     }
 
                     is ImageContent -> {
-                        networkUtils.sendImageMessageToServer(
+                        messageRemoteDataSource.sendImageMessageToServer(
                             empfaenger = empfaenger,
                             gruppe = gruppe,
                             image = content.image,
@@ -491,7 +491,7 @@ class OfflineFirstMessageRepository(
                     }
 
                     is AudioContent -> {
-                        networkUtils.sendAudioMessageToServer(
+                        messageRemoteDataSource.sendAudioMessageToServer(
                             empfaenger = empfaenger,
                             gruppe = gruppe,
                             audio = content.audio,
@@ -714,7 +714,7 @@ class OfflineFirstMessageRepository(
 
             while (moreMessages) {
 
-                val messageSyncResponse = networkUtils.messageSync(since = since).trackConnectivity()
+                val messageSyncResponse = messageRemoteDataSource.messageSync(since = since).trackConnectivity()
 
                 when (messageSyncResponse) {
                     is NetworkResult.Error<*> -> {
@@ -892,7 +892,7 @@ class OfflineFirstMessageRepository(
         return externalScope.async {
             SessionCache.requireLoggedIn() ?: return@async false
 
-            val result = networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong()).trackConnectivity()
+            val result = messageRemoteDataSource.setMessagesRead(chatid, gruppe, timestamp.toLong()).trackConnectivity()
             if (result !is NetworkResult.Success) {
                 loggingRepository.logWarning("Setting chat $chatid read failed: ${(result as? NetworkResult.Error<*>)?.error}")
                 return@async false

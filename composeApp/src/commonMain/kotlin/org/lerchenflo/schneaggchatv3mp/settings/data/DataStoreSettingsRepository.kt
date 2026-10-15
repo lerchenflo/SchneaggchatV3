@@ -4,8 +4,6 @@ import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Draft
 import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
@@ -14,11 +12,13 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.settings.data.remote.SettingsRemoteDataSource
 
-/** [SettingsRepository] on top of the DataStore wrapper [Preferencemanager], pushing synced settings via [NetworkUtils]. */
+/** [SettingsRepository] on top of the DataStore wrapper [Preferencemanager], pushing synced settings via [SettingsRemoteDataSource]. */
 class DataStoreSettingsRepository(
     private val preferencemanager: Preferencemanager,
-    private val networkUtils: NetworkUtils,
+    private val settingsRemoteDataSource: SettingsRemoteDataSource,
     private val languageService: LanguageService,
 ) : SettingsRepository {
 
@@ -65,7 +65,7 @@ class DataStoreSettingsRepository(
 
     override suspend fun setUseMd(value: Boolean) {
         preferencemanager.saveUseMd(value)
-        networkUtils.updateSettings(UserSettingsRequest(mdFormat = value)).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(mdFormat = value)).trackConnectivity()
     }
 
     override fun getDevSettingsFlow(): Flow<Boolean> {
@@ -74,7 +74,7 @@ class DataStoreSettingsRepository(
 
     override suspend fun setDevSettings(value: Boolean) {
         preferencemanager.saveDevSettings(value)
-        networkUtils.updateSettings(UserSettingsRequest(developerSettings = value)).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(developerSettings = value)).trackConnectivity()
     }
 
     override fun getHighlightTodaysMessageTimestampFlow(): Flow<Boolean> {
@@ -83,7 +83,7 @@ class DataStoreSettingsRepository(
 
     override suspend fun setHighlightTodaysMessageTimestamp(value: Boolean) {
         preferencemanager.saveHighlightTodaysMessageTimestamp(value)
-        networkUtils.updateSettings(UserSettingsRequest(highlightTodaysMessageTimestamp = value)).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(highlightTodaysMessageTimestamp = value)).trackConnectivity()
     }
 
     override fun getThemeFlow(): Flow<ThemeSetting> {
@@ -92,12 +92,12 @@ class DataStoreSettingsRepository(
 
     override suspend fun setThemeSetting(theme: ThemeSetting) {
         preferencemanager.saveThemeSetting(theme)
-        networkUtils.updateSettings(UserSettingsRequest(theme = theme.name)).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(theme = theme.name)).trackConnectivity()
     }
 
     override suspend fun setLanguageSetting(language: LanguageSetting) {
         languageService.applyLanguage(language)
-        networkUtils.updateSettings(UserSettingsRequest(language = language.name)).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(language = language.name)).trackConnectivity()
     }
 
     override fun getMergeMapLocationsFlow(): Flow<Boolean> {
@@ -106,7 +106,7 @@ class DataStoreSettingsRepository(
 
     override suspend fun setMergeMapLocations(value: Boolean) {
         preferencemanager.saveMergeMapLocations(value)
-        networkUtils.updateSettings(UserSettingsRequest(mergeMapLocations = value)).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(mergeMapLocations = value)).trackConnectivity()
     }
 
     override fun getMergeMapUsersFlow(): Flow<Boolean> {
@@ -115,7 +115,7 @@ class DataStoreSettingsRepository(
 
     override suspend fun setMergeMapUsers(value: Boolean) {
         preferencemanager.saveMergeMapUsers(value)
-        networkUtils.updateSettings(UserSettingsRequest(mergeMapUsers = value)).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(mergeMapUsers = value)).trackConnectivity()
     }
 
     override fun getMapStyleSettingFlow(): Flow<MapStyleSetting> {
@@ -128,7 +128,7 @@ class DataStoreSettingsRepository(
 
     override suspend fun setMapStyleSetting(style: MapStyleSetting) {
         preferencemanager.saveMapStyleSetting(style)
-        networkUtils.updateSettings(UserSettingsRequest(mapStyle = style.name)).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(mapStyle = style.name)).trackConnectivity()
     }
 
     override fun getQuickReactionsFlow(): Flow<List<String>> {
@@ -142,13 +142,13 @@ class DataStoreSettingsRepository(
      */
     override suspend fun setQuickReactions(reactions: List<String>) {
         preferencemanager.saveQuickReactions(reactions)
-        networkUtils.updateSettings(UserSettingsRequest(quickReactions = reactions)).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(quickReactions = reactions)).trackConnectivity()
     }
 
     /** Clears the customised list so DEFAULT_QUICK_REACTIONS applies again, here and on every device. */
     override suspend fun resetQuickReactions() {
         preferencemanager.clearQuickReactions()
-        networkUtils.updateSettings(UserSettingsRequest(resetQuickReactions = true)).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(resetQuickReactions = true)).trackConnectivity()
     }
 
     override suspend fun getLastContributePopupShown(): Long {
@@ -157,7 +157,7 @@ class DataStoreSettingsRepository(
 
     override suspend fun setLastContributePopupShown(epochMillis: Long) {
         preferencemanager.saveLastContributePopupShown(epochMillis)
-        networkUtils.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis))
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis))
     }
 
     // ─── Pinned chats ──────────────────────────────────────────────────────────

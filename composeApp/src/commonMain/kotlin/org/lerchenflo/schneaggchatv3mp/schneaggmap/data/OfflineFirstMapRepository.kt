@@ -9,18 +9,18 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.MapRemoteDataSource
 
-/** [MapRepository] on top of the local [MapLocalDataSource] and the server via [NetworkUtils]. */
+/** [MapRepository] on top of the local [MapLocalDataSource] and the server via [MapRemoteDataSource]. */
 class OfflineFirstMapRepository(
     private val mapLocalDataSource: MapLocalDataSource,
-    private val networkUtils: NetworkUtils,
+    private val mapRemoteDataSource: MapRemoteDataSource,
     private val loggingRepository: Logger,
     private val errorChannel: ErrorChannel,
 ) : MapRepository {
@@ -39,7 +39,7 @@ class OfflineFirstMapRepository(
         var currentPage = 0
         var moreEntries = true
         while (moreEntries) {
-            val response = networkUtils.mapSync(
+            val response = mapRemoteDataSource.mapSync(
                 entries = localEntries.map { IdTimeStamp(it.id, it.updatedAt) },
                 page = currentPage,
             ).trackConnectivity()
@@ -72,7 +72,7 @@ class OfflineFirstMapRepository(
 
 
 
-        val result = networkUtils.upsertMapEntry(
+        val result = mapRemoteDataSource.upsertMapEntry(
             MapEntryRequest(
                 entryId = entryId,
                 name = name,
@@ -94,7 +94,7 @@ class OfflineFirstMapRepository(
     }
 
     override suspend fun deleteMapEntry(entryId: String) : Boolean {
-        return when (val result = networkUtils.deleteMapEntry(entryId).trackConnectivity()) {
+        return when (val result = mapRemoteDataSource.deleteMapEntry(entryId).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false

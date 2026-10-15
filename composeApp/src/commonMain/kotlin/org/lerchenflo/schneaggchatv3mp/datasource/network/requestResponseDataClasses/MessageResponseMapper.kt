@@ -4,9 +4,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
-fun NetworkUtils.MessageResponse.toDomainMessage(
+fun MessageResponse.toDomainMessage(
     ownId: String,
     existingLocalPK: Long = 0L,
     existingPictureUrl: String? = null,

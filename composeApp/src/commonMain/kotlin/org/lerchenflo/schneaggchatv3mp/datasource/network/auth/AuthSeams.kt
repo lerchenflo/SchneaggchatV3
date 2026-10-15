@@ -2,11 +2,11 @@
 
 package org.lerchenflo.schneaggchatv3mp.datasource.network.auth
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
 
 /**
  * Durable token storage. The only writable copy of the session (AUTH_SESSION_REBUILD_PLAN R1);

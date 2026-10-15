@@ -19,7 +19,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
@@ -40,6 +39,10 @@ import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GroupResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NetworkFriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserResponse
 
 @Serializable()
 sealed interface SocketConnectionMessage {
@@ -47,18 +50,18 @@ sealed interface SocketConnectionMessage {
     @Serializable
     @SerialName("messagechange")
     data class MessageChange(
-        val message: NetworkUtils.MessageResponse,
+        val message: MessageResponse,
         val newMessage: Boolean,
         val deleted: Boolean
     ) : SocketConnectionMessage
 
     @Serializable
     @SerialName("userchange")
-    data class UserChange(val user: NetworkUtils.UserResponse, val deleted: Boolean) : SocketConnectionMessage
+    data class UserChange(val user: UserResponse, val deleted: Boolean) : SocketConnectionMessage
 
     @Serializable
     @SerialName("groupchange")
-    data class GroupChange(val group: NetworkUtils.GroupResponse, val deleted: Boolean) : SocketConnectionMessage
+    data class GroupChange(val group: GroupResponse, val deleted: Boolean) : SocketConnectionMessage
 
     @Serializable
     @SerialName("friendrequest")
@@ -273,7 +276,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     userLocalDataSource.deleteUser(socketMessage.user.id)
                 } else {
                     when (val newUser = socketMessage.user) {
-                        is NetworkUtils.UserResponse.SimpleUserResponse -> {
+                        is UserResponse.SimpleUserResponse -> {
                             val existing = userLocalDataSource.getUserById(newUser.id)
                             userLocalDataSource.upsertUser(UserDto(
                                 id = newUser.id,
@@ -308,7 +311,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
                         }
 
-                        is NetworkUtils.UserResponse.FriendUserResponse -> {
+                        is UserResponse.FriendUserResponse -> {
                             val existing = userLocalDataSource.getUserById(newUser.id)
                             userLocalDataSource.upsertUser(UserDto(
                                 id = newUser.id,
@@ -319,7 +322,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
                                 phoneNumber = newUser.phoneNumber,
-                                frienshipStatus = NetworkUtils.FriendshipStatus.ACCEPTED,
+                                frienshipStatus = NetworkFriendshipStatus.ACCEPTED,
                                 requesterId = newUser.requesterId,
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
 
@@ -349,7 +352,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 userRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
                             }
                         }
-                        is NetworkUtils.UserResponse.SelfUserResponse -> {
+                        is UserResponse.SelfUserResponse -> {
                             val existing = userLocalDataSource.getUserById(newUser.id)
                             userLocalDataSource.upsertUser(UserDto(
                                 id = newUser.id,

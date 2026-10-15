@@ -49,7 +49,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AppAuthEventSink
@@ -123,6 +122,26 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.loggedindevices.Log
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.app.data.remote.AppInfoRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.app.data.remote.KtorAppInfoRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.GroupRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.KtorGroupRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.KtorMessageRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.KtorUserRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.MessageRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.UserRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.EventRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.KtorEventRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.FeedbackRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.KtorFeedbackRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.GameRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.KtorGameRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.login.data.remote.AuthRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.login.data.remote.KtorAuthRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.KtorMapRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.MapRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.settings.data.remote.KtorSettingsRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.settings.data.remote.SettingsRemoteDataSource
 
 enum class HTTPCLIENTTYPE {
     AUTHENTICATED,
@@ -144,7 +163,7 @@ val sharedmodule = module{
 
     // Session layer (see plans/AUTH_SESSION_REBUILD_PLAN.md). Construction order matters and is
     // cycle-free: the refresh API only needs the NOT_AUTHENTICATED client, the AUTHENTICATED
-    // client needs the manager, NetworkUtils needs both clients.
+    // client needs the manager, the remote data sources below need the clients.
     single<AuthSessionStore> { PreferenceAuthSessionStore(get()) }
     single<AuthRefreshApi> { KtorAuthRefreshApi(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get()) }
     single<AuthEventSink> { AppAuthEventSink(get(), get()) }
@@ -163,9 +182,19 @@ val sharedmodule = module{
         )
     }
 
-    single<NetworkUtils> {
-        NetworkUtils(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get())
+    // Remote data sources. Explicit lambdas: the HttpClients are only registered by name.
+    single<UserRemoteDataSource> { KtorUserRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<GroupRemoteDataSource> { KtorGroupRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<MessageRemoteDataSource> { KtorMessageRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<AuthRemoteDataSource> {
+        KtorAuthRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get())
     }
+    single<AppInfoRemoteDataSource> { KtorAppInfoRemoteDataSource(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get()) }
+    single<SettingsRemoteDataSource> { KtorSettingsRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<EventRemoteDataSource> { KtorEventRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<MapRemoteDataSource> { KtorMapRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<FeedbackRemoteDataSource> { KtorFeedbackRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<GameRemoteDataSource> { KtorGameRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
 
     // AUTHENTICATED / NOT_AUTHENTICATED / SOCKET HttpClients are platform-specific (they need a
     // concrete HttpClientEngine) - see androidHttpModule, IosHttpModule, desktopHttpModule. Not
@@ -187,7 +216,7 @@ val sharedmodule = module{
         OfflineFirstMessageRepository(
             database = get(),
             messageLocalDataSource = get(),
-            networkUtils = get(),
+            messageRemoteDataSource = get(),
             pictureManager = get(),
             audioManager = get(),
             loggingRepository = get(),
@@ -202,7 +231,7 @@ val sharedmodule = module{
             groupLocalDataSource = get(),
             messageLocalDataSource = get(),
             settingsRepository = get(),
-            networkUtils = get(),
+            settingsRemoteDataSource = get(),
         )
     }
     singleOf(::RoomLoggingRepository) bind Logger::class

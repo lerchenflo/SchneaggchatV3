@@ -20,11 +20,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.NewFriendsUserResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toAvailableUser
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toWakeResult
@@ -33,16 +28,22 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.map
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NetworkFriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NewFriendsUserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserSyncResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.UserRemoteDataSource
 
 /**
- * [UserRepository] on top of the local [UserLocalDataSource] and the server via [NetworkUtils].
+ * [UserRepository] on top of the local [UserLocalDataSource] and the server via [UserRemoteDataSource].
  * [syncUsers] writes the user rows through [AppDatabase.userDao] directly (moved verbatim from
  * AppRepository.userIdSync) and hands the own user's synced settings to [SettingsRepository].
  */
 class OfflineFirstUserRepository(
     private val database: AppDatabase,
     private val userLocalDataSource: UserLocalDataSource,
-    private val networkUtils: NetworkUtils,
+    private val userRemoteDataSource: UserRemoteDataSource,
     private val pictureManager: PictureManager,
     private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger,
@@ -102,7 +103,7 @@ class OfflineFirstUserRepository(
 
             val localusers = userLocalDataSource.getuserchangeid()
 
-            val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) }).trackConnectivity()
+            val userSyncResponse = userRemoteDataSource.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) }).trackConnectivity()
 
             val profilePicsToGet = emptyList<String>().toMutableList()
 
@@ -129,7 +130,7 @@ class OfflineFirstUserRepository(
                                     status = newUser.userStatus,
                                     birthDate = newUser.birthDate,
                                     phoneNumber = newUser.phoneNumber,
-                                    frienshipStatus = NetworkUtils.FriendshipStatus.ACCEPTED,
+                                    frienshipStatus = NetworkFriendshipStatus.ACCEPTED,
                                     requesterId = newUser.requesterId,
 
                                     // Preserve existing values:
@@ -253,7 +254,7 @@ class OfflineFirstUserRepository(
     override suspend fun getProfilePicturesForUserIds(userIds: List<String>){
         userIds.forEach { userId ->
             val savefilename = userId + USERPROFILEPICTURE_FILE_NAME
-            when (val picture = networkUtils.getProfilePicForUserId(userId).trackConnectivity()) {
+            when (val picture = userRemoteDataSource.getProfilePicForUserId(userId).trackConnectivity()) {
                 is NetworkResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for userid $userId")}
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
@@ -288,7 +289,7 @@ class OfflineFirstUserRepository(
      * @param searchTerm the searchterm which the user entered
      */
     override suspend fun getAvailableUsers(searchTerm: String) : List<AvailableUser> {
-        return when (val response = networkUtils.getAvailableUsers(searchTerm).trackConnectivity()) {
+        return when (val response = userRemoteDataSource.getAvailableUsers(searchTerm).trackConnectivity()) {
             is NetworkResult.Error<NetworkingError> -> {
                 errorChannel.sendErrorSuspend(
                     ErrorEvent(
@@ -308,7 +309,7 @@ class OfflineFirstUserRepository(
      * Send or accept friend request from / to an userid
      */
     override suspend fun sendFriendRequest(friendId: String) : Boolean {
-        when (val success = networkUtils.sendFriendRequest(friendId).trackConnectivity()){
+        when (val success = userRemoteDataSource.sendFriendRequest(friendId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
@@ -325,7 +326,7 @@ class OfflineFirstUserRepository(
      * deny a friendrequest from an userid / cancel an outgoing friend request to an userid
      */
     override suspend fun denyFriendRequest(friendId: String) : Boolean {
-        when (val success = networkUtils.denyFriendRequest(friendId).trackConnectivity()){
+        when (val success = userRemoteDataSource.denyFriendRequest(friendId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
@@ -340,7 +341,7 @@ class OfflineFirstUserRepository(
 
 
     override suspend fun removeFriend(friendId: String) : Boolean {
-        when (val success = networkUtils.removeFriend(friendId).trackConnectivity()){
+        when (val success = userRemoteDataSource.removeFriend(friendId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
@@ -355,7 +356,7 @@ class OfflineFirstUserRepository(
 
 
     override suspend fun changeUsername(newUsername: String) : Boolean {
-        when (val success = networkUtils.changeUsername(newUsername).trackConnectivity()){
+        when (val success = userRemoteDataSource.changeUsername(newUsername).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
@@ -369,7 +370,7 @@ class OfflineFirstUserRepository(
     }
 
     override suspend fun changeProfilePic(newPic: ByteArray) : Boolean {
-        when (val success = networkUtils.changeProfilePic(newPic).trackConnectivity()){
+        when (val success = userRemoteDataSource.changeProfilePic(newPic).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
@@ -394,7 +395,7 @@ class OfflineFirstUserRepository(
         newNickName: String?,
         newPhoneNumber: String?,
         ) : Boolean {
-        return when (val success = networkUtils.changeProfile(
+        return when (val success = userRemoteDataSource.changeProfile(
             userId = userId,
             newStatus = newStatus,
             newDescription = newDescription,
@@ -428,7 +429,7 @@ class OfflineFirstUserRepository(
         shareSpeedHeading: Boolean,
         snailTrail: Boolean,
     ): Boolean {
-        return when (val result = networkUtils.shareLocation(friendId, share, shareSpeedHeading, snailTrail).trackConnectivity()) {
+        return when (val result = userRemoteDataSource.shareLocation(friendId, share, shareSpeedHeading, snailTrail).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
@@ -466,7 +467,7 @@ class OfflineFirstUserRepository(
      * [UserDto.wakeupEnabled] - on our own row that same column is the master switch instead.
      */
     override suspend fun setWakePermission(friendId: String, allowWake: Boolean): Boolean {
-        return when (val result = networkUtils.setWakePermission(friendId, allowWake).trackConnectivity()) {
+        return when (val result = userRemoteDataSource.setWakePermission(friendId, allowWake).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
@@ -483,7 +484,7 @@ class OfflineFirstUserRepository(
 
     /** Master switch: while off nobody can wake us, whatever the per-friend toggles say. */
     override suspend fun setWakeGlobal(enabled: Boolean): Boolean {
-        return when (val result = networkUtils.setWakeGlobal(enabled).trackConnectivity()) {
+        return when (val result = userRemoteDataSource.setWakeGlobal(enabled).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
@@ -510,6 +511,6 @@ class OfflineFirstUserRepository(
         isGroup: Boolean,
         reason: String,
     ): NetworkResult<WakeResult, NetworkingError> {
-        return networkUtils.sendWake(targetId, isGroup, reason).trackConnectivity().map { it.toWakeResult() }
+        return userRemoteDataSource.sendWake(targetId, isGroup, reason).trackConnectivity().map { it.toWakeResult() }
     }
 }

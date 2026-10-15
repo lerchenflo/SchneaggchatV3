@@ -39,7 +39,7 @@ V3 keeps the V2 semantics (one rating per user per entry, whole-star input, half
 | Client domain | `schneaggmap/domain/MapEntry.kt` | Plain data class, `updatedByName` resolved server side |
 | Client Room | `schneaggmap/data/dtos/MapEntryDto.kt`, `datasource/database/Daos.kt:431 MapEntryDao` | DB version **84**, `fallbackToDestructiveMigration(dropAllTables = true)` (`CreateDatabase.kt:12`), `RoomTypeConverters.stringListToString` exists (:121) |
 | Client wire | `datasource/network/requestResponseDataClasses/MapNetworkDtos.kt` + `MapResponseMapper.kt` | `MapEntryResponse`, `MapSyncResponse`, `MapEntryRequest` |
-| Client network | `datasource/network/NetworkUtils.kt:1138-1160` | `mapSync`, `upsertMapEntry`, `deleteMapEntry`; `safePostMultipart` (:112) + `appendProfilePic` (:129) |
+| Client network | `schneaggmap/data/remote/MapRemoteDataSource.kt` + `KtorMapRemoteDataSource.kt` | `mapSync`, `upsertMapEntry`, `deleteMapEntry`; `ServerClient.safePostMultipart`, `appendProfilePic`, `appendFile`, `appendJsonPart` in `datasource/network/KtorHttpHelpers.kt` |
 | Client sync | `schneaggmap/data/OfflineFirstMapRepository.kt:33 syncMapEntries()` (was `AppRepository.mapEntryIdSync()`) | Runs inside `dataSync(reason = "mapInit")` job type `MAP` (`app/data/DefaultDataSyncCoordinator.kt:189`), triggered from `SchneaggmapViewModel.kt:479` on map open |
 | Client CRUD | `OfflineFirstMapRepository.kt:64-107` | Network call → on success write to `MapLocalDataSource` (Room) |
 | Client socket | `datasource/network/socket/SocketConnectionMessage.kt:65,420` | `MapChange` → `mapRepository.upsertMapEntry` / `deleteMapEntry` |
@@ -162,17 +162,17 @@ Run `schneaggchat-security-check` on the four new endpoints (ownership of `keepI
 
 `MapNetworkDtos.kt`: `MapRatingResponse`, `MapRatingSyncResponse`, `MapRatingRequest(entryId, stars, text, keepImageIds)`. `MapResponseMapper.kt`: `MapRatingResponse.toMapEntryRating()`, `MapEntryRating.toDto()`, `MapEntryRatingDto.toMapEntryRating()`, `RatingSummary` needs no mapper (Room projection class).
 
-`NetworkUtils.kt` (Map section):
+`MapRemoteDataSource` / `KtorMapRemoteDataSource` (`schneaggmap/data/remote/`):
 
 ```kotlin
 suspend fun mapRatingSync(entries: List<IdTimeStamp>, page: Int): NetworkResult<MapRatingSyncResponse, NetworkingError>
 suspend fun upsertMapRating(request: MapRatingRequest, images: List<ByteArray>): NetworkResult<MapRatingResponse, NetworkingError>
-    // safePostMultipart("/map/ratings/upsert") { append("request", json, ContentType.Application.Json); images.forEachIndexed { i, b -> appendImage("images", b, "rating_$i.jpg") } }
+    // server.safePostMultipart("/map/ratings/upsert") { appendJsonPart("request", MapRatingRequest.serializer(), request); images.forEachIndexed { i, b -> appendFile("images", b, "rating_$i.jpg", "image/jpeg") } }
 suspend fun deleteMapRating(entryId: String): NetworkResult<Unit, NetworkingError>
 suspend fun getMapRatingImage(imageId: String, thumb: Boolean): NetworkResult<ByteArray, NetworkingError>
 ```
 
-`appendImage(partName, bytes, fileName)` = generalisation of the existing `appendProfilePic` (keep the old one untouched, add the new helper beside it).
+`appendFile(key, bytes, fileName, contentType)` (`datasource/network/KtorHttpHelpers.kt`) is the generalisation of `appendProfilePic`; it already exists, no new helper needed.
 
 ### 4.3 Repositories
 
@@ -269,7 +269,7 @@ Save validation (mirrors server): `draftStars in 1..5` else inline error, text t
 | # | Phase | Repo | Deliverable |
 |---|---|---|---|
 | 1 | Server data + endpoints | server | Model, repository, service, controller (4 endpoints), `ImageManager` map dir + thumbnail, docker volume, cascade on entry delete, `LogType`s, socket message + `notifyMapRatingUpdate`, security-check pass |
-| 2 | Client data | client | Domain, Room entity/DAO/version 85, wire DTOs + mappers, `NetworkUtils`, `MapLocalDataSource`, `MapRepository` / `OfflineFirstMapRepository` sync/CRUD/lazy image loader, `DefaultDataSyncCoordinator` `MAP` job, `PictureManager` path fn (3 actuals), socket handler, logout clear |
+| 2 | Client data | client | Domain, Room entity/DAO/version 85, wire DTOs + mappers, `MapRemoteDataSource`, `MapLocalDataSource`, `MapRepository` / `OfflineFirstMapRepository` sync/CRUD/lazy image loader, `DefaultDataSyncCoordinator` `MAP` job, `PictureManager` path fn (3 actuals), socket handler, logout clear |
 | 3 | Client UI | client | `StarRatingBar`, summary row in `MapEntryInfoCard`, ratings screen (state/action/VM/screen + 3 uielements), route + `App.kt` entry + Koin, strings en/de/it |
 | 4 | Optional follow-ups | both | "My ratings" list in map settings (V2 parity, `getOwnRatingsFlow` already planned); average badge on map markers; local image cache eviction; FCM for ratings on own entries |
 | post | Agents | client | `readme-changelog-updater`, then `string-resource-extractor` |

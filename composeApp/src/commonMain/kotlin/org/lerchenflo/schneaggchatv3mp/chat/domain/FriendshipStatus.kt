@@ -10,7 +10,7 @@ import schneaggchatv3mp.composeapp.generated.resources.pending
 
 /**
  * State of the friendship between the own user and another user ([User.friendshipStatus]).
- * Domain copy of the network enum `NetworkUtils.FriendshipStatus`, entry for entry.
+ * Domain copy of the network enum `NetworkFriendshipStatus`, entry for entry.
  */
 enum class FriendshipStatus {
     PENDING,

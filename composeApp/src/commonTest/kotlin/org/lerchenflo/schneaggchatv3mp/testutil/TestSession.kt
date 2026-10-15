@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.testutil
 
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import kotlin.io.encoding.Base64
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
 
 /** 2100-01-01T00:00:00Z: far enough in the future that a test token never expires. */
 private const val FAR_FUTURE_EPOCH_SECONDS = 4_102_444_800L
@@ -26,7 +26,7 @@ fun testJwt(userId: String, expiresAtEpochSeconds: Long = FAR_FUTURE_EPOCH_SECON
  */
 fun loginTestUser(userId: String) {
     SessionCache.login(
-        NetworkUtils.TokenPair(
+        TokenPair(
             accessToken = testJwt(userId),
             refreshToken = testJwt(userId),
         )

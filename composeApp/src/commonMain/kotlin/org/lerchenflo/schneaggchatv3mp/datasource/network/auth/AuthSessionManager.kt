@@ -22,7 +22,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
@@ -32,6 +31,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
 
 /**
  * The client-side session state machine (AUTH_SESSION_REBUILD_PLAN section 4). Owns the only

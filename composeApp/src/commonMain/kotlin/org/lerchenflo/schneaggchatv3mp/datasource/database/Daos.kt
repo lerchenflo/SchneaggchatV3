@@ -20,10 +20,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.data.dtos.EventDto
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NetworkFriendshipStatus
 
 @Dao
 interface UserDao {
@@ -397,7 +397,7 @@ interface MessageDao {
     """)
     fun getUnreadChatCountFlow(
         systemType: String = MessageType.SYSTEM.name,
-        acceptedFriendship: String = NetworkUtils.FriendshipStatus.ACCEPTED.name,
+        acceptedFriendship: String = NetworkFriendshipStatus.ACCEPTED.name,
     ): Flow<Int>
 /* Will not work since sendDate is a string
     @Transaction

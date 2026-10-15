@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipation
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
@@ -52,7 +51,7 @@ data class EventJoinRequest(
 
 @Serializable
 data class EventJoinResponse(
-    val groupResponse: NetworkUtils.GroupResponse, //Return the group belonging to the event
+    val groupResponse: GroupResponse, //Return the group belonging to the event
     val event: EventResponse? = null, //null only against a server that predates it
 )
 

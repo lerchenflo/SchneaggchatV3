@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.games.data
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.BatchScoreEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoresBatchRequest
@@ -17,9 +16,10 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
 import org.lerchenflo.schneaggchatv3mp.games.domain.toGlobalRankingEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.toHighscoreEntry
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.GameRemoteDataSource
 
 class GameHighscoreRepository(
-    private val networkUtils: NetworkUtils,
+    private val gameRemoteDataSource: GameRemoteDataSource,
 ) {
 
     suspend fun getHighscores(
@@ -27,7 +27,7 @@ class GameHighscoreRepository(
         difficulty: GameDifficulty,
         period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
     ): NetworkResult<List<HighscoreEntry>, NetworkingError> {
-        return networkUtils.getGameHighscores(game.name, difficulty.name, period.name).trackConnectivity().map { response ->
+        return gameRemoteDataSource.getGameHighscores(game.name, difficulty.name, period.name).trackConnectivity().map { response ->
             response.entries.map { it.toHighscoreEntry() }
         }
     }
@@ -36,7 +36,7 @@ class GameHighscoreRepository(
     suspend fun getGlobalRanking(
         period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
     ): NetworkResult<List<GlobalRankingEntry>, NetworkingError> {
-        return networkUtils.getGlobalRanking(period.name).trackConnectivity().map { response ->
+        return gameRemoteDataSource.getGlobalRanking(period.name).trackConnectivity().map { response ->
             response.entries.map { it.toGlobalRankingEntry() }
         }
     }
@@ -50,7 +50,7 @@ class GameHighscoreRepository(
         // In-dev games have no real leaderboard yet - don't pollute it with test scores.
         if (game.indev) return NetworkResult.Success(Unit)
 
-        return networkUtils.submitGameScore(
+        return gameRemoteDataSource.submitGameScore(
             SubmitGameScoreRequest(
                 gameId = game.name,
                 difficulty = difficulty.name,
@@ -74,7 +74,7 @@ class GameHighscoreRepository(
     ): EmptyResult<NetworkingError> {
         if (game.indev) return NetworkResult.Success(Unit)
 
-        return networkUtils.submitGameScoresBatch(
+        return gameRemoteDataSource.submitGameScoresBatch(
             SubmitGameScoresBatchRequest(
                 gameId = game.name,
                 difficulty = difficulty.name,
@@ -94,7 +94,7 @@ class GameHighscoreRepository(
     ): EmptyResult<NetworkingError> {
         if (game.indev || scores.isEmpty()) return NetworkResult.Success(Unit)
 
-        return networkUtils.submitGameScoresBatch(
+        return gameRemoteDataSource.submitGameScoresBatch(
             SubmitGameScoresBatchRequest(
                 gameId = game.name,
                 difficulty = difficulty.name,

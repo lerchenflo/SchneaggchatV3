@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToUiText
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onSuccess
@@ -45,6 +44,7 @@ import schneaggchatv3mp.composeapp.generated.resources.recap_type_image
 import schneaggchatv3mp.composeapp.generated.resources.recap_type_poll
 import schneaggchatv3mp.composeapp.generated.resources.recap_type_text
 import kotlin.math.roundToInt
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.GameRemoteDataSource
 
 data class RecapState(
     val isLoading: Boolean = true,
@@ -57,7 +57,7 @@ sealed interface RecapAction {
 }
 
 class RecapViewModel(
-    private val networkUtils: NetworkUtils,
+    private val gameRemoteDataSource: GameRemoteDataSource,
     private val userRepository: UserLocalDataSource,
     private val groupRepository: GroupLocalDataSource,
 ): ViewModel() {
@@ -78,7 +78,7 @@ class RecapViewModel(
     private fun loadRecap() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
-            networkUtils.getRecap(year = RecapAvailability.recapYear())
+            gameRemoteDataSource.getRecap(year = RecapAvailability.recapYear())
                 .trackConnectivity()
                 .onSuccess { response ->
                     _state.update { it.copy(isLoading = false, recap = response.toRecapUi()) }

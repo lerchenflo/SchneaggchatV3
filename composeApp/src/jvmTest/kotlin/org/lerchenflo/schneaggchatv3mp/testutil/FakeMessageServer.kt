@@ -11,11 +11,11 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSyncResponse
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CopyOnWriteArrayList
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageSyncResponse
 
 /** Server clock of the first stored message; later ones get +1 ms each. */
 private const val SERVER_TIME_BASE = 1_700_000_000_000L

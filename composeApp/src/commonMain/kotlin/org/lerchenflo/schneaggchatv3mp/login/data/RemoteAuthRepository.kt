@@ -15,8 +15,6 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.login.domain.DeviceSession
 import org.lerchenflo.schneaggchatv3mp.login.domain.SavedCredsResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.SessionCheck
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDeviceSession
@@ -36,16 +34,18 @@ import schneaggchatv3mp.composeapp.generated.resources.error_login_server_error
 import schneaggchatv3mp.composeapp.generated.resources.error_login_too_many_requests
 import schneaggchatv3mp.composeapp.generated.resources.offline
 import kotlin.time.Duration.Companion.seconds
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
+import org.lerchenflo.schneaggchatv3mp.login.data.remote.AuthRemoteDataSource
 
 //How long a logout waits for the server to drop the session before continuing to log out locally.
 private val LOGOUT_SERVER_CALL_TIMEOUT = 5.seconds
 
 /**
- * [AuthRepository] talking to the server through [NetworkUtils]. The session itself (tokens,
+ * [AuthRepository] talking to the server through [AuthRemoteDataSource]. The session itself (tokens,
  * refresh, persistence) is owned by [AuthSessionManager]; this class only seeds and reads it.
  */
 class RemoteAuthRepository(
-    private val networkUtils: NetworkUtils,
+    private val authRemoteDataSource: AuthRemoteDataSource,
     private val preferencemanager: Preferencemanager,
     private val authSessionManager: AuthSessionManager,
     private val userRepository: UserRepository,
@@ -60,11 +60,11 @@ class RemoteAuthRepository(
 
         val android = appVersion.isAndroid()
         //println("Sending notification token to server... Android: $android")
-        networkUtils.setNotificationToken(token, android).trackConnectivity()
+        authRemoteDataSource.setNotificationToken(token, android).trackConnectivity()
     }
 
     override suspend fun sendEmailVerify() : Boolean{
-        return when (val result = networkUtils.sendEmailVerify().trackConnectivity()) {
+        return when (val result = authRemoteDataSource.sendEmailVerify().trackConnectivity()) {
             is NetworkResult.Error<NetworkingError> -> {
                 println("Send email verify: Error occured: ${result.error}")
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
@@ -97,7 +97,7 @@ class RemoteAuthRepository(
             val notificationToken = notifier.getToken()
             if (usableRefreshToken == null && notificationToken.isNullOrBlank()) return@withTimeoutOrNull Unit
 
-            networkUtils.logout(
+            authRemoteDataSource.logout(
                 refreshToken = usableRefreshToken,
                 notificationToken = notificationToken,
                 isAndroid = appVersion.isAndroid(),
@@ -181,7 +181,7 @@ class RemoteAuthRepository(
             preferencemanager.saveServerUrl(BASE_SERVER_URL_TEST)
         }
 
-        when(val result = networkUtils.login(username.trim(), password).trackConnectivity()){
+        when(val result = authRemoteDataSource.login(username.trim(), password).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 println("Error: ${result.error}")
 
@@ -229,7 +229,7 @@ class RemoteAuthRepository(
         language: String?,
         onResult: (Boolean) -> Unit
     ) {
-        when(val response = networkUtils.register(username, password, email, birthdate, profilePic, phoneNumber, language).trackConnectivity()){
+        when(val response = authRemoteDataSource.register(username, password, email, birthdate, profilePic, phoneNumber, language).trackConnectivity()){
             is NetworkResult.Error -> {
                 println("Error: ${response.error}")
 
@@ -250,7 +250,7 @@ class RemoteAuthRepository(
 
 
     override suspend fun changePassword(oldPassword: String, newPassword: String) : Boolean {
-        when (val success = networkUtils.changePassword(oldPassword, newPassword).trackConnectivity()){
+        when (val success = authRemoteDataSource.changePassword(oldPassword, newPassword).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
@@ -266,7 +266,7 @@ class RemoteAuthRepository(
      * Logged-in devices of the own account, or null when loading failed (error already sent).
      */
     override suspend fun getSessions(): List<DeviceSession>? {
-        return when (val result = networkUtils.getSessions().trackConnectivity()) {
+        return when (val result = authRemoteDataSource.getSessions().trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 null
@@ -285,7 +285,7 @@ class RemoteAuthRepository(
         val refreshToken = authSessionManager.currentTokens()?.refreshToken
             ?.takeIf { it.isNotBlank() && JwtUtils.isTokenDateValid(it) }
 
-        return when (val result = networkUtils.logoutAllDevices(refreshToken).trackConnectivity()) {
+        return when (val result = authRemoteDataSource.logoutAllDevices(refreshToken).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 loggingRepository.logWarning("Logout all devices failed (${result.error.errorCode}): ${result.error.message}")
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
@@ -299,7 +299,7 @@ class RemoteAuthRepository(
      * Logs one of the own devices out remotely.
      */
     override suspend fun endSession(sessionId: String): Boolean {
-        return when (val result = networkUtils.endSession(sessionId).trackConnectivity()) {
+        return when (val result = authRemoteDataSource.endSession(sessionId).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false

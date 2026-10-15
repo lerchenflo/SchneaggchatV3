@@ -4,27 +4,26 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.AvailableUser
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeOutcome
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 // ─── Friendship status ───────────────────────────────────────────────────────
 
-fun NetworkUtils.FriendshipStatus.toFriendshipStatus(): FriendshipStatus = when (this) {
-    NetworkUtils.FriendshipStatus.PENDING -> FriendshipStatus.PENDING
-    NetworkUtils.FriendshipStatus.ACCEPTED -> FriendshipStatus.ACCEPTED
-    NetworkUtils.FriendshipStatus.DECLINED -> FriendshipStatus.DECLINED
-    NetworkUtils.FriendshipStatus.BLOCKED -> FriendshipStatus.BLOCKED
+fun NetworkFriendshipStatus.toFriendshipStatus(): FriendshipStatus = when (this) {
+    NetworkFriendshipStatus.PENDING -> FriendshipStatus.PENDING
+    NetworkFriendshipStatus.ACCEPTED -> FriendshipStatus.ACCEPTED
+    NetworkFriendshipStatus.DECLINED -> FriendshipStatus.DECLINED
+    NetworkFriendshipStatus.BLOCKED -> FriendshipStatus.BLOCKED
 }
 
-fun FriendshipStatus.toNetworkFriendshipStatus(): NetworkUtils.FriendshipStatus = when (this) {
-    FriendshipStatus.PENDING -> NetworkUtils.FriendshipStatus.PENDING
-    FriendshipStatus.ACCEPTED -> NetworkUtils.FriendshipStatus.ACCEPTED
-    FriendshipStatus.DECLINED -> NetworkUtils.FriendshipStatus.DECLINED
-    FriendshipStatus.BLOCKED -> NetworkUtils.FriendshipStatus.BLOCKED
+fun FriendshipStatus.toNetworkFriendshipStatus(): NetworkFriendshipStatus = when (this) {
+    FriendshipStatus.PENDING -> NetworkFriendshipStatus.PENDING
+    FriendshipStatus.ACCEPTED -> NetworkFriendshipStatus.ACCEPTED
+    FriendshipStatus.DECLINED -> NetworkFriendshipStatus.DECLINED
+    FriendshipStatus.BLOCKED -> NetworkFriendshipStatus.BLOCKED
 }
 
 // ─── Available users ─────────────────────────────────────────────────────────
 
-fun NetworkUtils.NewFriendsUserResponse.toAvailableUser(): AvailableUser = AvailableUser(
+fun NewFriendsUserResponse.toAvailableUser(): AvailableUser = AvailableUser(
     id = id,
     username = username,
     commonFriendCount = commonFriendCount,
@@ -32,13 +31,13 @@ fun NetworkUtils.NewFriendsUserResponse.toAvailableUser(): AvailableUser = Avail
 
 // ─── Wake ────────────────────────────────────────────────────────────────────
 
-fun NetworkUtils.WakeOutcome.toWakeOutcome(): WakeOutcome = when (this) {
-    NetworkUtils.WakeOutcome.WOKEN -> WakeOutcome.WOKEN
-    NetworkUtils.WakeOutcome.NOT_ALLOWED -> WakeOutcome.NOT_ALLOWED
-    NetworkUtils.WakeOutcome.NO_DEVICES -> WakeOutcome.NO_DEVICES
+fun NetworkWakeOutcome.toWakeOutcome(): WakeOutcome = when (this) {
+    NetworkWakeOutcome.WOKEN -> WakeOutcome.WOKEN
+    NetworkWakeOutcome.NOT_ALLOWED -> WakeOutcome.NOT_ALLOWED
+    NetworkWakeOutcome.NO_DEVICES -> WakeOutcome.NO_DEVICES
 }
 
-fun NetworkUtils.WakeResponse.toWakeResult(): WakeResult = WakeResult(
+fun WakeResponse.toWakeResult(): WakeResult = WakeResult(
     outcome = outcome.toWakeOutcome(),
     userCount = userCount,
     deviceCount = deviceCount,

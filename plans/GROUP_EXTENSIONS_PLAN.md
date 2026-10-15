@@ -35,7 +35,7 @@ The discriminator names and property names must be identical on both sides becau
 ### 1.3 Client sync plumbing
 
 - `DataSyncCoordinator.dataSync()` (`app/data/DefaultDataSyncCoordinator.kt`, was `AppRepository.dataSync()`) runs one `async` job per `DataSyncJobType` (`USERS, GROUPS, MESSAGES, MAP, EVENTS, MEDIA`) and reports progress through `DataSyncState`.
-- Each feature has a thin Room-only local data source (`MapLocalDataSource`, `EventLocalDataSource`) exposing `getXChangeIds()`, `upsertX()`, `deleteX()`, `getAllXFlow()`; the network calls live in `NetworkUtils`, orchestration in an offline-first repository behind an interface in the feature's `domain/` (`OfflineFirstMapRepository`, `OfflineFirstEventRepository`; `AppRepository` is gone, see `REPOSITORY_INTERFACE_MIGRATION_PLAN.md`).
+- Each feature has a thin Room-only local data source (`MapLocalDataSource`, `EventLocalDataSource`) exposing `getXChangeIds()`, `upsertX()`, `deleteX()`, `getAllXFlow()`; the network calls live in a remote data source per feature (interface + Ktor implementation in `<feature>/data/remote/`, e.g. `MapRemoteDataSource` / `KtorMapRemoteDataSource`), orchestration in an offline-first repository behind an interface in the feature's `domain/` (`OfflineFirstMapRepository`, `OfflineFirstEventRepository`; `AppRepository` is gone, see `REPOSITORY_INTERFACE_MIGRATION_PLAN.md`).
 - Socket handling is one `when` in `SocketConnectionMessage.kt:172-468`; `MapChange`/`EventChange` just upsert/delete the local row.
 - Group removal purge: `RoomGroupDataSource.deleteGroup` (`chat/data/RoomGroupDataSource.kt:47`) deletes messages + readers for the group, and `dataSync` repeats the purge after all jobs finished (`DefaultDataSyncCoordinator.kt:237`, via `MessageRepository.deleteMessagesForGroups`) because the message job runs in parallel.
 - Room DB is at version 82 with `fallbackToDestructiveMigration(dropAllTables = true)`; a schema change is a version bump + full re-sync.
@@ -336,7 +336,7 @@ datasource/network/requestResponseDataClasses/
 
 ### 4.3 Network + sync
 
-- `NetworkUtils`: `groupExtensionSync(since)`, `upsertGroupExtension(request)`, `deleteGroupExtension(id)`, `upsertGroupExtensionItems(list)`, `deleteGroupExtensionItem(id)` - all through the existing `safeGet/safePost/safeDelete`.
+- `GroupExtensionRemoteDataSource` + `KtorGroupExtensionRemoteDataSource` (`groupextensions/data/remote/`): `groupExtensionSync(since)`, `upsertGroupExtension(request)`, `deleteGroupExtension(id)`, `upsertGroupExtensionItems(list)`, `deleteGroupExtensionItem(id)` - all through the existing `ServerClient.safeGet/safePost/safeDelete` (`datasource/network/KtorHttpHelpers.kt`).
 - `GroupExtensionRepository` (interface in `groupextensions/domain/`, the feature that holds the implementation; `DataSyncCoordinator` imports it from there) / `OfflineFirstGroupExtensionRepository`, and `DefaultDataSyncCoordinator` (`AppRepository` is gone):
   - `DataSyncJobType.GROUP_EXTENSIONS` + default `DataSyncJobState` entry + a new `async` job in `DefaultDataSyncCoordinator.dataSync` calling `groupExtensionRepository.syncGroupExtensions()`.
   - `syncGroupExtensions()` copies the `syncMessages` loop (`OfflineFirstMessageRepository`, was `messageIdSync`): `since = dao.getLastSyncedVersion()`, apply deletions first, then upserts sorted by version, `since = response.newVersion`, loop while `moreEntries`.
@@ -424,7 +424,7 @@ Nothing else changes: no endpoint, no sync job, no socket message, no Room table
 | Phase | Scope | Done when |
 |---|---|---|
 | **1 - Server core** | models, converters, `SyncCollection.GROUP_EXTENSIONS`, repositories, `ExtensionOwnerAccess`, validator, service, controller (all 5 endpoints), `joinedAtExtensionVersion`, socket subtypes + `NotificationService` methods, `LogType`s, group delete cascade | endpoints callable with curl, `security-check` table clean |
-| **2 - Client data layer** | domain classes, Room entities/DAO/converters + DB 83, network DTOs + mappers, `NetworkUtils` calls, `OfflineFirstGroupExtensionRepository` sync + CRUD, `DefaultDataSyncCoordinator` job, socket branches, purge hooks, DI | `dataSync` shows a `GROUP_EXTENSIONS` job that succeeds; creating an extension on device A appears in Room on device B |
+| **2 - Client data layer** | domain classes, Room entities/DAO/converters + DB 83, network DTOs + mappers, remote data source, `OfflineFirstGroupExtensionRepository` sync + CRUD, `DefaultDataSyncCoordinator` job, socket branches, purge hooks, DI | `dataSync` shows a `GROUP_EXTENSIONS` job that succeeds; creating an extension on device A appears in Room on device B |
 | **3 - Group details + shared text** | `ChatDetails` section, `AddExtensionDialog`, `Route.GroupExtension`, `GroupExtensionScreenRoot`, shared-text screen | first extension usable end to end |
 | **4 - Quotes + Split** | quote screen; split screen with `SplitCalculator`, currency in the add dialog | balances match a hand-computed example |
 | **5 - Route planner** | `filterMapEntries` extraction, maplibre screen, long-press add, `MapEntryPickerSheet`, reorder, distance, "open on map" | route renders as polyline on both devices; a point picked from the map carries `mapEntryId` |

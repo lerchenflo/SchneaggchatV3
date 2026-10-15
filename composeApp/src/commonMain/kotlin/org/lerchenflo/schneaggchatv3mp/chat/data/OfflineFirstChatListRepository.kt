@@ -16,12 +16,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.settings.data.remote.SettingsRemoteDataSource
 
 //Message search in the chat selector: how much the user has to type before the message table is
 //scanned, and how many hits are kept so a common word cannot build a list of thousands of rows.
@@ -41,7 +41,7 @@ class OfflineFirstChatListRepository(
     private val groupLocalDataSource: GroupLocalDataSource,
     private val messageLocalDataSource: MessageLocalDataSource,
     private val settingsRepository: SettingsRepository,
-    private val networkUtils: NetworkUtils,
+    private val settingsRemoteDataSource: SettingsRemoteDataSource,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ChatListRepository {
 
@@ -239,7 +239,7 @@ class OfflineFirstChatListRepository(
         } else {
             settingsRepository.removePinnedChat(chatId)
         }
-        networkUtils.updateSettings(UserSettingsRequest(pinnedChats = settingsRepository.getPinnedChats())).trackConnectivity()
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(pinnedChats = settingsRepository.getPinnedChats())).trackConnectivity()
     }
 }
 

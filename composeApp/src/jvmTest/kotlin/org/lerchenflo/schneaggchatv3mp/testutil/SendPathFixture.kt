@@ -6,10 +6,11 @@ import kotlinx.coroutines.test.TestScope
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstMessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.RoomMessageDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.KtorMessageRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.MessageRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 
@@ -23,9 +24,9 @@ const val FRIEND_ID = "friend"
  * Builds the object under test for the message send-path tests (plan Phase 4.5) and everything
  * around it:
  * - a real in-memory [AppDatabase] with a real [RoomMessageDataSource];
- * - a real [NetworkUtils] ([createTestNetworkUtils]) on a Ktor client built by the app's own
- *   `createHttpClient()` (JSON set up like in the app), whose engine is [FakeMessageServer]'s
- *   `MockEngine`;
+ * - a real [KtorMessageRemoteDataSource] ([createTestMessageRemoteDataSource]) on a Ktor client
+ *   built by the app's own `createHttpClient()` (JSON set up like in the app), whose engine is
+ *   [FakeMessageServer]'s `MockEngine`;
  * - a real [DefaultErrorChannel] and a [FakeLogger];
  * - [unusedDependency] stubs for every constructor parameter the send path never touches. Text
  *   messages never use `PictureManager` / `AudioManager`, so they are stubs too.
@@ -51,12 +52,12 @@ class SendPathFixture(testScope: TestScope, val ownUserId: String = OWN_USER_ID)
 
     private val messageLocalDataSource = RoomMessageDataSource(database)
 
-    val networkUtils: NetworkUtils = createTestNetworkUtils(httpClient, logger)
+    val messageRemoteDataSource: MessageRemoteDataSource = createTestMessageRemoteDataSource(httpClient, logger)
 
     val repository = OfflineFirstMessageRepository(
         database = database,
         messageLocalDataSource = messageLocalDataSource,
-        networkUtils = networkUtils,
+        messageRemoteDataSource = messageRemoteDataSource,
         pictureManager = unusedDependency(),
         audioManager = unusedDependency(),
         loggingRepository = logger,

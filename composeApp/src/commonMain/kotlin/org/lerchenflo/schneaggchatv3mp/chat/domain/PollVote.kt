@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 /**
  * A vote in a poll, or a new custom option. Domain copy of the network DTO
- * `NetworkUtils.PollVoteRequest`, field for field.
+ * `PollVoteRequest`, field for field.
  */
 data class PollVote(
     val messageId: String,

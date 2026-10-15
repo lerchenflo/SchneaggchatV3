@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 /**
  * A poll the user is about to send, sub polls included. Domain copy of the network DTO
- * `NetworkUtils.PollCreateRequest`, field for field.
+ * `PollCreateRequest`, field for field.
  */
 data class NewPoll(
     val title: String,
@@ -26,7 +26,7 @@ data class NewPoll(
 )
 
 /**
- * One option of a [NewPoll]. Domain copy of the network DTO `NetworkUtils.PollVoteOptionCreateRequest`,
+ * One option of a [NewPoll]. Domain copy of the network DTO `PollVoteOptionCreateRequest`,
  * field for field.
  */
 data class NewPollOption(

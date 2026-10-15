@@ -5,8 +5,8 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import kotlin.time.ExperimentalTime
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NetworkFriendshipStatus
 
 @Serializable
 @Entity(tableName = "users")
@@ -43,7 +43,7 @@ data class UserDto(
 
 
     // friend stuff
-    var frienshipStatus: NetworkUtils.FriendshipStatus?, //Current status of the friendship
+    var frienshipStatus: NetworkFriendshipStatus?, //Current status of the friendship
     val requesterId: String?, //Who requested the friendship
 
     var locationShared: Boolean = false,

@@ -12,23 +12,23 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toNetworkGroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GroupResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GroupSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.GroupRemoteDataSource
 
 /**
- * [GroupRepository] on top of the local [GroupLocalDataSource] and the server via [NetworkUtils].
+ * [GroupRepository] on top of the local [GroupLocalDataSource] and the server via [GroupRemoteDataSource].
  * The sync, picture and write code is moved verbatim from AppRepository (groupIdSync,
  * getProfilePicturesForGroupIds, createGroup, changeGroup*, group part of getMissingPics).
  */
 class OfflineFirstGroupRepository(
     private val groupLocalDataSource: GroupLocalDataSource,
-    private val networkUtils: NetworkUtils,
+    private val groupRemoteDataSource: GroupRemoteDataSource,
     private val pictureManager: PictureManager,
     private val loggingRepository: Logger,
     private val errorChannel: ErrorChannel,
@@ -63,7 +63,7 @@ class OfflineFirstGroupRepository(
         memberIds: List<String>,
         profilePic: ByteArray
     ) : String? {
-        val response = networkUtils.createGroup(
+        val response = groupRemoteDataSource.createGroup(
             name = name,
             description = description,
             memberIds = memberIds,
@@ -131,7 +131,7 @@ class OfflineFirstGroupRepository(
             val localgroups = groupLocalDataSource.getgroupchangeid()
             val profilepicsToGet = mutableListOf<String>()
 
-            val groupSyncResponse = networkUtils.groupIdSync(
+            val groupSyncResponse = groupRemoteDataSource.groupIdSync(
                 groupIds = localgroups.map {
                     IdTimeStamp(it.id, it.updatedAt)
                 }
@@ -196,7 +196,7 @@ class OfflineFirstGroupRepository(
     override suspend fun getProfilePicturesForGroupIds(groupIds: List<String>){
         groupIds.forEach { groupId ->
             val savefilename = groupId + GROUPPROFILEPICTURE_FILE_NAME
-            when (val picture = networkUtils.getProfilePicForGroupId(groupId).trackConnectivity()) {
+            when (val picture = groupRemoteDataSource.getProfilePicForGroupId(groupId).trackConnectivity()) {
                 is NetworkResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for groupid $groupId")}
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
@@ -227,7 +227,7 @@ class OfflineFirstGroupRepository(
     // ─── Group changes ────────────────────────────────────────────────────────
 
     override suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray) : Boolean {
-        when (val success = networkUtils.changeGroupProfilePic(newPic, groupId).trackConnectivity()){
+        when (val success = groupRemoteDataSource.changeGroupProfilePic(newPic, groupId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
@@ -241,7 +241,7 @@ class OfflineFirstGroupRepository(
     }
 
     override suspend fun changeGroupDescription(groupId: String, newDescription: String) : Boolean {
-        when (val success = networkUtils.changeGroupDescription(newDescription, groupId).trackConnectivity()){
+        when (val success = groupRemoteDataSource.changeGroupDescription(newDescription, groupId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
@@ -255,7 +255,7 @@ class OfflineFirstGroupRepository(
     }
 
     override suspend fun changeGroupName(groupId: String, newName: String) : Boolean {
-        when (val success = networkUtils.changeGroupName(newName, groupId).trackConnectivity()){
+        when (val success = groupRemoteDataSource.changeGroupName(newName, groupId).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false
@@ -269,7 +269,7 @@ class OfflineFirstGroupRepository(
     }
 
     override suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String) : Boolean {
-        when (val success = networkUtils.changeGroupMembers(
+        when (val success = groupRemoteDataSource.changeGroupMembers(
             action = action.toNetworkGroupMemberAction(),
             memberId = memberId,
             groupId = groupId
@@ -288,7 +288,7 @@ class OfflineFirstGroupRepository(
 
     /** Pass null for [expiresAt] to clear the expiry (group never auto-expires). */
     override suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?) : Boolean {
-        when (val success = networkUtils.changeGroupExpiry(groupId, expiresAt).trackConnectivity()){
+        when (val success = groupRemoteDataSource.changeGroupExpiry(groupId, expiresAt).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
                 return false

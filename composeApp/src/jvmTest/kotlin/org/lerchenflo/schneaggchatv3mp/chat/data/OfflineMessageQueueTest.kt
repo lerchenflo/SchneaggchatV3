@@ -18,7 +18,6 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageRequest
 import org.lerchenflo.schneaggchatv3mp.testutil.FRIEND_ID
 import org.lerchenflo.schneaggchatv3mp.testutil.FakeMessageServer.Reply
 import org.lerchenflo.schneaggchatv3mp.testutil.OWN_USER_ID
@@ -27,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.testutil.resetGlobalState
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageRequest
 
 /**
  * Characterization tests for the offline queue (plan Phase 4.5): `sendOfflineMessages` resends

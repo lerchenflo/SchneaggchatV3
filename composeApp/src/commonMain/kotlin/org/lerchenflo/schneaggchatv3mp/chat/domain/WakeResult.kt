@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 /**
  * Why a wake did or did not reach anybody. Domain copy of the network enum
- * `NetworkUtils.WakeOutcome`, entry for entry. Waking a non-friend is not represented here:
+ * `NetworkWakeOutcome`, entry for entry. Waking a non-friend is not represented here:
  * the server rejects it with 403.
  */
 enum class WakeOutcome {
@@ -13,7 +13,7 @@ enum class WakeOutcome {
 
 /**
  * Server answer to [org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository.sendWake].
- * Domain copy of the network DTO `NetworkUtils.WakeResponse`, field for field.
+ * Domain copy of the network DTO `WakeResponse`, field for field.
  */
 data class WakeResult(
     val outcome: WakeOutcome,

@@ -26,13 +26,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeSettingsRepository
 import org.lerchenflo.schneaggchatv3mp.testutil.createInMemoryAppDatabase
-import org.lerchenflo.schneaggchatv3mp.testutil.createTestNetworkUtils
+import org.lerchenflo.schneaggchatv3mp.testutil.createTestSettingsRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.testutil.resetGlobalState
 import org.lerchenflo.schneaggchatv3mp.testutil.testGroup
 import org.lerchenflo.schneaggchatv3mp.testutil.testMessage
@@ -41,6 +40,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserSettingsRequest
 
 private const val OWN_ID = "me"
 
@@ -102,7 +102,7 @@ class OfflineFirstChatListRepositoryTest {
             groupLocalDataSource = groupDataSource,
             messageLocalDataSource = messageDataSource,
             settingsRepository = settingsRepository,
-            networkUtils = createTestNetworkUtils(httpClient, FakeLogger()),
+            settingsRemoteDataSource = createTestSettingsRemoteDataSource(httpClient, FakeLogger()),
             defaultDispatcher = StandardTestDispatcher(testScheduler),
         )
         testBody()

@@ -15,23 +15,23 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.EventRemoteDataSource
 
 /**
- * [EventRepository] on top of the local [EventLocalDataSource] and the server via [NetworkUtils].
+ * [EventRepository] on top of the local [EventLocalDataSource] and the server via [EventRemoteDataSource].
  * [joinEvent] and [detachEvent] also write the event's group through [GroupLocalDataSource].
  */
 class OfflineFirstEventRepository(
     private val eventLocalDataSource: EventLocalDataSource,
     private val groupLocalDataSource: GroupLocalDataSource,
-    private val networkUtils: NetworkUtils,
+    private val eventRemoteDataSource: EventRemoteDataSource,
     private val loggingRepository: Logger,
     private val errorChannel: ErrorChannel,
 ) : EventRepository {
@@ -51,7 +51,7 @@ class OfflineFirstEventRepository(
         var currentPage = 0
         var moreEntries = true
         while (moreEntries) {
-            val response = networkUtils.eventSync(
+            val response = eventRemoteDataSource.eventSync(
                 entries = localEntries.map { IdTimeStamp(it.id, it.updatedAt) },
                 page = currentPage,
             ).trackConnectivity()
@@ -85,7 +85,7 @@ class OfflineFirstEventRepository(
         groupDeleteDelay: GroupDeleteDelay,
         profilePic: ByteArray?,
     ): Boolean {
-        val result = networkUtils.upsertEvent(
+        val result = eventRemoteDataSource.upsertEvent(
             EventRequest(
                 eventId = eventId,
                 type = type,
@@ -121,7 +121,7 @@ class OfflineFirstEventRepository(
      * EventChange push even arrives.
      */
     override suspend fun setEventParticipation(eventId: String, status: EventParticipationStatus): Boolean {
-        return when (val result = networkUtils.setEventParticipation(eventId, status).trackConnectivity()) {
+        return when (val result = eventRemoteDataSource.setEventParticipation(eventId, status).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
@@ -138,7 +138,7 @@ class OfflineFirstEventRepository(
      * @return The id of the group belonging to the event
      */
     override suspend fun joinEvent(eventId: String): String? {
-        return when (val response = networkUtils.joinEvent(eventId).trackConnectivity()) {
+        return when (val response = eventRemoteDataSource.joinEvent(eventId).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = response.error))
                 null
@@ -185,7 +185,7 @@ class OfflineFirstEventRepository(
      * result regardless.
      */
     override suspend fun detachEvent(eventId: String, groupId: String?, deleteGroup: Boolean, deleteEvent: Boolean): Boolean {
-        return when (val result = networkUtils.detachEvent(eventId, deleteGroup, deleteEvent).trackConnectivity()) {
+        return when (val result = eventRemoteDataSource.detachEvent(eventId, deleteGroup, deleteEvent).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
                 false
