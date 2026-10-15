@@ -695,6 +695,8 @@
     <string name="poll_settings_allowdeleteoptions">Consenti l'eliminazione delle opzioni</string>
     <string name="poll_settings_allowdeleteoptions_info">Lascia che il creatore del sondaggio elimini qualsiasi opzione, e che ogni utente elimini le opzioni che ha creato lui stesso</string>
 
+    <string name="poll_settings_more">Altre impostazioni</string>
+
     <string name="poll_visibility_title">Visibilità: %1$s</string>
 
     <string name="poll_visibility_public">pubblico (Tutti possono vedere chi ha votato cosa)</string>

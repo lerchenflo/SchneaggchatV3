@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.SubdirectoryArrowRight
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
@@ -55,6 +58,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.collapse
+import androidx.compose.ui.semantics.expand
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -104,6 +110,7 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_cu
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_limitperentry
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_limitperentry_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_settings_more
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_showcheckboxes
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_showcheckboxes_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_title
@@ -162,7 +169,7 @@ class PollDraft(
     var title by mutableStateOf(TextFieldValue(title))
     var description by mutableStateOf(TextFieldValue(description))
 
-    var allowCustomAnswers by mutableStateOf(false)
+    var allowCustomAnswers by mutableStateOf(true)
     var allowedCustomAnswerCount by mutableStateOf(1)
 
     var allowMultipleAnswers by mutableStateOf(false)
@@ -187,6 +194,11 @@ class PollDraft(
     /** Sub polls open by picking an option, which a list poll (no checkboxes) can't do. */
     val subPollsActive: Boolean
         get() = subPollsEnabled && showCheckboxes
+
+    /** True when a setting behind "More settings" differs from its default, so the section opens by itself. */
+    fun hasChangedMoreSettings(): Boolean =
+        !allowCustomAnswers || allowedCustomAnswerCount != 1 || !showCheckboxes ||
+            limitVotersPerEntry || allowDeleteOptions || subPollsEnabled || !visibleToAll
 
     fun filledOptions(): List<PollOptionInput> = options.filter { it.text.text.trim().isNotEmpty() }
 
@@ -391,67 +403,72 @@ fun PollDialog(
                         draft = level.draft,
                         isSubPoll = level.depth > 0,
                         canAddSubPolls = level.depth + 1 < POLL_MAX_DEPTH,
-                        onEditSubPoll = { option -> openSubPoll(option) }
+                        onEditSubPoll = { option -> openSubPoll(option) },
+                        extraMoreSettingsChanged = level.depth == 0 && (visibility != PollVisibility.PUBLIC || expiresAt != null),
+                        extraMoreSettings = {
+                            if (level.depth == 0) {
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                //Answer visibility - shared by all sub polls
+                                var dropDownMenuShown by remember { mutableStateOf(false) }
+
+                                NormalButton(
+                                    text = stringResource(Res.string.poll_visibility_title, visibility.toUiText().asString()),
+                                    onClick = {
+                                        dropDownMenuShown = true
+                                    },
+                                    primary = false,
+                                    showOutline = true,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+
+                                Column {
+                                    DropdownMenu(
+                                        expanded = dropDownMenuShown,
+                                        onDismissRequest = {dropDownMenuShown = false},
+                                        modifier = Modifier.fillMaxWidth(),
+                                        scrollState = rememberScrollState(),
+                                    ) {
+                                        PollVisibility.entries.forEach { entry ->
+                                            DropdownMenuItem(
+                                                onClick = {
+                                                    visibility = entry
+                                                    dropDownMenuShown = false
+                                                },
+                                                text = {
+                                                    Text(
+                                                        text = entry.toUiText().asString()
+                                                    )
+                                                },
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                //Timer for poll expiration - shared by all sub polls
+                                SettingsSwitch(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    titletext = if (expiresAt == null) {stringResource(Res.string.poll_expiry_title)} else {
+                                        stringResource(Res.string.poll_expiry_title_withdate, "${expiresAt!!.day.toString().padStart(2, '0')}.${expiresAt!!.month.ordinal.toString().padStart(2, '0')}.${expiresAt!!.year} ${expiresAt!!.hour.toString().padStart(2, '0')}:${expiresAt!!.minute.toString().padStart(2, '0')}")
+                                    },
+                                    infotext = stringResource(Res.string.poll_expiry_title_info),
+                                    switchchecked = expiresAt != null,
+                                    onSwitchChange = {
+                                        if (expiresAt != null) {
+                                            expiresAt = null
+                                        } else {
+                                            showExpiresAtDatePickerDialog = true
+                                        }
+                                                     },
+                                    icon = null
+                                )
+                            }
+                        }
                     )
 
                     if (level.depth == 0) {
-                        //Answer visibility - shared by all sub polls
-                        var dropDownMenuShown by remember { mutableStateOf(false) }
-
-                        NormalButton(
-                            text = stringResource(Res.string.poll_visibility_title, visibility.toUiText().asString()),
-                            onClick = {
-                                dropDownMenuShown = true
-                            },
-                            primary = false,
-                            showOutline = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        Column {
-                            DropdownMenu(
-                                expanded = dropDownMenuShown,
-                                onDismissRequest = {dropDownMenuShown = false},
-                                modifier = Modifier.fillMaxWidth(),
-                                scrollState = rememberScrollState(),
-                            ) {
-                                PollVisibility.entries.forEach { entry ->
-                                    DropdownMenuItem(
-                                        onClick = {
-                                            visibility = entry
-                                            dropDownMenuShown = false
-                                        },
-                                        text = {
-                                            Text(
-                                                text = entry.toUiText().asString()
-                                            )
-                                        },
-                                    )
-                                }
-                            }
-                        }
-
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-
-                        //Timer for poll expiration - shared by all sub polls
-                        SettingsSwitch(
-                            modifier = Modifier.fillMaxWidth(),
-                            titletext = if (expiresAt == null) {stringResource(Res.string.poll_expiry_title)} else {
-                                stringResource(Res.string.poll_expiry_title_withdate, "${expiresAt!!.day.toString().padStart(2, '0')}.${expiresAt!!.month.ordinal.toString().padStart(2, '0')}.${expiresAt!!.year} ${expiresAt!!.hour.toString().padStart(2, '0')}:${expiresAt!!.minute.toString().padStart(2, '0')}")
-                            },
-                            infotext = stringResource(Res.string.poll_expiry_title_info),
-                            switchchecked = expiresAt != null,
-                            onSwitchChange = {
-                                if (expiresAt != null) {
-                                    expiresAt = null
-                                } else {
-                                    showExpiresAtDatePickerDialog = true
-                                }
-                                             },
-                            icon = null
-                        )
                         //Popup for date picker
                         if (showExpiresAtDatePickerDialog) {
                             AlertDialog(
@@ -490,9 +507,6 @@ fun PollDialog(
                                 }
                             )
                         }
-
-
-                        Spacer(modifier = Modifier.height(16.dp))
 
                         if (tooManyOptionsError) {
                             Text(
@@ -556,6 +570,10 @@ fun PollDialog(
  * Title, description, options and settings of one poll level. Used for the root poll and, with
  * [isSubPoll], for every sub poll (which then shows its visibility switch instead of the root-only
  * settings the caller adds).
+ *
+ * Only "allow multiple answers" is always shown, every other setting sits behind "More settings".
+ * [extraMoreSettings] adds the caller's own settings at the end of that section, and
+ * [extraMoreSettingsChanged] tells whether one of them differs from its default.
  */
 @Composable
 private fun PollDraftEditor(
@@ -563,6 +581,8 @@ private fun PollDraftEditor(
     isSubPoll: Boolean,
     canAddSubPolls: Boolean,
     onEditSubPoll: (PollOptionInput) -> Unit,
+    extraMoreSettingsChanged: Boolean = false,
+    extraMoreSettings: @Composable () -> Unit = {},
 ) {
     //Reset errors with launchedeffect
     LaunchedEffect(draft.title.text, draft.options.map { it.text.text }, draft.options.size) {
@@ -720,41 +740,7 @@ private fun PollDraftEditor(
         Spacer(modifier = Modifier.height(24.dp))
 
 
-        //settings
-
-        //Sub poll only: whether people who did not pick the parent option can look at it
-        if (isSubPoll) {
-            SettingsSwitch(
-                modifier = Modifier.fillMaxWidth(),
-                titletext = stringResource(Res.string.poll_settings_subpoll_visible_to_all),
-                infotext = stringResource(Res.string.poll_settings_subpoll_visible_to_all_info),
-                switchchecked = draft.visibleToAll,
-                onSwitchChange = { draft.visibleToAll = it },
-                icon = null
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        //Whether the poll shows checkboxes/radio buttons and accepts votes, or is a plain read-only list
-        SettingsSwitch(
-            modifier = Modifier.fillMaxWidth(),
-            titletext = stringResource(Res.string.poll_settings_showcheckboxes),
-            infotext = stringResource(Res.string.poll_settings_showcheckboxes_info),
-            switchchecked = draft.showCheckboxes,
-            onSwitchChange = {
-                draft.showCheckboxes = it
-                if (!draft.showCheckboxes) {
-                    //Voting-only settings are meaningless without checkboxes
-                    draft.allowMultipleAnswers = false
-                    draft.limitVotersPerEntry = false
-                }
-            },
-            icon = null
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+        //Simple settings, always visible
         if (draft.showCheckboxes) {
             SettingsSwitch(
                 titletext = if (!draft.allowMultipleAnswers) {
@@ -784,109 +770,192 @@ private fun PollDraftEditor(
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
 
-        SettingsSwitch(
-            modifier = Modifier.fillMaxWidth(),
-            titletext = if (!draft.allowCustomAnswers) {
-                stringResource(Res.string.poll_settings_allowcustom)
-            }
-            else if (draft.allowedCustomAnswerCount in 1..9) {
-                stringResource(
-                    Res.string.poll_settings_allowcustom_withcount,
-                    draft.allowedCustomAnswerCount.toString()
-                )
-            }
-            else {
-                stringResource(Res.string.poll_settings_allowcustom_withcount, "∞")
-            },
-            infotext = stringResource(Res.string.poll_settings_allowcustom_info),
-            switchchecked = draft.allowCustomAnswers,
-            onSwitchChange = {
-                draft.allowCustomAnswers = it
-                if (draft.allowCustomAnswers) {
-                    draft.allowedCustomAnswerCount = 1
-                }
-                             },
-            icon = null
+        //Every other setting sits behind "More settings". Starts collapsed, unless one of them was already changed
+        var moreSettingsExpanded by remember(draft) {
+            mutableStateOf(draft.hasChangedMoreSettings() || extraMoreSettingsChanged)
+        }
+
+        MoreSettingsToggle(
+            expanded = moreSettingsExpanded,
+            onClick = { moreSettingsExpanded = !moreSettingsExpanded },
+            modifier = Modifier.padding(top = 8.dp)
         )
 
-        if (draft.allowCustomAnswers) {
-            Slider(
-                value = draft.allowedCustomAnswerCount.toFloat(),
-                onValueChange = {draft.allowedCustomAnswerCount = it.toInt()},
-                valueRange = 1f..10f,
-                steps = 9,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
-        }
-
-        //Warning field if user selects both options
-        if (draft.allowMultipleAnswers && draft.allowedCustomAnswerCount == 10 || draft.allowedCustomAnswerCount == 10) {
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Box(
-                modifier = Modifier
-                    .padding(4.dp)
-                    .background(
-                        color = Color(red = 255, green = 165, blue = 0),
-                        shape = RoundedCornerShape(15.dp)
+        AnimatedVisibility(visible = moreSettingsExpanded) {
+            Column {
+                //Sub poll only: whether people who did not pick the parent option can look at it
+                if (isSubPoll) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SettingsSwitch(
+                        modifier = Modifier.fillMaxWidth(),
+                        titletext = stringResource(Res.string.poll_settings_subpoll_visible_to_all),
+                        infotext = stringResource(Res.string.poll_settings_subpoll_visible_to_all_info),
+                        switchchecked = draft.visibleToAll,
+                        onSwitchChange = { draft.visibleToAll = it },
+                        icon = null
                     )
-            ) {
-                Text(
-                    text = if (draft.allowMultipleAnswers) {
-                        stringResource(Res.string.poll_settings_infinite_custom_and_selected_answers_warning)
-                    } else stringResource(Res.string.poll_settings_infinite_custom_answers_warning),
-                    textAlign = TextAlign.Center,
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                //Whether the poll shows checkboxes/radio buttons and accepts votes, or is a plain read-only list
+                SettingsSwitch(
+                    modifier = Modifier.fillMaxWidth(),
+                    titletext = stringResource(Res.string.poll_settings_showcheckboxes),
+                    infotext = stringResource(Res.string.poll_settings_showcheckboxes_info),
+                    switchchecked = draft.showCheckboxes,
+                    onSwitchChange = {
+                        draft.showCheckboxes = it
+                        if (!draft.showCheckboxes) {
+                            //Voting-only settings are meaningless without checkboxes
+                            draft.allowMultipleAnswers = false
+                            draft.limitVotersPerEntry = false
+                        }
+                    },
+                    icon = null
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SettingsSwitch(
+                    modifier = Modifier.fillMaxWidth(),
+                    titletext = if (!draft.allowCustomAnswers) {
+                        stringResource(Res.string.poll_settings_allowcustom)
+                    }
+                    else if (draft.allowedCustomAnswerCount in 1..9) {
+                        stringResource(
+                            Res.string.poll_settings_allowcustom_withcount,
+                            draft.allowedCustomAnswerCount.toString()
+                        )
+                    }
+                    else {
+                        stringResource(Res.string.poll_settings_allowcustom_withcount, "∞")
+                    },
+                    infotext = stringResource(Res.string.poll_settings_allowcustom_info),
+                    switchchecked = draft.allowCustomAnswers,
+                    onSwitchChange = {
+                        draft.allowCustomAnswers = it
+                        if (draft.allowCustomAnswers) {
+                            draft.allowedCustomAnswerCount = 1
+                        }
+                                     },
+                    icon = null
+                )
+
+                if (draft.allowCustomAnswers) {
+                    Slider(
+                        value = draft.allowedCustomAnswerCount.toFloat(),
+                        onValueChange = {draft.allowedCustomAnswerCount = it.toInt()},
+                        valueRange = 1f..10f,
+                        steps = 9,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+
+                //Warning field if user selects both options
+                if (draft.allowMultipleAnswers && draft.allowedCustomAnswerCount == 10 || draft.allowedCustomAnswerCount == 10) {
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .background(
+                                color = Color(red = 255, green = 165, blue = 0),
+                                shape = RoundedCornerShape(15.dp)
+                            )
+                    ) {
+                        Text(
+                            text = if (draft.allowMultipleAnswers) {
+                                stringResource(Res.string.poll_settings_infinite_custom_and_selected_answers_warning)
+                            } else stringResource(Res.string.poll_settings_infinite_custom_answers_warning),
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+
+                if (draft.showCheckboxes) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SettingsSwitch(
+                        modifier = Modifier.fillMaxWidth(),
+                        titletext = stringResource(Res.string.poll_settings_limitperentry),
+                        infotext = stringResource(Res.string.poll_settings_limitperentry_info),
+                        switchchecked = draft.limitVotersPerEntry,
+                        onSwitchChange = { draft.limitVotersPerEntry = it },
+                        icon = null
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                //Whether the creator/option-creators may delete options after the poll is sent
+                SettingsSwitch(
+                    modifier = Modifier.fillMaxWidth(),
+                    titletext = stringResource(Res.string.poll_settings_allowdeleteoptions),
+                    infotext = stringResource(Res.string.poll_settings_allowdeleteoptions_info),
+                    switchchecked = draft.allowDeleteOptions,
+                    onSwitchChange = { draft.allowDeleteOptions = it },
+                    icon = null
+                )
+
+                //Follow-up polls per option - only on a votable poll, and not past the depth limit. Kept
+                //visible while this level already has sub polls, so they can still be switched off
+                if (draft.showCheckboxes && (canAddSubPolls || draft.options.any { it.subPoll != null })) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    SettingsSwitch(
+                        modifier = Modifier.fillMaxWidth(),
+                        titletext = stringResource(Res.string.poll_settings_subpolls),
+                        infotext = stringResource(Res.string.poll_settings_subpolls_info),
+                        switchchecked = draft.subPollsEnabled,
+                        onSwitchChange = { draft.subPollsEnabled = it },
+                        icon = null
+                    )
+                }
+
+                //Root poll only: visibility and close date, shared by all sub polls
+                extraMoreSettings()
             }
         }
 
-
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
 
-        if (draft.showCheckboxes) {
-            SettingsSwitch(
-                modifier = Modifier.fillMaxWidth(),
-                titletext = stringResource(Res.string.poll_settings_limitperentry),
-                infotext = stringResource(Res.string.poll_settings_limitperentry_info),
-                switchchecked = draft.limitVotersPerEntry,
-                onSwitchChange = { draft.limitVotersPerEntry = it },
-                icon = null
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        //Whether the creator/option-creators may delete options after the poll is sent
-        SettingsSwitch(
-            modifier = Modifier.fillMaxWidth(),
-            titletext = stringResource(Res.string.poll_settings_allowdeleteoptions),
-            infotext = stringResource(Res.string.poll_settings_allowdeleteoptions_info),
-            switchchecked = draft.allowDeleteOptions,
-            onSwitchChange = { draft.allowDeleteOptions = it },
-            icon = null
+/** Row that opens and closes the "More settings" section of the poll creator. */
+@Composable
+private fun MoreSettingsToggle(
+    expanded: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .semantics {
+                //Lets screen readers announce the expanded / collapsed state
+                if (expanded) {
+                    collapse { onClick(); true }
+                } else {
+                    expand { onClick(); true }
+                }
+            }
+            .padding(vertical = 12.dp)
+    ) {
+        Text(
+            text = stringResource(Res.string.poll_settings_more),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f)
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        //Follow-up polls per option - only on a votable poll, and not past the depth limit. Kept
-        //visible while this level already has sub polls, so they can still be switched off
-        if (draft.showCheckboxes && (canAddSubPolls || draft.options.any { it.subPoll != null })) {
-            SettingsSwitch(
-                modifier = Modifier.fillMaxWidth(),
-                titletext = stringResource(Res.string.poll_settings_subpolls),
-                infotext = stringResource(Res.string.poll_settings_subpolls_info),
-                switchchecked = draft.subPollsEnabled,
-                onSwitchChange = { draft.subPollsEnabled = it },
-                icon = null
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        Icon(
+            imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

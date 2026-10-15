@@ -696,6 +696,8 @@
     <string name="poll_settings_allowdeleteoptions">Löschen von Optionen erlauben</string>
     <string name="poll_settings_allowdeleteoptions_info">Erlaubt dem Umfrageersteller, jede Option zu löschen, und jedem Nutzer, die von ihm selbst erstellten Optionen zu löschen</string>
 
+    <string name="poll_settings_more">Weitere Einstellungen</string>
+
     <string name="poll_visibility_title">Sichtbarkeit: %1$s</string>
 
     <string name="poll_visibility_public">Öffentlich (Jeder sieht wer wo abgestimmt hat)</string>

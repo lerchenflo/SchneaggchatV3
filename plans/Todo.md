@@ -212,6 +212,16 @@ Noticed while moving `datasource/domain/` into the feature `domain/` packages. N
 - [ ] `CLAUDE.md` Project Structure package list misses `events/`, `feedback/`, `tools/` (and `constants.kt`).
 - [ ] Imports added by the move were appended to the end of each import block, not sorted in (e.g. `C/chat/domain/UserRepository.kt:7`). An IDE "Optimize imports" pass would sort them.
 
+## Findings from the poll creator "More settings" change (2026-10-15)
+
+Noticed while moving the poll settings behind "More settings" in `C/chat/presentation/chat/messagecomposables/content/poll/CreatePollPopup.kt`. Not fixed.
+
+- [ ] Expiry date shows the wrong month: the title uses `month.ordinal`, which is 0-based, so October shows as `09` (`CreatePollPopup.kt:454`). Use `month.number`.
+- [ ] Infinite-custom-answers warning: `draft.allowMultipleAnswers && count == 10 || count == 10` reduces to `count == 10`, so the warning stays visible after custom answers are switched off with the slider at ∞ (the count only resets when switching on) (`CreatePollPopup.kt:858`). Probably meant `allowCustomAnswers && count == 10`.
+- [ ] Hardcoded orange `Color(red = 255, green = 165, blue = 0)` behind that warning breaks the "never hardcode colors" rule (`CreatePollPopup.kt:866`). Decide on a theme color (e.g. `errorContainer` / `tertiaryContainer`).
+- [ ] Hardcoded contentDescription `"Reorder"` on the option drag handle, not a string resource (`CreatePollPopup.kt:726`).
+- [ ] Typo in `poll_expiry_title_info`: "does not allow and votes" should be "does not allow any votes" (`composeApp/src/commonMain/composeResources/values/strings.xml:710`).
+
 ## Deferred from the Android-standards review (plan §8, 2026-10-13)
 
 - [ ] **Auth invalidation in the data layer** (R8). Today `App.kt` reacts to `ActionChannel.AuthInvalidated` with error popup + `logout()` + navigate to Login. Target: `SessionTerminator` listens to `AuthEventSink` in the app scope, and `App.kt` only navigates when the auth state changes to logged out.
