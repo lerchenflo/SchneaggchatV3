@@ -36,7 +36,6 @@ import org.lerchenflo.schneaggchatv3mp.testutil.startTestKoin
 import org.lerchenflo.schneaggchatv3mp.testutil.stopTestKoin
 import org.lerchenflo.schneaggchatv3mp.testutil.testMessage
 import org.lerchenflo.schneaggchatv3mp.testutil.testUser
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -213,8 +212,6 @@ class ChatViewModelTest {
         assertThat(call.chatId).isEqualTo(FRIEND_ID)
         assertThat(call.isGroup).isFalse()
         assertThat(call.newestMessageId).isEqualTo("m2")
-        assertThat(notifier.cancelledMessageIds.calls)
-            .containsExactly(listOf(NotificationManager.NotiId.HexString(FRIEND_ID).asInt))
 
         // The same guard is passed every time, so the repository can skip what is already covered
         AppLifecycleManager.notifyAppResumed()

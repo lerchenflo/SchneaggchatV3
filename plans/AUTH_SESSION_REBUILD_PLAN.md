@@ -1,4 +1,4 @@
-# Auth Session Rebuild Plan (client side)
+# Auth Session Rebuild Plan (client side) (Done)
 
 Rebuild the client-side session layer: token refresh, 401 handling, offline/retry behaviour, and logout. The current implementation grew defect-by-defect and now spreads one piece of state (am I logged in, with which tokens) across three independent caches that drift apart. This plan defines what the replacement has to do, every edge case it has to survive, and how it gets tested.
 

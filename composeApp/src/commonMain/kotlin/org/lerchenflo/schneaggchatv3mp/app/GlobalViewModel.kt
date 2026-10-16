@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -99,6 +100,18 @@ class GlobalViewModel(
     init {
 
         NotificationManager.initialize()
+
+        //A chat on screen - just opened, or the app came back with it open - has its notifications
+        //dismissed, messages and reactions alike. Deliberately not tied to marking it read: a chat
+        //read on another device has nothing unread here, but its notification must still go.
+        viewModelScope.launch {
+            combine(OpenChatTracker.current, AppLifecycleManager.isAppInForegroundFlow) { chat, foreground ->
+                chat.takeIf { foreground }
+            }
+                .distinctUntilChanged()
+                .filterNotNull()
+                .collect { chat -> NotificationManager.removeChatNotifications(chat.chatId) }
+        }
 
 
         viewModelScope.launch {

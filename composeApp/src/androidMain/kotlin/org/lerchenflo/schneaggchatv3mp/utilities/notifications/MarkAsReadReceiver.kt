@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
@@ -30,9 +31,8 @@ class MarkAsReadReceiver : BroadcastReceiver() {
         val groupChat = intent.getBooleanExtra(EXTRA_GROUP_CHAT, false)
 
         //Dismiss immediately so the action feels instant, the sync happens in the background.
-        //One notification per chat (keyed by chatId, see Message.toNotificationContent), so a
-        //single cancel is enough.
-        NotificationManager.removeMessageNotifications(listOf(NotificationManager.NotiId.HexString(chatId).asInt))
+        //Takes the chat's reaction notifications along.
+        NotificationManager.removeChatNotifications(chatId)
 
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
@@ -45,7 +45,10 @@ class MarkAsReadReceiver : BroadcastReceiver() {
                     SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)
                 }
                 //Bail rather than fire an unauthenticated request the server would reject
-                if (SessionCache.authState.value !is SessionCache.AuthState.LoggedIn) return@runCatching
+                if (SessionCache.authState.value !is SessionCache.AuthState.LoggedIn) {
+                    logError("Chat $chatId not marked as read: no valid session")
+                    return@runCatching
+                }
 
                 messageRepository.setAllChatMessagesRead(
                     chatid = chatId,
@@ -53,9 +56,14 @@ class MarkAsReadReceiver : BroadcastReceiver() {
                     timestamp = getCurrentTimeMillisString()
                 )
             }.onFailure { e ->
-                println("[MarkAsReadReceiver] Error marking chat as read: ${e.message}")
+                logError("Marking chat $chatId as read failed: ${e::class.simpleName}: ${e.message}")
             }
             pendingResult.finish()
         }
+    }
+
+    private suspend fun logError(message: String) {
+        println("[MarkAsReadReceiver] $message")
+        runCatching { KoinPlatform.getKoin().get<Logger>().logError("[MarkAsReadReceiver] $message") }
     }
 }

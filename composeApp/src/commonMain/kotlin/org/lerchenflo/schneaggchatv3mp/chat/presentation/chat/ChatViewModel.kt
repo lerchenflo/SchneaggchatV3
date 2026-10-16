@@ -57,7 +57,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -178,9 +177,8 @@ class ChatViewModel(
 
         SessionCache.requireLoggedIn() ?: return
 
-        //One notification per chat (keyed by chatId, see Message.toNotificationContent), so a
-        //single cancel by chatId clears it - no need to enumerate individual message ids.
-        NotificationManager.removeMessageNotifications(listOf(NotificationManager.NotiId.HexString(chatId).asInt))
+        //The chat's notifications are dismissed by GlobalViewModel as soon as the chat is on screen,
+        //whether or not anything here is unread
 
         //App-wide scope (in the repository), not viewModelScope: leaving the chat must not cancel
         //the request, a request still queued behind the lock, or the sync that pulls the server's

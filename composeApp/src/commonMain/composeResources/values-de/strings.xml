@@ -319,6 +319,11 @@
 
 
     <string name="you_have_new_messages">Du hast neue Nachrichten</string>
+    <string name="notification_fallback_body">Tippe, um mehr zu sehen</string>
+    <string name="notification_channel_messages">Nachrichten</string>
+    <string name="notification_channel_reactions">Reaktionen</string>
+    <string name="notification_channel_social">Freunde &amp; Events</string>
+    <string name="notification_channel_general">Allgemein</string>
     <string name="new_messages">Neue Nachrichten</string>
     <string name="new_message_noti_single_title">Neuer Chat von %1$s</string>
     <string name="new_message_noti_group_title">Neuer Chat von %1$s in %2$s</string>

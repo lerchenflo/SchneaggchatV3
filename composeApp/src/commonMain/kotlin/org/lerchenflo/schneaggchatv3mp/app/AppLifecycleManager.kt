@@ -67,6 +67,9 @@ object AppLifecycleManager {
     val isAppInForeground: Boolean
         get() = _isAppInForeground.value
 
+    /** [isAppInForeground] as a flow, for code that reacts to the app coming to the front. */
+    val isAppInForegroundFlow: StateFlow<Boolean> = _isAppInForeground.asStateFlow()
+
     /**
      * Update the app foreground state
      */

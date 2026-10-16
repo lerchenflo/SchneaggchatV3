@@ -60,7 +60,12 @@ class RemoteAuthRepository(
 
         val android = appVersion.isAndroid()
         //println("Sending notification token to server... Android: $android")
-        authRemoteDataSource.setNotificationToken(token, android).trackConnectivity()
+        //Without a registered token the server can't push anything, so a failure must show up in the logs.
+        //The upload is retried on the next app start (chat list) and whenever Firebase issues a new token.
+        val result = authRemoteDataSource.setNotificationToken(token, android).trackConnectivity()
+        if (result is NetworkResult.Error<*>) {
+            loggingRepository.logError("Uploading the notification token failed: ${result.error}")
+        }
     }
 
     override suspend fun sendEmailVerify() : Boolean{

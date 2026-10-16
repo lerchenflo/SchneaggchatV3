@@ -39,6 +39,7 @@ class LocalSessionTerminator(
         preferencemanager.saveLastStartedVersion("") //Show Changelog on next startup
 
         database.allDatabaseDao().clearAll() //Drop all database tables
+        notifier.cancelAllNotifications() //Notifications and conversation shortcuts still show the old account's chats
         notifier.removeToken() //Remove notificationTOken
         SessionCache.logout() //Remove saved credentials from cache, but not from storage
     }

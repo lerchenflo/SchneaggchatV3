@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -36,6 +37,9 @@ class ReplyReceiver : BroadcastReceiver() {
 
         if (replyText.isNullOrEmpty()) return
 
+        val notifId = NotificationManager.NotiId.HexString(chatId).asInt
+        val notifier = KoinPlatform.getKoin().get<AndroidNotifier>()
+
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
@@ -46,8 +50,13 @@ class ReplyReceiver : BroadcastReceiver() {
                 if (SessionCache.authState.value !is SessionCache.AuthState.LoggedIn) {
                     SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)
                 }
-                val ownId = (SessionCache.authState.value as? SessionCache.AuthState.LoggedIn)
-                    ?.userId ?: return@runCatching
+                val ownId = (SessionCache.authState.value as? SessionCache.AuthState.LoggedIn)?.userId
+                if (ownId == null) {
+                    logError("Reply not sent: no valid session")
+                    //The notification must be updated either way, or its reply spinner keeps spinning
+                    notifier.refreshConversation(notifId, chatId, groupChat)
+                    return@runCatching
+                }
 
                 messageRepository.sendMessage(
                     ownId = ownId,
@@ -64,12 +73,17 @@ class ReplyReceiver : BroadcastReceiver() {
                     timestamp = getCurrentTimeMillisString()
                 )
 
-                val notifId = NotificationManager.NotiId.HexString(chatId).asInt
-                KoinPlatform.getKoin().get<AndroidNotifier>().appendSentReply(notifId, replyText)
+                notifier.appendSentReply(notifId, chatId, groupChat, replyText)
             }.onFailure { e ->
-                println("[ReplyReceiver] Error sending reply: ${e.message}")
+                logError("Sending the reply failed: ${e::class.simpleName}: ${e.message}")
+                runCatching { notifier.refreshConversation(notifId, chatId, groupChat) }
             }
             pendingResult.finish()
         }
+    }
+
+    private suspend fun logError(message: String) {
+        println("[ReplyReceiver] $message")
+        runCatching { KoinPlatform.getKoin().get<Logger>().logError("[ReplyReceiver] $message") }
     }
 }

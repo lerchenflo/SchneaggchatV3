@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.socket
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -11,6 +12,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
@@ -33,12 +36,19 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiIdType
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NOTIFICATION_FALLBACK_TITLE
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationContent
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationKind
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.ensureProfilePictureForNotification
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.reactionNotificationContent
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.new_event_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
+import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
+import kotlin.math.absoluteValue
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
@@ -221,34 +231,61 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 // SYSTEM messages are server-authored event lines (group renamed, member added,
                 // wake sent, ...) - never worth a notification banner.
                 if (socketMessage.newMessage && message.msgType != MessageType.SYSTEM) {
-                    // resolve sender name (falling back to the sender's per-group nickname) and,
-                    // for group messages, the group name shown alongside it
-                    val senderUser = userLocalDataSource.getUserById(message.senderId)
-                    val group = if (message.groupMessage) groupLocalDataSource.getGroupById(message.receiverId) else null
-                    message.senderAsString = senderUser?.displayName
-                        ?: group?.members?.find { it.userId == message.senderId }?.memberName
-                        ?: ""
+                    // A failure here must not skip the ack below: the server would then push the
+                    // message, and the push path drops it as already stored - nothing would show.
+                    try {
+                        // resolve sender name (falling back to the sender's per-group nickname) and,
+                        // for group messages, the group name shown alongside it
+                        val senderUser = userLocalDataSource.getUserById(message.senderId)
+                        val group = if (message.groupMessage) groupLocalDataSource.getGroupById(message.receiverId) else null
+                        message.senderAsString = senderUser?.displayName
+                            ?: group?.members?.find { it.userId == message.senderId }?.memberName
+                            ?: ""
 
-                    // Group messages live under the receiver (the group), single messages under the
-                    // sender - the same id ChatScreen registers with OpenChatTracker (and that
-                    // Message.toNotificationContent() uses). Comparing the sender's user id against
-                    // an open group chat never matched, so group messages notified even while that
-                    // group chat was open and focused.
-                    val chatId = if (message.groupMessage) message.receiverId else message.senderId
-                    if (OpenChatTracker.isSeen(chatId = chatId, isGroup = message.groupMessage)) {
-                        // Chat is on screen - but the user may be mid-way leaving the app. Only
-                        // stay silent if it is still on screen after the confirm delay. Own scope,
-                        // so the media fetch below is not held up by the wait.
-                        KoinPlatform.getKoin().get<ApplicationScope>().launch {
-                            if (!OpenChatTracker.isSeenAfterConfirmDelay(chatId = chatId, isGroup = message.groupMessage)) {
-                                NotificationManager.showNotification(message, fallbackGroupName = group?.name)
+                        // Group messages live under the receiver (the group), single messages under the
+                        // sender - the same id ChatScreen registers with OpenChatTracker (and that
+                        // Message.toNotificationContent() uses). Comparing the sender's user id against
+                        // an open group chat never matched, so group messages notified even while that
+                        // group chat was open and focused.
+                        val chatId = if (message.groupMessage) message.receiverId else message.senderId
+                        if (OpenChatTracker.isSeen(chatId = chatId, isGroup = message.groupMessage)) {
+                            // Chat is on screen - but the user may be mid-way leaving the app. Only
+                            // stay silent if it is still on screen after the confirm delay. Own scope,
+                            // so the media fetch below is not held up by the wait.
+                            KoinPlatform.getKoin().get<ApplicationScope>().launch {
+                                try {
+                                    if (!OpenChatTracker.isSeenAfterConfirmDelay(chatId = chatId, isGroup = message.groupMessage)) {
+                                        NotificationManager.showNotification(message, fallbackGroupName = group?.name)
+                                    }
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    logSocketError("Delayed notification for message ${message.id} failed, showing a plain one", e)
+                                    showFallbackMessageNotification(message)
+                                }
                             }
+                        } else {
+                            NotificationManager.showNotification(message, fallbackGroupName = group?.name)
                         }
-                    } else {
-                        NotificationManager.showNotification(message, fallbackGroupName = group?.name)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        logSocketError("Notification for message ${socketMessage.message.messageId} failed, showing a plain one", e)
+                        showFallbackMessageNotification(message)
                     }
+                }
 
-                    //Only get image if the message is new
+                // Stored and notified (or the seen-check scheduled) - tell the server, so it drops
+                // the push it holds back for this message. No ack means it pushes after a few seconds.
+                // Sent before the media download below, which can take longer than the server waits.
+                if (socketMessage.newMessage && !socketMessage.deleted) {
+                    val ack = SocketConnectionMessage.MessageAck(socketMessage.message.messageId)
+                    KoinPlatform.getKoin().get<SocketConnectionManager>()
+                        .sendMessage(AppJson.instance.encodeToString<SocketConnectionMessage>(ack))
+                }
+
+                //Only get media if the message is new
+                if (socketMessage.newMessage && message.msgType != MessageType.SYSTEM) {
                     if (socketMessage.message.msgType == MessageType.IMAGE) {
                         messageRepository.getPicturesForMessageIds(listOf(socketMessage.message.messageId))
                     }
@@ -259,16 +296,20 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     }
                 }
 
-                // Stored and notified (or the seen-check scheduled) - tell the server, so it drops
-                // the push it holds back for this message. No ack means it pushes after a few seconds.
-                if (socketMessage.newMessage && !socketMessage.deleted) {
-                    val ack = SocketConnectionMessage.MessageAck(socketMessage.message.messageId)
-                    KoinPlatform.getKoin().get<SocketConnectionManager>()
-                        .sendMessage(AppJson.instance.encodeToString<SocketConnectionMessage>(ack))
+                // A reaction arrives as a plain update of the message. While we are connected the
+                // server sends no push for it, so the notification has to come from here.
+                if (!socketMessage.newMessage && !socketMessage.deleted && existing != null) {
+                    notifyNewReactions(
+                        ownId = ownId,
+                        msgId = socketMessage.message.messageId,
+                        before = existing,
+                        after = message,
+                        userLocalDataSource = userLocalDataSource,
+                        groupLocalDataSource = groupLocalDataSource,
+                    )
                 }
             }
 
-            //A user got updated
             is SocketConnectionMessage.UserChange -> {
                 println("Recieved socket connection update: Userchange")
 
@@ -438,7 +479,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
             //Friend request was sent
             is SocketConnectionMessage.FriendRequest -> {
-                dataSyncCoordinator.dataSync(reason = "socketFriendRequest")
+                //Notify before the sync: it can be slow or fail, and the notification must not wait for it
+                ensureProfilePictureForNotification(socketMessage.requestingUser)
                 if (socketMessage.accepted) {
                     NotificationManager.showNotification(
                         titletext = getString(Res.string.new_friend_accepted_noti),
@@ -446,16 +488,20 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                             Res.string.new_friend_accepted_noti_body,
                             socketMessage.requestingUserName
                         ),
-                        notiId = NotiId.Integ(NotiIdType.FRIEND_REQUEST.baseId)
+                        notiId = NotiId.Integ(NotiIdType.FRIEND_REQUEST.baseId),
+                        avatarUserId = socketMessage.requestingUser,
+                        kind = NotificationKind.SOCIAL,
                     )
                 } else {
                     NotificationManager.showNotification(
                         titletext = getString(Res.string.new_friend_request_noti, socketMessage.requestingUserName),
                         bodytext = getString(Res.string.new_friend_request_noti_body, socketMessage.requestingUserName),
-                        notiId = NotiId.Integ(NotiIdType.FRIEND_REQUEST.baseId)
+                        notiId = NotiId.Integ(NotiIdType.FRIEND_REQUEST.baseId),
+                        avatarUserId = socketMessage.requestingUser,
+                        kind = NotificationKind.SOCIAL,
                     )
                 }
-
+                dataSyncCoordinator.dataSync(reason = "socketFriendRequest")
             }
 
             is SocketConnectionMessage.MapChange -> {
@@ -473,10 +519,13 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     eventLocalDataSource.upsertEvent(socketMessage.event.toEvent())
 
                     if (socketMessage.newEntry) {
+                        ensureProfilePictureForNotification(socketMessage.event.creatorId)
                         NotificationManager.showNotification(
                             titletext = getString(Res.string.new_event_noti_title, socketMessage.event.creatorName),
                             bodytext = socketMessage.event.title,
-                            notiId = NotiId.Integ(NotiIdType.EVENT.baseId)
+                            notiId = NotiId.Integ(NotiIdType.EVENT.baseId),
+                            avatarUserId = socketMessage.event.creatorId,
+                            kind = NotificationKind.SOCIAL,
                         )
                     }
                 }
@@ -516,7 +565,99 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
             is SocketConnectionMessage.MessageAck -> Unit
 
         }
+    } catch (e: CancellationException) {
+        throw e
     } catch (e: Exception) {
         e.printStackTrace()
+        logSocketError("Handling a socket message failed", e)
+    }
+}
+
+/**
+ * Shows a notification for every reaction someone else added to one of our own messages, found
+ * by comparing the stored message ([before]) with the update ([after]). Like messages, it stays
+ * silent while that chat is on screen.
+ */
+private suspend fun notifyNewReactions(
+    ownId: String,
+    msgId: String,
+    before: Message,
+    after: Message,
+    userLocalDataSource: UserLocalDataSource,
+    groupLocalDataSource: GroupLocalDataSource,
+) {
+    if (after.senderId != ownId) return
+
+    val previous = before.reactions.map { it.userId to it.content }.toSet()
+    val added = after.reactions.filter { it.userId != ownId && (it.userId to it.content) !in previous }
+    if (added.isEmpty()) return
+
+    val group = if (after.groupMessage) groupLocalDataSource.getGroupById(after.receiverId) else null
+
+    added.forEach { reaction ->
+        try {
+            val reactorName = userLocalDataSource.getUserById(reaction.userId)?.displayName
+                ?: group?.members?.find { it.userId == reaction.userId }?.memberName
+                ?: ""
+            val content = reactionNotificationContent(
+                msgId = msgId,
+                reactorId = reaction.userId,
+                reactorName = reactorName,
+                emoji = reaction.content,
+                messageType = after.msgType,
+                groupMessage = after.groupMessage,
+                groupId = if (after.groupMessage) after.receiverId else "",
+            )
+            val chatId = content.chatId
+            if (chatId != null && OpenChatTracker.isSeen(chatId = chatId, isGroup = after.groupMessage)) {
+                KoinPlatform.getKoin().get<ApplicationScope>().launch {
+                    try {
+                        if (!OpenChatTracker.isSeenAfterConfirmDelay(chatId = chatId, isGroup = after.groupMessage)) {
+                            NotificationManager.showNotification(content)
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        logSocketError("Delayed reaction notification for message $msgId failed", e)
+                    }
+                }
+            } else {
+                NotificationManager.showNotification(content)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logSocketError("Reaction notification for message $msgId failed", e)
+        }
+    }
+}
+
+/** Plain last-resort notification for a socket message whose normal notification failed. Never throws. */
+private suspend fun showFallbackMessageNotification(message: Message) {
+    try {
+        val chatId = if (message.groupMessage) message.receiverId else message.senderId
+        val body = message.content.takeIf { message.msgType == MessageType.TEXT && it.isNotBlank() }
+            ?: runCatching { getString(Res.string.you_have_new_messages) }.getOrDefault("")
+        NotificationManager.showNotification(
+            NotificationContent(
+                id = chatId.hashCode().absoluteValue,
+                title = message.senderAsString.ifBlank { NOTIFICATION_FALLBACK_TITLE },
+                body = body,
+                chatId = chatId.ifBlank { null },
+                groupChat = message.groupMessage,
+                kind = NotificationKind.MESSAGE,
+            )
+        )
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        logSocketError("Fallback notification for message ${message.id} failed", e)
+    }
+}
+
+/** Socket problems go to the app log too, not only to the console. Never throws. */
+private suspend fun logSocketError(message: String, e: Throwable) {
+    runCatching {
+        KoinPlatform.getKoin().get<Logger>().logError("[Socket] $message: ${e::class.simpleName}: ${e.message}")
     }
 }

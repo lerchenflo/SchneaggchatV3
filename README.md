@@ -27,9 +27,10 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit
 - Schneagg Rodeo verbessert
 - Umfragen: Einfachere Einstellungen
+- Benachrichtigungen: Profilbilder bei Chats, Reaktionen, Freundschaftsanfragen, Events und Geburtstagen, Chats gebündelt mit älteren Nachrichten, Klick auf Reaktion öffnet Chat, Kanäle pro Typ in Systemeinstellungen (Nachrichten, Reaktionen, Freunde & Events, Allgemein)
 
 #### Bugfixes
-- Benachrichtigungen: Notification fix
+- Benachrichtigungen: Notification fix, Reaktionen bei offener App zeigen Benachrichtigung, Fallback-Benachrichtigung bei Fehlern, fehlgeschlagene Benachrichtigungen im Log, Chat öffnen entfernt immer alle Benachrichtigungen (auch Reaktionen), Inline-Antwort ohne doppelten Ton und Ladeanzeige endet immer, bei ausbleibenden Push-Nachrichten Benachrichtigung „Neue Nachrichten“ und Sync
 - Chat: Lange Chats laden fix
 - Übersetzungen verbessert
 - Spiele: Scroll fix in Auswahl
