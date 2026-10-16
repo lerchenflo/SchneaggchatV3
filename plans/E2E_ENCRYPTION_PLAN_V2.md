@@ -33,7 +33,7 @@ Supersedes `E2E_ENCRYPTION_PLAN.md` (v1). Same repos, same boundary philosophy, 
   - send-echo: server-response upsert (:533-584, takes `content` from the response at :547);
   - sync: `syncMessages` (was `messageIdSync`, :703-802), mapper call :759;
   - socket: `SocketConnectionMessage.kt` `MessageChange` handler (:190-266), mapper call :198, notification :217-246.
-  Sync + socket funnel through `MessageResponseMapper.toDomainMessage` (`datasource/network/requestResponseDataClasses/MessageResponseMapper.kt:9-45`, non-suspend, takes server `content` at :19) — must become `suspend`. Edit (`editMessage` :205-248) also writes back server content (:238).
+  Sync + socket funnel through `MessageResponseMapper.toDomainMessage` (`chat/data/remote/dto/MessageResponseMapper.kt:9-45`, non-suspend, takes server `content` at :19) — must become `suspend`. Edit (`editMessage` :205-248) also writes back server content (:238).
 - Content currently logged, removed by the migration release: `chat/data/remote/KtorMessageRemoteDataSource.kt:58,130` (`println`), `Message.toString`, desktop `Notifier.jvm.kt:53`.
 
 ## Decisions
@@ -75,7 +75,7 @@ All primitives from `dev.whyoleg.cryptography` 0.6.0. Every HKDF/HMAC use gets a
 
 ### Decrypt-miss healing (the Matrix lesson)
 
-A message can arrive before its session share (offline devices, lost socket frames). Never block sync: store the raw envelope in `MessageDto.pendingContent`, show a "waiting for key / could not decrypt" placeholder in `content`, and run a re-decrypt pass over all `pendingContent` rows after every share pickup and after backup restore. Designed in from day one — it is the single biggest UX failure mode in real Matrix clients.
+A message can arrive before its session share (offline devices, lost socket frames). Never block sync: store the raw envelope in `MessageEntity.pendingContent`, show a "waiting for key / could not decrypt" placeholder in `content`, and run a re-decrypt pass over all `pendingContent` rows after every share pickup and after backup restore. Designed in from day one — it is the single biggest UX failure mode in real Matrix clients.
 
 ---
 
@@ -112,8 +112,8 @@ Repo: `SchneaggchatV3`, `composeApp/src/commonMain`, new package `utilities/cryp
    - `KeyBackup` (BK wrap/unwrap, entry encrypt/decrypt)
    - `SafetyNumber`
 2. `E2eEncryptionManager` (interface + one Koin singleton impl in `di/Modules.kt`, injected into the `OfflineFirstMessageRepository` and `RemoteAuthRepository` constructors; behind the interface so ViewModel and repository tests use a `FakeE2eEncryptionManager`): the only class the data layer talks to. Chat-generic API: `ensureKeysOnLogin(password)`, `encryptFor(chatId): Envelope`, `decrypt(envelope, chatId, senderId): String?`, `onChatChanged(chat)` (membershipVersion / member diff → rotate + heal), `pickUpShares()`, `healOutboundShares(chatId)`, `redecryptPending()`.
-3. Persistence: Room table `E2eSessionDto` (sessionId, chatId, senderId, membershipVersion, ratchet, idx, initialRatchet?-if-own-and-FULL, sessionSigPub/priv-if-own, sharedWith: List<userId>, createdAt, msgCount); `UserDto` + `identityPub/spkPub/spkSig/spkId/verified/keyChangedAt`; `MessageDto` + `encrypted: Boolean` + `pendingContent: String?`. **One** DB bump 88 → 89. IK/SPK privates + BK in KSafe: new `SecureKey` entries `E2E_IDENTITY_KEY`, `E2E_SPK_KEYS`, `E2E_BACKUP_KEY` (auto-wiped by `clearSessionCredentials()`; note `SessionTerminator.deleteAllAppData()` (`app/data/LocalSessionTerminator.kt:37-44`) does *not* clear KSafe — sessions die with the Room wipe, keys survive, backup restore covers the gap).
-4. Remote data sources (`<feature>/data/remote/`, e.g. `MessageRemoteDataSource` / `KtorMessageRemoteDataSource`, `UserRemoteDataSource`; a new one for the key endpoints): the Phase-0 endpoints; `encryptionVersion` + `membershipVersion` on message DTOs (`datasource/network/requestResponseDataClasses/MessageNetworkDtos.kt`, sent as 0 / null for now); new `UserResponse` fields (`UserNetworkDtos.kt`) mapped into `UserDto`.
+3. Persistence: Room table `E2eSessionEntity` (sessionId, chatId, senderId, membershipVersion, ratchet, idx, initialRatchet?-if-own-and-FULL, sessionSigPub/priv-if-own, sharedWith: List<userId>, createdAt, msgCount); `UserEntity` + `identityPub/spkPub/spkSig/spkId/verified/keyChangedAt`; `MessageEntity` + `encrypted: Boolean` + `pendingContent: String?`. **One** DB bump 88 → 89. IK/SPK privates + BK in KSafe: new `SecureKey` entries `E2E_IDENTITY_KEY`, `E2E_SPK_KEYS`, `E2E_BACKUP_KEY` (auto-wiped by `clearSessionCredentials()`; note `SessionTerminator.deleteAllAppData()` (`app/data/LocalSessionTerminator.kt:37-44`) does *not* clear KSafe — sessions die with the Room wipe, keys survive, backup restore covers the gap).
+4. Remote data sources (`<feature>/data/remote/`, e.g. `MessageRemoteDataSource` / `KtorMessageRemoteDataSource`, `UserRemoteDataSource`; a new one for the key endpoints): the Phase-0 endpoints; `encryptionVersion` + `membershipVersion` on message DTOs (requests in `chat/data/remote/dto/MessageNetworkDtos.kt`, `MessageResponse` in `datasource/network/dto/MessageNetworkDtos.kt`, sent as 0 / null for now); new `UserResponse` fields (`datasource/network/dto/UserNetworkDtos.kt`) mapped into `UserEntity`.
 5. Login (`RemoteAuthRepository.login`, `login/data/RemoteAuthRepository.kt:174-219`, password in scope) and signup (`SignUpViewModel.kt:219-235` chains login): after token save, before `dataSync` → `ensureKeysOnLogin(password)`: try backup restore (fetch + PBKDF2 + unwrap + import entries), else generate IK/SPK/BK, publish keys, upload backup. Autologin (`RemoteAuthRepository.loadSavedLoginConfig` :130-171, no password): keys already in KSafe, nothing to do. Password change (`RemoteAuthRepository.changePassword` :252-262, `PrivacyAndSecurityViewModel.kt:75-89`): re-wrap BK, send with the request (new optional fields on the server DTO).
 6. Smoke tests: ratchet vectors, ECIES round-trip, backup round-trip on Android/iOS/desktop (P-256 + GCM via provider-optimal on all three).
 
@@ -151,7 +151,7 @@ Additional:
 
 ## Phase 3 — Verification & reset UX
 
-1. Safety-number screen per peer: reachable from DIRECT chat details and from every member row in GROUP chat details (event groups contain non-friends — TOFU applies to them too). Verified flag on `UserDto`.
+1. Safety-number screen per peer: reachable from DIRECT chat details and from every member row in GROUP chat details (event groups contain non-friends — TOFU applies to them too). Verified flag on `UserEntity`.
 2. Key-change detection: peer's `identityPub` changed → banner in every chat containing that peer ("Encryption keys changed — verify again"), verified flag reset. This is what makes server key-substitution *detectable*.
 3. Backup unrecoverable on login (wrong-password decrypt failure or `backupInvalidatedAt`): dialog "Encrypted history can't be recovered. Generate new keys?" → new IK/SPK/BK, publish (server wipes stale shares/backup entries), peers get key-change warnings, chats re-share current sessions to the new SPK via self-healing. Old encrypted messages show placeholders.
 

@@ -37,8 +37,8 @@ V3 keeps the V2 semantics (one rating per user per entry, whole-star input, half
 | Server validation | `util/ValidationUtils.kt:141` | `validatePicture()`: jpeg/png/gif/webp, ≤ 3 MB; `application.properties` multipart max-file 3 MB / max-request 10 MB |
 | Server per-user-per-parent precedent | `group/model/GroupMember.kt:16` | `@CompoundIndex(name = "userid_groupId_idx", def = "{'userid': 1, 'groupId': 1}", unique = true)` |
 | Client domain | `schneaggmap/domain/MapEntry.kt` | Plain data class, `updatedByName` resolved server side |
-| Client Room | `schneaggmap/data/dtos/MapEntryDto.kt`, `datasource/database/Daos.kt:431 MapEntryDao` | DB version **84**, `fallbackToDestructiveMigration(dropAllTables = true)` (`CreateDatabase.kt:12`), `RoomTypeConverters.stringListToString` exists (:121) |
-| Client wire | `datasource/network/requestResponseDataClasses/MapNetworkDtos.kt` + `MapResponseMapper.kt` | `MapEntryResponse`, `MapSyncResponse`, `MapEntryRequest` |
+| Client Room | `schneaggmap/data/local/entity/MapEntryEntity.kt` (+ `MapEntryEntityMapper.kt`), `datasource/database/Daos.kt:431 MapEntryDao` | DB version **84**, `fallbackToDestructiveMigration(dropAllTables = true)` (`CreateDatabase.kt:12`), `RoomTypeConverters.stringListToString` exists (:121) |
+| Client wire | `schneaggmap/data/remote/dto/MapNetworkDtos.kt` + `MapResponseMapper.kt`; `MapEntryResponse` in `datasource/network/dto/MapNetworkDtos.kt` (the socket uses it) | `MapEntryResponse`, `MapSyncResponse`, `MapEntryRequest` |
 | Client network | `schneaggmap/data/remote/MapRemoteDataSource.kt` + `KtorMapRemoteDataSource.kt` | `mapSync`, `upsertMapEntry`, `deleteMapEntry`; `ServerClient.safePostMultipart`, `appendProfilePic`, `appendFile`, `appendJsonPart` in `datasource/network/KtorHttpHelpers.kt` |
 | Client sync | `schneaggmap/data/OfflineFirstMapRepository.kt:33 syncMapEntries()` (was `AppRepository.mapEntryIdSync()`) | Runs inside `dataSync(reason = "mapInit")` job type `MAP` (`app/data/DefaultDataSyncCoordinator.kt:189`), triggered from `SchneaggmapViewModel.kt:479` on map open |
 | Client CRUD | `OfflineFirstMapRepository.kt:64-107` | Network call → on success write to `MapLocalDataSource` (Room) |
@@ -97,19 +97,19 @@ Rules:
 
 ### 2.3 Client Room
 
-`schneaggmap/data/dtos/MapEntryRatingDto.kt` → `@Entity(tableName = "map_entry_ratings", indices = [Index("entryId")])`, `imageIds: List<String>` via existing `stringListToString`. DB version **84 → 85** (destructive migration already configured, no migration script needed).
+`schneaggmap/data/local/entity/MapEntryRatingEntity.kt` → `@Entity(tableName = "map_entry_ratings", indices = [Index("entryId")])`, `imageIds: List<String>` via existing `stringListToString`. DB version **84 → 85** (destructive migration already configured, no migration script needed).
 
 `MapEntryRatingDao` (in `Daos.kt`, next to `MapEntryDao`):
 
 ```kotlin
-@Upsert suspend fun upsert(dto: MapEntryRatingDto)
+@Upsert suspend fun upsert(dto: MapEntryRatingEntity)
 @Query("DELETE FROM map_entry_ratings WHERE id = :id") suspend fun delete(id: String)
 @Query("DELETE FROM map_entry_ratings WHERE entryId = :entryId") suspend fun deleteByEntryId(entryId: String)
 @Query("DELETE FROM map_entry_ratings") suspend fun clear()             // add to the existing clearAll() logout path
 @Query("SELECT id, updatedAt FROM map_entry_ratings") suspend fun getIdsWithChangeDates(): List<IdChangeDate>
-@Query("SELECT * FROM map_entry_ratings WHERE entryId = :entryId ORDER BY updatedAt DESC") fun getForEntryFlow(entryId: String): Flow<List<MapEntryRatingDto>>
+@Query("SELECT * FROM map_entry_ratings WHERE entryId = :entryId ORDER BY updatedAt DESC") fun getForEntryFlow(entryId: String): Flow<List<MapEntryRatingEntity>>
 @Query("SELECT entryId, AVG(stars) AS average, COUNT(*) AS count FROM map_entry_ratings GROUP BY entryId") fun getSummariesFlow(): Flow<List<RatingSummary>>
-@Query("SELECT * FROM map_entry_ratings WHERE userId = :userId ORDER BY updatedAt DESC") fun getByUserFlow(userId: String): Flow<List<MapEntryRatingDto>>  // for "my ratings" (phase 4)
+@Query("SELECT * FROM map_entry_ratings WHERE userId = :userId ORDER BY updatedAt DESC") fun getByUserFlow(userId: String): Flow<List<MapEntryRatingEntity>>  // for "my ratings" (phase 4)
 ```
 
 ---
@@ -160,7 +160,7 @@ Run `schneaggchat-security-check` on the four new endpoints (ownership of `keepI
 
 ### 4.2 Wire + mappers
 
-`MapNetworkDtos.kt`: `MapRatingResponse`, `MapRatingSyncResponse`, `MapRatingRequest(entryId, stars, text, keepImageIds)`. `MapResponseMapper.kt`: `MapRatingResponse.toMapEntryRating()`, `MapEntryRating.toDto()`, `MapEntryRatingDto.toMapEntryRating()`, `RatingSummary` needs no mapper (Room projection class).
+`MapNetworkDtos.kt`: `MapRatingResponse` in `datasource/network/dto/` (the socket's `MapRatingChange` uses it), `MapRatingSyncResponse`, `MapRatingRequest(entryId, stars, text, keepImageIds)` in `schneaggmap/data/remote/dto/`. `MapResponseMapper.kt`: `MapRatingResponse.toMapEntryRating()`. `schneaggmap/data/local/entity/MapEntryRatingEntityMapper.kt`: `MapEntryRating.toEntity()`, `MapEntryRatingEntity.toMapEntryRating()`. `RatingSummary` needs no mapper (Room projection class).
 
 `MapRemoteDataSource` / `KtorMapRemoteDataSource` (`schneaggmap/data/remote/`):
 

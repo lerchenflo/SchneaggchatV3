@@ -16,10 +16,10 @@ Companion docs: `E2E_ENCRYPTION_PLAN_V2.md`, `OFFLINE_FIRST_ANALYSIS.md` (same f
 
 | Collection | Client entity | Server model | Sync shape | Live push | Scope |
 |---|---|---|---|---|---|
-| map entries | `MapEntryDto` (`map_entries`) | `MapEntry` (`map_entries`) | **IdTimeStamp**: client POSTs `List<IdTimeStamp(id, updatedAt)>`, server diffs by `updatedAt` (`SchneaggmapService.mapSync`) | `MapChange` broadcast to everyone | global |
-| events | `EventDto` (`events`) | `Event` (`events`) | IdTimeStamp, filtered by visibility (`EventService.eventIdSync`) | `EventChange` targeted to invited + friends | per user |
-| groups | `GroupDto` + `GroupMemberDto` | `Group` + `GroupMember` | IdTimeStamp (`/groups/sync`) | `GroupChange` targeted to members | per user |
-| messages | `MessageDto` (has `version`) | `Message` (has `version`) | **Version watermark**: `GET /messages/sync?since=` bounded by `VersionCounterService.safeWatermark`, race-safe, deletions on every page | `MessageChange` targeted | per user + group membership |
+| map entries | `MapEntryEntity` (`map_entries`) | `MapEntry` (`map_entries`) | **IdTimeStamp**: client POSTs `List<IdTimeStamp(id, updatedAt)>`, server diffs by `updatedAt` (`SchneaggmapService.mapSync`) | `MapChange` broadcast to everyone | global |
+| events | `EventEntity` (`events`) | `Event` (`events`) | IdTimeStamp, filtered by visibility (`EventService.eventIdSync`) | `EventChange` targeted to invited + friends | per user |
+| groups | `GroupEntity` + `GroupMemberEntity` | `Group` + `GroupMember` | IdTimeStamp (`/groups/sync`) | `GroupChange` targeted to members | per user |
+| messages | `MessageEntity` (has `version`) | `Message` (has `version`) | **Version watermark**: `GET /messages/sync?since=` bounded by `VersionCounterService.safeWatermark`, race-safe, deletions on every page | `MessageChange` targeted | per user + group membership |
 
 Only `SyncCollection.MESSAGES` exists in the counter enum today; the comment there already reserves `USERS/GROUPS/EVENTS/MAP` for a later migration.
 
@@ -304,8 +304,10 @@ groupextensions/
     split/SplitCalculator.kt       computeBalances(), suggestSettlements()  (pure)
     route/RouteMetrics.kt          totalDistanceMeters() (pure, sums utilities/MapUtils.distanceMeters over consecutive points; formatDistance exists there too)
   data/
-    dtos/GroupExtensionDto.kt      @Entity("group_extensions"), index on ownerId
-    dtos/GroupExtensionItemDto.kt  @Entity("group_extension_items"), indices on extensionId and ownerId
+    local/entity/GroupExtensionEntity.kt      @Entity("group_extensions"), index on ownerId
+    local/entity/GroupExtensionItemEntity.kt  @Entity("group_extension_items"), indices on extensionId and ownerId
+    remote/dto/GroupExtensionNetworkDtos.kt   ExtensionRequest, ItemRequest, GroupExtensionSyncResponse (GroupExtensionResponse + GroupExtensionItemResponse go to datasource/network/dto/, the socket uses them)
+    remote/dto/GroupExtensionResponseMapper.kt toGroupExtension()/toEntity()/toItem() (same trio as MapResponseMapper; domain <-> entity mappers go to local/entity/, like MapEntryEntityMapper.kt)
     GroupExtensionLocalDataSource.kt          Room-only, same shape as EventLocalDataSource
     OfflineFirstGroupExtensionRepository.kt   network + sync + CRUD (§4.3), implements groupextensions/domain/GroupExtensionRepository
   presentation/
@@ -318,9 +320,6 @@ groupextensions/
     routeplanner/RoutePlannerScreen (maplibre) + MapEntryPickerSheet + ViewModel + State + Action
 schneaggmap/domain/
     MapEntryFilter.kt              filterMapEntries(entries, term, groups, types) - extracted from SchneaggmapViewModel's search (≈ lines 95-102) and reused there
-datasource/network/requestResponseDataClasses/
-    GroupExtensionNetworkDtos.kt   ExtensionRequest, ItemRequest, GroupExtensionResponse, GroupExtensionItemResponse, GroupExtensionSyncResponse
-    GroupExtensionResponseMapper.kt toGroupExtension()/toDto()/toItem() (same trio as MapResponseMapper)
 ```
 
 ### 4.2 Room

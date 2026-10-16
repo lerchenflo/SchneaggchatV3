@@ -30,9 +30,9 @@ Paths: server = `SchneaggchatV3server/src/main/kotlin/com/lerchenflo/schneaggcha
 
 ### 1.2 Client
 - Room `C/datasource/database/Database.kt`, **version 87**, destructive migration (`CreateDatabase.kt:12`). Persisted sync cursor = `MAX(version)` in Room (`Daos.kt:354`).
-- `MessageDto` (`C/chat/data/dtos/MessageDto.kt`): `senderId`, `receiverId`, `groupMessage`; two OR-arm indexes + one covering index for aggregates.
-- Chat identity is derived in many places with the same CASE: `Daos.kt:166-207`, `Daos.kt:223-341` (`(senderId = :id OR receiverId = :id) AND groupMessage = :gruppe`), `Daos.kt:385-401` (unread badge; DM arm requires `frienshipStatus = ACCEPTED`), `OfflineFirstChatListRepository.chatKey` (`C/chat/data/OfflineFirstChatListRepository.kt:250`), `SocketConnectionMessage.kt:224`, `MessageNotificationMapper.kt:30`, search (`OfflineFirstChatListRepository.kt:183-198`), `Message.isThisChatMessage` (`chat/domain/Message.kt:85`), `MessageWithReadersDto.isThisChatMessage` (:39).
-- `GroupDto` + `GroupMemberDto` exist only for groups; DMs have no chat row.
+- `MessageEntity` (`C/chat/data/local/entity/MessageEntity.kt`): `senderId`, `receiverId`, `groupMessage`; two OR-arm indexes + one covering index for aggregates.
+- Chat identity is derived in many places with the same CASE: `Daos.kt:166-207`, `Daos.kt:223-341` (`(senderId = :id OR receiverId = :id) AND groupMessage = :gruppe`), `Daos.kt:385-401` (unread badge; DM arm requires `frienshipStatus = ACCEPTED`), `OfflineFirstChatListRepository.chatKey` (`C/chat/data/OfflineFirstChatListRepository.kt:250`), `SocketConnectionMessage.kt:224`, `MessageNotificationMapper.kt:30`, search (`OfflineFirstChatListRepository.kt:183-198`), `Message.isThisChatMessage` (`chat/domain/Message.kt:85`), `MessageWithReaders.isThisChatMessage` (:39).
+- `GroupEntity` + `GroupMemberEntity` exist only for groups; DMs have no chat row.
 - Pinned chats + drafts in DataStore keyed by `(chatId, group)` (`Preferencemanager.kt:124-126, 306-357, 425-479`; drafts wrapped by `settings/data/SettingsRepository.kt:27-36`).
 - Navigation `Route.Chat(chatId, isGroup, …)`, `ChatDetails(chatId, isGroup)`, `ChatSharedContent(chatId, isGroup, …)` (`app/navigation/Route.kt:16,33,38`); Koin passes `(chatId, isGroup)` to ViewModels (`di/Modules.kt:209-243`).
 - Notifications: `PayloadDecoder.kt` (`chatTargetId` = groupId or senderId, decodes on `_class`), Android extras `EXTRA_CHAT_ID` + `EXTRA_GROUP_CHAT`, notification id = `chatId.hashCode()`. iOS NSE (`iosApp/SchneaggchatNotificationServiceExtension/NotificationPayload.swift`) decodes on `type`, parses `groupMessage`.
@@ -97,21 +97,21 @@ The member set of a DIRECT chat never changes. `membershipVersion` is still bump
 ### 2.3 Client Room (DB 87 → 88)
 
 ```
-ChatDto        (replaces GroupDto)
+ChatEntity        (replaces GroupEntity)
   id, type, partnerUserId?   (DIRECT: the other member, denormalized for user→chat lookup)
   name?, profilePictureUrl?, description?, expiresAt?, createDate, updatedAt, profilePicUpdatedAt
   membershipVersion, historyVisibility, muted (own flag)
   membershipState    ACTIVE | LEFT   (D8: LEFT = removed/left, read-only, history kept)
   backfillDoneBeforeVersion Long?   per-chat backfill progress (§3.3)
-ChatMemberDto  (replaces GroupMemberDto)   unique {chatId, userId}, index {userId}
+ChatMemberEntity  (replaces GroupMemberEntity)   unique {chatId, userId}, index {userId}
   chatId, userId, joinDate, admin, color, memberName
-MessageDto
+MessageEntity
   + chatId (indexed), + createdVersion, senderId nullable; - receiverId, - groupMessage
 ```
 
 Message indexes: `{chatId, sendDate}` (chat window and all `…ForChatFlow` queries), covering `{readByMe, myMessage, chatId, msgType, sent, sendDate}` (aggregates, unread badge); `id`, `sent`, `version`, `clientMessageId` unchanged.
 
-`UserDto` keeps user/friendship fields; `notisMuted` moves to `ChatDto.muted`. `UserDto` must also hold **non-friend co-members** (§3.1 user reachability).
+`UserEntity` keeps user/friendship fields; `notisMuted` moves to `ChatEntity.muted`. `UserEntity` must also hold **non-friend co-members** (§3.1 user reachability).
 
 ---
 
@@ -152,7 +152,7 @@ chatId IN myChatIds AND version > since AND version <= watermark
 
 Backfill replaces it: `GET /chats/{id}/messages?beforeVersion=&limit=` ordered by `createdVersion` desc, filtered by visible-to-member.
 - Trigger: a chat appears in `/chats/sync` (new chat, or `joinedAtVersion` newer than the stored one ⇒ rejoin).
-- Bound: the client records `upperBound = current sync cursor` at the moment the membership first appears, backfills `createdVersion <= upperBound` page by page, and persists progress in `ChatDto.backfillDoneBeforeVersion`. Everything above `upperBound` arrives via the normal version stream. Survives app kills and partial backfills; rejoin resets progress.
+- Bound: the client records `upperBound = current sync cursor` at the moment the membership first appears, backfills `createdVersion <= upperBound` page by page, and persists progress in `ChatEntity.backfillDoneBeforeVersion`. Everything above `upperBound` arrives via the normal version stream. Survives app kills and partial backfills; rejoin resets progress.
 - Also gives "load older messages" for free later.
 
 Removed members: no membership ⇒ no sync, no backfill, no access by id. (Today they keep seeing their own sent group messages via `senderId == u`.) Locally the chat becomes `membershipState = LEFT`: history stays readable, composer disabled, no new messages (D8). Re-adding resets it to ACTIVE and triggers a backfill.
@@ -187,7 +187,7 @@ No server-enforced gate in this release. Old clients fail with errors until upda
 ## 4. Client changes (`SchneaggchatV3`)
 
 ### 4.1 Data layer
-- **Room 87 → 88** (§2.3). `GroupDto`/`GroupMemberDto` → `ChatDto`/`ChatMemberDto`; `GroupWithMembersDto` → `ChatWithMembersDto`; `ChatAggregateDto` (:9) keyed on `chatId` only.
+- **Room 87 → 88** (§2.3). `GroupEntity`/`GroupMemberEntity` → `ChatEntity`/`ChatMemberEntity`; `GroupWithMembers` → `ChatWithMembers`; `ChatAggregate` (:9) keyed on `chatId` only.
 - **Daos** (`C/datasource/database/Daos.kt`) — every chat query `WHERE chatId = :chatId`:
   - `getChatAggregatesFlow` (:166-182), `getLastMessagePerChatFlow` (:192-207): `GROUP BY chatId`, no CASE.
   - `getMessagesByUserIdFlow` (:223-241) → `getMessagesByChatIdFlow`, single arm.
@@ -204,19 +204,19 @@ No server-enforced gate in this release. Old clients fail with errors until upda
     - `setAllChatMessagesRead(chatId, ts)` (:888-907), called by `markChatReadInBackground` (:914-936).
   - `OfflineFirstChatListRepository` (`C/chat/data/OfflineFirstChatListRepository.kt`, interface `C/chat/domain/ChatListRepository`):
     - `getChatListFlow`: DIRECT chats only while friendship ACCEPTED (D1); LEFT GROUP chats shown read-only.
-    - `getChatListFlow` (:73-136): chats + aggregates; DIRECT rows join partner `UserDto`.
+    - `getChatListFlow` (:73-136): chats + aggregates; DIRECT rows join partner `UserEntity`.
     - `getMessageSearchFlow` (:160-214): chat from `message.chatId`.
     - `chatKey()` (:250-254) deleted.
     - `setPinnedChat` (:236-243).
   - `OfflineFirstGroupRepository` (`C/chat/data/OfflineFirstGroupRepository.kt`): `syncGroups` (was `groupIdSync`, :125-194) → `chatIdSync` (`/chats/sync`); `leftChats` → `membershipState = LEFT` (keep messages, D8); `deletedChats` → purge (replaces the purge in `DefaultDataSyncCoordinator.dataSync`, `C/app/data/DefaultDataSyncCoordinator.kt:237`, and `RoomGroupDataSource.deleteGroup` :47-54). `createGroup` (:60-107) → `/chats/create`.
   - `OfflineFirstUserRepository`: `sendWake(chatId, reason)` (`C/chat/data/OfflineFirstUserRepository.kt:508-514`).
   - **Unknown chatId** in a socket frame (`SocketConnectionMessage`) / push (`OfflineFirstMessageRepository.applyPushMessage`) / sync row (`OfflineFirstMessageRepository.syncMessages`) → trigger `chatIdSync` before handling (covers the accept-ordering race, §3.1).
-- `MessageResponseMapper.toDomainMessage` (`C/datasource/network/requestResponseDataClasses/MessageResponseMapper.kt:9-45`): `chatId`, `createdVersion`, nullable `senderId`.
+- `MessageResponseMapper.toDomainMessage` (`C/chat/data/remote/dto/MessageResponseMapper.kt:9-45`): `chatId`, `createdVersion`, nullable `senderId`.
 - **Domain**: `Message` loses `receiverId`, `groupMessage`, `isGroupMessage()`, `isThisChatMessage()`; gains `chatId`. UI reads "is group" from the chat (`RepliedMessagePreview.kt:71`, `MessageContent.kt:63`, `UserButton.kt:265`, `MessageDisplayMapper.kt:48`). `Group` → `Chat`; `ChatListItem.isGroup` → `type` + `partnerUserId`; `MessageSearchResult.kt:12`.
-- **Remote data sources + network DTOs** (was `NetworkUtils`): message DTOs (`datasource/network/requestResponseDataClasses/MessageNetworkDtos.kt`), `/messages/setread` (`C/chat/data/remote/KtorMessageRemoteDataSource.kt:146`), `/groups/*` (`C/chat/data/remote/KtorGroupRemoteDataSource.kt`, DTOs in `GroupNetworkDtos.kt`) → `/chats/*`, `WakeRequest` (`UserNetworkDtos.kt:170`), `PersonalUserSettings.pinnedChats` / `UserSettingsRequest.pinnedChats` (`SettingsNetworkDtos.kt:23, :50`). Remove content `println`s (`KtorMessageRemoteDataSource.kt:58, :130`).
+- **Remote data sources + network DTOs** (was `NetworkUtils`): message DTOs (`C/chat/data/remote/dto/MessageNetworkDtos.kt`; `MessageResponse` in `C/datasource/network/dto/MessageNetworkDtos.kt`), `/messages/setread` (`C/chat/data/remote/KtorMessageRemoteDataSource.kt:146`), `/groups/*` (`C/chat/data/remote/KtorGroupRemoteDataSource.kt`, DTOs in `C/chat/data/remote/dto/GroupNetworkDtos.kt`, `GroupResponse` in `C/datasource/network/dto/GroupNetworkDtos.kt`) → `/chats/*`, `WakeRequest` (`C/chat/data/remote/dto/UserNetworkDtos.kt:61`), `PersonalUserSettings.pinnedChats` / `UserSettingsRequest.pinnedChats` (`C/datasource/network/dto/SettingsNetworkDtos.kt:23, :50`). Remove content `println`s (`KtorMessageRemoteDataSource.kt:58, :130`).
 - **Socket** (`C/datasource/network/socket/SocketConnectionMessage.kt`): `MessageChange` handler (:181-256) uses `message.chatId`; `GroupChange` (:390-424) → `ChatChange`.
 - **Preferences**: `PinnedChat(chatId, pinTimePoint)`, `Draft(chatId, text)` (`Preferencemanager.kt`, `SettingsRepository.kt:27-36`); local drafts dropped on upgrade.
-- **Events**: `events/data/dtos/EventDto.kt:14,22` (Room index on `groupId`), `EventNetworkDtos.kt:19`, `EventResponseMapper.kt`, `events/data/EventRepository.kt:29-30`, `events/domain/Event.kt` → `chatId`.
+- **Events**: `events/data/local/entity/EventEntity.kt:14,22` (Room index on `groupId`), `C/datasource/network/dto/EventNetworkDtos.kt:17` (`EventResponse`), `events/data/remote/dto/EventResponseMapper.kt`, `events/data/local/entity/EventEntityMapper.kt`, `events/data/EventRepository.kt:29-30`, `events/domain/Event.kt` → `chatId`.
 - **Profile pictures**: `PictureManager.kt:33` + android/ios/jvm actuals keep the `gruppe` path for GROUP chats; DIRECT chats render the partner's user picture.
 
 ### 4.2 Presentation & navigation
