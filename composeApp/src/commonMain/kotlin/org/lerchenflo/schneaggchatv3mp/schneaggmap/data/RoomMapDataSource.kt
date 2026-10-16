@@ -5,8 +5,8 @@ import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.database.MapEntryDao
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toDto
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.toEntity
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 
 class RoomMapDataSource(
@@ -19,7 +19,7 @@ class RoomMapDataSource(
         database.mapEntryDao().getMapEntryIdsWithChangeDates()
 
     override suspend fun upsertMapEntry(entry: MapEntry) =
-        database.mapEntryDao().upsert(entry.toDto())
+        database.mapEntryDao().upsert(entry.toEntity())
 
     override suspend fun deleteMapEntry(id: String) =
         database.mapEntryDao().delete(id)

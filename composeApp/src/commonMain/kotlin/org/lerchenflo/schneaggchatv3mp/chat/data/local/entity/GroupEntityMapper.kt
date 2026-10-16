@@ -1,10 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 
-fun GroupWithMembersDto.toGroup(): Group = Group(
+fun GroupWithMembers.toGroup(): Group = Group(
     id = this.group.id,
     name = this.group.name,
     profilePictureUrl = this.group.profilePictureUrl,
@@ -19,9 +19,9 @@ fun GroupWithMembersDto.toGroup(): Group = Group(
     }
 )
 
-/** Convert domain Group back to GroupDto (for persistence/transport) */
-fun Group.toDto(): GroupWithMembersDto = GroupWithMembersDto(
-    group = GroupDto(
+/** Convert domain Group back to GroupEntity (for persistence/transport) */
+fun Group.toEntity(): GroupWithMembers = GroupWithMembers(
+    group = GroupEntity(
         id = this.id,
         name = this.name,
         profilePictureUrl = this.profilePictureUrl,
@@ -33,11 +33,11 @@ fun Group.toDto(): GroupWithMembersDto = GroupWithMembersDto(
         notisMuted = this.notisMuted
     ),
     members = this.members.map { member ->
-        member.toDto()
+        member.toEntity()
     }
 )
 
-fun GroupMemberDto.toGroupMember(): GroupMember = GroupMember(
+fun GroupMemberEntity.toGroupMember(): GroupMember = GroupMember(
     localPk = localPk,
     groupId = groupId,
     userId = userId,
@@ -47,8 +47,8 @@ fun GroupMemberDto.toGroupMember(): GroupMember = GroupMember(
     memberName = memberName
 )
 
-/** Convert domain GroupMember -> persistence/transport GroupMemberDto */
-fun GroupMember.toDto(): GroupMemberDto = GroupMemberDto(
+/** Convert domain GroupMember -> persistence/transport GroupMemberEntity */
+fun GroupMember.toEntity(): GroupMemberEntity = GroupMemberEntity(
     localPk = localPk,
     groupId = groupId,
     userId = userId,

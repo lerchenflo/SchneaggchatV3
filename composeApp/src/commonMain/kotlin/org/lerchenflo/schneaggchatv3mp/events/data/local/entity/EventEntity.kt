@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.events.data.dtos
+package org.lerchenflo.schneaggchatv3mp.events.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.Index
@@ -13,7 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
     tableName = "events",
     indices = [Index(value = ["groupId"])]
 )
-data class EventDto(
+data class EventEntity(
     @PrimaryKey val id: String,
     val creatorId: String,
     val type: EventType,

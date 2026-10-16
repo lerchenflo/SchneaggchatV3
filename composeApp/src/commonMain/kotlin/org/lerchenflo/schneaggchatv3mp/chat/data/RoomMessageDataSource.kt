@@ -3,14 +3,14 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ChatAggregateDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.ChatAggregate
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageReaderEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toMessage
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 
@@ -22,13 +22,13 @@ class RoomMessageDataSource(
 ) : MessageLocalDataSource {
 
     override suspend fun upsertMessage(message: Message){
-        val messageWithReadersDto = message.toDto()
+        val messageWithReadersDto = message.toEntity()
         upsertMessageWithReaders(messageWithReadersDto)
     }
 
     override suspend fun upsertMessages(messages: List<Message>) {
         messages.chunked(SQL_ID_CHUNK_SIZE).forEach { chunk ->
-            database.messageDao().upsertMessagesWithReaders(chunk.map { it.toDto() })
+            database.messageDao().upsertMessagesWithReaders(chunk.map { it.toEntity() })
         }
     }
 
@@ -38,31 +38,31 @@ class RoomMessageDataSource(
         }
     }
 
-    override suspend fun getMessageDtosByIds(ids: List<String>): List<MessageDto> {
+    override suspend fun getMessageEntitiesByIds(ids: List<String>): List<MessageEntity> {
         return ids.chunked(SQL_ID_CHUNK_SIZE).flatMap { chunk ->
-            database.messageDao().getMessageDtosByIds(chunk)
+            database.messageDao().getMessageEntitiesByIds(chunk)
         }
     }
 
-    override suspend fun getMessageDtosByClientMessageIds(clientMessageIds: List<String>): List<MessageDto> {
+    override suspend fun getMessageEntitiesByClientMessageIds(clientMessageIds: List<String>): List<MessageEntity> {
         return clientMessageIds.chunked(SQL_ID_CHUNK_SIZE).flatMap { chunk ->
-            database.messageDao().getMessageDtosByClientMessageIds(chunk)
+            database.messageDao().getMessageEntitiesByClientMessageIds(chunk)
         }
     }
 
     override suspend fun getMessageByClientMessageId(clientMessageId: String): Message? {
-        return database.messageDao().getMessageDtosByClientMessageIds(listOf(clientMessageId))
+        return database.messageDao().getMessageEntitiesByClientMessageIds(listOf(clientMessageId))
             .firstOrNull()
             ?.toMessage()
     }
 
     override suspend fun deleteMessage(id: String){
         deleteReadersForMessage(id)
-        deleteMessageDto(id)
+        deleteMessageEntity(id)
     }
 
     override suspend fun deleteMessage(lokalPk: Long) {
-        database.messageDao().deleteMessageDtoByPk(lokalPk)
+        database.messageDao().deleteMessageEntityByPk(lokalPk)
     }
 
     override suspend fun getLastSyncedMessageVersion(): Long {
@@ -139,9 +139,9 @@ class RoomMessageDataSource(
      * Update a message in the database
      */
     @Transaction
-    private suspend fun upsertMessageWithReaders(message: MessageWithReadersDto) {
+    private suspend fun upsertMessageWithReaders(message: MessageWithReaders) {
         //Upsert the message dto without readers
-        val upserted = database.messageDao().upsertMessageDto(message.messageDto)
+        val upserted = database.messageDao().upsertMessageEntity(message.messageDto)
 
         //if the readers are not empty, remove all existing an re - insert
         if (message.readers.isNotEmpty() && upserted.id != null){
@@ -162,14 +162,14 @@ class RoomMessageDataSource(
     /**
      * Insert new readers for a message
      */
-    private suspend fun insertReaders(readers: List<MessageReaderDto>){
+    private suspend fun insertReaders(readers: List<MessageReaderEntity>){
         database.messageReaderDao().upsertReaders(readers)
     }
 
     override suspend fun updatePictureUrl(messageId: String, newUrl: String) {
         val dbMessage = database.messageDao().getMessageById(messageId)
         if (dbMessage != null) {
-            database.messageDao().upsertMessageDto(
+            database.messageDao().upsertMessageEntity(
                 dbMessage.messageDto.copy(
                     pictureUrl = newUrl
                 )
@@ -180,7 +180,7 @@ class RoomMessageDataSource(
     override suspend fun updateAudioPath(messageId: String, newPath: String) {
         val dbMessage = database.messageDao().getMessageById(messageId)
         if (dbMessage != null) {
-            database.messageDao().upsertMessageDto(
+            database.messageDao().upsertMessageEntity(
                 dbMessage.messageDto.copy(
                     audioPath = newPath
                 )
@@ -199,7 +199,7 @@ class RoomMessageDataSource(
         }
     }
 
-    override fun getChatAggregatesFlow(ownId: String): Flow<List<ChatAggregateDto>> =
+    override fun getChatAggregatesFlow(ownId: String): Flow<List<ChatAggregate>> =
         database.messageDao().getChatAggregatesFlow(ownId)
 
     override fun getLastMessagePerChatFlow(ownId: String): Flow<List<Message>> =
@@ -213,12 +213,12 @@ class RoomMessageDataSource(
     }
 
 
-    private suspend fun deleteMessageDto(messageId: String) {
-        database.messageDao().deleteMessageDtoById(messageId)
+    private suspend fun deleteMessageEntity(messageId: String) {
+        database.messageDao().deleteMessageEntityById(messageId)
     }
 
-    private suspend fun deleteMessageDto(localpk: Long) {
-        database.messageDao().deleteMessageDtoByPk(localpk)
+    private suspend fun deleteMessageEntity(localpk: Long) {
+        database.messageDao().deleteMessageEntityByPk(localpk)
     }
 
 

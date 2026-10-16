@@ -3,11 +3,11 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toGroup
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toGroup
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 
@@ -16,7 +16,7 @@ class RoomGroupDataSource(
 ) : GroupLocalDataSource {
 
     override suspend fun upsertGroup(group: Group) {
-        val groupWithMembersDto = group.toDto()
+        val groupWithMembersDto = group.toEntity()
 
         database.groupDao().upsertGroupWithMembers(
             groupWithMembersDto.group,
@@ -65,7 +65,7 @@ class RoomGroupDataSource(
 
     @Transaction
     override suspend fun getGroupMembers(groupId: String): List<GroupMember> {
-        val gwm: GroupWithMembersDto? = database.groupDao().getGroupWithMembersById(groupId)
+        val gwm: GroupWithMembers? = database.groupDao().getGroupWithMembersById(groupId)
         // toGroup() maps the DTO relation to a domain Group which carries members
         return gwm?.toGroup()?.members ?: emptyList()
     }

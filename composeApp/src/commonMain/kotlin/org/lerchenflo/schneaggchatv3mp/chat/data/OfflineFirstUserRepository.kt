@@ -7,8 +7,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
@@ -121,7 +121,7 @@ class OfflineFirstUserRepository(
                         when (newUser) {
                             is UserResponse.FriendUserResponse -> {
                                 val existing = database.userDao().getUserbyId(newUser.id)
-                                database.userDao().upsert(UserDto(
+                                database.userDao().upsert(UserEntity(
                                     id = newUser.id,
                                     updatedAt = newUser.updatedAt,
                                     name = newUser.username,
@@ -163,7 +163,7 @@ class OfflineFirstUserRepository(
                             }
                             is UserResponse.SelfUserResponse -> {
                                 val existing = database.userDao().getUserbyId(newUser.id)
-                                database.userDao().upsert(UserDto(
+                                database.userDao().upsert(UserEntity(
                                     id = newUser.id,
                                     updatedAt = newUser.updatedAt,
                                     name = newUser.username,
@@ -201,7 +201,7 @@ class OfflineFirstUserRepository(
                             }
                             is UserResponse.SimpleUserResponse -> {
                                 val existing = database.userDao().getUserbyId(newUser.id)
-                                database.userDao().upsert(UserDto(
+                                database.userDao().upsert(UserEntity(
                                     id = newUser.id,
                                     updatedAt = newUser.updatedAt,
                                     name = newUser.username,
@@ -442,7 +442,7 @@ class OfflineFirstUserRepository(
                         locationShared = share,
                         shareSpeedHeading = shareSpeedHeading,
                         snailTrail = snailTrail,
-                    ).toDto())
+                    ).toEntity())
                 }
                 true
             }
@@ -464,7 +464,7 @@ class OfflineFirstUserRepository(
 
     /**
      * Per-friend toggle: may this friend wake us. Stored on the friend's local row as
-     * [UserDto.wakeupEnabled] - on our own row that same column is the master switch instead.
+     * [UserEntity.wakeupEnabled] - on our own row that same column is the master switch instead.
      */
     override suspend fun setWakePermission(friendId: String, allowWake: Boolean): Boolean {
         return when (val result = userRemoteDataSource.setWakePermission(friendId, allowWake).trackConnectivity()) {
@@ -475,7 +475,7 @@ class OfflineFirstUserRepository(
             is NetworkResult.Success<*> -> {
                 // Optimistic local write, reconciled by the next /users/sync or UserChange push.
                 userLocalDataSource.getUserById(friendId)?.let { friend ->
-                    userLocalDataSource.upsertUser(friend.copy(wakeupEnabled = allowWake).toDto())
+                    userLocalDataSource.upsertUser(friend.copy(wakeupEnabled = allowWake).toEntity())
                 }
                 true
             }
@@ -492,7 +492,7 @@ class OfflineFirstUserRepository(
             is NetworkResult.Success<*> -> {
                 SessionCache.requireLoggedIn()?.userId?.let { ownId ->
                     userLocalDataSource.getUserById(ownId)?.let { own ->
-                        userLocalDataSource.upsertUser(own.copy(wakeupEnabled = enabled).toDto())
+                        userLocalDataSource.upsertUser(own.copy(wakeupEnabled = enabled).toEntity())
                     }
                 }
                 true

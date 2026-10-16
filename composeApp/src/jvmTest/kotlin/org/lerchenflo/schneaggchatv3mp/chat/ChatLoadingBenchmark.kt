@@ -6,13 +6,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageReaderEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toMessage
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toMessage
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageDisplayMapper
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import java.io.File
@@ -61,7 +61,7 @@ class ChatLoadingBenchmark {
                     val loadedIds = messages.mapNotNullTo(HashSet()) { it.id }
                     val missing = messages.mapNotNull { it.answerId }.filter { it !in loadedIds }.distinct()
                     val older = if (missing.isEmpty()) emptyMap() else
-                        dao.getMessageDtosByIds(missing).mapNotNull { d -> d.id?.let { it to d.toMessage() } }.toMap()
+                        dao.getMessageEntitiesByIds(missing).mapNotNull { d -> d.id?.let { it to d.toMessage() } }.toMap()
                     return MessageDisplayMapper { "" }.map(messages, older, names, groupMembers, null)
                 }
 
@@ -147,15 +147,15 @@ class ChatLoadingBenchmark {
         val dao = db.messageDao()
         val random = Random(42)
         val start = 1_700_000_000_000L
-        val readers = mutableListOf<MessageReaderDto>()
+        val readers = mutableListOf<MessageReaderEntity>()
 
         suspend fun insertChat(chatId: String, group: Boolean, count: Int, withReaders: Boolean) {
             for (i in 0 until count) {
                 val id = "$chatId-$i"
                 val sender = members[random.nextInt(members.size)]
                 val answerId = if (i > 10 && random.nextInt(10) == 0) "$chatId-${random.nextInt(i)}" else null
-                dao.insertMessageDto(
-                    MessageDto(
+                dao.insertMessageEntity(
+                    MessageEntity(
                         id = id,
                         msgType = MessageType.TEXT,
                         content = "Message $i " + "lorem ipsum ".repeat(random.nextInt(1, 8)),
@@ -172,7 +172,7 @@ class ChatLoadingBenchmark {
                 )
                 if (withReaders) {
                     members.filter { it != sender }.forEach { reader ->
-                        readers += MessageReaderDto(messageId = id, readerID = reader, readDate = (start + i * 45_000L + 5_000L).toString())
+                        readers += MessageReaderEntity(messageId = id, readerID = reader, readDate = (start + i * 45_000L + 5_000L).toString())
                     }
                 }
             }

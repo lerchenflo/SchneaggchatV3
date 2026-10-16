@@ -7,11 +7,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.SnailTrailPointDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.SnailTrailPointEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toUser
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.FriendLocationPayload
@@ -24,7 +24,7 @@ class RoomUserDataSource(
 ) : UserLocalDataSource {
 
     @Transaction
-    override suspend fun upsertUser(userDto: UserDto){
+    override suspend fun upsertUser(userDto: UserEntity){
         database.userDao().upsert(userDto)
     }
 
@@ -97,7 +97,7 @@ class RoomUserDataSource(
             if (entry.snailTrail.isNotEmpty()) {
                 database.snailTrailDao().upsertPoints(
                     entry.snailTrail.map {
-                        SnailTrailPointDto(
+                        SnailTrailPointEntity(
                             userId = userId,
                             lat = it.coordinates.lat,
                             long = it.coordinates.long,
@@ -113,7 +113,7 @@ class RoomUserDataSource(
 
     override suspend fun appendSnailTrailPoint(userId: String, point: SnailTrailPointPayload) {
         database.snailTrailDao().upsertPoints(listOf(
-            SnailTrailPointDto(
+            SnailTrailPointEntity(
                 userId = userId,
                 lat = point.coordinates.lat,
                 long = point.coordinates.long,
@@ -167,7 +167,7 @@ class RoomUserDataSource(
 
 }
 
-private fun SnailTrailPointDto.toSnailTrailPoint() = SnailTrailPoint(
+private fun SnailTrailPointEntity.toSnailTrailPoint() = SnailTrailPoint(
     lat = lat,
     long = long,
     locationTime = locationTime,

@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos
+package org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -6,7 +6,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 
 @Entity(tableName = "map_entries")
-data class MapEntryDto(
+data class MapEntryEntity(
     @PrimaryKey val id: String,
 
     val coordinates: LatLong,

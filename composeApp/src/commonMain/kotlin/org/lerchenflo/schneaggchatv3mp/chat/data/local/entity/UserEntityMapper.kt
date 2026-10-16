@@ -1,11 +1,11 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toFriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNetworkFriendshipStatus
 
-fun UserDto.toUser(): User = User(
+fun UserEntity.toUser(): User = User(
     id = this.id,
     lastChanged = this.updatedAt,
     name = this.name,
@@ -44,8 +44,8 @@ fun UserDto.toUser(): User = User(
     profilePicUpdatedAt = this.profilePicUpdatedAt,
 )
 
-/** Convert domain User back to UserDto (for persistence/transport) */
-fun User.toDto(): UserDto = UserDto(
+/** Convert domain User back to UserEntity (for persistence/transport) */
+fun User.toEntity(): UserEntity = UserEntity(
     id = this.id,
     updatedAt = this.lastChanged,
     name = this.name,

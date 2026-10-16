@@ -1,10 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
 /**
  * Per-chat message counters, aggregated in SQL instead of by loading every message into memory.
  * [chatId] is the group id for group chats and the other participant's user id for direct chats.
  */
-data class ChatAggregateDto(
+data class ChatAggregate(
     val chatId: String,
     val isGroup: Boolean,
     val unreadCount: Int,

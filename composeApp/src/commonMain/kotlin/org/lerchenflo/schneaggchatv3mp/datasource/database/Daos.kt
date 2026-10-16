@@ -10,41 +10,41 @@ import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ChatAggregateDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.SnailTrailPointDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.ChatAggregate
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.GroupEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.GroupMemberEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageReaderEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.SnailTrailPointEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.GroupWithMembers
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.events.data.dtos.EventDto
+import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.EventEntity
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.MapEntryEntity
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
 
 @Dao
 interface UserDao {
 
     @Upsert()
-    suspend fun upsert(userDto: UserDto) //Suspend: Async mit warten
+    suspend fun upsert(userDto: UserEntity) //Suspend: Async mit warten
 
     @Query("DELETE FROM users WHERE id = :userid")
     suspend fun delete(userid: String)
 
     @Query("SELECT * FROM users WHERE name LIKE '%' || :searchterm || '%'")
-    fun getAllUsersFlow(searchterm: String = ""): Flow<List<UserDto>>
+    fun getAllUsersFlow(searchterm: String = ""): Flow<List<UserEntity>>
 
     @Query("SELECT * FROM users")
-    suspend fun getAllUsers() : List<UserDto>
+    suspend fun getAllUsers() : List<UserEntity>
 
     @Query("SELECT * FROM users WHERE id = :userid")
-    fun getUserbyIdFlow(userid: String?): Flow<UserDto?>
+    fun getUserbyIdFlow(userid: String?): Flow<UserEntity?>
 
     @Query("SELECT * FROM users WHERE id = :userid")
-    suspend fun getUserbyId(userid: String?): UserDto?
+    suspend fun getUserbyId(userid: String?): UserEntity?
 
     @Query("SELECT id, updatedAt FROM users")
     suspend fun getUserIdsWithChangeDates(): List<IdChangeDate>
@@ -55,16 +55,16 @@ interface UserDao {
 interface SnailTrailDao {
 
     @Upsert
-    suspend fun upsertPoints(points: List<SnailTrailPointDto>): List<Long>
+    suspend fun upsertPoints(points: List<SnailTrailPointEntity>): List<Long>
 
     @Query("DELETE FROM snail_trail_points WHERE userId = :userId")
     suspend fun deletePointsForUser(userId: String)
 
     @Query("SELECT * FROM snail_trail_points WHERE userId = :userId ORDER BY locationTime ASC")
-    fun getPointsForUserFlow(userId: String): Flow<List<SnailTrailPointDto>>
+    fun getPointsForUserFlow(userId: String): Flow<List<SnailTrailPointEntity>>
 
     @Query("SELECT * FROM snail_trail_points WHERE userId = :userId ORDER BY locationTime ASC")
-    suspend fun getPointsForUser(userId: String): List<SnailTrailPointDto>
+    suspend fun getPointsForUser(userId: String): List<SnailTrailPointEntity>
 }
 
 
@@ -72,28 +72,28 @@ interface SnailTrailDao {
 interface MessageDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMessageDto(messageDto: MessageDto): Long
+    suspend fun insertMessageEntity(messageDto: MessageEntity): Long
 
     @Update
-    suspend fun updateMessageDto(messageDto: MessageDto)
+    suspend fun updateMessageEntity(messageDto: MessageEntity)
 
     @Query("DELETE FROM messages WHERE id = :msgid")
-    suspend fun deleteMessageDtoById(msgid: String)
+    suspend fun deleteMessageEntityById(msgid: String)
 
     @Query("DELETE FROM messages WHERE localPK = :pk")
-    suspend fun deleteMessageDtoByPk(pk: Long)
+    suspend fun deleteMessageEntityByPk(pk: Long)
 
     @Query("SELECT * FROM messages WHERE id = :id")
-    suspend fun getMessageDtoById(id: String): MessageDto?
+    suspend fun getMessageEntityById(id: String): MessageEntity?
 
     @Query("SELECT * FROM messages WHERE id IN (:ids)")
-    suspend fun getMessageDtosByIds(ids: List<String>): List<MessageDto>
+    suspend fun getMessageEntitiesByIds(ids: List<String>): List<MessageEntity>
 
     @Query("SELECT * FROM messages WHERE clientMessageId IN (:clientMessageIds)")
-    suspend fun getMessageDtosByClientMessageIds(clientMessageIds: List<String>): List<MessageDto>
+    suspend fun getMessageEntitiesByClientMessageIds(clientMessageIds: List<String>): List<MessageEntity>
 
     @Upsert
-    suspend fun upsertReaders(readers: List<MessageReaderDto>): List<Long>
+    suspend fun upsertReaders(readers: List<MessageReaderEntity>): List<Long>
 
     @Query("DELETE FROM message_readers WHERE messageId IN (:messageIds)")
     suspend fun deleteReadersForMessages(messageIds: List<String>)
@@ -103,11 +103,11 @@ interface MessageDao {
      * the page instead of once per message - every fire re-runs the chat selector's query chain.
      */
     @Transaction
-    suspend fun upsertMessagesWithReaders(messages: List<MessageWithReadersDto>) {
-        val readersByMessageId = mutableMapOf<String, List<MessageReaderDto>>()
+    suspend fun upsertMessagesWithReaders(messages: List<MessageWithReaders>) {
+        val readersByMessageId = mutableMapOf<String, List<MessageReaderEntity>>()
 
         messages.forEach { message ->
-            val upsertedId = upsertMessageDto(message.messageDto).id
+            val upsertedId = upsertMessageEntity(message.messageDto).id
             if (upsertedId != null && message.readers.isNotEmpty()) {
                 readersByMessageId[upsertedId] = message.readers.map { it.copy(messageId = upsertedId) }
             }
@@ -119,26 +119,26 @@ interface MessageDao {
         }
     }
 
-    /** Batch counterpart of [deleteMessageDtoById], readers included, in one transaction. */
+    /** Batch counterpart of [deleteMessageEntityById], readers included, in one transaction. */
     @Transaction
     suspend fun deleteMessagesByIds(ids: List<String>) {
         deleteReadersForMessages(ids)
-        deleteMessageDtosByIds(ids)
+        deleteMessageEntitiesByIds(ids)
     }
 
     @Query("DELETE FROM messages WHERE id IN (:ids)")
-    suspend fun deleteMessageDtosByIds(ids: List<String>)
+    suspend fun deleteMessageEntitiesByIds(ids: List<String>)
 
     @Transaction
-    suspend fun upsertMessageDto(messageDto: MessageDto): MessageDto {
-        val existing = getMessageDtoById(messageDto.id.orEmpty())
+    suspend fun upsertMessageEntity(messageDto: MessageEntity): MessageEntity {
+        val existing = getMessageEntityById(messageDto.id.orEmpty())
         if (existing != null) {
-            updateMessageDto(messageDto.copy(localPK = existing.localPK))
+            updateMessageEntity(messageDto.copy(localPK = existing.localPK))
         } else {
-            insertMessageDto(messageDto)
+            insertMessageEntity(messageDto)
         }
         // Get the message after insert/update
-        val returnedMessage = getMessageDtoById(messageDto.id.orEmpty())
+        val returnedMessage = getMessageEntityById(messageDto.id.orEmpty())
         return returnedMessage ?: messageDto
     }
 
@@ -146,12 +146,12 @@ interface MessageDao {
 
     @Transaction
     @Query("SELECT * FROM messages WHERE id = :id")
-    fun getMessageWithReadersByIdFlow(id: String): Flow<MessageWithReadersDto>
+    fun getMessageWithReadersByIdFlow(id: String): Flow<MessageWithReaders>
 
 
     @Transaction
     @Query("SELECT * FROM messages")
-    fun getAllMessagesWithReadersFlow(): Flow<List<MessageWithReadersDto>>
+    fun getAllMessagesWithReadersFlow(): Flow<List<MessageWithReaders>>
 
     /**
      * Per-chat unread and unsent counters for the chat selector, aggregated in SQL.
@@ -179,7 +179,7 @@ interface MessageDao {
     fun getChatAggregatesFlow(
         ownId: String,
         systemType: String = MessageType.SYSTEM.name,
-    ): Flow<List<ChatAggregateDto>>
+    ): Flow<List<ChatAggregate>>
 
     /**
      * The newest message of every chat - one row per chat instead of the whole message table.
@@ -204,7 +204,7 @@ interface MessageDao {
             )
         )
     """)
-    fun getLastMessagePerChatFlow(ownId: String): Flow<List<MessageDto>>
+    fun getLastMessagePerChatFlow(ownId: String): Flow<List<MessageEntity>>
 
     /**
      * The newest [limit] messages of one chat, newest first - the order the chat screen renders and
@@ -238,7 +238,7 @@ interface MessageDao {
         ORDER BY sendDate DESC
         LIMIT :limit
     """)
-    fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean, limit: Int): Flow<List<MessageWithReadersDto>>
+    fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean, limit: Int): Flow<List<MessageWithReaders>>
 
     /**
      * Number of messages in one chat sent at or after [sinceMillis] - how big the chat screen's
@@ -268,7 +268,7 @@ interface MessageDao {
     /** Every message of one chat, newest first, same order as [getMessagesByUserIdFlow]. */
     @Transaction
     @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ORDER BY sendDate DESC")
-    suspend fun getMessagesByUserId(userId: String, gruppe: Boolean): List<MessageWithReadersDto>
+    suspend fun getMessagesByUserId(userId: String, gruppe: Boolean): List<MessageWithReaders>
 
     /**
      * Every image ever shared in one chat, newest first, for the chat's shared content screen.
@@ -287,7 +287,7 @@ interface MessageDao {
         userId: String,
         gruppe: Boolean,
         imageType: String = MessageType.IMAGE.name,
-    ): Flow<List<MessageDto>>
+    ): Flow<List<MessageEntity>>
 
     /**
      * Every message of one [msgType] (a MessageType name) in one chat, newest first, for the shared
@@ -305,7 +305,7 @@ interface MessageDao {
         userId: String,
         gruppe: Boolean,
         msgType: String,
-    ): Flow<List<MessageDto>>
+    ): Flow<List<MessageEntity>>
 
     /** Number of (not deleted) messages in one chat, all types, for the chat details row. */
     @Query("""
@@ -338,15 +338,15 @@ interface MessageDao {
     fun getLinkCandidateMessagesForChatFlow(
         userId: String,
         gruppe: Boolean,
-    ): Flow<List<MessageDto>>
+    ): Flow<List<MessageEntity>>
 
     @Transaction
     @Query("SELECT * FROM messages WHERE id = :msgid")
-    suspend fun getMessageById(msgid: String): MessageWithReadersDto?
+    suspend fun getMessageById(msgid: String): MessageWithReaders?
 
     @Transaction
     @Query("SELECT * FROM messages WHERE localPK = :msgid")
-    suspend fun getMessageById(msgid: Long): MessageWithReadersDto?
+    suspend fun getMessageById(msgid: Long): MessageWithReaders?
 
     @Query("SELECT id, updatedAt FROM messages WHERE id != 0")
     suspend fun getMessageIdsWithChangeDates(): List<IdChangeDate>
@@ -359,15 +359,15 @@ interface MessageDao {
 
     @Transaction
     @Query("SELECT * FROM messages WHERE sent = 0")
-    suspend fun getUnsentMessages(): List<MessageWithReadersDto>
+    suspend fun getUnsentMessages(): List<MessageWithReaders>
 
     @Transaction
     @Query("SELECT * FROM messages WHERE msgType = :type")
-    suspend fun getImageMessages(type: String = MessageType.IMAGE.name): List<MessageWithReadersDto>
+    suspend fun getImageMessages(type: String = MessageType.IMAGE.name): List<MessageWithReaders>
 
     @Transaction
     @Query("SELECT * FROM messages WHERE msgType = :type")
-    suspend fun getAudioMessages(type: String = MessageType.AUDIO.name): List<MessageWithReadersDto>
+    suspend fun getAudioMessages(type: String = MessageType.AUDIO.name): List<MessageWithReaders>
 
     @Transaction
     @Query("UPDATE messages SET id = :serverId, sent = 1 WHERE localPK = :localPK")
@@ -402,7 +402,7 @@ interface MessageDao {
 /* Will not work since sendDate is a string
     @Transaction
     @Query("SELECT * FROM messages WHERE (sendDate > :time)")
-    suspend fun getMessagesSinceTimeStamp(time: Long): List<MessageWithReadersDto>
+    suspend fun getMessagesSinceTimeStamp(time: Long): List<MessageWithReaders>
 
  */
 
@@ -412,10 +412,10 @@ interface MessageDao {
 interface MessageReaderDao {
 
     @Upsert()
-    suspend fun upsertReader(reader: MessageReaderDto): Long
+    suspend fun upsertReader(reader: MessageReaderEntity): Long
 
     @Upsert
-    suspend fun upsertReaders(readers: List<MessageReaderDto>): List<Long>
+    suspend fun upsertReaders(readers: List<MessageReaderEntity>): List<Long>
 
     @Query("DELETE FROM message_readers WHERE messageId = :messageId")
     suspend fun deleteReadersForMessage(messageId: String)
@@ -429,7 +429,7 @@ interface MessageReaderDao {
 @Dao
 interface GroupDao {
     @Upsert
-    suspend fun upsertGroup(group: GroupDto)
+    suspend fun upsertGroup(group: GroupEntity)
 
     @Query("SELECT id, updatedAt FROM `groups`")
     suspend fun getGroupIdsWithChangeDates(): List<IdChangeDate>
@@ -439,21 +439,21 @@ interface GroupDao {
 
     @Transaction
     @Query("SELECT * FROM `groups`")
-    fun getAllGroupsWithMembersFlow(): Flow<List<GroupWithMembersDto>>
+    fun getAllGroupsWithMembersFlow(): Flow<List<GroupWithMembers>>
 
     @Transaction
     @Query("SELECT * FROM `groups`")
-    suspend fun getAllGroupsWithMembers(): List<GroupWithMembersDto>
+    suspend fun getAllGroupsWithMembers(): List<GroupWithMembers>
 
     @Upsert
-    suspend fun upsertMembers(members: List<GroupMemberDto>): List<Long>
+    suspend fun upsertMembers(members: List<GroupMemberEntity>): List<Long>
 
     @Query("DELETE FROM group_members WHERE groupId = :groupId")
     suspend fun deleteMembersForGroup(groupId: String)
 
     // Atomic so a concurrent upsert for the same group (e.g. socket GroupChange during a sync) can't interleave delete+insert and leave duplicate member rows.
     @Transaction
-    suspend fun upsertGroupWithMembers(group: GroupDto, members: List<GroupMemberDto>) {
+    suspend fun upsertGroupWithMembers(group: GroupEntity, members: List<GroupMemberEntity>) {
         upsertGroup(group)
         deleteMembersForGroup(group.id)
         if (members.isNotEmpty()) {
@@ -462,15 +462,15 @@ interface GroupDao {
     }
 
     @Query("SELECT * FROM `groups` WHERE id = :groupid")
-    suspend fun getGroupById(groupid: String?): GroupDto?
+    suspend fun getGroupById(groupid: String?): GroupEntity?
 
     @Transaction
     @Query("SELECT * FROM `groups` WHERE id = :groupId")
-    suspend fun getGroupWithMembersById(groupId: String): GroupWithMembersDto?
+    suspend fun getGroupWithMembersById(groupId: String): GroupWithMembers?
 
     @Transaction
     @Query("SELECT * FROM `groups` WHERE id = :groupId")
-    fun getGroupWithMembersByIdFlow(groupId: String): Flow<GroupWithMembersDto?>
+    fun getGroupWithMembersByIdFlow(groupId: String): Flow<GroupWithMembers?>
 
     @Transaction
     @Query("""
@@ -482,7 +482,7 @@ interface GroupDao {
             SELECT groupId FROM group_members WHERE userId = :memberId2
         )
     """)
-    suspend fun getCommonGroupsWithMembers(memberId1: String, memberId2: String): List<GroupWithMembersDto>
+    suspend fun getCommonGroupsWithMembers(memberId1: String, memberId2: String): List<GroupWithMembers>
 }
 
 
@@ -551,13 +551,13 @@ interface AllDatabaseDao {
 interface MapEntryDao {
 
     @Upsert
-    suspend fun upsert(dto: MapEntryDto)
+    suspend fun upsert(dto: MapEntryEntity)
 
     @Query("SELECT id, updatedAt FROM map_entries")
     suspend fun getMapEntryIdsWithChangeDates(): List<IdChangeDate>
 
     @Query("SELECT * FROM map_entries")
-    fun getAllFlow(): Flow<List<MapEntryDto>>
+    fun getAllFlow(): Flow<List<MapEntryEntity>>
 
     @Query("DELETE FROM map_entries WHERE id = :id")
     suspend fun delete(id: String)
@@ -567,16 +567,16 @@ interface MapEntryDao {
 interface EventDao {
 
     @Upsert
-    suspend fun upsert(dto: EventDto)
+    suspend fun upsert(dto: EventEntity)
 
     @Query("SELECT id, updatedAt FROM events")
     suspend fun getEventIdsWithChangeDates(): List<IdChangeDate>
 
     @Query("SELECT * FROM events ORDER BY startDate ASC")
-    fun getAllFlow(): Flow<List<EventDto>>
+    fun getAllFlow(): Flow<List<EventEntity>>
 
     @Query("SELECT * FROM events WHERE groupId = :groupId LIMIT 1")
-    fun getEventFlowByGroupId(groupId: String): Flow<EventDto?>
+    fun getEventFlowByGroupId(groupId: String): Flow<EventEntity?>
 
     @Query("DELETE FROM events WHERE id = :id")
     suspend fun delete(id: String)

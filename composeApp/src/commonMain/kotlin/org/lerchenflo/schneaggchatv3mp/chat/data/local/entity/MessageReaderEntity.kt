@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.Index
@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
     tableName = "message_readers",
     indices = [Index(value = ["messageId"])]
 )
-data class MessageReaderDto(
+data class MessageReaderEntity(
     @PrimaryKey(autoGenerate = true)
     val readerEntryId: Long = 0L,
     val messageId: String,

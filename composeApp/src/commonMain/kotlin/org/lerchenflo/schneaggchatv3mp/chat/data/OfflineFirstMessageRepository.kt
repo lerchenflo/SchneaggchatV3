@@ -17,8 +17,8 @@ import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toMessage
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
@@ -101,7 +101,7 @@ class OfflineFirstMessageRepository(
         messageLocalDataSource.getMessageById(id)
 
     override suspend fun getMessagesByIds(ids: List<String>): List<Message> =
-        messageLocalDataSource.getMessageDtosByIds(ids).map { it.toMessage() }
+        messageLocalDataSource.getMessageEntitiesByIds(ids).map { it.toMessage() }
 
     override fun getImageMessagesForChatFlow(chatId: String, gruppe: Boolean): Flow<List<Message>> =
         messageLocalDataSource.getImageMessagesForChatFlow(chatId, gruppe)
@@ -368,7 +368,7 @@ class OfflineFirstMessageRepository(
                 //Interne message macha die ned alles hot
                 val messageDto = when(content) {
                     is PollContent -> {
-                        MessageDto(
+                        MessageEntity(
                             localPK = localpkintern,
                             id = null,
                             msgType = MessageType.POLL,
@@ -388,7 +388,7 @@ class OfflineFirstMessageRepository(
                         )
                     }
                     is TextContent -> {
-                        MessageDto(
+                        MessageEntity(
                             localPK = localpkintern,
                             id = messageId,
                             msgType = MessageType.TEXT,
@@ -409,7 +409,7 @@ class OfflineFirstMessageRepository(
 
                     is ImageContent -> {
 
-                        MessageDto(
+                        MessageEntity(
                             localPK = localpkintern,
                             id = null,
                             msgType = MessageType.IMAGE,
@@ -430,7 +430,7 @@ class OfflineFirstMessageRepository(
 
                     is AudioContent -> {
 
-                        MessageDto(
+                        MessageEntity(
                             localPK = localpkintern,
                             id = null,
                             msgType = MessageType.AUDIO,
@@ -453,7 +453,7 @@ class OfflineFirstMessageRepository(
 
                 //Nachricht hot scho a pk vo da db, also scho din
                 if (localpkintern == 0L){
-                    localpkintern = database.messageDao().insertMessageDto(messageDto)
+                    localpkintern = database.messageDao().insertMessageEntity(messageDto)
                     println("LocalPK: $localpkintern")
                 }
 
@@ -507,7 +507,7 @@ class OfflineFirstMessageRepository(
                         val error = serverrequest.error
                         //If badrequest (not met servers specifications (should not happen)) or conflict (duplicate message) delete locally
                         if (error is NetworkingError.BadRequest || error is NetworkingError.Conflict) {
-                            database.messageDao().deleteMessageDtoByPk(localpkintern)
+                            database.messageDao().deleteMessageEntityByPk(localpkintern)
                         }
 
                         println("Message senden error: ${serverrequest.error}")
@@ -536,7 +536,7 @@ class OfflineFirstMessageRepository(
                             println("Messageid returned from server: ${serverrequest.data.messageId}")
 
                             val existing =
-                                database.messageDao().getMessageDtoById(serverrequest.data.messageId)
+                                database.messageDao().getMessageEntityById(serverrequest.data.messageId)
 
                             messageLocalDataSource.upsertMessage(
                                 Message(
@@ -620,7 +620,7 @@ class OfflineFirstMessageRepository(
                 //A poll row whose poll no longer decodes (the type converter returns null for it) can
                 //never be sent - drop it, or it would block the whole queue forever
                 if (m.msgType == MessageType.POLL && m.poll == null) {
-                    database.messageDao().deleteMessageDtoByPk(m.localPK)
+                    database.messageDao().deleteMessageEntityByPk(m.localPK)
                     continue
                 }
 
@@ -736,7 +736,7 @@ class OfflineFirstMessageRepository(
                         // the message table again and re-run the chat selector's query chain.
                         val sortedUpdates = updatedMessages.sortedBy { it.version }
                         val existingById = messageLocalDataSource
-                            .getMessageDtosByIds(sortedUpdates.map { it.messageId })
+                            .getMessageEntitiesByIds(sortedUpdates.map { it.messageId })
                             .associateBy { it.id }
 
                         // A message of our own can arrive here before our own sendMessage() call for
@@ -749,7 +749,7 @@ class OfflineFirstMessageRepository(
                             .filter { existingById[it.messageId] == null }
                             .mapNotNull { it.clientMessageId }
                         val existingByClientMessageId = messageLocalDataSource
-                            .getMessageDtosByClientMessageIds(unmatchedClientMessageIds)
+                            .getMessageEntitiesByClientMessageIds(unmatchedClientMessageIds)
                             .associateBy { it.clientMessageId }
 
                         messageLocalDataSource.upsertMessages(

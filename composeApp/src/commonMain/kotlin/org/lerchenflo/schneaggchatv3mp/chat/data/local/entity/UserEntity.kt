@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalTime::class)
 
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -10,7 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipS
 
 @Serializable
 @Entity(tableName = "users")
-data class UserDto(
+data class UserEntity(
     @PrimaryKey(autoGenerate = false)
     var id: String = "",
 

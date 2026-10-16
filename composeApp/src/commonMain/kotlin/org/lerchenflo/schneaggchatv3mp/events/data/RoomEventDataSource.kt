@@ -4,8 +4,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.toDto
-import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.toEvent
+import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.toEntity
+import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.toEvent
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 
 class RoomEventDataSource(
@@ -18,7 +18,7 @@ class RoomEventDataSource(
         database.eventDao().getEventIdsWithChangeDates()
 
     override suspend fun upsertEvent(event: Event) =
-        database.eventDao().upsert(event.toDto())
+        database.eventDao().upsert(event.toEntity())
 
     override suspend fun deleteEvent(id: String) =
         database.eventDao().delete(id)

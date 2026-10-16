@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.events.data.remote.dto
 
-import org.lerchenflo.schneaggchatv3mp.events.data.dtos.EventDto
+import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.EventEntity
+import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.toEntity
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
 
@@ -27,46 +28,4 @@ fun EventResponse.toEvent(): Event = Event(
     creatorName = creatorName
 )
 
-fun Event.toDto(): EventDto = EventDto(
-    id = id,
-    creatorId = creatorId,
-    type = type,
-    title = title,
-    description = description,
-    groupId = groupId,
-    location = location,
-    startDate = startDate,
-    closeDate = closeDate,
-    invitedUsers = invitedUsers,
-    participations = participations,
-    visibility = visibility,
-    maxUsers = maxUsers,
-    groupDeleteDelay = groupDeleteDelay,
-    createdAt = createdAt,
-    updatedAt = updatedAt,
-    updatedBy = updatedBy,
-    creatorName = creatorName
-)
-
-fun EventDto.toEvent(): Event = Event(
-    id = id,
-    creatorId = creatorId,
-    type = type,
-    title = title,
-    description = description,
-    groupId = groupId,
-    location = location,
-    startDate = startDate,
-    closeDate = closeDate,
-    invitedUsers = invitedUsers,
-    participations = participations,
-    visibility = visibility,
-    maxUsers = maxUsers,
-    groupDeleteDelay = groupDeleteDelay,
-    createdAt = createdAt,
-    updatedAt = updatedAt,
-    updatedBy = updatedBy,
-    creatorName = creatorName
-)
-
-fun EventResponse.toDto(): EventDto = toEvent().toDto()
+fun EventResponse.toEntity(): EventEntity = toEvent().toEntity()

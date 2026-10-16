@@ -16,7 +16,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.testutil.FRIEND_ID
 import org.lerchenflo.schneaggchatv3mp.testutil.FakeMessageServer.Reply
@@ -159,8 +159,8 @@ class OfflineMessageQueueTest {
     @Test
     fun `a poll row whose poll no longer decodes is dropped without a request`() =
         runSendPathTest {
-            fixture.database.messageDao().insertMessageDto(
-                MessageDto(
+            fixture.database.messageDao().insertMessageEntity(
+                MessageEntity(
                     msgType = MessageType.POLL,
                     poll = null,
                     senderId = OWN_USER_ID,

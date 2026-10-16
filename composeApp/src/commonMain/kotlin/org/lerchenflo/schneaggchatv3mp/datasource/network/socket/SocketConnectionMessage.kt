@@ -10,7 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
@@ -278,7 +278,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     when (val newUser = socketMessage.user) {
                         is UserResponse.SimpleUserResponse -> {
                             val existing = userLocalDataSource.getUserById(newUser.id)
-                            userLocalDataSource.upsertUser(UserDto(
+                            userLocalDataSource.upsertUser(UserEntity(
                                 id = newUser.id,
                                 updatedAt = newUser.updatedAt,
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
@@ -313,7 +313,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
                         is UserResponse.FriendUserResponse -> {
                             val existing = userLocalDataSource.getUserById(newUser.id)
-                            userLocalDataSource.upsertUser(UserDto(
+                            userLocalDataSource.upsertUser(UserEntity(
                                 id = newUser.id,
                                 updatedAt = newUser.updatedAt,
                                 name = newUser.username,
@@ -354,7 +354,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                         }
                         is UserResponse.SelfUserResponse -> {
                             val existing = userLocalDataSource.getUserById(newUser.id)
-                            userLocalDataSource.upsertUser(UserDto(
+                            userLocalDataSource.upsertUser(UserEntity(
                                 id = newUser.id,
                                 updatedAt = newUser.updatedAt,
                                 name = newUser.username,

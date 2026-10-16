@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.Index
@@ -14,7 +14,7 @@ import kotlinx.serialization.Serializable
         Index(value = ["groupId", "userId"], unique = true),
     ]
 )
-data class GroupMemberDto(
+data class GroupMemberEntity(
 
     @PrimaryKey(autoGenerate = true)
     val localPk: Long = 0L,

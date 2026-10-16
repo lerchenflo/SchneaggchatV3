@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data
 
 import kotlinx.coroutines.flow.Flow
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ChatAggregateDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.ChatAggregate
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
@@ -24,11 +24,11 @@ interface MessageLocalDataSource {
     /** Batch counterpart of [deleteMessage], readers included, in one transaction per chunk. */
     suspend fun deleteMessages(ids: List<String>)
 
-    suspend fun getMessageDtosByIds(ids: List<String>): List<MessageDto>
+    suspend fun getMessageEntitiesByIds(ids: List<String>): List<MessageEntity>
 
-    suspend fun getMessageDtosByClientMessageIds(clientMessageIds: List<String>): List<MessageDto>
+    suspend fun getMessageEntitiesByClientMessageIds(clientMessageIds: List<String>): List<MessageEntity>
 
-    /** Single-item convenience for the socket handler - see [getMessageDtosByClientMessageIds]. */
+    /** Single-item convenience for the socket handler - see [getMessageEntitiesByClientMessageIds]. */
     suspend fun getMessageByClientMessageId(clientMessageId: String): Message?
 
     suspend fun deleteMessage(id: String)
@@ -80,7 +80,7 @@ interface MessageLocalDataSource {
     fun getAllMessages(): Flow<List<Message>>
 
     /** Per-chat unread/unsent counters, aggregated in SQL. */
-    fun getChatAggregatesFlow(ownId: String): Flow<List<ChatAggregateDto>>
+    fun getChatAggregatesFlow(ownId: String): Flow<List<ChatAggregate>>
 
     /** The newest message of every chat, one row per chat, without readers. */
     fun getLastMessagePerChatFlow(ownId: String): Flow<List<Message>>

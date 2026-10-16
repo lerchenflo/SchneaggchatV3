@@ -6,19 +6,19 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.room.TypeConverters
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.SnailTrailPointDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
-import org.lerchenflo.schneaggchatv3mp.events.data.dtos.EventDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.GroupEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.GroupMemberEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageReaderEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.SnailTrailPointEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
+import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.EventEntity
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.MapEntryEntity
 
 
 @Database(
-    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, LogEntry::class, PlayerEntity::class, MapEntryDto::class, SnailTrailPointDto::class, EventDto::class],
+    entities = [UserEntity::class, MessageEntity::class, MessageReaderEntity::class, GroupEntity::class, GroupMemberEntity::class, LogEntry::class, PlayerEntity::class, MapEntryEntity::class, SnailTrailPointEntity::class, EventEntity::class],
     exportSchema = true,
     version = 87
 )

@@ -1,0 +1,45 @@
+package org.lerchenflo.schneaggchatv3mp.events.data.local.entity
+
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+
+fun Event.toEntity(): EventEntity = EventEntity(
+    id = id,
+    creatorId = creatorId,
+    type = type,
+    title = title,
+    description = description,
+    groupId = groupId,
+    location = location,
+    startDate = startDate,
+    closeDate = closeDate,
+    invitedUsers = invitedUsers,
+    participations = participations,
+    visibility = visibility,
+    maxUsers = maxUsers,
+    groupDeleteDelay = groupDeleteDelay,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+    updatedBy = updatedBy,
+    creatorName = creatorName
+)
+
+fun EventEntity.toEvent(): Event = Event(
+    id = id,
+    creatorId = creatorId,
+    type = type,
+    title = title,
+    description = description,
+    groupId = groupId,
+    location = location,
+    startDate = startDate,
+    closeDate = closeDate,
+    invitedUsers = invitedUsers,
+    participations = participations,
+    visibility = visibility,
+    maxUsers = maxUsers,
+    groupDeleteDelay = groupDeleteDelay,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+    updatedBy = updatedBy,
+    creatorName = creatorName
+)

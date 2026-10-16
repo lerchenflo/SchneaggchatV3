@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.toDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
@@ -118,7 +118,7 @@ class OfflineFirstChatListRepositoryTest {
             testUser("anna", name = "Anna"),
             testUser("ben", name = "Ben"),
             testUser("dave", name = "Dave", friendshipStatus = FriendshipStatus.PENDING, requesterId = "dave"),
-        ).forEach { userDataSource.upsertUser(it.toDto()) }
+        ).forEach { userDataSource.upsertUser(it.toEntity()) }
         groupDataSource.upsertGroup(testGroup("hiking", name = "Hiking", memberIds = listOf(OWN_ID, "anna", "ben")))
     }
 
@@ -230,7 +230,7 @@ class OfflineFirstChatListRepositoryTest {
     fun `pending friends lists requests in both directions`() = runChatListTest {
         seedUsersAndGroup()
         userDataSource.upsertUser(
-            testUser("emil", name = "Emil", friendshipStatus = FriendshipStatus.PENDING, requesterId = OWN_ID).toDto()
+            testUser("emil", name = "Emil", friendshipStatus = FriendshipStatus.PENDING, requesterId = OWN_ID).toEntity()
         )
 
         val pending = repository.getPendingFriends("").first()

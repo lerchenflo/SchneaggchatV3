@@ -1,20 +1,20 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 
-fun MessageWithReadersDto.toMessage(): Message = this.messageDto.toMessage(
+fun MessageWithReaders.toMessage(): Message = this.messageDto.toMessage(
     readers = this.readers.map { readerDto ->
         readerDto.toMessageReader()
     }
 )
 
 /**
- * DTO -> domain. [readers] defaults to empty for callers that read a message without its relation,
+ * Entity -> domain. [readers] defaults to empty for callers that read a message without its relation,
  * e.g. the chat selector's last message preview.
  */
-fun MessageDto.toMessage(readers: List<MessageReader> = emptyList()): Message = Message(
+fun MessageEntity.toMessage(readers: List<MessageReader> = emptyList()): Message = Message(
     localPK = this.localPK,
     id = this.id,
     msgType = this.msgType,
@@ -43,9 +43,9 @@ fun MessageDto.toMessage(readers: List<MessageReader> = emptyList()): Message = 
     clientMessageId = this.clientMessageId,
 )
 
-/** Domain -> DTO */
-fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
-    messageDto = MessageDto(
+/** Domain -> entity */
+fun Message.toEntity(): MessageWithReaders = MessageWithReaders(
+    messageDto = MessageEntity(
         localPK = this.localPK,
         id = this.id,
         msgType = this.msgType,
@@ -70,21 +70,21 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         clientMessageId = this.clientMessageId,
     ),
     readers = this.readers.map { reader ->
-        reader.toDto()
+        reader.toEntity()
     }
 )
 
 
 
-fun MessageReaderDto.toMessageReader(): MessageReader = MessageReader(
+fun MessageReaderEntity.toMessageReader(): MessageReader = MessageReader(
     readerEntryId = this.readerEntryId,
     messageId = this.messageId,
     readerId = this.readerID,
     readDate = this.readDate
 )
 
-/** Domain -> DTO */
-fun MessageReader.toDto(): MessageReaderDto = MessageReaderDto(
+/** Domain -> entity */
+fun MessageReader.toEntity(): MessageReaderEntity = MessageReaderEntity(
     readerEntryId = this.readerEntryId,
     messageId = this.messageId,
     readerID = this.readerId,

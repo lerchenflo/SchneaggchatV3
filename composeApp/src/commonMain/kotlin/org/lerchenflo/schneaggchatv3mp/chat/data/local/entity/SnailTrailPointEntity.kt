@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.Index
@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
     // locationTime trails userId so the per-user trail queries read in ORDER BY order.
     indices = [Index(value = ["userId", "locationTime"])]
 )
-data class SnailTrailPointDto(
+data class SnailTrailPointEntity(
     @PrimaryKey(autoGenerate = true)
     val localPk: Long = 0L,
 

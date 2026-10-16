@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -38,7 +38,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
         Index(value = ["clientMessageId"], unique = true),
     ]
 )
-data class MessageDto(
+data class MessageEntity(
 
     @PrimaryKey(autoGenerate = true)
     var localPK : Long = 0L,
@@ -58,7 +58,7 @@ data class MessageDto(
     var receiverId: String,
 
     // Epoch millis. Stored as a number (not the domain Message's String) so it sorts and indexes
-    // numerically; 0 means unknown - see Message.toDto / MessageDto.toMessage.
+    // numerically; 0 means unknown - see Message.toEntity / MessageEntity.toMessage.
     var sendDate: Long = 0L,
 
     var updatedAt: String = "",

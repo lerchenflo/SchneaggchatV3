@@ -1,20 +1,20 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations
 
 import androidx.room.Embedded
 import androidx.room.Relation
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageReaderEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 
 @Serializable
-data class MessageWithReadersDto(
-    @Embedded val messageDto: MessageDto,
+data class MessageWithReaders(
+    @Embedded val messageDto: MessageEntity,
     @Relation(
         parentColumn = "id",
         entityColumn = "messageId"
     )
-    val readers: List<MessageReaderDto>
+    val readers: List<MessageReaderEntity>
 ){
 
     fun isReadById(id: String) : Boolean{

@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
@@ -15,7 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SnailTrailPoint
  */
 interface UserLocalDataSource {
 
-    suspend fun upsertUser(userDto: UserDto)
+    suspend fun upsertUser(userDto: UserEntity)
 
     suspend fun deleteUser(userid: String)
 
