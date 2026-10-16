@@ -2,11 +2,12 @@ package org.lerchenflo.schneaggchatv3mp.events.data
 
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.events.data.local.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event

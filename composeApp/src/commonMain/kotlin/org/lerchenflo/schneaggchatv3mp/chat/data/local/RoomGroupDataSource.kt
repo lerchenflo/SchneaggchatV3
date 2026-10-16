@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data
+package org.lerchenflo.schneaggchatv3mp.chat.data.local
 
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow

@@ -19,6 +19,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomGroupDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomMessageDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomUserDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase

@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToUiText
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onSuccess

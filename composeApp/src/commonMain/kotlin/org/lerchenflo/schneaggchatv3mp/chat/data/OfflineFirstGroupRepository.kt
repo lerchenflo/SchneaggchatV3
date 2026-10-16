@@ -7,6 +7,7 @@ import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group

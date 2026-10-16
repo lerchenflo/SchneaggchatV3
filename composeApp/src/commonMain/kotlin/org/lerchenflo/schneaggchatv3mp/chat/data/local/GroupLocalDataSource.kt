@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data
+package org.lerchenflo.schneaggchatv3mp.chat.data.local
 
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group

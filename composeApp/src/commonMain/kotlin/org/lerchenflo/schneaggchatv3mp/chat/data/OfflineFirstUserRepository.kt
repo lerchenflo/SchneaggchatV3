@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase

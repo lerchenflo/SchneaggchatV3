@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.schneaggmap.data
+package org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data
+package org.lerchenflo.schneaggchatv3mp.chat.data.local
 
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
@@ -11,6 +11,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.SnailTrailPointEnt
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toSnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
@@ -166,11 +167,3 @@ class RoomUserDataSource(
     }
 
 }
-
-private fun SnailTrailPointEntity.toSnailTrailPoint() = SnailTrailPoint(
-    lat = lat,
-    long = long,
-    locationTime = locationTime,
-    speed = speed,
-    heading = heading,
-)

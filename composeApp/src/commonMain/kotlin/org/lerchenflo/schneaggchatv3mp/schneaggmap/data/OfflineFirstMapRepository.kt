@@ -5,6 +5,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.MapLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData

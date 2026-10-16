@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
 import android.annotation.SuppressLint
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -8,10 +9,18 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.BitmapShader
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Shader
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
+import androidx.core.content.LocusIdCompat
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.first
@@ -22,13 +31,16 @@ import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import java.io.File
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.mark_as_read
 import schneaggchatv3mp.composeapp.generated.resources.reply
+import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
 import schneaggchatv3mp.composeapp.generated.resources.you_sender
 import kotlin.coroutines.resume
 
@@ -55,6 +67,19 @@ private const val AVATAR_SIZE_PX = 128
 //Decoded avatars kept across notifications, so re-posting a chat doesn't decode the file again.
 private const val MAX_CACHED_AVATARS = 32
 
+//Prefix of the conversation shortcut published per chat (see publishConversationShortcut)
+private const val CHAT_SHORTCUT_PREFIX = "chat_"
+
+//All chat notifications (messages and reactions) are bundled under one summary, like WhatsApp does
+private const val CHAT_GROUP_KEY = "schneaggchat_chats"
+
+//Id of that summary - next to the fixed ids 1-5 of NotificationManager.NotiIdType. Chat
+//notification ids are chat id hashes, so a collision is practically impossible.
+private const val CHAT_SUMMARY_ID = 6
+
+//Lines the summary lists when the bundle is collapsed
+private const val MAX_SUMMARY_LINES = 6
+
 class AndroidNotifier(private val context: Context, private val permissionManager: PermissionManager) : Notifier {
 
     private data class StyledMessage(
@@ -69,7 +94,8 @@ class AndroidNotifier(private val context: Context, private val permissionManage
     private data class ActiveConversation(
         val chatId: String,
         val groupChat: Boolean,
-        val groupName: String?,
+        //Group name for group chats, the other person's name for 1:1 chats - title of the conversation
+        var chatName: String?,
         val messages: MutableList<StyledMessage> = mutableListOf(),
     )
 
@@ -79,19 +105,28 @@ class AndroidNotifier(private val context: Context, private val permissionManage
 
     private var cachedOwnDisplayName: String? = null
 
-    private data class CachedAvatar(val path: String, val lastModified: Long, val length: Long, val icon: IconCompat)
+    private data class CachedAvatar(val path: String, val lastModified: Long, val length: Long, val bitmap: Bitmap)
 
-    //Keyed by user id, access-ordered so the least recently used avatar is evicted first. The file
-    //stamp in CachedAvatar invalidates an entry once the user's picture is replaced on disk.
+    //Keyed by "user:<id>" / "group:<id>", access-ordered so the least recently used avatar is evicted
+    //first. The file stamp in CachedAvatar invalidates an entry once the picture is replaced on disk.
     private val avatarCache = object : LinkedHashMap<String, CachedAvatar>(16, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CachedAvatar>): Boolean =
             size > MAX_CACHED_AVATARS
     }
 
-    override suspend fun getToken(): String? = suspendCancellableCoroutine { cont ->
-        FirebaseMessaging.getInstance().token
-            .addOnSuccessListener { token -> cont.resume(token) }
-            .addOnFailureListener { cont.resume(null) }
+    //Shortcut id -> label and picture it was last published with, so an unchanged chat isn't re-published per message
+    private val publishedShortcuts = mutableMapOf<String, String>()
+
+    override suspend fun getToken(): String? {
+        val result = suspendCancellableCoroutine<Result<String?>> { cont ->
+            FirebaseMessaging.getInstance().token
+                .addOnSuccessListener { token -> cont.resume(Result.success(token)) }
+                .addOnFailureListener { e -> cont.resume(Result.failure(e)) }
+        }
+        return result.onFailure { e ->
+            //No token means no pushes at all - must be visible in the logs
+            runCatching { KoinPlatform.getKoin().get<Logger>().logError("[Notifier] Getting the notification token failed: ${e.describe()}") }
+        }.getOrNull()
     }
 
     override suspend fun removeToken(): Unit = suspendCancellableCoroutine { cont ->
@@ -113,17 +148,17 @@ class AndroidNotifier(private val context: Context, private val permissionManage
             logError("Creating the notification channel failed: ${e.describe()}")
         }
 
-        if (content.chatId != null) {
+        if (content.conversation && content.chatId != null) {
             try {
                 showMessageNotification(content)
             } catch (e: Throwable) {
                 //Never drop a message because the MessagingStyle notification could not be built -
                 //fall back to a plain one and record why, so the failure shows up in the logs.
                 logError("Message notification failed, showing plain fallback: ${e.describe()}")
-                showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat)
+                showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat, content.senderId)
             }
         } else {
-            showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat)
+            showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat, content.avatarUserId)
         }
     }
 
@@ -131,9 +166,9 @@ class AndroidNotifier(private val context: Context, private val permissionManage
      * Plain notification, then - if even that throws - a bare one without resources or a content
      * intent. Each failure is logged; this never throws.
      */
-    private fun showPlainNotificationSafely(id: Int, title: String, body: String, chatId: String?, groupChat: Boolean) {
+    private fun showPlainNotificationSafely(id: Int, title: String, body: String, chatId: String?, groupChat: Boolean, avatarUserId: String? = null) {
         try {
-            showPlainNotification(id, title, body, chatId, groupChat)
+            showPlainNotification(id, title, body, chatId, groupChat, avatarUserId)
         } catch (e: Throwable) {
             logError("Plain notification failed, showing bare fallback: ${e.describe()}")
             try {
@@ -152,7 +187,11 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         }
     }
 
-    private fun showPlainNotification(id: Int, title: String, body: String, chatId: String?, groupChat: Boolean) {
+    /**
+     * [avatarUserId]: whose profile picture is shown as the large icon - the default look when there
+     * is none. With a [chatId] (reactions, message fallbacks) it joins the chat bundle.
+     */
+    private fun showPlainNotification(id: Int, title: String, body: String, chatId: String?, groupChat: Boolean, avatarUserId: String?) {
         val pendingIntent = PendingIntent.getActivity(
             context,
             id,
@@ -168,10 +207,89 @@ class AndroidNotifier(private val context: Context, private val permissionManage
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
 
-        val notification = builder.build()
-        if (runBlocking { hasPermission() }) {
-            @SuppressLint("MissingPermission")
-            NotificationManagerCompat.from(context).notify(id, notification)
+        avatarUserId?.let { userAvatar(it) }?.let { builder.setLargeIcon(it) }
+        if (chatId != null) builder.setGroup(CHAT_GROUP_KEY)
+
+        notifyChecked(id, builder.build())
+        if (chatId != null) updateChatSummary(postedId = id)
+    }
+
+    /**
+     * Posts [notification], logging every reason it would not show up: missing permission (then it
+     * is not posted at all), notifications or the channel turned off in the system settings.
+     */
+    private fun notifyChecked(id: Int, notification: Notification) {
+        if (!runBlocking { hasPermission() }) {
+            logError("Notification $id not shown: the notification permission is not granted")
+            return
+        }
+        try {
+            val manager = NotificationManagerCompat.from(context)
+            if (!manager.areNotificationsEnabled()) {
+                logError("Notification $id not shown: notifications are turned off for the app in the system settings")
+            } else if (manager.getNotificationChannel(CHANNEL_ID)?.importance == NotificationManager.IMPORTANCE_NONE) {
+                logError("Notification $id not shown: the \"$CHANNEL_NAME\" channel is turned off in the system settings")
+            }
+        } catch (e: Throwable) {
+            logError("Checking whether notifications are turned off failed: ${e.describe()}")
+        }
+        @SuppressLint("MissingPermission")
+        NotificationManagerCompat.from(context).notify(id, notification)
+    }
+
+    /**
+     * Posts the summary that bundles all chat notifications, or removes it once none is left. Built
+     * from the notifications actually showing, so it stays right across process restarts.
+     * [postedId] / [removedId]: a chat notification just posted or cancelled - the system applies
+     * both asynchronously, so the active list may not reflect them yet. Never throws.
+     */
+    private fun updateChatSummary(postedId: Int? = null, removedId: Int? = null) {
+        try {
+            val shown = context.getSystemService(NotificationManager::class.java).activeNotifications
+                .filter { it.notification.group == CHAT_GROUP_KEY && it.id != CHAT_SUMMARY_ID && it.id != removedId }
+            val childIds = shown.map { it.id }.toSet() + listOfNotNull(postedId)
+
+            if (childIds.isEmpty()) {
+                NotificationManagerCompat.from(context).cancel(CHAT_SUMMARY_ID)
+                return
+            }
+
+            val style = NotificationCompat.InboxStyle()
+            shown.sortedByDescending { it.postTime }.take(MAX_SUMMARY_LINES).forEach { child ->
+                val extras = child.notification.extras
+                val title = extras.getCharSequence(Notification.EXTRA_TITLE)
+                val text = extras.getCharSequence(Notification.EXTRA_TEXT)
+                listOfNotNull(title, text).joinToString(": ").takeIf { it.isNotBlank() }?.let { style.addLine(it) }
+            }
+
+            val summary = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(NotificationConfig.iconResId)
+                .setContentTitle(appLabel())
+                .setContentText(runCatching { runBlocking { getString(Res.string.you_have_new_messages) } }.getOrDefault(""))
+                .setStyle(style)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setGroup(CHAT_GROUP_KEY)
+                .setGroupSummary(true)
+                //Only the chat notifications alert - the summary itself stays silent
+                .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
+                .setAutoCancel(true)
+                .setContentIntent(
+                    PendingIntent.getActivity(
+                        context,
+                        CHAT_SUMMARY_ID,
+                        launchIntent(chatId = null, groupChat = false),
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                )
+                .build()
+
+            //Missing permission or blocked notifications were already logged for the chat notification itself
+            if (runBlocking { hasPermission() }) {
+                @SuppressLint("MissingPermission")
+                NotificationManagerCompat.from(context).notify(CHAT_SUMMARY_ID, summary)
+            }
+        } catch (e: Throwable) {
+            logError("Updating the chat summary notification failed: ${e.describe()}")
         }
     }
 
@@ -185,8 +303,15 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         val chatId = content.chatId ?: return
 
         val record = activeConversations.getOrPut(content.id) {
-            ActiveConversation(chatId = chatId, groupChat = content.groupChat, groupName = content.groupName)
+            //A push may run in a fresh process: pick up the messages the chat's notification already
+            //shows, so it keeps its history instead of being replaced by the newest message alone
+            ActiveConversation(chatId = chatId, groupChat = content.groupChat, chatName = null).apply {
+                messages += restoreShownMessages(content.id)
+            }
         }
+        //Kept current, so a renamed group or a changed name shows up on the next message
+        val chatName = if (content.groupChat) content.groupName else content.senderName
+        if (!chatName.isNullOrBlank()) record.chatName = chatName
         record.messages.add(
             StyledMessage(
                 text = content.body,
@@ -206,7 +331,7 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         val record = activeConversations[notifId] ?: return
         record.messages.add(StyledMessage(text = replyText, timestamp = System.currentTimeMillis(), senderName = null, senderId = null))
         while (record.messages.size > MAX_HISTORY_PER_CHAT) record.messages.removeAt(0)
-        postConversationSafely(notifId, record, fallbackTitle = record.groupName ?: ownDisplayName(), fallbackBody = replyText)
+        postConversationSafely(notifId, record, fallbackTitle = record.chatName ?: ownDisplayName(), fallbackBody = replyText)
     }
 
     /**
@@ -227,7 +352,34 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         } catch (e: Throwable) {
             logError("Message notification with default icon failed, showing plain fallback: ${e.describe()}")
         }
-        showPlainNotificationSafely(notifId, fallbackTitle, fallbackBody, record.chatId, record.groupChat)
+        showPlainNotificationSafely(notifId, fallbackTitle, fallbackBody, record.chatId, record.groupChat, record.chatId.takeIf { !record.groupChat })
+    }
+
+    /**
+     * Messages the notification [notifId] currently shows, read back from its MessagingStyle. Empty
+     * when it isn't showing or can't be read. Failures are logged; this never throws.
+     */
+    private fun restoreShownMessages(notifId: Int): List<StyledMessage> {
+        return try {
+            val shown = context.getSystemService(NotificationManager::class.java).activeNotifications
+                .firstOrNull { it.id == notifId }
+                ?.notification
+                ?: return emptyList()
+            val style = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(shown)
+                ?: return emptyList()
+            style.messages.takeLast(MAX_HISTORY_PER_CHAT).map { message ->
+                StyledMessage(
+                    text = message.text?.toString().orEmpty(),
+                    timestamp = message.timestamp,
+                    //No person = one of our own replies, same convention as when it was added
+                    senderName = message.person?.name?.toString(),
+                    senderId = message.person?.key,
+                )
+            }
+        } catch (e: Throwable) {
+            logError("Restoring the messages of notification $notifId failed: ${e.describe()}")
+            emptyList()
+        }
     }
 
     private fun postMessageNotification(notifId: Int, record: ActiveConversation, withProfilePictures: Boolean) {
@@ -237,7 +389,7 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         val resolvedAvatars = mutableMapOf<String, IconCompat>()
         fun avatarFor(userId: String?): IconCompat {
             if (!withProfilePictures || userId == null) return appIcon
-            return resolvedAvatars.getOrPut(userId) { profilePictureIcon(userId) ?: appIcon }
+            return resolvedAvatars.getOrPut(userId) { userAvatar(userId)?.let { IconCompat.createWithBitmap(it) } ?: appIcon }
         }
 
         val ownId = runCatching { SessionCache.requireLoggedIn()?.userId }
@@ -247,12 +399,30 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         val style = NotificationCompat.MessagingStyle(mePerson)
             .setGroupConversation(record.groupChat)
         if (record.groupChat) {
-            record.groupName?.let { style.setConversationTitle(it) }
+            record.chatName?.let { style.setConversationTitle(it) }
         }
         record.messages.forEach { message ->
-            val sender = message.senderName?.let { Person.Builder().setName(it).setIcon(avatarFor(message.senderId)).build() }
+            val sender = message.senderName?.let {
+                Person.Builder().setName(it).setKey(message.senderId).setIcon(avatarFor(message.senderId)).build()
+            }
             style.addMessage(message.text, message.timestamp, sender)
         }
+
+        //Picture of the whole conversation: the group's for groups, the other person's for 1:1 chats
+        val chatBitmap = when {
+            !withProfilePictures -> null
+            record.groupChat -> groupAvatar(record.chatId)
+            else -> userAvatar(record.chatId)
+        }
+        val chatLabel = record.chatName?.takeIf { it.isNotBlank() } ?: appLabel()
+        val chatPerson = if (record.groupChat) null else {
+            Person.Builder()
+                .setName(chatLabel)
+                .setKey(record.chatId)
+                .setIcon(chatBitmap?.let { IconCompat.createWithBitmap(it) } ?: appIcon)
+                .build()
+        }
+        val shortcutId = publishConversationShortcut(record, chatLabel, chatBitmap, chatPerson)
 
         val pendingContentIntent = PendingIntent.getActivity(
             context,
@@ -264,19 +434,70 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(NotificationConfig.iconResId)
             .setStyle(style)
+            //Not drawn next to the MessagingStyle, but read by the chat summary and older launchers
+            .setContentTitle(chatLabel)
+            .setContentText(record.messages.lastOrNull()?.text)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingContentIntent)
+            .setGroup(CHAT_GROUP_KEY)
             .addAction(replyAction(record.chatId, record.groupChat, notifId))
             .addAction(markAsReadAction(record.chatId, record.groupChat, notifId))
 
-        val notification = builder.build()
-        if (runBlocking { hasPermission() }) {
-            @SuppressLint("MissingPermission")
-            NotificationManagerCompat.from(context).notify(notifId, notification)
+        if (shortcutId != null) {
+            builder.setShortcutId(shortcutId)
+            builder.setLocusId(LocusIdCompat(shortcutId))
+        }
+        //Android 11+ shows the conversation picture from the shortcut. Older versions (and a failed
+        //shortcut) only know the large icon.
+        if (shortcutId == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            chatBitmap?.let { builder.setLargeIcon(it) }
+        }
+
+        notifyChecked(notifId, builder.build())
+        updateChatSummary(postedId = notifId)
+    }
+
+    /**
+     * Publishes the chat as a long-lived conversation shortcut and returns its id. Since Android 11
+     * a MessagingStyle notification only counts as a conversation - shown with the chat's picture,
+     * in the conversations section - when it points at such a shortcut. Returns null when it could
+     * not be published; the notification then goes out without it. Never throws.
+     */
+    private fun publishConversationShortcut(record: ActiveConversation, label: String, chatBitmap: Bitmap?, chatPerson: Person?): String? {
+        val shortcutId = CHAT_SHORTCUT_PREFIX + record.chatId
+        val stamp = "$label|${chatBitmap?.let { System.identityHashCode(it) } ?: 0}"
+        if (publishedShortcuts[shortcutId] == stamp) return shortcutId
+
+        return try {
+            val icon = chatBitmap?.let { IconCompat.createWithBitmap(it) }
+                ?: IconCompat.createWithResource(context, context.applicationInfo.icon)
+            val intent = launchIntent(chatId = record.chatId, groupChat = record.groupChat).apply {
+                //Shortcut intents need an action
+                if (action == null) action = Intent.ACTION_VIEW
+            }
+            val builder = ShortcutInfoCompat.Builder(context, shortcutId)
+                .setShortLabel(label)
+                .setLongLived(true)
+                .setIcon(icon)
+                .setIntent(intent)
+                .setLocusId(LocusIdCompat(shortcutId))
+            chatPerson?.let { builder.setPerson(it) }
+
+            ShortcutManagerCompat.pushDynamicShortcut(context, builder.build())
+            publishedShortcuts[shortcutId] = stamp
+            shortcutId
+        } catch (e: Throwable) {
+            logError("Publishing the conversation shortcut for ${record.chatId} failed, posting without it: ${e.describe()}")
+            null
         }
     }
+
+    private fun appLabel(): String =
+        runCatching { context.applicationInfo.loadLabel(context.packageManager).toString() }.getOrNull()
+            ?.takeIf { it.isNotBlank() }
+            ?: NOTIFICATION_FALLBACK_TITLE
 
     private fun replyAction(chatId: String, groupChat: Boolean, notifId: Int): NotificationCompat.Action {
         val label = runBlocking { getString(Res.string.reply) }
@@ -376,42 +597,63 @@ class AndroidNotifier(private val context: Context, private val permissionManage
     }
 
     /**
-     * The user's stored profile picture as a small square icon, or null when there is none (no
-     * user row, no picture downloaded yet, file missing) or it can't be read - the caller then
-     * uses the default icon. Failures are logged; this never throws.
+     * The user's stored profile picture as a small round bitmap, or null when there is none (no
+     * picture downloaded yet, file missing) or it can't be read - the caller then uses the default
+     * icon. Looks at the path in the user's row first, then at the fixed per-user path, where a
+     * picture downloaded for a not yet synced user lands. Failures are logged; this never throws.
      */
-    private fun profilePictureIcon(userId: String): IconCompat? {
-        return try {
-            val path = runBlocking {
-                withTimeoutOrNull(AVATAR_LOOKUP_TIMEOUT_MS) {
-                    KoinPlatform.getKoin().get<UserLocalDataSource>().getUserById(userId)?.profilePictureUrl
-                }
-            }?.takeIf { it.isNotBlank() } ?: return null
+    private fun userAvatar(userId: String): Bitmap? = avatarBitmap("user:$userId") {
+        listOfNotNull(
+            KoinPlatform.getKoin().get<UserLocalDataSource>().getUserById(userId)?.profilePictureUrl,
+            KoinPlatform.getKoin().get<PictureManager>().getProfilePicFilePath(userId, gruppe = false),
+        )
+    }
 
-            val file = File(path)
-            if (!file.isFile || !file.canRead() || file.length() <= 0L) return null
+    /** Same as [userAvatar] for a group's picture. */
+    private fun groupAvatar(groupId: String): Bitmap? = avatarBitmap("group:$groupId") {
+        listOfNotNull(
+            KoinPlatform.getKoin().get<GroupLocalDataSource>().getGroupById(groupId)?.profilePictureUrl,
+            KoinPlatform.getKoin().get<PictureManager>().getProfilePicFilePath(groupId, gruppe = true),
+        )
+    }
+
+    private fun avatarBitmap(cacheKey: String, candidatePaths: suspend () -> List<String>): Bitmap? {
+        return try {
+            val paths = runBlocking {
+                withTimeoutOrNull(AVATAR_LOOKUP_TIMEOUT_MS) { candidatePaths() }
+            }
+            if (paths == null) {
+                logError("Looking up the picture for $cacheKey timed out, using default icon")
+                return null
+            }
+
+            val file = paths.asSequence()
+                .filter { it.isNotBlank() }
+                .map { File(it) }
+                .firstOrNull { it.isFile && it.canRead() && it.length() > 0L }
+                ?: return null
+            val path = file.absolutePath
             val lastModified = file.lastModified()
             val length = file.length()
 
-            avatarCache[userId]
+            avatarCache[cacheKey]
                 ?.takeIf { it.path == path && it.lastModified == lastModified && it.length == length }
-                ?.let { return it.icon }
+                ?.let { return it.bitmap }
 
             val bitmap = decodeAvatarBitmap(file)
             if (bitmap == null) {
-                logError("Profile picture of $userId could not be decoded, using default icon")
+                logError("Picture for $cacheKey could not be decoded, using default icon")
                 return null
             }
-            IconCompat.createWithBitmap(bitmap).also { icon ->
-                avatarCache[userId] = CachedAvatar(path, lastModified, length, icon)
-            }
+            avatarCache[cacheKey] = CachedAvatar(path, lastModified, length, bitmap)
+            bitmap
         } catch (e: Throwable) {
-            logError("Loading profile picture of $userId failed, using default icon: ${e.describe()}")
+            logError("Loading the picture for $cacheKey failed, using default icon: ${e.describe()}")
             null
         }
     }
 
-    /** Decodes [file] subsampled, then centre-crops and scales it to an [AVATAR_SIZE_PX] square. */
+    /** Decodes [file] subsampled, then centre-crops and scales it to an [AVATAR_SIZE_PX] circle. */
     private fun decodeAvatarBitmap(file: File): Bitmap? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, bounds)
@@ -429,7 +671,15 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         val scaled = Bitmap.createScaledBitmap(square, AVATAR_SIZE_PX, AVATAR_SIZE_PX, true)
         if (square !== scaled && square !== decoded) square.recycle()
         if (decoded !== scaled) decoded.recycle()
-        return scaled
+
+        //Round like every profile picture in the app - the large icon and some launchers show it as is
+        val round = Bitmap.createBitmap(AVATAR_SIZE_PX, AVATAR_SIZE_PX, Bitmap.Config.ARGB_8888)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            shader = BitmapShader(scaled, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+        }
+        Canvas(round).drawCircle(AVATAR_SIZE_PX / 2f, AVATAR_SIZE_PX / 2f, AVATAR_SIZE_PX / 2f, paint)
+        scaled.recycle()
+        return round
     }
 
     private fun Throwable.describe(): String = "${this::class.simpleName}: $message"
@@ -443,17 +693,30 @@ class AndroidNotifier(private val context: Context, private val permissionManage
     override fun cancelNotification(id: Int) {
         activeConversations.remove(id)
         NotificationManagerCompat.from(context).cancel(id)
+        updateChatSummary(removedId = id)
     }
 
     override fun cancelNotifications(ids: List<Int>) {
         ids.forEach { cancelNotification(it) }
     }
 
+    /** Clears everything, conversation shortcuts included - runs when the account's data is deleted (logout). */
     @Synchronized
     override fun cancelAllNotifications() {
         activeConversations.clear()
         avatarCache.clear()
+        publishedShortcuts.clear()
         NotificationManagerCompat.from(context).cancelAll()
+        try {
+            val chatShortcutIds = ShortcutManagerCompat.getShortcuts(
+                context,
+                ShortcutManagerCompat.FLAG_MATCH_DYNAMIC or ShortcutManagerCompat.FLAG_MATCH_CACHED
+            ).map { it.id }.filter { it.startsWith(CHAT_SHORTCUT_PREFIX) }
+            ShortcutManagerCompat.removeLongLivedShortcuts(context, chatShortcutIds)
+            ShortcutManagerCompat.removeAllDynamicShortcuts(context)
+        } catch (e: Throwable) {
+            logError("Removing the conversation shortcuts failed: ${e.describe()}")
+        }
     }
 
     override fun cancelMessageNotifications(ids: List<Int>) {

@@ -11,6 +11,7 @@ import assertk.assertions.single
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomMessageDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.testutil.FRIEND_ID
