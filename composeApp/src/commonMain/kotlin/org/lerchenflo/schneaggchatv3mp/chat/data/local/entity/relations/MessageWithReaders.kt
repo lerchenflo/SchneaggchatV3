@@ -9,7 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 
 @Serializable
 data class MessageWithReaders(
-    @Embedded val messageDto: MessageEntity,
+    @Embedded val messageEntity: MessageEntity,
     @Relation(
         parentColumn = "id",
         entityColumn = "messageId"
@@ -22,15 +22,15 @@ data class MessageWithReaders(
     }
 
     fun isPicture() : Boolean{
-        return messageDto.msgType == MessageType.IMAGE
+        return messageEntity.msgType == MessageType.IMAGE
     }
 
     fun getSendDateAsLong(): Long {
-        return messageDto.sendDate
+        return messageEntity.sendDate
     }
 
     fun isGroupMessage(): Boolean {
-        return messageDto.groupMessage
+        return messageEntity.groupMessage
     }
 
     /**
@@ -38,13 +38,13 @@ data class MessageWithReaders(
      */
     fun isThisChatMessage(ownId: String, chatID: String, gruppe : Boolean) : Boolean {
         if (gruppe){
-            if (messageDto.receiverId == chatID && messageDto.groupMessage){
+            if (messageEntity.receiverId == chatID && messageEntity.groupMessage){
                 return true
             }
         }else {
-            if (messageDto.myMessage && messageDto.receiverId == chatID && !messageDto.groupMessage){
+            if (messageEntity.myMessage && messageEntity.receiverId == chatID && !messageEntity.groupMessage){
                 return true
-            }else if (messageDto.senderId == chatID && messageDto.receiverId == ownId && !messageDto.groupMessage){
+            }else if (messageEntity.senderId == chatID && messageEntity.receiverId == ownId && !messageEntity.groupMessage){
                 return true
             }
         }

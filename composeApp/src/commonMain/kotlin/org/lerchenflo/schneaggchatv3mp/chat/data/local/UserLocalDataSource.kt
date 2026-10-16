@@ -15,7 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SnailTrailPoint
  */
 interface UserLocalDataSource {
 
-    suspend fun upsertUser(userDto: UserEntity)
+    suspend fun upsertUser(userEntity: UserEntity)
 
     suspend fun deleteUser(userid: String)
 

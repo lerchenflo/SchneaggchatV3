@@ -25,8 +25,8 @@ class RoomUserDataSource(
 ) : UserLocalDataSource {
 
     @Transaction
-    override suspend fun upsertUser(userDto: UserEntity){
-        database.userDao().upsert(userDto)
+    override suspend fun upsertUser(userEntity: UserEntity){
+        database.userDao().upsert(userEntity)
     }
 
 

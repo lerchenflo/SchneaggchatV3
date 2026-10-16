@@ -4,9 +4,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.MessageW
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 
-fun MessageWithReaders.toMessage(): Message = this.messageDto.toMessage(
-    readers = this.readers.map { readerDto ->
-        readerDto.toMessageReader()
+fun MessageWithReaders.toMessage(): Message = this.messageEntity.toMessage(
+    readers = this.readers.map { readerEntity ->
+        readerEntity.toMessageReader()
     }
 )
 
@@ -45,7 +45,7 @@ fun MessageEntity.toMessage(readers: List<MessageReader> = emptyList()): Message
 
 /** Domain -> entity */
 fun Message.toEntity(): MessageWithReaders = MessageWithReaders(
-    messageDto = MessageEntity(
+    messageEntity = MessageEntity(
         localPK = this.localPK,
         id = this.id,
         msgType = this.msgType,

@@ -367,7 +367,7 @@ class OfflineFirstMessageRepository(
                 }
 
                 //Interne message macha die ned alles hot
-                val messageDto = when(content) {
+                val messageEntity = when(content) {
                     is PollContent -> {
                         MessageEntity(
                             localPK = localpkintern,
@@ -454,7 +454,7 @@ class OfflineFirstMessageRepository(
 
                 //Nachricht hot scho a pk vo da db, also scho din
                 if (localpkintern == 0L){
-                    localpkintern = database.messageDao().insertMessageEntity(messageDto)
+                    localpkintern = database.messageDao().insertMessageEntity(messageEntity)
                     println("LocalPK: $localpkintern")
                 }
 

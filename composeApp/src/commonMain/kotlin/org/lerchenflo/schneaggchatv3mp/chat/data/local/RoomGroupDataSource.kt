@@ -16,12 +16,12 @@ class RoomGroupDataSource(
 ) : GroupLocalDataSource {
 
     override suspend fun upsertGroup(group: Group) {
-        val groupWithMembersDto = group.toEntity()
+        val groupWithMembers = group.toEntity()
 
         database.groupDao().upsertGroupWithMembers(
-            groupWithMembersDto.group,
-            groupWithMembersDto.members.map {
-                it.copy(groupId = groupWithMembersDto.group.id)
+            groupWithMembers.group,
+            groupWithMembers.members.map {
+                it.copy(groupId = groupWithMembers.group.id)
             }
         )
     }
@@ -66,7 +66,7 @@ class RoomGroupDataSource(
     @Transaction
     override suspend fun getGroupMembers(groupId: String): List<GroupMember> {
         val gwm: GroupWithMembers? = database.groupDao().getGroupWithMembersById(groupId)
-        // toGroup() maps the DTO relation to a domain Group which carries members
+        // toGroup() maps the entity relation to a domain Group which carries members
         return gwm?.toGroup()?.members ?: emptyList()
     }
 
@@ -81,8 +81,8 @@ class RoomGroupDataSource(
     @Transaction
     override suspend fun getCommonGroups(ownId: String, otherUserId: String): List<Group> {
 
-        val commonDtos = database.groupDao().getCommonGroupsWithMembers(ownId, otherUserId)
-        return commonDtos.map { it.toGroup() }
+        val commonGroupsWithMembers = database.groupDao().getCommonGroupsWithMembers(ownId, otherUserId)
+        return commonGroupsWithMembers.map { it.toGroup() }
     }
 
 

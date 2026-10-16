@@ -44,7 +44,7 @@ fun UserEntity.toUser(): User = User(
     profilePicUpdatedAt = this.profilePicUpdatedAt,
 )
 
-/** Convert domain User back to UserEntity (for persistence/transport) */
+/** Convert domain User back to UserEntity (for persistence) */
 fun User.toEntity(): UserEntity = UserEntity(
     id = this.id,
     updatedAt = this.lastChanged,

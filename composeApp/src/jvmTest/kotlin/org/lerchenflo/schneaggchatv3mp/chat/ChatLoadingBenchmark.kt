@@ -120,8 +120,8 @@ class ChatLoadingBenchmark {
                     report.appendLine("  raw window, indexed arms  (step 2): %8.2f ms".format(rawMs(newSql)))
 
                     // Correctness: the window must be exactly the newest 100 of the old full query.
-                    val oldIds = dao.getMessagesByUserId(groupId, true).take(100).map { it.messageDto.id }
-                    val newIds = dao.getMessagesByUserIdFlow(groupId, true, 100).first().map { it.messageDto.id }
+                    val oldIds = dao.getMessagesByUserId(groupId, true).take(100).map { it.messageEntity.id }
+                    val newIds = dao.getMessagesByUserIdFlow(groupId, true, 100).first().map { it.messageEntity.id }
                     check(oldIds == newIds) { "window differs from old order" }
                     report.appendLine("  window == newest 100 of old query: OK")
                 } finally {

@@ -22,8 +22,8 @@ class RoomMessageDataSource(
 ) : MessageLocalDataSource {
 
     override suspend fun upsertMessage(message: Message){
-        val messageWithReadersDto = message.toEntity()
-        upsertMessageWithReaders(messageWithReadersDto)
+        val messageWithReaders = message.toEntity()
+        upsertMessageWithReaders(messageWithReaders)
     }
 
     override suspend fun upsertMessages(messages: List<Message>) {
@@ -140,8 +140,8 @@ class RoomMessageDataSource(
      */
     @Transaction
     private suspend fun upsertMessageWithReaders(message: MessageWithReaders) {
-        //Upsert the message dto without readers
-        val upserted = database.messageDao().upsertMessageEntity(message.messageDto)
+        //Upsert the message entity without readers
+        val upserted = database.messageDao().upsertMessageEntity(message.messageEntity)
 
         //if the readers are not empty, remove all existing an re - insert
         if (message.readers.isNotEmpty() && upserted.id != null){
@@ -170,7 +170,7 @@ class RoomMessageDataSource(
         val dbMessage = database.messageDao().getMessageById(messageId)
         if (dbMessage != null) {
             database.messageDao().upsertMessageEntity(
-                dbMessage.messageDto.copy(
+                dbMessage.messageEntity.copy(
                     pictureUrl = newUrl
                 )
             )
@@ -181,7 +181,7 @@ class RoomMessageDataSource(
         val dbMessage = database.messageDao().getMessageById(messageId)
         if (dbMessage != null) {
             database.messageDao().upsertMessageEntity(
-                dbMessage.messageDto.copy(
+                dbMessage.messageEntity.copy(
                     audioPath = newPath
                 )
             )
@@ -192,8 +192,8 @@ class RoomMessageDataSource(
 
     @Transaction
     override fun getAllMessages(): Flow<List<Message>>{
-        return database.messageDao().getAllMessagesWithReadersFlow().map { messageWithReadersDtos ->
-            messageWithReadersDtos.map {
+        return database.messageDao().getAllMessagesWithReadersFlow().map { messagesWithReaders ->
+            messagesWithReaders.map {
                 it.toMessage()
             }
         }
@@ -203,8 +203,8 @@ class RoomMessageDataSource(
         database.messageDao().getChatAggregatesFlow(ownId)
 
     override fun getLastMessagePerChatFlow(ownId: String): Flow<List<Message>> =
-        database.messageDao().getLastMessagePerChatFlow(ownId).map { dtos ->
-            dtos.map { it.toMessage() }
+        database.messageDao().getLastMessagePerChatFlow(ownId).map { entities ->
+            entities.map { it.toMessage() }
         }
 
     @Transaction

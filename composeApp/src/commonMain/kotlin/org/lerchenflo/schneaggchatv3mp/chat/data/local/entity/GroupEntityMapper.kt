@@ -14,12 +14,12 @@ fun GroupWithMembers.toGroup(): Group = Group(
     notisMuted = this.group.notisMuted,
     profilePicUpdatedAt = this.group.profilePicUpdatedAt,
     expiresAt = this.group.expiresAt,
-    members = this.members.map { groupMemberDto ->
-        groupMemberDto.toGroupMember()
+    members = this.members.map { groupMemberEntity ->
+        groupMemberEntity.toGroupMember()
     }
 )
 
-/** Convert domain Group back to GroupEntity (for persistence/transport) */
+/** Convert domain Group back to GroupEntity (for persistence) */
 fun Group.toEntity(): GroupWithMembers = GroupWithMembers(
     group = GroupEntity(
         id = this.id,
@@ -47,7 +47,7 @@ fun GroupMemberEntity.toGroupMember(): GroupMember = GroupMember(
     memberName = memberName
 )
 
-/** Convert domain GroupMember -> persistence/transport GroupMemberEntity */
+/** Convert domain GroupMember -> persistence GroupMemberEntity */
 fun GroupMember.toEntity(): GroupMemberEntity = GroupMemberEntity(
     localPk = localPk,
     groupId = groupId,

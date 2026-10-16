@@ -29,7 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipS
 interface UserDao {
 
     @Upsert()
-    suspend fun upsert(userDto: UserEntity) //Suspend: Async mit warten
+    suspend fun upsert(userEntity: UserEntity) //Suspend: Async mit warten
 
     @Query("DELETE FROM users WHERE id = :userid")
     suspend fun delete(userid: String)
@@ -72,10 +72,10 @@ interface SnailTrailDao {
 interface MessageDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMessageEntity(messageDto: MessageEntity): Long
+    suspend fun insertMessageEntity(messageEntity: MessageEntity): Long
 
     @Update
-    suspend fun updateMessageEntity(messageDto: MessageEntity)
+    suspend fun updateMessageEntity(messageEntity: MessageEntity)
 
     @Query("DELETE FROM messages WHERE id = :msgid")
     suspend fun deleteMessageEntityById(msgid: String)
@@ -107,7 +107,7 @@ interface MessageDao {
         val readersByMessageId = mutableMapOf<String, List<MessageReaderEntity>>()
 
         messages.forEach { message ->
-            val upsertedId = upsertMessageEntity(message.messageDto).id
+            val upsertedId = upsertMessageEntity(message.messageEntity).id
             if (upsertedId != null && message.readers.isNotEmpty()) {
                 readersByMessageId[upsertedId] = message.readers.map { it.copy(messageId = upsertedId) }
             }
@@ -130,16 +130,16 @@ interface MessageDao {
     suspend fun deleteMessageEntitiesByIds(ids: List<String>)
 
     @Transaction
-    suspend fun upsertMessageEntity(messageDto: MessageEntity): MessageEntity {
-        val existing = getMessageEntityById(messageDto.id.orEmpty())
+    suspend fun upsertMessageEntity(messageEntity: MessageEntity): MessageEntity {
+        val existing = getMessageEntityById(messageEntity.id.orEmpty())
         if (existing != null) {
-            updateMessageEntity(messageDto.copy(localPK = existing.localPK))
+            updateMessageEntity(messageEntity.copy(localPK = existing.localPK))
         } else {
-            insertMessageEntity(messageDto)
+            insertMessageEntity(messageEntity)
         }
         // Get the message after insert/update
-        val returnedMessage = getMessageEntityById(messageDto.id.orEmpty())
-        return returnedMessage ?: messageDto
+        val returnedMessage = getMessageEntityById(messageEntity.id.orEmpty())
+        return returnedMessage ?: messageEntity
     }
 
 
@@ -551,7 +551,7 @@ interface AllDatabaseDao {
 interface MapEntryDao {
 
     @Upsert
-    suspend fun upsert(dto: MapEntryEntity)
+    suspend fun upsert(mapEntryEntity: MapEntryEntity)
 
     @Query("SELECT id, updatedAt FROM map_entries")
     suspend fun getMapEntryIdsWithChangeDates(): List<IdChangeDate>
@@ -567,7 +567,7 @@ interface MapEntryDao {
 interface EventDao {
 
     @Upsert
-    suspend fun upsert(dto: EventEntity)
+    suspend fun upsert(eventEntity: EventEntity)
 
     @Query("SELECT id, updatedAt FROM events")
     suspend fun getEventIdsWithChangeDates(): List<IdChangeDate>
