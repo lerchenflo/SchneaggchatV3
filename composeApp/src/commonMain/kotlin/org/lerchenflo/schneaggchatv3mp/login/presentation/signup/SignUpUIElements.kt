@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.darkokoa.datetimewheelpicker.WheelDatePicker
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
@@ -119,7 +120,7 @@ fun BirthdatePickerPopup(
                 minDate = LocalDate(1900, 1, 1),
                 maxDate = endOfCurrentYear,
                 dateFormatter = germanNumericDateFormatter(),
-                rowCount = 5,
+                rows = WheelRows.Count(5),
                 textColor = MaterialTheme.colorScheme.onSurface,
                 selectorProperties = WheelPickerDefaults.selectorProperties(
                     enabled = true,

@@ -41,7 +41,6 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
@@ -670,11 +669,11 @@ fun SchneaggmapLayers(
                                 source = clusterSource,
                                 onClick = {
                                     scope.launch {
-                                        mapState.animateCameraPosition(
+                                        mapState.animateCamera(
                                             mapState.cameraPosition.copy(
                                                 target = cluster.centroid,
                                                 zoom = mapState.cameraPosition.zoom + 2,
-                                            )
+                                            ).toCameraUpdate()
                                         )
                                     }
                                     ClickResult.Consume

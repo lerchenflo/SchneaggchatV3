@@ -93,6 +93,8 @@ fun ChatScreen(
                 quickReactions = state.quickReactions,
                 playbackProgress = playbackProgress,
                 onAction = { onAction(ChatAction.OnMessageAction(it)) },
+                onLoadOlderMessages = { onAction(ChatAction.OnLoadOlderMessages) },
+                onLoadMessagesUntil = { onAction(ChatAction.OnLoadMessagesUntil(it)) },
                 modifier = Modifier.weight(1f)
             )
 

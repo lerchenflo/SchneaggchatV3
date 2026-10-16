@@ -19,7 +19,8 @@ enum class FreeRoamBarPosition { Top, Center, Bottom }
  */
 typealias TourStepContent = @Composable ColumnScope.() -> Unit
 
-val DefaultTourBackgroundColor: Color = Color.Black.copy(alpha = 0.75f)
+/** Light enough that the screen behind stays readable; the spotlight outline carries the focus. */
+val DefaultTourBackgroundColor: Color = Color.Black.copy(alpha = 0.55f)
 
 /**
  * Describes a single step in an onboarding tour.

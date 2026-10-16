@@ -46,4 +46,8 @@ sealed interface ChatAction {
     // Message-level actions (reply/react/edit/delete/copy/details/poll/audio playback/...),
     // unchanged - see MessageAction. Wrapped so composables only need one onAction callback.
     data class OnMessageAction(val action: MessageAction) : ChatAction
+
+    // Message window: the list only holds the newest messages and grows on demand.
+    data object OnLoadOlderMessages : ChatAction
+    data class OnLoadMessagesUntil(val messageId: String) : ChatAction
 }

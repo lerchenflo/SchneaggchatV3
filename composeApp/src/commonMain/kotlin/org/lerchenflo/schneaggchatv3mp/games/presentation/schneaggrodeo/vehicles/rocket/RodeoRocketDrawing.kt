@@ -12,9 +12,13 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HOOVES_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.HAT_COLOR
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoDrawContext
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoFootprint
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoLayer
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.onFootprint
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.polygonPath
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoLassoHintUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleUi
@@ -59,14 +63,24 @@ data class RodeoRocketUi(
 
     override val lassoHint: RodeoLassoHintUi? get() = null
 
+    /**
+     * Rigid, level with the ground under the middle of its dome - right under the horse's hooves once
+     * it is in - so no part follows the hills on its own and it doesn't bob as they pass below.
+     */
+    override val footprint get() = (x + DOME_X + DOME_WIDTH / 2f).let { RodeoFootprint(it, it, tilts = false) }
+
     override fun DrawScope.draw(layer: RodeoLayer, context: RodeoDrawContext) {
         val colors = context.colors
         when (layer) {
-            RodeoLayer.BACK -> planets.forEach { drawPlanet(it, context) }
-            RodeoLayer.BODY -> if (visible) {
+            // Space knows no hills: the planets keep their height over the ground under the horse
+            RodeoLayer.BACK -> {
+                val space = context.leveled(context.ground(HORSE_X + HOOVES_X))
+                planets.forEach { drawPlanet(it, space) }
+            }
+            RodeoLayer.BODY -> if (visible) onFootprint(context, footprint) {
                 drawRocket(
                     rocket = this@RodeoRocketUi,
-                    context = context,
+                    context = it,
                     bodyColor = colors.surfaceBright,
                     lineColor = colors.onSurface,
                     accentColor = colors.tertiary,

@@ -26,7 +26,7 @@ data class MessageWithReadersDto(
     }
 
     fun getSendDateAsLong(): Long {
-        return messageDto.sendDate.toLong()
+        return messageDto.sendDate
     }
 
     fun isGroupMessage(): Boolean {

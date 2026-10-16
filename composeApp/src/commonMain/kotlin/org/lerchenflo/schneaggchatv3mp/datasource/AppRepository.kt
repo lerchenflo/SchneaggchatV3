@@ -294,19 +294,24 @@ class AppRepository(
      * offline too, the session then only dies with its expiry.
      *
      * The device's push token goes along, otherwise the server keeps sending notifications for the
-     * account this device just left.
+     * account this device just left. That also holds when the session is already dead (ended from
+     * another device's device list, refresh rejected): then only the push token is sent.
      *
      * Bounded by [LOGOUT_SERVER_CALL_TIMEOUT] - the HTTP client would otherwise let the user wait
      * up to its 30 s request timeout on a bad network before the local logout even starts. The
      * server side call is idempotent, so a cancelled attempt that still lands is harmless.
      */
     private suspend fun endServerSession(refreshToken: String?) {
-        if (refreshToken.isNullOrBlank() || !JwtUtils.isTokenDateValid(refreshToken)) return
+        val usableRefreshToken = refreshToken?.takeIf { it.isNotBlank() && JwtUtils.isTokenDateValid(it) }
 
         val finished = withTimeoutOrNull(LOGOUT_SERVER_CALL_TIMEOUT) {
+            // Inside the timeout: fetching the FCM token can hang offline
+            val notificationToken = KoinPlatform.getKoin().get<Notifier>().getToken()
+            if (usableRefreshToken == null && notificationToken.isNullOrBlank()) return@withTimeoutOrNull Unit
+
             networkUtils.logout(
-                refreshToken = refreshToken,
-                notificationToken = KoinPlatform.getKoin().get<Notifier>().getToken(),
+                refreshToken = usableRefreshToken,
+                notificationToken = notificationToken,
                 isAndroid = appVersion.isAndroid(),
             ).trackConnectivity()
                 .onError { loggingRepository.logWarning("Logout: server session not ended (${it.errorCode}): ${it.message}") }
@@ -321,7 +326,7 @@ class AppRepository(
      * still be ended best-effort; a throw anywhere after step 2 can no longer leave a session on
      * disk that the next start would silently pick up again.
      */
-    suspend fun logout(){
+    suspend fun logout(endSessionOnServer: Boolean = true){
         val refreshToken = authSessionManager.currentTokens()?.refreshToken
 
         try {
@@ -333,7 +338,7 @@ class AppRepository(
             SessionCache.logout() //Remove cached credentials (Userid)
         }
 
-        endServerSession(refreshToken) // best effort, bounded; the token is already gone locally
+        if (endSessionOnServer) endServerSession(refreshToken) // best effort, bounded; the token is already gone locally
 
         deleteAllAppData() // delete all app data when logging out
 
@@ -1600,6 +1605,59 @@ class AppRepository(
     }
 
 
+    /**
+     * Logged-in devices of the own account, or null when loading failed (error already sent).
+     */
+    suspend fun getSessions(): List<NetworkUtils.SessionResponse>? {
+        return when (val result = networkUtils.getSessions().trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                null
+            }
+            is NetworkResult.Success -> result.data
+        }
+    }
+
+    /**
+     * Logs one of the own devices out remotely.
+     */
+    /**
+     * Logs the account out everywhere. Mirrors the server's allDevices logout: it ends every
+     * session (this device's too) and drops all push tokens, so this device then runs the normal
+     * local logout - without a second server call, the session is already gone.
+     *
+     * Unlike [logout] this is not best effort: if the server call fails, the other devices are
+     * still logged in, so the user stays logged in here too and sees the error.
+     * @return true if the account was logged out everywhere
+     */
+    suspend fun logoutAllDevices(): Boolean {
+        val refreshToken = authSessionManager.currentTokens()?.refreshToken
+            ?.takeIf { it.isNotBlank() && JwtUtils.isTokenDateValid(it) }
+
+        return when (val result = networkUtils.logoutAllDevices(refreshToken).trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                loggingRepository.logWarning("Logout all devices failed (${result.error.errorCode}): ${result.error.message}")
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
+            is NetworkResult.Success<*> -> {
+                logout(endSessionOnServer = false)
+                true
+            }
+        }
+    }
+
+    suspend fun endSession(sessionId: String): Boolean {
+        return when (val result = networkUtils.endSession(sessionId).trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
+            is NetworkResult.Success<*> -> true
+        }
+    }
+
+
     suspend fun changeProfilePic(newPic: ByteArray) : Boolean {
         when (val success = networkUtils.changeProfilePic(newPic).trackConnectivity()){
             is NetworkResult.Error<*> -> {
@@ -1704,7 +1762,7 @@ class AppRepository(
                         poll = content.poll.toLocalPollMessage(ownId),
                         senderId = ownId,
                         receiverId = empfaenger,
-                        sendDate = senddate,
+                        sendDate = senddate.toLong(),
                         updatedAt = senddate,
                         deleted = false,
                         groupMessage = gruppe,
@@ -1723,7 +1781,7 @@ class AppRepository(
                         content = content.message,
                         senderId = ownId,
                         receiverId = empfaenger,
-                        sendDate = senddate,
+                        sendDate = senddate.toLong(),
                         updatedAt = senddate,
                         deleted = false,
                         groupMessage = gruppe,
@@ -1744,7 +1802,7 @@ class AppRepository(
                         content = content.text,
                         senderId = ownId,
                         receiverId = empfaenger,
-                        sendDate = senddate,
+                        sendDate = senddate.toLong(),
                         updatedAt = senddate,
                         deleted = false,
                         groupMessage = gruppe,
@@ -1765,7 +1823,7 @@ class AppRepository(
                         //content = content.text,
                         senderId = ownId,
                         receiverId = empfaenger,
-                        sendDate = senddate,
+                        sendDate = senddate.toLong(),
                         updatedAt = senddate,
                         deleted = false,
                         groupMessage = gruppe,

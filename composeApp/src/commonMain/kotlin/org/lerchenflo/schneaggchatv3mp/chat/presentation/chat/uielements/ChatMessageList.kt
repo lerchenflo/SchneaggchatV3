@@ -47,6 +47,12 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.new_messages
 import kotlin.time.Duration.Companion.milliseconds
 
+// How close (in items) to the oldest loaded item the user may scroll before older ones are loaded.
+private const val LOAD_OLDER_THRESHOLD = 30
+
+private fun List<MessageDisplayItem>.indexOfMessage(messageId: String): Int =
+    indexOfFirst { it is MessageDisplayItem.MessageItem && it.message.id == messageId }
+
 /**
  * The scrollable message list: opens scrolled to the unread divider (or a searched-for message
  * when [highlightMessageId] is set), and handles reply-preview jump-and-glow.
@@ -61,6 +67,8 @@ fun ChatMessageList(
     quickReactions: List<String>,
     playbackProgress: StateFlow<PlaybackProgress>,
     onAction: (MessageAction) -> Unit,
+    onLoadOlderMessages: () -> Unit,
+    onLoadMessagesUntil: (messageId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -115,28 +123,54 @@ fun ChatMessageList(
         }
     }
 
+    // The list only holds the newest messages: ask for the next older batch when the user nears
+    // the top (the reversed list's last index).
+    val nearOldestLoaded by remember {
+        derivedStateOf {
+            val layoutInfo = listState.layoutInfo
+            val topIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
+            topIndex >= layoutInfo.totalItemsCount - LOAD_OLDER_THRESHOLD
+        }
+    }
+    LaunchedEffect(Unit) {
+        snapshotFlow { nearOldestLoaded }.collect { nearTop ->
+            if (nearTop) onLoadOlderMessages()
+        }
+    }
+
     // Id of the message that should briefly glow after jumping to it via a reply preview
     var highlightedMessageId by remember { mutableStateOf<String?>(null) }
 
-    // Opened from the chat selector's message search: scroll the searched message into view
-    // and glow it, the same way a reply preview jump does. Keyed on displayItems because the
-    // messages stream in asynchronously - the first emission may not contain it yet.
-    //Guarded inside the effect rather than around it: flipping the flag must not remove the
-    //effect from composition, which would cancel the glow before it is cleared again.
-    var messageJumpDone by remember(highlightMessageId) { mutableStateOf(false) }
-    LaunchedEffect(highlightMessageId, displayItems) {
-        if (highlightMessageId == null || messageJumpDone) return@LaunchedEffect
-
-        val targetIndex = displayItems.indexOfFirst {
-            it is MessageDisplayItem.MessageItem && it.message.id == highlightMessageId
+    // Runs in the composable's scope, not in an effect: the effect below restarts whenever
+    // displayItems changes, which would cancel the glow before it is cleared again.
+    fun jumpAndGlow(targetIndex: Int, messageId: String, animate: Boolean) {
+        scope.launch {
+            if (animate) listState.animateScrollToItem(targetIndex) else listState.scrollToItem(targetIndex)
+            highlightedMessageId = messageId
+            delay(1500.milliseconds)
+            highlightedMessageId = null
         }
-        if (targetIndex == -1) return@LaunchedEffect
+    }
 
-        messageJumpDone = true
-        listState.scrollToItem(targetIndex)
-        highlightedMessageId = highlightMessageId
-        delay(1500.milliseconds)
-        highlightedMessageId = null
+    // Message to jump to once it is loaded: the searched message when opened from the chat
+    // selector's message search, or a reply's original that lies above the loaded window. Keyed on
+    // displayItems because messages stream in asynchronously - it may take a bigger window first.
+    var pendingJumpId by remember(highlightMessageId) { mutableStateOf(highlightMessageId) }
+    var loadRequestedFor by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(pendingJumpId, displayItems) {
+        val messageId = pendingJumpId ?: return@LaunchedEffect
+
+        val targetIndex = displayItems.indexOfMessage(messageId)
+        if (targetIndex == -1) {
+            if (loadRequestedFor != messageId) {
+                loadRequestedFor = messageId
+                onLoadMessagesUntil(messageId)
+            }
+            return@LaunchedEffect
+        }
+
+        pendingJumpId = null
+        jumpAndGlow(targetIndex, messageId, animate = false)
     }
 
     // Day of the topmost (partially) visible item, shown in the floating date chip while
@@ -184,18 +218,10 @@ fun ChatMessageList(
                         val message = item.message
                         //println("Message read by: ${message.readers}")
 
-                        var replyItem: MessageDisplayItem.MessageItem? = null
-                        if (message.answerId != null) {
-                            // Find answer message from display items
-                            replyItem = displayItems
-                                .filterIsInstance<MessageDisplayItem.MessageItem>()
-                                .firstOrNull { it.message.id == message.answerId }
-                        }
-
                         ChatMessageItem(
                             item = item,
-                            replyMessage = replyItem?.message,
-                            replyMessageSender = replyItem?.sender,
+                            replyMessage = item.replyMessage,
+                            replyMessageSender = item.replySender,
                             isHighlighted = message.id != null && message.id == highlightedMessageId,
                             ownId = ownId,
                             chatId = chatId,
@@ -203,16 +229,14 @@ fun ChatMessageList(
                             quickReactions = quickReactions,
                             playbackProgress = playbackProgress,
                             onReplyPreviewClick = {
-                                val targetIndex =
-                                    displayItems.indexOfFirst {
-                                        it is MessageDisplayItem.MessageItem && it.message.id == message.answerId
-                                    }
-                                if (targetIndex != -1) {
-                                    scope.launch {
-                                        listState.animateScrollToItem(targetIndex)
-                                        highlightedMessageId = message.answerId
-                                        delay(1500.milliseconds)
-                                        highlightedMessageId = null
+                                val answerId = message.answerId
+                                if (answerId != null) {
+                                    val targetIndex = displayItems.indexOfMessage(answerId)
+                                    if (targetIndex != -1) {
+                                        jumpAndGlow(targetIndex, answerId, animate = true)
+                                    } else {
+                                        // Above the loaded window: load down to it, then jump.
+                                        pendingJumpId = answerId
                                     }
                                 }
                             },

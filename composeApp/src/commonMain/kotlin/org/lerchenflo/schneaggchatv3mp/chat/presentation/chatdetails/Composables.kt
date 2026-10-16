@@ -7,18 +7,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AddModerator
-import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material3.AlertDialog
@@ -27,6 +24,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -57,7 +55,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.FriendRequestAlert
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
@@ -67,10 +64,8 @@ import schneaggchatv3mp.composeapp.generated.resources.add_description_placehold
 import schneaggchatv3mp.composeapp.generated.resources.admin
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change
-import schneaggchatv3mp.composeapp.generated.resources.common_groups
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_member
 import schneaggchatv3mp.composeapp.generated.resources.group_description
-import schneaggchatv3mp.composeapp.generated.resources.groupmembers
 import schneaggchatv3mp.composeapp.generated.resources.make_admin
 import schneaggchatv3mp.composeapp.generated.resources.member_since
 import schneaggchatv3mp.composeapp.generated.resources.ok
@@ -112,6 +107,10 @@ fun ConfirmationDialog(
     )
 }
 
+/**
+ * Member rows of a group. The section header (title + count) and the "add members" row live in
+ * ChatDetails, so this is only the list itself.
+ */
 @Composable
 fun GroupMembersView(
     ownId: String,
@@ -120,24 +119,12 @@ fun GroupMembersView(
     changeAdminStatus:(groupMember: GroupMember)-> Unit,
     removeMember: (memberId: String)-> Unit,
     sendFriendRequest:(id: String) -> Unit,
-    //iAmAdmin: Boolean,
 ) {
     val iAmAdmin = members.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
 
-
     Column(
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(vertical = 8.dp)
     ) {
-
-        if (members.isNotEmpty()) {
-            Text(
-                text = stringResource(Res.string.groupmembers, members.size),
-                )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-
         members.forEach { (groupMember, user) ->
             var profilePictureDialogShown by remember { mutableStateOf(false) }
             var userOptionPopupExpanded by remember { mutableStateOf(false) }
@@ -146,22 +133,45 @@ fun GroupMembersView(
             val me = groupMember.userId == ownId
             val userName = user?.displayName ?: groupMember.memberName
 
-            ChatButtonView(
-                profilePictureFilePath = user?.profilePictureUrl ?: "",
-                name = if(me){ // if own user is displays add a hint
-                    userName + stringResource(Res.string.you_with_brackets)
-                }else{
-                    userName
-                },
-                isAdmin = groupMember.admin,
-                onClickText = {
-                    if(!me) userOptionPopupExpanded = true // only show popup for others
-                },
-                onClickImage = {
-                    profilePictureDialogShown = true
-                },
-                joindate = groupMember.joinDate
-            )
+            // Box so the options menu opens at this row instead of below the list
+            Box {
+                ChatButtonView(
+                    profilePictureFilePath = user?.profilePictureUrl ?: "",
+                    name = if(me){ // if own user is displays add a hint
+                        userName + stringResource(Res.string.you_with_brackets)
+                    }else{
+                        userName
+                    },
+                    isAdmin = groupMember.admin,
+                    onClickText = {
+                        if(!me) userOptionPopupExpanded = true // only show popup for others
+                    },
+                    onClickImage = {
+                        profilePictureDialogShown = true
+                    },
+                    joindate = groupMember.joinDate
+                )
+
+                UserOptionPopup(
+                    expanded = userOptionPopupExpanded,
+                    iAmAdmin = iAmAdmin,
+                    groupMember = groupMember,
+                    user = user,
+                    onDismissRequest = { userOptionPopupExpanded = false },
+                    onOpenChat = {
+                        if(user != null) navigateToChat(user.id, false)
+                    },
+                    onAdminStatusChange = {
+                        changeAdminStatus(groupMember)
+                    },
+                    onRemoveUser = {
+                        showRemoveMemberConfirmation = true  // Show confirmation instead of directly removing
+                    },
+                    onSendFriendRequest = {
+                        showFriendRequestAlert = true
+                    }
+                )
+            }
 
             if (profilePictureDialogShown) {
                 ProfilePictureBigDialog(
@@ -197,29 +207,6 @@ fun GroupMembersView(
                     friendName = userName
                 )
             }
-
-            UserOptionPopup(
-                expanded = userOptionPopupExpanded,
-                iAmAdmin = iAmAdmin,
-                groupMember = groupMember,
-                user = user,
-                onDismissRequest = { userOptionPopupExpanded = false },
-                onOpenChat = {
-                    if(user != null) navigateToChat(user.id, false)
-                },
-                onAdminStatusChange = {
-                    changeAdminStatus(groupMember)
-                },
-                onRemoveUser = {
-                    showRemoveMemberConfirmation = true  // Show confirmation instead of directly removing
-                },
-                onSendFriendRequest = {
-                    showFriendRequestAlert = true
-                }
-            )
-
-
-            //HorizontalDivider()
         }
     }
 }
@@ -230,18 +217,8 @@ fun CommonGroupsView(
     viewmodel: ChatDetailsViewmodel
 ){
     Column(
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(vertical = 8.dp)
     ) {
-
-        if (groups.isNotEmpty()) {
-            Text(
-                text = stringResource(Res.string.common_groups, groups.size),
-
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
         groups.forEach { group ->
 
             var profilePictureDialogShown by remember { mutableStateOf(false) }
@@ -264,74 +241,77 @@ fun CommonGroupsView(
                     }
                 )
             }
-
-            //HorizontalDivider()
         }
     }
 }
 
 
+/**
+ * One member / group row: the whole row is the tap target ([onClickText]), the picture opens it
+ * big ([onClickImage]).
+ */
 @Composable
 private fun ChatButtonView(
     profilePictureFilePath: String,
     name: String,
     isAdmin: Boolean = false,
-    onClickText: () -> Unit = {},  // Add click for name + admin icon
-    onClickImage: () -> Unit = {},  // Add click for image (profilepicture)
+    onClickText: () -> Unit = {},
+    onClickImage: () -> Unit = {},
     joindate: String? = null,
     modifier: Modifier = Modifier
-        .fillMaxWidth()
-        .padding(6.dp)
-        .height(60.dp)
 ){
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClickText() }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         ProfilePictureView(
             filepath = profilePictureFilePath,
             modifier = Modifier
-                .size(50.dp) // Use square aspect ratio
-                .padding(end = 8.dp) // Right padding only
-                .clip(CircleShape) // Circular image
-                .clickable{onClickImage()}
+                .size(48.dp)
+                .clip(CircleShape)
+                .clickable { onClickImage() }
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable{onClickText()},
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.Center
-            ) {
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = name,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            joindate?.toLongOrNull()?.let { joinMillis ->
                 Text(
-                    text = name,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-
-                if (joindate != null) {
-                    Text(
-                        text = stringResource(Res.string.member_since, millisToTimeDateOrYesterday(joindate.toLong())),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                }
-            }
-
-            if(isAdmin){
-                Icon(
-                    imageVector = Icons.Default.AdminPanelSettings,
-                    contentDescription = stringResource(Res.string.admin),
+                    text = stringResource(Res.string.member_since, millisToTimeDateOrYesterday(joinMillis)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
 
+        if (isAdmin) {
+            Spacer(modifier = Modifier.width(8.dp))
 
-
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Text(
+                    text = stringResource(Res.string.admin),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+            }
+        }
     }
 }
 
@@ -525,58 +505,6 @@ fun ChangeDescription(
 
         },
     )
-}
-
-@Composable
-fun DescriptionStatusRow(
-    onClick: () -> Unit,
-    titleText: String,
-    bodyText: String,
-    infoText: String
-){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable{
-                onClick()
-            }
-            .padding(
-                16.dp
-            )
-    ){
-        Column(){
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = titleText,
-                    modifier = Modifier.weight(1f),  // Takes available space but allows other items to show
-                    autoSize = TextAutoSize.StepBased(13.sp, 19.sp),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,  // Shows "..." if text is too long
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                TooltipIconButton(infoText)
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row {
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Text(
-                    text = bodyText,
-                    fontSize = 14.sp,  // Smaller body text
-                    lineHeight = 16.sp,
-                    maxLines = 20,
-                )
-            }
-        }
-
-    }
 }
 
 @Composable

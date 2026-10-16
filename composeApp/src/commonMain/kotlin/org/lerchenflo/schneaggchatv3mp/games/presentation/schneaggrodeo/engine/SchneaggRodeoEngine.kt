@@ -959,8 +959,8 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         dropping = false
         horse.height = maxOf(0f, horse.height)
         horse.jumpPeak = 0f
-        course.clearForNewMap(horse.speed, elapsed)
         course.map = map
+        course.clearForNewMap(horse.speed, elapsed)
         stanislaus.reset()
         wonders.clearForNewMap()
         landscape.sections.clear()

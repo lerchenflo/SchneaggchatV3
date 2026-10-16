@@ -33,7 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -262,7 +262,7 @@ fun LoginScreen(
                     vertical = 24.dp
                 )
 
-            val windowSizeclass = currentWindowAdaptiveInfo().windowSizeClass
+            val windowSizeclass = currentWindowAdaptiveInfoV2().windowSizeClass
             val deviceConfiguration = DeviceSizeConfiguration.fromWindowSizeClass(windowSizeclass)
 
             // for continuing with tab

@@ -28,7 +28,11 @@ sealed class MessageDisplayItem {
         val messageMinimal: MessageMinimal,
         val resolvedReaders: Map<String, String> = emptyMap(), // readerId -> readerName, pre-resolved
         val resolvedReaderList: List<ReaderUi> = emptyList(), // full per-message reader list (details dialog)
-        val resolvedReactions: Map<String, String> = emptyMap() // userId -> userName, pre-resolved
+        val resolvedReactions: Map<String, String> = emptyMap(), // userId -> userName, pre-resolved
+        // The message this one answers, pre-resolved so the row needs no list scan - and found
+        // even when it lies outside the chat screen's loaded window.
+        val replyMessage: Message? = null,
+        val replySender: SenderInfo? = null,
     ) : MessageDisplayItem()
 
     /**

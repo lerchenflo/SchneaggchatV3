@@ -17,9 +17,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
     indices = [
         Index(value = ["id"], unique = true),
         // Both arms of the "(senderId = :id OR receiverId = :id) AND groupMessage = :group" chat
-        // lookup, so SQLite's OR-optimization can seek each arm instead of scanning.
-        Index(value = ["senderId", "groupMessage"]),
-        Index(value = ["receiverId", "groupMessage"]),
+        // lookup, so SQLite's OR-optimization can seek each arm instead of scanning. Ending in
+        // sendDate lets each arm also hand its rows back newest-first straight from the index,
+        // so MessageDao.getMessagesByUserIdFlow's LIMIT reads only that many rows instead of
+        // sorting the whole chat.
+        Index(value = ["senderId", "groupMessage", "sendDate"]),
+        Index(value = ["receiverId", "groupMessage", "sendDate"]),
         // Covers MessageDao.getChatAggregatesFlow, getLastMessagePerChatFlow and
         // getUnreadChatCountFlow completely: all three re-run on every message change and would
         // otherwise scan whole rows including content/poll/reaction payloads. The leading three
@@ -54,7 +57,9 @@ data class MessageDto(
 
     var receiverId: String,
 
-    var sendDate: String = "",
+    // Epoch millis. Stored as a number (not the domain Message's String) so it sorts and indexes
+    // numerically; 0 means unknown - see Message.toDto / MessageDto.toMessage.
+    var sendDate: Long = 0L,
 
     var updatedAt: String = "",
 

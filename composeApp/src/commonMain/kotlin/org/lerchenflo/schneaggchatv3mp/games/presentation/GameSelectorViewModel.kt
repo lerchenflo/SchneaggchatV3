@@ -7,10 +7,12 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.BedroomBaby
 import androidx.compose.material.icons.filled.Castle
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Dataset
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.House
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Search
@@ -21,11 +23,15 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_2048_description
+import schneaggchatv3mp.composeapp.generated.resources.games_cchallenge_description
+import schneaggchatv3mp.composeapp.generated.resources.games_cchallenge_title
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_description
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_description
 import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_description
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_description
 import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_description
+import schneaggchatv3mp.composeapp.generated.resources.games_ghettoguesser_description
+import schneaggchatv3mp.composeapp.generated.resources.games_ghettoguesser_title
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_description
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_description
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_title
@@ -67,6 +73,15 @@ class GameSelectorViewModel : ViewModel() {
             daily = true
         ),
         GameScreenElement(
+            title = Res.string.games_cchallenge_title,
+            description = Res.string.games_cchallenge_description,
+            icon = Icons.Default.Code,
+            route = Route.CChallenge,
+            inDev = GameId.C_CHALLENGE.indev,
+            gameId = GameId.C_CHALLENGE,
+            daily = true
+        ),
+        GameScreenElement(
             title = Res.string.games_schneaggrodeo_title,
             description = Res.string.games_schneaggrodeo_description,
             icon = Icons.Default.BedroomBaby, // the rocking horse is the closest thing to a horse
@@ -81,6 +96,14 @@ class GameSelectorViewModel : ViewModel() {
             route = Route.Crossword,
             inDev = GameId.CROSSWORD.indev,
             gameId = GameId.CROSSWORD
+        ),
+        GameScreenElement(
+            title = Res.string.games_ghettoguesser_title,
+            description = Res.string.games_ghettoguesser_description,
+            icon = Icons.Default.Map,
+            route = Route.GhettoGuesser,
+            // No server leaderboard yet, so no gameId; shown only in dev mode until then
+            inDev = true,
         ),
         GameScreenElement(
             title = Res.string.games_wordle_title,

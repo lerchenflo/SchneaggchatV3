@@ -158,4 +158,20 @@ class PrivacyAndSecurityViewModel(
             navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
         }
     }
+
+    private var isLoggingOutAllDevices = false
+
+    fun logoutAllDevices() {
+        if (isLoggingOutAllDevices) return
+        isLoggingOutAllDevices = true
+        viewModelScope.launch {
+            try {
+                if (appRepository.logoutAllDevices()) {
+                    navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
+                }
+            } finally {
+                isLoggingOutAllDevices = false
+            }
+        }
+    }
 }

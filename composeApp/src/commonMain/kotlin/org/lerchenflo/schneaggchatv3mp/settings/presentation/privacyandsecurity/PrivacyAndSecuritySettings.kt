@@ -2,6 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import schneaggchatv3mp.composeapp.generated.resources.yes
+import schneaggchatv3mp.composeapp.generated.resources.cancel
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -9,7 +14,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
@@ -58,6 +65,10 @@ import schneaggchatv3mp.composeapp.generated.resources.email_provider_warning
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
+import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices
+import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_description
+import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_logout_all
+import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_logout_all_confirm
 import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.privacy_and_security
 import schneaggchatv3mp.composeapp.generated.resources.privacy_group_legal
@@ -73,7 +84,8 @@ fun PrivacyAndSecuritySettings(
     modifier: Modifier = Modifier.fillMaxWidth(),
     viewModel: PrivacyAndSecurityViewModel,
     sharedSettingsViewmodel: SharedSettingsViewmodel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    navigateLoggedInDevices: () -> Unit
 ) {
     val ownuser = sharedSettingsViewmodel.ownUser
     val uriHandler = LocalUriHandler.current
@@ -82,6 +94,7 @@ fun PrivacyAndSecuritySettings(
     var showChangePasswordDialog by remember { mutableStateOf(false) }
     var showChangeEmailPopup by remember { mutableStateOf(false) }
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
+    var showLogoutAllDialog by rememberSaveable { mutableStateOf(false) }
     var locationSharingDialogShown by remember { mutableStateOf(false) }
 
     Column {
@@ -146,15 +159,6 @@ fun PrivacyAndSecuritySettings(
                 }
             )
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Logout
-            SettingsOption(
-                icon = Icons.AutoMirrored.Default.ExitToApp,
-                text = stringResource(Res.string.logout),
-                onClick = { showLogoutDialog = true }
-            )
-
             // Group 2: Location & Privacy
             SettingsDivider(
                 title = stringResource(Res.string.privacy_group_location)
@@ -194,6 +198,25 @@ fun PrivacyAndSecuritySettings(
                         uriHandler.openUri(getPrivacyPolicyUrl(serverUrl))
                     }
                 }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Logged-in devices
+            SettingsOption(
+                icon = Icons.Default.Devices,
+                text = stringResource(Res.string.logged_in_devices),
+                subtext = stringResource(Res.string.logged_in_devices_description),
+                onClick = navigateLoggedInDevices
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Logout
+            SettingsOption(
+                icon = Icons.AutoMirrored.Default.ExitToApp,
+                text = stringResource(Res.string.logout),
+                onClick = { showLogoutDialog = true }
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -255,13 +278,53 @@ fun PrivacyAndSecuritySettings(
     }
 
     if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.logout()
+                    showLogoutDialog = false
+                }) {
+                    Text(stringResource(Res.string.yes))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            },
+            text = {
+                Column {
+                    Text(stringResource(Res.string.are_you_sure_you_want_to_logout))
+
+                    // Hands over to the logout-all confirmation, which explains the 15 minute delay
+                    TextButton(
+                        onClick = {
+                            showLogoutDialog = false
+                            showLogoutAllDialog = true
+                        },
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.Logout,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(stringResource(Res.string.logged_in_devices_logout_all))
+                    }
+                }
+            }
+        )
+    }
+
+    if (showLogoutAllDialog) {
         ConfirmationDialog(
-            message = stringResource(Res.string.are_you_sure_you_want_to_logout),
+            message = stringResource(Res.string.logged_in_devices_logout_all_confirm),
             onConfirm = {
-                viewModel.logout()
+                viewModel.logoutAllDevices()
             },
             onDismiss = {
-                showLogoutDialog = false
+                showLogoutAllDialog = false
             }
         )
     }

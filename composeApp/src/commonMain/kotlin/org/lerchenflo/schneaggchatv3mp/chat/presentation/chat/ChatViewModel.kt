@@ -6,10 +6,14 @@ import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
 import io.github.lerchenflo.voicemessages.VoiceRecorder
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +23,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -44,6 +50,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -83,6 +90,11 @@ class ChatViewModel(
 
     companion object {
         private const val MAX_VOICE_MSG_TIME = 2*60*1000L
+
+        // Messages loaded per step while scrolling up.
+        private const val PAGE_SIZE = 100
+        // Extra messages above the oldest unread / a jump target, so it isn't the topmost row.
+        private const val WINDOW_MARGIN = 20
     }
 
     private var voiceRecorder: VoiceRecorder? = null // Object for Audio Recording
@@ -147,6 +159,9 @@ class ChatViewModel(
             ChatAction.OnDiscardRecording -> discardRecording()
 
             is ChatAction.OnMessageAction -> onMessageAction(action.action)
+
+            ChatAction.OnLoadOlderMessages -> loadOlderMessages()
+            is ChatAction.OnLoadMessagesUntil -> loadMessagesUntil(action.messageId)
         }
     }
 
@@ -653,6 +668,74 @@ class ChatViewModel(
 
 
 
+    /**
+     * How many of the newest messages the screen has loaded. Null until [initialMessageLimit] is
+     * known, so the very first emission already holds every unread message - the new-messages
+     * divider is captured from that first emission only (see [captureNewMessagesBoundary]).
+     */
+    private val messageLimit = MutableStateFlow<Int?>(null)
+
+    // Size of the last emitted window. Below messageLimit means the whole chat is loaded, or a
+    // bigger window is still on its way - either way there is nothing more to ask for yet.
+    private val loadedMessageCount = MutableStateFlow(0)
+
+    /** One page, or more when the unread messages alone don't fit into one. */
+    private val initialMessageLimit: Deferred<Int> = viewModelScope.async {
+        val unreadWindow = try {
+            messageRepository.getOldestUnreadSendDate(chatId, isGroup)
+                ?.let { messageRepository.getMessageCountSince(chatId, isGroup, it) + WINDOW_MARGIN }
+                ?: 0
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            loggingRepository.logWarning("ChatViewModel: Problem counting unread messages: ${e.message}")
+            0
+        }
+        maxOf(PAGE_SIZE, unreadWindow)
+    }
+
+    private fun loadOlderMessages() {
+        val limit = messageLimit.value ?: return
+        if (loadedMessageCount.value < limit) return
+        messageLimit.value = limit + PAGE_SIZE
+    }
+
+    /** Grows the window until [messageId] is inside it - for a search hit or a reply's original. */
+    private fun loadMessagesUntil(messageId: String) {
+        viewModelScope.launch {
+            val sendDate = messageRepository.getMessageById(messageId)?.sendDate?.toLongOrNull() ?: return@launch
+            val needed = messageRepository.getMessageCountSince(chatId, isGroup, sendDate) + WINDOW_MARGIN
+            val initial = initialMessageLimit.await()
+            messageLimit.update { maxOf(it ?: initial, needed) }
+        }
+    }
+
+    /**
+     * The loaded window plus the replied-to messages that fall outside it, so a reply to an old
+     * message keeps its preview. Fetched on every window emission, which fires on any write to
+     * messages - so an edited or deleted original still shows up in the preview.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val windowedMessagesFlow: Flow<Pair<List<Message>, Map<String, Message>>> =
+        messageLimit
+            .filterNotNull()
+            .flatMapLatest { limit ->
+                messageRepository.getMessagesByUserIdFlow(userId = chatId, gruppe = isGroup, limit = limit)
+            }
+            .map { messages ->
+                loadedMessageCount.value = messages.size
+                val loadedIds = messages.mapNotNullTo(HashSet()) { it.id }
+                val missingReplyIds = messages.mapNotNull { it.answerId }.filter { it !in loadedIds }.distinct()
+                val olderReplyTargets = if (missingReplyIds.isEmpty()) {
+                    emptyMap()
+                } else {
+                    messageRepository.getMessageDtosByIds(missingReplyIds)
+                        .mapNotNull { dto -> dto.id?.let { id -> id to dto.toMessage() } }
+                        .toMap()
+                }
+                messages to olderReplyTargets
+            }
+
     private val messageDisplayMapper = MessageDisplayMapper(
         getProfilePicFilePath = { userId -> pictureManager.getProfilePicFilePath(userId, false) }
     )
@@ -670,17 +753,14 @@ class ChatViewModel(
      */
     private val messageDisplayItemsFlow: Flow<List<MessageDisplayItem>> =
         combine(
-            messageRepository.getMessagesByUserIdFlow(
-                userId = chatId,
-                gruppe = isGroup
-            ),
+            windowedMessagesFlow,
             senderNamesFlow,
             flow {
                 emit(if (isGroup) groupRepository.getGroupMembers(chatId) else emptyList())
             }
-        ) { messages, senderNames, groupMembers ->
+        ) { (messages, olderReplyTargets), senderNames, groupMembers ->
             captureNewMessagesBoundary(messages)
-            messageDisplayMapper.map(messages, senderNames, groupMembers, newMessagesBoundaryId.value)
+            messageDisplayMapper.map(messages, olderReplyTargets, senderNames, groupMembers, newMessagesBoundaryId.value)
         }
             .distinctUntilChanged()
             .flowOn(Dispatchers.Default)
@@ -696,6 +776,13 @@ class ChatViewModel(
 
 
     init {
+        // Start loading messages once the initial window size is known. max() because a
+        // loadMessagesUntil() (search jump) may already have asked for a bigger one.
+        viewModelScope.launch {
+            val initial = initialMessageLimit.await()
+            messageLimit.update { maxOf(it ?: 0, initial) }
+        }
+
         // Chat partner (user or group) for the top bar, kept up to date from the database.
         viewModelScope.launch {
             val chatPartnerFlow = if (isGroup) {

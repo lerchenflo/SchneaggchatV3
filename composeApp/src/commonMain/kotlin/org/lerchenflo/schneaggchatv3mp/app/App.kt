@@ -82,9 +82,11 @@ import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCal
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.cchallenge.CChallengeScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.ghettoguesser.GhettoGuesserScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusScreenRoot
@@ -108,6 +110,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.Develop
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.notificationsettings.NotificationSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecuritySettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.loggedindevices.LoggedInDevicesScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
@@ -563,9 +566,11 @@ fun App() {
                     ) {
 
                         val online by SessionCache.onlineFlow.collectAsStateWithLifecycle()
+                        // Demo mode (developer setting) hides both bars, e.g. for store screenshots
+                        val demoMode by preferenceManager.getDemoModeFlow().collectAsStateWithLifecycle(initialValue = false)
 
                         //Show offline bar when offline
-                        if (!online) {
+                        if (!online && !demoMode) {
                             OfflineBar(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -575,7 +580,7 @@ fun App() {
                         val serverUrl by preferenceManager.getServerUrlFlow().collectAsStateWithLifecycle(initialValue = BASE_SERVER_URL)
 
                         //Show a persistent indicator while pinned to the test server (e.g. after logging in with the test account)
-                        if (serverUrl == BASE_SERVER_URL_TEST) {
+                        if (serverUrl == BASE_SERVER_URL_TEST && !demoMode) {
                             TestModeBar(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -706,6 +711,14 @@ fun App() {
                                         PrivacyAndSecuritySettings(
                                             viewModel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(),
+                                            onBackClick = { scope.launch { navigator.navigateBack() } },
+                                            navigateLoggedInDevices = { scope.launch { navigator.navigate(Route.LoggedInDevices) } }
+                                        )
+                                    }
+
+                                    entry<Route.LoggedInDevices> {
+                                        LoggedInDevicesScreen(
+                                            viewModel = koinInject(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
@@ -821,8 +834,20 @@ fun App() {
                                         )
                                     }
 
+                                    entry<Route.CChallenge> {
+                                        CChallengeScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
                                     entry<Route.OddOneOut> {
                                         OddOneOutScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.GhettoGuesser> {
+                                        GhettoGuesserScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

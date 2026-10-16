@@ -283,18 +283,22 @@ class NetworkUtils(
 
     @Serializable
     data class LogoutRequest(
-        val refreshToken: String,
+        val refreshToken: String? = null,
         val notificationToken: String? = null,
         val isAndroid: Boolean? = null,
+        val allDevices: Boolean = false,
     )
 
     /**
      * Ends this device's session on the server. Uses [authHttpClient]: the refresh token in the
      * body is what identifies the session, so an expired access token must not send this through
      * the Auth plugin and trigger a token refresh for a session we are about to kill anyway.
+     *
+     * [refreshToken] is null when the session is already dead (e.g. ended from another device's
+     * device list) - the server then only removes the [notificationToken].
      */
     suspend fun logout(
-        refreshToken: String,
+        refreshToken: String?,
         notificationToken: String?,
         isAndroid: Boolean,
     ): NetworkResult<Unit, NetworkingError> {
@@ -306,6 +310,46 @@ class NetworkUtils(
                 isAndroid = if (notificationToken.isNullOrBlank()) null else isAndroid,
             )
         )
+    }
+
+    /**
+     * One logged-in device of the own account.
+     * [deviceName] is the raw name the device sent at login (incl. its id suffix).
+     */
+    /**
+     * Ends every session of the own account on the server, this device's included, and removes
+     * all of the account's push tokens. Unlike [logout] this goes through the bearer client: the
+     * server identifies the account by the refresh token or, failing that, the access token - so
+     * it must not depend on the refresh token alone.
+     */
+    suspend fun logoutAllDevices(refreshToken: String?): NetworkResult<Unit, NetworkingError> {
+        return safePost<LogoutRequest, Unit>(
+            endpoint = "/auth/logout",
+            body = LogoutRequest(
+                refreshToken = refreshToken,
+                allDevices = true,
+            )
+        )
+    }
+
+    @Serializable
+    data class SessionResponse(
+        val id: String,
+        val deviceName: String? = null,
+        val deviceType: DEVICETYPE? = null,
+        val createdAt: Long,
+        val lastUsedAt: Long,
+    )
+
+    suspend fun getSessions(): NetworkResult<List<SessionResponse>, NetworkingError> {
+        return safeGet(endpoint = "/sessions")
+    }
+
+    /**
+     * Logs one of the own devices out remotely.
+     */
+    suspend fun endSession(sessionId: String): NetworkResult<Unit, NetworkingError> {
+        return safeDelete(endpoint = "/sessions/$sessionId")
     }
 
     @Serializable

@@ -36,7 +36,7 @@
 
     <string name="email_not_verified_screen_title">Du musst deine Email verifizieren, bevor du Schneaggchat verwenden kannst.</string>
     <string name="email_not_verified_email_has_been_sent1">Wenn du deinen Account gerade erstellt hast, ist ein Bestätigungslink zu </string>
-    <string name="email_not_verified_email_has_been_sent2">unterwegs. Wenn du schon länger dabei bist, musst du einen neuen Link anfordern.</string>
+    <string name="email_not_verified_email_has_been_sent2"> unterwegs. Wenn du schon länger dabei bist, musst du einen neuen Link anfordern.</string>
     <string name="email_check_verified">Email - Verifizierung überprüfen</string>
     <string name="email_check_problem">Es funktioniert nicht</string>
     <string name="email_check_loading_data">Accountdaten werden geladen ...</string>
@@ -178,7 +178,7 @@
     <string name="theme_sel_desc">Ändere das Aussehen deiner App</string>
 
     <string name="camera">Kamera</string>
-    <string name="gallery">Gallerie</string>
+    <string name="gallery">Galerie</string>
     <string name="choose_image_source">Bildquelle auswählen</string>
     <string name="image_picker_error">Fehler: %1$s</string>
 
@@ -203,6 +203,7 @@
 
     <string name="members">Mitglieder</string>
     <string name="info">Info</string>
+    <string name="chat_details_actions">Aktionen</string>
     <string name="at_least_members">Du benötigst mindestens %1$s Mitglieder in der Gruppe</string>
     <string name="group_name_missing">Bitte gib einen Gruppennamen ein</string>
 
@@ -341,7 +342,7 @@
     <string name="events_empty">Noch keine Events. Erstelle selbst eines!</string>
     <string name="events_view_list">Liste</string>
     <string name="events_view_day">Tag</string>
-    <string name="events_view_upcoming">Bevorstehend</string>
+    <string name="events_view_upcoming">Bald</string>
     <string name="events_view_month">Monat</string>
     <string name="weekday_monday_short">Mo</string>
     <string name="weekday_tuesday_short">Di</string>
@@ -633,9 +634,7 @@
     <string name="undercover_rules_roles_text">Es gibt 3 Gruppen im Spiel: Zivilisten, Undercover und Mr. White. Die Mehrheit der Einwohner sind friedliebende Zivilisten. Es gibt bis zu zwei Gruppen von Betrügern: Undercover und Mr. White.</string>
     
     <string name="undercover_rules_secret_word">Dein geheimes Wort</string>
-    <string name="undercover_rules_secret_word_text">Zu Beginn des Spiels erhält jeder ein geheimes Wort. In jedem Spiel werden zwei geheime Wörter verwendet. Denken Sie daran, Ihr geheimes Wort vor den anderen geheim zu halten. Zivilisten erhalten dasselbe geheime Wort. Undercover-Agenten erhalten ein Wort, das sich leicht von dem der Zivilisten unterscheidet. Mr. Whites erhalten kein Wort. Zu diesem Zeitpunkt wissen Sie noch nicht, ob Sie ein Zivilist oder ein Undercover-Agent sind.
-
-Übersetzt mit DeepL.com (kostenlose Version)</string>
+    <string name="undercover_rules_secret_word_text">Zu Beginn des Spiels erhält jeder ein geheimes Wort. In jedem Spiel werden zwei geheime Wörter verwendet. Denken Sie daran, Ihr geheimes Wort vor den anderen geheim zu halten. Zivilisten erhalten dasselbe geheime Wort. Undercover-Agenten erhalten ein Wort, das sich leicht von dem der Zivilisten unterscheidet. Mr. Whites erhalten kein Wort. Zu diesem Zeitpunkt wissen Sie noch nicht, ob Sie ein Zivilist oder ein Undercover-Agent sind.</string>
     
     <string name="undercover_rules_gameplay">Spielzüge</string>
     
@@ -1363,7 +1362,7 @@
     <string name="ttt_notification_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
 
     <string name="ttt_settings_appearance">Darstellungs-Einstellungen</string>
-    <string name="ttt_settings_appearance_description">Hier kannst du deine Sprache (Österreichisch, Deutsch, Englisch) und dein Design ändern.</string>
+    <string name="ttt_settings_appearance_description">Hier kannst du deine Sprache (Österreichisch, Deutsch, Englisch, Italienisch) und dein Design ändern.</string>
 
     <string name="ttt_appearance_settings_language">Sprache ändern</string>
     <string name="ttt_appearance_settings_language_description">Hier kannst du zwischen Deutsch, Vorarlbergerisch und Englisch wechseln.</string>
@@ -1591,12 +1590,12 @@
     <string name="games_schneaggrodeo_fence_height">%1$d cm</string>
     <string name="games_schneaggrodeo_lasso">Lasso</string>
     <string name="games_schneaggrodeo_catch_horse">Fang dein Pferd!</string>
-    <string name="games_schneaggrodeo_on_foot_hint">Tippe zum Springen – tippe genau bei der Landung nochmal für einen Salto, dreimal hintereinander für einen Dreifachsprung, der dich schneller macht! Fang dein Pferd mit dem Lasso, sobald du nah genug bist.</string>
-    <string name="games_schneaggrodeo_on_foot_hint_keys">Leertaste zum Springen – drücke genau bei der Landung nochmal für einen Salto, dreimal hintereinander für einen Dreifachsprung, der dich schneller macht! Fang dein Pferd mit dem Lasso [L], sobald du nah genug bist.</string>
+    <string name="games_schneaggrodeo_on_foot_hint">Tippen zum Springen · Fang dein Pferd mit dem Lasso!</string>
+    <string name="games_schneaggrodeo_on_foot_hint_keys">Leertaste: springen · L: Pferd mit dem Lasso fangen!</string>
     <string name="games_schneaggrodeo_snails">Schnecken: %1$d</string>
     <string name="games_schneaggrodeo_horseshoes">Hufeisen: %1$d</string>
-    <string name="games_schneaggrodeo_plane_controls">Linke Hälfte: steigen · Rechte Hälfte: sinken – weich Häusern und Wolken aus, schnapp die Hufeisen!</string>
-    <string name="games_schneaggrodeo_plane_controls_keys">Leertaste / W: steigen · S / ↓: sinken – weich Häusern und Wolken aus, schnapp die Hufeisen!</string>
+    <string name="games_schneaggrodeo_plane_controls">Linke Hälfte: steigen · Rechte Hälfte: sinken</string>
+    <string name="games_schneaggrodeo_plane_controls_keys">Leertaste / W: steigen · S / ↓: sinken</string>
     <string name="games_schneaggrodeo_super_jump">Supersprung ×%1$d</string>
     <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
     <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
@@ -1609,66 +1608,66 @@
     <string name="games_schneaggrodeo_goodbye">Grüße</string>
     <string name="games_schneaggrodeo_golden_carriage">Goldene Kutsche!</string>
     <string name="games_schneaggrodeo_golden_carriage_button">Goldene Kutsche</string>
-    <string name="games_schneaggrodeo_golden_carriage_controls">Nichts drücken: Die goldenen Pferde brechen durch jeden Zaun – 20 Punkte für jeden!</string>
+    <string name="games_schneaggrodeo_golden_carriage_controls">Nichts drücken – 20 Punkte pro Zaun!</string>
     <string name="games_schneaggrodeo_traffic_jam">Stau!</string>
-    <string name="games_schneaggrodeo_traffic_jam_controls">Nichts drücken: Dein Pferd hüpft von selbst von Autodach zu Autodach – 15 Punkte für jedes Auto!</string>
+    <string name="games_schneaggrodeo_traffic_jam_controls">Nichts drücken – 15 Punkte pro Auto!</string>
     <string name="games_schneaggrodeo_helicopter">Helikopter!</string>
-    <string name="games_schneaggrodeo_helicopter_controls">Irgendwo halten zum Steigen – erreich den Regenbogen da oben, bevor der Flug vorbei ist!</string>
-    <string name="games_schneaggrodeo_helicopter_controls_keys">Leertaste / W halten zum Steigen – erreich den Regenbogen da oben, bevor der Flug vorbei ist!</string>
+    <string name="games_schneaggrodeo_helicopter_controls">Halten zum Steigen – erreich den Regenbogen!</string>
+    <string name="games_schneaggrodeo_helicopter_controls_keys">Leertaste / W halten zum Steigen – erreich den Regenbogen!</string>
     <string name="games_schneaggrodeo_map_welcome">Willkommen in</string>
     <string name="games_schneaggrodeo_map_cave">Der Höhle</string>
     <string name="games_schneaggrodeo_map_sea">Dem offenen Meer</string>
     <string name="games_schneaggrodeo_map_rainbow">Dem Regenbogen</string>
     <string name="games_schneaggrodeo_map_fossil">Der Fossilienschicht</string>
     <string name="games_schneaggrodeo_pirate_ship">Piratenschiff!</string>
-    <string name="games_schneaggrodeo_pirate_ship_controls">Nichts drücken: Die Kanone feuert von selbst auf jeden Hai und das Pferd schnappt sich die Schatztruhen – Punkte für alles!</string>
+    <string name="games_schneaggrodeo_pirate_ship_controls">Nichts drücken – Haie und Truhen geben Punkte!</string>
     <string name="games_schneaggrodeo_drill">Bohrmaschine!</string>
-    <string name="games_schneaggrodeo_drill_controls">Irgendwo halten: nach unten zum Gold bohren · Loslassen: wieder hoch – weich den grauen Felsen aus! Ganz unten weiterbohren, um in die Fossilienschicht durchzubrechen.</string>
-    <string name="games_schneaggrodeo_drill_controls_keys">Leertaste / W halten: nach unten zum Gold bohren · Loslassen: wieder hoch – weich den grauen Felsen aus! Ganz unten weiterbohren, um in die Fossilienschicht durchzubrechen.</string>
+    <string name="games_schneaggrodeo_drill_controls">Halten: bohren · Loslassen: hoch</string>
+    <string name="games_schneaggrodeo_drill_controls_keys">Leertaste / W halten: bohren · Loslassen: hoch</string>
     <string name="games_schneaggrodeo_drill_boarding">Drill, baby, drill!</string>
     <string name="games_schneaggrodeo_double_points">×2 Punkte</string>
     <string name="games_schneaggrodeo_train">Wälderbähnle</string>
     <string name="games_schneaggrodeo_milk_truck">Milchlaster</string>
     <string name="games_schneaggrodeo_rocket_name">Schneagg-Rakete</string>
     <string name="games_schneaggrodeo_rocket">Rakete</string>
-    <string name="games_schneaggrodeo_train_controls">Irgendwo gedrückt halten zum Ducken, wenn eine Brücke kommt – loslassen zum Aufstehen!</string>
-    <string name="games_schneaggrodeo_train_controls_keys">Leertaste halten zum Ducken, wenn eine Brücke kommt – loslassen zum Aufstehen!</string>
-    <string name="games_schneaggrodeo_milk_truck_controls">Tipp auf Lasso, um die fliegenden Milchkannen zu fangen – Punkte für jede!</string>
-    <string name="games_schneaggrodeo_lawn_tractor_controls">Gut festhalten – er mäht alles nieder!</string>
+    <string name="games_schneaggrodeo_train_controls">Halten zum Ducken unter Brücken</string>
+    <string name="games_schneaggrodeo_train_controls_keys">Leertaste halten zum Ducken unter Brücken</string>
+    <string name="games_schneaggrodeo_milk_truck_controls">Fang die Milchkannen mit dem Lasso!</string>
+    <string name="games_schneaggrodeo_lawn_tractor_controls">Gut festhalten!</string>
     <string name="games_schneaggrodeo_next_to_beat">Als Nächstes schlagen: %1$s (%2$d)</string>
     <string name="games_schneaggrodeo_car_wreck">Escort-Wrack</string>
-    <string name="games_schneaggrodeo_car_wreck_controls">Gut festhalten – dein Pferd schiebt das Wrack durch alles durch!</string>
+    <string name="games_schneaggrodeo_car_wreck_controls">Festhalten!</string>
     <string name="games_schneaggrodeo_car_money">%1$s €</string>
     <string name="games_schneaggrodeo_bull">Muni-Ritt</string>
-    <string name="games_schneaggrodeo_bull_controls">Halt die Balance! Kippst du nach vorne → linke Hälfte halten · nach hinten → rechte Hälfte halten. Halte 6 s durch!</string>
-    <string name="games_schneaggrodeo_bull_controls_keys">Halt die Balance! Kippst du nach vorne → Leertaste halten · nach hinten → S halten. Halte 6 s durch!</string>
+    <string name="games_schneaggrodeo_bull_controls">Nach vorne → links halten · Nach hinten → rechts halten · 6 s!</string>
+    <string name="games_schneaggrodeo_bull_controls_keys">Nach vorne → Leertaste halten · Nach hinten → S halten · 6 s!</string>
     <string name="games_schneaggrodeo_cable_car">Seilbahn</string>
-    <string name="games_schneaggrodeo_cable_car_controls">Genieß die Aussicht – die Gondel bringt dich über den Berg!</string>
+    <string name="games_schneaggrodeo_cable_car_controls">Genieß die Aussicht!</string>
     <string name="games_schneaggrodeo_candy_bus">Free Candy Bus</string>
-    <string name="games_schneaggrodeo_candy_bus_controls">Drück Einfangen – der Bus hält neben Stanislaus und zieht ihn durch die Seitentür rein!</string>
+    <string name="games_schneaggrodeo_candy_bus_controls">Drück Einfangen!</string>
     <string name="games_schneaggrodeo_candy_bus_sign">FREE CANDY</string>
     <string name="games_schneaggrodeo_capture">Einfangen</string>
     <string name="games_schneaggrodeo_pocket_bike">Pocketbike</string>
-    <string name="games_schneaggrodeo_pocket_bike_controls">Vollgas – lang hält das nicht!</string>
+    <string name="games_schneaggrodeo_pocket_bike_controls">Vollgas!</string>
     <string name="games_schneaggrodeo_shopping_cart">Ikoufswäga</string>
-    <string name="games_schneaggrodeo_shopping_cart_controls">Dein Pferd schiebt den Wagen – jede Schnecke im Weg landet drin!</string>
+    <string name="games_schneaggrodeo_shopping_cart_controls">Schnecken landen im Wagen!</string>
     <string name="games_schneaggrodeo_balloon">Heißluftballon</string>
-    <string name="games_schneaggrodeo_balloon_controls">Gedrückt halten für den Brenner – schnapp dir die Hufeisen!</string>
-    <string name="games_schneaggrodeo_balloon_controls_keys">Leertaste halten für den Brenner – schnapp dir die Hufeisen!</string>
+    <string name="games_schneaggrodeo_balloon_controls">Halten zum Steigen – schnapp die Hufeisen!</string>
+    <string name="games_schneaggrodeo_balloon_controls_keys">Leertaste halten zum Steigen – schnapp die Hufeisen!</string>
     <string name="games_schneaggrodeo_cow">Kuah-Ritt</string>
-    <string name="games_schneaggrodeo_cow_controls">Nichts zu tun – genieß den Ritt! Die Kuhglocke vertreibt die Raben.</string>
+    <string name="games_schneaggrodeo_cow_controls">Genieß einfach den Ritt!</string>
     <string name="games_schneaggrodeo_rowboat">Ruderboot</string>
-    <string name="games_schneaggrodeo_rowboat_controls">Tipp auf Lasso, um die springenden Fische zu fangen – Punkte für jeden!</string>
+    <string name="games_schneaggrodeo_rowboat_controls">Fang die Fische mit dem Lasso!</string>
     <string name="games_schneaggrodeo_uboat">U-Boot</string>
-    <string name="games_schneaggrodeo_uboat_controls">Irgendwo halten zum Auftauchen, loslassen zum Abtauchen bis zum Meeresgrund – schnapp Perlen und Schatztruhen, weich den Minen aus!</string>
-    <string name="games_schneaggrodeo_uboat_controls_keys">Leertaste / W halten zum Auftauchen, loslassen zum Abtauchen bis zum Meeresgrund – schnapp Perlen und Schatztruhen, weich den Minen aus!</string>
+    <string name="games_schneaggrodeo_uboat_controls">Halten: auftauchen · Loslassen: abtauchen – weich den Minen aus!</string>
+    <string name="games_schneaggrodeo_uboat_controls_keys">Leertaste / W halten: auftauchen · Loslassen: abtauchen – weich den Minen aus!</string>
     <string name="games_schneaggrodeo_oil_tanker">Öltanker</string>
-    <string name="games_schneaggrodeo_oil_tanker_controls">Volle Kraft voraus – der Tanker pflügt durch alles durch!</string>
+    <string name="games_schneaggrodeo_oil_tanker_controls">Volle Kraft voraus!</string>
     <string name="games_schneaggrodeo_flamingo">Flamingo</string>
-    <string name="games_schneaggrodeo_flamingo_controls">Tippen zum Hochhüpfen – schnapp dir die Hufeisen!</string>
-    <string name="games_schneaggrodeo_flamingo_controls_keys">Leertaste drücken zum Hochhüpfen – schnapp dir die Hufeisen!</string>
+    <string name="games_schneaggrodeo_flamingo_controls">Tippen zum Hüpfen – schnapp die Hufeisen!</string>
+    <string name="games_schneaggrodeo_flamingo_controls_keys">Leertaste zum Hüpfen – schnapp die Hufeisen!</string>
     <string name="games_schneaggrodeo_mine_cart">Grubenhunt</string>
-    <string name="games_schneaggrodeo_mine_cart_controls">Festhalten – der Kart rast über die Schienen und zerlegt die Tropfsteine!</string>
+    <string name="games_schneaggrodeo_mine_cart_controls">Festhalten!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s reitet mit!</string>
     <string name="games_schneaggrodeo_friend_joined">Ab jetzt reitest du auch für den Highscore von %1$s: Sobald du vom Pferd steigst, zählen deine bisherigen Punkte auch für %1$s.</string>
 
@@ -1732,6 +1731,78 @@
     <string name="feedback_delete_comment_confirm">Diesen Kommentar löschen?</string>
     <string name="feedback_change_status">Status ändern</string>
     <string name="feedback_details_load_error">Details konnten nicht geladen werden.</string>
+    <string name="logged_in_devices">Angemeldete Geräte</string>
+    <string name="logged_in_devices_description">Sieh, wo dein Konto angemeldet ist, und melde Geräte ab</string>
+    <string name="logged_in_devices_this_device">Dieses Gerät</string>
+    <string name="logged_in_devices_last_active">Zuletzt aktiv: %1$s</string>
+    <string name="logged_in_devices_since">Angemeldet seit: %1$s</string>
+    <string name="logged_in_devices_unknown_device">Unbekanntes Gerät</string>
+    <string name="logged_in_devices_logout_device">Gerät abmelden</string>
+    <string name="logged_in_devices_logout_confirm">%1$s abmelden? Das Gerät wird innerhalb der nächsten 15 Minuten abgemeldet.</string>
+    <string name="logged_in_devices_logged_out">Gerät abgemeldet</string>
+    <string name="logged_in_devices_load_error">Deine Geräte konnten nicht geladen werden.</string>
+    <string name="logged_in_devices_retry">Erneut versuchen</string>
+    <string name="logged_in_devices_logout_all">Alle Geräte abmelden</string>
+    <string name="logged_in_devices_logout_all_confirm">Alle Geräte abmelden, auch dieses? Andere Geräte werden innerhalb der nächsten 15 Minuten abgemeldet.</string>
+    <string name="email_check_hello">Hallo %1$s!</string>
+    <string name="games_cchallenge_title">C-Challenge</string>
+    <string name="games_cchallenge_description">Ein tägliches C-Programmierrätsel</string>
+    <string name="games_cchallenge_instructions">Jeden Tag gibt es ein neues C-Rätsel — für alle dasselbe. Finde den Syntaxfehler, wähle die fehlende Zeile, sag voraus, was ein Programm ausgibt, oder bring durcheinandergewürfelte Zeilen wieder in die richtige Reihenfolge.\n\nDu hast 3 Versuche: Wer es beim ersten Versuch löst, bekommt 100 Punkte, beim zweiten 60 und beim dritten 30. Löse es jeden Tag, um deine Serie wachsen zu lassen!</string>
+    <string name="games_cchallenge_number">Challenge #%1$d</string>
+    <string name="games_cchallenge_streak_badge">🔥 %1$d</string>
+    <string name="games_cchallenge_prompt_fix_syntax">Dieser Code kompiliert nicht. Tippe auf die Zeile mit dem Fehler.</string>
+    <string name="games_cchallenge_prompt_fill_blank">Welche Zeile gehört in die Lücke?</string>
+    <string name="games_cchallenge_prompt_predict_output">Was gibt dieses Programm aus?</string>
+    <string name="games_cchallenge_prompt_order_lines">Tippe die Zeilen unten in der richtigen Reihenfolge an, um den Code zu vervollständigen.</string>
+    <string name="games_cchallenge_tries_left">Verbleibende Versuche: %1$d</string>
+    <string name="games_cchallenge_wrong">Nicht ganz — versuch es nochmal!</string>
+    <string name="games_cchallenge_order_slot">Zeile unten antippen</string>
+    <string name="games_cchallenge_order_feedback">%1$d von %2$d Zeilen stehen an der richtigen Stelle.</string>
+    <string name="games_cchallenge_check">Prüfen</string>
+    <string name="games_cchallenge_solved">Gelöst!</string>
+    <string name="games_cchallenge_failed">Keine Versuche mehr</string>
+    <string name="games_cchallenge_result_points">%1$d Punkte · %2$s</string>
+    <string name="games_cchallenge_streak">Serie: %1$d · Rekord: %2$d</string>
+    <string name="games_cchallenge_come_back">Morgen wartet eine neue Challenge.</string>
+    <string name="games_cchallenge_solution">Lösung</string>
+    <string name="games_cchallenge_output">Ausgabe: %1$s</string>
+    <string name="games_cchallenge_bug_missing_semicolon">Der Anweisung fehlt am Ende das Semikolon.</string>
+    <string name="games_cchallenge_bug_missing_parenthesis">Eine schließende Klammer fehlt.</string>
+    <string name="games_cchallenge_bug_missing_quote">Dem String fehlt das schließende Anführungszeichen.</string>
+    <string name="games_cchallenge_bug_keyword_typo">Ein Schlüsselwort ist falsch geschrieben, deshalb erkennt der Compiler es nicht.</string>
+    <string name="games_cchallenge_bug_wrong_bracket">Ein Array-Index muss mit einer eckigen Klammer geschlossen werden, nicht mit einer runden.</string>
+    <string name="dev_settings_demo_mode">Demo-Modus</string>
+    <string name="dev_settings_demo_mode_desc">Blendet die Offline- und Testserver-Leiste aus, z. B. für Store-Screenshots</string>
+    <string name="games_ghettoguesser_title">GhettoGuesser</string>
+    <string name="games_ghettoguesser_description">Errate, wo das Foto aufgenommen wurde</string>
+    <string name="games_ghettoguesser_choose_map">Karte auswählen</string>
+    <string name="games_ghettoguesser_map_info">%1$d Runden · Fotos von Wikimedia Commons</string>
+    <string name="games_ghettoguesser_round">Runde %1$d / %2$d</string>
+    <string name="games_ghettoguesser_loading">Suche ein Foto…</string>
+    <string name="games_ghettoguesser_open_map">Auf der Karte tippen</string>
+    <string name="games_ghettoguesser_show_photo">Foto anzeigen</string>
+    <string name="games_ghettoguesser_skip">Foto überspringen</string>
+    <string name="games_ghettoguesser_submit">Tipp abgeben</string>
+    <string name="games_ghettoguesser_place_pin">Tippe auf die Karte, um deinen Tipp zu setzen</string>
+    <string name="games_ghettoguesser_next_round">Nächste Runde</string>
+    <string name="games_ghettoguesser_show_total">Ergebnis anzeigen</string>
+    <string name="games_ghettoguesser_round_result">%1$s entfernt · %2$d Punkte</string>
+    <string name="games_ghettoguesser_total_points">%1$d von %2$d Punkten</string>
+    <string name="games_ghettoguesser_total_time">Zeit: %1$s</string>
+    <string name="games_ghettoguesser_game_over">Spiel vorbei</string>
+    <string name="games_ghettoguesser_play_again">Nochmal spielen</string>
+    <string name="games_ghettoguesser_back_to_maps">Andere Karte</string>
+    <string name="games_ghettoguesser_no_network">Es konnte kein Foto geladen werden. Prüfe deine Internetverbindung und versuche es erneut.</string>
+    <string name="games_ghettoguesser_no_photos">In diesem Gebiet wurden keine passenden Fotos gefunden.</string>
+    <string name="games_ghettoguesser_retry">Erneut versuchen</string>
+    <string name="games_ghettoguesser_photo_credit">Foto: %1$s, %2$s</string>
+    <string name="games_ghettoguesser_unknown_author">unbekannter Autor</string>
+    <string name="games_ghettoguesser_credits_title">Bildnachweis</string>
+    <string name="games_ghettoguesser_credits_author">Autor: %1$s</string>
+    <string name="games_ghettoguesser_credits_license">Lizenz: %1$s</string>
+    <string name="games_ghettoguesser_credits_file_page">Dateiseite auf Wikimedia Commons öffnen</string>
+    <string name="games_ghettoguesser_credits_unchanged">Das Foto wird unverändert und verkleinert angezeigt.</string>
+    <string name="games_ghettoguesser_close">Schließen</string>
 
     <!-- Group extensions -->
     <string name="group_extensions_title">Chat-Erweiterungen</string>

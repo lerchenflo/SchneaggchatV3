@@ -83,6 +83,9 @@ sealed interface Route : NavKey {
     data object PrivacyAndSecuritySettings: Route
 
     @Serializable
+    data object LoggedInDevices: Route
+
+    @Serializable
     data object NotificationSettings: Route
 
     @Serializable
@@ -132,7 +135,13 @@ sealed interface Route : NavKey {
     data object GridRush: Route
 
     @Serializable
+    data object CChallenge: Route
+
+    @Serializable
     data object OddOneOut: Route
+
+    @Serializable
+    data object GhettoGuesser: Route
 
     @Serializable
     data object SchneaggRodeo: Route

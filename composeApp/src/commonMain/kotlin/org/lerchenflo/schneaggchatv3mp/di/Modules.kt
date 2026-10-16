@@ -57,7 +57,11 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ViewM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushViewmodel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.cchallenge.CChallengeViewmodel
+import org.lerchenflo.schneaggchatv3mp.games.data.CChallengeStreakRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutViewmodel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.ghettoguesser.GhettoGuesserViewModel
+import org.lerchenflo.schneaggchatv3mp.games.data.CommonsPhotoRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
@@ -89,6 +93,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSett
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.notificationsettings.NotificationSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecurityViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.loggedindevices.LoggedInDevicesViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
@@ -155,9 +160,11 @@ val sharedmodule = module{
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
     singleOf(::GameSaveRepository)
+    singleOf(::CChallengeStreakRepository)
     // External puzzle archive fetch — no app auth, plain client
     single { CrosswordRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))) }
     single { WordleRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))) }
+    single { CommonsPhotoRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))) }
 
 
     // Socket Connection Manager
@@ -330,6 +337,8 @@ val sharedmodule = module{
 
     viewModelOf(::GridRushViewmodel)
 
+    viewModelOf(::CChallengeViewmodel)
+
     viewModelOf(::OddOneOutViewmodel)
 
     viewModelOf(::SchneaggRodeoViewModel)
@@ -337,6 +346,8 @@ val sharedmodule = module{
     viewModelOf(::CrosswordViewmodel)
 
     viewModelOf(::WordleViewModel)
+
+    viewModelOf(::GhettoGuesserViewModel)
 
     viewModelOf(::PlayerSelectorViewModel)
     viewModelOf(::HighscoresViewModel)
@@ -347,6 +358,7 @@ val sharedmodule = module{
     viewModelOf(::UserSettingsViewModel)
 
     viewModelOf(::PrivacyAndSecurityViewModel)
+    viewModelOf(::LoggedInDevicesViewModel)
 
     viewModelOf(::NotificationSettingsViewModel)
 

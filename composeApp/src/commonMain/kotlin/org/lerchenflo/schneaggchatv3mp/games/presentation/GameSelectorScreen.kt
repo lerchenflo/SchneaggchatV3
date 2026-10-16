@@ -357,95 +357,68 @@ private fun GamesTabContent(
     onShowHighscores: (GameId?) -> Unit,
     showDifficultyRow: Boolean = true,
 ) {
-    Column {
+    val visibleGames = gamesList.filter { !it.inDev || dev }
+    val (dailyGames, regularGames) = visibleGames.partition { it.daily }
+    val (leaderboardGames, otherGames) = regularGames.partition { it.gameId != null }
+
+    // The difficulty row scrolls with the games: pinned above the list it ate most of a landscape screen
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+    ) {
         if (showDifficultyRow) {
-            Text(
-                text = stringResource(Res.string.difficulty),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                DifficultySelector(
-                    selected = GameDifficultySelection.selected,
-                    onSelect = { GameDifficultySelection.selected = it },
-                    modifier = Modifier.weight(1f).tapTarget("games_difficulty_selector")
-                )
-
-                IconButton(
-                    onClick = onShowGlobalRanking,
-                    modifier = Modifier.tapTarget("games_global_ranking_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Leaderboard,
-                        contentDescription = stringResource(Res.string.show_global_ranking),
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            // The chips above only reach games whose board really is keyed by difficulty
-            Text(
-                text = stringResource(Res.string.games_difficulty_info_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 4.dp)
-            )
-        }
-
-        val visibleGames = gamesList.filter { !it.inDev || dev }
-        val (dailyGames, regularGames) = visibleGames.partition { it.daily }
-        val (leaderboardGames, otherGames) = regularGames.partition { it.gameId != null }
-
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-        ) {
-            if (dailyGames.isNotEmpty()) {
-                item {
+            item {
+                Column(modifier = Modifier.padding(bottom = 16.dp)) {
                     Text(
-                        text = stringResource(Res.string.games_daily_section, dailyChallengeTimeRemainingText()),
+                        text = stringResource(Res.string.difficulty),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
                     )
-                }
 
-                items(dailyGames) { game ->
-                    GameElementView(
-                        icon = game.icon,
-                        text = stringResource(game.title),
-                        subtext = game.description?.let { stringResource(it) },
-                        badgeIcon = { GameDifficultyIcon(game.gameId) },
-                        onClick = { onGameSelection(game.route) },
-                        rightSideIcon = {
-                            if (game.gameId != null) {
-                                IconButton(onClick = { onShowHighscores(game.gameId) }) {
-                                    Icon(
-                                        imageVector = Icons.Default.EmojiEvents,
-                                        contentDescription = stringResource(Res.string.show_highscores),
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                            }
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(top = 12.dp, bottom = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        DifficultySelector(
+                            selected = GameDifficultySelection.selected,
+                            onSelect = { GameDifficultySelection.selected = it },
+                            modifier = Modifier.weight(1f).tapTarget("games_difficulty_selector")
+                        )
+
+                        IconButton(
+                            onClick = onShowGlobalRanking,
+                            modifier = Modifier.tapTarget("games_global_ranking_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Leaderboard,
+                                contentDescription = stringResource(Res.string.show_global_ranking),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
+                    }
+
+                    // The chips above only reach games whose board really is keyed by difficulty
+                    Text(
+                        text = stringResource(Res.string.games_difficulty_info_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-
-                item {
-                    HorizontalDivider(modifier = Modifier.padding(top = 8.dp, bottom = 16.dp))
                 }
             }
+        }
 
-            items(leaderboardGames) { game ->
+        if (dailyGames.isNotEmpty()) {
+            item {
+                Text(
+                    text = stringResource(Res.string.games_daily_section, dailyChallengeTimeRemainingText()),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+                )
+            }
+
+            items(dailyGames) { game ->
                 GameElementView(
                     icon = game.icon,
                     text = stringResource(game.title),
@@ -453,13 +426,15 @@ private fun GamesTabContent(
                     badgeIcon = { GameDifficultyIcon(game.gameId) },
                     onClick = { onGameSelection(game.route) },
                     rightSideIcon = {
-                        IconButton(onClick = { onShowHighscores(game.gameId) }) {
-                            Icon(
-                                imageVector = Icons.Default.EmojiEvents,
-                                contentDescription = stringResource(Res.string.show_highscores),
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(24.dp)
-                            )
+                        if (game.gameId != null) {
+                            IconButton(onClick = { onShowHighscores(game.gameId) }) {
+                                Icon(
+                                    imageVector = Icons.Default.EmojiEvents,
+                                    contentDescription = stringResource(Res.string.show_highscores),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
                         }
                     }
                 )
@@ -467,29 +442,55 @@ private fun GamesTabContent(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            if (otherGames.isNotEmpty()) {
-                item {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            item {
+                HorizontalDivider(modifier = Modifier.padding(top = 8.dp, bottom = 16.dp))
+            }
+        }
 
-                    Text(
-                        text = stringResource(Res.string.games_without_highscores),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
+        items(leaderboardGames) { game ->
+            GameElementView(
+                icon = game.icon,
+                text = stringResource(game.title),
+                subtext = game.description?.let { stringResource(it) },
+                badgeIcon = { GameDifficultyIcon(game.gameId) },
+                onClick = { onGameSelection(game.route) },
+                rightSideIcon = {
+                    IconButton(onClick = { onShowHighscores(game.gameId) }) {
+                        Icon(
+                            imageVector = Icons.Default.EmojiEvents,
+                            contentDescription = stringResource(Res.string.show_highscores),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
+            )
 
-                items(otherGames) { game ->
-                    GameElementView(
-                        icon = game.icon,
-                        text = stringResource(game.title),
-                        subtext = game.description?.let { stringResource(it) },
-                        badgeIcon = { GameDifficultyIcon(game.gameId) },
-                        onClick = { onGameSelection(game.route) }
-                    )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
+        if (otherGames.isNotEmpty()) {
+            item {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                Text(
+                    text = stringResource(Res.string.games_without_highscores),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
+            items(otherGames) { game ->
+                GameElementView(
+                    icon = game.icon,
+                    text = stringResource(game.title),
+                    subtext = game.description?.let { stringResource(it) },
+                    badgeIcon = { GameDifficultyIcon(game.gameId) },
+                    onClick = { onGameSelection(game.route) }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }
