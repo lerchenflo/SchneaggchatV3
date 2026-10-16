@@ -7,9 +7,9 @@ import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.MessageLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
@@ -25,8 +25,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.toEvent
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.toSyncedSettings
-import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.events.data.local.EventLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.MapLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
