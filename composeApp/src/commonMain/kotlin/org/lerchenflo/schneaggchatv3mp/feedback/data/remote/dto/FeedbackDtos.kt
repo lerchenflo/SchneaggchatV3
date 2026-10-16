@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
+package org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto
 
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackComment

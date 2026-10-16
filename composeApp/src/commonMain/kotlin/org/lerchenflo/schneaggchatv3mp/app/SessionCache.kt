@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 /**
  * Singleton session cache that combines Compose-friendly mutable state and

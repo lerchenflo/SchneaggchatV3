@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.games.data
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.BatchScoreEntryRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoresBatchRequest
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.BatchScoreEntryRequest
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoreRequest
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoresBatchRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.EmptyResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError

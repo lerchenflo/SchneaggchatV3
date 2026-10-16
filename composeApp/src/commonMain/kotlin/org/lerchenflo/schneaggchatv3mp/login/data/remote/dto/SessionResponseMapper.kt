@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
+package org.lerchenflo.schneaggchatv3mp.login.data.remote.dto
 
 import org.lerchenflo.schneaggchatv3mp.login.domain.DeviceSession
 

@@ -1,7 +1,8 @@
-package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
+package org.lerchenflo.schneaggchatv3mp.events.data.remote.dto
 
 import org.lerchenflo.schneaggchatv3mp.events.data.dtos.EventDto
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
 
 // ─── Event ───────────────────────────────────────────────────────────────────
 

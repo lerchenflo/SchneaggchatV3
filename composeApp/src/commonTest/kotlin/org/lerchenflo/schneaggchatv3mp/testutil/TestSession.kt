@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.testutil
 
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import kotlin.io.encoding.Base64
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 /** 2100-01-01T00:00:00Z: far enough in the future that a test token never expires. */
 private const val FAR_FUTURE_EPOCH_SECONDS = 4_102_444_800L

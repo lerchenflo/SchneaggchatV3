@@ -4,11 +4,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.PollResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NotificationResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NotificationResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserResponse
 
 /**
  * Deserializer for all polymorphic JSON objects

@@ -1,13 +1,7 @@
-package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
+package org.lerchenflo.schneaggchatv3mp.login.data.remote.dto
 
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
-
-@Serializable
-data class TokenPair(
-    val accessToken: String,
-    val refreshToken: String,
-)
 
 @Serializable
 data class LoginRequest(

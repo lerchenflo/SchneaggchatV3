@@ -20,7 +20,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.settings.data.remote.SettingsRemoteDataSource
 
 //Message search in the chat selector: how much the user has to type before the message table is

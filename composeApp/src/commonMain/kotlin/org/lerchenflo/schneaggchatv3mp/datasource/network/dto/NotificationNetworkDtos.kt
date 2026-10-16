@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
+package org.lerchenflo.schneaggchatv3mp.datasource.network.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -14,7 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 /**
  * `POST /auth/refresh` through the client **without** the Auth plugin. Deliberately not routed

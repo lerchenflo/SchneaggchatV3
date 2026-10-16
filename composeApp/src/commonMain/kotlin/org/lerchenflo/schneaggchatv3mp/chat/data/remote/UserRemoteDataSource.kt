@@ -1,9 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.remote
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NewFriendsUserResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.WakeResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NewFriendsUserResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserSyncResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.WakeResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 

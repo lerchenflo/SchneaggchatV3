@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 /**
  * The client-side session state machine (AUTH_SESSION_REBUILD_PLAN section 4). Owns the only

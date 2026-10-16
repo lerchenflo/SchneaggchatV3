@@ -19,12 +19,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSyncedSettings
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MapEntryResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toDomainMessage
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.toEvent
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.events.data.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
@@ -39,10 +39,10 @@ import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GroupResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NetworkFriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserResponse
 
 @Serializable()
 sealed interface SocketConnectionMessage {

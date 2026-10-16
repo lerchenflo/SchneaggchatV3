@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.settings.data.remote
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 

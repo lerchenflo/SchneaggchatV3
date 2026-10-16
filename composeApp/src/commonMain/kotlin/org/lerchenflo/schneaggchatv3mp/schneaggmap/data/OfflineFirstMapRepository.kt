@@ -9,12 +9,12 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.MapEntryRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MapEntryResponse
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.MapRemoteDataSource
 
 /** [MapRepository] on top of the local [MapLocalDataSource] and the server via [MapRemoteDataSource]. */

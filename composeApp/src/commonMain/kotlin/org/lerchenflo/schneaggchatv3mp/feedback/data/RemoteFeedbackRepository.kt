@@ -1,13 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.data
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackCommentRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackCreateRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackStatusRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.FeedbackVoteRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toFeedbackComment
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toFeedbackEntry
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toFeedbackEntryDetail
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toFeedbackList
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentRequest
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCreateRequest
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackStatusRequest
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackVoteRequest
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toFeedbackComment
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toFeedbackEntry
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toFeedbackEntryDetail
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toFeedbackList
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.EmptyResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError

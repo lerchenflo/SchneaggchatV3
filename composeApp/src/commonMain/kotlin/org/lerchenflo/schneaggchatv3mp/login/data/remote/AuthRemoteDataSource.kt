@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.login.data.remote
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SessionResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
+import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.SessionResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 

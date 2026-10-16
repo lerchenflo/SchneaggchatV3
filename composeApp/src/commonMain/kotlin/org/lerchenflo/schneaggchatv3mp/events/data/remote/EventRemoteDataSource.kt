@@ -1,10 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.events.data.remote
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventJoinResponse
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus

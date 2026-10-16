@@ -5,8 +5,8 @@ import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.database.MapEntryDao
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDto
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toDto
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 
 class RoomMapDataSource(

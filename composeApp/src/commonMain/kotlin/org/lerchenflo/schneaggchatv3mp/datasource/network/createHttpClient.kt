@@ -20,7 +20,7 @@ import io.ktor.serialization.kotlinx.json.json
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshOutcome
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshReason
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 /**
  * Client without authentication: login, registration, token refresh, logout, external fetches.

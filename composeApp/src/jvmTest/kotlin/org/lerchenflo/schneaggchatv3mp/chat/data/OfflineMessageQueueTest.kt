@@ -26,7 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.testutil.resetGlobalState
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageRequest
 
 /**
  * Characterization tests for the offline queue (plan Phase 4.5): `sendOfflineMessages` resends

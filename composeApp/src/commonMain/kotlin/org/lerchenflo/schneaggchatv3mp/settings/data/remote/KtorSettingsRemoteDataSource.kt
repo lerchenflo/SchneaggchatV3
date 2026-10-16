@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.settings.data.remote
 import io.ktor.client.HttpClient
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager

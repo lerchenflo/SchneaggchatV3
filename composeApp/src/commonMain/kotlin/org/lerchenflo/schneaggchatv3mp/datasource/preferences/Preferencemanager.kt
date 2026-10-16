@@ -21,7 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,

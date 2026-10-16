@@ -13,9 +13,9 @@ import io.ktor.http.headersOf
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CopyOnWriteArrayList
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageSyncResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageSyncResponse
 
 /** Server clock of the first stored message; later ones get +1 ms each. */
 private const val SERVER_TIME_BASE = 1_700_000_000_000L

@@ -3,10 +3,10 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote
 import io.ktor.client.HttpClient
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.MapEntryRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MapEntryResponse
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.MapSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager

@@ -6,7 +6,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NetworkFriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
 
 @Serializable
 @Entity(tableName = "users")

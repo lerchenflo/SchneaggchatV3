@@ -15,13 +15,13 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventJoinResponse
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.toEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.EventRemoteDataSource
 
 /**

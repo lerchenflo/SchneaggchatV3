@@ -1,9 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
+package org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.AvailableUser
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeOutcome
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeResult
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
 
 // ─── Friendship status ───────────────────────────────────────────────────────
 

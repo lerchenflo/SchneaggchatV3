@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
+package org.lerchenflo.schneaggchatv3mp.games.data.remote.dto
 
 import kotlinx.serialization.Serializable
 

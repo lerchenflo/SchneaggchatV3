@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.auth
 
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 /** [AuthSessionStore] on top of the encrypted preferences (KSafe). */
 class PreferenceAuthSessionStore(

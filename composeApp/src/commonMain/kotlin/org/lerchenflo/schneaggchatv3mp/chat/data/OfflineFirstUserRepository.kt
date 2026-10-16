@@ -20,19 +20,19 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toAvailableUser
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSyncedSettings
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toWakeResult
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toAvailableUser
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.toSyncedSettings
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toWakeResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.map
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NetworkFriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.NewFriendsUserResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NewFriendsUserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.UserRemoteDataSource
 
 /**

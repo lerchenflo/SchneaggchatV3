@@ -36,12 +36,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVote
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toLocalPollMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toNewPoll
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollCreateRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollVoteRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toDomainMessage
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toLocalPollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNewPoll
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollCreateRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
@@ -54,9 +54,9 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotificati
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollOptionDeleteRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageSyncResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.MessageRemoteDataSource
 
 /**

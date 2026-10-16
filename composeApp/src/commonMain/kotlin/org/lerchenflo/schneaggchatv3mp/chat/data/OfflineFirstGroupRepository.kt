@@ -12,13 +12,13 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toNetworkGroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNetworkGroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GroupResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GroupSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.GroupRemoteDataSource
 
 /**

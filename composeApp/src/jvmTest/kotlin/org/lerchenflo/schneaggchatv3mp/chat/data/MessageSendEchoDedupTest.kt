@@ -23,7 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.testutil.resetGlobalState
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageRequest
 
 /**
  * Characterization tests for the send echo (plan Phase 4.5, `MESSAGE_SEND_SYNC_REBUILD_PLAN.md`):

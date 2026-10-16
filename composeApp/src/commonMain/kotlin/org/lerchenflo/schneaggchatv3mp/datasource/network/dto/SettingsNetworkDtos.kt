@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
+package org.lerchenflo.schneaggchatv3mp.datasource.network.dto
 
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat

@@ -2,8 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toFriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toNetworkFriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toFriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNetworkFriendshipStatus
 
 fun UserDto.toUser(): User = User(
     id = this.id,

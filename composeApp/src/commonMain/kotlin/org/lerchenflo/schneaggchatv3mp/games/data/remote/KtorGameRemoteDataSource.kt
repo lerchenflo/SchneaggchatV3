@@ -3,11 +3,11 @@ package org.lerchenflo.schneaggchatv3mp.games.data.remote
 import io.ktor.client.HttpClient
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GameScoreResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GlobalRankingResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.HighscoresResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoresBatchRequest
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.GameScoreResponse
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.GlobalRankingResponse
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.HighscoresResponse
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoreRequest
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoresBatchRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager

@@ -1,10 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.remote
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MessageSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollCreateRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollOptionDeleteRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollVoteRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageSyncResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollCreateRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollOptionDeleteRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 

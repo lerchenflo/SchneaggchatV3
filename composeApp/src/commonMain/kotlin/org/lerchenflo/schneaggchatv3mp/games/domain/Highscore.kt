@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.domain
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GlobalRankingEntryResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.HighscoreEntryResponse
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.GlobalRankingEntryResponse
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.HighscoreEntryResponse
 
 /**
  * Games with a server-side leaderboard. The name must match the server's Game enum.

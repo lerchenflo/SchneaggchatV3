@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses
+package org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
 

@@ -12,7 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.UserSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.settings.data.remote.SettingsRemoteDataSource
 
 /** [SettingsRepository] on top of the DataStore wrapper [Preferencemanager], pushing synced settings via [SettingsRemoteDataSource]. */
