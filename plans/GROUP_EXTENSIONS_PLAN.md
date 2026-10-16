@@ -8,9 +8,32 @@ Companion docs: `E2E_ENCRYPTION_PLAN_V2.md`, `OFFLINE_FIRST_ANALYSIS.md` (same f
 
 **Decisions taken (2026-09-05, confirmed with the owner)**: entry point is the group details screen only; split currency is set once per container; the route planner supports both tap-to-add and picking an existing schneaggmap entry in v1; only groups own extensions in v1, but the owner key is generic (`ownerType` + `ownerId`) so 1:1 chats can be added later without renaming anything.
 
+**Decisions confirmed again (2026-10-15)**, after the first UI commit (`b7204f6c`) had drifted from this plan: a group holds **any number of extension instances** (also several of the same type), each with its own title, opened by `extensionId` - not one extension per type. The enum names of this plan (`SHARED_TEXT, SPLIT, QUOTES, ROUTE_PLANNER`) are the wire names; the UI may label them differently ("Money split", "Tour planner", ...).
+
 ---
 
-## 1. Current state - how things are synced today (verified 2026-09-05)
+## 0. Implementation status (2026-10-15)
+
+Server: nothing implemented yet. The server repo was not available while this section was written, so §1.1, §1.4 and §3 are still as verified on 2026-09-05.
+
+Client (branch `fabi`, commit `b7204f6c` + restructure on 2026-10-15):
+
+| Done | Where |
+|---|---|
+| Domain: `GroupExtensionType`, `ExtensionOwnerType`, `GroupExtension` (container without `settings` yet), `GroupExtensionRepository` interface | `groupextensions/domain/` |
+| Stub data: `DemoGroupExtensionRepository` (in-memory, seeds two demo extensions per group the first time the group's list is observed), bound to the interface in `Modules.kt` | `groupextensions/data/` |
+| Type → UI mapping `GroupExtensionType.toUiText()` / `.icon()` | `groupextensions/presentation/GroupExtensionTypeUi.kt` |
+| Group details section `ExtensionListSection` + `ExtensionListAction` (open, add-by-type), developer-only (`SessionCache...developer`) | `groupextensions/presentation/ExtensionListSection.kt`, used in `ChatDetails.kt` after the description row, before the shared-content rows |
+| `ChatDetailsViewmodel.groupExtensions` (StateFlow, groups only) + `onExtensionAction` (open navigates, add is a TODO) | `chat/presentation/chatdetails/ChatDetailsViewmodel.kt` |
+| `Route.GroupExtension(extensionId)`, registered in `chatRoutes` and the backstack `SerializersModule`, `entry<>` in `App.kt` | `app/navigation/` |
+| Container screen `GroupExtensionScreenRoot`/`GroupExtensionScreen` + `GroupExtensionViewModel` (loads the container, back, "not found" / "under construction" placeholder), with preview | `groupextensions/presentation/` |
+| Strings `group_extensions_title`, `group_extension_add`, `group_extension_type_*`, `group_extension_not_found`, `group_extension_under_construction` in `values`, `values-de`, `values-it` | `composeResources/` |
+
+Open next: everything from phase 1 (server) and phase 2 (client data layer); then the `AddExtensionDialog` behind `ExtensionListAction.OnAddExtensionClick`, the delete action, and the type screens. Remove the developer gate once phase 3 is done end to end.
+
+---
+
+## 1. Current state - how things are synced today (verified 2026-09-05, client references re-checked 2026-10-15)
 
 ### 1.1 Four synced collections, two sync shapes
 
@@ -36,10 +59,10 @@ The discriminator names and property names must be identical on both sides becau
 
 - `AppRepository.dataSync()` runs one `async` job per `DataSyncJobType` (`USERS, GROUPS, MESSAGES, MAP, EVENTS, MEDIA`) and reports progress through `DataSyncState`.
 - Each feature has a thin Room-only repository (`MapRepository`, `EventRepository`) exposing `getXChangeIds()`, `upsertX()`, `deleteX()`, `getAllXFlow()`; the network calls live in `NetworkUtils`, orchestration in `AppRepository`.
-- Socket handling is one `when` in `SocketConnectionMessage.kt:172-468`; `MapChange`/`EventChange` just upsert/delete the local row.
-- Group removal purge: `GroupRepository.deleteGroup` deletes messages + readers for the group, and `dataSync` repeats the purge after all jobs finished (`AppRepository.kt:542`) because the message job runs in parallel.
-- Room DB is at version 82 with `fallbackToDestructiveMigration(dropAllTables = true)`; a schema change is a version bump + full re-sync.
-- Map "pick a location" flow: `Route.Schneaggmap(currentlyEditedEvent)` puts the map tab into `pickLocationMode`; `OnConfirmLocationPick` navigates **forward** to `Route.Events(selectedEvent = updatedEvent)` with `exitPreviousScreen` (`SchneaggmapViewModel.kt:118-143`). There is no generic back-with-result mechanism, and the flow is hardwired to `Event`.
+- Socket handling is one `when` in `SocketConnectionMessage.kt:178-509`; `MapChange`/`EventChange` just upsert/delete the local row.
+- Group removal purge: `GroupRepository.deleteGroup` deletes messages + readers for the group, and `dataSync` repeats the purge after all jobs finished (`AppRepository.kt:588`, after `awaitAll` at :583) because the message job runs in parallel.
+- Room DB is at version 86 with `fallbackToDestructiveMigration(dropAllTables = true)`; a schema change is a version bump + full re-sync.
+- Map "pick a location" flow: `Route.Schneaggmap(currentlyEditedEvent)` puts the map tab into `pickLocationMode`; `OnConfirmLocationPick` navigates **forward** to `Route.Events(selectedEvent = updatedEvent)` with `exitPreviousScreen` (`SchneaggmapViewModel.kt:116`). There is no generic back-with-result mechanism, and the flow is hardwired to `Event`.
 
 ### 1.4 Server plumbing to reuse
 
@@ -91,8 +114,8 @@ The owner key is the only 1:1-readiness measure taken now. Everything owner-spec
 ### 2.2 Payload sealed class - the only thing that grows per extension
 
 ```kotlin
-enum class GroupExtensionType { SHARED_TEXT, SPLIT, QUOTES, ROUTE_PLANNER }
-enum class ExtensionOwnerType { GROUP /* , FRIENDSHIP */ }
+@Serializable enum class GroupExtensionType { SHARED_TEXT, SPLIT, QUOTES, ROUTE_PLANNER }   // exists (client)
+@Serializable enum class ExtensionOwnerType { GROUP /* , FRIENDSHIP */ }                   // exists (client)
 
 @Serializable
 sealed class ExtensionItemData {
@@ -295,28 +318,34 @@ Follow `android-data-layer`, `android-presentation-mvi`, `android-navigation`, `
 ```
 groupextensions/
   domain/
-    GroupExtensionType.kt          enum + stringRes() + drawableRes()/icon (exhaustive when)
-    ExtensionOwnerType.kt
+    GroupExtensionType.kt          [exists] @Serializable enum, wire names; no UI types in domain
+    ExtensionOwnerType.kt          [exists]
+    GroupExtension.kt              [exists] domain container; add `settings: ExtensionSettings` in phase 2
+    GroupExtensionRepository.kt    [exists] interface: getExtensionsForOwnerFlow(ownerId), getExtensionFlow(id); phase 2 adds items flows + writes.
+                                   Interface in domain because the chat feature (ChatDetailsViewmodel) consumes it (android-module-structure: cross-feature imports go through domain/ only)
     ExtensionItemData.kt           sealed payload (+ HOW TO ADD header, mirrors LocationData.kt)
     ExtensionSettings.kt
-    GroupExtension.kt              domain container
     GroupExtensionItem.kt          domain item
     split/SplitCalculator.kt       computeBalances(), suggestSettlements()  (pure)
     route/RouteMetrics.kt          totalDistanceMeters() (pure, sums utilities/MapUtils.distanceMeters over consecutive points; formatDistance exists there too)
   data/
+    DemoGroupExtensionRepository.kt [exists, temporary] in-memory stub - delete in phase 2
+    RoomGroupExtensionRepository.kt Room-backed implementation of the domain interface (phase 2), bound with `singleOf(::RoomGroupExtensionRepository) { bind<GroupExtensionRepository>() }`
     dtos/GroupExtensionDto.kt      @Entity("group_extensions"), index on ownerId
     dtos/GroupExtensionItemDto.kt  @Entity("group_extension_items"), indices on extensionId and ownerId
-    GroupExtensionRepository.kt    Room-only, same shape as EventRepository
   presentation/
-    ExtensionListSection.kt        composable used inside ChatDetails (list + "add" button)
-    AddExtensionDialog.kt          type picker + title (+ currency field when SPLIT)
-    GroupExtensionScreenRoot.kt    route entry: loads container, dispatches on type
+    GroupExtensionTypeUi.kt        [exists] GroupExtensionType.toUiText() / .icon() (exhaustive when)
+    ExtensionListSection.kt        [exists] composable used inside ChatDetails (list + "add" dropdown) + ExtensionListAction
+    GroupExtensionState.kt         [exists] container screen State + Action
+    GroupExtensionViewModel.kt     [exists] loads the container, back navigation
+    GroupExtensionScreen.kt        [exists] Root + Screen + preview; route entry, later dispatches on type to the screens below
+    AddExtensionDialog.kt          type (pre-selected from the dropdown) + title (+ currency field when SPLIT)
     sharedtext/  SharedTextScreen + ViewModel + State + Action
     split/       SplitScreen (+ AddExpenseSheet) + ViewModel + State + Action
     quotes/      QuotesScreen + ViewModel + State + Action
     routeplanner/RoutePlannerScreen (maplibre) + MapEntryPickerSheet + ViewModel + State + Action
 schneaggmap/domain/
-    MapEntryFilter.kt              filterMapEntries(entries, term, groups, types) - extracted from SchneaggmapViewModel's search (≈ lines 95-102) and reused there
+    MapEntryFilter.kt              filterMapEntries(entries, term, groups, types) - extracted from SchneaggmapViewModel's search (≈ lines 63-92: term match on name/description/type label plus the group/type filter) and reused there
 datasource/network/requestResponseDataClasses/
     GroupExtensionNetworkDtos.kt   ExtensionRequest, ItemRequest, GroupExtensionResponse, GroupExtensionItemResponse, GroupExtensionSyncResponse
     GroupExtensionResponseMapper.kt toGroupExtension()/toDto()/toItem() (same trio as MapResponseMapper)
@@ -324,7 +353,7 @@ datasource/network/requestResponseDataClasses/
 
 ### 4.2 Room
 
-- `Database.kt`: add both entities to `@Database(entities = [...])`, bump `version` 82 → 83 (destructive migration wipes the DB and re-syncs, consistent with current practice; state it in the changelog).
+- `Database.kt`: add both entities to `@Database(entities = [...])`, bump `version` 86 → 87, or whatever is current then (destructive migration wipes the DB and re-syncs, consistent with current practice; state it in the changelog).
 - `RoomTypeConverters`: add `extensionItemDataToString/stringToExtensionItemData` and the `ExtensionSettings` pair, decoding tolerant (`runCatching`) so an unknown future discriminator from a newer server yields `null` and the row is skipped instead of crashing the list. Also `GroupExtensionType` / `ExtensionOwnerType` name converters with a safe default.
 - `Daos.kt` → `GroupExtensionDao`:
   - `upsertExtension`, `upsertItems(List)`, `deleteExtension(id)` (also deletes its items), `deleteItem(id)`
@@ -344,14 +373,14 @@ datasource/network/requestResponseDataClasses/
 
 ### 4.4 Navigation + DI
 
-- `Route.GroupExtension(extensionId: String)` in `Route.kt`; register in `NavigationState` (`chatRoutes` so the nav bar hides, plus the `subclass(...)` serializer line) and an `entry<Route.GroupExtension>` in `App.kt` next to `ChatDetails` that calls `GroupExtensionScreenRoot(extensionId)`.
-- `GroupExtensionScreenRoot` observes the container and switches on `type` to the concrete screen; each concrete screen gets its own ViewModel (`viewModel { (extensionId: String) -> ... }` in `Modules.kt`, explicit lambda like the event ones).
-- `Modules.kt`: `singleOf(::GroupExtensionRepository)` + the four ViewModels.
+- [done] `Route.GroupExtension(extensionId: String)` in `Route.kt`, registered in `NavigationState` (`chatRoutes` + `subclass(...)` serializer line), `entry<Route.GroupExtension>` in `App.kt` calling `GroupExtensionScreenRoot(extensionId)`. Opened without `exitPreviousScreen`, so back returns to the group details.
+- `GroupExtensionScreenRoot` already observes the container through `GroupExtensionViewModel`; replace its placeholder with a `when (extension.type)` to the concrete screen. Each concrete screen gets its own ViewModel (`viewModel { (extensionId: String) -> ... }` in `Modules.kt`, explicit lambda like `GroupExtensionViewModel`).
+- `Modules.kt`: [done] repository binding (currently the demo stub) and `GroupExtensionViewModel`; add the four type ViewModels.
 
 ### 4.5 Group details integration (the only entry point)
 
-- `ChatDetailsViewmodel`: `val groupExtensions: StateFlow<List<GroupExtension>>` from `groupExtensionRepository.getExtensionsForOwnerFlow(chatId)` (only when `isGroup`), `addExtension(type, title, settings)`, `deleteExtension(id)`, `openExtension(id)` → `navigator.navigate(Route.GroupExtension(id))`.
-- `ChatDetails.kt`: new section for groups placed after the connected-event block (`ChatDetails.kt:458-506`) and before the expiry block: `HorizontalDivider()`, section header, one `ListItem` per extension (type icon, title, supporting text = item count or "last edited by X"), trailing delete for creator/admin, and an "Add extension" `ListItem` opening `AddExtensionDialog`.
+- `ChatDetailsViewmodel`: [done] `val groupExtensions: StateFlow<List<GroupExtension>>` from `groupExtensionRepository.getExtensionsForOwnerFlow(chatId)` (only when `isGroup`) and `onExtensionAction(ExtensionListAction)`; `OnExtensionClick` navigates to `Route.GroupExtension(id)`. Open: `OnAddExtensionClick(type)` opens `AddExtensionDialog`, confirm calls `appRepository.upsertGroupExtension(...)`; add `OnDeleteExtensionClick(id)` with a confirmation (`confirm_delete_extension`).
+- `ChatDetails.kt`: [done] `ExtensionListSection` for groups, after the description row and before the shared-content rows, followed by its own `HorizontalDivider()`; one `ListItem` per extension (type icon, title, supporting text = type name) and an "Add extension" row with a dropdown of all types. Open: supporting text = item count or "last edited by X", trailing delete for creator/admin, developer gate removal.
 - Purge on group loss: `GroupRepository.deleteGroup` additionally calls `groupExtensionDao.deleteAllForOwner(groupId)`, and the post-`awaitAll` purge loop in `dataSync` (`AppRepository.kt:542`) also purges extensions for `removedGroupIds` (the extension job runs in parallel with the group job, same race as messages).
 
 ### 4.6 Presentation per extension (v1 scope)
@@ -365,7 +394,9 @@ datasource/network/requestResponseDataClasses/
 
 ### 4.7 Strings
 
-New keys in `values/strings.xml` + `values-de` + `values-it` (never `values-de-rAT`): `group_extensions_title`, `group_extension_add`, `group_extension_type_shared_text/split/quotes/route_planner`, `split_currency`, per-screen labels (`split_add_expense`, `split_balances`, `split_settle_up`, `quotes_add`, `route_add_point`, `route_pick_map_entry`, `route_open_on_map`, ...), and the confirmation `confirm_delete_extension`. Type names must go through `GroupExtensionType.stringRes()`.
+Existing keys (`values`, `values-de`, `values-it`): `group_extensions_title`, `group_extension_add`, `group_extension_type_shared_text/split/quotes/route_planner` (shown as "Shared text editor", "Money split", "Quotes", "Tour planner"), `group_extension_not_found`, `group_extension_under_construction` (remove once all type screens exist).
+
+New keys still to add in `values/strings.xml` + `values-de` + `values-it` (never `values-de-rAT`): `split_currency`, per-screen labels (`split_add_expense`, `split_balances`, `split_settle_up`, `quotes_add`, `route_add_point`, `route_pick_map_entry`, `route_open_on_map`, ...), and the confirmation `confirm_delete_extension`. Type names must go through `GroupExtensionType.toUiText()`.
 
 ---
 
@@ -407,10 +438,10 @@ Balances, settlement suggestions, route distance and "item count" are computed f
 5. If the type is single-item (like shared text), add it to the single-item set checked in `upsertItems`.
 
 **Client**
-1. Add the enum value to `GroupExtensionType` and wire `stringRes()` + `drawableRes()` (compiler enforced).
+1. Add the enum value to `GroupExtensionType` (domain) and wire `toUiText()` + `icon()` in `presentation/GroupExtensionTypeUi.kt` (compiler enforced).
 2. Add the `data class` to `ExtensionItemData` with the same `@SerialName` and property names as the server.
 3. Add strings for the type name in `values`, `values-de`, `values-it`.
-4. Add the screen package (`State`, `Action`, `ViewModel`, `Screen`, `Root`), register the ViewModel in `Modules.kt`, add the `when` branch in `GroupExtensionScreenRoot`.
+4. Add the screen package (`State`, `Action`, `ViewModel`, `Screen`, `Root`, preview), register the ViewModel in `Modules.kt`, add the `when` branch in `GroupExtensionScreen`.
 5. If the type has settings, add its fields to `AddExtensionDialog`.
 6. Optionally add a pure domain calculator for derived values.
 
@@ -420,14 +451,14 @@ Nothing else changes: no endpoint, no sync job, no socket message, no Room table
 
 ## 7. Phases
 
-| Phase | Scope | Done when |
-|---|---|---|
-| **1 - Server core** | models, converters, `SyncCollection.GROUP_EXTENSIONS`, repositories, `ExtensionOwnerAccess`, validator, service, controller (all 5 endpoints), `joinedAtExtensionVersion`, socket subtypes + `NotificationService` methods, `LogType`s, group delete cascade | endpoints callable with curl, `security-check` table clean |
-| **2 - Client data layer** | domain classes, Room entities/DAO/converters + DB 83, network DTOs + mappers, `NetworkUtils` calls, `AppRepository` sync job + CRUD, socket branches, purge hooks, DI | `dataSync` shows a `GROUP_EXTENSIONS` job that succeeds; creating an extension on device A appears in Room on device B |
-| **3 - Group details + shared text** | `ChatDetails` section, `AddExtensionDialog`, `Route.GroupExtension`, `GroupExtensionScreenRoot`, shared-text screen | first extension usable end to end |
-| **4 - Quotes + Split** | quote screen; split screen with `SplitCalculator`, currency in the add dialog | balances match a hand-computed example |
-| **5 - Route planner** | `filterMapEntries` extraction, maplibre screen, long-press add, `MapEntryPickerSheet`, reorder, distance, "open on map" | route renders as polyline on both devices; a point picked from the map carries `mapEntryId` |
-| **6 - Polish (optional)** | shared-text 409 conflict guard, push notification for new quotes/expenses, outbox integration, `FRIENDSHIP` owner type | - |
+| Phase | Scope | Done when | Status (2026-10-15) |
+|---|---|---|---|
+| **1 - Server core** | models, converters, `SyncCollection.GROUP_EXTENSIONS`, repositories, `ExtensionOwnerAccess`, validator, service, controller (all 5 endpoints), `joinedAtExtensionVersion`, socket subtypes + `NotificationService` methods, `LogType`s, group delete cascade | endpoints callable with curl, `security-check` table clean | open |
+| **2 - Client data layer** | domain classes, Room entities/DAO/converters + DB version bump, network DTOs + mappers, `NetworkUtils` calls, `AppRepository` sync job + CRUD, socket branches, purge hooks, DI | `dataSync` shows a `GROUP_EXTENSIONS` job that succeeds; creating an extension on device A appears in Room on device B | open; domain container + repository interface exist, demo stub to be replaced |
+| **3 - Group details + shared text** | `ChatDetails` section, `AddExtensionDialog`, `Route.GroupExtension`, `GroupExtensionScreenRoot`, shared-text screen | first extension usable end to end | partly: section, route, container screen done; `AddExtensionDialog`, delete, shared-text screen open |
+| **4 - Quotes + Split** | quote screen; split screen with `SplitCalculator`, currency in the add dialog | balances match a hand-computed example | open |
+| **5 - Route planner** | `filterMapEntries` extraction, maplibre screen, long-press add, `MapEntryPickerSheet`, reorder, distance, "open on map" | route renders as polyline on both devices; a point picked from the map carries `mapEntryId` | open |
+| **6 - Polish (optional)** | shared-text 409 conflict guard, push notification for new quotes/expenses, outbox integration, `FRIENDSHIP` owner type | - | open |
 
 Each phase ends with the `readme-changelog-updater` and `string-resource-extractor` agents.
 
@@ -440,6 +471,10 @@ Confirmed with the owner on 2026-09-05:
 - **Split currency**: one currency per container (`ExtensionSettings.Split.currency`, default EUR), chosen when the extension is created. Expenses carry no currency field.
 - **Route planner picker**: v1 supports both long-press tap-to-add and picking an existing schneaggmap entry. Implemented as an in-extension sheet over the local Room copy of the map entries, not as a navigation round trip through the map tab (§4.6).
 - **1:1 chats**: groups only in v1, but the owner key is `ownerType` + `ownerId` from the start and every owner-specific lookup goes through `ExtensionOwnerAccess`, so `FRIENDSHIP` is a later additive change with no renames or data migration.
+
+Confirmed with the owner on 2026-10-15:
+- **Instances, not one-per-type**: any number of extensions per group, also several of the same type, each with a title; opened by `extensionId`.
+- **Enum names**: the plan's `SHARED_TEXT, SPLIT, QUOTES, ROUTE_PLANNER` are the wire names; UI labels are free.
 
 Taken in this plan (change here if you disagree):
 - Version-watermark sync (messages style), not IdTimeStamp, because items are high-write and per-owner.

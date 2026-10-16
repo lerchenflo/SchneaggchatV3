@@ -1803,4 +1803,14 @@
     <string name="games_ghettoguesser_credits_file_page">Open file page on Wikimedia Commons</string>
     <string name="games_ghettoguesser_credits_unchanged">The photo is shown unchanged and scaled down.</string>
     <string name="games_ghettoguesser_close">Close</string>
+
+    <!-- Group extensions -->
+    <string name="group_extensions_title">Chat extensions</string>
+    <string name="group_extension_add">Add extension</string>
+    <string name="group_extension_type_shared_text">Shared text editor</string>
+    <string name="group_extension_type_split">Money split</string>
+    <string name="group_extension_type_quotes">Quotes</string>
+    <string name="group_extension_type_route_planner">Tour planner</string>
+    <string name="group_extension_not_found">This extension no longer exists.</string>
+    <string name="group_extension_under_construction">%1$s is still under construction.</string>
 </resources>

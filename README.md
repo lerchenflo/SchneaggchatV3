@@ -65,7 +65,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Bestenlisten: Diverse Fixes
 - Kreuzworträtsel und Wordle: Timer pausiert im Hintergrund
 - Anmeldung: Token-Refresh rebuild, leerer Bildschirm nach Hintergrundbeendigung behoben
-- Chat: Entwürfe werden wiederhergestellt, Gelesen-Status beim Öffnen über Benachrichtigung
+- Chat: Entwürfe werden wiederhergestellt, Gelesen-Status beim Öffnen über Benachrichtigung, Absturz bei geteilten Inhalten beim Wechsel in den Hintergrund behoben (Bottom Navigation dort ausgeblendet)
 - Doppelte Nachrichten (ungesendete) behoben
 - Events: Crash bei mehrtägigen Events behoben
 - Android Noti-Fehler behoben

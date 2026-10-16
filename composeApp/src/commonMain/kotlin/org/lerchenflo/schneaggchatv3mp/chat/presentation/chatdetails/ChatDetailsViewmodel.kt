@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -45,6 +46,9 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.ExtensionListAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -114,6 +118,7 @@ class ChatDetailsViewmodel(
     private val pictureManager: PictureManager,
     private val eventRepository: EventRepository,
     private val messageRepository: MessageRepository,
+    private val groupExtensionRepository: GroupExtensionRepository,
 
     val chatId: String,
     val isGroup: Boolean,
@@ -405,6 +410,29 @@ class ChatDetailsViewmodel(
             } else {
                 // todo was tuat ma mit lüt in ana gruppe wo ned in da userdatenbank sind?
                 GroupMemberWithUser(member, null)
+            }
+        }
+    }
+
+    /** Extensions of this group, only groups own extensions for now. */
+    val groupExtensions: StateFlow<List<GroupExtension>> = (
+        if (isGroup) groupExtensionRepository.getExtensionsForOwnerFlow(chatId)
+        else flowOf(emptyList())
+    ).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    fun onExtensionAction(action: ExtensionListAction) {
+        when (action) {
+            is ExtensionListAction.OnExtensionClick -> {
+                viewModelScope.launch {
+                    navigator.navigate(Route.GroupExtension(extensionId = action.extensionId))
+                }
+            }
+            is ExtensionListAction.OnAddExtensionClick -> {
+                // todo: AddExtensionDialog (title + per-type settings), GROUP_EXTENSIONS_PLAN.md phase 3
             }
         }
     }
