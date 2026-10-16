@@ -44,6 +44,8 @@ utilities/         — Shared helpers
 
 Repository interfaces + their models live in the domain/ of the feature that holds the implementation (data/); features may import each other's domain/ only.
 
+Feature data layer: data/ (repositories), data/local/ (local data sources + entity/), data/remote/ (remote data sources + dto/).
+
 ## Build Commands
 
 ```bash
