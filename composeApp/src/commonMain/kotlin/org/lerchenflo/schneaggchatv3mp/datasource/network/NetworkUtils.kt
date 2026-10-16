@@ -16,6 +16,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
@@ -768,12 +769,24 @@ class NetworkUtils(
     @Serializable
     data class GroupSyncResponse(
         val updatedGroups: List<GroupResponse>,
-        val deletedGroups: List<String>
+        val deletedGroups: List<String>,
+
+        // Group extensions changed since `extensionsSince` (plus all of a group the user just joined).
+        // Defaulted so a server without extension support still deserializes. Kept as raw JSON and
+        // decoded entry by entry (decodeGroupExtensionResponses), so one bad entry can't fail the group sync.
+        val updatedExtensions: List<JsonElement> = emptyList(),
+        val deletedExtensions: List<String> = emptyList(),
+        val updatedExtensionItems: List<JsonElement> = emptyList(),
+        val deletedExtensionItems: List<String> = emptyList(),
     )
 
-    suspend fun groupIdSync(groupIds: List<IdTimeStamp>) : NetworkResult<GroupSyncResponse, NetworkingError> {
+    /**
+     * @param extensionsSince highest group extension version stored locally. Sent as query param so the
+     * body stays the plain group list - a server without extension support just ignores it.
+     */
+    suspend fun groupIdSync(groupIds: List<IdTimeStamp>, extensionsSince: Long) : NetworkResult<GroupSyncResponse, NetworkingError> {
         return safePost(
-            endpoint = "/groups/sync",
+            endpoint = "/groups/sync?extensionsSince=$extensionsSince",
             body = groupIds
         )
     }

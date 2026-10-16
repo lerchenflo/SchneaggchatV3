@@ -8,6 +8,8 @@ Companion docs: `E2E_ENCRYPTION_PLAN_V2.md`, `OFFLINE_FIRST_ANALYSIS.md` (same f
 
 **Decisions taken (2026-09-05, confirmed with the owner)**: entry point is the group details screen only; split currency is set once per container; the route planner supports both tap-to-add and picking an existing schneaggmap entry in v1; only groups own extensions in v1, but the owner key is generic (`ownerType` + `ownerId`) so 1:1 chats can be added later without renaming anything.
 
+**Decisions taken (2026-10-16, confirmed with the owner)**: extensions are synced **inside `/groups/sync`**, not through an own endpoint or sync job - see §3.3, which replaces the earlier `GET /groupextensions/sync`. No socket handling for now. The client keeps the demo repository bound until the server serves extensions.
+
 **Decisions confirmed again (2026-10-15)**, after the first UI commit (`b7204f6c`) had drifted from this plan: a group holds **any number of extension instances** (also several of the same type), each with its own title, opened by `extensionId` - not one extension per type. The enum names of this plan (`SHARED_TEXT, SPLIT, QUOTES, ROUTE_PLANNER`) are the wire names; the UI may label them differently ("Money split", "Tour planner", ...).
 
 ---
@@ -29,7 +31,26 @@ Client (branch `fabi`, commit `b7204f6c` + restructure on 2026-10-15):
 | Container screen `GroupExtensionScreenRoot`/`GroupExtensionScreen` + `GroupExtensionViewModel` (loads the container, back, "not found" / "under construction" placeholder), with preview | `groupextensions/presentation/` |
 | Strings `group_extensions_title`, `group_extension_add`, `group_extension_type_*`, `group_extension_not_found`, `group_extension_under_construction` in `values`, `values-de`, `values-it` | `composeResources/` |
 
-Open next: everything from phase 1 (server) and phase 2 (client data layer); then the `AddExtensionDialog` behind `ExtensionListAction.OnAddExtensionClick`, the delete action, and the type screens. Remove the developer gate once phase 3 is done end to end.
+Client data layer (2026-10-16, phase 2 partly):
+
+| Done | Where |
+|---|---|
+| Domain: `ExtensionItemData` (+ HOW TO ADD header), `ExtensionSettings`, `RoutePointKind`, `GroupExtensionItem`; `GroupExtension.settings`; `GroupExtensionRepository.getItemsForExtensionFlow` | `groupextensions/domain/` |
+| Room: `GroupExtensionDto` (`group_extensions`), `GroupExtensionItemDto` (`group_extension_items`), `GroupExtensionDao`, `clearAll` entries, DB version 88 | `groupextensions/data/dtos/`, `datasource/database/` |
+| Enum names and payloads are stored as the raw wire strings/JSON and decoded on read (`toGroupExtension()` / `toGroupExtensionItem()` return null for unknown types), so rows of a type the app does not know yet survive until an app update | `GroupExtensionResponseMapper.kt` |
+| Sync inside `/groups/sync?extensionsSince=` (§3.3), applied in one Room transaction from `AppRepository.groupIdSync`; never fails the group sync | `NetworkUtils.GroupSyncResponse`, `AppRepository.applyGroupExtensionChanges` |
+| `RoomGroupExtensionRepository` (sync writes live; read overrides commented out), purge in `GroupRepository.deleteGroup` | `groupextensions/data/`, `chat/data/` |
+
+Split UI (2026-10-16, developer preview on the demo repository - writes stay in memory until app restart):
+
+| Done | Where |
+|---|---|
+| `GroupExtensionRepository.upsertItem/deleteItem` (demo: in memory; Room: commented-out network stubs) | `groupextensions/domain/`, `groupextensions/data/` |
+| `SplitCalculator` (`shares`, `computeBalances`, `suggestSettlements`, totals) | `groupextensions/domain/split/` |
+| Split screen (Tricount style): segmented Expenses/Balances switch, expense list by day, totals bar, add FAB; balances with diverging bars + "how to balance" suggestions whose "Mark as paid" opens a prefilled transfer | `groupextensions/presentation/split/` |
+| Editor route `Route.SplitExpenseEditor(extensionId, itemId?, transfer?)`: expense (title, amount, paid by, date, equal or by-shares split) or money transfer (from, to, amount, date), delete with confirmation | `groupextensions/presentation/split/editor/` |
+
+Open next: phase 1 (server), then uncomment the reads in `RoomGroupExtensionRepository` + swap the Koin binding (deletes the demo stub), socket branches, write calls; then the `AddExtensionDialog` behind `ExtensionListAction.OnAddExtensionClick`, the delete action, and the type screens. Remove the developer gate once phase 3 is done end to end.
 
 ---
 
@@ -132,10 +153,11 @@ sealed class ExtensionItemData {
         val amountCents: Long,
         val paidBy: String,                   // userId
         val participants: List<String>,       // userIds sharing the cost
-        val weights: Map<String, Int>? = null,// optional custom split, null = equal
+        val weights: Map<String, Int>? = null,// optional split by shares, null = equal
+        val amounts: Map<String, Long>? = null,// optional fixed cents per participant, wins over weights (2026-10-16)
         val date: Long,
         val isSettlement: Boolean = false,    // true = "A paid B back", participants = [B]
-        val category: String? = null,
+        val emoji: String? = null,            // user-chosen icon, any emoji (replaces the former `category`, 2026-10-16)
     ) : ExtensionItemData()
 
     /** QUOTES: one item per quote. */
@@ -230,26 +252,39 @@ Indexes: `group_extensions {ownerId:1, version:1}`, `group_extension_items {owne
 | `DELETE` | `/groupextensions/delete?extensionid=` | - | - | soft delete; allowed for the extension creator or an owner admin. Cascades: every non-deleted item of the container is soft-deleted, all stamped with fresh versions (`withVersions(n + 1)`). |
 | `POST` | `/groupextensions/items/upsert` | `List<ItemRequest(itemId?, extensionId, data)>` (1..100) | `List<GroupExtensionItemResponse>` | batch on purpose (route reorder, future outbox drain). All items must belong to the same container; requester must be a member of the container's owner; each `data.extensionType` must equal the container type; `SHARED_TEXT` rejects a second item (409). Versions via `withVersions(count)`. |
 | `DELETE` | `/groupextensions/items/delete?itemid=` | - | - | soft delete; item creator, extension creator or owner admin. |
-| `GET` | `/groupextensions/sync?since=&page_size=400` | - | `GroupExtensionSyncResponse` | version-watermark sync, §3.3 |
+| `POST` | `/groups/sync?extensionsSince=` | unchanged group `List<IdTimeStamp>` | `GroupSyncResponse` + 4 extension fields | replaces the former `GET /groupextensions/sync`, §3.3 |
 
 Request DTOs are nested data classes in the controller with `jakarta.validation` annotations; ids validated with `ValidationUtils.validateObjectId`. Item payload limits live in `ExtensionItemValidator` (§3.5).
 
 The service derives `ownerType`, `ownerId` and `type` for items from the container - the client never sends them for items.
 
-### 3.3 Sync (`GroupExtensionSyncResponse`)
+### 3.3 Sync (inside `/groups/sync`, decided 2026-10-16)
+
+The client already calls `POST /groups/sync` with its group `List<IdTimeStamp>` as body. Extensions ride along:
+
+- Request: body **unchanged** (an object body would make an old server answer 400). New query param `extensionsSince: Long` = the client's `MAX(version)` over both extension tables (0 on a fresh DB). A server without the feature ignores the param.
+- Response: `GroupSyncResponse` gets four new fields; the client defaults them to empty lists, so an old server keeps working.
 
 ```kotlin
-data class GroupExtensionSyncResponse(
-    val updatedExtensions: List<GroupExtensionResponse>,
+data class GroupSyncResponse(
+    val updatedGroups: List<GroupResponse>,
+    val deletedGroups: List<String>,
+    val updatedExtensions: List<GroupExtensionResponse>,       // ownerType/type as enum names, settings as polymorphic JSON ("_class")
     val deletedExtensions: List<String>,
-    val updatedItems: List<GroupExtensionItemResponse>,
-    val deletedItems: List<String>,
-    val newVersion: Long,
-    val moreEntries: Boolean,
+    val updatedExtensionItems: List<GroupExtensionItemResponse>, // data as polymorphic JSON ("_class")
+    val deletedExtensionItems: List<String>,
 )
+// GroupExtensionResponse: id, ownerType, ownerId, type, title, settings, createdBy, createdAt, updatedBy, updatedAt, version
+// GroupExtensionItemResponse: id, extensionId, ownerType, ownerId, type, data, createdBy, createdAt, updatedBy, updatedAt, version
 ```
 
-Algorithm (mirrors `MessageService.messageSync` + `MessageLookupService.getMessagesSince`):
+Server rules:
+- Rows with `version > extensionsSince && version <= safeWatermark(GROUP_EXTENSIONS)` of all groups the requester is a member of; soft-deleted rows go into the `deleted*` lists.
+- **Full set** (every non-deleted row, ignoring `extensionsSince`) for a group that is missing from the request body (the client has never seen it) **or** where the requester's `joinedAtExtensionVersion > extensionsSince` (§3.6). The second rule is needed because a group can reach the client through the socket `GroupChange` before the next sync, so it is already in the body although its extensions are not.
+- No paging; the client loops nothing. If the payload ever gets too big, add `moreExtensions: Boolean = false` and let the client repeat the call.
+- The client decodes every entry on its own and drops malformed ones, so one bad row never breaks the group sync.
+
+Original standalone-endpoint algorithm, still valid for the query itself (mirrors `MessageService.messageSync` + `MessageLookupService.getMessagesSince`):
 
 1. `watermark = versionCounterService.safeWatermark(GROUP_EXTENSIONS)`.
 2. `ownerIds = extensionOwnerAccess.ownerIdsFor(requester)` (v1: `groupLookupService.getUserGroupIds`), `fullHistoryOwners = extensionOwnerAccess.lateJoinOwnerIds(requester, since)` (§3.6).
@@ -272,7 +307,7 @@ Exhaustive `when (data)`; new subclasses do not compile until they get a branch:
 | Payload | Rules |
 |---|---|
 | `SharedText` | `text.length <= 20_000` |
-| `SplitExpense` | `title` 1..100, `amountCents in 0..100_000_000`, `paidBy` and every `participants` entry must be a current member of the owner, `participants` non-empty and distinct, `weights` keys ⊆ participants and values > 0, `isSettlement` → exactly one participant |
+| `SplitExpense` | `title` 1..100 (empty for `isSettlement`, the client labels transfers itself), `amountCents in 0..100_000_000`, `paidBy` and every `participants` entry must be a current member of the owner, `participants` non-empty and distinct, `weights` keys ⊆ participants and values > 0, `amounts` keys ⊆ participants, values ≥ 0 and their sum == `amountCents`, `emoji` ≤ 10 chars, `isSettlement` → exactly one participant, no weights/amounts/emoji |
 | `Quote` | `text` 1..1_000, `saidByUserId` must be a member when set, `saidByName` ≤ 50, at least one of the two set |
 | `RoutePoint` | `ValidationUtils.validateLatLong`, `name` 1..100, `description` ≤ 500, `sortIndex >= 0`, `mapEntryId` must be a valid ObjectId when set (existence is not checked - it is a soft link) |
 
@@ -361,10 +396,12 @@ datasource/network/requestResponseDataClasses/
   - `getLastSyncedVersion(): Long` = `MAX(COALESCE(MAX(version) over extensions, MAX(version) over items), 0)`
   - `deleteAllForOwner(ownerId)` (both tables), `clearAll` entries in `AllDatabaseDao`
 - Sync watermark lives in the rows (`version` column) exactly like messages, so no extra preference key is needed.
+- [done 2026-10-16, deviates from the converter idea above] Entities keep `ownerType`/`type` as strings and `settings`/`data` as raw wire JSON (no type converters). Decoding happens in the mappers on read; an undecodable row is skipped but stays stored, so it appears after an app update without a re-sync. No foreign keys, so an item without its container never fails a batch.
 
 ### 4.3 Network + sync
 
-- `NetworkUtils`: `groupExtensionSync(since)`, `upsertGroupExtension(request)`, `deleteGroupExtension(id)`, `upsertGroupExtensionItems(list)`, `deleteGroupExtensionItem(id)` - all through the existing `safeGet/safePost/safeDelete`.
+- [done 2026-10-16, replaces the sync job below] `NetworkUtils.groupIdSync(groupIds, extensionsSince)`; `AppRepository.groupIdSync` applies the extension fields via `applyGroupExtensionChanges` in one Room transaction, before the group deletions so their purge also covers them. No `DataSyncJobType.GROUP_EXTENSIONS`.
+- `NetworkUtils`: `upsertGroupExtension(request)`, `deleteGroupExtension(id)`, `upsertGroupExtensionItems(list)`, `deleteGroupExtensionItem(id)` - all through the existing `safeGet/safePost/safeDelete`.
 - `AppRepository`:
   - `DataSyncJobType.GROUP_EXTENSIONS` + default `DataSyncJobState` entry + a new `async` job in `dataSync` calling `groupExtensionSync()`.
   - `groupExtensionSync()` copies the `messageIdSync` loop: `since = dao.getLastSyncedVersion()`, apply deletions first, then upserts sorted by version, `since = response.newVersion`, loop while `moreEntries`.
@@ -454,7 +491,7 @@ Nothing else changes: no endpoint, no sync job, no socket message, no Room table
 | Phase | Scope | Done when | Status (2026-10-15) |
 |---|---|---|---|
 | **1 - Server core** | models, converters, `SyncCollection.GROUP_EXTENSIONS`, repositories, `ExtensionOwnerAccess`, validator, service, controller (all 5 endpoints), `joinedAtExtensionVersion`, socket subtypes + `NotificationService` methods, `LogType`s, group delete cascade | endpoints callable with curl, `security-check` table clean | open |
-| **2 - Client data layer** | domain classes, Room entities/DAO/converters + DB version bump, network DTOs + mappers, `NetworkUtils` calls, `AppRepository` sync job + CRUD, socket branches, purge hooks, DI | `dataSync` shows a `GROUP_EXTENSIONS` job that succeeds; creating an extension on device A appears in Room on device B | open; domain container + repository interface exist, demo stub to be replaced |
+| **2 - Client data layer** | domain classes, Room entities/DAO + DB version bump, network DTOs + mappers, sync inside `/groups/sync`, CRUD, socket branches, purge hooks, DI | creating an extension on device A appears in Room on device B after a group sync | partly (2026-10-16): domain, Room, mappers, group-sync piggyback, purge, DI done; reads commented out (demo stub still bound), CRUD + socket open |
 | **3 - Group details + shared text** | `ChatDetails` section, `AddExtensionDialog`, `Route.GroupExtension`, `GroupExtensionScreenRoot`, shared-text screen | first extension usable end to end | partly: section, route, container screen done; `AddExtensionDialog`, delete, shared-text screen open |
 | **4 - Quotes + Split** | quote screen; split screen with `SplitCalculator`, currency in the add dialog | balances match a hand-computed example | open |
 | **5 - Route planner** | `filterMapEntries` extraction, maplibre screen, long-press add, `MapEntryPickerSheet`, reorder, distance, "open on map" | route renders as polyline on both devices; a point picked from the map carries `mapEntryId` | open |

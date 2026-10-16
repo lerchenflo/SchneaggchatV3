@@ -10,6 +10,7 @@ data class GroupExtension(
     val ownerId: String,
     val type: GroupExtensionType,
     val title: String,
+    val settings: ExtensionSettings = ExtensionSettings.None,
     val createdBy: String,
     val createdAt: Long,
     val updatedBy: String,

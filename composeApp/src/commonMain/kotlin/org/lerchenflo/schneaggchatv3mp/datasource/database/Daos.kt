@@ -23,6 +23,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.data.dtos.EventDto
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.dtos.GroupExtensionDto
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.dtos.GroupExtensionItemDto
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
 
 @Dao
@@ -532,6 +534,12 @@ interface AllDatabaseDao {
     @Query("DELETE FROM events")
     suspend fun clearEvents()
 
+    @Query("DELETE FROM group_extension_items")
+    suspend fun clearGroupExtensionItems()
+
+    @Query("DELETE FROM group_extensions")
+    suspend fun clearGroupExtensions()
+
 
     @Transaction
     suspend fun clearAll() {
@@ -544,6 +552,8 @@ interface AllDatabaseDao {
         clearGroups()
         clearMapEntries()
         clearEvents()
+        clearGroupExtensionItems()
+        clearGroupExtensions()
     }
 }
 
@@ -580,6 +590,76 @@ interface EventDao {
 
     @Query("DELETE FROM events WHERE id = :id")
     suspend fun delete(id: String)
+}
+
+@Dao
+interface GroupExtensionDao {
+
+    @Upsert
+    suspend fun upsertExtensions(extensions: List<GroupExtensionDto>)
+
+    @Upsert
+    suspend fun upsertItems(items: List<GroupExtensionItemDto>)
+
+    @Query("DELETE FROM group_extensions WHERE id IN (:ids)")
+    suspend fun deleteExtensionsByIds(ids: List<String>)
+
+    @Query("DELETE FROM group_extension_items WHERE extensionId IN (:extensionIds)")
+    suspend fun deleteItemsForExtensions(extensionIds: List<String>)
+
+    @Query("DELETE FROM group_extension_items WHERE id IN (:ids)")
+    suspend fun deleteItemsByIds(ids: List<String>)
+
+    @Query("DELETE FROM group_extensions WHERE ownerId = :ownerId")
+    suspend fun deleteExtensionsForOwner(ownerId: String)
+
+    @Query("DELETE FROM group_extension_items WHERE ownerId = :ownerId")
+    suspend fun deleteItemsForOwner(ownerId: String)
+
+    /** Purges everything of one owner (e.g. a group that was left or deleted). */
+    @Transaction
+    suspend fun deleteAllForOwner(ownerId: String) {
+        deleteItemsForOwner(ownerId)
+        deleteExtensionsForOwner(ownerId)
+    }
+
+    /**
+     * Applies one sync batch atomically. Upserts go first so a deleted container also takes along
+     * items that arrived for it in the same batch.
+     */
+    @Transaction
+    suspend fun applySyncChanges(
+        updatedExtensions: List<GroupExtensionDto>,
+        deletedExtensionIds: List<String>,
+        updatedItems: List<GroupExtensionItemDto>,
+        deletedItemIds: List<String>,
+    ) {
+        if (updatedExtensions.isNotEmpty()) upsertExtensions(updatedExtensions)
+        if (updatedItems.isNotEmpty()) upsertItems(updatedItems)
+        if (deletedExtensionIds.isNotEmpty()) {
+            deleteItemsForExtensions(deletedExtensionIds)
+            deleteExtensionsByIds(deletedExtensionIds)
+        }
+        if (deletedItemIds.isNotEmpty()) deleteItemsByIds(deletedItemIds)
+    }
+
+    /** Sync watermark: containers and items share one server version counter. */
+    @Query("""
+        SELECT MAX(
+            COALESCE((SELECT MAX(version) FROM group_extensions), 0),
+            COALESCE((SELECT MAX(version) FROM group_extension_items), 0)
+        )
+    """)
+    suspend fun getLastSyncedVersion(): Long
+
+    @Query("SELECT * FROM group_extensions WHERE ownerId = :ownerId ORDER BY createdAt ASC")
+    fun getExtensionsForOwnerFlow(ownerId: String): Flow<List<GroupExtensionDto>>
+
+    @Query("SELECT * FROM group_extensions WHERE id = :id")
+    fun getExtensionFlow(id: String): Flow<GroupExtensionDto?>
+
+    @Query("SELECT * FROM group_extension_items WHERE extensionId = :extensionId ORDER BY createdAt ASC")
+    fun getItemsForExtensionFlow(extensionId: String): Flow<List<GroupExtensionItemDto>>
 }
 
 @Dao

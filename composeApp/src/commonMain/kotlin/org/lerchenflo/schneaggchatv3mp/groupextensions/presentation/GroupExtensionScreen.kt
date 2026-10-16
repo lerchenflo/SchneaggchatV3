@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionOwnerType
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitScreenRoot
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_not_found
@@ -35,10 +36,14 @@ fun GroupExtensionScreenRoot(
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    GroupExtensionScreen(
-        state = state,
-        onAction = viewModel::onAction
-    )
+    // Types with their own screen take over once the container is loaded
+    when (state.extension?.type) {
+        GroupExtensionType.SPLIT -> SplitScreenRoot(extensionId = extensionId)
+        else -> GroupExtensionScreen(
+            state = state,
+            onAction = viewModel::onAction
+        )
+    }
 }
 
 @Composable
@@ -63,7 +68,7 @@ fun GroupExtensionScreen(
             when {
                 state.isLoading -> CircularProgressIndicator()
                 state.extension == null -> Text(stringResource(Res.string.group_extension_not_found))
-                // todo: dispatch to the type specific screen (GROUP_EXTENSIONS_PLAN.md phases 3-5)
+                // todo: dispatch the remaining types to their own screens in GroupExtensionScreenRoot (GROUP_EXTENSIONS_PLAN.md phases 3-5)
                 else -> Text(
                     stringResource(
                         Res.string.group_extension_under_construction,

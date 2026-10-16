@@ -10,6 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
@@ -75,8 +76,11 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.DemoGroupExtensionRepository
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.RoomGroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.GroupExtensionViewModel
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitViewModel
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor.SplitExpenseEditorViewModel
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackViewModel
@@ -146,7 +150,7 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::SettingsRepository)
     singleOf(::GroupRepository)
@@ -156,6 +160,9 @@ val sharedmodule = module{
     singleOf(::MapRepository)
     singleOf(::EventRepository)
     singleOf(::DemoGroupExtensionRepository) { bind<GroupExtensionRepository>() }
+    // Holds the synced extensions. Swap with the demo line above once the server serves extensions
+    // (see RoomGroupExtensionRepository): singleOf(::RoomGroupExtensionRepository) { bind<GroupExtensionRepository>() }
+    singleOf(::RoomGroupExtensionRepository)
     singleOf(::FeedbackRepository)
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
@@ -255,6 +262,28 @@ val sharedmodule = module{
             groupExtensionRepository = get(),
             navigator = get(),
             extensionId = extensionId
+        )
+    }
+
+    // Explicit lambda because the runtime extensionId can't be resolved by viewModelOf
+    viewModel { (extensionId: String) ->
+        SplitViewModel(
+            groupExtensionRepository = get(),
+            groupRepository = get(),
+            userRepository = get(),
+            navigator = get(),
+            extensionId = extensionId
+        )
+    }
+
+    // The whole route is passed, its itemId/transfer are nullable
+    viewModel { (route: Route.SplitExpenseEditor) ->
+        SplitExpenseEditorViewModel(
+            groupExtensionRepository = get(),
+            groupRepository = get(),
+            userRepository = get(),
+            navigator = get(),
+            route = route
         )
     }
 

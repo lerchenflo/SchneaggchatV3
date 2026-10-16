@@ -181,6 +181,7 @@ private val chatRoutes: Set<KClass<out NavKey>> = setOf(
     Route.ChatDetails::class,
     Route.ChatSharedContent::class,
     Route.GroupExtension::class,
+    Route.SplitExpenseEditor::class,
     Route.Birthdays::class,
     Route.NewChat::class,
     Route.MessageChatSelector::class,
@@ -208,6 +209,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
             subclass(Route.ChatSharedContent::class, Route.ChatSharedContent.serializer())
             subclass(Route.GroupExtension::class, Route.GroupExtension.serializer())
+            subclass(Route.SplitExpenseEditor::class, Route.SplitExpenseEditor.serializer())
             subclass(Route.Birthdays::class, Route.Birthdays.serializer())
             subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
             subclass(Route.FriendCompass::class, Route.FriendCompass.serializer())

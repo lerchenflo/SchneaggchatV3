@@ -123,6 +123,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.GroupExtensionScreenRoot
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor.SplitExpenseEditorScreenRoot
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
 import schneaggchatv3mp.composeapp.generated.resources.ttt_hint_tap_anywhere
@@ -639,6 +640,9 @@ fun App() {
                                         GroupExtensionScreenRoot(
                                             extensionId = route.extensionId
                                         )
+                                    }
+                                    entry<Route.SplitExpenseEditor> { route ->
+                                        SplitExpenseEditorScreenRoot(route = route)
                                     }
                                     entry<Route.Birthdays> {
                                         BirthdaysScreenRoot()

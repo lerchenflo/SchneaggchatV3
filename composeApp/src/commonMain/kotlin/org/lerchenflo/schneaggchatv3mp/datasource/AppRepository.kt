@@ -99,6 +99,9 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.decodeGroupExtensionItemResponses
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.decodeGroupExtensionResponses
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
@@ -121,6 +124,7 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.RoomGroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
@@ -185,6 +189,7 @@ class AppRepository(
     private val eventRepository: EventRepository,
     private val languageService: LanguageService,
     private val authSessionManager: AuthSessionManager,
+    private val groupExtensionRepository: RoomGroupExtensionRepository,
 ) {
     //Errorchannel for global error events (Show in every screen)
     object ErrorChannel {
@@ -2534,7 +2539,8 @@ class AppRepository(
         val groupSyncResponse = networkUtils.groupIdSync(
             groupIds = localgroups.map {
                 IdTimeStamp(it.id, it.updatedAt)
-            }
+            },
+            extensionsSince = groupExtensionRepository.getLastSyncedVersion()
         ).trackConnectivity()
 
         var deletedGroupIds: List<String> = emptyList()
@@ -2578,6 +2584,10 @@ class AppRepository(
                 }
 
 
+                // Before the group deletions below, so their purge also covers extensions of
+                // removed groups in this same response
+                applyGroupExtensionChanges(groupSyncResponse.data)
+
                 deletedGroupIds = groupSyncResponse.data.deletedGroups
                 deletedGroupIds.forEach { id ->
                     groupRepository.deleteGroup(id)
@@ -2590,6 +2600,39 @@ class AppRepository(
         }
 
         return deletedGroupIds
+    }
+
+    /**
+     * Stores the group extensions that ride along with /groups/sync. A server without extension
+     * support sends none of these fields, so this is a no-op there. Never throws: extensions are
+     * an add-on and must not fail the group sync they piggyback on.
+     */
+    private suspend fun applyGroupExtensionChanges(response: GroupSyncResponse) {
+        val updatedExtensions = response.updatedExtensions.decodeGroupExtensionResponses()
+        val updatedItems = response.updatedExtensionItems.decodeGroupExtensionItemResponses()
+
+        val skipped = (response.updatedExtensions.size - updatedExtensions.size) +
+                (response.updatedExtensionItems.size - updatedItems.size)
+        if (skipped > 0) {
+            loggingRepository.logWarning("Group extension sync: skipped $skipped malformed entries")
+        }
+
+        if (updatedExtensions.isEmpty() && updatedItems.isEmpty()
+            && response.deletedExtensions.isEmpty() && response.deletedExtensionItems.isEmpty()) {
+            return
+        }
+
+        try {
+            groupExtensionRepository.applySyncChanges(
+                updatedExtensions = updatedExtensions.map { it.toDto() },
+                deletedExtensionIds = response.deletedExtensions,
+                updatedItems = updatedItems.map { it.toDto() },
+                deletedItemIds = response.deletedExtensionItems,
+            )
+        } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
+            loggingRepository.logWarning("Group extension sync failed: ${e.message}")
+        }
     }
 
     suspend fun getProfilePicturesForGroupIds(groupIds: List<String>){

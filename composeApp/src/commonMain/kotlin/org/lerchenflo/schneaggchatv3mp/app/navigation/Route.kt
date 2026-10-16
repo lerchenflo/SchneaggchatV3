@@ -4,6 +4,7 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor.SplitTransferDraft
 
 sealed interface Route : NavKey {
 
@@ -43,6 +44,14 @@ sealed interface Route : NavKey {
     @Serializable
     data class GroupExtension(
         val extensionId: String
+    ): Route
+
+    /** Create ([itemId] null) or edit an entry of a money split. [transfer] prefills a new money transfer. */
+    @Serializable
+    data class SplitExpenseEditor(
+        val extensionId: String,
+        val itemId: String? = null,
+        val transfer: SplitTransferDraft? = null,
     ): Route
 
     @Serializable

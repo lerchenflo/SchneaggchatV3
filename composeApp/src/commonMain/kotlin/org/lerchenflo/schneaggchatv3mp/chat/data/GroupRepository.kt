@@ -52,6 +52,7 @@ class GroupRepository(
         // messages here so both /groups/sync and the websocket groupchange path cover it.
         database.messageReaderDao().deleteReadersForGroupMessages(groupid)
         database.messageDao().deleteMessagesForGroup(groupid)
+        database.groupExtensionDao().deleteAllForOwner(groupid)
         database.groupDao().deleteMembersForGroup(groupid)
         database.groupDao().deleteGroup(groupid)
     }
