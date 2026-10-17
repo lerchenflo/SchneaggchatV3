@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.app.logging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.number
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import kotlin.time.Clock
@@ -23,7 +24,7 @@ class RoomLoggingRepository(
         }
 
         val timestamp = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val formattedTimestamp = "${timestamp.year}-${timestamp.month.ordinal.toString().padStart(2, '0')}-${timestamp.day.toString().padStart(2, '0')} ${timestamp.hour.toString().padStart(2, '0')}:${timestamp.minute.toString().padStart(2, '0')}:${timestamp.second.toString().padStart(2, '0')}"
+        val formattedTimestamp = "${timestamp.year}-${timestamp.month.number.toString().padStart(2, '0')}-${timestamp.day.toString().padStart(2, '0')} ${timestamp.hour.toString().padStart(2, '0')}:${timestamp.minute.toString().padStart(2, '0')}:${timestamp.second.toString().padStart(2, '0')}"
         val consoleMessage = "[$formattedTimestamp] [${logType.name}] $truncatedMessage"
         println(consoleMessage)
         database.logDao().upsertLog(LogEntry(

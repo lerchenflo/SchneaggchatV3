@@ -71,6 +71,7 @@ import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
 import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.number
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -128,6 +129,7 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_screentitle
 import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_shown_for
 import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_too_many_options
 import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_untitled
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_reorder
 import sh.calvin.reorderable.ReorderableColumn
 import kotlin.time.Clock
 
@@ -451,7 +453,7 @@ fun PollDialog(
                                 SettingsSwitch(
                                     modifier = Modifier.fillMaxWidth(),
                                     titletext = if (expiresAt == null) {stringResource(Res.string.poll_expiry_title)} else {
-                                        stringResource(Res.string.poll_expiry_title_withdate, "${expiresAt!!.day.toString().padStart(2, '0')}.${expiresAt!!.month.ordinal.toString().padStart(2, '0')}.${expiresAt!!.year} ${expiresAt!!.hour.toString().padStart(2, '0')}:${expiresAt!!.minute.toString().padStart(2, '0')}")
+                                        stringResource(Res.string.poll_expiry_title_withdate, "${expiresAt!!.day.toString().padStart(2, '0')}.${expiresAt!!.month.number.toString().padStart(2, '0')}.${expiresAt!!.year} ${expiresAt!!.hour.toString().padStart(2, '0')}:${expiresAt!!.minute.toString().padStart(2, '0')}")
                                     },
                                     infotext = stringResource(Res.string.poll_expiry_title_info),
                                     switchchecked = expiresAt != null,
@@ -723,7 +725,7 @@ private fun PollDraftEditor(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.DragHandle,
-                            contentDescription = "Reorder",
+                            contentDescription = stringResource(Res.string.poll_option_reorder),
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -854,8 +856,8 @@ private fun PollDraftEditor(
                     )
                 }
 
-                //Warning field if user selects both options
-                if (draft.allowMultipleAnswers && draft.allowedCustomAnswerCount == 10 || draft.allowedCustomAnswerCount == 10) {
+                //Warning while custom answers are unlimited (slider at ∞); the text also covers multiple answers
+                if (draft.allowCustomAnswers && draft.allowedCustomAnswerCount == 10) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
