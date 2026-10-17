@@ -160,7 +160,7 @@ fun UserButton(
                         Icon(
                             imageVector = Icons.Default.PushPin,
                             contentDescription = "pinned",
-                            tint = MaterialTheme.colorScheme.errorContainer,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
                                 .size(18.dp)
                                 .rotate(45f) // Rotates the pin to look like it's sticking in

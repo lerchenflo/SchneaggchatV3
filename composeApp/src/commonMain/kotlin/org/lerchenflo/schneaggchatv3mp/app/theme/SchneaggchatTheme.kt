@@ -140,6 +140,25 @@ private val darkVariant1 = darkColorScheme(
     surfaceContainerHigh = etherealMidnightHigh,             // Hover states/Active backgrounds
     surfaceContainerHighest = etherealMidnightHighest,       // Receiver message bubbles
     outlineVariant = etherealText.copy(alpha = 0.15f),       // The "Ghost Border"
+
+    // Filled in 2026-10-17 so no role falls back to the Material defaults
+    secondaryContainer = etherealTealContainer,
+    onSecondaryContainer = etherealText,
+    tertiary = etherealPink,
+    onTertiary = etherealMidnight,
+    tertiaryContainer = etherealPinkContainer,
+    onTertiaryContainer = etherealText,
+    error = errorDark,
+    onError = onErrorDark,
+    errorContainer = errorContainerDark,
+    onErrorContainer = onErrorContainerDark,
+    scrim = scrimDark,
+    outline = etherealOutline,
+    inverseSurface = etherealText,
+    inverseOnSurface = etherealMidnightHigh,
+    inversePrimary = electricVioletDim,
+    surfaceDim = etherealMidnight,
+    surfaceBright = etherealMidnightHighest,
 )
 
 private val lightVariant2 = lightColorScheme(
@@ -162,7 +181,29 @@ private val lightVariant2 = lightColorScheme(
     surfaceContainerHigh = curatorSurfaceHigh,
     surfaceContainerHighest = curatorSurfaceHighest,
 
-    outlineVariant = curatorGhostBorder // The "Ghost Border"
+    outlineVariant = curatorGhostBorder, // The "Ghost Border"
+
+    // Filled in 2026-10-17 so no role falls back to the Material defaults
+    secondary = curatorSecondary,
+    onSecondary = curatorOnSecondary,
+    secondaryContainer = curatorSecondaryContainer,
+    onSecondaryContainer = curatorOnSecondaryContainer,
+    tertiary = curatorTertiary,
+    onTertiary = curatorOnTertiary,
+    tertiaryContainer = curatorTertiaryContainer,
+    onTertiaryContainer = curatorOnTertiaryContainer,
+    error = errorLight,
+    onError = onErrorLight,
+    errorContainer = errorContainerLight,
+    onErrorContainer = onErrorContainerLight,
+    scrim = scrimLight,
+    surfaceVariant = curatorSurfaceHigh,
+    outline = curatorOutline,
+    inverseSurface = curatorOnSurface,
+    inverseOnSurface = curatorSurfaceLow,
+    inversePrimary = curatorPrimaryContainer,
+    surfaceDim = curatorSurfaceHighest,
+    surfaceBright = curatorSurfaceLowest,
 )
 
 private val neonPulseScheme = darkColorScheme(
@@ -192,7 +233,24 @@ private val neonPulseScheme = darkColorScheme(
     surfaceContainerHigh = neonSurfaceHigh,
     surfaceContainerHighest = neonSurfaceHighest,
 
-    outlineVariant = neonGhostBorder // Critical accessibility containment
+    outlineVariant = neonGhostBorder, // Critical accessibility containment
+
+    // Filled in 2026-10-17 so no role falls back to the Material defaults
+    onTertiary = neonOnTertiary,
+    tertiaryContainer = neonTertiaryContainer,
+    onTertiaryContainer = neonTertiary,
+    error = errorDark,
+    onError = onErrorDark,
+    errorContainer = errorContainerDark,
+    onErrorContainer = onErrorContainerDark,
+    scrim = scrimDark,
+    surfaceVariant = neonSurfaceHighest,
+    outline = neonOutline,
+    inverseSurface = neonInverseSurface,
+    inverseOnSurface = neonSurface,
+    inversePrimary = neonOnPrimary,
+    surfaceDim = neonSurface,
+    surfaceBright = neonSurfaceHighest,
 )
 
 private val annaScheme = darkColorScheme(
@@ -224,7 +282,21 @@ private val annaScheme = darkColorScheme(
     surfaceContainerHighest = annaSurfaceContainerHighest,
 
     outline = annaOutline,
-    outlineVariant = annaOutlineVariant
+    outlineVariant = annaOutlineVariant,
+
+    // Filled in 2026-10-17 so no role falls back to the Material defaults
+    tertiaryContainer = annaTertiaryContainer,
+    onTertiaryContainer = annaOnTertiary,
+    error = errorDark,
+    onError = onErrorDark,
+    errorContainer = errorContainerDark,
+    onErrorContainer = onErrorContainerDark,
+    scrim = scrimDark,
+    inverseSurface = annaOnBackground,
+    inverseOnSurface = annaSurface,
+    inversePrimary = annaPrimary,
+    surfaceDim = annaSurfaceContainerLowest,
+    surfaceBright = annaSurfaceContainerHigh,
 )
 
 private val flosScheme = darkColorScheme(
@@ -256,7 +328,21 @@ private val flosScheme = darkColorScheme(
     surfaceContainerHighest = flosSurfaceContainerHighest,
 
     outline = flosOutline,
-    outlineVariant = flosOutlineVariant
+    outlineVariant = flosOutlineVariant,
+
+    // Filled in 2026-10-17 so no role falls back to the Material defaults
+    tertiaryContainer = flosTertiaryContainer,
+    onTertiaryContainer = flosOnTertiary,
+    error = errorDark,
+    onError = onErrorDark,
+    errorContainer = errorContainerDark,
+    onErrorContainer = onErrorContainerDark,
+    scrim = scrimDark,
+    inverseSurface = flosOnBackground,
+    inverseOnSurface = flosSurface,
+    inversePrimary = flosPrimary,
+    surfaceDim = flosBackground,
+    surfaceBright = flosSurfaceContainerHighest,
 )
 
 @Composable
