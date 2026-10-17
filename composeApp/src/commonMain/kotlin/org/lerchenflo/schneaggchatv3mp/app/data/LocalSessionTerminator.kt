@@ -31,10 +31,7 @@ class LocalSessionTerminator(
     private val loggingRepository: Logger,
 ) : SessionTerminator {
 
-    /**
-     * Delete all app data (for example on appdatadelete or logout)
-     */
-    override suspend fun deleteAllAppData(){
+    override suspend fun resetLocalData(){
 
         preferencemanager.saveLastStartedVersion("") //Show Changelog on next startup
 
@@ -64,7 +61,7 @@ class LocalSessionTerminator(
 
         if (endSessionOnServer) authRepository.endServerSession(refreshToken) // best effort, bounded; the token is already gone locally
 
-        deleteAllAppData() // delete all app data when logging out
+        resetLocalData() // database, notifications, push token - the preferences follow below
 
         preferencemanager.clearAll() //Delete all app data to force login again (retries the token delete too)
 

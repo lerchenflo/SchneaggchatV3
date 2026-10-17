@@ -42,9 +42,9 @@ class MiscSettingsViewModel(
         }
     }
 
-    fun deleteAllAppData(){
+    fun resetLocalData(){
         viewModelScope.launch {
-            sessionTerminator.deleteAllAppData()
+            sessionTerminator.resetLocalData()
             // UNDISPATCHED: the sync is started before the navigation below can clear this
             // ViewModel; it then runs in the app-wide scope (plan R2).
             viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {

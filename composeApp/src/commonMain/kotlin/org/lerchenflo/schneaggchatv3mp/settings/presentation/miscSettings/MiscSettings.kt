@@ -174,7 +174,7 @@ fun MiscSettings(
                 ConfirmationDialog(
                     message = stringResource(Res.string.app_broken_are_you_sure),
                     onConfirm = {
-                        miscSettingsViewModel.deleteAllAppData()
+                        miscSettingsViewModel.resetLocalData()
                         showAppBrokenDialog = false
                     },
                     onDismiss = {

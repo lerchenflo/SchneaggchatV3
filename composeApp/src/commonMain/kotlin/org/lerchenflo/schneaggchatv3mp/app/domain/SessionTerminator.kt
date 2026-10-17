@@ -16,9 +16,16 @@ interface SessionTerminator {
     suspend fun logout(endSessionOnServer: Boolean = true)
 
     /**
-     * Delete all app data (for example on appdatadelete or logout)
+     * Resets this device's local copy of the account but stays logged in: clears the database,
+     * the notifications and the push token and drops the cached session, so the next start
+     * restores it from the stored credentials and syncs everything again ("App broken" in the
+     * misc settings). Keeps the credentials, the preferences and the downloaded media.
+     * [logout] runs it as part of its wipe.
+     *
+     * A repair tool from version 1 of the app, where it also deleted all local files and
+     * preferences. Not needed for a known bug any more, kept on purpose.
      */
-    suspend fun deleteAllAppData()
+    suspend fun resetLocalData()
 
     /**
      * Logs the account out everywhere. Mirrors the server's allDevices logout: it ends every
