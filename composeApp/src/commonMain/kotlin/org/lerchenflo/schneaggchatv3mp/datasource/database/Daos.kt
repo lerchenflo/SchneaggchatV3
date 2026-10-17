@@ -358,7 +358,8 @@ interface MessageDao {
     suspend fun deleteMessagesForGroup(groupId: String)
 
     @Transaction
-    @Query("SELECT * FROM messages WHERE sent = 0")
+    // Oldest first - the offline queue sends in this order
+    @Query("SELECT * FROM messages WHERE sent = 0 ORDER BY localPK")
     suspend fun getUnsentMessages(): List<MessageWithReaders>
 
     @Transaction

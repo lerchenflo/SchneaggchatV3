@@ -371,11 +371,16 @@ class OfflineFirstMessageRepository(
      * defeat it. Never pass this for a brand-new message - one is minted below.
      *
      */
-    override suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long, clientMessageId: String?){
+    override suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long, clientMessageId: String?) {
+        sendMessageForResult(ownId, messageId, empfaenger, gruppe, content, answerid, localpk, clientMessageId)
+    }
+
+    /** [sendMessage] that also reports the outcome: null when sent, else the server's error. */
+    private suspend fun sendMessageForResult(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long, clientMessageId: String?): NetworkingError? {
 
         // externalScope (plan R2): started before the first suspension point, so the send
         // finishes even when the caller (e.g. a closed chat screen) is cancelled meanwhile.
-        externalScope.async {
+        return externalScope.async {
             sendMessageLock.withLock {
                 var localpkintern = localpk
 
@@ -530,22 +535,26 @@ class OfflineFirstMessageRepository(
                     is NetworkResult.Error<NetworkingError> -> {
 
                         val error = serverrequest.error
-                        //If badrequest (not met servers specifications (should not happen)) or conflict (duplicate message) delete locally
-                        if (error is NetworkingError.BadRequest || error is NetworkingError.Conflict) {
+                        //Rejected for good (malformed, duplicate, no access, chat gone, too large):
+                        //it can never be sent, so it is dropped locally - the error popup says why
+                        val dropped = error.rejectsMessageForGood()
+                        if (dropped) {
                             database.messageDao().deleteMessageEntityByPk(localpkintern)
                         }
 
                         println("Message senden error: ${serverrequest.error}")
                         errorChannel.sendErrorSuspend(ErrorEvent(error = error))
 
+                        //Kept for the offline queue, removed with a dropped message
                         when (content) {
                             is ImageContent -> {
-                                pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
-                                //ignore unsent audio or image, this should not happen anyway
+                                if (dropped) pictureManager.deletePicture("unsent_" + localpkintern + PICTURE_FILE_NAME)
+                                else pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
                             }
 
                             is AudioContent -> {
-                                audioManager.saveAudioToStorage(
+                                if (dropped) audioManager.deleteAudio("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
+                                else audioManager.saveAudioToStorage(
                                     audioBytes = content.audio,
                                     filename = "unsent_" + localpkintern + VOICEMSG_FILE_NAME
                                 )
@@ -554,6 +563,7 @@ class OfflineFirstMessageRepository(
                             else -> {}
                         }
 
+                        error
                     }
                     is NetworkResult.Success<MessageResponse> -> {
                         withContext(ioDispatcher) {
@@ -606,6 +616,7 @@ class OfflineFirstMessageRepository(
                                 audioManager.deleteAudio("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
                             }
                         }
+                        null
                     }
                 }
             }
@@ -625,7 +636,12 @@ class OfflineFirstMessageRepository(
     override suspend fun sendOfflineMessages(ownId: String){
         sendOfflineLock.withLock {
 
-            while (true) {
+            //A chat whose message failed for an unclear reason is skipped for the rest of this
+            //run, so its later messages never overtake it - the other chats keep sending
+            val skippedChats = mutableSetOf<String>()
+
+            //Oldest first
+            for (queued in messageLocalDataSource.getUnsentMessages()) {
 
                 while (sendMessageLock.isLocked) {
                     //If the message sending lock is active, do not send offline messages
@@ -633,14 +649,12 @@ class OfflineFirstMessageRepository(
                     delay(15.milliseconds)
                 }
 
+                val chatKey = (if (queued.groupMessage) "group:" else "user:") + queued.receiverId
+                if (chatKey in skippedChats) continue
 
-                val messages = messageLocalDataSource.getUnsentMessages()
-                if (messages.isEmpty()) {
-                    //println("OFFLINE MESSAGE SENDING: NO UNSENT MESSAGES")
-                    return
-                }
-
-                val m = messages.first()
+                //Read again: a sync may have merged the server copy into the row meanwhile
+                val m = messageLocalDataSource.getMessageById(queued.localPK)
+                if (m == null || m.sent) continue
 
                 //Has a server id, so it is a stuck edit, not a send (see retryStuckEdit)
                 if (m.id != null) {
@@ -694,7 +708,7 @@ class OfflineFirstMessageRepository(
                     continue
                 }
 
-                sendMessage(
+                val error = sendMessageForResult(
                     empfaenger = m.receiverId,
                     gruppe = m.groupMessage,
                     content = content,
@@ -703,11 +717,13 @@ class OfflineFirstMessageRepository(
                     messageId = null,
                     ownId = ownId,
                     clientMessageId = m.clientMessageId
-                )
+                ) ?: continue
 
-
-                val nextMessages = messageLocalDataSource.getUnsentMessages()
-                if (nextMessages.firstOrNull()?.localPK == m.localPK) return
+                when {
+                    error.rejectsMessageForGood() -> continue //Already dropped by the send
+                    error.stopsOfflineQueue() -> return //Retry everything later
+                    else -> skippedChats += chatKey
+                }
             }
 
 
@@ -966,3 +982,20 @@ class OfflineFirstMessageRepository(
         }
     }
 }
+
+/** The server turned the message down for good: it can never be sent, so it is dropped. */
+private fun NetworkingError.rejectsMessageForGood(): Boolean = when (this) {
+    is NetworkingError.BadRequest,
+    is NetworkingError.Conflict,
+    is NetworkingError.Forbidden,
+    is NetworkingError.NotFound,
+    is NetworkingError.PayloadTooLarge -> true
+    else -> false
+}
+
+/** Hits every queued message alike (no connection, rate limit, session, server down): retry all later. */
+private fun NetworkingError.stopsOfflineQueue(): Boolean =
+    isNetworkerror() ||
+        this is NetworkingError.TooManyRequests ||
+        this is NetworkingError.Unauthorized ||
+        this is NetworkingError.ServerError

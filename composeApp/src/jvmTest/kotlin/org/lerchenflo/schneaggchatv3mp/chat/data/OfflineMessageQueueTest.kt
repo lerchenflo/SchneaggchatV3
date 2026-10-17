@@ -30,8 +30,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageRequest
 
 /**
  * Characterization tests for the offline queue (plan Phase 4.5): `sendOfflineMessages` resends
- * the unsent rows one by one, head first, and stops as soon as the head is still unsent after
- * an attempt.
+ * the unsent rows one by one, oldest first. A connection problem, rate limit, session or server
+ * error (5xx) stops the drain; a message the server rejects for good is dropped; any other
+ * failure skips the rest of that chat for this run (since 2026-10-17).
  *
  * The queue is filled the way the app fills it: sends that fail with a retryable server error.
  *
@@ -82,10 +83,7 @@ class OfflineMessageQueueTest {
         return clientMessageIds
     }
 
-    /**
-     * "Oldest first" means lowest local row first. `getUnsentMessages()` has no ORDER BY, so this
-     * order comes from SQLite walking the `sent` index (see `plans/Todo.md`).
-     */
+    /** "Oldest first" means lowest local row first (`getUnsentMessages()` orders by `localPK`). */
     @Test
     fun `drains the queue oldest row first and reuses each row's clientMessageId`() =
         runSendPathTest {
