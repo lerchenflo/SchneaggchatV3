@@ -28,6 +28,13 @@ interface PictureManager {
     suspend fun deletePicture(filename: String): Boolean
 
     /**
+     * Deletes every picture this app stored (profile, group and message pictures), matched by
+     * [org.lerchenflo.schneaggchatv3mp.STORED_PICTURE_FILE_ENDINGS] - the folder also holds other
+     * app files. Used on logout. @return the number of deleted files
+     */
+    suspend fun deleteAllStoredPictures(): Int
+
+    /**
      * Get the filepath for a picture
      */
     fun getProfilePicFilePath(id: String, gruppe: Boolean) : String

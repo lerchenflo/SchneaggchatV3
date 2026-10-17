@@ -17,6 +17,9 @@ import javax.imageio.IIOImage
 import javax.imageio.ImageIO
 import javax.imageio.ImageWriteParam
 import javax.imageio.ImageWriter
+import org.lerchenflo.schneaggchatv3mp.STORED_PICTURE_FILE_ENDINGS
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class DesktopPictureManager : PictureManager {
 
@@ -67,6 +70,14 @@ class DesktopPictureManager : PictureManager {
 
     override suspend fun deletePicture(filename: String): Boolean {
         return File(getPath(filename)).delete()
+    }
+
+    override suspend fun deleteAllStoredPictures(): Int = withContext(Dispatchers.IO) {
+        // getPath("") is the app data folder itself
+        File(getPath(""))
+            .listFiles { file -> file.isFile && STORED_PICTURE_FILE_ENDINGS.any { file.name.endsWith(it) } }
+            .orEmpty()
+            .count { it.delete() }
     }
 
     override fun getProfilePicFilePath(id: String, gruppe: Boolean): String {

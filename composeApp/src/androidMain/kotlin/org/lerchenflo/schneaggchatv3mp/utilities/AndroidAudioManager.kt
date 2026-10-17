@@ -9,6 +9,7 @@ import android.media.AudioManager as SystemAudioManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 
 class AndroidAudioManager(private val context: Context) : AudioManager {
 
@@ -49,6 +50,14 @@ class AndroidAudioManager(private val context: Context) : AudioManager {
             val file = File(context.filesDir, filename)
             if (!file.exists()) return@withContext false
             file.delete()
+        }
+
+    override suspend fun deleteAllStoredAudio(): Int =
+        withContext(Dispatchers.IO) {
+            context.filesDir
+                .listFiles { file -> file.isFile && file.name.endsWith(VOICEMSG_FILE_NAME) }
+                .orEmpty()
+                .count { it.delete() }
         }
 
     override fun checkAudioExists(filePath: String): Boolean {

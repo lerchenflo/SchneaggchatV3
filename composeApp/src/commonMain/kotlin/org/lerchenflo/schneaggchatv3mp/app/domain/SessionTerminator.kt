@@ -4,7 +4,7 @@ import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
 
 /**
  * Ends the session on this device: forgets the credentials and wipes the local app data
- * (database, preferences, push token, socket). The server side goes through [AuthRepository].
+ * (database, downloaded media, preferences, push token, socket). The server side goes through [AuthRepository].
  */
 interface SessionTerminator {
 

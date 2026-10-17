@@ -24,6 +24,13 @@ interface AudioManager {
     suspend fun deleteAudio(filename: String) : Boolean
 
     /**
+     * Deletes every voice message file this app stored (received, unsent and recordings), matched
+     * by [org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME] - the folder also holds other app
+     * files. Used on logout. @return the number of deleted files
+     */
+    suspend fun deleteAllStoredAudio(): Int
+
+    /**
      * checks if file exists
      */
 

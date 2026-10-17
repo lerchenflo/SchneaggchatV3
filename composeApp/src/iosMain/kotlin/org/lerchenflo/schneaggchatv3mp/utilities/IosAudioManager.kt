@@ -16,6 +16,7 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.create
 import platform.Foundation.writeToFile
+import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 
 @OptIn(BetaInteropApi::class)
 class IosAudioManager : AudioManager {
@@ -49,6 +50,16 @@ class IosAudioManager : AudioManager {
             val fileManager = NSFileManager.defaultManager
             val filePath = "$basePath/$filename"
             return@withContext fileManager.removeItemAtPath(filePath, null)
+        }
+
+    override suspend fun deleteAllStoredAudio(): Int =
+        withContext(Dispatchers.Default) {
+            val fileManager = NSFileManager.defaultManager
+            fileManager.contentsOfDirectoryAtPath(basePath, null)
+                .orEmpty()
+                .filterIsInstance<String>()
+                .filter { name -> name.endsWith(VOICEMSG_FILE_NAME) }
+                .count { name -> fileManager.removeItemAtPath("$basePath/$name", null) }
         }
 
     override fun checkAudioExists(filePath: String): Boolean {

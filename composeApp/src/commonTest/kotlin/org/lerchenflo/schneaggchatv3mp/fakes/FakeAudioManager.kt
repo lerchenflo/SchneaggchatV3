@@ -24,6 +24,8 @@ class FakeAudioManager(var mediaDurationMillis: Long = 1_000L) : AudioManager {
         return storedAudios.remove(filename) != null
     }
 
+    override suspend fun deleteAllStoredAudio(): Int = storedAudios.size.also { storedAudios.clear() }
+
     override fun checkAudioExists(filePath: String): Boolean = storedAudios.keys.any { getRecordingPath(it) == filePath }
 
     override suspend fun getMediaDuration(path: String): Long = mediaDurationMillis

@@ -38,6 +38,7 @@ import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIImageOrientation
 import platform.UIKit.UIImageWriteToSavedPhotosAlbum
 import platform.posix.memcpy
+import org.lerchenflo.schneaggchatv3mp.STORED_PICTURE_FILE_ENDINGS
 
 @OptIn(BetaInteropApi::class)
 class IosPictureManager : PictureManager {
@@ -94,6 +95,16 @@ class IosPictureManager : PictureManager {
             val fileManager = NSFileManager.defaultManager
             val filePath = "$basePath/$filename"
             return@withContext fileManager.removeItemAtPath(filePath, null)
+        }
+
+    override suspend fun deleteAllStoredPictures(): Int =
+        withContext(Dispatchers.Default) {
+            val fileManager = NSFileManager.defaultManager
+            fileManager.contentsOfDirectoryAtPath(basePath, null)
+                .orEmpty()
+                .filterIsInstance<String>()
+                .filter { name -> STORED_PICTURE_FILE_ENDINGS.any { name.endsWith(it) } }
+                .count { name -> fileManager.removeItemAtPath("$basePath/$name", null) }
         }
 
     private fun ByteArray.toNSData(): NSData = memScoped {

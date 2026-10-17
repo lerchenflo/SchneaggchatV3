@@ -15,11 +15,12 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
+import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 /**
- * [SessionTerminator] wiping this device: session ([AuthSessionManager]), database, preferences,
- * push token and socket. The server side of a logout goes through [AuthRepository].
- * Downloaded media is not deleted (see plans/Todo.md).
+ * [SessionTerminator] wiping this device: session ([AuthSessionManager]), database, downloaded
+ * media, preferences, push token and socket. The server side of a logout goes through [AuthRepository].
  */
 class LocalSessionTerminator(
     private val database: AppDatabase,
@@ -29,6 +30,8 @@ class LocalSessionTerminator(
     private val notifier: Notifier,
     private val socketConnectionManager: SocketConnectionManager,
     private val loggingRepository: Logger,
+    private val pictureManager: PictureManager,
+    private val audioManager: AudioManager,
 ) : SessionTerminator {
 
     override suspend fun resetLocalData(){
@@ -63,6 +66,8 @@ class LocalSessionTerminator(
 
         resetLocalData() // database, notifications, push token - the preferences follow below
 
+        deleteStoredMedia()
+
         preferencemanager.clearAll() //Delete all app data to force login again (retries the token delete too)
 
         notifier.removeToken() //Remove notification token
@@ -70,6 +75,21 @@ class LocalSessionTerminator(
         socketConnectionManager.close() //Close socket connection
 
         SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
+    }
+
+    /**
+     * Pictures and voice messages of this account must not stay on the device for the next one.
+     * Only on logout - "App broken" ([resetLocalData]) keeps them. Never throws.
+     */
+    private suspend fun deleteStoredMedia() {
+        try {
+            val pictures = pictureManager.deleteAllStoredPictures()
+            val voiceMessages = audioManager.deleteAllStoredAudio()
+            loggingRepository.logInfo("Logout: deleted $pictures pictures and $voiceMessages voice messages")
+        } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
+            loggingRepository.logError("Logout: deleting the stored media failed (${e.message})")
+        }
     }
 
     /**

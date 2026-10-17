@@ -7,6 +7,7 @@ import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.sound.sampled.FloatControl
+import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 
 class DesktopAudioManager : AudioManager {
 
@@ -41,6 +42,14 @@ class DesktopAudioManager : AudioManager {
 
     override suspend fun deleteAudio(filename: String): Boolean {
         return File(getPath(filename)).delete()
+    }
+
+    override suspend fun deleteAllStoredAudio(): Int = withContext(Dispatchers.IO) {
+        // getPath("") is the app data folder itself
+        File(getPath(""))
+            .listFiles { file -> file.isFile && file.name.endsWith(VOICEMSG_FILE_NAME) }
+            .orEmpty()
+            .count { it.delete() }
     }
 
     override fun checkAudioExists(filePath: String): Boolean {

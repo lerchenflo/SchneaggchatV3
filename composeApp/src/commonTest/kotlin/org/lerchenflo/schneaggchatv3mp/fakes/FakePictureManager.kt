@@ -28,6 +28,8 @@ class FakePictureManager : PictureManager {
 
     override suspend fun deletePicture(filename: String): Boolean = storedPictures.remove(filename) != null
 
+    override suspend fun deleteAllStoredPictures(): Int = storedPictures.size.also { storedPictures.clear() }
+
     override fun getProfilePicFilePath(id: String, gruppe: Boolean): String = path(if (gruppe) "group_$id" else "user_$id")
 
     override fun getImageMessageFilePath(messageId: String): String = path("message_$messageId")

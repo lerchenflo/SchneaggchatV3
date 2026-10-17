@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import org.lerchenflo.schneaggchatv3mp.STORED_PICTURE_FILE_ENDINGS
 
 class AndroidPictureManager(private val context: Context) : PictureManager {
 
@@ -68,6 +69,14 @@ class AndroidPictureManager(private val context: Context) : PictureManager {
             val file = File(context.filesDir, filename)
             if (!file.exists()) return@withContext false
             file.delete()
+        }
+
+    override suspend fun deleteAllStoredPictures(): Int =
+        withContext(Dispatchers.IO) {
+            context.filesDir
+                .listFiles { file -> file.isFile && STORED_PICTURE_FILE_ENDINGS.any { file.name.endsWith(it) } }
+                .orEmpty()
+                .count { it.delete() }
         }
 
     override fun getProfilePicFilePath(id: String, gruppe: Boolean) : String {

@@ -37,6 +37,10 @@ var PICTURE_FILE_NAME = "_bild.drawable"
 
 var VOICEMSG_FILE_NAME = "_voicemsg.m4a"
 
+/** File endings of every picture the app stores: user and group profile pictures, image messages. */
+val STORED_PICTURE_FILE_ENDINGS: List<String>
+    get() = listOf(USERPROFILEPICTURE_FILE_NAME, GROUPPROFILEPICTURE_FILE_NAME, PICTURE_FILE_NAME)
+
 val MIN_GROUPNAME_LENGTH = 3
 val MAX_GROUPNAME_LENGTH = 25
 
