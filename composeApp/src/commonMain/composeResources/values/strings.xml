@@ -712,7 +712,7 @@
     <string name="poll_expiry_title">Expires</string>
     <string name="poll_expiry_title_withdate">Expires at %1$s</string>
 
-    <string name="poll_expiry_title_info">Poll does not allow and votes past this date &amp; time</string>
+    <string name="poll_expiry_title_info">Poll does not allow any votes past this date &amp; time</string>
     
 
     <string name="poll_create">create poll</string>
@@ -1798,4 +1798,6 @@
     <string name="announcement_expiry_custom">Pick date</string>
     <string name="announcement_preview">Preview</string>
     <string name="announcement_delete_confirm">Delete announcement #%1$s? It disappears for everyone.</string>
+    <string name="poll_option_reorder">Reorder</string>
+    <string name="wake_failed">The wake-up could not be sent</string>
 </resources>

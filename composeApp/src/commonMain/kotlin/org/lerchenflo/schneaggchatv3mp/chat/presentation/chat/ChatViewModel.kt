@@ -31,7 +31,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
@@ -229,20 +228,16 @@ class ChatViewModel(
             is TextContent -> {
                 if (message.textMessage.text.isBlank()) return
 
-                require(message.textMessage.text.length < 10000) {
-                    runBlocking {
-                        SnackbarManager.showMessage(getString(Res.string.message_too_long))
-                    }
+                if (message.textMessage.text.length >= 10000) {
+                    showMessageTooLong()
                     return
                 }
             }
             is SendMessageContent.ImageContent -> {
                 if (message.images.isEmpty()) return
 
-                require(message.text.text.length < 10000) {
-                    runBlocking {
-                        SnackbarManager.showMessage(getString(Res.string.message_too_long))
-                    }
+                if (message.text.text.length >= 10000) {
+                    showMessageTooLong()
                     return
                 }
 
@@ -486,10 +481,16 @@ class ChatViewModel(
 
 
 
+    private fun showMessageTooLong() {
+        viewModelScope.launch {
+            SnackbarManager.showMessage(getString(Res.string.message_too_long))
+        }
+    }
+
     private fun onBackClick() {
         saveDraft()
 
-        runBlocking {
+        viewModelScope.launch {
             navigator.navigateBack(navigationOptions = Navigator.NavigationOptions(
                 removeAllScreensByClass = listOf(Route.ChatDetails::class, Route.Chat::class)
             ))

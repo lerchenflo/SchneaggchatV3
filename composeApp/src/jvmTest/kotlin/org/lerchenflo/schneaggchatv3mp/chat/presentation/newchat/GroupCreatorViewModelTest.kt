@@ -118,11 +118,10 @@ class GroupCreatorViewModelTest {
     /**
      * The name rule, on the state directly: an invalid name's error text is loaded with a
      * suspending `getString`, so through the ViewModel the check would race the resource read.
-     * Pins that 25 characters are not allowed although the error text only appears above
-     * `MAX_GROUPNAME_LENGTH` (25), see `plans/Todo.md`.
+     * Same bounds as the error text and the server: `MIN_GROUPNAME_LENGTH` to `MAX_GROUPNAME_LENGTH`.
      */
     @Test
-    fun `a valid state needs a name of 3 to 24 characters`() {
+    fun `a valid state needs a name of 3 to 25 characters`() {
         fun stateWithName(name: String) = GroupCreatorState(
             searchterm = "",
             groupname = InputfieldState(text = name),
@@ -134,8 +133,8 @@ class GroupCreatorViewModelTest {
 
         assertThat(stateWithName("Cl").valid()).isFalse()
         assertThat(stateWithName("Cli").valid()).isTrue()
-        assertThat(stateWithName("x".repeat(24)).valid()).isTrue()
-        assertThat(stateWithName("x".repeat(25)).valid()).isFalse()
+        assertThat(stateWithName("x".repeat(25)).valid()).isTrue()
+        assertThat(stateWithName("x".repeat(26)).valid()).isFalse()
     }
 
     @Test

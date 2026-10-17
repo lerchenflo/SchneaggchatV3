@@ -1798,4 +1798,6 @@
     <string name="announcement_expiry_custom">Datum wählen</string>
     <string name="announcement_preview">Vorschau</string>
     <string name="announcement_delete_confirm">Ankündigung #%1$s löschen? Sie verschwindet für alle.</string>
+    <string name="poll_option_reorder">Verschieben</string>
+    <string name="wake_failed">Das Wecken hat nicht geklappt</string>
 </resources>

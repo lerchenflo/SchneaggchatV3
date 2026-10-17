@@ -61,6 +61,9 @@ import schneaggchatv3mp.composeapp.generated.resources.wake_not_friends
 import schneaggchatv3mp.composeapp.generated.resources.wake_sent_skipped
 import schneaggchatv3mp.composeapp.generated.resources.wake_sent_user
 import schneaggchatv3mp.composeapp.generated.resources.wake_sent_users
+import schneaggchatv3mp.composeapp.generated.resources.network_error_no_internet
+import schneaggchatv3mp.composeapp.generated.resources.network_error_timeout
+import schneaggchatv3mp.composeapp.generated.resources.wake_failed
 
 
 data class GroupMemberWithUser(
@@ -188,8 +191,12 @@ class ChatDetailsViewmodel(
                     //The server rejects waking a non-friend outright rather than reporting it
                     //as an outcome, so it arrives here as a 403.
                     SnackbarManager.showMessage(
-                        if (result.error is NetworkingError.Forbidden) getString(Res.string.wake_not_friends)
-                        else "You are not Friends with this User or other error (401)"
+                        when (result.error) {
+                            is NetworkingError.Forbidden -> getString(Res.string.wake_not_friends)
+                            is NetworkingError.NoInternetConnection -> getString(Res.string.network_error_no_internet)
+                            is NetworkingError.NetworkTimeout -> getString(Res.string.network_error_timeout)
+                            else -> getString(Res.string.wake_failed)
+                        }
                     )
                     return@launch
                 }

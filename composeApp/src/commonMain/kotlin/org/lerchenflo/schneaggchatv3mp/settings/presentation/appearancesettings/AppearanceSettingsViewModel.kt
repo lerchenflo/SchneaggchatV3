@@ -136,7 +136,6 @@ class AppearanceSettingsViewModel(
         viewModelScope.launch {
             settingsRepository.setLanguageSetting(language)
         }
-        println("System language: ${languageService.getSystemLanguage()}")
     }
 
 }

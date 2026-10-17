@@ -1792,4 +1792,6 @@
     <string name="announcement_expiry_custom">Scegli data</string>
     <string name="announcement_preview">Anteprima</string>
     <string name="announcement_delete_confirm">Eliminare l'annuncio #%1$s? Sparisce per tutti.</string>
+    <string name="poll_option_reorder">Riordina</string>
+    <string name="wake_failed">Impossibile inviare la sveglia</string>
 </resources>

@@ -319,6 +319,11 @@
 
 
     <string name="you_have_new_messages">Du hosch neue Nochrichta</string>
+    <string name="notification_fallback_body">Tipp zum mehr seaha</string>
+    <string name="notification_channel_messages">Nochrichta</string>
+    <string name="notification_channel_reactions">Reaktiona</string>
+    <string name="notification_channel_social">Freunde &amp; Events</string>
+    <string name="notification_channel_general">Allgemein</string>
     <string name="new_messages">Neue Nochrichta</string>
     <string name="new_message_noti_single_title">Neuer Chat vo %1$s</string>
     <string name="new_message_noti_group_title">Neuer Chat vo %1$s in %2$s</string>
@@ -695,6 +700,7 @@
 
     <string name="poll_settings_allowdeleteoptions">Löscha vo Optiona erlauba</string>
     <string name="poll_settings_allowdeleteoptions_info">Erlaubt dir, jede Option zum löscha, und jedem Nutzer sine eigana Optiona zum löscha.</string>
+    <string name="poll_settings_more">Mehr Einstellunga</string>
 
     <string name="poll_visibility_title">Sichtbarkeit: %1$s</string>
 
@@ -1746,4 +1752,52 @@ Mealds, egal wie klenn.</string>
     <string name="logged_in_devices_logout_all">Alle Geräte uslogga</string>
     <string name="logged_in_devices_logout_all_confirm">Alle Geräte uslogga, o des do? Die andra Geräte werrand innerhalb vo da nächsta 15 Minuta usgloggt.</string>
     <string name="email_check_hello">Grüße %1$s!</string>
+    <string name="games_cchallenge_title">C-Challenge</string>
+    <string name="games_cchallenge_description">Jeda Tag a C-Programmierrätsel</string>
+    <string name="games_cchallenge_instructions">Jeda Tag gits a neus C-Rätsel — für alle s glich. Find da Syntaxfehler, wähl die fehlenda Zila, säg vorus, was as Programm usgit, oder bring durchanand gwürfelte Zila wieder in die richtige Reihafolg.\n\nDu hosch 3 Versuche: Wer s bem erschta Versuach löst, kriagt 100 Punkte, bem zweita 60 und bem dritta 30. Lös jeda Tag, zum dine Serie wachsa lo!</string>
+    <string name="games_cchallenge_number">Challenge #%1$d</string>
+    <string name="games_cchallenge_streak_badge">🔥 %1$d</string>
+    <string name="games_cchallenge_prompt_fix_syntax">Da Code kompiliert ned. Tipp uf die Zila mitam Fehler.</string>
+    <string name="games_cchallenge_prompt_fill_blank">Welche Zila ghört in d Lücke?</string>
+    <string name="games_cchallenge_prompt_predict_output">Was git des Programm us?</string>
+    <string name="games_cchallenge_prompt_order_lines">Tipp d Zila unta in da richtiga Reihafolg a, zum da Code fertig macha.</string>
+    <string name="games_cchallenge_tries_left">Versuach übrig: %1$d</string>
+    <string name="games_cchallenge_wrong">Ned ganz — versuach's nomml!</string>
+    <string name="games_cchallenge_order_slot">Zila unta atippa</string>
+    <string name="games_cchallenge_order_feedback">%1$d vo %2$d Zila sind an da richtiga Stell.</string>
+    <string name="games_cchallenge_check">Prüfa</string>
+    <string name="games_cchallenge_solved">Glöst!</string>
+    <string name="games_cchallenge_failed">Kua Versuache mehr</string>
+    <string name="games_cchallenge_result_points">%1$d Punkte · %2$s</string>
+    <string name="games_cchallenge_streak">Serie: %1$d · Rekord: %2$d</string>
+    <string name="games_cchallenge_come_back">Morn wartat a neue Challenge.</string>
+    <string name="games_cchallenge_solution">Lösung</string>
+    <string name="games_cchallenge_output">Usgab: %1$s</string>
+    <string name="games_cchallenge_bug_missing_semicolon">Am End vo da Anweisung fehlt s Semikolon.</string>
+    <string name="games_cchallenge_bug_missing_parenthesis">A schlüßende Klammer fehlt.</string>
+    <string name="games_cchallenge_bug_missing_quote">Am String fehlt s schlüßenda Anführungszeicha.</string>
+    <string name="games_cchallenge_bug_keyword_typo">A Schlüsselwort isch falsch gschrieba, drum erkennt's da Compiler ned.</string>
+    <string name="games_cchallenge_bug_wrong_bracket">An Array-Index muss mit na eckiga Klammer gschlossa werra, ned mit na runda.</string>
+    <string name="dev_settings_demo_mode">Demo-Modus</string>
+    <string name="dev_settings_demo_mode_desc">Blendat d Offline- und Testserver-Leiste us, z. B. für Store-Screenshots</string>
+    <string name="dev_announcements">Ankündigunga</string>
+    <string name="dev_announcements_desc">Ankündigunga für alle User erstella und verwalta (nur Admins)</string>
+    <string name="announcement_new">Neue Ankündigung</string>
+    <string name="announcement_edit_title">Ankündigung #%1$s bearbeita</string>
+    <string name="announcement_empty">Bis jetzt no kua Ankündigunga</string>
+    <string name="announcement_not_allowed">Nur Admins künnand Ankündigunga verwalta</string>
+    <string name="announcement_expired">Abglofa</string>
+    <string name="announcement_expires_at">Louft am %1$s ab</string>
+    <string name="announcement_field_title">Titel</string>
+    <string name="announcement_field_body">Text (optional)</string>
+    <string name="announcement_required_language">%1$s (Pflicht)</string>
+    <string name="announcement_language_hint">Dütsch isch Pflicht. Fehlende Sprocha zoagand Dütsch, Italienisch zersch Englisch.</string>
+    <string name="announcement_edit_hint">Wer se scho wegklickt hot, siaht se ned nomml.</string>
+    <string name="announcement_expiry">Sichtbar bis</string>
+    <string name="announcement_expiry_days">%1$s Täg</string>
+    <string name="announcement_expiry_custom">Datum uswähla</string>
+    <string name="announcement_preview">Vorschou</string>
+    <string name="announcement_delete_confirm">Ankündigung #%1$s löscha? Se verschwindat für alle.</string>
+    <string name="poll_option_reorder">Verschiaba</string>
+    <string name="wake_failed">S Wecka hot ned klappt</string>
 </resources>

@@ -52,8 +52,7 @@ data class GroupCreatorState(
 ) {
     fun valid() : Boolean {
         return (selectedUsers.size >= 2 &&
-            groupname.text.length > 2 &&
-            groupname.text.length < 25 &&
+            groupname.text.length in MIN_GROUPNAME_LENGTH..MAX_GROUPNAME_LENGTH &&
                 profilepic != null)
     }
 

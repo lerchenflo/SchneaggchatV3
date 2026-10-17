@@ -302,7 +302,7 @@ class OfflineFirstMessageRepository(
                     messageLocalDataSource.upsertMessage(
                         existing.copy(
                             reactions = request.data.reactions.map {
-                                Reaction(userId = it.userId, content = it.content)
+                                Reaction(userId = it.userId, content = it.content, reactedAt = it.reactedAt)
                             },
                             changeDate = request.data.lastChanged.toString()
                         )
@@ -361,7 +361,7 @@ class OfflineFirstMessageRepository(
 
     // ─── Send / offline queue / sync ──────────────────────────────────────────
 
-    val sendMessageLock = Mutex()
+    private val sendMessageLock = Mutex()
 
     /**
      * @param localpk Local pk, only pass if already in db
