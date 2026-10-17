@@ -471,15 +471,15 @@ class ChatViewModel(
             //Block empty edit
             if (content.textMessage.text.isBlank()) return@launch
 
-            messageRepository.editMessage(
+            val saved = messageRepository.editMessage(
                 message = message,
                 newContent = content.textMessage.text
             )
 
             println("Edit: Newcontent: ${content.textMessage}")
 
-            //Clear text after editing message
-            onMessageAction(MessageAction.CancelEditMessage)
+            //Clear text after editing message - a failed edit keeps it, so it can be sent again
+            if (saved) onMessageAction(MessageAction.CancelEditMessage)
         }
     }
 

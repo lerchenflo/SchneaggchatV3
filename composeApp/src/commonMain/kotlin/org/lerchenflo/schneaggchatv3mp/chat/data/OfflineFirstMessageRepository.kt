@@ -45,6 +45,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isNetworkerror
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -203,7 +204,7 @@ class OfflineFirstMessageRepository(
 
     // ─── Writes ───────────────────────────────────────────────────────────────
 
-    override suspend fun editMessage(message: Message, newContent: String) {
+    override suspend fun editMessage(message: Message, newContent: String): Boolean {
 
         if (message.id == null) {
             //edit a not sent message
@@ -214,6 +215,7 @@ class OfflineFirstMessageRepository(
                     sent = false
                 ))
             }
+            return true
 
         } else {
             val request = messageRemoteDataSource.editMessage(
@@ -221,16 +223,12 @@ class OfflineFirstMessageRepository(
                 newContent = newContent
             ).trackConnectivity()
 
-            when (request) {
+            return when (request) {
                 is NetworkResult.Error<NetworkingError> ->  {
-                    val existing = messageLocalDataSource.getMessageById(message.localPK)
-                    if (existing != null) {
-                        messageLocalDataSource.upsertMessage(existing.copy(
-                            content = newContent,
-                            sent = false
-                        ))
-                    }
+                    //The message stays as it is: marking a sent message unsent would make the
+                    //offline queue resend it as a new message
                     errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
+                    false
                 }
                 is NetworkResult.Success<MessageResponse> -> {
                     val existing = messageLocalDataSource.getMessageById(request.data.messageId)
@@ -241,11 +239,37 @@ class OfflineFirstMessageRepository(
                             edited = true,
                         ))
                     }
-
+                    true
                 }
             }
         }
 
+    }
+
+    /**
+     * A sent message (it has a server id) that an older version marked unsent after a failed
+     * edit. It is not a send: retries the edit once. Offline it stays queued for the next drain;
+     * any other result marks it sent, so it never blocks the queue again.
+     * @return false while offline
+     */
+    private suspend fun retryStuckEdit(m: Message): Boolean {
+        val result = messageRemoteDataSource.editMessage(messageId = m.id!!, newContent = m.content).trackConnectivity()
+        if (result is NetworkResult.Error && result.error.isNetworkerror()) return false
+
+        val existing = messageLocalDataSource.getMessageById(m.localPK) ?: return true
+        when (result) {
+            is NetworkResult.Success -> messageLocalDataSource.upsertMessage(existing.copy(
+                content = result.data.content,
+                changeDate = result.data.lastChanged.toString(),
+                edited = true,
+                sent = true,
+            ))
+            is NetworkResult.Error -> {
+                loggingRepository.logWarning("Offline queue: edit of message ${m.id} failed for good (${result.error}), marked sent")
+                messageLocalDataSource.upsertMessage(existing.copy(sent = true))
+            }
+        }
+        return true
     }
 
     override suspend fun deleteLocalMessage(localpk: Long) {
@@ -617,6 +641,12 @@ class OfflineFirstMessageRepository(
                 }
 
                 val m = messages.first()
+
+                //Has a server id, so it is a stuck edit, not a send (see retryStuckEdit)
+                if (m.id != null) {
+                    if (!retryStuckEdit(m)) return
+                    continue
+                }
 
                 //A poll row whose poll no longer decodes (the type converter returns null for it) can
                 //never be sent - drop it, or it would block the whole queue forever

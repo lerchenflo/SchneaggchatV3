@@ -57,8 +57,12 @@ interface MessageRepository {
 
     // ─── Writes ───────────────────────────────────────────────────────────────
 
-    /** Edits a message. A message that was never sent is only changed locally. */
-    suspend fun editMessage(message: Message, newContent: String)
+    /**
+     * Edits a message. A message that was never sent is only changed locally. A sent message
+     * needs the server: if the edit fails (e.g. offline) the message stays unchanged and the
+     * error is shown. @return true when the edit was saved
+     */
+    suspend fun editMessage(message: Message, newContent: String): Boolean
 
     /** Deletes a message that was never sent, by its local primary key (local only). */
     suspend fun deleteLocalMessage(localpk: Long)

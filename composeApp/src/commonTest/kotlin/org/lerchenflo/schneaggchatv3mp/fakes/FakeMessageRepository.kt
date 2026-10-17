@@ -118,8 +118,13 @@ class FakeMessageRepository : MessageRepository {
 
     // ─── Writes ───────────────────────────────────────────────────────────────
 
-    override suspend fun editMessage(message: Message, newContent: String) =
+    /** What [editMessage] answers - false like a failed (e.g. offline) edit. */
+    var editSucceeds = true
+
+    override suspend fun editMessage(message: Message, newContent: String): Boolean {
         editCalls.record(EditCall(message, newContent))
+        return editSucceeds
+    }
 
     override suspend fun deleteLocalMessage(localpk: Long) = deleteLocalCalls.record(localpk)
 
