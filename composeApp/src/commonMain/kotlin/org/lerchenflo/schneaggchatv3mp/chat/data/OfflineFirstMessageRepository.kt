@@ -625,49 +625,49 @@ class OfflineFirstMessageRepository(
                     continue
                 }
 
-                sendMessage(
-                    empfaenger = m.receiverId,
-                    gruppe = m.groupMessage,
-                    content = when (m.msgType) {
-                        MessageType.TEXT -> {
-                            TextContent(m.content)
-                        }
+                val content = when (m.msgType) {
+                    MessageType.TEXT -> {
+                        TextContent(m.content)
+                    }
 
-                        MessageType.IMAGE -> {
-                            val image =
-                                pictureManager.loadPictureFromStorage("unsent_" + m.localPK + PICTURE_FILE_NAME)
-
-                            if (image == null) {
-                                TextContent("Offline image sending failed")
-                            } else {
+                    MessageType.IMAGE -> {
+                        pictureManager.loadPictureFromStorage("unsent_" + m.localPK + PICTURE_FILE_NAME)
+                            ?.let { image ->
                                 ImageContent(
                                     image = image,
                                     text = m.content
                                 )
                             }
-                        }
+                    }
 
-                        MessageType.POLL -> {
-                            //Null-checked above. Rebuilt with the shared mapper so sub polls and
-                            //every other setting survive the resend
-                            PollContent(m.poll!!.toNewPoll())
-                        }
+                    MessageType.POLL -> {
+                        //Null-checked above. Rebuilt with the shared mapper so sub polls and
+                        //every other setting survive the resend
+                        PollContent(m.poll!!.toNewPoll())
+                    }
 
-                        MessageType.AUDIO -> {
-                            if(m.audioPath == null){
-                                TextContent("Offline audio sending failed")
-                            }
-                            val audio = getAudioBytes(
-                                audioManager.getRecordingPath("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
-                            )
+                    MessageType.AUDIO -> {
+                        //getAudioBytes returns an empty array when the file can't be read
+                        getAudioBytes(audioManager.getRecordingPath("unsent_" + m.localPK + VOICEMSG_FILE_NAME))
+                            .takeIf { it.isNotEmpty() }
+                            ?.let { audio -> AudioContent(audio = audio) }
+                    }
 
-                            AudioContent(
-                                audio = audio
-                            )
-                        }
+                    MessageType.SYSTEM -> error("SYSTEM messages are server-authored and are never queued locally as unsent")
+                }
 
-                        MessageType.SYSTEM -> error("SYSTEM messages are server-authored and are never queued locally as unsent")
-                    },
+                //An image or voice message whose file is gone can never be sent - drop it like the
+                //poll above, instead of sending a placeholder text to the chat partner
+                if (content == null) {
+                    loggingRepository.logWarning("Offline queue: dropped unsent ${m.msgType} message ${m.localPK}, its file is missing")
+                    database.messageDao().deleteMessageEntityByPk(m.localPK)
+                    continue
+                }
+
+                sendMessage(
+                    empfaenger = m.receiverId,
+                    gruppe = m.groupMessage,
+                    content = content,
                     answerid = m.answerId,
                     localpk = m.localPK,
                     messageId = null,
