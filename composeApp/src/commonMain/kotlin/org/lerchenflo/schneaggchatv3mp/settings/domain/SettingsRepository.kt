@@ -53,6 +53,13 @@ interface SettingsRepository {
     suspend fun getLastContributePopupShown(): Long
     suspend fun setLastContributePopupShown(epochMillis: Long)
 
+    // ─── Announcements (synced) ────────────────────────────────────────────────
+    // Number of the newest announcement dismissed on any device of this account. A dismissal
+    // that fails to send is not retried - the next sync restores the server's number and the
+    // announcement shows once more.
+    fun getLastDismissedAnnouncementIdFlow(): Flow<Long>
+    suspend fun setLastDismissedAnnouncementId(id: Long)
+
     // ─── Pinned chats (synced) ─────────────────────────────────────────────────
     // Local reads and writes only, newest pin first. ChatListRepository.setPinnedChat writes
     // here and then pushes the whole list to the server itself.

@@ -7,6 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.material.icons.automirrored.filled.Forward
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Link
@@ -21,8 +22,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import io.github.lerchenflo.taptarget.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements.AnnouncementAdminAction
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements.AnnouncementAdminPopup
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements.AnnouncementAdminViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
@@ -30,6 +35,8 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChang
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
+import schneaggchatv3mp.composeapp.generated.resources.dev_announcements
+import schneaggchatv3mp.composeapp.generated.resources.dev_announcements_desc
 import schneaggchatv3mp.composeapp.generated.resources.dev_group_general
 import schneaggchatv3mp.composeapp.generated.resources.dev_group_network
 import schneaggchatv3mp.composeapp.generated.resources.dev_group_tools
@@ -46,13 +53,15 @@ fun DeveloperSettings(
         .fillMaxWidth(),
     devSettingsViewModel: DevSettingsViewModel,
     sharedSettingsViewmodel: SharedSettingsViewmodel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    announcementAdminViewModel: AnnouncementAdminViewModel = koinViewModel(),
 ) {
 
     var showChangeServerUrlPopup by remember { mutableStateOf(false) }
     val tapTargetController = LocalTapTargetController.current
     val demoMode by devSettingsViewModel.demoMode.collectAsStateWithLifecycle()
     val serverCheckStatus by devSettingsViewModel.serverCheckStatus.collectAsStateWithLifecycle()
+    val announcementAdminState by announcementAdminViewModel.state.collectAsStateWithLifecycle()
 
     Column {
 
@@ -131,6 +140,18 @@ fun DeveloperSettings(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+            // Shown to every developer - the server rejects everyone who is not an admin
+            SettingsOption(
+                icon = Icons.Default.Campaign,
+                text = stringResource(Res.string.dev_announcements),
+                subtext = stringResource(Res.string.dev_announcements_desc),
+                onClick = {
+                    announcementAdminViewModel.onAction(AnnouncementAdminAction.Open)
+                }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
             SettingsOption(
                 icon = Icons.AutoMirrored.Filled.Forward,
                 text = stringResource(Res.string.dev_settings_skip_tour),
@@ -144,6 +165,13 @@ fun DeveloperSettings(
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
+        }
+
+        if (announcementAdminState.isOpen) {
+            AnnouncementAdminPopup(
+                state = announcementAdminState,
+                onAction = announcementAdminViewModel::onAction,
+            )
         }
 
         if (showChangeServerUrlPopup) {

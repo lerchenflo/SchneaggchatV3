@@ -1780,4 +1780,22 @@
     <string name="games_cchallenge_bug_wrong_bracket">An array index must be closed with a square bracket, not a parenthesis.</string>
     <string name="dev_settings_demo_mode">Demo mode</string>
     <string name="dev_settings_demo_mode_desc">Hides the offline and test server bars, e.g. for store screenshots</string>
+    <string name="dev_announcements">Announcements</string>
+    <string name="dev_announcements_desc">Create and manage announcements for all users (admins only)</string>
+    <string name="announcement_new">New announcement</string>
+    <string name="announcement_edit_title">Edit announcement #%1$s</string>
+    <string name="announcement_empty">No announcements yet</string>
+    <string name="announcement_not_allowed">Only admins can manage announcements</string>
+    <string name="announcement_expired">Expired</string>
+    <string name="announcement_expires_at">Expires %1$s</string>
+    <string name="announcement_field_title">Title</string>
+    <string name="announcement_field_body">Text (optional)</string>
+    <string name="announcement_required_language">%1$s (required)</string>
+    <string name="announcement_language_hint">German is required. Missing languages fall back to German, Italian first to English.</string>
+    <string name="announcement_edit_hint">Users who already dismissed it will not see it again.</string>
+    <string name="announcement_expiry">Visible until</string>
+    <string name="announcement_expiry_days">%1$s days</string>
+    <string name="announcement_expiry_custom">Pick date</string>
+    <string name="announcement_preview">Preview</string>
+    <string name="announcement_delete_confirm">Delete announcement #%1$s? It disappears for everyone.</string>
 </resources>

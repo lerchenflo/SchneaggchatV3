@@ -1780,4 +1780,22 @@
     <string name="games_cchallenge_bug_wrong_bracket">Ein Array-Index muss mit einer eckigen Klammer geschlossen werden, nicht mit einer runden.</string>
     <string name="dev_settings_demo_mode">Demo-Modus</string>
     <string name="dev_settings_demo_mode_desc">Blendet die Offline- und Testserver-Leiste aus, z. B. für Store-Screenshots</string>
+    <string name="dev_announcements">Ankündigungen</string>
+    <string name="dev_announcements_desc">Ankündigungen für alle Nutzer erstellen und verwalten (nur Admins)</string>
+    <string name="announcement_new">Neue Ankündigung</string>
+    <string name="announcement_edit_title">Ankündigung #%1$s bearbeiten</string>
+    <string name="announcement_empty">Noch keine Ankündigungen</string>
+    <string name="announcement_not_allowed">Nur Admins können Ankündigungen verwalten</string>
+    <string name="announcement_expired">Abgelaufen</string>
+    <string name="announcement_expires_at">Läuft ab am %1$s</string>
+    <string name="announcement_field_title">Titel</string>
+    <string name="announcement_field_body">Text (optional)</string>
+    <string name="announcement_required_language">%1$s (Pflicht)</string>
+    <string name="announcement_language_hint">Deutsch ist Pflicht. Fehlende Sprachen zeigen Deutsch, Italienisch zuerst Englisch.</string>
+    <string name="announcement_edit_hint">Wer sie schon weggeklickt hat, sieht sie nicht noch einmal.</string>
+    <string name="announcement_expiry">Sichtbar bis</string>
+    <string name="announcement_expiry_days">%1$s Tage</string>
+    <string name="announcement_expiry_custom">Datum wählen</string>
+    <string name="announcement_preview">Vorschau</string>
+    <string name="announcement_delete_confirm">Ankündigung #%1$s löschen? Sie verschwindet für alle.</string>
 </resources>

@@ -115,6 +115,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSettingsViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements.AnnouncementAdminViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.notificationsettings.NotificationSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecurityViewModel
@@ -134,6 +135,10 @@ import org.lerchenflo.schneaggchatv3mp.events.data.remote.EventRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.KtorEventRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.FeedbackRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.KtorFeedbackRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.announcement.data.RemoteAnnouncementRepository
+import org.lerchenflo.schneaggchatv3mp.announcement.data.remote.AnnouncementRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.announcement.data.remote.KtorAnnouncementRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.GameRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.KtorGameRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.login.data.remote.AuthRemoteDataSource
@@ -194,6 +199,7 @@ val sharedmodule = module{
     single<EventRemoteDataSource> { KtorEventRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
     single<MapRemoteDataSource> { KtorMapRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
     single<FeedbackRemoteDataSource> { KtorFeedbackRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<AnnouncementRemoteDataSource> { KtorAnnouncementRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
     single<GameRemoteDataSource> { KtorGameRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
 
     // AUTHENTICATED / NOT_AUTHENTICATED / SOCKET HttpClients are platform-specific (they need a
@@ -241,6 +247,7 @@ val sharedmodule = module{
     singleOf(::OfflineFirstEventRepository) bind EventRepository::class
     singleOf(::RemoteAppInfoRepository) bind AppInfoRepository::class
     singleOf(::RemoteFeedbackRepository) bind FeedbackRepository::class
+    singleOf(::RemoteAnnouncementRepository) bind AnnouncementRepository::class
     singleOf(::RemoteAuthRepository) bind AuthRepository::class
     singleOf(::LocalSessionTerminator) bind SessionTerminator::class
     // Explicit lambda for the scope: the sync runs in the app-wide scope, so it outlives the
@@ -408,6 +415,7 @@ val sharedmodule = module{
 
 
     viewModelOf(::DevSettingsViewModel)
+    viewModelOf(::AnnouncementAdminViewModel)
     viewModelOf(::DartCounterViewModel)
     viewModelOf(::TowerstackViewModel)
     viewModelOf(::UndercoverViewModel)

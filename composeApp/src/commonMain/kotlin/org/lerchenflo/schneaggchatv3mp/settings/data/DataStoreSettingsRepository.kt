@@ -160,6 +160,15 @@ class DataStoreSettingsRepository(
         settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis))
     }
 
+    override fun getLastDismissedAnnouncementIdFlow(): Flow<Long> {
+        return preferencemanager.getLastDismissedAnnouncementIdFlow()
+    }
+
+    override suspend fun setLastDismissedAnnouncementId(id: Long) {
+        preferencemanager.saveLastDismissedAnnouncementId(id)
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastDismissedAnnouncementId = id)).trackConnectivity()
+    }
+
     // ─── Pinned chats ──────────────────────────────────────────────────────────
     // Local only: ChatListRepository.setPinnedChat pushes the resulting list to the server.
 

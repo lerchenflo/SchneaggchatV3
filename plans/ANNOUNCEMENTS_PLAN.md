@@ -20,6 +20,7 @@ Analysis date: 2026-10-16. Client repo `SchneaggchatV3` (branch `macci`), server
 | 8 | When the app checks | On app start, like the changelog. |
 | 9 | Admin flag in the app | Never. The role stays in the server database and is never sent to or synced with the app. |
 | 10 | Where admins create announcements | An option inside the developer settings that opens a popup, no new screen or route. Everyone with developer settings enabled can open it and see the form; the server rejects every request from a non-admin (404) and the app shows an error. Normal users don't have developer settings enabled anyway. |
+| 11 | Dismissal while offline | No retry logic. The setting is sent once like every other setting; if that fails, the next sync restores the server's number and the announcement simply shows once more. |
 
 Defaults taken without a question (change them before implementation if needed):
 
@@ -37,6 +38,7 @@ Defaults taken without a question (change them before implementation if needed):
 - Only the newest announcement is ever shown. If two are created while a user is away, that user only sees the newer one; the older one is covered by the dismissal of the newer one.
 - A new announcement appears at the next app start, not live.
 - Offline at start: no banner (nothing is cached). It shows at the next start with a connection.
+- Dismissed while offline: the dismissal is not retried. The next settings sync restores the server's number and the announcement shows once more (decision 11).
 
 ## Current state
 
@@ -69,11 +71,13 @@ New package `announcement/`, repository in `repository/` as usual.
 
 | Method | Route | Guard | Does |
 |---|---|---|---|
-| GET | `/announcements/latest` | `requireAuth()` | The newest announcement with `expiresAt > now` and `id > caller's settings.lastDismissedAnnouncementId`, all languages included. 204 / empty for none and always for the test account. |
-| GET | `/announcements/admin` | `requireAdmin()` | All announcements including expired ones, newest first, with the creator's username. |
-| POST | `/announcements/admin` | `requireAdmin()` | Create with the next number. Validates texts and expiry (see defaults). |
-| PUT | `/announcements/admin/{id}` | `requireAdmin()` | Edit texts and expiry, bumps `updatedAt`, keeps the number. |
-| DELETE | `/announcements/admin/{id}` | `requireAdmin()` | Hard delete. |
+| GET | `/announcements/latest` | `requireAuth()` | `{ "announcement": AnnouncementResponse \| null }`: the newest announcement with `expiresAt > now` and `id > caller's settings.lastDismissedAnnouncementId`, all languages included. `null` for none and always for the test account. |
+| GET | `/announcements/admin/list` | `requireAdmin()` | `List<AnnouncementResponse>` including expired ones, newest first, with `creatorName`. |
+| POST | `/announcements/admin/create` | `requireAdmin()` | Body `AnnouncementRequest` (`id` null). Create with the next number. Validates texts and expiry (see defaults). |
+| POST | `/announcements/admin/update` | `requireAdmin()` | Body `AnnouncementRequest` with `id`. Edit texts and expiry, bumps `updatedAt`, keeps the number. |
+| DELETE | `/announcements/admin/delete?id=` | `requireAdmin()` | Hard delete. |
+
+Shapes (as implemented in the app's `announcement/data/remote/dto/`; JSON `austrian` is the app's Vori, times are epoch millis): `AnnouncementResponse(id: Long, german: {title, body}, austrian?, english?, italian?, expiresAt, createdAt, updatedAt, creatorName?)`, `AnnouncementRequest(id: Long?, german, austrian?, english?, italian?, expiresAt)`.
 
 The server comparing against the stored number (not only the app) avoids a race: a second device that starts before its settings sync arrived would otherwise briefly show an announcement already dismissed elsewhere.
 
@@ -81,7 +85,7 @@ Validation goes into `util/ValidationUtils.kt` like the FAQ texts. Text is trimm
 
 ### S4 Settings field
 - `PersonalUserSettings.lastDismissedAnnouncementId: Long = 0`, in `UserSettingsRequest` (nullable) and in the settings response.
-- `UserService.updateSettings`: stores `max(current, new)`, so an outdated device can never lower it.
+- `UserService.updateSettings`: stores `max(current, new)`, so an outdated device can never lower it (cheap safety; the app itself does no retries, decision 11).
 - No migration needed: missing field = 0.
 
 ### S5 No admin flag for the app
@@ -91,34 +95,35 @@ Validation goes into `util/ValidationUtils.kt` like the FAQ texts. Text is trimm
 
 Run the code-reuse-scout agent with the function list below before implementing.
 
-### C1 Domain and remote
-New feature package `announcement/`:
+Status 2026-10-16: C1-C5 implemented (uncommitted), compiled for JVM, Android, iOS and the iOS tests. Not run on a device; tests not run.
 
-- `announcement/domain/Announcement.kt`: `id: Long`, the four optional texts (German required), `expiresAt`, `createdAt`, `updatedAt`.
-- `Announcement.textFor(language: LanguageSetting): AnnouncementText`: applies the fallbacks from decision 1 (SYSTEM resolved through `LanguageService.getSystemLanguageSetting()`).
-- `announcement/domain/AnnouncementRepository.kt`: `getLatest()`, and the admin calls `getAll()`, `create(...)`, `update(...)`, `delete(id)`. Online only, returning the result type the other repositories use.
-- `announcement/data/AnnouncementRepositoryImpl` (name as the other repositories) + `announcement/data/remote/` data source and `dto/` for the five endpoints, through the authenticated client and `safeCall`.
+### C1 Domain and remote (done)
+New feature package `announcement/`, built like `feedback/`:
 
-### C2 Settings field
-- `SyncedSettings`, the settings DTOs and their mapper, `Preferencemanager`: `lastDismissedAnnouncementId: Long`.
-- `Preferencemanager.applySyncedSettings`: keeps `max(local, server)` for this field (server-wins would undo an offline dismiss).
-- `SettingsRepository`: flow + `setLastDismissedAnnouncementId(id)`. Writes locally, then sends; if sending fails, a local "pending" flag is set and the value is sent again at the next start.
+- `announcement/domain/Announcement.kt`: `Announcement` (`id: Long`, `german`, `vori?`, `english?`, `italian?`, `expiresAt`, `createdAt`, `updatedAt`, `creatorName?`), `AnnouncementText`, `AnnouncementDraft`, `AnnouncementLimits` (80 / 500 / 365 days).
+- `Announcement.textFor(language)`: the fallbacks from decision 1.
+- `announcement/domain/AnnouncementRepository.kt`: `getLatest()`, `getAll()`, `create()`, `update()`, `delete()`, returning `NetworkResult` like `FeedbackRepository`.
+- `announcement/data/RemoteAnnouncementRepository.kt`, `data/remote/` (`AnnouncementRemoteDataSource`, `KtorAnnouncementRemoteDataSource`), `data/remote/dto/` (DTOs + mapper; the mapper trims texts and drops translations without a title). Registered in `di/Modules.kt`.
 
-### C3 Chat list banner
-- `ChatSelectorViewModel`: at start (next to the changelog / contribute check, after login), resend a pending dismissal, then call `getLatest()`. Banner state = `combine(latest announcement, lastDismissedAnnouncementId flow, language flow)`: shown while `id > lastDismissed` and `expiresAt > now`. Because the settings flow is part of it, a dismissal on another device (arriving as `UserChange`) hides the banner here at once. A timer re-evaluates at `expiresAt`, so it also disappears while the app stays open.
-- `ChatSelector`: one `ChatSelectorDismissableInfo` below the notification permission banner, title + text in the user's language; the close button calls `setLastDismissedAnnouncementId(id)`.
-- `ChatSelectorDismissableInfo`: make `activateText` / `onClick` optional and hide the button when absent. Existing callers stay unchanged.
-- Failures of `getLatest()` are logged; no banner, no error shown to the user.
+### C2 Settings field (done)
+- `SyncedSettings`, `PersonalUserSettings`, `UserSettingsRequest`, the mapper, `Preferencemanager`: `lastDismissedAnnouncementId: Long`.
+- Server wins in `applySyncedSettings`, like every other synced setting. `setLastDismissedAnnouncementId(id)` writes locally, then sends once (decision 11).
 
-### C4 Announcements popup in the developer settings
-- No new screen and no new route (decision 10). `DeveloperSettings` gets a `SettingsOption` "Announcements" that opens a popup; its state and actions live in `DevSettingsViewModel`.
+### C3 Chat list banner (done)
+- `ChatSelectorViewModel.loadAnnouncement()`: after login, once per ViewModel, calls `getLatest()`. Non-network failures are logged.
+- `ChatSelectorViewModel.announcement`: `combine(latest, lastDismissedAnnouncementId flow)`, shown while `id > lastDismissed`; a `delay` until `expiresAt` hides it while the app stays open. A dismissal on another device (arriving as `UserChange`) hides it at once.
+- `chat/presentation/chatselector/AnnouncementBanner.kt` (with preview), placed below the notification permission banner. Language: the locale the string resources use (`Locale.current` through `LanguageSetting.fromIsoCode`); an untranslated system language counts as English, like the string resources. No existing "current app language" helper existed to reuse.
+- `ChatSelectorDismissableInfo`: `activateText` / `onClick` optional, new `icon` parameter.
+
+### C4 Announcements popup in the developer settings (done)
+- No new screen and no new route (decision 10). `DeveloperSettings` gets a `SettingsOption` "Announcements" that opens `AnnouncementAdminPopup`, with its own `AnnouncementAdminViewModel` (MVI: `AnnouncementAdminState`, `AnnouncementAdminAction`), in `settings/presentation/devsettings/announcements/`.
 - Shown to everyone who has developer settings enabled. No admin check in the app.
-- Popup content: the list from `/announcements/admin` (active and expired, expired ones marked, each with its number, edit and delete; delete asks for confirmation) and a "New" button that switches to the form.
-- Form: German section first and marked as required, then English, Vori, Italian; each with title + text and character counters. Expiry presets 1 day / 7 days / 30 days plus a custom date and time. Preview with `ChatSelectorDismissableInfo` for the selected language.
-- A 404 from any admin route (= not an admin) shows a "Only admins can manage announcements" snackbar; the list then stays empty. Other errors go through the existing snackbar / error channel.
+- List: all announcements (expired ones marked), number, title, expiry, creator, edit and delete (with confirmation). "New" opens the form.
+- Form: German (required), English, Vori, Italian; title + text with counters. Expiry presets 1 / 7 / 30 days plus a date-time wheel picker (max 365 days). Preview per language with the banner's look and fallbacks.
+- Errors show inside the popup (a snackbar would be hidden behind it). NotFound from an admin route shows "Only admins can manage announcements".
 
 ### C5 Finish
-- New UI strings in `values/`, `values-de/`, `values-it/` (not `values-de-rAT`).
+- New UI strings in `values/`, `values-de/`, `values-it/` (not `values-de-rAT`). Done.
 - README changelog (readme-changelog-updater), string-resource-extractor.
 - `plans/Todo.md`: cleanup of expired announcements; optional foreground check.
 
@@ -138,7 +143,7 @@ Server tasks are also tracked in the server repo's `Todo.md` (section "Admin ann
 - Each language: German, English, Vori, Italian, system language; missing translations fall back as in decision 1.
 - Dismiss on device A while device B is open: banner on B disappears at once (settings over the socket).
 - Dismiss on device A, then start device B: no banner, not even briefly.
-- Dismiss while offline: stays hidden after a restart; other devices learn it after the next start with a connection.
+- Dismiss while offline: the announcement shows once more after the next sync; dismissing it again online keeps it hidden everywhere.
 - Two announcements created: only the newer one shows; after dismissing it, the older one does not appear.
 - Edit: users who dismissed it don't see it again; others see the new text at their next start.
 - Delete and expiry: banner disappears at the next start (delete) and at `expiresAt` while open (expiry).

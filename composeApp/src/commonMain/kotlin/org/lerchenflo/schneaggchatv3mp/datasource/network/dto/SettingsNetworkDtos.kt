@@ -32,6 +32,10 @@ data class PersonalUserSettings(
     // Epoch millis of the last time the contribute popup was shown on any device.
     // 0 means never seeded - the server backfills this at registration and via migration.
     val lastContributePopupShown: Long = 0L,
+
+    // Number of the newest announcement dismissed on any device - dismissing one also covers
+    // every older announcement. 0 means none dismissed yet.
+    val lastDismissedAnnouncementId: Long = 0L,
 )
 
 /**
@@ -54,4 +58,6 @@ data class UserSettingsRequest(
     val resetQuickReactions: Boolean? = null,
     val developerSettings: Boolean? = null,
     val lastContributePopupShown: Long? = null,
+    // The server keeps the higher of its stored and this value
+    val lastDismissedAnnouncementId: Long? = null,
 )

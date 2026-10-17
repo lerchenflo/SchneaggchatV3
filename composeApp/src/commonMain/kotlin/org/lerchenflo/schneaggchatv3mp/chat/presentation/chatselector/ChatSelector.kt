@@ -145,6 +145,7 @@ fun Chatauswahlscreen(
     val changelogPopup by viewModel.changelogPopup.collectAsStateWithLifecycle()
     val contributePopupShown by viewModel.contributePopupShown.collectAsStateWithLifecycle()
     val newVersionAvailable by viewModel.newVersionAvailable.collectAsStateWithLifecycle()
+    val announcement by viewModel.announcement.collectAsStateWithLifecycle()
 
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
@@ -700,6 +701,15 @@ fun Chatauswahlscreen(
                                 },
                                 onDismiss = null,
                                 backgroundColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        }
+                    }
+
+                    announcement?.let { shown ->
+                        item(key = "announcement_${shown.id}") {
+                            AnnouncementBanner(
+                                announcement = shown,
+                                onDismiss = { viewModel.onAnnouncementDismiss(shown) },
                             )
                         }
                     }

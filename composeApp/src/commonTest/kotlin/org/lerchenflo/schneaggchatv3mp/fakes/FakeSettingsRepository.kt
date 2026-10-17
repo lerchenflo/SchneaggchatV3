@@ -33,6 +33,7 @@ class FakeSettingsRepository : SettingsRepository {
     val mapStyleUrl = MutableStateFlow("")
     val quickReactions = MutableStateFlow(DEFAULT_QUICK_REACTIONS)
     val lastContributePopupShown = MutableStateFlow(0L)
+    val lastDismissedAnnouncementId = MutableStateFlow(0L)
     val pinnedChats = MutableStateFlow<List<PinnedChat>>(emptyList())
     val demoMode = MutableStateFlow(false)
     val onboardingSeen = MutableStateFlow(true)
@@ -108,6 +109,11 @@ class FakeSettingsRepository : SettingsRepository {
     override suspend fun getLastContributePopupShown(): Long = lastContributePopupShown.value
     override suspend fun setLastContributePopupShown(epochMillis: Long) {
         lastContributePopupShown.value = epochMillis
+    }
+
+    override fun getLastDismissedAnnouncementIdFlow(): Flow<Long> = lastDismissedAnnouncementId
+    override suspend fun setLastDismissedAnnouncementId(id: Long) {
+        lastDismissedAnnouncementId.value = id
     }
 
     // ─── Pinned chats ─────────────────────────────────────────────────────────

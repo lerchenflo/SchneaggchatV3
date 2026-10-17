@@ -130,6 +130,7 @@ class Preferencemanager(
         val DRAFTS = stringPreferencesKey("drafts")
         val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
         val LAST_CONTRIBUTE_POPUP_SHOWN = longPreferencesKey("last_contribute_popup_shown")
+        val LAST_DISMISSED_ANNOUNCEMENT_ID = longPreferencesKey("last_dismissed_announcement_id")
         val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
         val EVENTS_VIEW_MODE = stringPreferencesKey("events_view_mode")
     }
@@ -292,6 +293,15 @@ class Preferencemanager(
         return prefs.data.first()[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN] ?: 0L
     }
 
+    // Last dismissed announcement (synced)
+    fun getLastDismissedAnnouncementIdFlow(): Flow<Long> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.LAST_DISMISSED_ANNOUNCEMENT_ID] ?: 0L
+    }
+
+    suspend fun saveLastDismissedAnnouncementId(id: Long) {
+        prefs.edit { it[PrefsKeys.LAST_DISMISSED_ANNOUNCEMENT_ID] = id }
+    }
+
     // Onboarding Seen
     suspend fun setOnboardingSeen(value: Boolean) {
         prefs.edit { it[PrefsKeys.ONBOARDING_SEEN] = value }
@@ -423,6 +433,8 @@ class Preferencemanager(
             }
             it[PrefsKeys.DEVELOPER_SETTINGS] = settings.developerSettings
             it[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN] = settings.lastContributePopupShown
+            // A dismissal made offline is undone here - the announcement simply shows once more
+            it[PrefsKeys.LAST_DISMISSED_ANNOUNCEMENT_ID] = settings.lastDismissedAnnouncementId
         }
     }
 

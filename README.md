@@ -22,6 +22,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.19
 
 #### Features
+- Ankündigungen
 - Bearbeitete Nachrichten Anzeige
 - Chatdetails überarbeitet
 - Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit

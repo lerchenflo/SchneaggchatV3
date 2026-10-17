@@ -14,4 +14,5 @@ fun PersonalUserSettings.toSyncedSettings(): SyncedSettings = SyncedSettings(
     quickReactions = quickReactions,
     developerSettings = developerSettings,
     lastContributePopupShown = lastContributePopupShown,
+    lastDismissedAnnouncementId = lastDismissedAnnouncementId,
 )

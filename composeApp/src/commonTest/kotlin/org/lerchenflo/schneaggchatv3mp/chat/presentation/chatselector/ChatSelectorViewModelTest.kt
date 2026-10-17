@@ -9,6 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeAnnouncementRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAppVersion
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAuthRepository
@@ -81,6 +82,7 @@ class ChatSelectorViewModelTest {
             loggingRepository = FakeLogger(),
             permissionManager = FakePermissionManager(),
             settingsRepository = settingsRepository,
+            announcementRepository = FakeAnnouncementRepository(),
         )
     )
 

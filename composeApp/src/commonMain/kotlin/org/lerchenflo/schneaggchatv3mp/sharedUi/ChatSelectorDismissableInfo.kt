@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,10 +36,12 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 fun ChatSelectorDismissableInfo(
     title: String,
     description: String? = null,
-    activateText: String,
-    onClick: () -> Unit,
+    // Without both, the card has no action button (e.g. an announcement only to read)
+    activateText: String? = null,
+    onClick: (() -> Unit)? = null,
     onDismiss: (() -> Unit)?,
     backgroundColor: Color = MaterialTheme.colorScheme.primary,
+    icon: ImageVector = Icons.Default.Info,
     modifier: Modifier = Modifier.fillMaxWidth()
 ) {
     // Determine high contrast content color based on MaterialTheme color scheme
@@ -76,7 +79,7 @@ fun ChatSelectorDismissableInfo(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Info,
+                    imageVector = icon,
                     contentDescription = null,
                     tint = contentColor,
                     modifier = Modifier.size(18.dp)
@@ -110,12 +113,14 @@ fun ChatSelectorDismissableInfo(
             Spacer(modifier = Modifier.width(8.dp))
 
             // Action Button
-            NormalButton(
-                text = activateText,
-                onClick = onClick
-            )
+            if (activateText != null && onClick != null) {
+                NormalButton(
+                    text = activateText,
+                    onClick = onClick
+                )
 
-            Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+            }
 
             onDismiss?.let {
                 // Dismiss Button

@@ -1774,4 +1774,22 @@
     <string name="games_cchallenge_bug_wrong_bracket">L'indice di un array va chiuso con una parentesi quadra, non con una tonda.</string>
     <string name="dev_settings_demo_mode">Modalità demo</string>
     <string name="dev_settings_demo_mode_desc">Nasconde le barre offline e del server di test, ad es. per gli screenshot dello store</string>
+    <string name="dev_announcements">Annunci</string>
+    <string name="dev_announcements_desc">Crea e gestisci annunci per tutti gli utenti (solo admin)</string>
+    <string name="announcement_new">Nuovo annuncio</string>
+    <string name="announcement_edit_title">Modifica annuncio #%1$s</string>
+    <string name="announcement_empty">Ancora nessun annuncio</string>
+    <string name="announcement_not_allowed">Solo gli admin possono gestire gli annunci</string>
+    <string name="announcement_expired">Scaduto</string>
+    <string name="announcement_expires_at">Scade il %1$s</string>
+    <string name="announcement_field_title">Titolo</string>
+    <string name="announcement_field_body">Testo (facoltativo)</string>
+    <string name="announcement_required_language">%1$s (obbligatorio)</string>
+    <string name="announcement_language_hint">Il tedesco è obbligatorio. Le lingue mancanti mostrano il tedesco, l'italiano prima l'inglese.</string>
+    <string name="announcement_edit_hint">Chi l'ha già chiuso non lo vedrà di nuovo.</string>
+    <string name="announcement_expiry">Visibile fino al</string>
+    <string name="announcement_expiry_days">%1$s giorni</string>
+    <string name="announcement_expiry_custom">Scegli data</string>
+    <string name="announcement_preview">Anteprima</string>
+    <string name="announcement_delete_confirm">Eliminare l'annuncio #%1$s? Sparisce per tutti.</string>
 </resources>

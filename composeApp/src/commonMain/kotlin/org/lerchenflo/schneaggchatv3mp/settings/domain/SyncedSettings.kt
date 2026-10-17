@@ -7,7 +7,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
  * [org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository.applyServerSettings].
  * Domain copy of the network DTO `PersonalUserSettings`, field for field:
  * theme/language/mapStyle stay the enum's name as a string, a null [quickReactions] means
- * "never customised" and [lastContributePopupShown] 0 means "never seeded".
+ * "never customised", [lastContributePopupShown] 0 means "never seeded" and
+ * [lastDismissedAnnouncementId] 0 means "no announcement dismissed yet".
  */
 data class SyncedSettings(
     val mdFormat: Boolean,
@@ -21,4 +22,5 @@ data class SyncedSettings(
     val quickReactions: List<String>?,
     val developerSettings: Boolean,
     val lastContributePopupShown: Long,
+    val lastDismissedAnnouncementId: Long,
 )
