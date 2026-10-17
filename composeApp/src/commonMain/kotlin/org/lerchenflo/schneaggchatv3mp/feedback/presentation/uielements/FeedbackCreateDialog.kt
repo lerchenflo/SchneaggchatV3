@@ -57,6 +57,7 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_field_location
 import schneaggchatv3mp.composeapp.generated.resources.feedback_field_tags
 import schneaggchatv3mp.composeapp.generated.resources.feedback_field_title
 import schneaggchatv3mp.composeapp.generated.resources.feedback_submit
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 // Same limits the server enforces
 private const val TITLE_MIN_LENGTH = 3
@@ -215,8 +216,8 @@ fun FeedbackCreateDialog(
 
 @Composable
 private fun HintBox(text: String, isWarning: Boolean) {
-    val container = if (isWarning) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainerHigh
-    val content = if (isWarning) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurfaceVariant
+    val container = if (isWarning) MaterialTheme.warningColors.warningContainer else MaterialTheme.colorScheme.surfaceContainerHigh
+    val content = if (isWarning) MaterialTheme.warningColors.onWarningContainer else MaterialTheme.colorScheme.onSurfaceVariant
 
     Row(
         modifier = Modifier

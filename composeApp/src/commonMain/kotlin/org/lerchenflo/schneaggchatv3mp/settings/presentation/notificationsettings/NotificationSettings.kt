@@ -50,6 +50,7 @@ import schneaggchatv3mp.composeapp.generated.resources.notifications_enabled
 import schneaggchatv3mp.composeapp.generated.resources.open_settings
 import schneaggchatv3mp.composeapp.generated.resources.wake_settings
 import schneaggchatv3mp.composeapp.generated.resources.wake_settings_info
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 @Composable
 fun NotificationSettings(
@@ -121,7 +122,7 @@ fun NotificationSettings(
                         Icon(
                             imageVector = Icons.Rounded.Warning,
                             contentDescription = "Notifications disabled",
-                            tint = MaterialTheme.colorScheme.error,
+                            tint = MaterialTheme.warningColors.warning,
                             modifier = Modifier
                                 .size(30.dp)
                                 .clickable {

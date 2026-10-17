@@ -5,6 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.luminance
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 
 private val lightScheme = lightColorScheme(
@@ -380,9 +382,14 @@ fun SchneaggchatTheme(
       lightScheme
   }
 
-  MaterialTheme(
-    colorScheme = colorScheme,
-    content = content
-  )
+  // Light or dark warning colors, whichever fits the theme's background
+  val warningColors = if (colorScheme.background.luminance() > 0.5f) lightWarningColors else darkWarningColors
+
+  CompositionLocalProvider(LocalWarningColors provides warningColors) {
+    MaterialTheme(
+      colorScheme = colorScheme,
+      content = content
+    )
+  }
 }
 

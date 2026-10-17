@@ -124,6 +124,7 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_popup
 import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_start
 import schneaggchatv3mp.composeapp.generated.resources.unpin_chat
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 @OptIn(ExperimentalMaterial3Api::class) // PullToRefreshBox is experimental
 @Composable
@@ -700,7 +701,8 @@ fun Chatauswahlscreen(
                                     viewModel.requestNotificationPermission()
                                 },
                                 onDismiss = null,
-                                backgroundColor = MaterialTheme.colorScheme.errorContainer
+                                backgroundColor = MaterialTheme.warningColors.warningContainer,
+                                contentColor = MaterialTheme.warningColors.onWarningContainer,
                             )
                         }
                     }

@@ -27,7 +27,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -48,6 +47,7 @@ import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.language
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.theme
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 @Composable
 fun ThemeSelector(
@@ -265,7 +265,7 @@ fun ChangeDialog(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = warning,
-                        color = Color(0xFFF57C00),
+                        color = MaterialTheme.warningColors.warning,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }

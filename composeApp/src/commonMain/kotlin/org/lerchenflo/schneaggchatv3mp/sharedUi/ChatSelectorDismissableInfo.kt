@@ -41,12 +41,16 @@ fun ChatSelectorDismissableInfo(
     onClick: (() -> Unit)? = null,
     onDismiss: (() -> Unit)?,
     backgroundColor: Color = MaterialTheme.colorScheme.primary,
+    // Needed for a background outside the color scheme (e.g. the warning colors)
+    contentColor: Color = Color.Unspecified,
     icon: ImageVector = Icons.Default.Info,
     modifier: Modifier = Modifier.fillMaxWidth()
 ) {
     // Determine high contrast content color based on MaterialTheme color scheme
     val calculatedContent = contentColorFor(backgroundColor)
-    val contentColor = if (calculatedContent != Color.Unspecified) {
+    val contentColor = if (contentColor != Color.Unspecified) {
+        contentColor
+    } else if (calculatedContent != Color.Unspecified) {
         calculatedContent
     } else if (backgroundColor.luminance() > 0.5f) {
         MaterialTheme.colorScheme.onSurface

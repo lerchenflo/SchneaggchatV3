@@ -228,6 +228,17 @@ val phWhite = Color(0xFFFFFFFF)
 val phOrangeLightVariant = Color(0xFFffbb57)
 
 
+// Warning - Material 3 has no warning role (see WarningColors.kt). Amber tones, same in every theme.
+val warningLight = Color(0xFF825500)
+val onWarningLight = Color(0xFFFFFFFF)
+val warningContainerLight = Color(0xFFFFDDB3)
+val onWarningContainerLight = Color(0xFF291800)
+val warningDark = Color(0xFFFFB951)
+val onWarningDark = Color(0xFF452B00)
+val warningContainerDark = Color(0xFF633F00)
+val onWarningContainerDark = Color(0xFFFFDDB3)
+
+
 // Ethereal Signal - Variant 1 Colors
 val etherealMidnight = Color(0xFF060E20)       // Base Background
 val etherealMidnightLow = Color(0xFF091328)    // surface-container-low

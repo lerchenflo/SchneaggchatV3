@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.offline
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 @Composable
 fun OfflineBar(
@@ -21,14 +22,14 @@ fun OfflineBar(
     Row(
         modifier = modifier
             .background(
-                color = MaterialTheme.colorScheme.errorContainer,
+                color = MaterialTheme.warningColors.warningContainer,
                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             ),
         horizontalArrangement = Arrangement.Center
     ){
         Text(
             text = stringResource(Res.string.offline),
-            color = MaterialTheme.colorScheme.onErrorContainer,
+            color = MaterialTheme.warningColors.onWarningContainer,
             modifier = Modifier.padding(vertical = 2.dp) //Abstand oba und unta
         )
     }

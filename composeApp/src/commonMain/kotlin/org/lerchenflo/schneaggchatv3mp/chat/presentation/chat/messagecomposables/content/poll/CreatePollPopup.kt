@@ -55,7 +55,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.collapse
@@ -83,6 +82,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.Settings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.ok
@@ -865,7 +865,7 @@ private fun PollDraftEditor(
                         modifier = Modifier
                             .padding(4.dp)
                             .background(
-                                color = Color(red = 255, green = 165, blue = 0),
+                                color = MaterialTheme.warningColors.warningContainer,
                                 shape = RoundedCornerShape(15.dp)
                             )
                     ) {
@@ -874,6 +874,7 @@ private fun PollDraftEditor(
                                 stringResource(Res.string.poll_settings_infinite_custom_and_selected_answers_warning)
                             } else stringResource(Res.string.poll_settings_infinite_custom_answers_warning),
                             textAlign = TextAlign.Center,
+                            color = MaterialTheme.warningColors.onWarningContainer,
                         )
                     }
                 }
