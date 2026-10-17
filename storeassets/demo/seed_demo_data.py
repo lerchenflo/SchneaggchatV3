@@ -13,18 +13,20 @@ FILES = f"/data/user/0/{PKG}/files"
 ME = None  # logged-in user, detected below (the only user row without a friendship status)
 VANESSA, EMMA, NOAH = "6a93f644c99a8eb72043ae00", "6a93f50ec99a8eb72043adcc", "6a93f46ac99a8eb72043adbf"
 NEW = {  # id: (name, birthDate, lat, long, battery, speed)
-    "de0000000000000000000001": ("Jonas", "2001-11-12", 47.418, 9.733, 64, 0.0),
-    "de0000000000000000000002": ("Sophie", "2002-04-03", 47.4245, 9.752, 88, 0.0),
-    "de0000000000000000000003": ("Max", "2000-07-21", 47.401, 9.745, 41, 13.0),
-    "de0000000000000000000004": ("Mia", "2003-01-30", 47.41, 9.728, 92, 0.0),
-    "de0000000000000000000005": ("Paul", "1999-10-15", 47.398, 9.76, 23, 0.0),
-    "de0000000000000000000006": ("Lena", "2001-06-08", 47.43, 9.738, 70, 0.0),
-    "de0000000000000000000007": ("Tobias", "1998-02-17", 47.406, 9.77, 35, 0.0),
-    "de0000000000000000000008": ("Alex", "2002-12-01", 47.42, 9.764, 59, 0.0),
+    "de0000000000000000000001": ("Jonas", "2001-11-12", 47.4180, 9.7290, 64, 0.0),
+    "de0000000000000000000002": ("Sophie", "2002-04-03", 47.4255, 9.7480, 88, 0.0),
+    "de0000000000000000000003": ("Max", "2000-07-21", 47.4045, 9.7495, 41, 13.0),
+    "de0000000000000000000004": ("Mia", "2003-01-30", 47.4085, 9.7275, 92, 0.0),
+    "de0000000000000000000005": ("Paul", "1999-10-15", 47.3955, 9.7650, 23, 0.0),
+    "de0000000000000000000006": ("Lena", "2001-06-08", 47.4259, 9.7489, 70, 0.0),
+    "de0000000000000000000007": ("Tobias", "1998-02-17", 47.4049, 9.7503, 35, 0.0),
+    "de0000000000000000000008": ("Alex", "2002-12-01", 47.4252, 9.7493, 59, 0.0),
 }
 JONAS, SOPHIE, MAX, MIA, PAUL, LENA, TOBIAS, ALEX = NEW
-EXISTING_LOC = {VANESSA: (47.4140, 9.7400, 77), EMMA: (47.4150, 9.7510, 55), NOAH: (47.4030, 9.7330, 81)}
-# All around Dornbirn, so one map zoom level shows every face without clustering
+EXISTING_LOC = {VANESSA: (47.4155, 9.7400, 77), EMMA: (47.4160, 9.7640, 55), NOAH: (47.3930, 9.7300, 81)}
+# All around Dornbirn (the emulator's own position is set to 47.4118 / 9.7435 by capture_store_shots.sh).
+# Sophie/Lena/Alex and Max/Tobias stand within ~80 m of each other, so the map shows them as
+# clusters; everyone else is at least ~800 m apart, so their faces never overlap at the shot's zoom.
 G_SKI, G_WG, G_FB = "de00000000000000000000a1", "de00000000000000000000a2", "de00000000000000000000a3"
 
 now = int(time.time() * 1000)
@@ -169,12 +171,14 @@ msg(PAUL, ME, "Bist du schon zu Hause?", 7 * HOUR)
 msg(ME, PAUL, "In 10 Minuten 🚲", 6 * HOUR + 55 * MIN)
 
 # --- events --------------------------------------------------------------
-def event(eid, etype, title, desc, lat, lng, start, invited, accepted, group_id=None, max_users=None):
-    invited = [u for u in invited if u in known]
+def event(eid, etype, title, desc, lat, lng, start, invited, accepted, creator, group_id=None, max_users=None):
+    """`creator` is one of the fictional friends, so every card shows a different face."""
+    invited = [u for u in invited if u in known and u != creator] + [ME]
+    creator_name = NEW[creator][0]
     parts = [{"userId": u, "status": "ACCEPTED", "updatedAt": now - HOUR} for u in accepted if u in known]
     c.execute("insert or replace into events values (?,?,?,?,?,?,?,?,null,?,?,?,?,?,?,?,?,?)",
-              (eid, ME, etype, title, desc, group_id, json.dumps({"lat": lat, "long": lng}), start,
-               json.dumps(invited), json.dumps(parts), "FRIENDS_ONLY", max_users, "ONE_DAY", now - DAY, now - HOUR, ME, ME_NAME))
+              (eid, creator, etype, title, desc, group_id, json.dumps({"lat": lat, "long": lng}), start,
+               json.dumps(invited), json.dumps(parts), "FRIENDS_ONLY", max_users, "ONE_DAY", now - DAY, now - HOUR, creator, creator_name))
 
 def at(days, hour, minute=0):
     """Local wall-clock time `days` from today - events start at round times, not 'now + x hours'."""
@@ -183,11 +187,11 @@ def at(days, hour, minute=0):
 
 everyone = [JONAS, SOPHIE, MAX, MIA, PAUL, LENA, TOBIAS, ALEX, VANESSA, EMMA, NOAH]
 event("de00000000000000000e0001", "FOOD", "Grillabend am See 🔥", "Bring was zum Grillen mit, Getränke sind organisiert!",
-      47.5070, 9.7390, at(2, 18, 30), everyone, [ME, SOPHIE, MIA, PAUL, LENA, VANESSA, NOAH])
+      47.5070, 9.7390, at(2, 18, 30), everyone, [ME, SOPHIE, MIA, PAUL, LENA, VANESSA, NOAH], SOPHIE)
 event("de00000000000000000e0002", "SPORT", "Skitour aufs Bödele ⛷️", "Treffpunkt Parkplatz Bödele, Lawinenausrüstung nicht vergessen.",
-      47.4269, 9.8158, at(3, 7, 0), [JONAS, SOPHIE, MAX, EMMA], [ME, JONAS, SOPHIE, MAX], max_users=8)
+      47.4269, 9.8158, at(3, 7, 0), [JONAS, SOPHIE, MAX, EMMA], [ME, JONAS, SOPHIE, MAX], JONAS, max_users=8)
 event("de00000000000000000e0003", "GAMING", "Spieleabend 🎲", "Catan, Uno und Pizza in der WG.",
-      47.4136, 9.7432, at(5, 19, 30), everyone, [ME, MIA, PAUL, EMMA])
+      47.4136, 9.7432, at(5, 19, 30), everyone, [ME, MIA, PAUL, EMMA], MIA)
 
 db.commit()
 print("users", c.execute("select count(*) from users").fetchone()[0],
