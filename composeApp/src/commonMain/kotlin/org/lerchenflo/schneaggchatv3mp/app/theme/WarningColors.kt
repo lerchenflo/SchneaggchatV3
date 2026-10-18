@@ -4,13 +4,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 
 /**
  * Warning colors, which Material 3's color scheme has no role for (e.g. "users can add unlimited
- * answers"). Read them with [MaterialTheme.warningColors]; [SchneaggchatTheme] picks the light or
- * dark set to match the theme's background.
+ * answers"). Read them with [MaterialTheme.warningColors], which picks the light or dark set to
+ * match the current color scheme's background.
  */
 @Immutable
 data class WarningColors(
@@ -34,9 +34,7 @@ internal val darkWarningColors = WarningColors(
     onWarningContainer = onWarningContainerDark,
 )
 
-internal val LocalWarningColors = staticCompositionLocalOf { lightWarningColors }
-
 val MaterialTheme.warningColors: WarningColors
     @Composable
     @ReadOnlyComposable
-    get() = LocalWarningColors.current
+    get() = if (colorScheme.background.luminance() > 0.5f) lightWarningColors else darkWarningColors
