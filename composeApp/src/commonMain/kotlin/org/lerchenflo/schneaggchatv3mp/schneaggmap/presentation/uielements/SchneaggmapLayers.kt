@@ -56,6 +56,7 @@ import org.maplibre.compose.expressions.dsl.image
 import org.maplibre.compose.expressions.value.LineCap
 import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.interaction.ClickResult
+import org.maplibre.compose.layers.FeaturesClickHandler
 import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
@@ -83,6 +84,13 @@ import kotlin.time.Clock
 //Radius, in dp, within which nearby friends get merged into one marker - converted to meters via
 //the camera's current scale so it stays a constant on-screen size regardless of zoom level.
 private const val USER_CLUSTER_RADIUS_DP = 40.0
+
+//Place (POI) markers are half the size of the 40 dp profile picture in user markers, so friends
+//stand out over the places.
+private val PLACE_MARKER_SIZE = 20.dp
+
+//Per-type icon size inside a merged multi-type place marker, half of mergeLocationTypeIcons' default.
+private val MERGED_PLACE_ICON_SIZE = 11.dp
 
 private data class MarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
 
@@ -445,7 +453,7 @@ fun SchneaggmapLayers(
                             ClickResult.Consume
                         } else ClickResult.Pass
                     },
-                    iconImage = image(painterResource(iconRes), size = DpSize(33.dp, 33.dp)),
+                    iconImage = image(painterResource(iconRes), size = DpSize(PLACE_MARKER_SIZE, PLACE_MARKER_SIZE)),
                     iconAllowOverlap = const(!state.useClustering)
                 )
             }
@@ -469,6 +477,7 @@ fun SchneaggmapLayers(
                     icons = icons,
                     backgroundColor = mergedLocationBackgroundColor,
                     density = density,
+                    iconSize = MERGED_PLACE_ICON_SIZE,
                 )
                 val size = with(density) { DpSize(bitmap.width.toDp(), bitmap.height.toDp()) }
                 entry.id to MarkerIcon(bitmap = bitmap, size = size)
@@ -692,6 +701,9 @@ fun SchneaggmapLayers(
     //Each pin uses the same icon as the event's type (see EventType.icon()).
     if (state.eventsWithLocation.isNotEmpty() && state.showEvents) {
         val eventPinTint = MaterialTheme.colorScheme.onError
+        //Filled circle behind each event icon so the pins stand out from the base map
+        val eventPinBackgroundColor = MaterialTheme.colorScheme.error
+        val eventPinBorderColor = MaterialTheme.colorScheme.surface
 
         state.eventsWithLocation.forEach { event ->
             val location = event.location ?: return@forEach
@@ -716,16 +728,29 @@ fun SchneaggmapLayers(
 
                 val eventPinPainter = rememberVectorPainter(event.type.icon())
 
+                val onEventPinClick: FeaturesClickHandler = { clickedItems ->
+                    if (clickedItems.isNotEmpty()) {
+                        onAction(SchneaggmapAction.OnEventPinClick(clickedItems.first().id!!.content))
+                        ClickResult.Consume
+                    } else ClickResult.Pass
+                }
+
+                //Declared before the icon layer so it is drawn underneath it
+                CircleLayer(
+                    id = "event-background-${event.id}",
+                    source = eventSource,
+                    onClick = onEventPinClick,
+                    color = const(eventPinBackgroundColor),
+                    radius = const(16.dp),
+                    strokeColor = const(eventPinBorderColor),
+                    strokeWidth = const(2.dp)
+                )
+
                 SymbolLayer(
                     id = "event-${event.id}",
                     source = eventSource,
-                    onClick = { clickedItems ->
-                        if (clickedItems.isNotEmpty()) {
-                            onAction(SchneaggmapAction.OnEventPinClick(clickedItems.first().id!!.content))
-                            ClickResult.Consume
-                        } else ClickResult.Pass
-                    },
-                    iconImage = image(eventPinPainter, size = DpSize(33.dp, 33.dp), colorFilter = ColorFilter.tint(eventPinTint)),
+                    onClick = onEventPinClick,
+                    iconImage = image(eventPinPainter, size = DpSize(22.dp, 22.dp), colorFilter = ColorFilter.tint(eventPinTint)),
                     iconAllowOverlap = const(true)
                 )
             }
@@ -754,11 +779,20 @@ fun SchneaggmapLayers(
             ?.takeIf { it.inMeters > 3 }
             ?.let { location.course }
 
+        //Tapping the own position opens the own user info card
+        val onOwnLocationClick: FeaturesClickHandler = { clickedItems ->
+            if (clickedItems.isNotEmpty()) {
+                onAction(SchneaggmapAction.OnOwnUserClick)
+                ClickResult.Consume
+            } else ClickResult.Pass
+        }
+
         val arrowPainter = rememberVectorPainter(Icons.Default.Navigation)
         SymbolLayer(
             id = "own-location-arrow",
             source = ownLocationSource,
             visible = heading != null,
+            onClick = onOwnLocationClick,
             iconImage = image(
                 arrowPainter,
                 size = DpSize(28.dp, 28.dp),
@@ -771,6 +805,7 @@ fun SchneaggmapLayers(
             id = "own-location-dot",
             source = ownLocationSource,
             visible = heading == null,
+            onClick = onOwnLocationClick,
             color = const(Color(0xFF4285F4)),
             radius = const(8.dp),
             strokeColor = const(Color.White),

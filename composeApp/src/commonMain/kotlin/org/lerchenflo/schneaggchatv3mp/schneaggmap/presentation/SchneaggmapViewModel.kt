@@ -147,7 +147,6 @@ class SchneaggmapViewModel(
             SchneaggmapAction.ToggleFilterDropdown -> _state.update {
                 it.copy(
                     isFilterDropdownVisible = !it.isFilterDropdownVisible,
-                    isMapStyleDropdownVisible = false,
                     selectedEntry = null,
                 )
             }
@@ -185,10 +184,10 @@ class SchneaggmapViewModel(
                 // open the unrelated "create a public map entry" flow.
                 if (_state.value.pickLocationMode) return
 
-                //Dismiss filter/map-style dropdowns on map click
-                if (_state.value.isFilterDropdownVisible || _state.value.isMapStyleDropdownVisible) {
+                //Dismiss filter dropdown on map click
+                if (_state.value.isFilterDropdownVisible) {
                     _state.update {
-                        it.copy(isFilterDropdownVisible = false, isMapStyleDropdownVisible = false)
+                        it.copy(isFilterDropdownVisible = false)
                     }
                 }
 
@@ -362,21 +361,6 @@ class SchneaggmapViewModel(
 
             SchneaggmapAction.ToggleSnailTrails -> _state.update {
                 it.copy(showSnailTrails = !it.showSnailTrails)
-            }
-
-            SchneaggmapAction.ToggleMapStyleDropdown -> _state.update {
-                it.copy(
-                    isMapStyleDropdownVisible = !it.isMapStyleDropdownVisible,
-                    isFilterDropdownVisible = false,
-                    selectedEntry = null,
-                )
-            }
-
-            is SchneaggmapAction.SelectMapStyle -> {
-                _state.update { it.copy(isMapStyleDropdownVisible = false) }
-                viewModelScope.launch {
-                    settingsRepository.setMapStyleSetting(action.style)
-                }
             }
 
             SchneaggmapAction.ToggleShowUsers -> {

@@ -1066,6 +1066,11 @@
 
     <!-- Schneaggmap -->
     <string name="schneaggmap_filter_location_types">Standorttypen</string>
+    <string name="schneaggmap_filter_snail_trails">Schleimspuren</string>
+    <string name="schneaggmap_chip_places">Orte · %1$d/%2$d</string>
+    <string name="schneaggmap_chip_events">Events</string>
+    <string name="schneaggmap_chip_state_on">%1$s, an</string>
+    <string name="schneaggmap_chip_state_off">%1$s, aus</string>
     <string name="location_belongs_to_type">Gehört zu: %1$s</string>
     <string name="location_add_type">Neuen Typ hinzufügen</string>
 

@@ -2,7 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,29 +17,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.Polyline
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,19 +51,19 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.CoordinateView
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapCreateChoiceDialog
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapAttributionBar
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapFilterChipsRow
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapLocateButton
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapSearchBar
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapStyleDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapZoomSlider
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.SchneaggmapLayers
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.maplibre.compose.camera.CameraAnimation
@@ -84,10 +76,7 @@ import org.maplibre.compose.location.LocationAccuracy
 import org.maplibre.compose.location.LocationRequest
 import org.maplibre.compose.location.rememberDefaultLocationProvider
 import org.maplibre.compose.location.rememberLocationState
-import org.maplibre.compose.material3.AttributionButtonDefaults
-import org.maplibre.compose.material3.DisappearingCompassButton
 import org.maplibre.compose.material3.DisappearingScaleBar
-import org.maplibre.compose.material3.ExpandingAttributionButton
 import org.maplibre.compose.map.MapState
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.rememberMapState
@@ -265,6 +254,9 @@ fun SchneaggmapScreen(
     }
 
 
+    //Hides the filter chips below the search bar while the full-screen search is open
+    var isSearchExpanded by remember { mutableStateOf(false) }
+
     //Speed badge visibility with hysteresis (see SPEED_BADGE_SHOW_MPS / SPEED_BADGE_HIDE_MPS)
     var showSpeedBadge by remember { mutableStateOf(false) }
     val speedMps = ownLocation?.distancePerSecond?.inMeters
@@ -316,102 +308,25 @@ fun SchneaggmapScreen(
         )
 
         if (!state.pickLocationMode) {
-            //Bottom column
+            //Bottom column: map info row, friends bar, attribution line
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(8.dp)
             ) {
 
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-
-                        //Compass - lives here, not in the bottom row, where the speed badge covered it
-                        DisappearingCompassButton(
-                            size = 32.dp
-                        )
-
-                        //Center to own location button. Shown as soon as location is permitted - a
-                        //tap before the first fix starts following and zooms in once the fix arrives.
-                        if (state.locationPermissionGranted || ownLocation != null) {
-                            SmallFloatingActionButton(
-                                onClick = {
-                                    isFollowingLocation = true
-                                    followRequest++
-                                },
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = MaterialTheme.colorScheme.onSurface,
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.MyLocation,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.secondary
-                                )
-                            }
-                        }
-                    }
-                }
-
-                if (state.usersWithLocation.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    FriendLocationsPreview(
-                        friends = state.usersWithLocation,
-                        onlineFriendIds = state.onlineFriendIds,
-                        onUserClick = { user ->
-                            val loc = user.location ?: return@FriendLocationsPreview
-                            isFollowingLocation = false
-                            scope.launch {
-                                mapState.animateCamera(
-                                    CameraUpdate(
-                                        target = Position(longitude = loc.long, latitude = loc.lat),
-                                        zoom = OWN_LOCATION_CLICK_ZOOM
-                                    )
-                                )
-                            }
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
                 ) {
-                    // Left: Scale bar + attribution
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.align(Alignment.CenterStart)
-                    ) {
-                        // Legally required OSM/OpenFreeMap copyright notice.
-                        ExpandingAttributionButton(
-                            contentAlignment = Alignment.BottomStart,
-                            //The library starts this expanded (shows the full popup) rather than
-                            //just the collapsed icon - collapse it right away so it only opens
-                            //when tapped, same as the collapse that already happens on any map
-                            //gesture.
-                            toggleButton = { onClick ->
-                                LaunchedEffect(Unit) { onClick() }
-                                AttributionButtonDefaults.button(onClick)
-                            },
-                        )
-
-                        DisappearingScaleBar(
-                            metersPerDp = { mapState.metersPerDpAtTarget },
-                            color = MaterialTheme.colorScheme.background,
-                            zoom = { mapState.cameraPosition.zoom }
-                        )
-
-                    }
+                    // Left: scale bar, only visible while zooming
+                    DisappearingScaleBar(
+                        metersPerDp = { mapState.metersPerDpAtTarget },
+                        color = MaterialTheme.colorScheme.background,
+                        zoom = { mapState.cameraPosition.zoom },
+                        modifier = Modifier.align(Alignment.BottomStart)
+                    )
 
                     //Round speed indicator
                     speedMps?.let { speed ->
@@ -419,7 +334,7 @@ fun SchneaggmapScreen(
                             val speedKmh = (speed * 3.6).roundToInt()
                             Box(
                                 modifier = Modifier
-                                    .align(Alignment.TopCenter)
+                                    .align(Alignment.BottomCenter)
                                     .size(56.dp)
                                     .background(Color.White, CircleShape)
                                     .border(width = 4.dp, color = Color.Red, shape = CircleShape),
@@ -435,28 +350,53 @@ fun SchneaggmapScreen(
                         }
                     }
 
-                    // Right: Snail trails toggle
-                    Card(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .tapTarget("schneaggmap_snailtrail_switch")
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Polyline,
-                                contentDescription = null,
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Switch(
-                                checked = state.showSnailTrails,
-                                onCheckedChange = { onAction(SchneaggmapAction.ToggleSnailTrails) },
-                            )
-                        }
+                    // Right: compass + center to own location button. Shown as soon as location is
+                    // permitted (a tap before the first fix starts following and zooms in once the
+                    // fix arrives) or while the map is rotated.
+                    MapLocateButton(
+                        mapState = mapState,
+                        isLocationAvailable = state.locationPermissionGranted || ownLocation != null,
+                        isFollowingLocation = isFollowingLocation,
+                        onLocateClick = {
+                            isFollowingLocation = true
+                            followRequest++
+                        },
+                        onResetRotationClick = {
+                            scope.launch {
+                                mapState.animateCamera(CameraUpdate(bearing = 0.0, tilt = 0.0))
+                            }
+                        },
+                        modifier = Modifier.align(Alignment.BottomEnd)
+                    )
+                }
+
+                if (state.usersWithLocation.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+                        FriendLocationsPreview(
+                            friends = state.usersWithLocation,
+                            onlineFriendIds = state.onlineFriendIds,
+                            onUserClick = { user ->
+                                val loc = user.location ?: return@FriendLocationsPreview
+                                isFollowingLocation = false
+                                scope.launch {
+                                    mapState.animateCamera(
+                                        CameraUpdate(
+                                            target = Position(longitude = loc.long, latitude = loc.lat),
+                                            zoom = OWN_LOCATION_CLICK_ZOOM
+                                        )
+                                    )
+                                }
+                            }
+                        )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Legally required OSM/OpenFreeMap copyright notice, always visible
+                MapAttributionBar(mapState = mapState)
             }
         }
     }
@@ -504,81 +444,27 @@ fun SchneaggmapScreen(
             Column(
                 modifier = Modifier.fillMaxWidth()
                     .align(Alignment.TopCenter)
-                    .padding(4.dp)
             ) {
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
+                //Map search bar with search and settings buttons inside
+                MapSearchBar(
+                    state = state,
+                    onAction = onAction,
+                    onExpandedChange = { isSearchExpanded = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp)
+                )
 
+                //Quick filter chips, 8 dp below the search bar (4 dp row padding + 4 dp spacer)
+                if (!isSearchExpanded) {
+                    Spacer(modifier = Modifier.height(4.dp))
 
-                    //Settingsbutton
-                    IconButton(
-                        onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
-                        colors = IconButtonDefaults.iconButtonColors().copy(
-                            containerColor = MaterialTheme.colorScheme.background
-                        ),
-                        modifier = Modifier.tapTarget("schneaggmap_settings_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    //Map Search bar with user info button
-                    MapSearchBar(
+                    MapFilterChipsRow(
                         state = state,
                         onAction = onAction,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    ShownLocationsDropdown(
-                        state = state,
-                        onAction = onAction,
-                        modifier = Modifier.tapTarget("schneaggmap_location_dropdown")
                     )
                 }
-
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-                        //Map style dropdown menu
-                        MapStyleDropdown(
-                            state = state,
-                            onAction = onAction,
-                        )
-
-
-                        //Own user detail button
-                        SmallFloatingActionButton(
-                            onClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null
-                            )
-                        }
-                    }
-
-
-                }
-
             }
         }
 
