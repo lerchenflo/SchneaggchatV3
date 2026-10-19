@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -7,10 +8,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +37,7 @@ import schneaggchatv3mp.composeapp.generated.resources.merge_map_users
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_users_info
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_group_display
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_group_sharing
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_map_style
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
@@ -107,6 +111,32 @@ fun SchneaggmapSettings(
                 onSwitchChange = { schneaggmapSettingsViewModel.updateMergeMapUsers(it) },
                 icon = Icons.Default.Group
             )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Base map style, picked from a dropdown anchored to this option
+            var mapStyleDropdownShown by remember { mutableStateOf(false) }
+            Box {
+                SettingsOption(
+                    icon = Icons.Default.Layers,
+                    text = stringResource(Res.string.schneaggmap_map_style),
+                    subtext = schneaggmapSettingsViewModel.mapStyle.toUiText().asString(),
+                    onClick = { mapStyleDropdownShown = true }
+                )
+
+                DropdownMenu(
+                    expanded = mapStyleDropdownShown,
+                    onDismissRequest = { mapStyleDropdownShown = false },
+                ) {
+                    MapStyleDropdownContent(
+                        selectedStyle = schneaggmapSettingsViewModel.mapStyle,
+                        onStyleClick = {
+                            schneaggmapSettingsViewModel.updateMapStyle(it)
+                            mapStyleDropdownShown = false
+                        },
+                    )
+                }
+            }
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         }

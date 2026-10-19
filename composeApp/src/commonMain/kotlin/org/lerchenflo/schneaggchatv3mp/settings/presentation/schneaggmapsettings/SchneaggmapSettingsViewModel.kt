@@ -11,6 +11,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 
@@ -33,6 +34,9 @@ class SchneaggmapSettingsViewModel(
         private set
 
     var mergeMapUsers by mutableStateOf(true)
+        private set
+
+    var mapStyle by mutableStateOf(MapStyleSetting.LIBERTY)
         private set
 
     // Derived server-side from whether any friend has locationShared=true. Only used to seed
@@ -61,6 +65,16 @@ class SchneaggmapSettingsViewModel(
                 }
                 .collect { value ->
                     mergeMapUsers = value
+                }
+        }
+
+        viewModelScope.launch { // Base map style of the Schneaggmap
+            preferenceManager.getMapStyleSettingFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting map style preference: ${exception.message}")
+                }
+                .collect { value ->
+                    mapStyle = value
                 }
         }
 
@@ -96,6 +110,12 @@ class SchneaggmapSettingsViewModel(
     fun updateMergeMapUsers(newValue: Boolean) {
         viewModelScope.launch {
             appRepository.setMergeMapUsers(newValue)
+        }
+    }
+
+    fun updateMapStyle(newValue: MapStyleSetting) {
+        viewModelScope.launch {
+            appRepository.setMapStyleSetting(newValue)
         }
     }
 

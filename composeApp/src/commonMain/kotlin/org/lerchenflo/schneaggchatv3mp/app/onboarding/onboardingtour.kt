@@ -296,8 +296,9 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     requireExactTap = false
                 )
 
+                //Snail trails are toggled in the filter dropdown, so point at its button
                 tapStep(
-                    id = "schneaggmap_snailtrail_switch",
+                    id = "schneaggmap_location_dropdown",
                     description = Res.string.ttt_schneaggmap_snailtrail_description,
                     route = Route.Schneaggmap(),
                     requireExactTap = false
