@@ -22,16 +22,17 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.19
 
 #### Features
-- Chat: Bearbeitete Nachrichten zeigen Bearbeitungs-Icon neben Zeitstempel, neues, aufgeräumtes Design der Chat-Info passend zum Rest der App
-- Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit
+- Chat: Bearbeitet-Icon, neue Chat-Info
+- Einstellungen: Angemeldete Geräte
 - Schneagg Rodeo verbessert
+- Schneaggmap: UI verbessert
+- Neues Spiel: C Coding
 
 #### Bugfixes
-- Benachrichtigungen: Nachrichtenbenachrichtigungen auf Android behoben (konnten stillschweigend fehlschlagen)
-- Chat: Lange Chats laden fix
+- Benachrichtigungen: Android-Fehler behoben
+- Chat: Laden langer Chats behoben
 - Übersetzungen verbessert
 - Spiele: Schwierigkeitsauswahl scrollt mit
-- neues Spiel: C Coding
 
 ### 3.0.18
 
@@ -41,35 +42,26 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Unterumfragen
 
 #### Features
-- Feedback-Board für Feature Requests und Bug Reports (ersetzt Roadmap und E-Mail-Formular)
+- Feedback-Board für Wünsche und Fehlermeldungen
 - Unterumfragen
 - Neue Spiele: SchneaggaHus, Wordle, Schneagg Rodeo
-- Spiele: Spielstand wird gespeichert und wiederhergestellt
-- Spiele: Menü in Tabs aufgeteilt (Einzel, Mehrspieler, Werkzeuge), Kurzbeschreibung und Schwierigkeits-Symbol auf jeder Karte
-- Bestenlisten für Yatzi, Dart Counter und Undercover
-- Werkzeug: Gemischrechner für 2-Takt-Gemisch
-- Kreuzworträtsel-Update
-- Wordle
-- Tower Stack: Schneagg reitet auf dem Balken
-- Dartcounter: Neue Spieler-Anzeige, kompaktes Scoreboard
-- Undercover: Restart mit gleichen Spielern, Mr. White Hinweis, neue Wortpaare, "Sniff"-Knopf
-- Events: Ansicht bleibt erhalten, Upcoming Events, Ungelesen-Indikator
-- Chat: Geteilte Bilder und Links in Chat-Details
-- Schneaggmap: Daten-Picker Update, neue Typen
-- Profilbild-Dialog: Zoom und Animation
-- Freundschaftsanfragen: Bildvorschau für Profilbilder
-- Quick Reactions anpassen
+- Spiele: Spielstand wird gespeichert, neues Menü, viele Spiele verbessert
+- Bestenlisten: Yatzi, Dart Counter, Undercover
+- Werkzeug: 2-Takt-Gemischrechner
+- Events: Upcoming Events, Ungelesen-Anzeige
+- Chat: Geteilte Bilder und Links
+- Schneaggmap: Neue Orte-Typen
+- Profilbild: Zoom
+- Freundschaftsanfragen: Profilbild-Vorschau
+- Quick Reactions anpassbar
 
 #### Bugfixes
-- Spiele: Sehr viele Bugfixes in fast allen Spielen
-- Bestenlisten: Diverse Fixes
-- Kreuzworträtsel und Wordle: Timer pausiert im Hintergrund
-- Anmeldung: Token-Refresh rebuild, leerer Bildschirm nach Hintergrundbeendigung behoben
-- Chat: Entwürfe werden wiederhergestellt, Gelesen-Status beim Öffnen über Benachrichtigung
-- Doppelte Nachrichten (ungesendete) behoben
-- Events: Crash bei mehrtägigen Events behoben
-- Android Noti-Fehler behoben
-- Dialog-Popups: Fehler bei schneller Navigation behoben
+- Spiele: Viele Fehler behoben
+- Anmeldung: Leerer Bildschirm behoben
+- Chat: Entwürfe bleiben erhalten, doppelte Nachrichten behoben
+- Events: Absturz behoben
+- Benachrichtigungen: Android-Fehler behoben
+- Popups: Fehler behoben
 
 ### 3.0.17
 

@@ -1053,6 +1053,11 @@
 
     <!-- Schneaggmap -->
     <string name="schneaggmap_filter_location_types">Tipi di posizione</string>
+    <string name="schneaggmap_filter_snail_trails">Scie</string>
+    <string name="schneaggmap_chip_places">Luoghi · %1$d/%2$d</string>
+    <string name="schneaggmap_chip_events">Eventi</string>
+    <string name="schneaggmap_chip_state_on">%1$s, attivo</string>
+    <string name="schneaggmap_chip_state_off">%1$s, disattivo</string>
     <string name="location_belongs_to_type">Appartiene a: %1$s</string>
     <string name="location_add_type">Aggiungi un nuovo tipo</string>
 
