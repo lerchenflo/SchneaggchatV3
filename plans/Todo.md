@@ -121,6 +121,10 @@ None open (all five fixed on 2026-10-17, see Done).
 - [ ] **L** **Location and media repositories** (R10). ViewModels still inject `LocationService`, `PictureManager`, `AudioManager`, `BatteryService` directly; Android recommends going through repositories. *(Android-standards review)*
 - [ ] **L** **Global error/action events as app-level state** (review Q1). Replace the `ErrorChannel` / `ActionChannel` streams with app-level `StateFlow` messages and an `onShown(id)` acknowledgement, as Android's UI-events guidance recommends. *(Android-standards review)*
 - [ ] **L** **Add tests to everything** (user, 2026-10-14; tackle later). Beyond the Phase 4.5 send-path tests and the Phase 9 safety net: cover every repository, coordinator and ViewModel with fakes (`commonTest`) and the Room/Ktor paths with in-memory Room + `MockEngine` (`jvmTest`). *(repository migration follow-ups)*
+- [ ] **L** **Move `kmp-taptarget-library` into its own project, then rewrite it** (user, 2026-10-18: later, a separate repo with only the library and some example screens). The library breaks two `android-compose-ui` rules, and the skill stays as it is (no exception):
+  - Custom `CompositionLocal`: `LocalTapTargetController` (`kmp-taptarget-library/src/commonMain/kotlin/io/github/lerchenflo/taptarget/TapTargetController.kt:152`), provided at `C/app/App.kt:526` and read directly at `C/settings/presentation/devsettings/DeveloperSettings.kt:61` and `C/chat/presentation/chatselector/ChatSelector.kt:678`.
+  - `Modifier.tapTarget` is built with `Modifier.composed` (`.../taptarget/TapTargetModifier.kt:38`); rewrite as a `Modifier.Node` factory.
+  - 31 `tapTarget(` calls in 12 files of `composeApp` must keep working after the move. *(CompositionLocal check, 2026-10-18)*
 
 ## P4: docs, plans, cosmetics, games, optional
 
