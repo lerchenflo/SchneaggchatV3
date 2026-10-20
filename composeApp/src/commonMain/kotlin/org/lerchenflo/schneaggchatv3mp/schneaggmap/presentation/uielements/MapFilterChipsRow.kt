@@ -17,6 +17,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedFilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,7 +26,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.lerchenflo.taptarget.tapTarget
 import org.jetbrains.compose.resources.stringResource
@@ -40,10 +41,6 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_chip_state_of
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_chip_state_on
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_snail_trails
 
-//Width kept free at the right edge for the zoom slider (32 dp handle + 8 dp edge padding), so the
-//scrolling row never swallows drags meant for the slider on short/landscape screens.
-private val ZOOM_SLIDER_CLEARANCE = 40.dp
-
 /**
  * Quick filter chips below the map search bar. Every chip works on the same state as the matching
  * entry in the "Location types" dropdown, so both always stay in sync. The places chip doesn't
@@ -54,7 +51,6 @@ fun MapFilterChipsRow(
     state: SchneaggmapState,
     onAction: (SchneaggmapAction) -> Unit,
     modifier: Modifier = Modifier,
-    endClearance: Dp = ZOOM_SLIDER_CLEARANCE,
 ) {
     val enabledGroupCount = LocationGroup.entries.count { group -> group.types.any { it in state.enabledTypes } }
     val placesVisible = state.enabledTypes.isNotEmpty()
@@ -63,7 +59,6 @@ fun MapFilterChipsRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
             .fillMaxWidth()
-            .padding(end = endClearance)
             .horizontalScrollWithMouseWheel()
             .padding(horizontal = 16.dp)
     ) {
@@ -125,17 +120,37 @@ private fun MapFilterChip(
         label
     )
 
+    //Chips float on the map, so the default chip roles (surfaceContainerLow / secondaryContainer)
+    //vanish on light map tiles in some themes - use high-contrast roles plus a border instead
+    val colorScheme = MaterialTheme.colorScheme
+
     ElevatedFilterChip(
         selected = selected,
         onClick = onClick,
+        colors = FilterChipDefaults.elevatedFilterChipColors(
+            containerColor = colorScheme.surface,
+            labelColor = colorScheme.onSurface,
+            iconColor = colorScheme.primary,
+            selectedContainerColor = colorScheme.primary,
+            selectedLabelColor = colorScheme.onPrimary,
+            selectedLeadingIconColor = colorScheme.onPrimary,
+            selectedTrailingIconColor = colorScheme.onPrimary,
+        ),
+        elevation = FilterChipDefaults.elevatedFilterChipElevation(elevation = 3.dp),
+        border = FilterChipDefaults.filterChipBorder(
+            enabled = true,
+            selected = selected,
+            borderColor = colorScheme.outline,
+        ),
         label = {
             //Never truncated - the row scrolls instead
             Text(text = label, maxLines = 1, softWrap = false, overflow = TextOverflow.Visible)
         },
         leadingIcon = {
             if (isLoading) {
-                //Map data still loading
+                //Map data still loading - content color so it stays visible on the selected chip
                 CircularProgressIndicator(
+                    color = LocalContentColor.current,
                     strokeWidth = 2.dp,
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
