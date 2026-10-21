@@ -80,9 +80,9 @@ import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterRoot
-import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.fingerpicker.FingerPickerScreen
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCalculatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordScreenRoot

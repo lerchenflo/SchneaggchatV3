@@ -72,10 +72,10 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresViewModel
 import org.lerchenflo.schneaggchatv3mp.games.data.WordleRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewModel
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip.CoinFlipViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerViewModel
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.fingerpicker.FingerPickerViewModel
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCalculatorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel

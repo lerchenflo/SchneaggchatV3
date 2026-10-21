@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip
+package org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

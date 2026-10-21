@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip
+package org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
