@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi.text
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,7 +22,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.model.DefaultMarkdownAlertIcons
 import com.mikepenz.markdown.model.DefaultMarkdownColors
+import com.mikepenz.markdown.model.markdownAlertColors
 import com.mikepenz.markdown.model.markdownAnnotator
 import com.mikepenz.markdown.model.markdownAnnotatorConfig
 
@@ -98,6 +101,9 @@ fun ComboText(
                     dividerColor = MaterialTheme.colorScheme.onPrimary,
                     tableBackground = MaterialTheme.colorScheme.onSurface,
                     codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
+                    alert = markdownAlertColors(darkTheme = isSystemInDarkTheme()),
+                    highlightText = MaterialTheme.colorScheme.primary,
+                    highlightBackground = MaterialTheme.colorScheme.primaryContainer,
                 )
             )
         }

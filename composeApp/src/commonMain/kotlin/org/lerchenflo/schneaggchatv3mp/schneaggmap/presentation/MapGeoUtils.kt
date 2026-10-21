@@ -14,7 +14,7 @@ private const val EARTH_RADIUS_METERS = 6371000.0
 //The camera only knows its scale once the map has reported a viewport; until then everything that
 //converts dp to meters falls back to zero, which reads as "no snapping, no clustering yet".
 internal val MapState.metersPerDpAtTarget: Double
-    get() = viewport?.metersPerDpAtTarget ?: 0.0
+    get() = viewport?.metersPerDpAtCenter ?: 0.0
 
 //Flat-earth approximation - accurate enough for grouping markers that are at most a few
 //kilometers apart, which is all clustering cares about, without the cost of full Haversine.

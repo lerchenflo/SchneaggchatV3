@@ -433,12 +433,14 @@ fun SchneaggmapLayers(
                         )
                     ),
 
-                    options = GeoJsonOptions(
-                        cluster = state.useClustering,
-                        clusterRadius = 12,
-                        clusterMinPoints = 6,
-                        //synchronousUpdate = true
-                    )
+                    from = GeoJsonOptions(
+                        from = GeoJsonOptions.Standard
+                    ) {
+                        cluster = state.useClustering
+                        clusterRadius = 12
+                        clusterMinPoints = 6
+                        synchronousTiling = false
+                    }
 
 
                 )
@@ -679,7 +681,7 @@ fun SchneaggmapLayers(
                                     scope.launch {
                                         mapState.animateCamera(
                                             mapState.cameraPosition.copy(
-                                                target = cluster.centroid,
+                                                center = cluster.centroid,
                                                 zoom = mapState.cameraPosition.zoom + 2,
                                             ).toCameraUpdate()
                                         )

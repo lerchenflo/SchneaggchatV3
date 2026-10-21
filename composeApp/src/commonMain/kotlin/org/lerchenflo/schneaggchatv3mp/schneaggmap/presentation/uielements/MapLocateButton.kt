@@ -46,7 +46,7 @@ fun MapLocateButton(
             val camera = mapState.cameraPosition
             val bearing = ((camera.bearing % 360) + 360) % 360
             val bearingFromNorth = minOf(bearing, 360 - bearing)
-            bearingFromNorth > ROTATION_SLOP_DEGREES || abs(camera.tilt) > ROTATION_SLOP_DEGREES
+            bearingFromNorth > ROTATION_SLOP_DEGREES || abs(camera.pitch) > ROTATION_SLOP_DEGREES
         }
     }
 
@@ -66,7 +66,7 @@ fun MapLocateButton(
                     .size(24.dp)
                     .graphicsLayer {
                         rotationZ = -mapState.cameraPosition.bearing.toFloat()
-                        rotationX = mapState.cameraPosition.tilt.toFloat()
+                        rotationX = mapState.cameraPosition.pitch.toFloat()
                     }
             )
 
