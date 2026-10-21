@@ -453,12 +453,12 @@ fun SchneaggmapScreen(
                     onExpandedChange = { isSearchExpanded = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp)
+                        .padding(start = 4.dp, top = 4.dp, end = 4.dp)
                 )
 
                 //Quick filter chips, 8 dp below the search bar (4 dp row padding + 4 dp spacer)
                 if (!isSearchExpanded) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    //Spacer(modifier = Modifier.height(4.dp))
 
                     MapFilterChipsRow(
                         state = state,

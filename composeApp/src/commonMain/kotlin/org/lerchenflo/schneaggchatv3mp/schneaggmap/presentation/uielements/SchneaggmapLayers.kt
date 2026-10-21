@@ -87,10 +87,10 @@ private const val USER_CLUSTER_RADIUS_DP = 40.0
 
 //Place (POI) markers are half the size of the 40 dp profile picture in user markers, so friends
 //stand out over the places.
-private val PLACE_MARKER_SIZE = 20.dp
+private val PLACE_MARKER_SIZE = 28.dp
 
 //Per-type icon size inside a merged multi-type place marker, half of mergeLocationTypeIcons' default.
-private val MERGED_PLACE_ICON_SIZE = 11.dp
+private val MERGED_PLACE_ICON_SIZE = 15.dp
 
 private data class MarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
 
