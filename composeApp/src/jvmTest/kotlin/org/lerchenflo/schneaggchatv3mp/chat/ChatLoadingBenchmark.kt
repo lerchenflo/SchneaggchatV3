@@ -52,7 +52,7 @@ class ChatLoadingBenchmark {
                 // OLD: same SQL the flow ran before (no LIMIT), map all, remap all.
                 suspend fun oldPath(): List<MessageDisplayItem> {
                     val messages = dao.getMessagesByUserId(groupId, true).map { it.toMessage() }
-                    return MessageDisplayMapper { "" }.map(messages, emptyMap(), names, groupMembers, null)
+                    return MessageDisplayMapper { "" }.map(messages, emptyMap(), names, groupMembers, null, "")
                 }
 
                 // NEW: window of 100 + out-of-window reply targets, like ChatViewModel.
@@ -62,7 +62,7 @@ class ChatLoadingBenchmark {
                     val missing = messages.mapNotNull { it.answerId }.filter { it !in loadedIds }.distinct()
                     val older = if (missing.isEmpty()) emptyMap() else
                         dao.getMessageEntitiesByIds(missing).mapNotNull { d -> d.id?.let { it to d.toMessage() } }.toMap()
-                    return MessageDisplayMapper { "" }.map(messages, older, names, groupMembers, null)
+                    return MessageDisplayMapper { "" }.map(messages, older, names, groupMembers, null, "")
                 }
 
                 // NEW, once on open only: size the first window so all unread fit.

@@ -120,7 +120,8 @@ class OfflineFirstChatListRepository(
                     val aggregate = aggregateMap[group.id to true]
                     val last = lastMessageMap[group.id to true]?.let { message ->
                         message.copy(
-                            senderAsString = userIdMap[message.senderId]?.name ?: "Unknown"
+                            // Blank when the sender isn't known locally; the UI shows its own fallback
+                            senderAsString = userIdMap[message.senderId]?.name ?: ""
                         )
                     }
 

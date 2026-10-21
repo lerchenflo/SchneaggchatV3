@@ -678,8 +678,8 @@ fun App() {
                                     //Settings
                                     entry<Route.SettingsScreen> {
                                         SettingsScreen(
-                                            settingsViewmodel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(), // see note below on scoping
+                                            settingsViewmodel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = {
                                                  scope.launch { navigator.navigateBack() }
                                             },
@@ -696,24 +696,24 @@ fun App() {
 
                                     entry<Route.DeveloperSettings> {
                                         DeveloperSettings(
-                                            devSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            devSettingsViewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.UserSettings> {
                                         UserSettings(
-                                            userSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            userSettingsViewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.PrivacyAndSecuritySettings> {
                                         PrivacyAndSecuritySettings(
-                                            viewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            viewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } },
                                             navigateLoggedInDevices = { scope.launch { navigator.navigate(Route.LoggedInDevices) } }
                                         )
@@ -721,30 +721,30 @@ fun App() {
 
                                     entry<Route.LoggedInDevices> {
                                         LoggedInDevicesScreen(
-                                            viewModel = koinInject(),
+                                            viewModel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.NotificationSettings> {
                                         NotificationSettings(
-                                            viewModel = koinInject(),
+                                            viewModel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.AppearanceSettings> {
                                         AppearanceSettings(
-                                            appearanceSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            appearanceSettingsViewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.MiscSettings> {
                                         MiscSettings(
-                                            miscSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            miscSettingsViewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } },
                                             navigateFeedback = { scope.launch { navigator.navigate(Route.Feedback) } }
                                         )
@@ -752,8 +752,8 @@ fun App() {
 
                                     entry<Route.SchneaggmapSettings> {
                                         SchneaggmapSettings(
-                                            schneaggmapSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            schneaggmapSettingsViewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

@@ -263,7 +263,7 @@ fun UserButton(
                                     if (lastMessage.myMessage) {
                                         stringResource(Res.string.you_sender) + ": "
                                     } else if (lastMessage.isGroupMessage()) {
-                                        lastMessage.senderAsString + ": "
+                                        lastMessage.senderAsString.ifBlank { stringResource(Res.string.unknown_user) } + ": "
                                     } else {
                                         lastMessage.senderAsString + ": "
                                     }

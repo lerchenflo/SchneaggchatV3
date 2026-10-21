@@ -316,6 +316,7 @@
 
     <string name="use_default_server">Standardserver verwenden</string>
     <string name="use_test_server">Testserver verwenden</string>
+    <string name="test_server_connection">Serververbindung testen</string>
 
 
     <string name="you_have_new_messages">Du hast neue Nachrichten</string>

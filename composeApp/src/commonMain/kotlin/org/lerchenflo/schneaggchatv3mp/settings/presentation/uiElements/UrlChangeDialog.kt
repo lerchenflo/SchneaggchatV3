@@ -36,7 +36,10 @@ import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
+import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
+import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
+import schneaggchatv3mp.composeapp.generated.resources.test_server_connection
 import schneaggchatv3mp.composeapp.generated.resources.use_default_server
 import schneaggchatv3mp.composeapp.generated.resources.use_test_server
 
@@ -72,7 +75,7 @@ fun UrlChangeDialog (
     val testServer: () -> Unit = {
         if (checkStatus != CheckStatus.Loading){
             if (!internalServerUrl.startsWith("http://") && !internalServerUrl.startsWith("https://")){
-                internalServerUrl = internalServerUrl.prependIndent("https://") //Default https
+                internalServerUrl = "https://$internalServerUrl" //Default https
             }
 
             onTestServer(internalServerUrl)
@@ -106,19 +109,19 @@ fun UrlChangeDialog (
                             when (checkStatus) {
                                 CheckStatus.Idle -> Icon(
                                     imageVector = Icons.Default.WifiFind,
-                                    contentDescription = "Test server"
+                                    contentDescription = stringResource(Res.string.test_server_connection)
                                 )
                                 CheckStatus.Loading -> CircularProgressIndicator(
                                     modifier = Modifier.height(20.dp)
                                 )
                                 CheckStatus.Success -> Icon(
                                     imageVector = Icons.Default.Check,
-                                    contentDescription = "OK",
-                                    tint = Color.Green
+                                    contentDescription = stringResource(Res.string.ok),
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                                 is CheckStatus.Error -> Icon(
                                     imageVector = Icons.Default.Error,
-                                    contentDescription = "server error",
+                                    contentDescription = stringResource(Res.string.server_not_reachable),
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }

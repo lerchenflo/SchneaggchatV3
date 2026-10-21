@@ -35,6 +35,7 @@ import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.invitation_text
 import kotlin.time.Duration.Companion.milliseconds
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 
 class NewChatViewModel (
     private val appVersion: AppVersion,
@@ -43,7 +44,8 @@ class NewChatViewModel (
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val shareUtils: ShareUtils,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val notifier: Notifier,
 ): ViewModel() {
 
     private val _searchTerm = MutableStateFlow("")
@@ -62,7 +64,7 @@ class NewChatViewModel (
 
     init {
         //On start remove all friend request notis
-        NotificationManager.removeNotification(NotificationManager.NotiIdType.FRIEND_REQUEST.baseId)
+        notifier.cancelNotification(NotificationManager.NotiIdType.FRIEND_REQUEST.baseId)
 
         // Kombiniere searchTerm mit einem Flow der die Daten lädt
         viewModelScope.launch {

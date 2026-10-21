@@ -1,23 +1,34 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTag
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
+
+// Wire copies of the domain enums (same entry names), so renaming a domain entry never changes
+// what goes over the network. Mapped in FeedbackResponseMapper.kt.
+
+@Serializable
+enum class NetworkFeedbackType { FEATURE, BUG }
+
+@Serializable
+enum class NetworkFeedbackStatus { REQUESTED, PLANNED, IMPLEMENTED, OPEN, CONFIRMED, FIXED }
+
+@Serializable
+enum class NetworkFeedbackTag { CHAT, GROUPS, EVENTS, MAP, GAMES, SETTINGS, UI, NOTIFICATIONS, PERFORMANCE, OTHER }
+
+@Serializable
+enum class NetworkFeedbackVote { UP, DOWN, DIDNT_KNOW, NONE }
 
 @Serializable
 data class FeedbackEntryResponse(
     val id: String,
-    val type: FeedbackType,
+    val type: NetworkFeedbackType,
     val title: String,
     val descriptionPreview: String,
-    val tags: List<FeedbackTag>,
-    val status: FeedbackStatus,
+    val tags: List<NetworkFeedbackTag>,
+    val status: NetworkFeedbackStatus,
     val upvotes: Int,
     val downvotes: Int,
     val didntKnowCount: Int,
-    val myVote: FeedbackVote,
+    val myVote: NetworkFeedbackVote,
     val commentCount: Int,
     val latestDevComment: String? = null,
     val creatorName: String? = null,
@@ -58,10 +69,10 @@ data class FeedbackEntryDetailResponse(
 
 @Serializable
 data class FeedbackCreateRequest(
-    val type: FeedbackType,
+    val type: NetworkFeedbackType,
     val title: String,
     val description: String,
-    val tags: List<FeedbackTag>,
+    val tags: List<NetworkFeedbackTag>,
     val location: String?,
     val appVersion: String?,
     val platform: String?,
@@ -70,7 +81,7 @@ data class FeedbackCreateRequest(
 @Serializable
 data class FeedbackVoteRequest(
     val entryId: String,
-    val vote: FeedbackVote,
+    val vote: NetworkFeedbackVote,
 )
 
 @Serializable
@@ -84,5 +95,5 @@ data class FeedbackCommentRequest(
 @Serializable
 data class FeedbackStatusRequest(
     val entryId: String,
-    val status: FeedbackStatus,
+    val status: NetworkFeedbackStatus,
 )

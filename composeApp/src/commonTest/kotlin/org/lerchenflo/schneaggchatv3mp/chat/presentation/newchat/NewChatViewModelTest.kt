@@ -78,6 +78,7 @@ class NewChatViewModelTest {
             loggingRepository = FakeLogger(),
             shareUtils = shareUtils,
             settingsRepository = settingsRepository,
+            notifier = notifier,
         )
     )
 

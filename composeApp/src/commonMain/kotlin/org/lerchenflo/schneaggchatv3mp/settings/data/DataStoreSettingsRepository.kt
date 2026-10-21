@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.settings.data
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
@@ -20,6 +22,7 @@ class DataStoreSettingsRepository(
     private val preferencemanager: Preferencemanager,
     private val settingsRemoteDataSource: SettingsRemoteDataSource,
     private val languageService: LanguageService,
+    private val externalScope: CoroutineScope,
 ) : SettingsRepository {
 
     // ─── Server URL ────────────────────────────────────────────────────────────
@@ -229,14 +232,16 @@ class DataStoreSettingsRepository(
         )
     }
 
-    override suspend fun saveDraft(chatId: String, group: Boolean, string: String) {
-        preferencemanager.addDraft(
-            draft = Draft(
-                chatId = chatId,
-                group = group,
-                string = string
+    override fun saveDraft(chatId: String, group: Boolean, string: String) {
+        externalScope.launch {
+            preferencemanager.addDraft(
+                draft = Draft(
+                    chatId = chatId,
+                    group = group,
+                    string = string
+                )
             )
-        )
+        }
     }
 
 }

@@ -41,6 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -56,7 +57,8 @@ class GlobalViewModel(
     private val navigator: Navigator,
     private val locationService: LocationService,
     private val batteryService: BatteryService,
-    private val appVersion: AppVersion
+    private val appVersion: AppVersion,
+    private val notifier: Notifier,
 ): ViewModel() {
 
     /** Guards the app-resume handler so overlapping resume events are dropped instead of queued. */
@@ -110,7 +112,7 @@ class GlobalViewModel(
             }
                 .distinctUntilChanged()
                 .filterNotNull()
-                .collect { chat -> NotificationManager.removeChatNotifications(chat.chatId) }
+                .collect { chat -> notifier.cancelChatNotifications(chat.chatId) }
         }
 
 
@@ -146,7 +148,7 @@ class GlobalViewModel(
                             dataSyncCoordinator.dataSync(reason = "appResumed")
 
                             //On resume clear all error notis
-                            NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
+                            notifier.cancelNotification(NotificationManager.NotiIdType.ERROR.baseId)
 
                             //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
                             if(IncomingDataManager.isNewDataAvailable()){

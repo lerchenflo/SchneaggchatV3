@@ -210,7 +210,14 @@ val sharedmodule = module{
 
 
     //Repository
-    singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
+    single<SettingsRepository> {
+        DataStoreSettingsRepository(
+            preferencemanager = get(),
+            settingsRemoteDataSource = get(),
+            languageService = get(),
+            externalScope = get<ApplicationScope>(),
+        )
+    }
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
     singleOf(::OfflineFirstGroupRepository) bind GroupRepository::class
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
