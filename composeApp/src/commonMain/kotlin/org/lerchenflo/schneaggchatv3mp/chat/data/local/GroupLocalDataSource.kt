@@ -27,8 +27,6 @@ interface GroupLocalDataSource {
 
     /**
      * Return the members of a group as domain objects (empty list when not found).
-     * Caller example:
-     *   chat.toGroup()?.groupMembers = groupLocalDataSource.getGroupMembers(chat.id)
      */
     suspend fun getGroupMembers(groupId: String): List<GroupMember>
 
@@ -37,9 +35,7 @@ interface GroupLocalDataSource {
     suspend fun getGroupById(id: String): Group?
 
     /**
-     * Return all groups (domain objects) that are common between the current user and the provided userId.
-     * Caller example:
-     *   chat.toUser()?.commonGroups = groupLocalDataSource.getCommonGroups(chat.id) // Together with own id
+     * Return all groups (domain objects) that both [ownId] and [otherUserId] are members of.
      */
     suspend fun getCommonGroups(ownId: String, otherUserId: String): List<Group>
 }

@@ -10,12 +10,12 @@ import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackStatusRe
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.NetworkFeedbackType
 
 /** Server calls for the feedback board. */
 interface FeedbackRemoteDataSource {
 
-    suspend fun getFeedbackList(type: FeedbackType): NetworkResult<FeedbackListResponse, NetworkingError>
+    suspend fun getFeedbackList(type: NetworkFeedbackType): NetworkResult<FeedbackListResponse, NetworkingError>
 
     suspend fun getFeedbackDetails(entryId: String): NetworkResult<FeedbackEntryDetailResponse, NetworkingError>
 

@@ -18,12 +18,15 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.WakePe
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import kotlin.time.ExperimentalTime
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 class NotificationSettingsViewModel(
     private val userRepository: UserRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     var notificationPermissionState by mutableStateOf(PermissionState.NOT_DETERMINED)
@@ -99,7 +102,9 @@ class NotificationSettingsViewModel(
         val wasGlobal = wakeEnabledGlobal
         val currentByFriendId = friends.associate { it.id to it.wakeupEnabled }
 
-        viewModelScope.launch {
+        // The server writes outlive the screen; the permission prompt belongs to it and is
+        // dropped when the screen is gone
+        val writes = applicationScope.launchOnMain {
             if (newGlobal != wasGlobal) {
                 userRepository.setWakeGlobal(newGlobal)
             }
@@ -109,8 +114,11 @@ class NotificationSettingsViewModel(
                     userRepository.setWakePermission(draft.friendId, draft.allowWake)
                 }
             }
+        }
 
-            if (newGlobal && !wasGlobal) {
+        if (newGlobal && !wasGlobal) {
+            viewModelScope.launch {
+                writes.join()
                 requestFullScreenIntentPermissionIfNeeded()
             }
         }

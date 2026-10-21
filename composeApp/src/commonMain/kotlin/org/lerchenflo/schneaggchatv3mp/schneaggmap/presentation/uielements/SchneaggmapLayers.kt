@@ -87,10 +87,10 @@ private const val USER_CLUSTER_RADIUS_DP = 40.0
 
 //Place (POI) markers are half the size of the 40 dp profile picture in user markers, so friends
 //stand out over the places.
-private val PLACE_MARKER_SIZE = 20.dp
+private val PLACE_MARKER_SIZE = 28.dp
 
 //Per-type icon size inside a merged multi-type place marker, half of mergeLocationTypeIcons' default.
-private val MERGED_PLACE_ICON_SIZE = 11.dp
+private val MERGED_PLACE_ICON_SIZE = 15.dp
 
 private data class MarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
 
@@ -160,9 +160,8 @@ private fun clusterUsersByProximity(users: List<User>, radiusMeters: Double): Li
 /**
  * Draws the Schneaggmap tiles, POI markers, friend/cluster markers, event pins, snail trails and
  * own-location puck as [mapState]'s declared style content. Contains no phone-only chrome (FABs,
- * search bar, dropdowns, info cards, dialogs) so it can be shared verbatim between the phone
- * screen ([org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreen]) and the
- * Android Auto car surface.
+ * search bar, dropdowns, info cards, dialogs); those live in
+ * [org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreen].
  */
 @Composable
 @MaplibreComposable
@@ -434,12 +433,14 @@ fun SchneaggmapLayers(
                         )
                     ),
 
-                    options = GeoJsonOptions(
-                        cluster = state.useClustering,
-                        clusterRadius = 12,
-                        clusterMinPoints = 6,
-                        //synchronousUpdate = true
-                    )
+                    from = GeoJsonOptions(
+                        from = GeoJsonOptions.Standard
+                    ) {
+                        cluster = state.useClustering
+                        clusterRadius = 12
+                        clusterMinPoints = 6
+                        synchronousTiling = false
+                    }
 
 
                 )
@@ -680,7 +681,7 @@ fun SchneaggmapLayers(
                                     scope.launch {
                                         mapState.animateCamera(
                                             mapState.cameraPosition.copy(
-                                                target = cluster.centroid,
+                                                center = cluster.centroid,
                                                 zoom = mapState.cameraPosition.zoom + 2,
                                             ).toCameraUpdate()
                                         )

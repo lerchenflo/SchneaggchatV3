@@ -140,7 +140,11 @@ fun SchneaggmapScreen(
     val locationState = rememberLocationState(
         enabled = state.locationPermissionGranted,
         provider = locationProvider,
-        request = LocationRequest(accuracy = LocationAccuracy.BestForNavigation),
+        request = LocationRequest(
+            from = LocationRequest.Standard
+        ) {
+                accuracy = LocationAccuracy.BestForNavigation
+        }
     )
     val ownLocation = locationState.lastLocation
 
@@ -155,7 +159,7 @@ fun SchneaggmapScreen(
     mapState = rememberMapState(
         baseStyle = BaseStyle.Uri(state.mapStyleUrl),
         initialCameraPosition = CameraPosition(
-            target = Position(9.92, 47.32),
+            center = Position(9.92, 47.32),
             zoom = 7.0,
         )
     ) {
@@ -183,7 +187,7 @@ fun SchneaggmapScreen(
         val position = ownLocation?.position
         if (!hasAutoCentered && state.ownLocationShared && position != null) {
             hasAutoCentered = true
-            mapState.animateCamera(CameraUpdate(target = position, zoom = OWN_LOCATION_START_ZOOM))
+            mapState.animateCamera(CameraUpdate(center = position, zoom = OWN_LOCATION_START_ZOOM))
         }
     }
 
@@ -194,7 +198,7 @@ fun SchneaggmapScreen(
             hasAutoCentered = true
             mapState.animateCamera(
                 CameraUpdate(
-                    target = Position(longitude = target.long, latitude = target.lat),
+                    center = Position(longitude = target.long, latitude = target.lat),
                     zoom = ENTRY_FOCUS_ZOOM
                 )
             )
@@ -211,7 +215,7 @@ fun SchneaggmapScreen(
     LaunchedEffect(Unit) {
         snapshotFlow { mapState.cameraMoveReason }
             .collect { reason ->
-                if (reason == CameraMoveReason.GESTURE) {
+                if (reason == CameraMoveReason.Gesture) {
                     isFollowingLocation = false
                 }
             }
@@ -233,7 +237,7 @@ fun SchneaggmapScreen(
         //Zoom in once when following starts (waiting for the first fix if there is none yet), then
         //keep re-centering on the latest location at whatever zoom/bearing the user leaves it at.
         val start = snapshotFlow { locationState.lastLocation?.position }.filterNotNull().first()
-        animateSafely(CameraPosition(target = start, zoom = OWN_LOCATION_CLICK_ZOOM), CameraAnimation.Fly())
+        animateSafely(CameraPosition(center = start, zoom = OWN_LOCATION_CLICK_ZOOM), CameraAnimation.Fly {})
 
         snapshotFlow { locationState.lastLocation?.position }
             .filterNotNull()
@@ -244,12 +248,14 @@ fun SchneaggmapScreen(
 
                 val current = mapState.cameraPosition
                 val movedMeters = approximateDistanceMeters(
-                    current.target.latitude, current.target.longitude,
+                    current.center.latitude, current.center.longitude,
                     position.latitude, position.longitude
                 )
                 if (movedMeters < FOLLOW_MIN_MOVE_METERS) return@collect
 
-                animateSafely(current.copy(target = position), CameraAnimation.Ease(duration = FOLLOW_ANIMATION_DURATION))
+                animateSafely(current.copy(center = position), CameraAnimation.Ease() {
+                    duration = FOLLOW_ANIMATION_DURATION
+                })
             }
     }
 
@@ -277,7 +283,7 @@ fun SchneaggmapScreen(
         MapZoomSlider(
             zoom = mapState.cameraPosition.zoom,
             onZoomChange = { newZoom ->
-                val currentTarget = mapState.cameraPosition.target
+                val currentTarget = mapState.cameraPosition.center
                 val snapRadiusMeters = ZOOM_SNAP_RADIUS_DP * mapState.metersPerDpAtTarget
 
                 //If a user is sitting near the current screen center, zoom onto them (like Snap Map);
@@ -297,7 +303,7 @@ fun SchneaggmapScreen(
 
                 mapState.setCameraPosition(
                     mapState.cameraPosition.copy(
-                        target = snapTarget ?: currentTarget,
+                        center = snapTarget ?: currentTarget,
                         zoom = newZoom
                     )
                 )
@@ -363,7 +369,7 @@ fun SchneaggmapScreen(
                         },
                         onResetRotationClick = {
                             scope.launch {
-                                mapState.animateCamera(CameraUpdate(bearing = 0.0, tilt = 0.0))
+                                mapState.animateCamera(CameraUpdate(bearing = 0.0, pitch = 0.0))
                             }
                         },
                         modifier = Modifier.align(Alignment.BottomEnd)
@@ -383,7 +389,7 @@ fun SchneaggmapScreen(
                                 scope.launch {
                                     mapState.animateCamera(
                                         CameraUpdate(
-                                            target = Position(longitude = loc.long, latitude = loc.lat),
+                                            center = Position(longitude = loc.long, latitude = loc.lat),
                                             zoom = OWN_LOCATION_CLICK_ZOOM
                                         )
                                     )
@@ -434,8 +440,8 @@ fun SchneaggmapScreen(
         if (state.pickLocationMode) {
             LocationPickOverlay(
                 cameraTarget = LatLong(
-                    lat = mapState.cameraPosition.target.latitude,
-                    long = mapState.cameraPosition.target.longitude
+                    lat = mapState.cameraPosition.center.latitude,
+                    long = mapState.cameraPosition.center.longitude
                 ),
                 onConfirm = { onAction(SchneaggmapAction.OnConfirmLocationPick(it)) },
                 onCancel = { onAction(SchneaggmapAction.OnCancelLocationPick) },
@@ -453,12 +459,12 @@ fun SchneaggmapScreen(
                     onExpandedChange = { isSearchExpanded = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp)
+                        .padding(start = 4.dp, top = 4.dp, end = 4.dp)
                 )
 
                 //Quick filter chips, 8 dp below the search bar (4 dp row padding + 4 dp spacer)
                 if (!isSearchExpanded) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    //Spacer(modifier = Modifier.height(4.dp))
 
                     MapFilterChipsRow(
                         state = state,

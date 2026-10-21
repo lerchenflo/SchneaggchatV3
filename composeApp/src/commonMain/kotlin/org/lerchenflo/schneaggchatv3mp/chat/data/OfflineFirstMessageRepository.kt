@@ -38,8 +38,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVote
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toDomainMessage
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toLocalPollMessage
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNewPoll
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toLocalPollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toNewPoll
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollVoteRequest
@@ -375,6 +375,14 @@ class OfflineFirstMessageRepository(
         sendMessageForResult(ownId, messageId, empfaenger, gruppe, content, answerid, localpk, clientMessageId)
     }
 
+    override suspend fun sendVoiceMessage(ownId: String, empfaenger: String, gruppe: Boolean, recordingPath: String, answerid: String?) {
+        // externalScope (plan R2): the file read is part of the send, so it must not die with the caller either
+        externalScope.async {
+            val audio = withContext(ioDispatcher) { getAudioBytes(recordingPath) }
+            sendMessageForResult(ownId, null, empfaenger, gruppe, AudioContent(audio), answerid, 0L, null)
+        }.await()
+    }
+
     /** [sendMessage] that also reports the outcome: null when sent, else the server's error. */
     private suspend fun sendMessageForResult(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long, clientMessageId: String?): NetworkingError? {
 
@@ -543,7 +551,12 @@ class OfflineFirstMessageRepository(
                         }
 
                         println("Message senden error: ${serverrequest.error}")
-                        errorChannel.sendErrorSuspend(ErrorEvent(error = error))
+                        //A queue-stopping error (offline, session, server down) keeps the row
+                        //queued and retries it on resume / reconnect - no popup, or every retry
+                        //would show the same one again
+                        if (!error.stopsOfflineQueue()) {
+                            errorChannel.sendErrorSuspend(ErrorEvent(error = error))
+                        }
 
                         //Kept for the offline queue, removed with a dropped message
                         when (content) {

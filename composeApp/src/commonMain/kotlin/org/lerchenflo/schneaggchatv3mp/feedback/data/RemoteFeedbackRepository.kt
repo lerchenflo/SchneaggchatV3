@@ -23,6 +23,10 @@ import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.NewFeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.FeedbackRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toNetworkFeedbackStatus
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toNetworkFeedbackTag
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toNetworkFeedbackType
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toNetworkFeedbackVote
 
 /**
  * Talks straight to the server - the board is always fetched live and never stored in the
@@ -37,7 +41,7 @@ class RemoteFeedbackRepository(
     private val platformName get() = appVersion.getDeviceType().name
 
     override suspend fun getEntries(type: FeedbackType): NetworkResult<FeedbackList, NetworkingError> =
-        feedbackRemoteDataSource.getFeedbackList(type).map { it.toFeedbackList() }
+        feedbackRemoteDataSource.getFeedbackList(type.toNetworkFeedbackType()).map { it.toFeedbackList() }
 
     override suspend fun getDetails(entryId: String): NetworkResult<FeedbackEntryDetail, NetworkingError> =
         feedbackRemoteDataSource.getFeedbackDetails(entryId).map { it.toFeedbackEntryDetail() }
@@ -46,10 +50,10 @@ class RemoteFeedbackRepository(
         val isBug = entry.type == FeedbackType.BUG
         return feedbackRemoteDataSource.createFeedback(
             FeedbackCreateRequest(
-                type = entry.type,
+                type = entry.type.toNetworkFeedbackType(),
                 title = entry.title.trim(),
                 description = entry.description.trim(),
-                tags = entry.tags,
+                tags = entry.tags.map { it.toNetworkFeedbackTag() },
                 // "Where to find it" only makes sense for features
                 location = entry.location?.trim()?.takeIf { !isBug && it.isNotEmpty() },
                 appVersion = versionName.takeIf { isBug },
@@ -59,7 +63,7 @@ class RemoteFeedbackRepository(
     }
 
     override suspend fun vote(entryId: String, vote: FeedbackVote): NetworkResult<FeedbackEntry, NetworkingError> =
-        feedbackRemoteDataSource.voteFeedback(FeedbackVoteRequest(entryId = entryId, vote = vote))
+        feedbackRemoteDataSource.voteFeedback(FeedbackVoteRequest(entryId = entryId, vote = vote.toNetworkFeedbackVote()))
             .map { it.toFeedbackEntry() }
 
     /** [isBug] attaches app version and platform, which only matter for bug reports. */
@@ -80,6 +84,6 @@ class RemoteFeedbackRepository(
         feedbackRemoteDataSource.deleteFeedbackComment(commentId)
 
     override suspend fun setStatus(entryId: String, status: FeedbackStatus): NetworkResult<FeedbackEntry, NetworkingError> =
-        feedbackRemoteDataSource.setFeedbackStatus(FeedbackStatusRequest(entryId = entryId, status = status))
+        feedbackRemoteDataSource.setFeedbackStatus(FeedbackStatusRequest(entryId = entryId, status = status.toNetworkFeedbackStatus()))
             .map { it.toFeedbackEntry() }
 }

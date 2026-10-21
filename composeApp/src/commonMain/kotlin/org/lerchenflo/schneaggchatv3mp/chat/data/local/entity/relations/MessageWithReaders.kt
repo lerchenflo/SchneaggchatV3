@@ -2,12 +2,10 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations
 
 import androidx.room.Embedded
 import androidx.room.Relation
-import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageReaderEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 
-@Serializable
 data class MessageWithReaders(
     @Embedded val messageEntity: MessageEntity,
     @Relation(

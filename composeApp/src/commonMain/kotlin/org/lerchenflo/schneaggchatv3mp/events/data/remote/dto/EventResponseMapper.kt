@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.events.data.remote.dto
 
-import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.EventEntity
-import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.toEntity
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
 
@@ -27,5 +25,3 @@ fun EventResponse.toEvent(): Event = Event(
     updatedBy = updatedBy,
     creatorName = creatorName
 )
-
-fun EventResponse.toEntity(): EventEntity = toEvent().toEntity()

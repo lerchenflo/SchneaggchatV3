@@ -72,10 +72,10 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresViewModel
 import org.lerchenflo.schneaggchatv3mp.games.data.WordleRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewModel
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip.CoinFlipViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerViewModel
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.fingerpicker.FingerPickerViewModel
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCalculatorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
@@ -210,7 +210,14 @@ val sharedmodule = module{
 
 
     //Repository
-    singleOf(::DataStoreSettingsRepository) bind SettingsRepository::class
+    single<SettingsRepository> {
+        DataStoreSettingsRepository(
+            preferencemanager = get(),
+            settingsRemoteDataSource = get(),
+            languageService = get(),
+            externalScope = get<ApplicationScope>(),
+        )
+    }
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
     singleOf(::OfflineFirstGroupRepository) bind GroupRepository::class
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
@@ -249,7 +256,20 @@ val sharedmodule = module{
     singleOf(::RemoteFeedbackRepository) bind FeedbackRepository::class
     singleOf(::RemoteAnnouncementRepository) bind AnnouncementRepository::class
     singleOf(::RemoteAuthRepository) bind AuthRepository::class
-    singleOf(::LocalSessionTerminator) bind SessionTerminator::class
+    single<SessionTerminator> {
+        LocalSessionTerminator(
+            database = get(),
+            preferencemanager = get(),
+            authSessionManager = get(),
+            authRepository = get(),
+            notifier = get(),
+            socketConnectionManager = get(),
+            loggingRepository = get(),
+            pictureManager = get(),
+            audioManager = get(),
+            externalScope = get<ApplicationScope>(),
+        )
+    }
     // Explicit lambda for the scope: the sync runs in the app-wide scope, so it outlives the
     // screen that started it (plan R2). Depends on repositories only, never the other way round.
     single<DataSyncCoordinator> {

@@ -153,7 +153,7 @@ class FakeSettingsRepository : SettingsRepository {
 
     override fun getDraft(chatId: String, group: Boolean): Flow<String?> = drafts.map { it[chatId to group] }
 
-    override suspend fun saveDraft(chatId: String, group: Boolean, string: String) {
+    override fun saveDraft(chatId: String, group: Boolean, string: String) {
         drafts.update { it + ((chatId to group) to string) }
     }
 }

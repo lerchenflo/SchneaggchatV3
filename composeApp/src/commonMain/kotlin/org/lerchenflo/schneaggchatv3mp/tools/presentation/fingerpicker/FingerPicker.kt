@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker
+package org.lerchenflo.schneaggchatv3mp.tools.presentation.fingerpicker
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box

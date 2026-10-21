@@ -51,7 +51,7 @@ class LoginViewModel(
     val versionName: String = appVersion.getVersionName()
     val versionCode: String = appVersion.getVersionCode()
 
-    /** The server URL as saved right now; the website and password-reset links open this one. */
+    /** The server URL as saved right now; the URL dialog shows it, the website and password-reset links open it. */
     val savedServerUrl: StateFlow<String> = settingsRepository.getServerUrlFlow()
         .stateIn(viewModelScope, SharingStarted.Eagerly, BASE_SERVER_URL)
 
@@ -127,11 +127,7 @@ class LoginViewModel(
     }
 
 
-    var serverUrl by mutableStateOf("")
-        private set
-
     fun updateServerUrl(newValue: String) {
-        serverUrl = newValue
         viewModelScope.launch {
             settingsRepository.saveServerUrl(newValue)
         }
@@ -189,9 +185,6 @@ class LoginViewModel(
             }
         }
 
-        viewModelScope.launch {
-            serverUrl = settingsRepository.getServerUrl()
-        }
     }
 
 

@@ -50,9 +50,11 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         val decoded = PayloadDecoder.decode(message.data)
         if (decoded == null) {
-            //Unknown or incomplete payload (newer server, missing id) - nothing can be shown, so at least log it
+            //Unknown or incomplete payload (newer server, missing id) - its details can't be shown,
+            //but the user still has to learn that something arrived
             runBlocking(Dispatchers.IO) {
-                logError("Push dropped, its payload could not be read (_class=${message.data["_class"]}, keys=${message.data.keys.sorted()})")
+                logError("Push payload could not be read, showing a generic notification (_class=${message.data["_class"]}, keys=${message.data.keys.sorted()})")
+                showGenericNewMessagesNotification(idKey = "unreadable_push")
             }
             return
         }
@@ -100,18 +102,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
     override fun onDeletedMessages() {
         runBlocking(Dispatchers.IO) {
             logError("FCM dropped pending pushes, showing a generic notification and syncing")
-            try {
-                KoinPlatform.getKoin().get<Notifier>().showLocalNotification(
-                    NotificationContent(
-                        id = "fcm_deleted_messages".hashCode().absoluteValue,
-                        title = NOTIFICATION_FALLBACK_TITLE,
-                        body = runCatching { getString(Res.string.you_have_new_messages) }.getOrDefault(""),
-                        kind = NotificationKind.MESSAGE,
-                    )
-                )
-            } catch (e: Throwable) {
-                logError("Notification about the dropped pushes failed", e)
-            }
+            showGenericNewMessagesNotification(idKey = "fcm_deleted_messages")
         }
 
         KoinPlatform.getKoin().get<ApplicationScope>().launch {
@@ -164,6 +155,22 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
 
         handled.set(true)
         KoinPlatform.getKoin().get<Notifier>().showLocalNotification(content)
+    }
+
+    /** "You have new messages" without any details - for pushes that were dropped or can't be read. Never throws. */
+    private suspend fun showGenericNewMessagesNotification(idKey: String) {
+        try {
+            KoinPlatform.getKoin().get<Notifier>().showLocalNotification(
+                NotificationContent(
+                    id = idKey.hashCode().absoluteValue,
+                    title = NOTIFICATION_FALLBACK_TITLE,
+                    body = runCatching { getString(Res.string.you_have_new_messages) }.getOrDefault(""),
+                    kind = NotificationKind.MESSAGE,
+                )
+            )
+        } catch (e: Throwable) {
+            logError("Generic notification ($idKey) failed, nothing could be shown", e)
+        }
     }
 
     /** Plain notification from the raw push fields after the normal path failed or timed out. Never throws. */

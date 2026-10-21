@@ -315,6 +315,7 @@
 
     <string name="use_default_server">Usa server predefinito</string>
     <string name="use_test_server">Usa server di test</string>
+    <string name="test_server_connection">Verifica connessione al server</string>
 
 
     <string name="you_have_new_messages">Hai nuovi messaggi</string>

@@ -82,5 +82,9 @@ interface SettingsRepository {
     suspend fun saveEventsViewMode(mode: EventsViewMode)
 
     fun getDraft(chatId: String, group: Boolean): Flow<String?>
-    suspend fun saveDraft(chatId: String, group: Boolean, string: String)
+    /**
+     * Stores the chat's unsent text. Fire and forget: runs in the app-wide scope, so it also
+     * finishes when called while the chat screen is going away (ChatViewModel.onCleared).
+     */
+    fun saveDraft(chatId: String, group: Boolean, string: String)
 }

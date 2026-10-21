@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import kotlinx.coroutines.sync.Mutex
+import kotlin.concurrent.Volatile
 
 /**
  * Dedup state for [org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository.markChatReadInBackground].
@@ -22,6 +23,8 @@ class MarkReadGuard {
     // Only set once the server has actually accepted the read. A failed or lost attempt leaves it
     // null so the next emission retries - the read state itself lives on the server now, so a
     // chat can legitimately come back unread after we already asked once.
+    // Written on an IO thread under [mutex], read on the main thread without it.
+    @Volatile
     var lastMarkedReadMessageId: String? = null
         internal set
 }

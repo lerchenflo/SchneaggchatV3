@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker
+package org.lerchenflo.schneaggchatv3mp.tools.presentation.fingerpicker
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerId

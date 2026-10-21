@@ -156,31 +156,42 @@ class GroupCreatorViewModel (
 
 
     fun onAction(action: GroupCreatorAction) {
-        viewModelScope.launch {
-            when (action) {
-                is GroupCreatorAction.updateGroupdescription -> {
-                    state = state.copy(
-                        groupdescription = state.groupdescription.copy(
-                            text = action.newValue,
-                        )
+        // State is written synchronously, so the next action (e.g. tapping create) always sees it.
+        // Only the error text and the picture load suspend; they write their result afterwards.
+        when (action) {
+            is GroupCreatorAction.updateGroupdescription -> {
+                state = state.copy(
+                    groupdescription = state.groupdescription.copy(
+                        text = action.newValue,
                     )
-                }
-                is GroupCreatorAction.updateGroupname -> {
-                    val newtext = action.newValue
+                )
+            }
+            is GroupCreatorAction.updateGroupname -> {
+                val newtext = action.newValue
+                state = state.copy(
+                    groupname = state.groupname.copy(
+                        text = newtext
+                    )
+                )
+                viewModelScope.launch {
+                    val errorMessage = if (newtext.length > MAX_GROUPNAME_LENGTH) getString(Res.string.name_too_long) else if (newtext.length < MIN_GROUPNAME_LENGTH) getString(Res.string.name_too_short) else null
+                    // Typed on meanwhile: that newer name's own coroutine sets its error text
+                    if (state.groupname.text != newtext) return@launch
                     state = state.copy(
                         groupname = state.groupname.copy(
-                            text = newtext,
-                            errorMessage = if (newtext.length > MAX_GROUPNAME_LENGTH) getString(Res.string.name_too_long) else if (newtext.length < MIN_GROUPNAME_LENGTH) getString(Res.string.name_too_short) else null
+                            errorMessage = errorMessage
                         )
                     )
                 }
-                is GroupCreatorAction.updateSearchterm -> {
-                    state = state.copy(
-                        searchterm = action.newValue
-                    )
-                    _searchTermFlow.value = action.newValue
-                }
-                is GroupCreatorAction.updateProfilePic -> {
+            }
+            is GroupCreatorAction.updateSearchterm -> {
+                state = state.copy(
+                    searchterm = action.newValue
+                )
+                _searchTermFlow.value = action.newValue
+            }
+            is GroupCreatorAction.updateProfilePic -> {
+                viewModelScope.launch {
                     val bytearray = action.profilePicUri
                         .loadBytes()
 
@@ -193,34 +204,36 @@ class GroupCreatorViewModel (
                     state = state.copy(
                         profilepic = downscaledimage
                     )
-                }
-
-                is GroupCreatorAction.addGroupMember -> {
-                    state = state.copy(
-                        selectedUsers = state.selectedUsers + action.member
-                    )
-                }
-                is GroupCreatorAction.removeGroupMember -> {
-                    state = state.copy(
-                        selectedUsers = state.selectedUsers - action.member
-                    )
-                }
-                GroupCreatorAction.createGroup -> {
-                    onCreateGroup()
-                }
-
-                GroupCreatorAction.navigateBack -> {
-                    onBackClick()
+                    updateCreationPermitted()
                 }
             }
 
+            is GroupCreatorAction.addGroupMember -> {
+                state = state.copy(
+                    selectedUsers = state.selectedUsers + action.member
+                )
+            }
+            is GroupCreatorAction.removeGroupMember -> {
+                state = state.copy(
+                    selectedUsers = state.selectedUsers - action.member
+                )
+            }
+            GroupCreatorAction.createGroup -> {
+                onCreateGroup()
+            }
 
-            //Validation
-            state = state.copy(
-                creationPermitted = state.valid()
-            )
-
+            GroupCreatorAction.navigateBack -> {
+                onBackClick()
+            }
         }
+
+        updateCreationPermitted()
+    }
+
+    private fun updateCreationPermitted() {
+        state = state.copy(
+            creationPermitted = state.valid()
+        )
     }
 
 

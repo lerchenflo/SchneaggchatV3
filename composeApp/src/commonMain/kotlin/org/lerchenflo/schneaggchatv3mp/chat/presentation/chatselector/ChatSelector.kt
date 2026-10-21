@@ -367,27 +367,6 @@ fun Chatauswahlscreen(
                  */
 
 
-                /*
-                //Map
-                if (appRepository.appVersion.isMobile()) {
-                    Box(
-                        modifier = Modifier
-                            .size(touchSize)
-                            .clip(CircleShape)
-                            .clickable { viewModel.onMapClick() }
-                            .tapTarget("chatselector_map_button"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Map,
-                            contentDescription = stringResource(Res.string.schneaggmap),
-                            modifier = Modifier.size(iconSize),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-
-                 */
 
 
                 //Recap (only during the recap season, see RecapAvailability)

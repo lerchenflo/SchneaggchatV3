@@ -51,6 +51,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.TOP_LEVEL_DESTINATIONS
 import org.lerchenflo.schneaggchatv3mp.app.navigation.decoratedEntriesMap
 import org.lerchenflo.schneaggchatv3mp.app.navigation.getVisibleTopLevelDestinations
 import org.lerchenflo.schneaggchatv3mp.app.navigation.rememberNavigationState
+import org.lerchenflo.schneaggchatv3mp.app.navigation.resetAllTabs
 import org.lerchenflo.schneaggchatv3mp.app.navigation.resetTabRoot
 import org.lerchenflo.schneaggchatv3mp.app.navigation.restartAuthFlow
 import io.github.lerchenflo.taptarget.LocalTapTargetController
@@ -80,9 +81,9 @@ import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterRoot
-import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.fingerpicker.FingerPickerScreen
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCalculatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordScreenRoot
@@ -330,6 +331,13 @@ fun App() {
             flow = navigator.navigationActions
         ) { action ->
             val navigationOptions = action.navigationOptions
+
+            // Login means the session ended (logout, invalidated session): no tab may keep a
+            // sub-screen - and its ViewModel - of the old account. Only the current tab is
+            // cleared below, so the others are reset here.
+            if (action is NavigationAction.Navigate && action.destination is Route.Login) {
+                navigationState.resetAllTabs()
+            }
 
             if (navigationOptions.exitPreviousScreen) {
                 navigationState.backStacks[navigationState.topLevelRoute]?.let { stack ->
@@ -678,8 +686,8 @@ fun App() {
                                     //Settings
                                     entry<Route.SettingsScreen> {
                                         SettingsScreen(
-                                            settingsViewmodel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(), // see note below on scoping
+                                            settingsViewmodel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = {
                                                  scope.launch { navigator.navigateBack() }
                                             },
@@ -696,24 +704,24 @@ fun App() {
 
                                     entry<Route.DeveloperSettings> {
                                         DeveloperSettings(
-                                            devSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            devSettingsViewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.UserSettings> {
                                         UserSettings(
-                                            userSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            userSettingsViewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.PrivacyAndSecuritySettings> {
                                         PrivacyAndSecuritySettings(
-                                            viewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            viewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } },
                                             navigateLoggedInDevices = { scope.launch { navigator.navigate(Route.LoggedInDevices) } }
                                         )
@@ -721,30 +729,30 @@ fun App() {
 
                                     entry<Route.LoggedInDevices> {
                                         LoggedInDevicesScreen(
-                                            viewModel = koinInject(),
+                                            viewModel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.NotificationSettings> {
                                         NotificationSettings(
-                                            viewModel = koinInject(),
+                                            viewModel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.AppearanceSettings> {
                                         AppearanceSettings(
-                                            appearanceSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            appearanceSettingsViewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
                                     entry<Route.MiscSettings> {
                                         MiscSettings(
-                                            miscSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            miscSettingsViewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } },
                                             navigateFeedback = { scope.launch { navigator.navigate(Route.Feedback) } }
                                         )
@@ -752,8 +760,8 @@ fun App() {
 
                                     entry<Route.SchneaggmapSettings> {
                                         SchneaggmapSettings(
-                                            schneaggmapSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
+                                            schneaggmapSettingsViewModel = koinViewModel(),
+                                            sharedSettingsViewmodel = koinViewModel(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

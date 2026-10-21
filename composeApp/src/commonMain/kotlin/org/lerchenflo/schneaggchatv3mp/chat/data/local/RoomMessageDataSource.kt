@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.local
 
-import androidx.room.Transaction
+import androidx.room.immediateTransaction
+import androidx.room.useWriterConnection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.ChatAggregate
@@ -138,17 +139,20 @@ class RoomMessageDataSource(
     /**
      * Update a message in the database
      */
-    @Transaction
     private suspend fun upsertMessageWithReaders(message: MessageWithReaders) {
-        //Upsert the message entity without readers
-        val upserted = database.messageDao().upsertMessageEntity(message.messageEntity)
+        database.useWriterConnection { transactor ->
+            transactor.immediateTransaction {
+                //Upsert the message entity without readers
+                val upserted = database.messageDao().upsertMessageEntity(message.messageEntity)
 
-        //if the readers are not empty, remove all existing an re - insert
-        if (message.readers.isNotEmpty() && upserted.id != null){
-            deleteReadersForMessage(upserted.id!!)
+                //if the readers are not empty, remove all existing an re - insert
+                if (message.readers.isNotEmpty() && upserted.id != null){
+                    deleteReadersForMessage(upserted.id!!)
 
-            val readers = message.readers.map { it.copy(messageId = upserted.id!!) }
-            insertReaders(readers)
+                    val readers = message.readers.map { it.copy(messageId = upserted.id!!) }
+                    insertReaders(readers)
+                }
+            }
         }
     }
 
@@ -190,7 +194,6 @@ class RoomMessageDataSource(
 
     override fun getUnreadChatCountFlow(): Flow<Int> = database.messageDao().getUnreadChatCountFlow()
 
-    @Transaction
     override fun getAllMessages(): Flow<List<Message>>{
         return database.messageDao().getAllMessagesWithReadersFlow().map { messagesWithReaders ->
             messagesWithReaders.map {
@@ -207,7 +210,6 @@ class RoomMessageDataSource(
             entities.map { it.toMessage() }
         }
 
-    @Transaction
     override suspend fun getmessagechangeid(): List<IdChangeDate>{
         return database.messageDao().getMessageIdsWithChangeDates()
     }

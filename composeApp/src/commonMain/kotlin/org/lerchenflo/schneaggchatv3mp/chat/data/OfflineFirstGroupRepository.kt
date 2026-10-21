@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.GroupRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toGroup
 
 /**
  * [GroupRepository] on top of the local [GroupLocalDataSource] and the server via [GroupRemoteDataSource].
@@ -80,27 +81,7 @@ class OfflineFirstGroupRepository(
 
                 val groupResponse = response.data
 
-                groupLocalDataSource.upsertGroup(Group(
-                    id = groupResponse.id,
-                    name = groupResponse.name,
-                    profilePictureUrl = "",
-                    description = groupResponse.description,
-                    createDate = groupResponse.createdAt,
-                    updatedAt = groupResponse.updatedAt,
-                    profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
-                    expiresAt = groupResponse.expiresAt,
-                    notisMuted = false,
-                    members = groupResponse.members.map { groupMemberresp ->
-                        GroupMember(
-                            groupId = groupResponse.id,
-                            userId = groupMemberresp.userid,
-                            joinDate = groupMemberresp.joinedAt,
-                            admin = groupMemberresp.admin,
-                            color = groupMemberresp.color,
-                            memberName = groupMemberresp.memberName
-                        )
-                    }
-                ))
+                groupLocalDataSource.upsertGroup(groupResponse.toGroup())
 
                 response.data.id
             }
@@ -126,7 +107,7 @@ class OfflineFirstGroupRepository(
     override suspend fun syncGroups(): List<String> {
         groupSyncLock.withLock {
 
-            val userId = SessionCache.requireLoggedIn() ?: return emptyList()
+            SessionCache.requireLoggedIn() ?: return emptyList()
 
 
             val localgroups = groupLocalDataSource.getgroupchangeid()
@@ -150,27 +131,7 @@ class OfflineFirstGroupRepository(
 
                     groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
                         val existing = groupLocalDataSource.getGroupById(groupResponse.id)
-                        groupLocalDataSource.upsertGroup(Group(
-                            id = groupResponse.id,
-                            name = groupResponse.name,
-                            profilePictureUrl = existing?.profilePictureUrl ?: "",
-                            description = groupResponse.description,
-                            createDate = groupResponse.createdAt,
-                            updatedAt = groupResponse.updatedAt,
-                            profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
-                            expiresAt = groupResponse.expiresAt,
-                            notisMuted = existing?.notisMuted ?: false,
-                            members = groupResponse.members.map { groupMemberresp ->
-                                GroupMember(
-                                    groupId = groupResponse.id,
-                                    userId = groupMemberresp.userid,
-                                    joinDate = groupMemberresp.joinedAt,
-                                    admin = groupMemberresp.admin,
-                                    color = groupMemberresp.color,
-                                    memberName = groupMemberresp.memberName
-                                    )
-                            }
-                        ))
+                        groupLocalDataSource.upsertGroup(groupResponse.toGroup(existing))
 
                         //Update profile picture if group is new or the profile pic got updated
                         if (existing == null || existing.profilePicUpdatedAt < groupResponse.profilePicUpdatedAt) {

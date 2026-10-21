@@ -21,9 +21,6 @@ fun resetGlobalState() {
     SnackbarManager.resetForTest()
 
     AppLifecycleManager.updateAppForegroundState(false)
-    // Only when set: switching the car session off while the app is in the background emits a
-    // "backgrounded" event.
-    if (AppLifecycleManager.isCarSessionActive.value) AppLifecycleManager.setCarSessionActive(false)
     AppLifecycleManager.consumePendingNotificationOpen()
     AppLifecycleManager.resetStartupRoutingDoneForTest()
 

@@ -207,7 +207,7 @@ fun LoginScreen(
                         viewModel.resetServerCheck()
                         showUrlChangeDialog = false
                                 },
-                    serverUrl = viewModel.serverUrl,
+                    serverUrl = savedServerUrl,
                     checkStatus = viewModel.serverCheckStatus,
                     onTestServer = { viewModel.testServer(it) },
                     onUrlEdited = { viewModel.onServerUrlEdited() }

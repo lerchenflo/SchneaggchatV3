@@ -3,11 +3,9 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import kotlinx.serialization.Serializable
 
 /** One sampled point of a friend's snail trail (see `FriendLocationSnapshotEntry.snailTrail` and
  * `SocketConnectionMessage.SnailTrailPointAdded`). */
-@Serializable
 @Entity(
     tableName = "snail_trail_points",
     // locationTime trails userId so the per-user trail queries read in ORDER BY order.

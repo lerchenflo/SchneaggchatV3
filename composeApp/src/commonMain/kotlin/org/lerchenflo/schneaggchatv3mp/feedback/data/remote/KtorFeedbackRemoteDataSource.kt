@@ -14,7 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackVoteRequ
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.NetworkFeedbackType
 
 /** [FeedbackRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */
 class KtorFeedbackRemoteDataSource(
@@ -25,7 +25,7 @@ class KtorFeedbackRemoteDataSource(
 
     private val server = ServerClient(httpClient, preferenceManager, loggingRepository)
 
-    override suspend fun getFeedbackList(type: FeedbackType): NetworkResult<FeedbackListResponse, NetworkingError> {
+    override suspend fun getFeedbackList(type: NetworkFeedbackType): NetworkResult<FeedbackListResponse, NetworkingError> {
         return server.safeGet(endpoint = "/feedback/list?type=${type.name}")
     }
 

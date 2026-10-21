@@ -7,7 +7,6 @@ import io.github.ismoy.imagepickerkmp.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
 import io.github.lerchenflo.voicemessages.VoiceRecorder
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -61,11 +60,11 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import kotlin.time.TimeSource
+import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 class ChatViewModel(
     private val appVersion: AppVersion,
@@ -198,17 +197,16 @@ class ChatViewModel(
     private fun hasUnreadMessages(): Boolean = _state.value.displayItems
         .any { it is MessageDisplayItem.MessageItem && !it.message.readByMe }
 
+    // No scope needed: the repository writes in the app-wide scope, so this also works from onCleared
     private fun saveDraft(){
-        CoroutineScope(Dispatchers.IO).launch {
-            // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
-            val sendContent = state.value.sendContent
-            if(sendContent is TextContent) { // schoua ob es textfeld leer isch
-                settingsRepository.saveDraft(
-                    chatId = chatId,
-                    group = isGroup,
-                    string = sendContent.textMessage.text
-                )
-            }
+        // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
+        val sendContent = state.value.sendContent
+        if(sendContent is TextContent) { // schoua ob es textfeld leer isch
+            settingsRepository.saveDraft(
+                chatId = chatId,
+                group = isGroup,
+                string = sendContent.textMessage.text
+            )
         }
     }
 
@@ -289,16 +287,11 @@ class ChatViewModel(
 
             is SendMessageContent.AudioContent -> {
                 viewModelScope.launch {
-                    messageRepository.sendMessage(
+                    messageRepository.sendVoiceMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
-                        content = MessageContent.AudioContent(
-                            audio = getAudioBytes(
-                                audioManager.getRecordingPath(message.audioPath.substringAfterLast('/'))
-                            )
-                        ),
+                        recordingPath = audioManager.getRecordingPath(message.audioPath.substringAfterLast('/')),
                         answerid = replyTo?.id,
-                        messageId = null,
                         ownId = ownId
                     )
                 }
@@ -737,7 +730,7 @@ class ChatViewModel(
             }
         ) { (messages, olderReplyTargets), senderNames, groupMembers ->
             captureNewMessagesBoundary(messages)
-            messageDisplayMapper.map(messages, olderReplyTargets, senderNames, groupMembers, newMessagesBoundaryId.value)
+            messageDisplayMapper.map(messages, olderReplyTargets, senderNames, groupMembers, newMessagesBoundaryId.value, getString(Res.string.unknown_user))
         }
             .distinctUntilChanged()
             .flowOn(Dispatchers.Default)
