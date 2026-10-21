@@ -31,6 +31,13 @@ class FakeMessageRepository : MessageRepository {
         val clientMessageId: String?,
     )
 
+    data class SendVoiceCall(
+        val ownId: String,
+        val empfaenger: String,
+        val gruppe: Boolean,
+        val recordingPath: String,
+        val answerid: String?,
+    )
     data class EditCall(val message: Message, val newContent: String)
     data class ReactCall(val messageId: String, val content: String)
     data class VotePollCall(val ownId: String, val pollVote: PollVote)
@@ -49,6 +56,7 @@ class FakeMessageRepository : MessageRepository {
     val messages = MutableStateFlow<List<Message>>(emptyList())
 
     val sendCalls = CallLog<SendCall>()
+    val sendVoiceCalls = CallLog<SendVoiceCall>()
     val sendOfflineCalls = CallLog<String>()
     val syncCalls = CallLog<Boolean>()
     val editCalls = CallLog<EditCall>()
@@ -154,6 +162,16 @@ class FakeMessageRepository : MessageRepository {
         val call = SendCall(ownId, messageId, empfaenger, gruppe, content, answerid, localpk, clientMessageId)
         sendCalls.record(call)
         onSendMessage(call)
+    }
+
+    override suspend fun sendVoiceMessage(
+        ownId: String,
+        empfaenger: String,
+        gruppe: Boolean,
+        recordingPath: String,
+        answerid: String?,
+    ) {
+        sendVoiceCalls.record(SendVoiceCall(ownId, empfaenger, gruppe, recordingPath, answerid))
     }
 
     override suspend fun sendOfflineMessages(ownId: String) {

@@ -173,34 +173,6 @@ class GlobalViewModel(
 
 
 
-        /*
-
-        // Sync when app is resumed
-        viewModelScope.launch {
-            AppLifecycleManager.appResumedEvent.collectLatest {
-                //println("App resumed, checking loggedin status")
-                val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collectLatest
-
-                if (SessionCache.isLoggedIn()) {
-                    //println("App resumed and logged in, triggering sync...")
-                    messageRepository.sendOfflineMessages(ownId)
-                    dataSyncCoordinator.dataSync(reason = "appResumed")
-
-                    //On resume clear all error notis
-                    NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
-
-                    //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
-                    if(IncomingDataManager.isNewDataAvailable()){
-                        navigator.navigate(Route.MessageChatSelector) // todo build backstack?
-                    }
-
-                    startSocketConnection()
-                    updateLocationTracking()
-                }
-            }
-        }
-
-         */
 
         viewModelScope.launch {
             while (true) {
@@ -212,8 +184,8 @@ class GlobalViewModel(
 
                         if (appVersion.isDesktop()) { //On desktop always try to hold the socket connection for notifications
                             startSocketConnection()
-                        } else { //On Mobile only connect if the app (or a car session) is active
-                            if (AppLifecycleManager.isAppOrCarActive) {
+                        } else { //On Mobile only connect if the app is active
+                            if (AppLifecycleManager.isAppInForeground) {
                                 startSocketConnection()
                             }
                         }
@@ -239,10 +211,6 @@ class GlobalViewModel(
             // Plain collect (not collectLatest): a close in progress must never be cancelled by
             // a follow-up lifecycle event, or the socket could survive into the background.
             AppLifecycleManager.appBackgroundedEvent.collect {
-                // A car session keeps the socket/location tracking "foreground" even while the
-                // phone itself is backgrounded (screen off in a pocket) - see isAppOrCarActive.
-                if (AppLifecycleManager.isCarSessionActive.value) return@collect
-
                 // Mobile: drop the socket the moment the app leaves the foreground (home, app
                 // switch, screen lock), so the server switches this user to FCM/APNs delivery.
                 // Desktop: the socket is the only notification channel, so it stays up while the
@@ -308,21 +276,13 @@ class GlobalViewModel(
                 updateLocationTracking()
             }
         }
-
-        // Login state and the share setting are handled above; a car session starting/stopping
-        // needs its own re-evaluation too, since it doesn't touch either of those.
-        viewModelScope.launch {
-            AppLifecycleManager.isCarSessionActive.collectLatest {
-                updateLocationTracking()
-            }
-        }
     }
 
     private var ownLocationShared = false
 
     /** Re-evaluates login state, foreground state, and the share setting, then starts/stops tracking. */
     private fun updateLocationTracking() {
-        if (SessionCache.isLoggedIn() && AppLifecycleManager.isAppOrCarActive && ownLocationShared) {
+        if (SessionCache.isLoggedIn() && AppLifecycleManager.isAppInForeground && ownLocationShared) {
             startLocationTracking()
         } else {
             stopLocationTracking()

@@ -29,11 +29,11 @@ class OfflineFirstMapRepository(
     override fun getAllMapEntriesFlow(): Flow<List<MapEntry>> =
         mapLocalDataSource.getAllMapEntriesFlow()
 
-    // ─── Map sync (triggered only from map screen, not part of global dataSync) ─
+    // ─── Map sync (the MAP job of the global dataSync) ─────────────────────────
 
     override suspend fun syncMapEntries() {
 
-        val userId = SessionCache.requireLoggedIn() ?: return
+        SessionCache.requireLoggedIn() ?: return
 
 
         val localEntries = mapLocalDataSource.getMapEntryChangeIds()

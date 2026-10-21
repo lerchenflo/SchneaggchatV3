@@ -9,6 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogParser
 import org.lerchenflo.schneaggchatv3mp.app.data.remote.AppInfoRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.app.data.remote.getTagName
 
 /** [AppInfoRepository] reading the installed version from [AppVersion] and everything else live via [AppInfoRemoteDataSource]. */
 class RemoteAppInfoRepository(
@@ -43,7 +44,7 @@ class RemoteAppInfoRepository(
     }
 
     /**
-     * Fetches the name of the current GitHub release
+     * Fetches the tag name of the current GitHub release
      */
     override suspend fun getLatestGitHubVersionAsString(): String? {
         return when (val networkResult = appInfoRemoteDataSource.getGitHubVersionJson(GITHUB_LATEST_RELEASE_API_URL)) {
@@ -52,7 +53,7 @@ class RemoteAppInfoRepository(
                 null
             }
             is NetworkResult.Success<*> -> {
-                networkResult.data.toString()
+                getTagName(networkResult.data.toString())
             }
         }
     }

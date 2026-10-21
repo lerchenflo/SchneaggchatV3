@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.local
 
-import androidx.room.Transaction
+import androidx.room.immediateTransaction
+import androidx.room.useWriterConnection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.GroupWithMembers
@@ -26,12 +27,10 @@ class RoomGroupDataSource(
         )
     }
 
-    @Transaction
     override suspend fun getgroupchangeid(): List<IdChangeDate> {
         return database.groupDao().getGroupIdsWithChangeDates()
     }
 
-    @Transaction
     override fun getAllGroupswithMembersFlow(): Flow<List<Group>> {
         return database.groupDao().getAllGroupsWithMembersFlow().map { list ->
             list.map { it.toGroup() }
@@ -47,10 +46,14 @@ class RoomGroupDataSource(
     override suspend fun deleteGroup(groupid: String) {
         // A left/removed group no longer produces a message-sync signal - purge its
         // messages here so both /groups/sync and the websocket groupchange path cover it.
-        database.messageReaderDao().deleteReadersForGroupMessages(groupid)
-        database.messageDao().deleteMessagesForGroup(groupid)
-        database.groupDao().deleteMembersForGroup(groupid)
-        database.groupDao().deleteGroup(groupid)
+        database.useWriterConnection { transactor ->
+            transactor.immediateTransaction {
+                database.messageReaderDao().deleteReadersForGroupMessages(groupid)
+                database.messageDao().deleteMessagesForGroup(groupid)
+                database.groupDao().deleteMembersForGroup(groupid)
+                database.groupDao().deleteGroup(groupid)
+            }
+        }
     }
 
     override suspend fun updateGroupProfilePicUrl(groupId: String, newUrl: String) {
@@ -63,7 +66,6 @@ class RoomGroupDataSource(
     }
 
 
-    @Transaction
     override suspend fun getGroupMembers(groupId: String): List<GroupMember> {
         val gwm: GroupWithMembers? = database.groupDao().getGroupWithMembersById(groupId)
         // toGroup() maps the entity relation to a domain Group which carries members
@@ -78,7 +80,6 @@ class RoomGroupDataSource(
         return database.groupDao().getGroupWithMembersById(id)?.toGroup()
     }
 
-    @Transaction
     override suspend fun getCommonGroups(ownId: String, otherUserId: String): List<Group> {
 
         val commonGroupsWithMembers = database.groupDao().getCommonGroupsWithMembers(ownId, otherUserId)

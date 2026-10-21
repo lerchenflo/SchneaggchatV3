@@ -61,7 +61,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_too_long
@@ -289,16 +288,11 @@ class ChatViewModel(
 
             is SendMessageContent.AudioContent -> {
                 viewModelScope.launch {
-                    messageRepository.sendMessage(
+                    messageRepository.sendVoiceMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
-                        content = MessageContent.AudioContent(
-                            audio = getAudioBytes(
-                                audioManager.getRecordingPath(message.audioPath.substringAfterLast('/'))
-                            )
-                        ),
+                        recordingPath = audioManager.getRecordingPath(message.audioPath.substringAfterLast('/')),
                         answerid = replyTo?.id,
-                        messageId = null,
                         ownId = ownId
                     )
                 }

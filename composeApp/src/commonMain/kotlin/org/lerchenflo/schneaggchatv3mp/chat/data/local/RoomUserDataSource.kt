@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.local
 
-import androidx.room.Transaction
+import androidx.room.immediateTransaction
+import androidx.room.useWriterConnection
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,15 +25,18 @@ class RoomUserDataSource(
     private val database: AppDatabase,
 ) : UserLocalDataSource {
 
-    @Transaction
     override suspend fun upsertUser(userEntity: UserEntity){
         database.userDao().upsert(userEntity)
     }
 
 
     override suspend fun deleteUser(userid: String){
-        database.snailTrailDao().deletePointsForUser(userid) // Child table first
-        database.userDao().delete(userid)
+        database.useWriterConnection { transactor ->
+            transactor.immediateTransaction {
+                database.snailTrailDao().deletePointsForUser(userid) // Child table first
+                database.userDao().delete(userid)
+            }
+        }
     }
 
     override fun getAllUsersFlow(searchTerm: String): Flow<List<User>>{
@@ -49,7 +53,6 @@ class RoomUserDataSource(
         }
     }
 
-    @Transaction
     override suspend fun getuserchangeid(): List<IdChangeDate>{
         return database.userDao().getUserIdsWithChangeDates()
     }
@@ -88,26 +91,31 @@ class RoomUserDataSource(
         }
     }
 
-    @Transaction
     override suspend fun updateFriendLocations(entries: List<FriendLocationSnapshotEntry>) {
-        entries.forEach { entry ->
-            updateFriendLocation(entry.position)
+        // One transaction (DAO calls inside the block run on its connection): a reader never sees
+        // a trail deleted but not yet re-inserted
+        database.useWriterConnection { transactor ->
+            transactor.immediateTransaction {
+                entries.forEach { entry ->
+                    updateFriendLocation(entry.position)
 
-            val userId = entry.position.userId
-            database.snailTrailDao().deletePointsForUser(userId)
-            if (entry.snailTrail.isNotEmpty()) {
-                database.snailTrailDao().upsertPoints(
-                    entry.snailTrail.map {
-                        SnailTrailPointEntity(
-                            userId = userId,
-                            lat = it.coordinates.lat,
-                            long = it.coordinates.long,
-                            locationTime = it.locationTime,
-                            speed = it.speed,
-                            heading = it.heading,
+                    val userId = entry.position.userId
+                    database.snailTrailDao().deletePointsForUser(userId)
+                    if (entry.snailTrail.isNotEmpty()) {
+                        database.snailTrailDao().upsertPoints(
+                            entry.snailTrail.map {
+                                SnailTrailPointEntity(
+                                    userId = userId,
+                                    lat = it.coordinates.lat,
+                                    long = it.coordinates.long,
+                                    locationTime = it.locationTime,
+                                    speed = it.speed,
+                                    heading = it.heading,
+                                )
+                            }
                         )
                     }
-                )
+                }
             }
         }
     }

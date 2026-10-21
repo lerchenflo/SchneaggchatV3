@@ -4,8 +4,6 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.currentCoroutineContext
@@ -101,7 +99,7 @@ class NewChatViewModel (
     }
 
     fun addFriend(friendId: String) {
-        CoroutineScope(Dispatchers.IO).launch { //Launch in coroutinescope to not access the db on main thread
+        viewModelScope.launch { //The repository is main-safe
             val success = userRepository.sendFriendRequest(friendId)
             SnackbarManager.showMessage(
                 if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)

@@ -82,7 +82,7 @@ val androidPictureManagerModule = module {
 
 val androidPermissionManagerModule = module {
     single<PermissionManager> { AndroidPermissionManager(androidContext()) }
-    single<LocationService> { AndroidLocationService(androidContext()) }
+    single<LocationService> { AndroidLocationService(androidContext(), get()) }
     single<BatteryService> { AndroidBatteryService(androidContext()) }
 }
 

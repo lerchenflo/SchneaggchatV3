@@ -157,7 +157,7 @@ class DataStoreSettingsRepository(
 
     override suspend fun setLastContributePopupShown(epochMillis: Long) {
         preferencemanager.saveLastContributePopupShown(epochMillis)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis))
+        settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis)).trackConnectivity()
     }
 
     override fun getLastDismissedAnnouncementIdFlow(): Flow<Long> {

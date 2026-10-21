@@ -104,6 +104,18 @@ interface MessageRepository {
     )
 
     /**
+     * [sendMessage] for a recorded voice message: reads the recording at [recordingPath] off the
+     * main thread, inside the app-wide scope, so a closed chat screen can't drop it either.
+     */
+    suspend fun sendVoiceMessage(
+        ownId: String,
+        empfaenger: String,
+        gruppe: Boolean,
+        recordingPath: String,
+        answerid: String?,
+    )
+
+    /**
      * Resends the unsent messages one by one, oldest first, and stops at the first one that is
      * still unsent after its attempt. Waits for a send in flight before picking the next row.
      */

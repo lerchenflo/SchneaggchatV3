@@ -35,11 +35,15 @@ login/             — Authentication (data/domain/presentation)
 settings/          — User settings
 games/             — Games feature
 schneaggmap/       — Map feature
-todolist/          — To-do list feature
+events/            — Events (data/domain/presentation)
+feedback/          — User feedback (data/domain/presentation)
+announcement/      — Server announcements (data/domain)
+tools/             — Tools screen (domain/presentation)
 sharedUi/          — Shared UI components
 datasource/        — Database, network, preferences
 di/                — Koin DI modules
 utilities/         — Shared helpers
+constants.kt       — App-wide constants
 ```
 
 Repository interfaces + their models live in the domain/ of the feature that holds the implementation (data/); features may import each other's domain/ only.

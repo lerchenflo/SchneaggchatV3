@@ -3,8 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.events.data
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.events.data.local.EventLocalDataSource
@@ -24,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.EventRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toGroup
 
 /**
  * [EventRepository] on top of the local [EventLocalDataSource] and the server via [EventRemoteDataSource].
@@ -46,7 +45,7 @@ class OfflineFirstEventRepository(
     // ─── Event sync ───────────────────────────────────────────────────────────
 
     override suspend fun syncEvents() {
-        val userId = SessionCache.requireLoggedIn() ?: return
+        SessionCache.requireLoggedIn() ?: return
 
         val localEntries = eventLocalDataSource.getEventChangeIds()
         var currentPage = 0
@@ -152,27 +151,7 @@ class OfflineFirstEventRepository(
 
                 val groupResponse = response.data.groupResponse
 
-                groupLocalDataSource.upsertGroup(Group(
-                    id = groupResponse.id,
-                    name = groupResponse.name,
-                    profilePictureUrl = "",
-                    description = groupResponse.description,
-                    createDate = groupResponse.createdAt,
-                    updatedAt = groupResponse.updatedAt,
-                    profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
-                    expiresAt = groupResponse.expiresAt,
-                    notisMuted = false,
-                    members = groupResponse.members.map { groupMemberresp ->
-                        GroupMember(
-                            groupId = groupResponse.id,
-                            userId = groupMemberresp.userid,
-                            joinDate = groupMemberresp.joinedAt,
-                            admin = groupMemberresp.admin,
-                            color = groupMemberresp.color,
-                            memberName = groupMemberresp.memberName
-                        )
-                    }
-                ))
+                groupLocalDataSource.upsertGroup(groupResponse.toGroup())
                 groupResponse.id
             }
         }

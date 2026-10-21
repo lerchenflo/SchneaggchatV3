@@ -17,12 +17,15 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.utilities.AndroidPermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import kotlin.math.PI
 import kotlin.math.roundToInt
 
-class AndroidLocationService(private val context: Context) : LocationService {
+class AndroidLocationService(
+    private val context: Context,
+    private val permissionManager: PermissionManager,
+) : LocationService {
 
     private val fusedClient by lazy {
         LocationServices.getFusedLocationProviderClient(context)
@@ -30,12 +33,10 @@ class AndroidLocationService(private val context: Context) : LocationService {
 
     @SuppressLint("MissingPermission")
     override fun getLocationFlow(fastUpdates: Boolean): Flow<DeviceLocation?> {
-        val permManager = AndroidPermissionManager(context)
-
         // Build a callbackFlow so we can use the FusedLocation callback API
         return callbackFlow {
             // Quick permission guard – caller should have requested permission first
-            if (permManager.checkLocationPermission() != PermissionState.GRANTED) {
+            if (permissionManager.checkLocationPermission() != PermissionState.GRANTED) {
                 trySend(null)
                 close()
                 return@callbackFlow
@@ -101,11 +102,11 @@ class AndroidLocationService(private val context: Context) : LocationService {
     }
 
     override suspend fun checkLocationPermission(): PermissionState {
-        return AndroidPermissionManager(context).checkLocationPermission()
+        return permissionManager.checkLocationPermission()
     }
 
     override suspend fun requestLocationPermission(): PermissionState {
-        return AndroidPermissionManager(context).requestLocationPermission()
+        return permissionManager.requestLocationPermission()
     }
 }
 

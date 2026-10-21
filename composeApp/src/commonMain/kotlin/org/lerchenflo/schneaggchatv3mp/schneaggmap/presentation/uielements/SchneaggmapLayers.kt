@@ -160,9 +160,8 @@ private fun clusterUsersByProximity(users: List<User>, radiusMeters: Double): Li
 /**
  * Draws the Schneaggmap tiles, POI markers, friend/cluster markers, event pins, snail trails and
  * own-location puck as [mapState]'s declared style content. Contains no phone-only chrome (FABs,
- * search bar, dropdowns, info cards, dialogs) so it can be shared verbatim between the phone
- * screen ([org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreen]) and the
- * Android Auto car surface.
+ * search bar, dropdowns, info cards, dialogs); those live in
+ * [org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreen].
  */
 @Composable
 @MaplibreComposable

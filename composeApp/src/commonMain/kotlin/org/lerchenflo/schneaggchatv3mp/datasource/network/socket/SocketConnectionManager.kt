@@ -289,9 +289,9 @@ class SocketConnectionManager(
      */
     fun isReconnectPending(): Boolean = reconnectJob?.isActive == true
 
-    /** Desktop holds the socket regardless of window state; mobile only while the app or an Android Auto car session is active. */
+    /** Desktop holds the socket regardless of window state; mobile only while the app is in the foreground. */
     private fun shouldHoldConnection(): Boolean =
-        keepAliveInBackground || AppLifecycleManager.isAppOrCarActive
+        keepAliveInBackground || AppLifecycleManager.isAppInForeground
 
     private fun scheduleReconnectIfPossible() {
         val url = lastServerUrl ?: return

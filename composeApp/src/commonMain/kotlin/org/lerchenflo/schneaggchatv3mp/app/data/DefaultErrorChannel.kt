@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 
 //Errorchannel for global error events (Show in every screen)
 class DefaultErrorChannel : ErrorChannel {
@@ -14,12 +15,22 @@ class DefaultErrorChannel : ErrorChannel {
     override val errors: Flow<ErrorEvent> = _channel.receiveAsFlow()
 
     override suspend fun sendErrorSuspend(event: ErrorEvent) {
+        if (event.isSessionError()) return
         _channel.send(event) // suspending send
     }
 
     override fun trySendError(event: ErrorEvent) {
+        if (event.isSessionError()) return
         _channel.trySend(event).onFailure {
             println("Error when adding error event: $it")
         }
     }
+
+    /**
+     * A 401 from an authenticated request is the session's business, not the caller's: the
+     * request already failed after the auth layer could not refresh (offline, backoff, server
+     * busy) and the session stays logged in. Only a real invalidation shows a popup, together
+     * with the logout (`ActionEvent.AuthInvalidated` in `App.kt`).
+     */
+    private fun ErrorEvent.isSessionError(): Boolean = error is NetworkingError.Unauthorized
 }

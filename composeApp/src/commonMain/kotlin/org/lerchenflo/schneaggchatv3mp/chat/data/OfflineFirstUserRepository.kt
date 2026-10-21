@@ -64,7 +64,7 @@ class OfflineFirstUserRepository(
 
     override suspend fun getFriends(searchTerm: String): List<User> {
         return userLocalDataSource.getAllUsers().filter {
-            it.name.contains(searchTerm)
+            it.name.contains(searchTerm, ignoreCase = true) // like getFriendsFlow's SQL LIKE
                     && it.friendshipStatus == FriendshipStatus.ACCEPTED
         }
     }

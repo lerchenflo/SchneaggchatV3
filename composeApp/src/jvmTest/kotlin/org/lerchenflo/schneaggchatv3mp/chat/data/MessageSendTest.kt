@@ -117,7 +117,7 @@ class MessageSendTest {
         }
 
     @Test
-    fun `server error keeps the row queued with its clientMessageId and reports the error`() =
+    fun `server error keeps the row queued with its clientMessageId without a popup`() =
         runSendPathTest {
             fixture.server.onTextSend = { Reply.Fail(HttpStatusCode.InternalServerError) }
 
@@ -130,13 +130,12 @@ class MessageSendTest {
             assertThat(row.content).isEqualTo("Hello")
             assertThat(row.clientMessageId).isEqualTo(request.clientMessageId)
 
-            fixture.errorChannel.errors.test {
-                assertThat(awaitItem().error).isNotNull().isInstanceOf<NetworkingError.ServerError>()
-            }
+            // Retried by the offline queue, so no popup (it would repeat on every retry)
+            fixture.errorChannel.errors.test { expectNoEvents() }
         }
 
     @Test
-    fun `dropped connection keeps the row queued and reports no internet`() =
+    fun `dropped connection keeps the row queued without a popup`() =
         runSendPathTest {
             fixture.server.onTextSend = { Reply.ConnectionDrop }
 
@@ -145,9 +144,7 @@ class MessageSendTest {
             val row = fixture.storedMessages().single()
             assertThat(row.sent).isFalse()
             assertThat(row.id).isNull()
-            fixture.errorChannel.errors.test {
-                assertThat(awaitItem().error).isEqualTo(NetworkingError.NoInternetConnection)
-            }
+            fixture.errorChannel.errors.test { expectNoEvents() }
         }
 
     @Test

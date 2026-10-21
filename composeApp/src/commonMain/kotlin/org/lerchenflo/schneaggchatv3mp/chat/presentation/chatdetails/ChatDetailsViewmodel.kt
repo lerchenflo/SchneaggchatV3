@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
@@ -516,7 +515,7 @@ class ChatDetailsViewmodel(
     }
 
     fun sendFriendRequest(id: String){
-        CoroutineScope(Dispatchers.IO).launch { //Launch in coroutinescope to not access the db on main thread
+        viewModelScope.launch { //The repository is main-safe
             val success = userRepository.sendFriendRequest(id)
             SnackbarManager.showMessage(
                 if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)

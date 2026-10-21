@@ -20,8 +20,7 @@ const val ACTION_REPLY = "org.lerchenflo.schneaggchatv3mp.REPLY"
 const val KEY_REPLY_TEXT = "reply_text"
 
 /**
- * Handles the voice/typed "Reply" action on a message notification - the path Android Auto's
- * voice reply and the phone notification's inline reply both go through.
+ * Handles the "Reply" action on a message notification (the notification's inline reply).
  */
 class ReplyReceiver : BroadcastReceiver() {
 

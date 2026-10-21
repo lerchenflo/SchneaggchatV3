@@ -75,13 +75,15 @@ class DefaultDataSyncCoordinator(
         externalScope.async {
             SessionCache.requireLoggedIn() ?: return@async
 
-            if (dataSyncLock.isLocked) {
+            // tryLock instead of isLocked + withLock: two calls that both passed an isLocked check
+            // before either took the lock would run two full syncs back to back
+            if (!dataSyncLock.tryLock()) {
                 println("Datasync started but already running (reason: $reason)")
                 dataSyncLock.withLock {  } //Awaiting finish and return to apply normal data sync await logic
                 return@async
             }
 
-            dataSyncLock.withLock {
+            try {
                 _dataSyncState.update {
                     it.copy(
                         isSyncing = true,
@@ -267,6 +269,8 @@ class DefaultDataSyncCoordinator(
                         )
                     }
                 }
+            } finally {
+                dataSyncLock.unlock()
             }
         }.await()
     }

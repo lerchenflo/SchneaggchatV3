@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto
 
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.MapEntryEntity
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.toEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MapEntryResponse
 
@@ -19,5 +17,3 @@ fun MapEntryResponse.toMapEntry(): MapEntry = MapEntry(
     updatedAt = updatedAt,
     updatedByName = updatedByName,
 )
-
-fun MapEntryResponse.toEntity(): MapEntryEntity = toMapEntry().toEntity()

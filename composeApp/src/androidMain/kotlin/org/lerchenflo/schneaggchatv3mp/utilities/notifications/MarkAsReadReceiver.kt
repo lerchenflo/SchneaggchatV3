@@ -20,7 +20,8 @@ const val EXTRA_GROUP_CHAT = "group_chat"
 
 /**
  * Handles the "mark as read" action button on message notifications.
- * Marks the whole chat as read locally and on the server, then dismisses the notification.
+ * Marks the whole chat as read on the server (the sync pulls the read state back), then
+ * dismisses the notification.
  */
 class MarkAsReadReceiver : BroadcastReceiver() {
 

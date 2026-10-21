@@ -83,6 +83,7 @@ class ChatSelectorViewModelTest {
             permissionManager = FakePermissionManager(),
             settingsRepository = settingsRepository,
             announcementRepository = FakeAnnouncementRepository(),
+            notifier = notifier,
         )
     )
 

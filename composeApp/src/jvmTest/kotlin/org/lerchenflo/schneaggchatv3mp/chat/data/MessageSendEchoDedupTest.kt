@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.testutil.FakeMessageServer.Reply
 import org.lerchenflo.schneaggchatv3mp.testutil.OWN_USER_ID
 import org.lerchenflo.schneaggchatv3mp.testutil.SendPathFixture
@@ -146,9 +145,7 @@ class MessageSendEchoDedupTest {
             val queued = fixture.storedMessages().single()
             assertThat(queued.sent).isFalse()
             assertThat(queued.id).isNull()
-            fixture.errorChannel.errors.test {
-                assertThat(awaitItem().error).isEqualTo(NetworkingError.NoInternetConnection)
-            }
+            fixture.errorChannel.errors.test { expectNoEvents() }
 
             fixture.server.enqueueSyncPage(listOf(fixture.server.storedMessage("srv-1")))
             fixture.syncMessages()

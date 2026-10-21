@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.domain
+package org.lerchenflo.schneaggchatv3mp.app.data.remote
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -9,7 +9,7 @@ data class GitHubRelease(
     @SerialName("tag_name") val tagName: String
 )
 
-val jsonParser = Json { ignoreUnknownKeys = true }
+private val jsonParser = Json { ignoreUnknownKeys = true }
 
 fun getTagName(jsonString: String): String? {
     return try {

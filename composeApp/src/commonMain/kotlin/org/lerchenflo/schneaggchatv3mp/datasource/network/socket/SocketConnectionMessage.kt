@@ -31,7 +31,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.events.data.local.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.MapLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
@@ -53,6 +52,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toGroup
 
 @Serializable()
 sealed interface SocketConnectionMessage {
@@ -448,27 +448,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
                     val existing = groupLocalDataSource.getGroupById(socketMessage.group.id)
 
-                    groupLocalDataSource.upsertGroup(Group(
-                        id = socketMessage.group.id,
-                        name = socketMessage.group.name,
-                        profilePictureUrl = existing?.profilePictureUrl ?: "",
-                        description = socketMessage.group.description,
-                        createDate = socketMessage.group.createdAt,
-                        updatedAt = socketMessage.group.updatedAt,
-                        profilePicUpdatedAt = socketMessage.group.profilePicUpdatedAt,
-                        expiresAt = socketMessage.group.expiresAt,
-                        notisMuted = existing?.notisMuted ?: false,
-                        members = socketMessage.group.members.map { groupMemberresp ->
-                            GroupMember(
-                                groupId = socketMessage.group.id,
-                                userId = groupMemberresp.userid,
-                                joinDate = groupMemberresp.joinedAt,
-                                admin = groupMemberresp.admin,
-                                color = groupMemberresp.color,
-                                memberName = groupMemberresp.memberName
-                            )
-                        }
-                    ))
+                    groupLocalDataSource.upsertGroup(socketMessage.group.toGroup(existing))
 
                     //Update profile picture if group is new or the profile pic got updated
                     if (existing == null || existing.profilePicUpdatedAt < socketMessage.group.profilePicUpdatedAt) {

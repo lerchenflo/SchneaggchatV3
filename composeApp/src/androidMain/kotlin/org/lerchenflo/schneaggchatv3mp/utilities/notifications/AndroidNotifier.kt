@@ -62,7 +62,7 @@ private const val CHANNEL_GENERAL = "schneaggchat_general"
 const val EXTRA_FROM_NOTIFICATION = "from_notification"
 
 //How many past messages are kept per chat in the MessagingStyle history shown on the notification
-//and read aloud by Android Auto - bounded so a chat that's been unread for a while doesn't build
+// - bounded so a chat that's been unread for a while doesn't build
 //an ever-growing in-memory list.
 private const val MAX_HISTORY_PER_CHAT = 6
 
@@ -355,8 +355,8 @@ class AndroidNotifier(private val context: Context, private val permissionManage
     }
 
     /**
-     * Builds/updates a [NotificationCompat.MessagingStyle] notification for the chat - the shape
-     * Android Auto reads aloud and offers voice-reply/mark-as-read on. One notification per chat,
+     * Builds/updates a [NotificationCompat.MessagingStyle] notification for the chat, with
+     * reply and mark-as-read actions. One notification per chat,
      * not per message: repeated calls for the same chat append to [activeConversations] and
      * re-post rather than stacking a new notification.
      */

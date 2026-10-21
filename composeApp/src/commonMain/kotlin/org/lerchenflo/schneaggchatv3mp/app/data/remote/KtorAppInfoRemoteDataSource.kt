@@ -2,9 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.app.data.remote
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
@@ -19,10 +16,7 @@ class KtorAppInfoRemoteDataSource(
     /** GETs [url] as given (not a server endpoint), without the bearer token. */
     private suspend inline fun <reified R> safeAuthGet(url: String): NetworkResult<R, NetworkingError> {
         return safeNetworkCall(loggingRepository) {
-            authHttpClient.get(url) {
-                contentType(ContentType.Application.Json)
-                setBody(body)
-            }
+            authHttpClient.get(url)
         }
     }
 

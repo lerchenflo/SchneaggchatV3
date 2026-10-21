@@ -31,7 +31,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.Announcement
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementRepository
@@ -43,7 +42,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.applySearchAndFilter
-import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
@@ -83,6 +81,7 @@ class ChatSelectorViewModel(
     private val permissionManager: PermissionManager,
     private val settingsRepository: SettingsRepository,
     private val announcementRepository: AnnouncementRepository,
+    private val notifier: Notifier,
 ): ViewModel() {
 
     private val _notificationPermissionState = MutableStateFlow(PermissionState.GRANTED)
@@ -150,7 +149,7 @@ class ChatSelectorViewModel(
         checkNotificationPermission()
 
         viewModelScope.launch {
-            val token = KoinPlatform.getKoin().get<Notifier>().getToken()
+            val token = notifier.getToken()
 
             //println("Chatselector notificationtoken: $token")
 
@@ -377,9 +376,7 @@ class ChatSelectorViewModel(
 
     private suspend fun checkNewGitHubRelease(): String?{
         // get the github release name
-        val releaseJson = appInfoRepository.getLatestGitHubVersionAsString()
-        println("github json: ${releaseJson}")
-        val tagName = getTagName(releaseJson?:"") ?:"v0.0.0"
+        val tagName = appInfoRepository.getLatestGitHubVersionAsString() ?: "v0.0.0"
         println("github tag name: ${tagName}")
 
         // get the current app name
