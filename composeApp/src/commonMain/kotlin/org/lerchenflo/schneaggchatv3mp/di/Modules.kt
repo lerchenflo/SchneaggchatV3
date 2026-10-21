@@ -256,7 +256,20 @@ val sharedmodule = module{
     singleOf(::RemoteFeedbackRepository) bind FeedbackRepository::class
     singleOf(::RemoteAnnouncementRepository) bind AnnouncementRepository::class
     singleOf(::RemoteAuthRepository) bind AuthRepository::class
-    singleOf(::LocalSessionTerminator) bind SessionTerminator::class
+    single<SessionTerminator> {
+        LocalSessionTerminator(
+            database = get(),
+            preferencemanager = get(),
+            authSessionManager = get(),
+            authRepository = get(),
+            notifier = get(),
+            socketConnectionManager = get(),
+            loggingRepository = get(),
+            pictureManager = get(),
+            audioManager = get(),
+            externalScope = get<ApplicationScope>(),
+        )
+    }
     // Explicit lambda for the scope: the sync runs in the app-wide scope, so it outlives the
     // screen that started it (plan R2). Depends on repositories only, never the other way round.
     single<DataSyncCoordinator> {

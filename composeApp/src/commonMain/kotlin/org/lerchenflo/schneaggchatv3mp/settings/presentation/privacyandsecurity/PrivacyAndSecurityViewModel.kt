@@ -31,6 +31,8 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 class PrivacyAndSecurityViewModel(
     private val dataSyncCoordinator: DataSyncCoordinator,
@@ -41,6 +43,7 @@ class PrivacyAndSecurityViewModel(
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     var lastEmailVerificationTime: Instant = Instant.DISTANT_PAST
@@ -79,11 +82,11 @@ class PrivacyAndSecurityViewModel(
     }
 
     fun changePassword(oldPassword: String, newPassword: String, onFinished: (Boolean) -> Unit) {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             // Guard set synchronously, before any suspend call, so a second
             // near-simultaneous tap can't slip through while this coroutine is
             // still suspended inside changePassword() below.
-            if (isChangingPassword) return@launch
+            if (isChangingPassword) return@launchOnMain
             isChangingPassword = true
 
             try {
@@ -107,7 +110,7 @@ class PrivacyAndSecurityViewModel(
         }
 
         lastEmailVerificationTime = Clock.System.now()
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             authRepository.sendEmailVerify()
             SnackbarManager.showMessage(getString(Res.string.verification_email_sent))
         }
@@ -116,7 +119,7 @@ class PrivacyAndSecurityViewModel(
     fun changeEmail(newEmail: String) {
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             userRepository.changeUserDetails(newEmail = newEmail, userId = userId)
             dataSyncCoordinator.dataSync(reason = "emailChanged")
         }
@@ -125,7 +128,9 @@ class PrivacyAndSecurityViewModel(
     fun saveLocationSharing(newGlobalShare: Boolean, friendDrafts: List<FriendShareDraft>) {
         val wasGlobalShared = shareLocationGlobal
 
-        viewModelScope.launch {
+        // The server writes outlive the screen; the permission prompt belongs to it and is
+        // dropped when the screen is gone
+        val writes = applicationScope.launchOnMain {
             when {
                 newGlobalShare && !wasGlobalShared -> {
                     friendDrafts.forEach { draft ->
@@ -147,8 +152,11 @@ class PrivacyAndSecurityViewModel(
                     }
                 }
             }
+        }
 
-            if (newGlobalShare) {
+        if (newGlobalShare) {
+            viewModelScope.launch {
+                writes.join()
                 permissionManager.requestLocationPermission()
             }
         }
@@ -159,7 +167,7 @@ class PrivacyAndSecurityViewModel(
     }
 
     fun logout() {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             sessionTerminator.logout()
             navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
         }
@@ -170,7 +178,7 @@ class PrivacyAndSecurityViewModel(
     fun logoutAllDevices() {
         if (isLoggingOutAllDevices) return
         isLoggingOutAllDevices = true
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             try {
                 if (sessionTerminator.logoutAllDevices()) {
                     navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))

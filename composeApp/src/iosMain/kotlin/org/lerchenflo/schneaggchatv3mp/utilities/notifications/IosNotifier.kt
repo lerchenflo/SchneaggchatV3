@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import platform.UIKit.UIApplication
 import platform.UIKit.unregisterForRemoteNotifications
 import platform.UserNotifications.UNMutableNotificationContent
@@ -15,7 +17,10 @@ class IosNotifier(private val permissionManager: PermissionManager) : Notifier {
 
     override suspend fun removeToken() {
         IosPushTokenStore.clearToken()
-        UIApplication.sharedApplication.unregisterForRemoteNotifications()
+        //UIKit is main-thread only; a logout calls this from the app-wide (IO) scope
+        withContext(Dispatchers.Main) {
+            UIApplication.sharedApplication.unregisterForRemoteNotifications()
+        }
     }
 
     override suspend fun hasPermission(): Boolean =

@@ -117,11 +117,21 @@ fun NavigationState.resetTabRoot(tabKey: NavKey) {
 }
 
 /**
+ * Resets every tab to its bare root, e.g. when the session ends. Pops the sub-screens of the tabs
+ * that are not visible too, so their ViewModels are cleared instead of surviving into the next
+ * account's session with the old account's state.
+ */
+fun NavigationState.resetAllTabs() {
+    backStacks.keys.forEach { resetTabRoot(it) }
+}
+
+/**
  * Sends the app back through the startup auth flow: the home tab is reset to
  * `AutoLoginCredChecker` and selected, which then routes to login, email verification or the
  * chat selector just like a cold start.
  */
 fun NavigationState.restartAuthFlow() {
+    resetAllTabs()
     backStacks[homeRoute]?.let { stack ->
         stack.clear()
         stack.add(Route.AutoLoginCredChecker)

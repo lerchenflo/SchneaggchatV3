@@ -14,6 +14,8 @@ import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 /** Draft per-friend location sharing settings edited in the dialog, only sent to the server on Save. */
 data class FriendShareDraft(
@@ -28,6 +30,7 @@ class SchneaggmapSettingsViewModel(
     private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     var mergeMapLocations by mutableStateOf(true)
@@ -129,7 +132,9 @@ class SchneaggmapSettingsViewModel(
     fun saveLocationSharing(newGlobalShare: Boolean, friendDrafts: List<FriendShareDraft>) {
         val wasGlobalShared = shareLocationGlobal
 
-        viewModelScope.launch {
+        // The server writes outlive the screen; the permission prompt belongs to it and is
+        // dropped when the screen is gone
+        val writes = applicationScope.launchOnMain {
             when {
                 newGlobalShare && !wasGlobalShared -> {
                     friendDrafts.forEach { draft ->
@@ -151,8 +156,11 @@ class SchneaggmapSettingsViewModel(
                     }
                 }
             }
+        }
 
-            if (newGlobalShare) {
+        if (newGlobalShare) {
+            viewModelScope.launch {
+                writes.join()
                 permissionManager.requestLocationPermission()
             }
         }

@@ -31,6 +31,8 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 class UserSettingsViewModel(
     private val dataSyncCoordinator: DataSyncCoordinator,
@@ -41,6 +43,7 @@ class UserSettingsViewModel(
     private val navigator: Navigator,
     private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
+    private val applicationScope: ApplicationScope,
 ): ViewModel() {
 
     var lastEmailVerificationTime: Instant = Instant.DISTANT_PAST
@@ -51,7 +54,7 @@ class UserSettingsViewModel(
         val bytearrayfullsize = newImage
             .loadBytes()
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
 
             val bytearray = pictureManager.downscaleImage(bytearrayfullsize)
 
@@ -70,7 +73,7 @@ class UserSettingsViewModel(
         }
 
         lastEmailVerificationTime = Clock.System.now()
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             authRepository.sendEmailVerify()
         }
 
@@ -91,7 +94,7 @@ class UserSettingsViewModel(
             return
         }
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             userRepository.changeUsername(newUsername)
         }
     }
@@ -99,15 +102,15 @@ class UserSettingsViewModel(
     fun changeEmail(newEmail: String){
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             userRepository.changeUserDetails(newEmail = newEmail, userId = userId)
             dataSyncCoordinator.dataSync(reason = "emailChanged")
         }
     }
 
     fun changeStatus(newStatus: String) {
-        viewModelScope.launch {
-            val userId = SessionCache.requireLoggedIn()?.userId ?: return@launch
+        applicationScope.launchOnMain {
+            val userId = SessionCache.requireLoggedIn()?.userId ?: return@launchOnMain
 
             userRepository.changeUserDetails(newStatus = newStatus, userId = userId)
             dataSyncCoordinator.dataSync(reason = "statusChanged")
@@ -117,7 +120,7 @@ class UserSettingsViewModel(
     fun changeBirthDate(newBirthDate: String) {
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             userRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId)
             dataSyncCoordinator.dataSync(reason = "birthDateChanged")
         }
@@ -126,7 +129,7 @@ class UserSettingsViewModel(
     fun changePhoneNumber(newPhoneNumber: String) {
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             userRepository.changeUserDetails(newPhoneNumber = newPhoneNumber, userId = userId)
             dataSyncCoordinator.dataSync(reason = "phoneNumberChanged")
         }
@@ -134,11 +137,9 @@ class UserSettingsViewModel(
 
 
     fun logout(){
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             sessionTerminator.logout()
-            viewModelScope.launch {
-                navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
-            }
+            navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
         }
     }
 

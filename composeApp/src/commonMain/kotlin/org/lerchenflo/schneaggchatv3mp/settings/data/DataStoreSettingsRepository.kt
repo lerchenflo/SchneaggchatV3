@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.settings.data
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
@@ -24,6 +25,15 @@ class DataStoreSettingsRepository(
     private val languageService: LanguageService,
     private val externalScope: CoroutineScope,
 ) : SettingsRepository {
+
+    /**
+     * Runs a setter in [externalScope] (plan R2), started before its first suspension point: the
+     * local write and the push to the server both finish even when the caller (a settings screen
+     * being left) is cancelled meanwhile, so this device and the server never disagree.
+     */
+    private suspend fun outliveCaller(block: suspend () -> Unit) {
+        externalScope.async { block() }.await()
+    }
 
     // ─── Server URL ────────────────────────────────────────────────────────────
 
@@ -67,8 +77,10 @@ class DataStoreSettingsRepository(
     }
 
     override suspend fun setUseMd(value: Boolean) {
-        preferencemanager.saveUseMd(value)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(mdFormat = value)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.saveUseMd(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(mdFormat = value)).trackConnectivity()
+        }
     }
 
     override fun getDevSettingsFlow(): Flow<Boolean> {
@@ -76,8 +88,10 @@ class DataStoreSettingsRepository(
     }
 
     override suspend fun setDevSettings(value: Boolean) {
-        preferencemanager.saveDevSettings(value)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(developerSettings = value)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.saveDevSettings(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(developerSettings = value)).trackConnectivity()
+        }
     }
 
     override fun getHighlightTodaysMessageTimestampFlow(): Flow<Boolean> {
@@ -85,8 +99,10 @@ class DataStoreSettingsRepository(
     }
 
     override suspend fun setHighlightTodaysMessageTimestamp(value: Boolean) {
-        preferencemanager.saveHighlightTodaysMessageTimestamp(value)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(highlightTodaysMessageTimestamp = value)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.saveHighlightTodaysMessageTimestamp(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(highlightTodaysMessageTimestamp = value)).trackConnectivity()
+        }
     }
 
     override fun getThemeFlow(): Flow<ThemeSetting> {
@@ -94,13 +110,17 @@ class DataStoreSettingsRepository(
     }
 
     override suspend fun setThemeSetting(theme: ThemeSetting) {
-        preferencemanager.saveThemeSetting(theme)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(theme = theme.name)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.saveThemeSetting(theme)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(theme = theme.name)).trackConnectivity()
+        }
     }
 
     override suspend fun setLanguageSetting(language: LanguageSetting) {
-        languageService.applyLanguage(language)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(language = language.name)).trackConnectivity()
+        outliveCaller {
+            languageService.applyLanguage(language)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(language = language.name)).trackConnectivity()
+        }
     }
 
     override fun getMergeMapLocationsFlow(): Flow<Boolean> {
@@ -108,8 +128,10 @@ class DataStoreSettingsRepository(
     }
 
     override suspend fun setMergeMapLocations(value: Boolean) {
-        preferencemanager.saveMergeMapLocations(value)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(mergeMapLocations = value)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.saveMergeMapLocations(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(mergeMapLocations = value)).trackConnectivity()
+        }
     }
 
     override fun getMergeMapUsersFlow(): Flow<Boolean> {
@@ -117,8 +139,10 @@ class DataStoreSettingsRepository(
     }
 
     override suspend fun setMergeMapUsers(value: Boolean) {
-        preferencemanager.saveMergeMapUsers(value)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(mergeMapUsers = value)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.saveMergeMapUsers(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(mergeMapUsers = value)).trackConnectivity()
+        }
     }
 
     override fun getMapStyleSettingFlow(): Flow<MapStyleSetting> {
@@ -130,8 +154,10 @@ class DataStoreSettingsRepository(
     }
 
     override suspend fun setMapStyleSetting(style: MapStyleSetting) {
-        preferencemanager.saveMapStyleSetting(style)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(mapStyle = style.name)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.saveMapStyleSetting(style)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(mapStyle = style.name)).trackConnectivity()
+        }
     }
 
     override fun getQuickReactionsFlow(): Flow<List<String>> {
@@ -144,14 +170,18 @@ class DataStoreSettingsRepository(
      * to the app defaults.
      */
     override suspend fun setQuickReactions(reactions: List<String>) {
-        preferencemanager.saveQuickReactions(reactions)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(quickReactions = reactions)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.saveQuickReactions(reactions)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(quickReactions = reactions)).trackConnectivity()
+        }
     }
 
     /** Clears the customised list so DEFAULT_QUICK_REACTIONS applies again, here and on every device. */
     override suspend fun resetQuickReactions() {
-        preferencemanager.clearQuickReactions()
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(resetQuickReactions = true)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.clearQuickReactions()
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(resetQuickReactions = true)).trackConnectivity()
+        }
     }
 
     override suspend fun getLastContributePopupShown(): Long {
@@ -159,8 +189,10 @@ class DataStoreSettingsRepository(
     }
 
     override suspend fun setLastContributePopupShown(epochMillis: Long) {
-        preferencemanager.saveLastContributePopupShown(epochMillis)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.saveLastContributePopupShown(epochMillis)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis)).trackConnectivity()
+        }
     }
 
     override fun getLastDismissedAnnouncementIdFlow(): Flow<Long> {
@@ -168,8 +200,10 @@ class DataStoreSettingsRepository(
     }
 
     override suspend fun setLastDismissedAnnouncementId(id: Long) {
-        preferencemanager.saveLastDismissedAnnouncementId(id)
-        settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastDismissedAnnouncementId = id)).trackConnectivity()
+        outliveCaller {
+            preferencemanager.saveLastDismissedAnnouncementId(id)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastDismissedAnnouncementId = id)).trackConnectivity()
+        }
     }
 
     // ─── Pinned chats ──────────────────────────────────────────────────────────

@@ -46,7 +46,9 @@ The device identity already exists on the server: one `RefreshToken` row per log
   while the desktop is active. Options: always push to the other devices, or push to them only if
   the acking device is a desktop that has been idle for some minutes.
 - A message read on the desktop leaves the phone notification standing. A "read elsewhere" cancel
-  (silent push or socket event that removes the chat's notification) would pair well with this.
+  (silent push or socket event that removes the chat's notification) would pair well with this. A silent
+  push needs a marker the client skips (e.g. `silent=true`): since 2026-10-21 the Android client shows
+  a generic "You have new messages" notification for any push `_class` it doesn't know.
 
 ## Size
 

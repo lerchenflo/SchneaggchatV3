@@ -51,6 +51,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.TOP_LEVEL_DESTINATIONS
 import org.lerchenflo.schneaggchatv3mp.app.navigation.decoratedEntriesMap
 import org.lerchenflo.schneaggchatv3mp.app.navigation.getVisibleTopLevelDestinations
 import org.lerchenflo.schneaggchatv3mp.app.navigation.rememberNavigationState
+import org.lerchenflo.schneaggchatv3mp.app.navigation.resetAllTabs
 import org.lerchenflo.schneaggchatv3mp.app.navigation.resetTabRoot
 import org.lerchenflo.schneaggchatv3mp.app.navigation.restartAuthFlow
 import io.github.lerchenflo.taptarget.LocalTapTargetController
@@ -330,6 +331,13 @@ fun App() {
             flow = navigator.navigationActions
         ) { action ->
             val navigationOptions = action.navigationOptions
+
+            // Login means the session ended (logout, invalidated session): no tab may keep a
+            // sub-screen - and its ViewModel - of the old account. Only the current tab is
+            // cleared below, so the others are reset here.
+            if (action is NavigationAction.Navigate && action.destination is Route.Login) {
+                navigationState.resetAllTabs()
+            }
 
             if (navigationOptions.exitPreviousScreen) {
                 navigationState.backStacks[navigationState.topLevelRoute]?.let { stack ->

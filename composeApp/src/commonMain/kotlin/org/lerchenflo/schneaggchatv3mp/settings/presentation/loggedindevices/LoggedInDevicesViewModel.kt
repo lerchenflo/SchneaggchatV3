@@ -17,6 +17,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_logged_out
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 /**
  * One logged-in device of the own account, ready for display.
@@ -36,6 +38,7 @@ class LoggedInDevicesViewModel(
     private val sessionTerminator: SessionTerminator,
     private val appVersion: AppVersion,
     private val navigator: Navigator,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     var devices by mutableStateOf<List<LoggedInDevice>>(emptyList())
@@ -76,7 +79,7 @@ class LoggedInDevicesViewModel(
     fun logoutDevice(device: LoggedInDevice) {
         if (device.isCurrentDevice) return // The own device logs out via the normal logout
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             if (authRepository.endSession(device.id)) {
                 devices = devices.filterNot { it.id == device.id }
                 SnackbarManager.showMessage(getString(Res.string.logged_in_devices_logged_out))
@@ -89,7 +92,7 @@ class LoggedInDevicesViewModel(
     fun logoutAllDevices() {
         if (isLoggingOutAllDevices) return
         isLoggingOutAllDevices = true
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             try {
                 if (sessionTerminator.logoutAllDevices()) {
                     navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))

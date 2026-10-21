@@ -13,12 +13,21 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SharedSettingsViewmodel(
     private val appVersion: AppVersion,
     private val userRepository: UserRepository,
     private val settingsRepository: SettingsRepository,
-    private val loggingRepository: Logger
+    private val loggingRepository: Logger,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     var serverUrl by mutableStateOf("")
@@ -55,11 +64,15 @@ class SharedSettingsViewmodel(
         }
 
         viewModelScope.launch { // Own user
-            val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
-
-            userRepository.getUserByIdFlow(ownId).collect { value ->
-                ownUser = value
-            }
+            // Follows the logged-in account: the settings tab root keeps this ViewModel across a
+            // logout and the next login, so reading the id once would keep showing the old account.
+            SessionCache.authState
+                .map { (it as? SessionCache.AuthState.LoggedIn)?.userId }
+                .distinctUntilChanged()
+                .flatMapLatest { ownId -> ownId?.let { userRepository.getUserByIdFlow(it) } ?: flowOf(null) }
+                .collect { value ->
+                    ownUser = value
+                }
         }
 
         isAndroid = appVersion.isAndroid()
@@ -68,7 +81,7 @@ class SharedSettingsViewmodel(
     // Developer Settings
 
     fun updateDevSettings(newValue: Boolean){
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             settingsRepository.setDevSettings(newValue)
             SessionCache.updateDeveloper(newValue)
         }
