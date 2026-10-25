@@ -41,7 +41,7 @@ koin-plugin = "1.2.1"
 koin-annotations = "4.2.2"
 ktor = "3.6.0"
 adaptive = "1.3.0"
-datastore = "1.2.1"
+datastore = "1.3.0"
 
 mikepenz-markdown = "0.46.0"
 firebase-messaging-version = "24.1.2"
