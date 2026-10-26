@@ -30,7 +30,7 @@ Property name, `AttributeKey` constant, JSON key and Mongo field name are always
 | `LongDef(min, max)` | `LongValue` | Number field (plain long - **no longer a date picker**) | Range |
 | `BoolDef` | `BoolValue` | Switch | Type |
 | `EnumDef(options)` | `StringValue` holding the enum **constant name** (never the ordinal) | Dropdown with translated labels; unknown names are shown raw | Value must be one of `options` |
-| `DateTimeDef` | `LongValue` (epoch millis) | Date + time picker with a Now button; the read-only card also has Now and saves at once | Type |
+| `DateTimeDef` | `LongValue` (epoch millis) | Date + time picker with a Now button, plus a clear button when optional and set; the read-only card also has Now and saves at once | Type |
 | `PriceDef(max)` | `DoubleValue` (euros) | Decimal field, `€` suffix, max 2 decimals, `.` or `,` | Not negative, max |
 | `DistanceDef(unit, max)` | `DoubleValue` in `unit` (`METERS`, `KILOMETERS`) | Decimal field with unit suffix | Not negative, max |
 | `RatingDef(min, max)` | `IntValue` | Slider, value saved on release | Within `min..max` |

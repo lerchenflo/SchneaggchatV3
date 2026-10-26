@@ -39,6 +39,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Chat: Lange Chats laden fix, Nachrichten senden fix
 - Übersetzungen verbessert
 - Spiele: Scroll fix in Auswahl
+- Schneaggmap: Datum (z.B. nächstes Turnier) wieder entfernbar
 
 ### 3.0.18
 
