@@ -243,6 +243,7 @@
     <string name="event_no_group">Dieses Event hat keinen Gruppenchat</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Gruppe verlassen</string>
+    <string name="delete_group">Gruppe löschen</string>
     <string name="add_users_to_group">Mitglied hinzufügen</string>
     <string name="member_since">Mitglied seit %1$s</string>
     <string name="change_group_name">Änderen den Gruppennamen</string>
@@ -514,6 +515,7 @@
 
     <!-- Confirmation dialogs -->
     <string name="confirm_leave_group">Bist du sicher, dass du diese Gruppe verlassen willst?</string>
+    <string name="confirm_delete_group">Diese Gruppe für alle Mitglieder löschen? Der Chat und alle Nachrichten sind dann für alle weg. Das kann nicht rückgängig gemacht werden.</string>
     <string name="confirm_remove_friend">Bist du sicher, dass du %1$s als Freund entfernen willst?</string>
     <string name="confirm_remove_member">Bist du sicher, dass du %1$s aus der Gruppe entfernen willst?</string>
 

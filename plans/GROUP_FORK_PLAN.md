@@ -46,7 +46,7 @@ Rough effort for v1 without history: server ~4 files, client ~12 files plus stri
 - `S/group/model/GroupMember.kt`: `userid, groupId, joinedAt, admin, color, joinedAtVersion`; unique `{userid, groupId}`.
 - `S/group/model/GroupResponse.kt`: response sent over `/groups/sync` and the `GroupChange` socket message.
 - `GroupService.createGroup` (`S/group/GroupService.kt:55`): at least 3 members (:61, skipped for event groups), creator must be friends with every member (:72-78), saves the picture through `ImageManager.saveProfilePic` (`S/util/ImageManager.kt:34`), generates unique member colors, sets `joinedAtVersion` to the current `SyncCollection.MESSAGES` counter (:115), notifies all members (`notifyGroupUpdate`) and posts `SystemEventType.GROUP_CREATED` (:144).
-- `GroupController` (`S/group/GroupController.kt`): `/groups/create` (multipart), `/groups/sync`, `/groups/profilepic/{id}`, `setprofilepic`, `setdescription`, `setGroupName`, `setexpiry` (admin only), `changemembers`. **There is no endpoint to delete a group.** A group is only deleted when the last member leaves (`performUserAction`, :360) or its expiry passes (`deleteExpiredGroups`, :658). Both go through `GroupService.deleteGroup` (:612), which soft-deletes, removes members, deletes the picture, notifies, and detaches or deletes a connected event.
+- `GroupController` (`S/group/GroupController.kt`): `/groups/create` (multipart), `/groups/sync`, `/groups/profilepic/{id}`, `setprofilepic`, `setdescription`, `setGroupName`, `setexpiry` (admin only), `changemembers`, `DELETE /groups/delete` (admin only, added 2026-10-26, see §4.3). Before that endpoint a group was only deleted when the last member left (`performUserAction`, :360), its expiry passed (`deleteExpiredGroups`), or the event creator deleted it through `DELETE /events/delete?deletegroup=true`. All paths go through `GroupService.deleteGroup`, which soft-deletes, removes members, deletes the picture, notifies, and detaches or deletes a connected event.
 - `GroupLookupService.isUserInGroup` (`S/group/GroupLookupService.kt:84`) does not check `group.deleted` (already noted as F-item in `CHAT_BASED_MIGRATION_PLAN.md` §3.1).
 - Server JSON ignores unknown properties (`S/util/JsonMapper.kt:9`).
 
@@ -121,13 +121,14 @@ ForkGroupRequest(
 7. Notify all fork members (`notifyGroupUpdate`), post system messages (§4.4), log `LogType.GROUP_FORKED` (new entry).
 8. Rate limit: reuse the same limit as `/groups/create` if one exists, otherwise add one; a fork is a cheap way to create many groups.
 
-### 4.3 Delete endpoint
+### 4.3 Delete endpoint - implemented 2026-10-26
 
-The user wants to delete forks, and there is no delete endpoint today.
+Shipped ahead of the fork as a standalone feature (D12 decided: admins, any group; a connected event is detached and survives).
 
-`POST /groups/delete` (body: `groupId`), admin only, calls the existing `GroupService.deleteGroup(groupId, deletedBy = requester)` (:612). Open point D12: allow it for every group (recommended, the code path already exists and is used by expiry) or only for groups with `forkedFromGroupId != null`.
+- Server: `DELETE /groups/delete?groupid=` (`GroupController.deleteGroup`) -> `GroupService.deleteGroupAsAdmin` (404 for a missing/deleted group, member + admin check via `requireOrLog`) -> `deleteGroup(groupId, deletedBy, deleteConnectedEvent = false)`.
+- Client: `GroupRemoteDataSource.deleteGroup` / `GroupRepository.deleteGroup` (local delete as optimistic fast path, the `GroupChange` push converges), `ChatDetailsViewmodel.deleteGroup` (navigates to the chat selector on success), admin-only "delete group" button with confirmation under "leave group" in `ChatDetails.kt`.
 
-When the chat migration lands, this becomes `/chats/{id}/delete` together with the other group endpoints.
+A fork therefore needs no extra delete code. When the chat migration lands, this becomes `/chats/{id}/delete` together with the other group endpoints.
 
 ### 4.4 System messages
 
@@ -178,7 +179,7 @@ Run `code-reuse-scout` before implementing (project rule). Candidates: `GroupCre
 
 ### 5.4 Delete
 
-- Group details: "Delete group" action for admins (per D12: all groups or forks only), with a destructive confirmation dialog (`mobile-ux-conventions`). Calls `groupRepository.deleteGroup`; on success navigate back to the chat list (`navigateChatSelExitAllPrevious`).
+Done, see §4.3.
 
 ### 5.5 Strings
 
@@ -238,7 +239,7 @@ When `GROUP_EXTENSIONS_PLAN.md` ships, a fork could copy extensions (shared text
 | D9 | What is copied from the parent | name, description, picture, member colors, expiry, pinned/mute state | Name (+ " (Fork)"), description, picture, member colors; not expiry, not mute/pin |
 | D10 | Copy group extensions (after `GROUP_EXTENSIONS_PLAN.md`) | no / snapshot copy | No in v1 |
 | D11 | Forking an event group | fork is a plain group (no event link, no expiry) / forbidden | Plain group |
-| D12 | Delete endpoint scope | admins can delete any group / only forks / creator only | Admins, any group |
+| D12 | Delete endpoint scope | admins can delete any group / only forks / creator only | **Decided 2026-10-26: admins, any group; connected event is detached. Implemented (§4.3)** |
 | D13 | Message history | A none / B copy / C virtual prefix / D link to parent (§6) | A + D now, store `forkedAtVersion` for C later |
 | D14 | Timing vs. chat migration | before / after | After |
 | D15 | Notify members on fork? | normal push like "added to group" / silent | Same push as being added to a new group |
@@ -251,7 +252,7 @@ When `GROUP_EXTENSIONS_PLAN.md` ships, a fork could copy extensions (shared text
 | Phase | Scope | Done when |
 |---|---|---|
 | 0 | Confirm decisions D1-D16 | table above has a "Decided" column filled in |
-| 1 | Server: model fields, `getGroupAsGroupResponse`, `/groups/fork`, `/groups/delete`, system event types, log type, security check | endpoints pass `spring-endpoint-security-check`, fork appears in `/groups/sync` for every selected member with the parent fields |
+| 1 | Server: model fields, `getGroupAsGroupResponse`, `/groups/fork`, system event types, log type, security check (`/groups/delete` already done) | endpoints pass `spring-endpoint-security-check`, fork appears in `/groups/sync` for every selected member with the parent fields |
 | 2 | Client data: DTO, domain, entity, mappers, Room bump, remote + repository methods | fork and delete callable from the repository, fork fields stored |
 | 3 | Client UI: fork entry in group details, fork mode in `GroupCreator`, "Forked from" row, delete action, system event texts, strings (EN/DE/IT) | fork created from the details screen opens the new chat; reference row links to the parent or shows the snapshot |
 | 4 (optional) | Parent lists its forks (D7), history option C (D13) | as decided |

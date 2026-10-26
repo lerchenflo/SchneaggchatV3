@@ -63,4 +63,10 @@ interface GroupRepository {
 
     /** Pass null for [expiresAt] to clear the expiry (group never auto-expires). @return true on success */
     suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): Boolean
+
+    /**
+     * Deletes the whole group for every member (admins only). A connected event is detached and
+     * survives. @return true on success
+     */
+    suspend fun deleteGroup(groupId: String): Boolean
 }

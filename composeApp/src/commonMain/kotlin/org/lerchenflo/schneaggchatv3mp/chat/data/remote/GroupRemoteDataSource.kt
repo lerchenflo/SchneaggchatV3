@@ -31,4 +31,7 @@ interface GroupRemoteDataSource {
 
     //Pass null to clear the expiry (group never auto-expires)
     suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): NetworkResult<Any, NetworkingError>
+
+    //Deletes the whole group for every member (admins only)
+    suspend fun deleteGroup(groupId: String): NetworkResult<Unit, NetworkingError>
 }

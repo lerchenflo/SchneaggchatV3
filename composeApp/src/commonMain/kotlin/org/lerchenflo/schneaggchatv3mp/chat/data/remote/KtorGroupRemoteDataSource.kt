@@ -94,4 +94,8 @@ class KtorGroupRemoteDataSource(
             )
         )
     }
+
+    override suspend fun deleteGroup(groupId: String): NetworkResult<Unit, NetworkingError> {
+        return server.safeDelete(endpoint = "/groups/delete?groupid=$groupId")
+    }
 }
