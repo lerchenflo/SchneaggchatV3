@@ -122,6 +122,7 @@ fun KeyValueView(
             DateTimeInput(
                 millis = (value as? LongValue)?.value,
                 clearable = !definition.required,
+                showNow = definition.showNow,
                 onValueChange = onValueChange
             )
         }
@@ -418,14 +419,15 @@ fun KeyValueView(
 }
 
 /**
- * Date + time picker button with a Now button next to it. Only writes a value when the user picks
- * one (OK in the dialog) or taps Now - opening the form must not mark the entry as changed.
+ * Date + time picker button with a Now button next to it when [showNow]. Only writes a value when the
+ * user picks one (OK in the dialog) or taps Now - opening the form must not mark the entry as changed.
  * When [clearable], a set date gets a clear button that writes null.
  */
 @Composable
 private fun DateTimeInput(
     millis: Long?,
     clearable: Boolean,
+    showNow: Boolean,
     onValueChange: (AttributeValue?) -> Unit,
 ) {
     val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
@@ -468,12 +470,14 @@ private fun DateTimeInput(
             }
         }
 
-        Spacer(Modifier.width(8.dp))
+        if (showNow) {
+            Spacer(Modifier.width(8.dp))
 
-        OutlinedButton(
-            onClick = { onValueChange(LongValue(Clock.System.now().toEpochMilliseconds())) }
-        ) {
-            Text(stringResource(Res.string.schneaggmap_datetime_now))
+            OutlinedButton(
+                onClick = { onValueChange(LongValue(Clock.System.now().toEpochMilliseconds())) }
+            ) {
+                Text(stringResource(Res.string.schneaggmap_datetime_now))
+            }
         }
     }
 
@@ -581,7 +585,7 @@ fun KeyValueReadOnlyView(
                 )
             }
 
-            if (onValueChange != null) {
+            if (onValueChange != null && definition.showNow) {
                 Spacer(Modifier.width(16.dp))
 
                 NormalButton(
