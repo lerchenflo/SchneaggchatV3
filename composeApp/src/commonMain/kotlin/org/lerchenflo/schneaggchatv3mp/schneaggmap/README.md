@@ -145,7 +145,7 @@ standalone image and not referenced from code yet.
 **New definition type** (reusing an existing `AttributeValue`)
 1. Add the subtype to `AttributeDefinition` on both sides (server: `@JsonSubTypes`, client: `@SerialName`).
 2. Server: add a branch in `SchneaggmapService.validate` (the compiler forces it).
-3. Client: add a branch in `KeyValueView` (the compiler forces it).
+3. Client: add a branch in `KeyValueView` (edit form) and `KeyValueReadOnlyView` (detail card) - the compiler forces both.
 
 **New location type** - follow the checklist at the top of `LocationData.kt` in each repo.
 

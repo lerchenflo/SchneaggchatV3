@@ -5,24 +5,33 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -32,9 +41,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,21 +60,18 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.stevdza_san.swipeable.Swipeable
-import com.stevdza_san.swipeable.domain.ActionCustomization
-import com.stevdza_san.swipeable.domain.SwipeAction
-import com.stevdza_san.swipeable.domain.SwipeBehavior
-import com.stevdza_san.swipeable.domain.SwipeDirection
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.utilities.copyToClipboard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.getValueByKey
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.sortedTypes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
@@ -75,15 +82,20 @@ import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.close
+import schneaggchatv3mp.composeapp.generated.resources.copy
 import schneaggchatv3mp.composeapp.generated.resources.delete
+import schneaggchatv3mp.composeapp.generated.resources.edit
 import schneaggchatv3mp.composeapp.generated.resources.latlong
-import schneaggchatv3mp.composeapp.generated.resources.location_belongs_to_type
+import schneaggchatv3mp.composeapp.generated.resources.location_add_type
 import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_delete
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_edit
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_last_changed_by
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_last_changed_label
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_new
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_title
 
 @Composable
@@ -98,6 +110,10 @@ fun MapEntryInfoCard(
     var currentEntry by remember {
         mutableStateOf(entry)
     }
+
+    //New entries have no id yet and open straight in the form, existing ones as a read-only card first
+    val isNewEntry = entry.id.isEmpty()
+    var isEditing by remember { mutableStateOf(isNewEntry) }
 
     var showDeleteConfirmationPopup by remember { mutableStateOf(false) }
 
@@ -115,134 +131,134 @@ fun MapEntryInfoCard(
     ) {
         Column(
             modifier = modifier
+                .widthIn(max = 560.dp)
                 .fillMaxWidth()
                 .imePadding()
-                .padding(12.dp)
+                .padding(16.dp)
                 .clip(RoundedCornerShape(28.dp))
-                .background(MaterialTheme.colorScheme.background)
-                .padding(start = 12.dp, top = 12.dp, end = 12.dp, bottom = 12.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .padding(start = 24.dp, top = 16.dp, end = 12.dp, bottom = 20.dp)
         ) {
+
+            EntryHeader(
+                entry = currentEntry,
+                isEditing = isEditing,
+                isNewEntry = isNewEntry,
+                onEditClick = { isEditing = true },
+                onCloseClick = onDismiss,
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             //Scrollable column to be able to hoist multiple attributevalues
             Column(
                 modifier = Modifier
                     .weight(1f, fill = false)
                     .verticalScroll(rememberScrollState())
+                    .padding(end = 12.dp)
             ) {
-                EntryTitleView(
-                    entry = currentEntry,
-                    onChange = {
-                        currentEntry = it
-                    },
-                )
+                if (isEditing) {
+                    EntryTitleView(
+                        entry = currentEntry,
+                        onChange = {
+                            currentEntry = it
+                        },
+                    )
 
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                CoordinateView(currentEntry.coordinates)
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                //The editor name is resolved server side, but old cached entries may not have one yet
-                val lastChangedText = if (currentEntry.updatedByName.isNotBlank()) {
-                    stringResource(
-                        Res.string.schneaggmap_entry_last_changed_by,
-                        currentEntry.updatedByName,
-                        millisToTimeDateOrYesterday(currentEntry.updatedAt)
+                    LocationAttributeView(
+                        entry = currentEntry,
+                        onChange = {
+                            currentEntry = it
+                        }
                     )
                 } else {
-                    stringResource(Res.string.schneaggmap_entry_last_changed_label) + ": " +
-                            millisToTimeDateOrYesterday(currentEntry.updatedAt)
+                    EntryDetailView(entry = currentEntry)
                 }
 
-                Text(
-                    text = lastChangedText,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                HorizontalDivider(thickness = 4.dp)
+                HorizontalDivider()
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                LocationAttributeView(
+                EntryMetaView(
                     entry = currentEntry,
-                    onChange = {
-                        currentEntry = it
-                    }
+                    showLastChanged = !isNewEntry
                 )
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
 
+            if (isEditing) {
+                //Primary action on the trailing side, cancel next to it
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 12.dp)
+                ) {
+                    NormalButton(
+                        text = stringResource(Res.string.cancel),
+                        onClick = {
+                            if (isNewEntry) {
+                                onDismiss()
+                            } else {
+                                //Throw away the edits and go back to the read-only card
+                                currentEntry = entry
+                                isEditing = false
+                            }
+                        },
+                        primary = false
+                    )
 
+                    //The ViewModel drops entries without a name or a type, so don't offer saving those
+                    val canSave = currentEntry != entry &&
+                            currentEntry.name.isNotBlank() &&
+                            currentEntry.locationData.isNotEmpty()
 
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            //Close / cancel row
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                val changed = entry != currentEntry
-
-                //Delete on the far left, only shown when nothing has been edited yet
-                if (!changed) {
-                    IconButton(
-                        onClick = { showDeleteConfirmationPopup = true }
-                    ) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-
-                val shareUtils = koinInject<ShareUtils>()
-                NormalButton(
-                    text = stringResource(Res.string.open_location_in_maps),
-                    onClick = {
-                        shareUtils.openLocationInMaps(
-                            currentEntry.coordinates.lat,
-                            currentEntry.coordinates.long,
-                            currentEntry.name
-                        )
-                    },
-                    primary = false
-                )
-
-                //Move cancel button to the right, if something changed to the left (primary action always on the right)
-                if (!changed) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-
-                NormalButton(
-                    text = stringResource(Res.string.cancel),
-                    onClick = onDismiss,
-                    primary = false
-                )
-
-                if (changed) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-
-                //Save button on the right side, but only if something changed
-                if (changed) {
                     NormalButton(
                         text = stringResource(Res.string.save),
                         onClick = {
                             onSave(currentEntry)
                         },
-                        primary = false,
-                        showOutline = true
+                        disabled = !canSave
                     )
                 }
+            } else {
+                //Delete far away from the main action on the leading side
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 12.dp)
+                ) {
+                    IconButton(
+                        onClick = { showDeleteConfirmationPopup = true }
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = stringResource(Res.string.delete),
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
 
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    val shareUtils = koinInject<ShareUtils>()
+                    NormalButton(
+                        text = stringResource(Res.string.open_location_in_maps),
+                        onClick = {
+                            shareUtils.openLocationInMaps(
+                                currentEntry.coordinates.lat,
+                                currentEntry.coordinates.long,
+                                currentEntry.name
+                            )
+                        }
+                    )
+                }
             }
 
         }
@@ -278,27 +294,208 @@ fun MapEntryInfoCard(
 }
 
 
+/**
+ * Top row of the card: the entry's types as chips (or the form title while editing), then the
+ * edit and close buttons. Editing has its own cancel / save row, so it only shows the title.
+ */
+@Composable
+private fun EntryHeader(
+    entry: MapEntry,
+    isEditing: Boolean,
+    isNewEntry: Boolean,
+    onEditClick: () -> Unit,
+    onCloseClick: () -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        if (isEditing) {
+            Text(
+                text = stringResource(if (isNewEntry) Res.string.schneaggmap_entry_new else Res.string.schneaggmap_entry_edit),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 12.dp)
+            )
+        } else {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                entry.locationData.forEach { locationData ->
+                    LocationTypeChip(locationData)
+                }
+            }
+
+            IconButton(onClick = onEditClick) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = stringResource(Res.string.edit),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            IconButton(onClick = onCloseClick) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(Res.string.close),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+/** Non-interactive label for one of the entry's types, with the same icon as its map marker. */
+@Composable
+private fun LocationTypeChip(locationData: LocationData) {
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 8.dp, top = 6.dp, end = 12.dp, bottom = 6.dp)
+        ) {
+            Image(
+                painter = painterResource(locationData.locationtype.drawableRes()),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+
+            Spacer(modifier = Modifier.width(6.dp))
+
+            Text(
+                text = stringResource(locationData.locationtype.stringRes()),
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+    }
+}
+
+/** Read-only body of the card: name, description and every attribute that has a value. */
+@Composable
+private fun EntryDetailView(entry: MapEntry) {
+    Column {
+        if (entry.name.isNotBlank()) {
+            Text(
+                text = entry.name,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        if (entry.description.isNotBlank()) {
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = entry.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        //TODO: Small row with ratings
+
+        entry.locationData.forEach { locationData ->
+            val filledAttributes = locationData.schema().mapNotNull { definition ->
+                locationData.getValueByKey(definition.key)?.let { value -> definition to value }
+            }
+
+            if (filledAttributes.isEmpty()) return@forEach
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            //The header chips already name the type, a section title is only needed to tell several apart
+            if (entry.locationData.size > 1) {
+                Text(
+                    text = stringResource(locationData.locationtype.stringRes()),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            filledAttributes.forEach { (definition, value) ->
+                KeyValueReadOnlyView(
+                    value = value,
+                    definition = definition
+                )
+            }
+        }
+    }
+}
+
+/** Coordinates with a copy button, and who changed the entry last. */
+@Composable
+private fun EntryMetaView(entry: MapEntry, showLastChanged: Boolean) {
+    val lat = entry.coordinates.lat.toString().take(8)
+    val long = entry.coordinates.long.toString().take(8)
+
+    Column {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = stringResource(Res.string.latlong, lat, long),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+
+            IconButton(
+                onClick = { copyToClipboard(text = "$lat, $long") }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ContentCopy,
+                    contentDescription = stringResource(Res.string.copy),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+
+        if (showLastChanged) {
+            //The editor name is resolved server side, but old cached entries may not have one yet
+            val lastChangedText = if (entry.updatedByName.isNotBlank()) {
+                stringResource(
+                    Res.string.schneaggmap_entry_last_changed_by,
+                    entry.updatedByName,
+                    millisToTimeDateOrYesterday(entry.updatedAt)
+                )
+            } else {
+                stringResource(Res.string.schneaggmap_entry_last_changed_label) + ": " +
+                        millisToTimeDateOrYesterday(entry.updatedAt)
+            }
+
+            Text(
+                text = lastChangedText,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+
 @Composable
 fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
 
     Column {
-
-        val combinedEntries = entry.locationData.map {
-            stringResource(it.locationtype.stringRes())
-        }
-        Text(
-            text = stringResource(Res.string.location_belongs_to_type, combinedEntries.joinToString(", ")),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        //TODO: Small row with ratings
-
-        Spacer(modifier = Modifier.height(4.dp))
-
         //Title
-        TextField(
+        OutlinedTextField(
             value = entry.name,
             onValueChange = {
                 onChange(
@@ -307,15 +504,16 @@ fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
             },
             label = {
                 Text(
-                    text = stringResource(Res.string.schneaggmap_entry_title)
+                    text = stringResource(Res.string.schneaggmap_entry_title) + " *"
                 )
             },
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        TextField(
+        OutlinedTextField(
             value = entry.description,
             onValueChange = {
                 onChange(
@@ -327,6 +525,7 @@ fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
                     text = stringResource(Res.string.schneaggmap_entry_description)
                 )
             },
+            minLines = 2,
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -399,67 +598,74 @@ fun CoordinateView(
 @Composable
 fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
 
-    Column {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         entry.locationData.forEach { locationData ->
-            Swipeable(
-                behavior = SwipeBehavior.REVEAL,
-                direction = SwipeDirection.LEFT,
-                leftRevealActions = if (entry.locationData.size > 1) { //Only allow deletion if the entry has more than one locationdata
-                    listOf(
-
-                        SwipeAction(
-                            customization = ActionCustomization(
-                                icon = Icons.Default.Delete,
-                                iconColor = MaterialTheme.colorScheme.onError,
-                                containerColor = MaterialTheme.colorScheme.error
-                            ),
-                            onAction = {
-                                onChange(entry.copy(
-                                    locationData = entry.locationData.mapNotNull {
-                                        if (it.locationtype == locationData.locationtype) {
-                                            null //Return null for this entry (gets deleted)
-                                        } else it
-                                    }
-                                ))
-                            }
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 4.dp, bottom = 12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(locationData.locationtype.drawableRes()),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
                         )
 
-                    )
-                } else emptyList()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .border(width = 2.dp, color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
-                        .padding(8.dp)
-                ) {
-                    Column {
+                        Spacer(modifier = Modifier.width(8.dp))
+
                         Text(
                             text = stringResource(locationData.locationtype.stringRes()),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 12.dp)
                         )
 
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            locationData.schema().forEach { definition ->
-                                val value = locationData.getValueByKey(definition.key)
-
-                                KeyValueView(
-                                    value = value,
-                                    definition = definition,
-                                    onValueChange = { newValue ->
-                                        onChange(entry.copy(
-                                            locationData = entry.locationData.map {
-                                                if (it === locationData) locationData.withValueForKey(definition.key, newValue)
-                                                else it
-                                            }
-                                        ))
-                                    },
+                        //Only allow deletion if the entry has more than one locationdata
+                        if (entry.locationData.size > 1) {
+                            IconButton(
+                                onClick = {
+                                    onChange(entry.copy(
+                                        locationData = entry.locationData.filter {
+                                            it.locationtype != locationData.locationtype
+                                        }
+                                    ))
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = stringResource(Res.string.delete),
+                                    tint = MaterialTheme.colorScheme.error
                                 )
                             }
                         }
+                    }
+
+                    locationData.schema().forEach { definition ->
+                        val value = locationData.getValueByKey(definition.key)
+
+                        KeyValueView(
+                            value = value,
+                            definition = definition,
+                            onValueChange = { newValue ->
+                                onChange(entry.copy(
+                                    locationData = entry.locationData.map {
+                                        if (it === locationData) locationData.withValueForKey(definition.key, newValue)
+                                        else it
+                                    }
+                                ))
+                            },
+                        )
                     }
                 }
             }
@@ -474,17 +680,27 @@ fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
 
     //Box for alignment of popup
     Box(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
     ) {
         NormalButton(
-            text = "+",
+            text = stringResource(Res.string.location_add_type),
             primary = false,
             onClick = {
                 expandedAddGroups = emptySet()
                 showLocationAddDropdown = true
             },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(18.dp)
+                )
+            },
             modifier = Modifier.fillMaxWidth()
-                .padding(8.dp)
         )
 
         DropdownMenu(

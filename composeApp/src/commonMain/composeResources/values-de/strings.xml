@@ -1072,11 +1072,20 @@
     <string name="schneaggmap_chip_events">Events</string>
     <string name="schneaggmap_chip_state_on">%1$s, an</string>
     <string name="schneaggmap_chip_state_off">%1$s, aus</string>
-    <string name="location_belongs_to_type">Gehört zu: %1$s</string>
     <string name="location_add_type">Neuen Typ hinzufügen</string>
 
     <string name="schneaggmap_entry_title">Name</string>
     <string name="schneaggmap_entry_description">Beschreibung</string>
+    <string name="schneaggmap_entry_new">Neuer Karteneintrag</string>
+    <string name="schneaggmap_entry_edit">Karteneintrag bearbeiten</string>
+    <string name="schneaggmap_secret_show">Anzeigen</string>
+    <string name="schneaggmap_secret_hide">Verbergen</string>
+    <string name="schneaggmap_attribute_required">Pflichtfeld</string>
+    <string name="schneaggmap_attribute_invalid_number">Ungültige Zahl</string>
+    <string name="schneaggmap_attribute_min">Min.: %1$s</string>
+    <string name="schneaggmap_attribute_max">Max.: %1$s</string>
+    <string name="schneaggmap_attribute_max_chars">Max. %1$s Zeichen</string>
+    <string name="schneaggmap_datetime_picker_title">Datum &amp; Uhrzeit wählen</string>
 
     <string name="schneaggmap_entry_delete">Diesen Eintrag löschen. Er wird auch für alle anderen gelöscht. Du wirst ihn nicht wiederherstellen können.</string>
 

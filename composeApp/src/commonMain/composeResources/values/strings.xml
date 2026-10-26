@@ -1072,11 +1072,20 @@
     <string name="schneaggmap_chip_events">Events</string>
     <string name="schneaggmap_chip_state_on">%1$s, on</string>
     <string name="schneaggmap_chip_state_off">%1$s, off</string>
-    <string name="location_belongs_to_type">Belongs to: %1$s</string>
     <string name="location_add_type">Add a new type</string>
 
     <string name="schneaggmap_entry_title">Name</string>
     <string name="schneaggmap_entry_description">Description</string>
+    <string name="schneaggmap_entry_new">New map entry</string>
+    <string name="schneaggmap_entry_edit">Edit map entry</string>
+    <string name="schneaggmap_secret_show">Show</string>
+    <string name="schneaggmap_secret_hide">Hide</string>
+    <string name="schneaggmap_attribute_required">Required</string>
+    <string name="schneaggmap_attribute_invalid_number">Invalid number</string>
+    <string name="schneaggmap_attribute_min">Min: %1$s</string>
+    <string name="schneaggmap_attribute_max">Max: %1$s</string>
+    <string name="schneaggmap_attribute_max_chars">Max. %1$s characters</string>
+    <string name="schneaggmap_datetime_picker_title">Select date &amp; time</string>
 
     <string name="schneaggmap_entry_delete">Delete this entry. It will also be deleted for everyone else. You will not be able to restore it.</string>
 

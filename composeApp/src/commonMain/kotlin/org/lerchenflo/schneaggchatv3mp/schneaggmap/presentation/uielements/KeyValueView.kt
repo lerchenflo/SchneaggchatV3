@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
@@ -46,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.darkokoa.datetimewheelpicker.WheelDatePicker
@@ -71,9 +74,26 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.LongVal
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.StringValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.koin.compose.koinInject
 import org.koin.mp.KoinPlatform
 import kotlin.math.roundToInt
 import org.lerchenflo.schneaggchatv3mp.utilities.germanNumericDateFormatter
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.toFixed
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.copy
+import schneaggchatv3mp.composeapp.generated.resources.no
+import schneaggchatv3mp.composeapp.generated.resources.ok
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_invalid_number
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_max
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_max_chars
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_min
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_required
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_datetime_picker_title
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_secret_hide
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_secret_show
+import schneaggchatv3mp.composeapp.generated.resources.yes
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -116,10 +136,10 @@ fun KeyValueView(
 
                 val error = rawText.toDoubleOrNull().let { parsed ->
                     when {
-                        rawText.isBlank() && definition.required -> "Required"
-                        parsed == null && rawText.isNotBlank()   -> "Invalid number"
-                        parsed != null && definition.min != null && parsed < definition.min -> "Min: ${definition.min}"
-                        parsed != null && definition.max != null && parsed > definition.max -> "Max: ${definition.max}"
+                        rawText.isBlank() && definition.required -> stringResource(Res.string.schneaggmap_attribute_required)
+                        parsed == null && rawText.isNotBlank()   -> stringResource(Res.string.schneaggmap_attribute_invalid_number)
+                        parsed != null && definition.min != null && parsed < definition.min -> stringResource(Res.string.schneaggmap_attribute_min, "${definition.min}")
+                        parsed != null && definition.max != null && parsed > definition.max -> stringResource(Res.string.schneaggmap_attribute_max, "${definition.max}")
                         else -> null
                     }
                 }
@@ -150,10 +170,10 @@ fun KeyValueView(
 
                 val error = rawText.toIntOrNull().let { parsed ->
                     when {
-                        rawText.isBlank() && definition.required              -> "Required"
-                        parsed == null && rawText.isNotBlank()                -> "Invalid number"
-                        parsed != null && definition.min != null && parsed < definition.min -> "Min: ${definition.min}"
-                        parsed != null && definition.max != null && parsed > definition.max -> "Max: ${definition.max}"
+                        rawText.isBlank() && definition.required              -> stringResource(Res.string.schneaggmap_attribute_required)
+                        parsed == null && rawText.isNotBlank()                -> stringResource(Res.string.schneaggmap_attribute_invalid_number)
+                        parsed != null && definition.min != null && parsed < definition.min -> stringResource(Res.string.schneaggmap_attribute_min, "${definition.min}")
+                        parsed != null && definition.max != null && parsed > definition.max -> stringResource(Res.string.schneaggmap_attribute_max, "${definition.max}")
                         else -> null
                     }
                 }
@@ -185,8 +205,8 @@ fun KeyValueView(
                 }
 
                 val error = when {
-                    rawText.isBlank() && definition.required                                    -> "Required"
-                    definition.maxLength != null && rawText.length > definition.maxLength -> "Max ${definition.maxLength} chars"
+                    rawText.isBlank() && definition.required                                    -> stringResource(Res.string.schneaggmap_attribute_required)
+                    definition.maxLength != null && rawText.length > definition.maxLength -> stringResource(Res.string.schneaggmap_attribute_max_chars, "${definition.maxLength}")
                     else -> null
                 }
 
@@ -211,10 +231,10 @@ fun KeyValueView(
 
                 val error = rawText.toLongOrNull().let { parsed ->
                     when {
-                        rawText.isBlank() && definition.required              -> "Required"
-                        parsed == null && rawText.isNotBlank()                -> "Invalid number"
-                        parsed != null && definition.min != null && parsed < definition.min -> "Min: ${definition.min}"
-                        parsed != null && definition.max != null && parsed > definition.max -> "Max: ${definition.max}"
+                        rawText.isBlank() && definition.required              -> stringResource(Res.string.schneaggmap_attribute_required)
+                        parsed == null && rawText.isNotBlank()                -> stringResource(Res.string.schneaggmap_attribute_invalid_number)
+                        parsed != null && definition.min != null && parsed < definition.min -> stringResource(Res.string.schneaggmap_attribute_min, "${definition.min}")
+                        parsed != null && definition.max != null && parsed > definition.max -> stringResource(Res.string.schneaggmap_attribute_max, "${definition.max}")
                         else -> null
                     }
                 }
@@ -424,15 +444,15 @@ fun KeyValueView(
                                 selectedTime = LocalTime(timePickerState.hour, timePickerState.minute)
                                 showDialog = false
                             }) {
-                                Text("OK")
+                                Text(stringResource(Res.string.ok))
                             }
                         },
                         dismissButton = {
                             TextButton(onClick = { showDialog = false }) {
-                                Text("Cancel")
+                                Text(stringResource(Res.string.cancel))
                             }
                         },
-                        title = { Text("Select Date & Time") },
+                        title = { Text(stringResource(Res.string.schneaggmap_datetime_picker_title)) },
                         text = {
                             Column(
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -475,6 +495,136 @@ fun KeyValueView(
 
 
 /**
+ * Read-only counterpart of [KeyValueView] for the map entry detail card: label on the left, the
+ * formatted value on the right. Like [KeyValueView], every definition type needs a branch here.
+ */
+@Composable
+fun KeyValueReadOnlyView(
+    value: AttributeValue,
+    definition: AttributeDefinition,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 40.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(definition.key.labelRes()),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .padding(end = 16.dp)
+        )
+
+        Box(
+            contentAlignment = Alignment.CenterEnd,
+            modifier = Modifier.weight(1f, fill = false)
+        ) {
+            when (definition) {
+                is AttributeDefinition.BoolDef -> ReadOnlyValueText(
+                    stringResource(if ((value as? BoolValue)?.value == true) Res.string.yes else Res.string.no)
+                        .replaceFirstChar { it.uppercase() }
+                )
+
+                is AttributeDefinition.IntDef -> ReadOnlyValueText((value as? IntValue)?.value?.toString().orEmpty())
+
+                is AttributeDefinition.LongDef -> ReadOnlyValueText((value as? LongValue)?.value?.toString().orEmpty())
+
+                is AttributeDefinition.DoubleDef -> ReadOnlyValueText((value as? DoubleValue)?.value?.toDisplayString().orEmpty())
+
+                is AttributeDefinition.StringDef -> ReadOnlyValueText((value as? StringValue)?.value.orEmpty())
+
+                is AttributeDefinition.EnumDef -> {
+                    val storedName = (value as? StringValue)?.value
+                    val selectedOption = definition.options.firstOrNull { it.name == storedName }
+
+                    // Unknown stored names (e.g. an option added in a newer app version) are shown raw
+                    ReadOnlyValueText(selectedOption?.let { stringResource(it.labelRes) } ?: storedName.orEmpty())
+                }
+
+                is AttributeDefinition.PriceDef -> ReadOnlyValueText(
+                    (value as? DoubleValue)?.value?.let { "${it.toFixed(2)} €" }.orEmpty()
+                )
+
+                is AttributeDefinition.DistanceDef -> ReadOnlyValueText(
+                    (value as? DoubleValue)?.value?.let { "${it.toDisplayString()} ${definition.unit.symbol}" }.orEmpty()
+                )
+
+                is AttributeDefinition.RatingDef -> {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+
+                        Spacer(Modifier.width(4.dp))
+
+                        ReadOnlyValueText("${(value as? IntValue)?.value ?: definition.min} / ${definition.max}")
+                    }
+                }
+
+                is AttributeDefinition.DateTimeDef -> ReadOnlyValueText(
+                    (value as? LongValue)?.value?.let { millisToString(it, format = "HH:mm dd.MM.yyyy") }.orEmpty()
+                )
+
+                is AttributeDefinition.SecretDef -> {
+                    val secret = (value as? StringValue)?.value.orEmpty()
+                    var secretVisible by remember { mutableStateOf(false) }
+                    val shareUtils = koinInject<ShareUtils>()
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        ReadOnlyValueText(if (secretVisible) secret else "••••••")
+
+                        IconButton(onClick = { secretVisible = !secretVisible }) {
+                            Icon(
+                                imageVector = if (secretVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = stringResource(
+                                    if (secretVisible) Res.string.schneaggmap_secret_hide else Res.string.schneaggmap_secret_show
+                                ),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        IconButton(
+                            // ShareUtils directly - copyToClipboard() would echo the secret in a snackbar
+                            onClick = { shareUtils.copyToClipboard(secret) },
+                            enabled = secret.isNotEmpty()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = stringResource(Res.string.copy),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReadOnlyValueText(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurface,
+        textAlign = TextAlign.End
+    )
+}
+
+/** Whole numbers without the ".0" that toString() appends. */
+private fun Double.toDisplayString(): String =
+    if (this % 1.0 == 0.0) toLong().toString() else toString()
+
+
+/**
  * Non-negative decimal input with a unit [suffix]. Accepts both '.' and ',' as decimal separator and
  * rejects input with more than [maxDecimals] decimals. Only resyncs from [value] when it differs from
  * what is typed, so e.g. "3." is not overwritten with "3.0" while typing.
@@ -498,10 +648,10 @@ private fun DecimalInputField(
 
     val parsed = rawText.replace(',', '.').toDoubleOrNull()
     val error = when {
-        rawText.isBlank() && required            -> "Required"
-        parsed == null && rawText.isNotBlank()   -> "Invalid number"
-        parsed != null && parsed < 0.0           -> "Min: 0"
-        parsed != null && max != null && parsed > max -> "Max: $max"
+        rawText.isBlank() && required            -> stringResource(Res.string.schneaggmap_attribute_required)
+        parsed == null && rawText.isNotBlank()   -> stringResource(Res.string.schneaggmap_attribute_invalid_number)
+        parsed != null && parsed < 0.0           -> stringResource(Res.string.schneaggmap_attribute_min, "0")
+        parsed != null && max != null && parsed > max -> stringResource(Res.string.schneaggmap_attribute_max, "$max")
         else -> null
     }
 

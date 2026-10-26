@@ -1066,11 +1066,20 @@ Mealds, egal wie klenn.</string>
 
     <!-- Schneaggmap -->
     <string name="schneaggmap_filter_location_types">Standorttypa</string>
-    <string name="location_belongs_to_type">Ghört zu: %1$s</string>
     <string name="location_add_type">Neua Typ erstella</string>
 
     <string name="schneaggmap_entry_title">Nama</string>
     <string name="schneaggmap_entry_description">Beschreibung</string>
+    <string name="schneaggmap_entry_new">Neuer Kartaitrag</string>
+    <string name="schneaggmap_entry_edit">Kartaitrag bearbeita</string>
+    <string name="schneaggmap_secret_show">Azoaga</string>
+    <string name="schneaggmap_secret_hide">Verstecka</string>
+    <string name="schneaggmap_attribute_required">Pflichtfeald</string>
+    <string name="schneaggmap_attribute_invalid_number">Ungültige Zahl</string>
+    <string name="schneaggmap_attribute_min">Min.: %1$s</string>
+    <string name="schneaggmap_attribute_max">Max.: %1$s</string>
+    <string name="schneaggmap_attribute_max_chars">Max. %1$s Zeicha</string>
+    <string name="schneaggmap_datetime_picker_title">Datum &amp; Uhrzit wähla</string>
 
     <string name="schneaggmap_entry_delete">Dean Itrag löscha. Er wird o für alle andra glöscht. Du kannschan num wiederherstella.</string>
 

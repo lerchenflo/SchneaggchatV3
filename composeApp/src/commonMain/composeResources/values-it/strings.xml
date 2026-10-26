@@ -1066,11 +1066,20 @@
     <string name="schneaggmap_chip_events">Eventi</string>
     <string name="schneaggmap_chip_state_on">%1$s, attivo</string>
     <string name="schneaggmap_chip_state_off">%1$s, disattivo</string>
-    <string name="location_belongs_to_type">Appartiene a: %1$s</string>
     <string name="location_add_type">Aggiungi un nuovo tipo</string>
 
     <string name="schneaggmap_entry_title">Nome</string>
     <string name="schneaggmap_entry_description">Descrizione</string>
+    <string name="schneaggmap_entry_new">Nuova voce della mappa</string>
+    <string name="schneaggmap_entry_edit">Modifica voce della mappa</string>
+    <string name="schneaggmap_secret_show">Mostra</string>
+    <string name="schneaggmap_secret_hide">Nascondi</string>
+    <string name="schneaggmap_attribute_required">Obbligatorio</string>
+    <string name="schneaggmap_attribute_invalid_number">Numero non valido</string>
+    <string name="schneaggmap_attribute_min">Min: %1$s</string>
+    <string name="schneaggmap_attribute_max">Max: %1$s</string>
+    <string name="schneaggmap_attribute_max_chars">Max %1$s caratteri</string>
+    <string name="schneaggmap_datetime_picker_title">Seleziona data e ora</string>
 
     <string name="schneaggmap_entry_delete">Elimina questa voce. Verrà eliminata anche per tutti gli altri. Non potrai ripristinarla.</string>
 
