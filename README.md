@@ -28,6 +28,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit
 - Schneagg Rodeo verbessert
 - Schneaggmap: UI verbessert
+- Schneaggmap: Events ohne Interesse ausgeblendet, beigetretene Events farbig markiert
 - Umfragen: Einfachere Einstellungen
 - Neues Spiel: C Coding
 

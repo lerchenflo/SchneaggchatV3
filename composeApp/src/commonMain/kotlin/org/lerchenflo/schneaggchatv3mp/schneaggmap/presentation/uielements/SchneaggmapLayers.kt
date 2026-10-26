@@ -700,14 +700,17 @@ fun SchneaggmapLayers(
 
     //Show events with a location set, gated by the "Events" toggle in the filter dropdown.
     //Each pin uses the same icon as the event's type (see EventType.icon()).
+    //Joined events are drawn in the primary color, all others in the error color.
     if (state.eventsWithLocation.isNotEmpty() && state.showEvents) {
-        val eventPinTint = MaterialTheme.colorScheme.onError
-        //Filled circle behind each event icon so the pins stand out from the base map
-        val eventPinBackgroundColor = MaterialTheme.colorScheme.error
         val eventPinBorderColor = MaterialTheme.colorScheme.surface
+        val colorScheme = MaterialTheme.colorScheme
 
         state.eventsWithLocation.forEach { event ->
             val location = event.location ?: return@forEach
+            val isJoined = event.id in state.joinedEventIds
+            val eventPinTint = if (isJoined) colorScheme.onPrimary else colorScheme.onError
+            //Filled circle behind each event icon so the pins stand out from the base map
+            val eventPinBackgroundColor = if (isJoined) colorScheme.primary else colorScheme.error
 
             safeAdd(layerId = "event-${event.id}") {
                 val eventSource = rememberGeoJsonSource(
