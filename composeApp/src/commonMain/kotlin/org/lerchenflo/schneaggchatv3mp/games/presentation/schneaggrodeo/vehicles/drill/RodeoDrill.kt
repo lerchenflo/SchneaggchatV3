@@ -82,6 +82,9 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
     /** Underside of the tracks; negative while underground. */
     private var y = 0f
     private var drilling = false
+    /** Jump and dive input held: either one drills (the dive is S / arrow down on desktop). */
+    private var jumpHeld = false
+    private var diveHeld = false
     /** The ride is over (time up or a rock): the machine comes back up no matter what. */
     private var surfacing = false
     private var lift = 0f
@@ -126,12 +129,20 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
         super.board(world)
         boardingHop.start(x, world)
         drilling = false
+        jumpHeld = false
+        diveHeld = false
         surfacing = false
         nextFindIn = 6f
     }
 
     override fun onJump(pressed: Boolean) {
-        drilling = pressed && phase == VehiclePhase.RIDING
+        jumpHeld = pressed
+        drilling = (jumpHeld || diveHeld) && phase == VehiclePhase.RIDING
+    }
+
+    override fun onDive(pressed: Boolean) {
+        diveHeld = pressed
+        drilling = (jumpHeld || diveHeld) && phase == VehiclePhase.RIDING
     }
 
     @OptIn(kotlin.experimental.ExperimentalNativeApi::class)

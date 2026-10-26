@@ -36,6 +36,9 @@ internal class RodeoLasso(private val snails: MutableList<Snail>) {
 
     val isOut: Boolean get() = time >= 0f
     val isReady: Boolean get() = !isOut && cooldown <= 0f
+
+    /** Ready again within [seconds] (it may still be on its way back). */
+    fun readyWithin(seconds: Float): Boolean = cooldown <= seconds
     /** 0..1 through the throw (out and back), null while no lasso is out. */
     val throwProgress: Float? get() = if (isOut) progressOf(time, LASSO_DURATION) else null
 
@@ -58,25 +61,26 @@ internal class RodeoLasso(private val snails: MutableList<Snail>) {
 
     /**
      * Thrown from the saddle. [vehicleGrab] offers a vehicle target for the reach and the time the
-     * loop takes to get there; it beats any snail. Otherwise the loop homes in on the closest snail
-     * in reach, picked by where it will be when the loop arrives - at full speed a snail scrolls
+     * loop takes to get there; it beats any snail. It also gets where the closest snail in reach
+     * will be (null if none), so it can leave a snail to the loop. Otherwise the loop homes in on
+     * that snail, picked by where it will be when the loop arrives - at full speed a snail scrolls
      * ~40 u during the throw, so its current position would already be behind the hand.
      */
     fun throwFromSaddle(
         groundSpeed: Float,
-        vehicleGrab: (reach: ClosedFloatingPointRange<Float>, timeToCatch: Float) -> LassoGrab?,
+        vehicleGrab: (reach: ClosedFloatingPointRange<Float>, timeToCatch: Float, snailX: Float?) -> LassoGrab?,
     ) {
         val handX = HORSE_X + HAND_X
         val timeToCatch = LASSO_DURATION / 2f
         startThrow()
         grabbed = false
-        grab = vehicleGrab((handX - 2f)..(handX + LASSO_RANGE), timeToCatch)
-        target = if (grab != null) null else snails
+        val snail = snails
             .filter { it.state == SnailState.ACTIVE }
             .map { it to it.predictedX(groundSpeed, timeToCatch) }
             .filter { (_, x) -> x > handX - 2f && x < handX + LASSO_RANGE }
             .minByOrNull { (_, x) -> x }
-            ?.first
+        grab = vehicleGrab((handX - 2f)..(handX + LASSO_RANGE), timeToCatch, snail?.second)
+        target = if (grab != null) null else snail?.first
     }
 
     /** Thrown on foot, ahead at the horse (see [stepToSaddle]). */

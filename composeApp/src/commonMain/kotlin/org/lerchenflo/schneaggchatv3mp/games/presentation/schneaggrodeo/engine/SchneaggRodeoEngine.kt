@@ -60,6 +60,10 @@ import kotlin.random.Random
 
 /** Longer frames (a hiccup, a debugger pause) are cut so nothing tunnels through a fence. */
 private const val MAX_FRAME_SECONDS = 0.05f
+/** Seconds before landing a jump press is remembered and jumps again on touchdown. */
+private const val JUMP_BUFFER_SECONDS = 0.12f
+/** Seconds before the lasso is ready again a press is remembered and throws once it is. */
+private const val LASSO_BUFFER_SECONDS = 0.15f
 
 // Rules: what running into things costs and what catching things gives
 private const val FENCE_CRASH_PENALTY = 12f   // pack gap lost
@@ -272,6 +276,12 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     /** The map whose name is shown big right after arriving there, if any. */
     val mapTitle: RodeoMap? get() = mapSwitch.title
 
+    /** No super jump over the rainbow's gaps: it is made for fences (see [superJumpPressed]). */
+    val superJumpAllowed: Boolean get() = mapSwitch.map != RodeoMap.RAINBOW
+
+    /** The horse is restless and may buck after a big jump: the warning shows. */
+    val horseRestless: Boolean get() = fall.isRestless && ride == null && mapSwitch.map != RodeoMap.RAINBOW
+
     /** Kind of the vehicle being ridden; the controls turn into a hint on how to ride it. */
     val rideKind: RodeoVehicleKind? get() = ride?.kind
 
@@ -289,6 +299,19 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     /** The vehicle carrying the rider (or getting him on / off). */
     private val ride: RodeoVehicle? get() = traffic.ride
+
+    // --- Input held down
+
+    /** The jump input (key or finger) is down, also while a vehicle does not take it yet. */
+    private var jumpDown = false
+    /** The dive input is down. */
+    private var diveDown = false
+    /** Seconds a jump pressed in the air is still remembered and fires on landing (see JUMP_BUFFER_SECONDS). */
+    private var jumpBuffer = 0f
+    /** Seconds a lasso press a moment too early is still remembered (see LASSO_BUFFER_SECONDS). */
+    private var lassoBuffer = 0f
+    /** A vehicle took the input last frame; on getting there the held input is passed on to it. */
+    private var wasRiding = false
 
     /** Height of the horse's hooves above the ground, vehicle included. */
     private val horseBase: Float get() = horse.height + (ride?.horseLift ?: 0f)
@@ -326,6 +349,9 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         travelling = false
         dropping = false
         dropVelocity = 0f
+        jumpBuffer = 0f
+        lassoBuffer = 0f
+        wasRiding = false
         flavor.roll()
         course.mudFactor = flavor.mudFactor
         tilt = 0f
@@ -407,6 +433,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     // --- Input
 
     fun jumpPressed() {
+        jumpDown = true
         if (horse.jumpHeld || inputLocked) return // key repeat while holding
         horse.jumpHeld = true
         if (!fall.isInSaddle) {
@@ -418,27 +445,32 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             ride.onJump(true)
             return
         }
-        if (fall.isInSaddle && horse.isOnGround && !superJump.isActive && !dropping) horse.jump()
+        if (superJump.isActive || dropping) return
+        // Pressed a moment before landing: jumps again as soon as the hooves touch down
+        if (horse.isOnGround) horse.jump() else jumpBuffer = JUMP_BUFFER_SECONDS
     }
 
     fun jumpReleased() {
+        jumpDown = false
         horse.jumpHeld = false
         traffic.releaseJump()
     }
 
     /** Steers the plane or the rocket down while held; does nothing on the horse. */
     fun divePressed() {
+        diveDown = true
         if (inputLocked) return
         ride?.onDive(true)
     }
 
     fun diveReleased() {
+        diveDown = false
         traffic.releaseDive()
     }
 
     fun superJumpPressed() {
         // No super jump over the rainbow's gaps: it is made for fences
-        if (inputLocked || superJumpCharges <= 0 || !fall.isInSaddle || ride != null || superJump.isBusy || mapSwitch.map == RodeoMap.RAINBOW) return
+        if (inputLocked || superJumpCharges <= 0 || !fall.isInSaddle || ride != null || superJump.isBusy || !superJumpAllowed) return
         // In the air it fires on landing, on the ground right away
         if (horse.isOnGround) startSuperJump() else superJump.queue()
     }
@@ -463,7 +495,11 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         if (inputLocked) return
         val ride = ride
         if (ride != null && ride.onLassoButton(this)) return
-        if (!lasso.isReady) return
+        if (!lasso.isReady) {
+            // Pressed a moment before the loop is back: it goes out again as soon as it is
+            if (lasso.readyWithin(LASSO_BUFFER_SECONDS)) lassoBuffer = LASSO_BUFFER_SECONDS
+            return
+        }
         if (ride != null && !ride.allowsLasso) return
         if (!fall.isInSaddle) {
             // On foot the lasso is for the horse only; it catches it once he is close enough
@@ -472,11 +508,14 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         }
         // How fast the ground (and everything on it) moves by, per second
         val groundSpeed = ride?.worldScroll(this, horse.pace, 1f) ?: horse.pace
-        lasso.throwFromSaddle(groundSpeed) { reach, timeToCatch ->
+        lasso.throwFromSaddle(groundSpeed) { reach, timeToCatch, snailX ->
             // A passing vehicle beats any snail; while riding one it may offer targets of its own.
-            // Then other horses on the track, then snails.
-            traffic.current?.takeIf { !superJump.isActive }?.lassoGrab(this, HORSE_X + HAND_X, reach, timeToCatch)
-                ?: wildHorses.takeIf { ride == null && !superJump.isActive }?.lassoGrab(reach, timeToCatch, ::wildHorseCaught)
+            // Then other horses on the track, then snails. A snail in reach is only passed over for
+            // a vehicle or a horse closer than it, so a throw at it doesn't start an unwanted ride or
+            // switch horses (which drops a friend riding along).
+            val nearReach = if (snailX != null) reach.start..min(reach.endInclusive, snailX) else reach
+            traffic.current?.takeIf { !superJump.isActive }?.lassoGrab(this, HORSE_X + HAND_X, if (ride == null) nearReach else reach, timeToCatch)
+                ?: wildHorses.takeIf { ride == null && !superJump.isActive }?.lassoGrab(nearReach, timeToCatch, ::wildHorseCaught)
                 ?: stanislaus.takeIf { ride == null && !superJump.isActive }?.lassoGrab(reach, timeToCatch, ::stanislausCaught)
                 ?: pizzaOvens.takeIf { ride == null && !superJump.isActive }?.lassoGrab(reach, timeToCatch, groundSpeed, ::stopFood)
                 ?: shovelGrab(reach, timeToCatch, groundSpeed).takeIf { ride == null && !superJump.isActive }
@@ -503,8 +542,21 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             return
         }
         effects.tick(dt)
+        jumpBuffer = max(0f, jumpBuffer - dt)
         if (fall.isInSaddle) stepRiding(dt) else stepOffTheHorse(dt)
+        throwBufferedLasso(dt)
         if (pack.stepAttack(dt)) peckCowboy()
+    }
+
+    /** A lasso press a moment too early (see [lassoPressed]) throws once the loop is back. */
+    private fun throwBufferedLasso(dt: Float) {
+        if (lassoBuffer <= 0f) return
+        if (lasso.isReady) {
+            lassoBuffer = 0f
+            lassoPressed()
+        } else {
+            lassoBuffer -= dt
+        }
     }
 
     /** The ravens peck the next part off the cowboy; it flies away. Nothing left to lose: he is done for. */
@@ -699,6 +751,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             onBoarded = { kind ->
                 effects.announce(kind)
                 horse.jumpHeld = false
+                jumpBuffer = 0f
                 // Plane, car: the cowboy leaves his horse
                 if (ride?.riderOnHorse == false) leaveHorse()
             },
@@ -708,12 +761,28 @@ internal class SchneaggRodeoEngine : RodeoWorld {
             },
         )
 
+        passHeldInputToRide()
+
         pack.ride(dt, RodeoDifficulty.chaseGapRegain(elapsed))
         markers.catchUp(dt, bonusPoints)
+        fall.tickRestless(dt, pack.gap, elapsed, allowed = ride == null && traffic.isClear && !superJump.isBusy && mapSwitch.map != RodeoMap.RAINBOW)
 
         // Out of hearts: bucks the cowboy off and runs away, once nothing else is going on
         // (not up on the rainbow: there is no ground to run after a new horse on)
         if (horse.isExhausted && ride == null && traffic.isClear && !superJump.isActive && horse.isOnGround && mapSwitch.map != RodeoMap.RAINBOW) exhaustHorse()
+    }
+
+    /**
+     * Most vehicles only take input once riding: a finger (or key) held down through boarding
+     * steers it from the first moment on, without having to let go and press again.
+     */
+    private fun passHeldInputToRide() {
+        val riding = traffic.current?.isRiding == true
+        if (riding && !wasRiding) {
+            if (jumpDown) ride?.onJump(true)
+            if (diveDown) ride?.onDive(true)
+        }
+        wasRiding = riding
     }
 
     /** Test mode: sends the tested vehicle right away, and again shortly after each ride. */
@@ -797,6 +866,10 @@ internal class SchneaggRodeoEngine : RodeoWorld {
                 throwCowboy()
                 return false
             }
+            if (jumpBuffer > 0f && ride == null && !dropping && !superJump.queued) {
+                jumpBuffer = 0f
+                horse.jump()
+            }
         }
         if (superJump.queued && horse.isOnGround && !superJump.isActive) startSuperJump()
         return true
@@ -810,7 +883,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
     }
 
     private fun shouldThrowCowboy(): Boolean =
-        traffic.isClear && !superJump.queued && mapSwitch.map != RodeoMap.RAINBOW && fall.shouldThrow(horse.jumpPeak, pack.gap, elapsed)
+        traffic.isClear && !superJump.queued && mapSwitch.map != RodeoMap.RAINBOW && fall.shouldThrow(horse.jumpPeak, pack.gap)
 
     private fun throwCowboy() {
         fall.start(elapsed)
@@ -831,6 +904,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         // A snail dangling in the lasso gets away
         lasso.end()
         lasso.clearCooldown()
+        lassoBuffer = 0f
     }
 
     // --- Rules
@@ -840,7 +914,10 @@ internal class SchneaggRodeoEngine : RodeoWorld {
      * vehicle the vehicle deals with the track; the riderless horse under the plane hops everything
      * on its own.
      */
-    private val invulnerable: Boolean get() = superJump.isActive || ride != null || wonders.isGhost || dropping
+    private val invulnerable: Boolean get() = superJump.isActive || ride != null || wonders.isGhost || dropping || isFading
+
+    /** Switching maps: the picture is (getting) dark, so nothing on the track can hit the horse meanwhile. */
+    private val isFading: Boolean get() = mapSwitch.fade > 0f
 
     private fun crashIntoFences() {
         if (invulnerable) return
