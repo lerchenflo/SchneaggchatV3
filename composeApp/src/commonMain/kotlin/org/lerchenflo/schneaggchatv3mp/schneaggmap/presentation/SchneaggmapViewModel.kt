@@ -301,7 +301,7 @@ class SchneaggmapViewModel(
 
                 _state.update { s ->
                     s.copy(
-                        selectedEntry = null,
+                        selectedEntry = if (action.keepPopupOpen) entry else null,
                         enabledTypes = s.enabledTypes + entry.locationData.map { it.locationtype }
                     )
                 }

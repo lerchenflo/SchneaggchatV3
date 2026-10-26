@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -58,9 +59,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
-import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
@@ -73,6 +72,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.IntValu
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.LongValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.StringValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.labelRes
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.koin.compose.koinInject
 import org.koin.mp.KoinPlatform
@@ -90,6 +90,8 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_max
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_max_chars
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_min
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_required
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_datetime_not_set
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_datetime_now
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_datetime_picker_title
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_secret_hide
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_secret_show
@@ -104,6 +106,26 @@ fun KeyValueView(
     onValueChange: (AttributeValue) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // The date button and its Now button don't fit next to the label on a phone, so the label goes above them
+    if (definition is AttributeDefinition.DateTimeDef) {
+        Column(
+            modifier = modifier
+                .padding(horizontal = 8.dp)
+        ) {
+            Text(
+                text = stringResource(definition.key.labelRes()) + if (definition.required) " *" else "",
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            DateTimeInput(
+                millis = (value as? LongValue)?.value,
+                onValueChange = onValueChange
+            )
+        }
+        return
+    }
+
     Row(
         modifier = modifier
             .padding(horizontal = 8.dp),
@@ -387,123 +409,178 @@ fun KeyValueView(
                 )
             }
 
-            is AttributeDefinition.DateTimeDef -> {
-                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                // A few years ahead so upcoming dates (e.g. the next horse riding tournament) can be picked
-                val maxPickableDate = LocalDate(now.year + 5, 12, 31)
-
-                val currentMillis = (value as? LongValue)?.value
-                val initialDateTime = currentMillis
-                    ?.let { Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()) }
-                    ?: now
-
-                var selectedDate by remember { mutableStateOf(initialDateTime.date) }
-                var selectedTime by remember { mutableStateOf(initialDateTime.time) }
-                var showDialog by remember { mutableStateOf(false) }
-
-                // Keep onValueChange in sync whenever date or time changes
-                LaunchedEffect(selectedDate, selectedTime) {
-                    val millis = LocalDateTime(date = selectedDate, time = selectedTime)
-                        .toInstant(TimeZone.currentSystemDefault())
-                        .toEpochMilliseconds()
-                    onValueChange(LongValue(millis))
-                }
-
-                // Trigger button — shows the current value, opens dialog on click
-                OutlinedButton(
-                    onClick = { showDialog = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = LocalDateTime(date = selectedDate, time = selectedTime)
-                            .format(LocalDateTime.Format { byUnicodePattern("HH:mm dd.MM.yyyy") })
-                    )
-                }
-
-                if (showDialog) {
-                    // Dialog-local state — only committed on OK
-                    var dialogDate by remember { mutableStateOf(selectedDate) }
-
-                    val timePickerState = rememberTimePickerState(
-                        initialHour   = initialDateTime.hour,
-                        initialMinute = initialDateTime.minute,
-                        is24Hour      = true,
-                    )
-
-                    AlertDialog(
-                        onDismissRequest = { showDialog = false },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                selectedDate = dialogDate
-                                selectedTime = LocalTime(timePickerState.hour, timePickerState.minute)
-                                showDialog = false
-                            }) {
-                                Text(stringResource(Res.string.ok))
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { showDialog = false }) {
-                                Text(stringResource(Res.string.cancel))
-                            }
-                        },
-                        title = { Text(stringResource(Res.string.schneaggmap_datetime_picker_title)) },
-                        text = {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                WheelDatePicker(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    startDate = dialogDate,
-                                    minDate = LocalDate(1900, 1, 1),
-                                    maxDate = maxPickableDate,
-                                    dateFormatter = germanNumericDateFormatter(),
-                                    rows = WheelRows.Count(5),
-                                    textColor = MaterialTheme.colorScheme.onSurface,
-                                    selectorProperties = WheelPickerDefaults.selectorProperties(
-                                        enabled = true,
-                                        color  = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                                    ),
-                                    onSnappedDate = { snappedDate ->
-                                        if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= maxPickableDate) {
-                                            dialogDate = snappedDate
-                                        }
-                                    }
-                                )
-
-                                HorizontalDivider()
-
-                                TimePicker(
-                                    state = timePickerState,
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                )
-                            }
-                        }
-                    )
-                }
-            }
+            // Drawn above, the label sits on its own line there
+            is AttributeDefinition.DateTimeDef -> Unit
         }
     }
 }
+
+/**
+ * Date + time picker button with a Now button next to it. Only writes a value when the user picks
+ * one (OK in the dialog) or taps Now - opening the form must not mark the entry as changed.
+ */
+@Composable
+private fun DateTimeInput(
+    millis: Long?,
+    onValueChange: (AttributeValue) -> Unit,
+) {
+    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    // A few years ahead so upcoming dates (e.g. the next horse riding tournament) can be picked
+    val maxPickableDate = LocalDate(now.year + 5, 12, 31)
+
+    val initialDateTime = millis
+        ?.let { Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()) }
+        ?: now
+
+    var showDialog by remember { mutableStateOf(false) }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // Trigger button — shows the current value, opens dialog on click
+        OutlinedButton(
+            onClick = { showDialog = true },
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(
+                imageVector = Icons.Default.CalendarMonth,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = millis?.let { millisToString(it, format = DATE_TIME_FORMAT) }
+                    ?: stringResource(Res.string.schneaggmap_datetime_not_set)
+            )
+        }
+
+        Spacer(Modifier.width(8.dp))
+
+        OutlinedButton(
+            onClick = { onValueChange(LongValue(Clock.System.now().toEpochMilliseconds())) }
+        ) {
+            Text(stringResource(Res.string.schneaggmap_datetime_now))
+        }
+    }
+
+    if (showDialog) {
+        // Dialog-local state — only committed on OK
+        var dialogDate by remember { mutableStateOf(initialDateTime.date) }
+
+        val timePickerState = rememberTimePickerState(
+            initialHour   = initialDateTime.hour,
+            initialMinute = initialDateTime.minute,
+            is24Hour      = true,
+        )
+
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val pickedMillis = LocalDateTime(date = dialogDate, time = LocalTime(timePickerState.hour, timePickerState.minute))
+                        .toInstant(TimeZone.currentSystemDefault())
+                        .toEpochMilliseconds()
+                    onValueChange(LongValue(pickedMillis))
+                    showDialog = false
+                }) {
+                    Text(stringResource(Res.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            },
+            title = { Text(stringResource(Res.string.schneaggmap_datetime_picker_title)) },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    WheelDatePicker(
+                        modifier = Modifier.fillMaxWidth(),
+                        startDate = dialogDate,
+                        minDate = LocalDate(1900, 1, 1),
+                        maxDate = maxPickableDate,
+                        dateFormatter = germanNumericDateFormatter(),
+                        rows = WheelRows.Count(5),
+                        textColor = MaterialTheme.colorScheme.onSurface,
+                        selectorProperties = WheelPickerDefaults.selectorProperties(
+                            enabled = true,
+                            color  = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                        ),
+                        onSnappedDate = { snappedDate ->
+                            if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= maxPickableDate) {
+                                dialogDate = snappedDate
+                            }
+                        }
+                    )
+
+                    HorizontalDivider()
+
+                    TimePicker(
+                        state = timePickerState,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
+        )
+    }
+}
+
+private const val DATE_TIME_FORMAT = "HH:mm dd.MM.yyyy"
 
 
 /**
  * Read-only counterpart of [KeyValueView] for the map entry detail card: label on the left, the
  * formatted value on the right. Like [KeyValueView], every definition type needs a branch here.
+ * [onValueChange] backs the quick actions that work without the edit form (the Now button of a date).
  */
 @Composable
 fun KeyValueReadOnlyView(
-    value: AttributeValue,
+    value: AttributeValue?,
     definition: AttributeDefinition,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onValueChange: ((AttributeValue) -> Unit)? = null,
 ) {
+    // Two lines (label above value) so the Now button fits next to the date
+    if (definition is AttributeDefinition.DateTimeDef) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(definition.key.labelRes()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Text(
+                    text = (value as? LongValue)?.value?.let { millisToString(it, format = DATE_TIME_FORMAT) }
+                        ?: stringResource(Res.string.schneaggmap_datetime_not_set),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            if (onValueChange != null) {
+                Spacer(Modifier.width(16.dp))
+
+                NormalButton(
+                    text = stringResource(Res.string.schneaggmap_datetime_now),
+                    onClick = { onValueChange(LongValue(Clock.System.now().toEpochMilliseconds())) },
+                    primary = false
+                )
+            }
+        }
+        return
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -569,9 +646,8 @@ fun KeyValueReadOnlyView(
                     }
                 }
 
-                is AttributeDefinition.DateTimeDef -> ReadOnlyValueText(
-                    (value as? LongValue)?.value?.let { millisToString(it, format = "HH:mm dd.MM.yyyy") }.orEmpty()
-                )
+                // Drawn above as a two-line row
+                is AttributeDefinition.DateTimeDef -> Unit
 
                 is AttributeDefinition.SecretDef -> {
                     val secret = (value as? StringValue)?.value.orEmpty()

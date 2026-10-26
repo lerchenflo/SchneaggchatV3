@@ -316,6 +316,7 @@
 
     <string name="use_default_server">Standardserver verwenda</string>
     <string name="use_test_server">Testserver verwenda</string>
+    <string name="test_server_connection">Serververbindung testa</string>
 
 
     <string name="you_have_new_messages">Du hosch neue Nochrichta</string>
@@ -1066,7 +1067,13 @@ Mealds, egal wie klenn.</string>
 
     <!-- Schneaggmap -->
     <string name="schneaggmap_filter_location_types">Standorttypa</string>
+    <string name="schneaggmap_filter_snail_trails">Schleimspura</string>
+    <string name="schneaggmap_chip_places">Orte · %1$d/%2$d</string>
+    <string name="schneaggmap_chip_events">Events</string>
+    <string name="schneaggmap_chip_state_on">%1$s, a</string>
+    <string name="schneaggmap_chip_state_off">%1$s, us</string>
     <string name="location_add_type">Neua Typ erstella</string>
+    <string name="schneaggmap_entry_type_required">Tua mindestens uan Typ dazua</string>
 
     <string name="schneaggmap_entry_title">Nama</string>
     <string name="schneaggmap_entry_description">Beschreibung</string>
@@ -1080,6 +1087,8 @@ Mealds, egal wie klenn.</string>
     <string name="schneaggmap_attribute_max">Max.: %1$s</string>
     <string name="schneaggmap_attribute_max_chars">Max. %1$s Zeicha</string>
     <string name="schneaggmap_datetime_picker_title">Datum &amp; Uhrzit wähla</string>
+    <string name="schneaggmap_datetime_now">Jetzt</string>
+    <string name="schneaggmap_datetime_not_set">Ned gsetzt</string>
 
     <string name="schneaggmap_entry_delete">Dean Itrag löscha. Er wird o für alle andra glöscht. Du kannschan num wiederherstella.</string>
 

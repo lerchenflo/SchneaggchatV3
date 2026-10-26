@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AlertDialog
@@ -67,6 +68,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.utilities.copyToClipboard
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeDefinition
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
@@ -90,6 +92,7 @@ import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.location_add_type
 import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.save
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_required
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_delete
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_edit
@@ -97,6 +100,7 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_last_ch
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_last_changed_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_new
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_title
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_type_required
 
 @Composable
 fun MapEntryInfoCard(
@@ -105,9 +109,12 @@ fun MapEntryInfoCard(
     onSave: (MapEntry) -> Unit,
     onDelete: (String) -> Unit,
     modifier: Modifier = Modifier,
+    // Saves a change made on the read-only card (e.g. a date's Now button) and keeps the card open
+    onQuickSave: (MapEntry) -> Unit = {},
 ) {
 
-    var currentEntry by remember {
+    // Keyed on entry so the card shows the saved state after a quick save hands back the updated entry
+    var currentEntry by remember(entry) {
         mutableStateOf(entry)
     }
 
@@ -116,6 +123,9 @@ fun MapEntryInfoCard(
     var isEditing by remember { mutableStateOf(isNewEntry) }
 
     var showDeleteConfirmationPopup by remember { mutableStateOf(false) }
+
+    // Set by the first save attempt with a missing name or type: errors only show up after trying
+    var showValidationErrors by remember { mutableStateOf(false) }
 
     // A plain Dialog rather than a ModalBottomSheet: the sheet's anchored-drag machinery could end
     // up swallowing pointer-down events after the card was rebuilt on a fast navigation, leaving it
@@ -163,6 +173,7 @@ fun MapEntryInfoCard(
                         onChange = {
                             currentEntry = it
                         },
+                        showNameError = showValidationErrors,
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -171,10 +182,14 @@ fun MapEntryInfoCard(
                         entry = currentEntry,
                         onChange = {
                             currentEntry = it
-                        }
+                        },
+                        showTypeError = showValidationErrors,
                     )
                 } else {
-                    EntryDetailView(entry = currentEntry)
+                    EntryDetailView(
+                        entry = currentEntry,
+                        onQuickChange = onQuickSave
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -214,17 +229,17 @@ fun MapEntryInfoCard(
                         primary = false
                     )
 
-                    //The ViewModel drops entries without a name or a type, so don't offer saving those
-                    val canSave = currentEntry != entry &&
-                            currentEntry.name.isNotBlank() &&
-                            currentEntry.locationData.isNotEmpty()
-
                     NormalButton(
                         text = stringResource(Res.string.save),
                         onClick = {
-                            onSave(currentEntry)
+                            //The ViewModel drops entries without a name or a type - show what is missing instead
+                            if (currentEntry.name.isBlank() || currentEntry.locationData.isEmpty()) {
+                                showValidationErrors = true
+                            } else {
+                                onSave(currentEntry)
+                            }
                         },
-                        disabled = !canSave
+                        disabled = currentEntry == entry
                     )
                 }
             } else {
@@ -377,9 +392,12 @@ private fun LocationTypeChip(locationData: LocationData) {
     }
 }
 
-/** Read-only body of the card: name, description and every attribute that has a value. */
+/**
+ * Read-only body of the card: name, description and every attribute that has a value. Date rows
+ * stay visible while empty, their Now button sets them in one tap via [onQuickChange].
+ */
 @Composable
-private fun EntryDetailView(entry: MapEntry) {
+private fun EntryDetailView(entry: MapEntry, onQuickChange: (MapEntry) -> Unit) {
     Column {
         if (entry.name.isNotBlank()) {
             Text(
@@ -402,11 +420,12 @@ private fun EntryDetailView(entry: MapEntry) {
         //TODO: Small row with ratings
 
         entry.locationData.forEach { locationData ->
-            val filledAttributes = locationData.schema().mapNotNull { definition ->
-                locationData.getValueByKey(definition.key)?.let { value -> definition to value }
+            val shownAttributes = locationData.schema().mapNotNull { definition ->
+                val value = locationData.getValueByKey(definition.key)
+                if (value != null || definition is AttributeDefinition.DateTimeDef) definition to value else null
             }
 
-            if (filledAttributes.isEmpty()) return@forEach
+            if (shownAttributes.isEmpty()) return@forEach
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -421,10 +440,18 @@ private fun EntryDetailView(entry: MapEntry) {
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            filledAttributes.forEach { (definition, value) ->
+            shownAttributes.forEach { (definition, value) ->
                 KeyValueReadOnlyView(
                     value = value,
-                    definition = definition
+                    definition = definition,
+                    onValueChange = { newValue ->
+                        onQuickChange(entry.copy(
+                            locationData = entry.locationData.map {
+                                if (it === locationData) locationData.withValueForKey(definition.key, newValue)
+                                else it
+                            }
+                        ))
+                    }
                 )
             }
         }
@@ -490,10 +517,14 @@ private fun EntryMetaView(entry: MapEntry, showLastChanged: Boolean) {
 }
 
 
+/** [showNameError]: a save was tried, so a blank name is marked as missing. */
 @Composable
-fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
+fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit, showNameError: Boolean = false) {
 
     Column {
+        //The error goes away the moment a name is typed
+        val nameError = showNameError && entry.name.isBlank()
+
         //Title
         OutlinedTextField(
             value = entry.name,
@@ -507,6 +538,13 @@ fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
                     text = stringResource(Res.string.schneaggmap_entry_title) + " *"
                 )
             },
+            isError = nameError,
+            supportingText = if (nameError) {
+                { Text(stringResource(Res.string.schneaggmap_attribute_required)) }
+            } else null,
+            trailingIcon = if (nameError) {
+                { Icon(imageVector = Icons.Default.Error, contentDescription = null) }
+            } else null,
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -595,8 +633,9 @@ fun CoordinateView(
      */
 }
 
+/** [showTypeError]: a save was tried, so an entry without a type shows why saving doesn't work. */
 @Composable
-fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
+fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit, showTypeError: Boolean = false) {
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -789,4 +828,35 @@ fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
         }
     }
 
+    if (showTypeError && entry.locationData.isEmpty()) {
+        ValidationErrorText(
+            text = stringResource(Res.string.schneaggmap_entry_type_required),
+            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+        )
+    }
+
+}
+
+/** Error line under a form element, with an icon so the error isn't shown by color alone. */
+@Composable
+private fun ValidationErrorText(text: String, modifier: Modifier = Modifier) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = Icons.Default.Error,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.error,
+            modifier = Modifier.size(16.dp)
+        )
+
+        Spacer(modifier = Modifier.width(4.dp))
+
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error
+        )
+    }
 }

@@ -1073,6 +1073,7 @@
     <string name="schneaggmap_chip_state_on">%1$s, on</string>
     <string name="schneaggmap_chip_state_off">%1$s, off</string>
     <string name="location_add_type">Add a new type</string>
+    <string name="schneaggmap_entry_type_required">Add at least one type</string>
 
     <string name="schneaggmap_entry_title">Name</string>
     <string name="schneaggmap_entry_description">Description</string>
@@ -1086,6 +1087,8 @@
     <string name="schneaggmap_attribute_max">Max: %1$s</string>
     <string name="schneaggmap_attribute_max_chars">Max. %1$s characters</string>
     <string name="schneaggmap_datetime_picker_title">Select date &amp; time</string>
+    <string name="schneaggmap_datetime_now">Now</string>
+    <string name="schneaggmap_datetime_not_set">Not set</string>
 
     <string name="schneaggmap_entry_delete">Delete this entry. It will also be deleted for everyone else. You will not be able to restore it.</string>
 

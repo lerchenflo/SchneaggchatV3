@@ -1067,6 +1067,7 @@
     <string name="schneaggmap_chip_state_on">%1$s, attivo</string>
     <string name="schneaggmap_chip_state_off">%1$s, disattivo</string>
     <string name="location_add_type">Aggiungi un nuovo tipo</string>
+    <string name="schneaggmap_entry_type_required">Aggiungi almeno un tipo</string>
 
     <string name="schneaggmap_entry_title">Nome</string>
     <string name="schneaggmap_entry_description">Descrizione</string>
@@ -1080,6 +1081,8 @@
     <string name="schneaggmap_attribute_max">Max: %1$s</string>
     <string name="schneaggmap_attribute_max_chars">Max %1$s caratteri</string>
     <string name="schneaggmap_datetime_picker_title">Seleziona data e ora</string>
+    <string name="schneaggmap_datetime_now">Ora</string>
+    <string name="schneaggmap_datetime_not_set">Non impostato</string>
 
     <string name="schneaggmap_entry_delete">Elimina questa voce. Verrà eliminata anche per tutti gli altri. Non potrai ripristinarla.</string>
 
