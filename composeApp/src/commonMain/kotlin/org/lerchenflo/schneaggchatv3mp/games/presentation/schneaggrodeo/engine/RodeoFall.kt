@@ -9,8 +9,9 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-// Falling off: rarely, after a big normal jump while the pack is far away, the horse bucks the
-// cowboy off and bolts ahead. He gets up and runs after it on his own - the world scrolls at his
+// Falling off: now and then, while the pack is far away, the horse gets restless (a warning shows)
+// and a big normal jump landed meanwhile bucks the cowboy off; it bolts ahead. Small hops are
+// safe. He gets up and runs after it on his own - the world scrolls at his
 // pace - and lassoes the horse once it is in reach. Nothing on the track can stop him: he runs
 // around fences and snails, and the pack waits meanwhile.
 // An exhausted horse (no hearts left) bucks him off too, but then runs away; a new horse comes
@@ -20,7 +21,12 @@ import kotlin.random.Random
 // jump with a salto. The third jump of a chain is a big triple jump with a double salto that also
 // carries him forward faster.
 private const val FALL_MIN_JUMP_PEAK = 14f      // jumps peaking at 140 cm and more can throw him
-private const val FALL_CHANCE = 0.05f
+/** Chance per second (once allowed) that the horse gets restless. */
+private const val RESTLESS_CHANCE_PER_SECOND = 0.02f
+/** Seconds the horse stays restless, warning included. */
+private const val RESTLESS_SECONDS = 5f
+/** Seconds of warning before a big jump can throw him: longer than a jump, so one already in the air is safe. */
+private const val RESTLESS_WARNING_SECONDS = 1.2f
 private const val FALL_MIN_CHASE_GAP = 32f      // only while the pack is well off screen
 private const val FALL_MIN_ELAPSED = 20f
 private const val FALL_COOLDOWN = 90f           // game seconds between two falls
@@ -107,6 +113,8 @@ internal class RodeoFall {
     /** Seconds in the current phase. */
     private var phaseTime = 0f
     private var lastFallAt = -FALL_COOLDOWN
+    /** Seconds into the horse being restless, or < 0 while it is calm. */
+    private var restlessTime = -1f
     private var cowboyX = 0f
     private var cowboyY = 0f
     private var cowboyVx = 0f
@@ -162,21 +170,43 @@ internal class RodeoFall {
 
     private val horseIsBack: Boolean get() = !horseRunsOff || horseMove == HorseMove.TROT
 
+    /** The horse is restless: a big jump now can throw the cowboy off. */
+    val isRestless: Boolean get() = phase == FallPhase.RIDING && restlessTime >= 0f
+
     fun reset() {
         phase = FallPhase.RIDING
         lastFallAt = -FALL_COOLDOWN
+        restlessTime = -1f
         horseRunsOff = false
         groundSpeed = 0f
         horseStride = 0f
     }
 
-    /** Decides on landing whether the horse bucks the cowboy off after a jump peaking at [jumpPeak]. */
-    fun shouldThrow(jumpPeak: Float, chaseGap: Float, elapsed: Float): Boolean =
-        jumpPeak >= FALL_MIN_JUMP_PEAK &&
+    /**
+     * Moves the restless spell on by [dt] while riding the horse; [allowed] (nothing else going on)
+     * lets a new one start once the pack is far away and the cooldown since the last one is over.
+     */
+    fun tickRestless(dt: Float, chaseGap: Float, elapsed: Float, allowed: Boolean) {
+        if (restlessTime >= 0f) {
+            restlessTime += dt
+            if (restlessTime >= RESTLESS_SECONDS) restlessTime = -1f
+            return
+        }
+        val mayStart = allowed &&
                 chaseGap >= FALL_MIN_CHASE_GAP &&
                 elapsed >= FALL_MIN_ELAPSED &&
-                elapsed - lastFallAt >= FALL_COOLDOWN &&
-                Random.nextFloat() < FALL_CHANCE
+                elapsed - lastFallAt >= FALL_COOLDOWN
+        if (mayStart && Random.nextFloat() < RESTLESS_CHANCE_PER_SECOND * dt) {
+            restlessTime = 0f
+            lastFallAt = elapsed
+        }
+    }
+
+    /** Decides on landing whether the restless horse bucks the cowboy off after a jump peaking at [jumpPeak]. */
+    fun shouldThrow(jumpPeak: Float, chaseGap: Float): Boolean =
+        restlessTime >= RESTLESS_WARNING_SECONDS &&
+                jumpPeak >= FALL_MIN_JUMP_PEAK &&
+                chaseGap >= FALL_MIN_CHASE_GAP
 
     /**
      * Throws the cowboy off. With [horseRunsOff] (the horse is exhausted) it gallops out of the
@@ -189,6 +219,7 @@ internal class RodeoFall {
         clock = 0f
         phaseTime = 0f
         lastFallAt = elapsed
+        restlessTime = -1f
         cowboyX = HORSE_X + COWBOY_SEAT_X
         cowboyY = COWBOY_SEAT_Y
         cowboyVx = COWBOY_THROW_VX

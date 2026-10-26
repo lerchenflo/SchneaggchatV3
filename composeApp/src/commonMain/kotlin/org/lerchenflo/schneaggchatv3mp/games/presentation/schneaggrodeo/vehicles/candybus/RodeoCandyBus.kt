@@ -26,8 +26,9 @@ import kotlin.random.Random
 // and it backs up over the horse with its rear doors open - the horse ends up in the back - while
 // the cowboy jumps over the roof into the driver's seat. Stanislaus keeps showing up by the
 // roadside; the lasso button turns into "Capture": the bus drives up next to the closest one ahead,
-// stops, slides its side door open and pulls him in. At the end the bus pulls forward, the horse
-// is left standing behind it and the cowboy backflips into the saddle.
+// stops, slides its side door open and pulls him in. A press with nobody in the picture yet (or
+// while a capture is still going on) is kept and goes for the next one. At the end the bus pulls
+// forward, the horse is left standing behind it and the cowboy backflips into the saddle.
 
 // Shape, shared with the drawing (grid: x from the rear bumper, y up from the ground)
 internal const val BUS_LENGTH = 60f
@@ -65,8 +66,6 @@ private const val WHEEL_TURN = 0.3f
 private const val STANISLAUS_FIRST_SECONDS = 0.5f
 private const val STANISLAUS_INTERVAL_MIN = 1.2f
 private const val STANISLAUS_INTERVAL_RANDOM = 1f
-/** How far ahead of the door (u) the bus drives up to someone. */
-private const val CAPTURE_RANGE = 75f
 /** Driving up: share of the remaining way per second, and the speed limits (u/s). */
 private const val DRIVE_UP_RATE = 5f
 private const val DRIVE_UP_MIN_SPEED = 15f
@@ -88,6 +87,8 @@ internal class RodeoCandyBus : RodeoVehicle(RodeoVehicleKind.CANDY_BUS) {
     private val waiting = mutableListOf<Stanislaus>()
     private var spawnIn = 0f
     private var target: Stanislaus? = null
+    /** "Capture" was pressed with nobody to drive up to: goes for the next one in the picture. */
+    private var captureQueued = false
     private var captureStep = CaptureStep.DRIVE_UP
     private var stepTime = 0f
     /** u/s the world scrolled by last frame, for the speedometer. */
@@ -115,11 +116,13 @@ internal class RodeoCandyBus : RodeoVehicle(RodeoVehicleKind.CANDY_BUS) {
         super.reset()
         waiting.clear()
         target = null
+        captureQueued = false
     }
 
     override fun board(world: RodeoWorld) {
         super.board(world)
         boardStartX = x
+        captureQueued = false
         // A jump in progress ends right here, the bus backs up over the horse
         world.takeHorseOffTheGround()
     }
@@ -144,17 +147,22 @@ internal class RodeoCandyBus : RodeoVehicle(RodeoVehicleKind.CANDY_BUS) {
     override fun speedKmh(world: RodeoWorld): Int? =
         if (isRiding) (currentSpeed * KMH_PER_UNIT_PER_SECOND).roundToInt() else null
 
-    /** "Capture": drives up to the closest Stanislaus ahead of the door. */
+    /** "Capture": drives up to the closest Stanislaus ahead of the door, or to the next one coming. */
     override fun onLassoButton(world: RodeoWorld): Boolean {
         if (!isRiding) return false
-        if (target != null) return true
-        target = waiting
-            .filter { !it.pulled && it.x - doorCenter in 0f..CAPTURE_RANGE }
+        if (target != null || !driveUpToNext(world)) captureQueued = true
+        return true
+    }
+
+    /** Picks the closest Stanislaus ahead of the door and in the picture; false if there is none. */
+    private fun driveUpToNext(world: RodeoWorld): Boolean {
+        val next = waiting
+            .filter { !it.pulled && it.x >= doorCenter && it.x <= world.worldWidth }
             .minByOrNull { it.x }
-            ?.also {
-                captureStep = CaptureStep.DRIVE_UP
-                stepTime = 0f
-            }
+            ?: return false
+        target = next
+        captureStep = CaptureStep.DRIVE_UP
+        stepTime = 0f
         return true
     }
 
@@ -199,6 +207,7 @@ internal class RodeoCandyBus : RodeoVehicle(RodeoVehicleKind.CANDY_BUS) {
             waiting.add(Stanislaus(x = world.worldWidth + STANISLAUS_HEIGHT))
             spawnIn = STANISLAUS_INTERVAL_MIN + Random.nextFloat() * STANISLAUS_INTERVAL_RANDOM
         }
+        if (captureQueued && target == null && !rideIsOver && driveUpToNext(world)) captureQueued = false
         capture(world, dt)
         if (rideIsOver && target == null) {
             enter(VehiclePhase.UNLOADING)
