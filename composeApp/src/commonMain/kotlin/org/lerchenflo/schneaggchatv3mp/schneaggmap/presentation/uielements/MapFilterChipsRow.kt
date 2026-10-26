@@ -78,10 +78,10 @@ fun MapFilterChipsRow(
             .padding(horizontal = 16.dp)
     ) {
         MapFilterChip(
-            label = stringResource(Res.string.location_type_user),
-            icon = Icons.Outlined.Group,
-            selected = state.showUsers,
-            onClick = { onAction(SchneaggmapAction.ToggleShowUsers) },
+            label = stringResource(Res.string.schneaggmap_chip_events),
+            icon = Icons.Outlined.Event,
+            selected = state.showEvents,
+            onClick = { onAction(SchneaggmapAction.ToggleShowEvents) },
         )
 
         //Box anchors the "Location types" dropdown below the split button
@@ -104,17 +104,17 @@ fun MapFilterChipsRow(
         }
 
         MapFilterChip(
-            label = stringResource(Res.string.schneaggmap_chip_events),
-            icon = Icons.Outlined.Event,
-            selected = state.showEvents,
-            onClick = { onAction(SchneaggmapAction.ToggleShowEvents) },
-        )
-
-        MapFilterChip(
             label = stringResource(Res.string.schneaggmap_filter_snail_trails),
             icon = Icons.Outlined.Route,
             selected = state.showSnailTrails,
             onClick = { onAction(SchneaggmapAction.ToggleSnailTrails) },
+        )
+
+        MapFilterChip(
+            label = stringResource(Res.string.location_type_user),
+            icon = Icons.Outlined.Group,
+            selected = state.showUsers,
+            onClick = { onAction(SchneaggmapAction.ToggleShowUsers) },
         )
     }
 }
