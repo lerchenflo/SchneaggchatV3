@@ -198,6 +198,7 @@ class SchneaggRodeoViewModel(
                 runTimeMillis = engine.runTimeSeconds.toLong() * 1000L,
                 snailsCaught = engine.snailsCaught,
                 superJumpCharges = engine.superJumpCharges,
+                superJumpAllowed = engine.superJumpAllowed,
                 luckyCharms = engine.luckyCharms,
                 isOnFoot = engine.isOnFoot,
                 canCatchHorse = engine.canCatchHorse,
@@ -209,6 +210,7 @@ class SchneaggRodeoViewModel(
                 mapTitle = engine.mapTitle,
                 nextToBeat = ghosts.firstOrNull { ghost -> ghost.score > score },
                 isEnding = engine.isEnding,
+                horseRestless = engine.horseRestless,
             )
         }
     }

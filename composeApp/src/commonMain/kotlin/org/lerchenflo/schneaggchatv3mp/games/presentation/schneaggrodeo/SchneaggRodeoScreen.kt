@@ -49,8 +49,11 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoTrack
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoAnnouncementBanner
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoMapTitle
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoRestlessWarning
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoControls
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoLassoButton
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoSpeedometer
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.RodeoHeldInput
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.ui.rodeoInput
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -77,6 +80,9 @@ private val COMPACT_LANDSCAPE_MAX_HEIGHT = 480.dp
 private val BACK_BUTTON_SPACE = 52.dp
 private val OVERLAY_PADDING = 8.dp
 private val NEXT_TO_BEAT_END_PADDING = 16.dp
+/** Room under the track (portrait) from which on the lasso button moves there, off the picture. */
+private val LASSO_BELOW_TRACK_MIN_SPACE = 80.dp
+private val LASSO_BELOW_TRACK_PADDING = 16.dp
 
 @Composable
 fun SchneaggRodeoRoot(
@@ -167,6 +173,8 @@ fun SchneaggRodeoScreen(
     val colors = MaterialTheme.colorScheme
     val currentOnAction by rememberUpdatedState(onAction)
     val steers by rememberUpdatedState(state.steers)
+    val downKey by rememberUpdatedState(state.downKey)
+    val heldInput = remember { RodeoHeldInput() }
     val isStarted = state.isPlaying || state.isGameOver
 
     val focusRequester = remember { FocusRequester() }
@@ -195,15 +203,18 @@ fun SchneaggRodeoScreen(
                     .background(colors.background)
                     .focusRequester(focusRequester)
                     .focusable()
-                    .rodeoInput(steers = { steers }, onAction = { currentOnAction(it) }),
+                    .rodeoInput(held = heldInput, steers = { steers }, downKey = { downKey }, onAction = { currentOnAction(it) }),
                 contentAlignment = Alignment.Center
             ) {
                 // The track takes the whole screen, with counters, HUD and buttons floating on it.
                 // Everything inside scales with the track height.
+                val trackHeight = min(maxHeight, maxWidth / MIN_TRACK_ASPECT)
+                // Portrait leaves room under the track: the lasso button goes there, off the picture
+                val lassoBelowTrack = (maxHeight - trackHeight) / 2 >= LASSO_BELOW_TRACK_MIN_SPACE
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(min(maxHeight, maxWidth / MIN_TRACK_ASPECT))
+                        .height(trackHeight)
                 ) {
                     RodeoTrack(
                         frame = frame,
@@ -231,22 +242,23 @@ fun SchneaggRodeoScreen(
                         )
                     }
 
-                    RodeoMapTitle(
-                        map = state.mapTitle,
-                        modifier = Modifier.fillMaxSize()
-                    )
-
-                    RodeoAnnouncementBanner(
-                        announcement = state.announcement,
+                    Column(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
-                            .padding(top = 60.dp)
-                    )
+                            .padding(top = 60.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        RodeoMapTitle(map = state.mapTitle)
+                        RodeoAnnouncementBanner(announcement = state.announcement)
+                        RodeoRestlessWarning(visible = state.horseRestless)
+                    }
 
                     // Hidden during the ending, the restart button takes their corner
                     if (!state.isEnding) {
                         RodeoControls(
                             superJumpCharges = state.superJumpCharges,
+                            superJumpAllowed = state.superJumpAllowed,
                             isOnFoot = state.isOnFoot,
                             canCatchHorse = state.canCatchHorse,
                             ride = state.ride,
@@ -255,6 +267,7 @@ fun SchneaggRodeoScreen(
                             showKeyHints = showKeyHints,
                             enabled = state.isPlaying && !state.isPaused,
                             onAction = onAction,
+                            lassoOnTrack = !lassoBelowTrack,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(OVERLAY_PADDING)
@@ -304,6 +317,20 @@ fun SchneaggRodeoScreen(
                             }
                         }
                     }
+                }
+
+                if (lassoBelowTrack && !state.isEnding) {
+                    RodeoLassoButton(
+                        isOnFoot = state.isOnFoot,
+                        ride = state.ride,
+                        showKeyHints = showKeyHints,
+                        enabled = state.isPlaying && !state.isPaused,
+                        onAction = onAction,
+                        onTrack = false,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(LASSO_BELOW_TRACK_PADDING)
+                    )
                 }
 
                 if (showStartOverlay) {

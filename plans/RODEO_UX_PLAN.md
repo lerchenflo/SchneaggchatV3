@@ -1,6 +1,11 @@
 # Schneagg Rodeo UX Plan
 
-**Status: planned** (2026-10-21, branch `macci`). Not started. Proposals; the user picks what to keep after the implementation.
+**Status: partly done** (2026-10-22, branch `mapuiredo`, uncommitted, not compiled - laptop). Done: 1, 2, 3, 4, 5, 6, 7 (plane, train, U-boat), 8, 9, 11, 12, 15. Open: 10 (only the lasso part: it moves under the track in portrait), 13, 14, 16, 17.
+- 8: the drill keeps "hold = drill down" (flipped, a passive player would drill through to the fossil layer); its key hint adds ↓. S / ↓ is the down input (RodeoVehicleKind.downKey) on plane, rocket, bull, U-boat, balloon, drill, train; L is always the lasso now. No-input rides all say "No input – <goal>".
+- 9: candy bus: instead of feedback, a Capture press with nobody in the picture (or during a capture) is kept for the next Stanislaus; range is the visible track (was 75 u). Snail priority: a vehicle / wild horse only wins over a snail in reach when it is closer than the snail.
+- 6: the buffered press fires on landing even if already let go (tap-friendly), not only while held. No coyote time.
+- 11 (user, 2026-10-22): lasso button bottom right (right thumb, like Rayman Jungle Run's punch button), 56 dp; never over the rider, out of the left thumb's jump area. Portrait with >= 80 dp free under the track: it sits there, off the picture.
+- 15: kept, with a warning: the horse gets restless now and then (banner "small jumps!"), only a big jump landed >= 1.2 s into it throws him. Replaces FALL_CHANCE.
 
 Makes Schneagg Rodeo friendlier to play: input (touch + keyboard), the view on portrait phones, and a few unfair moments.
 Paths: `R/` = `composeApp/src/commonMain/kotlin/org/lerchenflo/schneaggchatv3mp/games/presentation/schneaggrodeo/`. Findings verified 2026-10-21 (engine lines spot-checked).

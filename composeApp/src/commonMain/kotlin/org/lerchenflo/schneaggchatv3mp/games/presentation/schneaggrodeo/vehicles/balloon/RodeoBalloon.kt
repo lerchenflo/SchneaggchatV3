@@ -52,7 +52,7 @@ internal class RodeoBalloon : RodeoVehicle(RodeoVehicleKind.BALLOON) {
 
     private val steering = RodeoSteering(
         climbAccel = 55f,
-        diveAccel = 0f,
+        diveAccel = 40f,
         sinkAccel = 22f,
         maxClimb = 16f,
         maxSink = 12f,
@@ -96,6 +96,11 @@ internal class RodeoBalloon : RodeoVehicle(RodeoVehicleKind.BALLOON) {
 
     override fun onJump(pressed: Boolean) {
         steering.climb = pressed && phase == VehiclePhase.RIDING
+    }
+
+    /** S / arrow down on desktop: sinks a bit quicker than just letting go. */
+    override fun onDive(pressed: Boolean) {
+        steering.dive = pressed && phase == VehiclePhase.RIDING
     }
 
     override fun update(world: RodeoWorld, dt: Float, scroll: Float) {
