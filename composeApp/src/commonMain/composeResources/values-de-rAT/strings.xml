@@ -1061,7 +1061,6 @@ Mealds, egal wie klenn.</string>
     <string name="contribute_donate_action">Spendensitta uftua</string>
     <string name="contribute_later">Eventuell später</string>
 
-    <!-- Roadmap -->
     <string name="custom_reaction">Eigne Reaktion</string>
     <string name="enter_reaction">Reaktion igia</string>
 
@@ -1470,7 +1469,6 @@ Mealds, egal wie klenn.</string>
     <string name="user_settings_group_features">Funktiona</string>
     <string name="user_settings_group_danger_zone">Konto-Aktiona</string>
 
-    <string name="misc_group_feedback">Feedback &amp; Roadmap</string>
     <string name="misc_group_diagnostics">Diagnose &amp; Fehlerbehebung</string>
     <string name="misc_group_data_reset">Zrucksetza &amp; Repariera</string>
 

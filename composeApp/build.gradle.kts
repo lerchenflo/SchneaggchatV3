@@ -109,7 +109,6 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.ui.tooling)
-            implementation(libs.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
 
             implementation(libs.koin.android)
@@ -118,8 +117,6 @@ kotlin {
             //Netzwerk
             implementation(libs.ktor.client.okhttp)
 
-            //App update
-            implementation(libs.app.update.ktx)
             //implementation(libs.core.ktx)
 
             //Firebase Cloud Messaging
@@ -154,22 +151,15 @@ kotlin {
 
 
             //Viewmodel / DI
-            implementation(libs.sqlite.bundled)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             api(libs.koin.core)
-            implementation(libs.koin.core)
             implementation(libs.koin.compose.viewmodel.navigation)
             api(libs.koin.annotations)
 
             //Navigation
             implementation(libs.jetbrains.navigation3.ui)
             implementation(libs.jetbrains.lifecycle.viewmodel.nav3)
-
-            // Permissions
-            //api(libs.moko.permissions)
-            //api(libs.moko.permissions.compose)
-            //api(libs.moko.permissions.microphone)
 
             //Old navigation (Not used anymore)
             //implementation(libs.jetbrains.compose.navigation)
@@ -205,9 +195,6 @@ kotlin {
 
             //Reordable Column
             implementation(libs.reorderable)
-
-            //Roadmap timeline
-            implementation(libs.jetlime)
 
             //Sharedprefs
             api(libs.datastore.preferences)
@@ -276,6 +263,68 @@ kotlin {
 }
 
 
+
+
+
+//Compose core alignment: puts every Compose Multiplatform core module into one virtual platform, so
+//Gradle resolves them all to the same version. Without it, modules only a library asks for stay on
+//that library's version next to the newer core (e.g. material-ripple 1.12.0-beta01 from
+//material3) - a mix that can crash iOS with an IrLinkage error.
+//material3, adaptive, navigation3 and lifecycle have their own versions and aren't part of it.
+//The material icons are frozen at 1.7.3, so they're left out too.
+abstract class ComposeCoreAlignmentRule : ComponentMetadataRule {
+    companion object {
+        val GROUPS = setOf(
+            "org.jetbrains.compose.runtime",
+            "org.jetbrains.compose.ui",
+            "org.jetbrains.compose.foundation",
+            "org.jetbrains.compose.animation",
+            "org.jetbrains.compose.material",
+            "org.jetbrains.compose.components",
+        )
+
+        fun isCoreModule(group: String, name: String) = group in GROUPS && !name.startsWith("material-icons")
+    }
+
+    override fun execute(context: ComponentMetadataContext) {
+        val id = context.details.id
+        if (isCoreModule(id.group, id.name)) {
+            context.details.belongsTo("org.jetbrains.compose:compose-core-alignment:${id.version}")
+        }
+    }
+}
+
+dependencies {
+    components {
+        all<ComposeCoreAlignmentRule>()
+    }
+}
+
+//Version guard: after the alignment above, all core modules share one version. If that isn't the
+//composeMultiplatform version, a library pulls core above the plugin (e.g. a material3 that isn't the
+//one paired with this CMP release). It would still build, but iOS crashes at runtime - so fail here.
+//Take material3, adaptive, navigation3 and lifecycle from the CMP release notes together with the plugin.
+val composeCoreVersion = libs.versions.composeMultiplatform.get()
+configurations.matching { it.isCanBeResolved }.configureEach {
+    val configurationName = name
+    incoming.afterResolve {
+        val mismatches = resolutionResult.allComponents
+            .mapNotNull { it.moduleVersion }
+            .filter { module ->
+                ComposeCoreAlignmentRule.isCoreModule(module.group, module.name) &&
+                    module.version != composeCoreVersion
+            }
+            .map { "${it.group}:${it.name}:${it.version}" }
+
+        if (mismatches.isNotEmpty()) {
+            throw GradleException(
+                "$configurationName resolves Compose core libraries that aren't $composeCoreVersion " +
+                    "(composeMultiplatform): ${mismatches.joinToString()}. A library pulls in another core " +
+                    "version - use the versions paired with this CMP release in its release notes."
+            )
+        }
+    }
+}
 
 
 

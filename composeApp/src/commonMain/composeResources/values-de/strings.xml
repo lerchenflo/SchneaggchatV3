@@ -1061,7 +1061,6 @@
     <string name="contribute_donate_action">Spendenseite öffnen</string>
     <string name="contribute_later">Vielleicht später</string>
 
-    <!-- Roadmap -->
     <string name="custom_reaction">Eigene Reaktion</string>
     <string name="enter_reaction">Reaktion eingeben</string>
 
@@ -1470,7 +1469,7 @@
     <string name="user_settings_group_features">Funktionen</string>
     <string name="user_settings_group_danger_zone">Konto-Aktionen</string>
 
-    <string name="misc_group_feedback">Feedback &amp; Roadmap</string>
+    <string name="misc_group_feedback">Feedback</string>
     <string name="misc_group_diagnostics">Diagnose &amp; Fehlerbehebung</string>
     <string name="misc_group_data_reset">Zurücksetzen &amp; Reparieren</string>
 
