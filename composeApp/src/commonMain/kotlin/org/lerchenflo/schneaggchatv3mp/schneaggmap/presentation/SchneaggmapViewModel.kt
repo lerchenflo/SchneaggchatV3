@@ -32,6 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
@@ -167,6 +168,14 @@ class SchneaggmapViewModel(
                     isFilterDropdownVisible = !it.isFilterDropdownVisible,
                     selectedEntry = null,
                 )
+            }
+            SchneaggmapAction.ToggleAllPlaces -> {
+                val allPlaceTypes = LocationGroup.entries.flatMapTo(mutableSetOf()) { it.types }
+
+                // Anything shown (even only some types): hide all. Nothing shown: show every type
+                _state.update {
+                    it.copy(enabledTypes = if (it.enabledTypes.isNotEmpty()) emptySet() else allPlaceTypes)
+                }
             }
             is SchneaggmapAction.ToggleMainType -> {
                 val enabled = state.value.enabledTypes
