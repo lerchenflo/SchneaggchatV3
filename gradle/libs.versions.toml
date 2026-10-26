@@ -4,9 +4,8 @@ agp = "9.4.1"
 
 # ATTENTION WHEN UPDATING
 kotlinx-datetime = "0.8.0" #Check for voice message crash when updating
-material3 = "1.11.0-alpha07" #Test for ios input crashes when updating (IRLinkage error crash when clicking on any textfield)
+material3 = "1.12.0-alpha03" #Must be the material3 version listed next to composeMultiplatform in the CMP release notes, otherwise iOS crashes with an IrLinkage error (e.g. when tapping a text field)
 cryptographyProviderOptimal = "0.6.0" #update same as material3
-composeBom = "2026.09.00" #Check for popup crashes when updating
 
 
 
@@ -14,13 +13,11 @@ composeBom = "2026.09.00" #Check for popup crashes when updating
 androidx-activity = "1.13.0"
 androidx-lifecycle = "2.11.0"
 coilComposeVersion = "3.6.3"
-componentsResources = "1.12.2"
 composeHotReload = "1.2.0"
-composeMultiplatform = "1.12.2"
+composeMultiplatform = "1.12.2" #Plugin and all Compose core libraries (runtime, ui, foundation, components-resources)
 coreSplashscreen = "1.2.0"
 encoding = "2.6.0"
 exifinterface = "1.4.2"
-foundation = "1.12.2"
 githubImagepickerkmp = "1.1.7"
 
 jwtKt = "1.3.2"
@@ -32,7 +29,6 @@ kotlinxIo = "0.9.1"
 materialIconsExtended = "1.7.3"
 room = "2.8.5"
 
-runtime = "1.12.2"
 sqlite = "2.7.1"
 datetime-wheel-picker = "1.5.0"
 
@@ -47,7 +43,6 @@ mikepenz-markdown = "0.46.0"
 firebase-messaging-version = "24.1.2"
 google-services = "4.5.0"
 play-services-location = "21.4.0"
-uiToolingPreview = "1.12.2"
 
 cmpNavigation3 = "1.1.2"
 appUpdateKtx = "2.1.0"
@@ -67,7 +62,6 @@ map = "0.20.0"
 
 swipeableKmp = "1.0.7"
 reorderable = "3.1.0"
-jetlime = "4.3.0"
 
 
 [libraries]
@@ -83,17 +77,16 @@ maplibre-compose-runtime-metal-macos-arm64 = { module = "org.maplibre.compose:ma
 
 swipeable-kmp = { module = "com.stevdza-san:swipeable-kmp", version.ref = "swipeableKmp" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
-jetlime = { module = "io.github.pushpalroy:jetlime", version.ref = "jetlime" }
 
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-exifinterface = { module = "androidx.exifinterface:exifinterface", version.ref = "exifinterface" }
 
 
 
-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
+components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 cryptography-core = { module = "dev.whyoleg.cryptography:cryptography-core", version.ref = "cryptographyProviderOptimal" }
 cryptography-provider-optimal = { module = "dev.whyoleg.cryptography:cryptography-provider-optimal", version.ref = "cryptographyProviderOptimal" }
-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "foundation" }
+foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 github-imagepickerkmp = { module = "io.github.ismoy:imagepickerkmp", version.ref = "githubImagepickerkmp" }
 jwt-kt = { module = "com.appstractive:jwt-kt", version.ref = "jwtKt" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging-ktx", version.ref = "firebase-messaging-version" }
@@ -112,7 +105,7 @@ material-icons-extended = { module = "org.jetbrains.compose.material:material-ic
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
+runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 datetime-wheel-picker = { module = "io.github.darkokoa:datetime-wheel-picker", version.ref = "datetime-wheel-picker" }
@@ -147,9 +140,9 @@ koin-compose-viewmodel-navigation = { module = "io.insert-koin:koin-compose-view
 koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
 
 mikepenzMultiplatformMarkdownM3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "mikepenz-markdown" }
-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "uiToolingPreview" }
-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "uiToolingPreview" }
-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
+ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
+ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
+ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 app-update-ktx = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "appUpdateKtx" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -158,12 +151,6 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
-androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
-androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 
 ksafe-compose = { module = "eu.anifantakis:ksafe-compose", version.ref = "ksafe" }
 ksafe = { module = "eu.anifantakis:ksafe", version.ref = "ksafe" }

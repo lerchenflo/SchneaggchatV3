@@ -362,12 +362,16 @@ interface MessageDao {
     @Query("SELECT * FROM messages WHERE sent = 0 ORDER BY localPK")
     suspend fun getUnsentMessages(): List<MessageWithReaders>
 
+    // Group messages whose group is no longer stored locally are left out: leftover rows of a
+    // left/removed group (from before the purge in GroupLocalDataSource.deleteGroup, or re-inserted
+    // by a sync race) would otherwise make the media job request their files on every sync, and the
+    // server rejects each one with "You are not a member of this group".
     @Transaction
-    @Query("SELECT * FROM messages WHERE msgType = :type")
+    @Query("SELECT * FROM messages WHERE msgType = :type AND (groupMessage = 0 OR receiverId IN (SELECT id FROM `groups`))")
     suspend fun getImageMessages(type: String = MessageType.IMAGE.name): List<MessageWithReaders>
 
     @Transaction
-    @Query("SELECT * FROM messages WHERE msgType = :type")
+    @Query("SELECT * FROM messages WHERE msgType = :type AND (groupMessage = 0 OR receiverId IN (SELECT id FROM `groups`))")
     suspend fun getAudioMessages(type: String = MessageType.AUDIO.name): List<MessageWithReaders>
 
     @Transaction

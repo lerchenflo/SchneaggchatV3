@@ -68,17 +68,14 @@ android {
 dependencies {
     implementation(projects.composeApp)
 
+    // Compose versions come only from Compose Multiplatform (via composeApp). No Compose BOM here:
+    // a newer BOM would raise androidx Compose on Android above what CMP is built for.
 
-    implementation(platform(libs.androidx.compose.bom))
+    // In-app updates from the Play Store (MainActivity)
     implementation(libs.app.update.ktx)
-    implementation(libs.androidx.compose.ui.tooling)
-    implementation(libs.androidx.compose.ui.tooling.preview)
 
+    // setContent { App() } in MainActivity
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
 
 
     implementation(libs.androidx.core.ktx)
@@ -90,6 +87,4 @@ dependencies {
 
     // splash screen
     implementation(libs.androidx.core.splashscreen)
-
-    implementation(libs.firebase.messaging)
 }

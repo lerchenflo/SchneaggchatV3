@@ -1061,7 +1061,6 @@ Mealds, egal wie klenn.</string>
     <string name="contribute_donate_action">Spendensitta uftua</string>
     <string name="contribute_later">Eventuell später</string>
 
-    <!-- Roadmap -->
     <string name="custom_reaction">Eigne Reaktion</string>
     <string name="enter_reaction">Reaktion igia</string>
 
@@ -1070,13 +1069,25 @@ Mealds, egal wie klenn.</string>
     <string name="schneaggmap_filter_snail_trails">Schleimspura</string>
     <string name="schneaggmap_chip_places">Orte · %1$d/%2$d</string>
     <string name="schneaggmap_chip_events">Events</string>
-    <string name="schneaggmap_chip_state_on">%1$s, aktiviert</string>
-    <string name="schneaggmap_chip_state_off">%1$s, deaktiviert</string>
-    <string name="location_belongs_to_type">Ghört zu: %1$s</string>
+    <string name="schneaggmap_chip_state_on">%1$s, a</string>
+    <string name="schneaggmap_chip_state_off">%1$s, us</string>
     <string name="location_add_type">Neua Typ erstella</string>
+    <string name="schneaggmap_entry_type_required">Tua mindestens uan Typ dazua</string>
 
     <string name="schneaggmap_entry_title">Nama</string>
     <string name="schneaggmap_entry_description">Beschreibung</string>
+    <string name="schneaggmap_entry_new">Neuer Kartaitrag</string>
+    <string name="schneaggmap_entry_edit">Kartaitrag bearbeita</string>
+    <string name="schneaggmap_secret_show">Azoaga</string>
+    <string name="schneaggmap_secret_hide">Verstecka</string>
+    <string name="schneaggmap_attribute_required">Pflichtfeald</string>
+    <string name="schneaggmap_attribute_invalid_number">Ungültige Zahl</string>
+    <string name="schneaggmap_attribute_min">Min.: %1$s</string>
+    <string name="schneaggmap_attribute_max">Max.: %1$s</string>
+    <string name="schneaggmap_attribute_max_chars">Max. %1$s Zeicha</string>
+    <string name="schneaggmap_datetime_picker_title">Datum &amp; Uhrzit wähla</string>
+    <string name="schneaggmap_datetime_now">Jetzt</string>
+    <string name="schneaggmap_datetime_not_set">Ned gsetzt</string>
 
     <string name="schneaggmap_entry_delete">Dean Itrag löscha. Er wird o für alle andra glöscht. Du kannschan num wiederherstella.</string>
 
@@ -1458,7 +1469,6 @@ Mealds, egal wie klenn.</string>
     <string name="user_settings_group_features">Funktiona</string>
     <string name="user_settings_group_danger_zone">Konto-Aktiona</string>
 
-    <string name="misc_group_feedback">Feedback &amp; Roadmap</string>
     <string name="misc_group_diagnostics">Diagnose &amp; Fehlerbehebung</string>
     <string name="misc_group_data_reset">Zrucksetza &amp; Repariera</string>
 

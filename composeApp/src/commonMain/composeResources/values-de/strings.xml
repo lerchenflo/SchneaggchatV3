@@ -243,6 +243,7 @@
     <string name="event_no_group">Dieses Event hat keinen Gruppenchat</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Gruppe verlassen</string>
+    <string name="delete_group">Gruppe löschen</string>
     <string name="add_users_to_group">Mitglied hinzufügen</string>
     <string name="member_since">Mitglied seit %1$s</string>
     <string name="change_group_name">Änderen den Gruppennamen</string>
@@ -514,6 +515,7 @@
 
     <!-- Confirmation dialogs -->
     <string name="confirm_leave_group">Bist du sicher, dass du diese Gruppe verlassen willst?</string>
+    <string name="confirm_delete_group">Diese Gruppe für alle Mitglieder löschen? Der Chat und alle Nachrichten sind dann für alle weg. Das kann nicht rückgängig gemacht werden.</string>
     <string name="confirm_remove_friend">Bist du sicher, dass du %1$s als Freund entfernen willst?</string>
     <string name="confirm_remove_member">Bist du sicher, dass du %1$s aus der Gruppe entfernen willst?</string>
 
@@ -1061,7 +1063,6 @@
     <string name="contribute_donate_action">Spendenseite öffnen</string>
     <string name="contribute_later">Vielleicht später</string>
 
-    <!-- Roadmap -->
     <string name="custom_reaction">Eigene Reaktion</string>
     <string name="enter_reaction">Reaktion eingeben</string>
 
@@ -1072,11 +1073,23 @@
     <string name="schneaggmap_chip_events">Events</string>
     <string name="schneaggmap_chip_state_on">%1$s, an</string>
     <string name="schneaggmap_chip_state_off">%1$s, aus</string>
-    <string name="location_belongs_to_type">Gehört zu: %1$s</string>
     <string name="location_add_type">Neuen Typ hinzufügen</string>
+    <string name="schneaggmap_entry_type_required">Füge mindestens einen Typ hinzu</string>
 
     <string name="schneaggmap_entry_title">Name</string>
     <string name="schneaggmap_entry_description">Beschreibung</string>
+    <string name="schneaggmap_entry_new">Neuer Karteneintrag</string>
+    <string name="schneaggmap_entry_edit">Karteneintrag bearbeiten</string>
+    <string name="schneaggmap_secret_show">Anzeigen</string>
+    <string name="schneaggmap_secret_hide">Verbergen</string>
+    <string name="schneaggmap_attribute_required">Pflichtfeld</string>
+    <string name="schneaggmap_attribute_invalid_number">Ungültige Zahl</string>
+    <string name="schneaggmap_attribute_min">Min.: %1$s</string>
+    <string name="schneaggmap_attribute_max">Max.: %1$s</string>
+    <string name="schneaggmap_attribute_max_chars">Max. %1$s Zeichen</string>
+    <string name="schneaggmap_datetime_picker_title">Datum &amp; Uhrzeit wählen</string>
+    <string name="schneaggmap_datetime_now">Jetzt</string>
+    <string name="schneaggmap_datetime_not_set">Nicht gesetzt</string>
 
     <string name="schneaggmap_entry_delete">Diesen Eintrag löschen. Er wird auch für alle anderen gelöscht. Du wirst ihn nicht wiederherstellen können.</string>
 
@@ -1458,7 +1471,7 @@
     <string name="user_settings_group_features">Funktionen</string>
     <string name="user_settings_group_danger_zone">Konto-Aktionen</string>
 
-    <string name="misc_group_feedback">Feedback &amp; Roadmap</string>
+    <string name="misc_group_feedback">Feedback</string>
     <string name="misc_group_diagnostics">Diagnose &amp; Fehlerbehebung</string>
     <string name="misc_group_data_reset">Zurücksetzen &amp; Reparieren</string>
 

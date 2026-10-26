@@ -514,6 +514,18 @@ class ChatDetailsViewmodel(
         }
     }
 
+    /**
+     * Delete the whole group for every member. Admins only - the server rejects anyone else, and
+     * the UI only offers it to admins. Errors reach the user through the repository's ErrorChannel.
+     */
+    fun deleteGroup() {
+        viewModelScope.launch {
+            if (groupRepository.deleteGroup(chatId)) {
+                navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
+            }
+        }
+    }
+
     fun sendFriendRequest(id: String){
         viewModelScope.launch { //The repository is main-safe
             val success = userRepository.sendFriendRequest(id)

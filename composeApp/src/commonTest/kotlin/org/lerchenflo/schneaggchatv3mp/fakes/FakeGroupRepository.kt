@@ -44,6 +44,7 @@ class FakeGroupRepository : GroupRepository {
     val nameChanges = CallLog<Pair<String, String>>()
     val memberChanges = CallLog<MemberCall>()
     val expiryChanges = CallLog<Pair<String, Long?>>()
+    val deleteCalls = CallLog<String>()
 
     // ─── Reads ────────────────────────────────────────────────────────────────
 
@@ -110,6 +111,11 @@ class FakeGroupRepository : GroupRepository {
 
     override suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): Boolean {
         expiryChanges.record(groupId to expiresAt)
+        return writeResult
+    }
+
+    override suspend fun deleteGroup(groupId: String): Boolean {
+        deleteCalls.record(groupId)
         return writeResult
     }
 }

@@ -9,6 +9,8 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 sealed interface SchneaggmapAction {
     data object OnBackClicked : SchneaggmapAction
     data object ToggleFilterDropdown : SchneaggmapAction
+    // Leading part of the places split button: hides all shown places, or shows every type when none are shown
+    data object ToggleAllPlaces : SchneaggmapAction
 
     data object ToggleShowUsers: SchneaggmapAction
     data object ToggleShowEvents: SchneaggmapAction
@@ -27,7 +29,8 @@ sealed interface SchneaggmapAction {
 
     data object OnPopupDismiss: SchneaggmapAction
     data object OnFocusEntryHandled: SchneaggmapAction
-    data class OnEntryPopupSave(val entry: MapEntry): SchneaggmapAction
+    // keepPopupOpen: quick changes on the read-only card (a date's Now button) leave the popup open
+    data class OnEntryPopupSave(val entry: MapEntry, val keepPopupOpen: Boolean = false): SchneaggmapAction
 
     data class OnEntryPopupDelete(val entryId: String): SchneaggmapAction
 

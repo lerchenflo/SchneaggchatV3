@@ -91,10 +91,12 @@ import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.change_group_name
 import schneaggchatv3mp.composeapp.generated.resources.change_nickname
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
+import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.delete_event
+import schneaggchatv3mp.composeapp.generated.resources.delete_group
 import schneaggchatv3mp.composeapp.generated.resources.delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.set_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.group_timer_picker_title
@@ -173,6 +175,7 @@ fun ChatDetails(
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
+    var showDeleteGroupConfirmation by remember { mutableStateOf(false) }
     var showDecoupleExpiryConfirmation by remember { mutableStateOf(false) }
     var showExpiryPicker by remember { mutableStateOf(false) }
     var showRemoveFriendConfirmation by remember { mutableStateOf(false) }
@@ -657,6 +660,31 @@ fun ChatDetails(
                         .padding(top = 8.dp, bottom = 16.dp, start = 16.dp, end = 16.dp)
                         .fillMaxWidth()
                 )
+
+                // Delete the whole group for everyone - admins only, the server rejects anyone else
+                if (iAmAdmin) {
+                    if (showDeleteGroupConfirmation) {
+                        ConfirmationDialog(
+                            message = stringResource(Res.string.confirm_delete_group),
+                            onConfirm = {
+                                chatdetailsViewmodel.deleteGroup()
+                            },
+                            onDismiss = {
+                                showDeleteGroupConfirmation = false
+                            }
+                        )
+                    }
+
+                    DeleteButton(
+                        text = stringResource(Res.string.delete_group),
+                        onClick = {
+                            showDeleteGroupConfirmation = true
+                        },
+                        modifier = Modifier
+                            .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
+                            .fillMaxWidth()
+                    )
+                }
             } else {
                 // Confirmation dialog for removing friend
                 if (showRemoveFriendConfirmation) {

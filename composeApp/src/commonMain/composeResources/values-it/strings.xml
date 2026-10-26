@@ -242,6 +242,7 @@
     <string name="event_no_group">Questo evento non ha una chat di gruppo</string>
     <string name="user_description">descrizione utente</string>
     <string name="leave_group">abbandona gruppo</string>
+    <string name="delete_group">elimina gruppo</string>
     <string name="add_users_to_group">aggiungi utenti</string>
     <string name="member_since">membro dal %1$s</string>
     <string name="change_group_name">Modifica il nome di questo Gruppo</string>
@@ -513,6 +514,7 @@
 
     <!-- Confirmation dialogs -->
     <string name="confirm_leave_group">Sei sicuro di voler abbandonare questo gruppo?</string>
+    <string name="confirm_delete_group">Eliminare questo gruppo per tutti i membri? La chat e tutti i messaggi andranno persi per tutti. L'operazione non può essere annullata.</string>
     <string name="confirm_remove_friend">Sei sicuro di voler rimuovere %1$s dagli amici?</string>
     <string name="confirm_remove_member">Sei sicuro di voler rimuovere %1$s dal gruppo?</string>
 
@@ -1055,7 +1057,6 @@
     <string name="contribute_donate_action">Apri la pagina delle donazioni</string>
     <string name="contribute_later">Forse più tardi</string>
 
-    <!-- Roadmap -->
     <string name="custom_reaction">Reazione personalizzata</string>
     <string name="enter_reaction">Inserisci reazione</string>
 
@@ -1066,11 +1067,23 @@
     <string name="schneaggmap_chip_events">Eventi</string>
     <string name="schneaggmap_chip_state_on">%1$s, attivo</string>
     <string name="schneaggmap_chip_state_off">%1$s, disattivo</string>
-    <string name="location_belongs_to_type">Appartiene a: %1$s</string>
     <string name="location_add_type">Aggiungi un nuovo tipo</string>
+    <string name="schneaggmap_entry_type_required">Aggiungi almeno un tipo</string>
 
     <string name="schneaggmap_entry_title">Nome</string>
     <string name="schneaggmap_entry_description">Descrizione</string>
+    <string name="schneaggmap_entry_new">Nuova voce della mappa</string>
+    <string name="schneaggmap_entry_edit">Modifica voce della mappa</string>
+    <string name="schneaggmap_secret_show">Mostra</string>
+    <string name="schneaggmap_secret_hide">Nascondi</string>
+    <string name="schneaggmap_attribute_required">Obbligatorio</string>
+    <string name="schneaggmap_attribute_invalid_number">Numero non valido</string>
+    <string name="schneaggmap_attribute_min">Min: %1$s</string>
+    <string name="schneaggmap_attribute_max">Max: %1$s</string>
+    <string name="schneaggmap_attribute_max_chars">Max %1$s caratteri</string>
+    <string name="schneaggmap_datetime_picker_title">Seleziona data e ora</string>
+    <string name="schneaggmap_datetime_now">Ora</string>
+    <string name="schneaggmap_datetime_not_set">Non impostato</string>
 
     <string name="schneaggmap_entry_delete">Elimina questa voce. Verrà eliminata anche per tutti gli altri. Non potrai ripristinarla.</string>
 
@@ -1452,7 +1465,7 @@
     <string name="user_settings_group_features">Funzionalità</string>
     <string name="user_settings_group_danger_zone">Azioni account</string>
 
-    <string name="misc_group_feedback">Feedback &amp; Roadmap</string>
+    <string name="misc_group_feedback">Feedback</string>
     <string name="misc_group_diagnostics">Diagnostica &amp; Risoluzione problemi</string>
     <string name="misc_group_data_reset">Ripristino &amp; Riparazione</string>
 

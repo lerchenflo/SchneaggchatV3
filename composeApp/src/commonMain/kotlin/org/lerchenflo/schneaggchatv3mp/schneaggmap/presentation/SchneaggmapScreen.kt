@@ -492,6 +492,12 @@ fun SchneaggmapScreen(
                     },
                     onDelete = {
                         onAction(SchneaggmapAction.OnEntryPopupDelete(it))
+                    },
+                    onQuickSave = { changedEntry ->
+                        onAction(SchneaggmapAction.OnEntryPopupSave(
+                            entry = changedEntry,
+                            keepPopupOpen = true
+                        ))
                     }
                 )
             }

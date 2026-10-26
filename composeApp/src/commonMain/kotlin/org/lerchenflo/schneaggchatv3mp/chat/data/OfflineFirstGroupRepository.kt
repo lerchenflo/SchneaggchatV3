@@ -262,4 +262,21 @@ class OfflineFirstGroupRepository(
             }
         }
     }
+
+    /**
+     * The local delete is only an optimistic fast path (it also purges the group's messages);
+     * the server's GroupChange push and the next group sync converge on the same result.
+     */
+    override suspend fun deleteGroup(groupId: String): Boolean {
+        when (val success = groupRemoteDataSource.deleteGroup(groupId).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
+                return false
+            }
+            is NetworkResult.Success<*> -> {
+                groupLocalDataSource.deleteGroup(groupId)
+                return true
+            }
+        }
+    }
 }

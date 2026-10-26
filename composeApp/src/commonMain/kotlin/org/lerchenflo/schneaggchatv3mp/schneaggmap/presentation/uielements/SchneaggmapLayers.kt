@@ -32,7 +32,6 @@ import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.readByteArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -176,16 +175,9 @@ fun SchneaggmapLayers(
 
     val ownId = SessionCache.requireLoggedIn()?.userId
 
-    //Resolve all icons (Cycle trough the entrys, code is more garbage otherwise (Auto resolves new types)
-    val typeIcons: Map<LocationType, DrawableResource> = remember {
-        entries.associateWith { type ->
-            type.drawableRes()
-        }
-    }
-
-    //Decoded bitmaps of the same icons, needed to composite a merged marker for entries that
-    //match 2+ location types (see multiTypeEntries below). imageResource() caches by resource
-    //id internally, so re-calling it here on every recomposition is cheap.
+    //Decoded type icons, scaled into the per-type markers and composited into a merged marker for
+    //entries that match 2+ location types (see multiTypeEntries below). imageResource() caches by
+    //resource id internally, so re-calling it here on every recomposition is cheap.
     val typeIconBitmaps: Map<LocationType, ImageBitmap> = entries.associateWith { type ->
         imageResource(type.drawableRes())
     }
@@ -409,9 +401,16 @@ fun SchneaggmapLayers(
             if (entriesForType.isEmpty()) return@forEach
 
 
-            val iconRes = typeIcons[type] ?: return@forEach
+            val iconBitmap = typeIconBitmaps[type] ?: return@forEach
 
             safeAdd(layerId = "type-${type.name}") {
+                //A ready bitmap instead of painterResource: maplibre renders a Painter on the
+                //RenderThread while the main thread waits, which froze the map for ~1.5 s when all
+                //place types were enabled at once
+                val markerIcon = remember(iconBitmap, density) {
+                    scaleMarkerIcon(iconBitmap, density, PLACE_MARKER_SIZE)
+                }
+
                 val mapLocationSource = rememberGeoJsonSource(
                     data = GeoJsonData.Features(
                         FeatureCollection(
@@ -454,7 +453,7 @@ fun SchneaggmapLayers(
                             ClickResult.Consume
                         } else ClickResult.Pass
                     },
-                    iconImage = image(painterResource(iconRes), size = DpSize(PLACE_MARKER_SIZE, PLACE_MARKER_SIZE)),
+                    iconImage = image(markerIcon),
                     iconAllowOverlap = const(!state.useClustering)
                 )
             }
@@ -518,7 +517,8 @@ fun SchneaggmapLayers(
                                     ClickResult.Consume
                                 } else ClickResult.Pass
                             },
-                            iconImage = image(BitmapPainter(markerIcon.bitmap), size = markerIcon.size),
+                            //The bitmap itself, not a BitmapPainter, so maplibre skips the RenderThread capture
+                            iconImage = image(markerIcon.bitmap),
                             iconAllowOverlap = const(true)
                         )
                     }
@@ -700,14 +700,17 @@ fun SchneaggmapLayers(
 
     //Show events with a location set, gated by the "Events" toggle in the filter dropdown.
     //Each pin uses the same icon as the event's type (see EventType.icon()).
+    //Joined events are drawn in the primary color, all others in the error color.
     if (state.eventsWithLocation.isNotEmpty() && state.showEvents) {
-        val eventPinTint = MaterialTheme.colorScheme.onError
-        //Filled circle behind each event icon so the pins stand out from the base map
-        val eventPinBackgroundColor = MaterialTheme.colorScheme.error
         val eventPinBorderColor = MaterialTheme.colorScheme.surface
+        val colorScheme = MaterialTheme.colorScheme
 
         state.eventsWithLocation.forEach { event ->
             val location = event.location ?: return@forEach
+            val isJoined = event.id in state.joinedEventIds
+            val eventPinTint = if (isJoined) colorScheme.onPrimary else colorScheme.onError
+            //Filled circle behind each event icon so the pins stand out from the base map
+            val eventPinBackgroundColor = if (isJoined) colorScheme.primary else colorScheme.error
 
             safeAdd(layerId = "event-${event.id}") {
                 val eventSource = rememberGeoJsonSource(

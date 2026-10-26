@@ -30,7 +30,7 @@ Property name, `AttributeKey` constant, JSON key and Mongo field name are always
 | `LongDef(min, max)` | `LongValue` | Number field (plain long - **no longer a date picker**) | Range |
 | `BoolDef` | `BoolValue` | Switch | Type |
 | `EnumDef(options)` | `StringValue` holding the enum **constant name** (never the ordinal) | Dropdown with translated labels; unknown names are shown raw | Value must be one of `options` |
-| `DateTimeDef` | `LongValue` (epoch millis) | Date + time picker | Type |
+| `DateTimeDef` | `LongValue` (epoch millis) | Date + time picker with a Now button; the read-only card also has Now and saves at once | Type |
 | `PriceDef(max)` | `DoubleValue` (euros) | Decimal field, `€` suffix, max 2 decimals, `.` or `,` | Not negative, max |
 | `DistanceDef(unit, max)` | `DoubleValue` in `unit` (`METERS`, `KILOMETERS`) | Decimal field with unit suffix | Not negative, max |
 | `RatingDef(min, max)` | `IntValue` | Slider, value saved on release | Within `min..max` |
@@ -145,7 +145,7 @@ standalone image and not referenced from code yet.
 **New definition type** (reusing an existing `AttributeValue`)
 1. Add the subtype to `AttributeDefinition` on both sides (server: `@JsonSubTypes`, client: `@SerialName`).
 2. Server: add a branch in `SchneaggmapService.validate` (the compiler forces it).
-3. Client: add a branch in `KeyValueView` (the compiler forces it).
+3. Client: add a branch in `KeyValueView` (edit form) and `KeyValueReadOnlyView` (detail card) - the compiler forces both.
 
 **New location type** - follow the checklist at the top of `LocationData.kt` in each repo.
 

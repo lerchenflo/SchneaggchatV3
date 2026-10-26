@@ -51,8 +51,6 @@ data class FeedbackEntry(
     /** Up and downvotes cancel out, "didn't know" is neutral. */
     val score: Int get() = upvotes - downvotes
 
-    val isDone: Boolean get() = status == FeedbackStatus.IMPLEMENTED || status == FeedbackStatus.FIXED
-
     /** User-created entries stay pinned (and highlighted) at the top for [NEW_ENTRY_PIN_MILLIS]. */
     fun isPinned(nowMillis: Long): Boolean =
         !isSeeded && nowMillis - createdAt in 0 until NEW_ENTRY_PIN_MILLIS

@@ -28,8 +28,11 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
@@ -55,12 +58,18 @@ class SchneaggmapViewModel(
 
     private val _state = MutableStateFlow(SchneaggmapState(pickLocationMode = pickLocationMode))
 
+    // Driven off authState (not a one-shot read) so the event filter picks up the id once autologin finishes
+    private val ownUserIdFlow = SessionCache.authState.map {
+        (it as? SessionCache.AuthState.LoggedIn)?.userId
+    }
+
     val state = combine(
         _state,
         mapRepository.getAllMapEntriesFlow(),
         userRepository.onlineFriendIdsFlow,
         eventRepository.getAllEventsFlow(),
-    ) { state, entries, onlineFriendIds, events ->
+        ownUserIdFlow,
+    ) { state, entries, onlineFriendIds, events, ownUserId ->
 
         // Types the search is restricted to: explicitly picked types win within their group,
         // a selected group with no individual picks counts as the whole group.
@@ -93,11 +102,21 @@ class SchneaggmapViewModel(
 
         //println("Results: ${results.size}")
 
+        // Events the user marked as not interested are hidden from the map
+        val eventsWithLocation = events.filter { event ->
+            event.location != null &&
+                (ownUserId == null || event.statusOf(ownUserId) != EventParticipationStatus.DISMISSED)
+        }
 
         state.copy(
             entries = entries,
             onlineFriendIds = onlineFriendIds,
-            eventsWithLocation = events.filter { it.location != null },
+            eventsWithLocation = eventsWithLocation,
+            joinedEventIds = ownUserId?.let { id ->
+                eventsWithLocation
+                    .filter { it.statusOf(id) == EventParticipationStatus.ACCEPTED }
+                    .mapTo(mutableSetOf()) { it.id }
+            } ?: emptySet(),
 
             searchResults = results
         )
@@ -149,6 +168,14 @@ class SchneaggmapViewModel(
                     isFilterDropdownVisible = !it.isFilterDropdownVisible,
                     selectedEntry = null,
                 )
+            }
+            SchneaggmapAction.ToggleAllPlaces -> {
+                val allPlaceTypes = LocationGroup.entries.flatMapTo(mutableSetOf()) { it.types }
+
+                // Anything shown (even only some types): hide all. Nothing shown: show every type
+                _state.update {
+                    it.copy(enabledTypes = if (it.enabledTypes.isNotEmpty()) emptySet() else allPlaceTypes)
+                }
             }
             is SchneaggmapAction.ToggleMainType -> {
                 val enabled = state.value.enabledTypes
@@ -283,7 +310,7 @@ class SchneaggmapViewModel(
 
                 _state.update { s ->
                     s.copy(
-                        selectedEntry = null,
+                        selectedEntry = if (action.keepPopupOpen) entry else null,
                         enabledTypes = s.enabledTypes + entry.locationData.map { it.locationtype }
                     )
                 }

@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,8 +57,8 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_vote_up
 
 /**
  * One entry of the board: status, title, short description, tags, the newest dev comment and the
- * vote buttons. Done entries (implemented / fixed) get a tinted card so they stand apart from
- * requests; entries younger than two days get an outline and a "new" badge.
+ * vote buttons. All cards share one neutral container - the status pill shows whether an entry is
+ * done, and entries younger than two days get a "new" badge.
  */
 @Composable
 fun FeedbackCard(
@@ -72,14 +71,7 @@ fun FeedbackCard(
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (entry.isDone) {
-                MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f)
-            } else {
-                MaterialTheme.colorScheme.surfaceContainer
-            }
-        ),
-        border = if (isPinned) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Column(
             modifier = Modifier.padding(14.dp),
@@ -194,10 +186,12 @@ fun DevCommentBlock(
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        FeedbackPill(
+        //Plain label on the container instead of a second filled pill - the block is tinted already
+        Text(
             text = stringResource(Res.string.feedback_dev_comment),
-            container = MaterialTheme.colorScheme.primary,
-            content = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
         )
         Text(
             text = text,

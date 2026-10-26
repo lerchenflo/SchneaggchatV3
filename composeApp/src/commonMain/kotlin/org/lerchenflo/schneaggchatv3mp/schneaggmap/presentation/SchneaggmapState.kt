@@ -41,6 +41,8 @@ data class SchneaggmapState(
     val showUsers: Boolean = true,
 
     val eventsWithLocation: List<Event> = emptyList(),
+    // Events the own user is going to (accepted, joined or created) - their pins use the primary color
+    val joinedEventIds: Set<String> = emptySet(),
     val showEvents: Boolean = true,
 
     val mapStyle: MapStyleSetting = MapStyleSetting.LIBERTY,
