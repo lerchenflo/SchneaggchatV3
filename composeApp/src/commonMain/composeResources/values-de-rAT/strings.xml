@@ -110,9 +110,10 @@
     <string name="highlight_todays_message_timestamp">Hütige Zitstempel fürraheba</string>
     <string name="highlight_todays_message_timestamp_info">Markiert da Zitstempel vo hüt empfangana Nochrichta in da Chat-Uswahl grün</string>
     <string name="quick_reactions">Schneallreaktion</string>
-    <string name="quick_reactions_info">Emojis, dia bem langa Drucka vo na Nochricht abota werrand. Zum Umsortiera züha.</string>
-    <string name="quick_reactions_empty">Kua Schneallreaktiona - du kannsch trotzdem bei jeda Nochricht a eigene Reaktion dazuatua.</string>
+    <string name="quick_reactions_info">S erschta Emoji kriagsch mit Doppeltippa uf a Nochricht, die andra werrand bem langa Drucka abota. Zum Umsortiera züha.</string>
+    <string name="quick_reactions_empty">Kua Schneallreaktiona - Doppeltippa macht nix, du kannsch aber trotzdem bei jeda Nochricht a eigene Reaktion dazuatua.</string>
     <string name="quick_reactions_reorder">Schneallreaktiona umsortiera</string>
+    <string name="quick_reactions_double_tap">Doppeltippa</string>
     <string name="add_quick_reaction">Schneallreaktiona dazuatua</string>
     <string name="restore_defaults">Standard wiederherstella</string>
     <string name="something_wrong_message">Irgendwas isch falsch glofa</string>
@@ -243,6 +244,7 @@
     <string name="event_no_group">Des Event hot kuan Gruppenchat</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Abhaua</string>
+    <string name="delete_group">Gruppe löscha</string>
     <string name="add_users_to_group">Mitglied hinzufüga</string>
     <string name="member_since">Dabei sit %1$s</string>
     <string name="change_group_name">Änder da Gruppanama</string>
@@ -514,6 +516,7 @@
 
     <!-- Confirmation dialogs -->
     <string name="confirm_leave_group">Bisch da sicher, dass du dia Gruppa verlo willsch?</string>
+    <string name="confirm_delete_group">Dia Gruppe für alle Mitglieder löscha? Da Chat und alle Nochrichta sind denn für alle furt. Des kann ned rückgängig gmacht werra.</string>
     <string name="confirm_remove_friend">Bisch da sicher, dass du %1$s als Freund entferna willsch?</string>
     <string name="confirm_remove_member">Bisch da sicher, dass du %1$s us da Gruppe entferna willsch?</string>
 
@@ -881,7 +884,7 @@
 
     <!-- Games: Odd One Out -->
     <string name="games_oddoneout_title">Odd One Out</string>
-    <string name="games_oddoneout_instructions">A Raster us Fealda kut – alle luagand glich us, außer uans. Tipp uf des andre Feald, bevor d Zit ablouft!\n\nJe schnealla du s findsch, desto meh Punkte. A falscha Tipp oder a abgloufene Zit kostet uans vo dina 3 Leba – sind alle weg, isch da Versuach vorbei. D Runda werrand schnealla und s andre Feald schwieriger zum finda, je länger du durchhebsch!</string>
+    <string name="games_oddoneout_instructions">A Raster us Fealda kut – alle luagand glich us, außer uans. Tipp uf des andre Feald, bevor d Zit ablouft!\n\nJe schnealla du s findsch, desto meh Punkte. A falscha Tipp oder a abgloufene Zit kostet uans vo dina 3 Leba – sind alle furt, isch da Versuach vorbei. D Runda werrand schnealla und s andre Feald schwieriger zum finda, je länger du durchhebsch!</string>
     <string name="games_oddoneout_lives_remaining">%1$d Leba übrig</string>
 
     <!-- Games: Morse -->
@@ -1468,6 +1471,7 @@ Mealds, egal wie klenn.</string>
     <string name="user_settings_group_account">Konto &amp; Sicherheit</string>
     <string name="user_settings_group_features">Funktiona</string>
     <string name="user_settings_group_danger_zone">Konto-Aktiona</string>
+    <string name="misc_group_feedback">Feedback</string>
 
     <string name="misc_group_diagnostics">Diagnose &amp; Fehlerbehebung</string>
     <string name="misc_group_data_reset">Zrucksetza &amp; Repariera</string>

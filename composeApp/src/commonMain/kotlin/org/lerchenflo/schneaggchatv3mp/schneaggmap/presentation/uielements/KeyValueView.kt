@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
@@ -103,7 +104,7 @@ import kotlin.time.Instant
 fun KeyValueView(
     value: AttributeValue?,
     definition: AttributeDefinition,
-    onValueChange: (AttributeValue) -> Unit,
+    onValueChange: (AttributeValue?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // The date button and its Now button don't fit next to the label on a phone, so the label goes above them
@@ -120,6 +121,8 @@ fun KeyValueView(
 
             DateTimeInput(
                 millis = (value as? LongValue)?.value,
+                clearable = !definition.required,
+                showNow = definition.showNow,
                 onValueChange = onValueChange
             )
         }
@@ -416,13 +419,16 @@ fun KeyValueView(
 }
 
 /**
- * Date + time picker button with a Now button next to it. Only writes a value when the user picks
- * one (OK in the dialog) or taps Now - opening the form must not mark the entry as changed.
+ * Date + time picker button with a Now button next to it when [showNow]. Only writes a value when the
+ * user picks one (OK in the dialog) or taps Now - opening the form must not mark the entry as changed.
+ * When [clearable], a set date gets a clear button that writes null.
  */
 @Composable
 private fun DateTimeInput(
     millis: Long?,
-    onValueChange: (AttributeValue) -> Unit,
+    clearable: Boolean,
+    showNow: Boolean,
+    onValueChange: (AttributeValue?) -> Unit,
 ) {
     val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
     // A few years ahead so upcoming dates (e.g. the next horse riding tournament) can be picked
@@ -455,12 +461,23 @@ private fun DateTimeInput(
             )
         }
 
-        Spacer(Modifier.width(8.dp))
+        if (clearable && millis != null) {
+            IconButton(onClick = { onValueChange(null) }) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null
+                )
+            }
+        }
 
-        OutlinedButton(
-            onClick = { onValueChange(LongValue(Clock.System.now().toEpochMilliseconds())) }
-        ) {
-            Text(stringResource(Res.string.schneaggmap_datetime_now))
+        if (showNow) {
+            Spacer(Modifier.width(8.dp))
+
+            OutlinedButton(
+                onClick = { onValueChange(LongValue(Clock.System.now().toEpochMilliseconds())) }
+            ) {
+                Text(stringResource(Res.string.schneaggmap_datetime_now))
+            }
         }
     }
 
@@ -568,7 +585,7 @@ fun KeyValueReadOnlyView(
                 )
             }
 
-            if (onValueChange != null) {
+            if (onValueChange != null && definition.showNow) {
                 Spacer(Modifier.width(16.dp))
 
                 NormalButton(

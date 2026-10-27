@@ -31,6 +31,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Schneaggmap: UI verbessert
 - Umfragen: Einfachere Einstellungen
 - Neues Spiel: C Coding, Tic Tac Toe
+- Quick Reactions: Custom Doppeltip Reaktion
 
 #### Bugfixes
 - Benachrichtigungen: Alles mögliche repariert
