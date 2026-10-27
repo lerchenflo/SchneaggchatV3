@@ -1445,6 +1445,8 @@
 
     <string name="ttt_hint_tap_highlighted">Drücke die hervorgehobene Fläche um fortzufahren</string>
     <string name="ttt_hint_tap_anywhere">Drücke irgendwo um fortzufahren</string>
+    <string name="ttt_previous_step">Vorheriger Schritt</string>
+    <string name="ttt_highlighted_element">Hervorgehobenes Element</string>
 
     <string name="navbar_chats">Chats</string>
     

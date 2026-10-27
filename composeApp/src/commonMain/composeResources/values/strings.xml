@@ -1445,6 +1445,8 @@
 
     <string name="ttt_hint_tap_highlighted">Tap the highlighted area to continue</string>
     <string name="ttt_hint_tap_anywhere">Tap anywhere to continue</string>
+    <string name="ttt_previous_step">Previous step</string>
+    <string name="ttt_highlighted_element">Highlighted element</string>
 
     <string name="navbar_chats">chats</string>
     

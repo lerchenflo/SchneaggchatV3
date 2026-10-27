@@ -1439,6 +1439,8 @@
 
     <string name="ttt_hint_tap_highlighted">Tocca l'area evidenziata per continuare</string>
     <string name="ttt_hint_tap_anywhere">Tocca ovunque per continuare</string>
+    <string name="ttt_previous_step">Passo precedente</string>
+    <string name="ttt_highlighted_element">Elemento evidenziato</string>
 
     <string name="navbar_chats">chat</string>
 

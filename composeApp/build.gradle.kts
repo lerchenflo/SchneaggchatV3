@@ -174,7 +174,7 @@ kotlin {
 
             // Voice messages (local module, not published)
             implementation(projects.kmpVoiceMessageLibrary)
-            implementation(projects.kmpTaptargetLibrary)
+            implementation(libs.kmp.taptarget)
 
             //Jwt parsing
             implementation(libs.jwt.kt)
