@@ -58,11 +58,16 @@ sealed interface AttributeDefinition {
         @Transient val options: List<AttributeOption> = emptyList(),
     ) : AttributeDefinition
 
-    /** A point in time as epoch millis. Stored as an [AttributeValue.LongValue]. */
+    /**
+     * A point in time as epoch millis. Stored as an [AttributeValue.LongValue].
+     * [showNow] offers a Now button - only for moments that already happened (e.g. a police sighting),
+     * not for upcoming dates like the next tournament.
+     */
     @Serializable @SerialName("datetime")
     data class DateTimeDef(
         override val key: AttributeKey,
         override val required: Boolean,
+        val showNow: Boolean = false,
     ) : AttributeDefinition
 
     /** A price in euros, never negative. Stored as an [AttributeValue.DoubleValue]. */

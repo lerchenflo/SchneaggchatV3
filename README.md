@@ -33,12 +33,14 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Schneaggmap: Ortsdetails überarbeitet (Ansicht mit Bearbeiten-Button)
 - Umfragen: Einfachere Einstellungen
 - Neues Spiel: C Coding
+- Quick Reactions: Custom Doppeltip Reaktion
 
 #### Bugfixes
 - Benachrichtigungen: Alles mögliche repariert
 - Chat: Lange Chats laden fix, Nachrichten senden fix
 - Übersetzungen verbessert
 - Spiele: Scroll fix in Auswahl
+- Schneaggmap: Datum (z.B. nächstes Turnier) wieder entfernbar
 
 ### 3.0.18
 
