@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.BedroomBaby
 import androidx.compose.material.icons.filled.Castle
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Dataset
+import androidx.compose.material.icons.filled.Grid3x3
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.House
@@ -48,6 +49,8 @@ import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_title
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
+import schneaggchatv3mp.composeapp.generated.resources.games_tictactoe_description
+import schneaggchatv3mp.composeapp.generated.resources.games_tictactoe_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_title
 import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
@@ -174,6 +177,14 @@ class GameSelectorViewModel : ViewModel() {
             route = Route.Undercover,
             inDev = GameId.UNDERCOVER.indev,
             gameId = GameId.UNDERCOVER
+        ),
+        GameScreenElement(
+            title = Res.string.games_tictactoe_title,
+            description = Res.string.games_tictactoe_description,
+            icon = Icons.Default.Grid3x3,
+            route = Route.TicTacToe,
+            inDev = GameId.TIC_TAC_TOE.indev,
+            gameId = GameId.TIC_TAC_TOE
         ),
         GameScreenElement(
             title = Res.string.games_yahtzee_title,

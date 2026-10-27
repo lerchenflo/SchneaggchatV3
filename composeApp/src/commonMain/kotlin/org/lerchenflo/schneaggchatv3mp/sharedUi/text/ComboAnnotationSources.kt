@@ -27,6 +27,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 import schneaggchatv3mp.composeapp.generated.resources.games_2048_title
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
+import schneaggchatv3mp.composeapp.generated.resources.games_tictactoe_title
 import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
 import schneaggchatv3mp.composeapp.generated.resources.unknown_event
 import schneaggchatv3mp.composeapp.generated.resources.unknown_game
@@ -84,13 +85,14 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     val gameFingerPickerTitle = stringResource(Res.string.games_fingerpicker_title)
     val gameDartCounterTitle = stringResource(Res.string.games_dartcounter_title)
     val gameUndercoverTitle = stringResource(Res.string.games_undercover_title)
+    val gameTicTacToeTitle = stringResource(Res.string.games_tictactoe_title)
     val gameYatziTitle = stringResource(Res.string.games_yahtzee_title)
     val game2048Title = stringResource(Res.string.games_2048_title)
 
     val gameNames = remember(
         gameTetrisTitle, gameTowerstackTitle, gameMorseTitle, gameSchneaggaHusTitle,
         gameGridRushTitle, gameOddOneOutTitle, gameCoinFlipTitle, gameFingerPickerTitle,
-        gameDartCounterTitle, gameUndercoverTitle, gameYatziTitle, game2048Title
+        gameDartCounterTitle, gameUndercoverTitle, gameTicTacToeTitle, gameYatziTitle, game2048Title
     ) {
         mapOf(
             "tetris" to gameTetrisTitle,
@@ -103,6 +105,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
             "fingerpicker" to gameFingerPickerTitle,
             "dartcounter" to gameDartCounterTitle,
             "undercover" to gameUndercoverTitle,
+            "tictactoe" to gameTicTacToeTitle,
             "yatzi" to gameYatziTitle,
             "2048" to game2048Title,
         )
@@ -162,6 +165,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                         "fingerpicker" -> Route.FingerPicker
                         "dartcounter" -> Route.DartCounter
                         "undercover" -> Route.Undercover
+                        "tictactoe" -> Route.TicTacToe
                         "yatzi" -> Route.Yatzi
                         "2048" -> Route.Game2048
                         else -> Route.GamesSelector

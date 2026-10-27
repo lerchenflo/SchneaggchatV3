@@ -32,6 +32,8 @@ enum class GameId(
     DART_COUNTER(sharedDevice = true),
     // Every submission is one win (score = 1); the server ranks the sum of wins (see countsWins)
     UNDERCOVER(sharedDevice = true),
+    // Every won round is one win (score = 1), like UNDERCOVER
+    TIC_TAC_TOE(sharedDevice = true),
     // Daily C puzzle without a difficulty: 100 / 60 / 30 points for solving on the first / second / third try
     C_CHALLENGE(daily = true);
 
@@ -149,7 +151,7 @@ val GameId.leaderboard: LeaderboardSpec
             boardAxis = BoardAxis.DART_COUNTDOWN,
             boards = listOf(GameDifficulty.LOW, GameDifficulty.HIGH),
         )
-        GameId.UNDERCOVER -> LeaderboardSpec(
+        GameId.UNDERCOVER, GameId.TIC_TAC_TOE -> LeaderboardSpec(
             scoreKind = ScoreKind.WIN_COUNT,
             boardAxis = BoardAxis.NONE,
             boards = listOf(GameDifficulty.MEDIUM),
