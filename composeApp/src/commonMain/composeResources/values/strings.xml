@@ -1362,7 +1362,8 @@
     <string name="ttt_new_chat_search_friends_freeroam">Try to add a new friend.</string>
 
 
-    <string name="ttt_new_chat_create_group">You can tap here to create a new group</string>
+    <string name="ttt_new_chat_create_group">Create groups</string>
+    <string name="ttt_new_chat_create_group_description">Later you can start a group chat with several friends here.</string>
 
     <string name="ttt_new_chat_go_back">Let's go back to the Chatselection</string>
 
@@ -1447,6 +1448,7 @@
     <string name="ttt_hint_tap_anywhere">Tap anywhere to continue</string>
     <string name="ttt_previous_step">Previous step</string>
     <string name="ttt_highlighted_element">Highlighted element</string>
+    <string name="ttt_got_it">Got it</string>
 
     <string name="navbar_chats">chats</string>
     

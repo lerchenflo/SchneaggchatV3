@@ -3,11 +3,12 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
+        // includeGroupByRegex("x(\\..*)?") = the group and its subgroups (stable replacement for the incubating includeGroupAndSubgroups)
         google {
             mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
+                includeGroupByRegex("androidx(\\..*)?")
+                includeGroupByRegex("com\\.android(\\..*)?")
+                includeGroupByRegex("com\\.google(\\..*)?")
             }
         }
         mavenCentral()
@@ -19,9 +20,9 @@ dependencyResolutionManagement {
     repositories {
         google {
             mavenContent {
-                includeGroupAndSubgroups("androidx")
-                includeGroupAndSubgroups("com.android")
-                includeGroupAndSubgroups("com.google")
+                includeGroupByRegex("androidx(\\..*)?")
+                includeGroupByRegex("com\\.android(\\..*)?")
+                includeGroupByRegex("com\\.google(\\..*)?")
             }
         }
         mavenCentral()

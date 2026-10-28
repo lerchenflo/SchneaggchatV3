@@ -62,7 +62,7 @@ map = "0.20.0"
 
 swipeableKmp = "1.0.7"
 reorderable = "3.1.0"
-kmpTaptarget = "1.0.1" #Onboarding tour library, https://github.com/lerchenflo/kmp-taptarget (JitPack)
+kmpTaptarget = "1.0.4" #Onboarding tour library, https://github.com/lerchenflo/kmp-taptarget (JitPack)
 
 
 [libraries]

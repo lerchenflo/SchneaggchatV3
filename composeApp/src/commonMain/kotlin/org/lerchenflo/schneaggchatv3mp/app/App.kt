@@ -133,6 +133,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
 import schneaggchatv3mp.composeapp.generated.resources.ttt_hint_tap_anywhere
 import schneaggchatv3mp.composeapp.generated.resources.ttt_hint_tap_highlighted
+import schneaggchatv3mp.composeapp.generated.resources.ttt_got_it
 import schneaggchatv3mp.composeapp.generated.resources.ttt_highlighted_element
 import schneaggchatv3mp.composeapp.generated.resources.ttt_previous_step
 import schneaggchatv3mp.composeapp.generated.resources.ttt_skip
@@ -550,6 +551,7 @@ fun App() {
                 skipTour = stringResource(Res.string.ttt_skip),
                 previousStep = stringResource(Res.string.ttt_previous_step),
                 highlightedTarget = stringResource(Res.string.ttt_highlighted_element),
+                gotIt = stringResource(Res.string.ttt_got_it),
             ),
             skipButton = { onSkip ->
                 TourSkipButton(text = stringResource(Res.string.ttt_skip), onSkip = onSkip)
