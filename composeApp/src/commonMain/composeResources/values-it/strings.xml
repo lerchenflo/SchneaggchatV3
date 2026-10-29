@@ -105,7 +105,7 @@
     <string name="loadinginfo_offline">Sei attualmente offline...</string>
     <string name="read">letto</string>
     <string name="useMarkdown">usa la formattazione Markdown</string>
-    <string name="markdownInfo">Questo aggiungerà la formattazione Markdown ai messaggi, ma rallenterà il caricamento dei messaggi in chat.</string>
+    <string name="markdownInfo">Questo aggiungerà la formattazione Markdown ai messaggi.</string>
     <string name="highlight_todays_message_timestamp">Evidenzia l'orario di oggi</string>
     <string name="highlight_todays_message_timestamp_info">Evidenzia in verde l'orario dei messaggi ricevuti oggi nel selettore chat.</string>
     <string name="quick_reactions">Reazioni rapide</string>

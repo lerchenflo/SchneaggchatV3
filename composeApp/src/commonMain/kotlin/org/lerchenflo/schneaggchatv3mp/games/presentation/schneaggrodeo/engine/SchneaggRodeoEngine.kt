@@ -203,7 +203,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
 
     /** Visible world width in units; follows the canvas size. */
     override var worldWidth = 0f
-    /** Distance ridden at the horse's own pace; the score comes from it. */
+    /** Distance ridden at the horse's own pace; the score comes from it. Running on foot adds nothing. */
     var distance = 0f
         private set
     /** Game time ridden; drives fence growth, runners and the pressure (see RodeoDifficulty). */
@@ -829,9 +829,11 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         }
     }
 
-    /** The world moves by [scroll] under the running cowboy: the track, the landscape and what is on it. */
+    /**
+     * The world moves by [scroll] under the running cowboy: the track, the landscape and what is on it.
+     * No points on foot (not even double points): running has no obstacles, so it would be free points.
+     */
     private fun scrollOnFoot(scroll: Float, dt: Float) {
-        distance += scroll
         groundScroll += scroll
         landscape.scroll(scroll, worldWidth)
         terrain.scroll(
@@ -842,7 +844,7 @@ internal class SchneaggRodeoEngine : RodeoWorld {
         mapSwitch.scroll(scroll)
         pizzaOvens.scroll(scroll)
         deepSea.step(dt, scroll, worldWidth, active = mapSwitch.map == RodeoMap.SEA)
-        bonusPoints += wonders.step(dt, scroll, scroll * level.pointsFactor, worldWidth, firefliesAllowed = false)
+        bonusPoints += wonders.step(dt, scroll, ridden = 0f, worldWidth, firefliesAllowed = false)
         // Fences come at his pace, so they are as far apart in time as on the horse
         val bridgeComing = terrain.bridgeWithin(worldWidth - BRIDGE_CLEARANCE, worldWidth + BRIDGE_CLEARANCE)
         course.scrollFences(scroll, scroll, worldWidth, COWBOY_RUN_SPEED, elapsed, spawnFences = !bridgeComing)

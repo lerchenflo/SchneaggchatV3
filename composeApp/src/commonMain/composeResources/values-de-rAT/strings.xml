@@ -106,7 +106,7 @@
     <string name="loadinginfo_offline">Du bisch offline...</string>
     <string name="read">gleasa</string>
     <string name="useMarkdown">Markdown-formatierung verwenda</string>
-    <string name="markdownInfo">Des aktiviert Markdown im Chat, es kann aber si dassas denn kle laggt</string>
+    <string name="markdownInfo">Des aktiviert Markdown im Chat</string>
     <string name="highlight_todays_message_timestamp">Hütige Zitstempel fürraheba</string>
     <string name="highlight_todays_message_timestamp_info">Markiert da Zitstempel vo hüt empfangana Nochrichta in da Chat-Uswahl grün</string>
     <string name="quick_reactions">Schneallreaktion</string>
