@@ -30,6 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.DesktopBatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.location.DesktopLocationService
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
+import androidx.compose.ui.window.TrayState
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DesktopNotifier
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import java.util.concurrent.TimeUnit
@@ -92,5 +93,7 @@ val desktopLanguageManagerModule = module {
 }
 
 val desktopNotifierModule = module {
-    single<Notifier> { DesktopNotifier() }
+    // Shared with the tray icon in main.kt: notifications show as its balloon instead of a second icon
+    single { TrayState() }
+    single<Notifier> { DesktopNotifier(get()) }
 }

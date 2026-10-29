@@ -304,8 +304,10 @@ dependencies {
 //composeMultiplatform version, a library pulls core above the plugin (e.g. a material3 that isn't the
 //one paired with this CMP release). It would still build, but iOS crashes at runtime - so fail here.
 //Take material3, adaptive, navigation3 and lifecycle from the CMP release notes together with the plugin.
+//Skipped: the hot reload plugin's own tool classpaths (e.g. composeHotReloadDevTools, built against an
+//older Compose). They run in their own JVM, never in the app, so their Compose version doesn't matter.
 val composeCoreVersion = libs.versions.composeMultiplatform.get()
-configurations.matching { it.isCanBeResolved }.configureEach {
+configurations.matching { it.isCanBeResolved && !it.name.startsWith("composeHotReload") }.configureEach {
     val configurationName = name
     incoming.afterResolve {
         val mismatches = resolutionResult.allComponents

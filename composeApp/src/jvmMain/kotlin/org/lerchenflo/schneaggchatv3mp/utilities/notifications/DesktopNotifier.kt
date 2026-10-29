@@ -1,14 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
-import java.awt.Image
-import java.awt.SystemTray
-import java.awt.TrayIcon
-import java.awt.image.BufferedImage
+import androidx.compose.ui.window.Notification
+import androidx.compose.ui.window.TrayState
+import androidx.compose.ui.window.isTraySupported
 import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-import javax.imageio.ImageIO
 
 private const val APP_NAME = "SchneaggchatV3"
 private const val ICON_RESOURCE_PATH =
@@ -17,10 +15,11 @@ private const val ICON_RESOURCE_PATH =
 /** notify-send / gdbus return right after their D-Bus call; anything longer means the bus is gone. */
 private const val PROCESS_TIMEOUT_SECONDS = 2L
 
-class DesktopNotifier : Notifier {
-
-    // Lazily created and reused — a TrayIcon can only be added to the SystemTray once.
-    private var trayIcon: TrayIcon? = null
+/**
+ * @param trayState the state of the app's tray icon (main.kt): outside Linux, notifications show as
+ * that icon's balloon, so no second tray icon is needed for them
+ */
+class DesktopNotifier(private val trayState: TrayState) : Notifier {
 
     private val isLinux: Boolean = System.getProperty("os.name")?.lowercase()?.contains("linux") == true
 
@@ -36,7 +35,7 @@ class DesktopNotifier : Notifier {
 
     override suspend fun getToken(): String? = null // No FCM on desktop — skipped
     override suspend fun removeToken() = Unit // No FCM on desktop — skipped
-    override suspend fun hasPermission(): Boolean = isLinux || SystemTray.isSupported()
+    override suspend fun hasPermission(): Boolean = isLinux || isTraySupported
 
     override fun showLocalNotification(content: NotificationContent) {
         // Linux: libnotify first. java.awt.SystemTray reports itself as supported on most modern
@@ -115,27 +114,11 @@ class DesktopNotifier : Notifier {
         .replace("<", "&lt;")
         .replace(">", "&gt;")
 
+    /** Shown by the tray icon in main.kt, which only exists where [isTraySupported]. */
     private fun showViaSystemTray(content: NotificationContent): Boolean {
-        if (!SystemTray.isSupported()) return false
-        return try {
-            getOrCreateTrayIcon().displayMessage(content.title, content.body, TrayIcon.MessageType.INFO)
-            true
-        } catch (e: Exception) {
-            println("[Notifier.jvm] SystemTray notification failed: ${e.message}")
-            false
-        }
-    }
-
-    @Synchronized
-    private fun getOrCreateTrayIcon(): TrayIcon {
-        trayIcon?.let { return it }
-
-        val icon = TrayIcon(loadTrayImage(), APP_NAME).apply {
-            isImageAutoSize = true
-        }
-        SystemTray.getSystemTray().add(icon)
-        trayIcon = icon
-        return icon
+        if (!isTraySupported) return false
+        trayState.sendNotification(Notification(content.title, content.body, Notification.Type.Info))
+        return true
     }
 
     private fun extractIconFile(): File? = try {
@@ -148,22 +131,5 @@ class DesktopNotifier : Notifier {
     } catch (e: Exception) {
         println("[Notifier.jvm] could not extract notification icon: ${e.message}")
         null
-    }
-
-    private fun loadTrayImage(): Image {
-        val classLoaderImage = DesktopNotifier::class.java.classLoader
-            ?.getResourceAsStream(ICON_RESOURCE_PATH)
-            ?.use { ImageIO.read(it) }
-
-        if (classLoaderImage != null) return classLoaderImage
-
-        // Fallback: a small solid-color placeholder, in case the resource can't be loaded.
-        return BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB).apply {
-            createGraphics().apply {
-                color = java.awt.Color.WHITE
-                fillRect(0, 0, 16, 16)
-                dispose()
-            }
-        }
     }
 }
