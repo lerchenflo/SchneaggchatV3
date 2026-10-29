@@ -13,12 +13,13 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionItemData.SplitExpense
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.SplitShare
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
-import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.shares
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.consumedCents
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.DEFAULT_SPLIT_CURRENCY
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.MAX_SPLIT_AMOUNT_CENTS
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitMemberUi
@@ -87,10 +88,8 @@ class SplitExpenseEditorViewModel(
         val ownId = SessionCache.requireLoggedIn()?.userId
 
         val extension = groupExtensionRepository.getExtensionFlow(route.extensionId).first()
-        val existing = route.itemId?.let { itemId ->
-            groupExtensionRepository.getItemsForExtensionFlow(route.extensionId).first()
-                .find { it.id == itemId }?.data as? SplitExpense
-        }
+        val existingItem = route.itemId?.let { itemId -> extension?.items?.find { it.id == itemId } }
+        val existing = existingItem?.data as? SplitExpense
         // Deleted meanwhile (e.g. by another member)
         if (extension == null || (route.itemId != null && existing == null)) {
             SnackbarManager.showMessage(getString(Res.string.split_item_not_found))
@@ -123,10 +122,25 @@ class SplitExpenseEditorViewModel(
         val amountCents = existing?.amountCents ?: transfer?.amountCents
         val date = existing?.let { millisToLocalDate(it.date) } ?: today()
 
+        // The editor offers three plain modes. A mix of weights and fixed amounts (from another
+        // client) opens as fixed amounts with what everyone owes, so the total stays the same
+        val existingShares = existing?.shares?.values.orEmpty()
+        val splitMode = when {
+            existing == null || isTransfer -> SplitMode.EQUALLY
+            existingShares.any { it.fixedCents > 0L } -> SplitMode.BY_AMOUNT
+            existingShares.any { it.weight != 1 } -> SplitMode.BY_SHARES
+            else -> SplitMode.EQUALLY
+        }
+        val existingAmounts = if (splitMode == SplitMode.BY_AMOUNT) existing?.consumedCents() else null
+
         _state.update {
             it.copy(
                 isLoading = false,
                 isNew = existing == null,
+                canDelete = ownId != null && (
+                    existingItem?.createdBy == ownId || extension.createdBy == ownId ||
+                        groupMembers.any { member -> member.userId == ownId && member.admin }
+                    ),
                 isTransfer = isTransfer,
                 emoji = existing?.emoji?.takeIf { e -> e.isNotBlank() },
                 title = existing?.title.orEmpty(),
@@ -139,18 +153,14 @@ class SplitExpenseEditorViewModel(
                 paidByName = members.nameOf(paidBy),
                 receiverUserId = receiver,
                 receiverName = members.nameOf(receiver),
-                splitMode = when {
-                    existing?.amounts != null -> SplitMode.BY_AMOUNT
-                    existing?.weights != null -> SplitMode.BY_SHARES
-                    else -> SplitMode.EQUALLY
-                },
+                splitMode = splitMode,
                 participants = members.map { member ->
                     SplitParticipantUi(
                         member = member,
                         // New expenses are shared by every current member
-                        isIncluded = existing?.participants?.contains(member.userId) ?: (member.userId in currentMemberIds),
-                        weight = existing?.weights?.get(member.userId) ?: 1,
-                        amountInput = existing?.amounts?.get(member.userId)
+                        isIncluded = existing?.shares?.containsKey(member.userId) ?: (member.userId in currentMemberIds),
+                        weight = existing?.shares?.get(member.userId)?.weight?.takeIf { it > 0 } ?: 1,
+                        amountInput = existingAmounts?.get(member.userId)
                             ?.let { cents -> formatAmountNumber(cents, decimalSeparator) }
                             .orEmpty(),
                         shareText = "",
@@ -353,7 +363,7 @@ class SplitExpenseEditorViewModel(
         _state.update { it.copy(isDeleteDialogVisible = false) }
 
         viewModelScope.launch {
-            if (groupExtensionRepository.deleteItem(itemId)) {
+            if (groupExtensionRepository.deleteItem(extensionId = route.extensionId, itemId = itemId)) {
                 navigator.navigateBack()
             } else {
                 SnackbarManager.showMessage(getString(Res.string.split_delete_failed))
@@ -370,13 +380,14 @@ class SplitExpenseEditorViewModel(
             title = if (isTransfer) "" else title.trim(),
             amountCents = parseAmountToCents(amount) ?: 0L,
             paidBy = paidByUserId.orEmpty(),
-            participants = if (isTransfer) listOfNotNull(receiverUserId) else included.map { it.member.userId },
-            weights = if (!isTransfer && splitMode == SplitMode.BY_SHARES) {
-                included.associate { it.member.userId to it.weight }
-            } else null,
-            amounts = if (!isTransfer && splitMode == SplitMode.BY_AMOUNT) {
-                included.associate { it.member.userId to (parseAmountToCents(it.amountInput) ?: 0L) }
-            } else null,
+            shares = when {
+                isTransfer -> listOfNotNull(receiverUserId).associateWith { SplitShare() }
+                splitMode == SplitMode.BY_SHARES -> included.associate { it.member.userId to SplitShare(weight = it.weight) }
+                splitMode == SplitMode.BY_AMOUNT -> included.associate {
+                    it.member.userId to SplitShare(weight = 0, fixedCents = parseAmountToCents(it.amountInput) ?: 0L)
+                }
+                else -> included.associate { it.member.userId to SplitShare() }
+            },
             date = dateMillis,
             isSettlement = isTransfer,
             emoji = if (isTransfer) null else emoji,
@@ -394,7 +405,7 @@ class SplitExpenseEditorViewModel(
 
     /** Fills in every participant's part of the current amount and, in [SplitMode.BY_AMOUNT], the unassigned rest. */
     private fun SplitExpenseEditorState.recalculated(): SplitExpenseEditorState {
-        val shares = toExpense(dateMillis = 0L).shares()
+        val shares = toExpense(dateMillis = 0L).consumedCents()
         return copy(
             participants = participants.map { participant ->
                 participant.copy(
@@ -432,7 +443,7 @@ class SplitExpenseEditorViewModel(
     private fun SplitExpenseEditorState.withAmountsPrefilled(): SplitExpenseEditorState {
         if (participants.any { it.isIncluded && it.amountInput.isNotBlank() }) return this
 
-        val shares = toExpense(dateMillis = 0L).shares()
+        val shares = toExpense(dateMillis = 0L).consumedCents()
         return copy(
             participants = participants.map { participant ->
                 participant.copy(

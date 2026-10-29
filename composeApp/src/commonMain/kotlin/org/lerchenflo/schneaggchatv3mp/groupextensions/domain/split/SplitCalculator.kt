@@ -15,32 +15,30 @@ data class SettlementSuggestion(
 )
 
 /**
- * What each participant consumed of this expense: the fixed [SplitExpense.amounts] when set (a missing
- * amount counts as 0), else proportional to [SplitExpense.weights] (a missing weight counts as 1), else
- * an equal split. Cents that don't divide evenly go one each to the first participants, so weighted and
- * equal shares always add up to the amount. Empty when nobody takes part.
+ * What each participant consumed of this expense: their fixedCents plus their part of the rest
+ * (amountCents minus all fixedCents), split by weight. Cents of the rest that don't divide evenly go
+ * one each to the first weighted participants, so the shares always add up to the amount. With no
+ * weight left only the fixed amounts count. Empty when nobody takes part.
  */
-fun SplitExpense.shares(): Map<String, Long> {
-    val people = participants.distinct()
-    if (people.isEmpty()) return emptyMap()
+fun SplitExpense.consumedCents(): Map<String, Long> {
+    if (shares.isEmpty()) return emptyMap()
 
-    amounts?.let { fixed ->
-        return people.associateWith { (fixed[it] ?: 0L).coerceAtLeast(0L) }
-    }
-
-    val weightOf = people.associateWith { (weights?.get(it) ?: 1).coerceAtLeast(0).toLong() }
+    val fixedOf = shares.mapValues { (_, share) -> share.fixedCents.coerceAtLeast(0L) }
+    val weightOf = shares.mapValues { (_, share) -> share.weight.coerceAtLeast(0).toLong() }
     val totalWeight = weightOf.values.sum()
-    if (totalWeight == 0L) return emptyMap()
+    val rest = (amountCents - fixedOf.values.sum()).coerceAtLeast(0L)
+    if (totalWeight == 0L) return fixedOf
 
-    val shares = people.associateWith { amountCents * weightOf.getValue(it) / totalWeight }.toMutableMap()
-    var remainder = amountCents - shares.values.sum()
-    for (person in people) {
+    val result = shares.keys.associateWith { fixedOf.getValue(it) + rest * weightOf.getValue(it) / totalWeight }
+        .toMutableMap()
+    var remainder = rest - shares.keys.sumOf { rest * weightOf.getValue(it) / totalWeight }
+    for (person in shares.keys) {
         if (remainder <= 0L) break
         if (weightOf.getValue(person) == 0L) continue
-        shares[person] = shares.getValue(person) + 1
+        result[person] = result.getValue(person) + 1
         remainder--
     }
-    return shares
+    return result
 }
 
 /**
@@ -50,11 +48,11 @@ fun SplitExpense.shares(): Map<String, Long> {
 fun computeBalances(expenses: List<SplitExpense>): Map<String, Long> {
     val balances = mutableMapOf<String, Long>()
     expenses.forEach { expense ->
-        val shares = expense.shares()
+        val shares = expense.consumedCents()
         if (shares.isEmpty()) return@forEach
 
         // Credits what was handed out, not amountCents: the same for valid data, and fixed amounts
-        // that don't add up to the total (data from a buggy client) can't break the zero sum
+        // above the total (data from a buggy client) can't break the zero sum
         balances[expense.paidBy] = (balances[expense.paidBy] ?: 0L) + shares.values.sum()
         shares.forEach { (userId, share) ->
             balances[userId] = (balances[userId] ?: 0L) - share
@@ -101,4 +99,4 @@ fun totalExpenses(expenses: List<SplitExpense>): Long =
 
 /** What [userId] consumed over all real expenses, transfers excluded. */
 fun consumedBy(userId: String, expenses: List<SplitExpense>): Long =
-    expenses.filterNot { it.isSettlement }.sumOf { it.shares()[userId] ?: 0L }
+    expenses.filterNot { it.isSettlement }.sumOf { it.consumedCents()[userId] ?: 0L }

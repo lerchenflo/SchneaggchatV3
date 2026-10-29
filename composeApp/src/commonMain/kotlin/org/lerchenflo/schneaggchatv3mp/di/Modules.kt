@@ -101,8 +101,11 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import org.lerchenflo.schneaggchatv3mp.events.data.local.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.data.OfflineFirstEventRepository
 import org.lerchenflo.schneaggchatv3mp.events.data.local.RoomEventDataSource
-import org.lerchenflo.schneaggchatv3mp.groupextensions.data.DemoGroupExtensionRepository
-import org.lerchenflo.schneaggchatv3mp.groupextensions.data.RoomGroupExtensionRepository
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.OfflineFirstGroupExtensionRepository
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.local.GroupExtensionLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.local.RoomGroupExtensionDataSource
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.GroupExtensionRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.KtorGroupExtensionRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.GroupExtensionViewModel
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitViewModel
@@ -207,6 +210,7 @@ val sharedmodule = module{
     single<SettingsRemoteDataSource> { KtorSettingsRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
     single<EventRemoteDataSource> { KtorEventRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
     single<MapRemoteDataSource> { KtorMapRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<GroupExtensionRemoteDataSource> { KtorGroupExtensionRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
     single<FeedbackRemoteDataSource> { KtorFeedbackRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
     single<AnnouncementRemoteDataSource> { KtorAnnouncementRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
     single<GameRemoteDataSource> { KtorGameRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
@@ -288,14 +292,13 @@ val sharedmodule = module{
             messageRepository = get(),
             mapRepository = get(),
             eventRepository = get(),
+            groupExtensionRepository = get(),
             loggingRepository = get(),
             externalScope = get<ApplicationScope>(),
         )
     }
-    singleOf(::DemoGroupExtensionRepository) bind GroupExtensionRepository::class
-    // Holds the synced extensions. Swap with the demo line above once the server serves extensions
-    // (see RoomGroupExtensionRepository): singleOf(::RoomGroupExtensionRepository) bind GroupExtensionRepository::class
-    singleOf(::RoomGroupExtensionRepository)
+    singleOf(::RoomGroupExtensionDataSource) bind GroupExtensionLocalDataSource::class
+    singleOf(::OfflineFirstGroupExtensionRepository) bind GroupExtensionRepository::class
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
     singleOf(::GameSaveRepository)

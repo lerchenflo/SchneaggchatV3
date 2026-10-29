@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split
 
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.split_member_me

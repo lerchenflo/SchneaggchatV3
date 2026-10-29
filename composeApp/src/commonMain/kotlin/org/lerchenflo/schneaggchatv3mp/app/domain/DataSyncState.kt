@@ -18,6 +18,7 @@ enum class DataSyncJobType {
     MESSAGES,
     MAP,
     EVENTS,
+    GROUP_EXTENSIONS,
 
     MEDIA;
 }
@@ -34,7 +35,7 @@ data class DataSyncState(
     val jobs: List<DataSyncJobState> = listOf(
         DataSyncJobState(type = USERS), DataSyncJobState(type = GROUPS),
         DataSyncJobState(type = MESSAGES), DataSyncJobState(type = MAP),
-        DataSyncJobState(type = EVENTS),
+        DataSyncJobState(type = EVENTS), DataSyncJobState(type = DataSyncJobType.GROUP_EXTENSIONS),
         DataSyncJobState(type = DataSyncJobType.MEDIA)
     )
 )

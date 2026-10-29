@@ -156,7 +156,7 @@ fun SplitExpenseEditorScreen(
                 onBackClick = { onAction(SplitExpenseEditorAction.OnBackClick) },
                 actions = {
                     // Top right, far away from the save button at the bottom
-                    if (!state.isNew) {
+                    if (!state.isNew && state.canDelete) {
                         IconButton(onClick = { onAction(SplitExpenseEditorAction.OnDeleteClick) }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,

@@ -46,6 +46,8 @@ sealed class ExtensionItemData {
     @SerialName("shared_text")
     data class SharedText(
         val text: String,
+        /** Who wrote which part, as consecutive runs adding up to text.length. Set by the server, ignored when sent. */
+        val writers: List<TextWriterRun> = emptyList(),
     ) : ExtensionItemData() {
         override val extensionType: GroupExtensionType get() = GroupExtensionType.SHARED_TEXT
     }
@@ -58,19 +60,21 @@ sealed class ExtensionItemData {
         val amountCents: Long,
         /** userId of the payer */
         val paidBy: String,
-        /** userIds sharing the cost */
-        val participants: List<String>,
-        /** Optional split by shares per userId, null = equal split */
-        val weights: Map<String, Int>? = null,
-        /** Optional fixed amount per userId (cents), adding up to [amountCents]; wins over [weights] */
-        val amounts: Map<String, Long>? = null,
+        /**
+         * The userIds sharing the cost and what each of them owes: fixedCents + the rest
+         * (amountCents minus all fixedCents) split by weight. Equal split = all weights 1, fixedCents 0.
+         */
+        val shares: Map<String, SplitShare>,
         val date: Long,
-        /** true = "A paid B back", participants = [B] */
+        /** true = "A paid B back", [shares] holds only B */
         val isSettlement: Boolean = false,
         /** Icon chosen by the user, any emoji (at most 10 chars) */
         val emoji: String? = null,
     ) : ExtensionItemData() {
         override val extensionType: GroupExtensionType get() = GroupExtensionType.SPLIT
+
+        /** The userIds sharing the cost (not serialized, derived from [shares]). */
+        val participants: List<String> get() = shares.keys.toList()
     }
 
     /** QUOTES: one item per quote. Either [saidByUserId] (a member) or [saidByName] (free text) is set. */
@@ -103,3 +107,17 @@ sealed class ExtensionItemData {
         override val extensionType: GroupExtensionType get() = GroupExtensionType.ROUTE_PLANNER
     }
 }
+
+/** One run of [ExtensionItemData.SharedText.text]: [length] chars written by [writtenBy]. */
+@Serializable
+data class TextWriterRun(
+    val length: Int,
+    val writtenBy: String,
+)
+
+/** What one participant owes of a [ExtensionItemData.SplitExpense], see its `shares`. */
+@Serializable
+data class SplitShare(
+    val weight: Int = 1,
+    val fixedCents: Long = 0L,
+)

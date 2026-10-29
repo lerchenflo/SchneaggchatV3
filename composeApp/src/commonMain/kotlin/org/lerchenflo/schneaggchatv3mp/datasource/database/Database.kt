@@ -14,13 +14,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.SnailTrailPointEnt
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.EventEntity
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
-import org.lerchenflo.schneaggchatv3mp.groupextensions.data.dtos.GroupExtensionDto
-import org.lerchenflo.schneaggchatv3mp.groupextensions.data.dtos.GroupExtensionItemDto
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.local.entity.GroupExtensionEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.MapEntryEntity
 
 
 @Database(
-    entities = [UserEntity::class, MessageEntity::class, MessageReaderEntity::class, GroupEntity::class, GroupMemberEntity::class, LogEntry::class, PlayerEntity::class, MapEntryEntity::class, SnailTrailPointEntity::class, EventEntity::class, GroupExtensionDto::class, GroupExtensionItemDto::class],
+    entities = [UserEntity::class, MessageEntity::class, MessageReaderEntity::class, GroupEntity::class, GroupMemberEntity::class, LogEntry::class, PlayerEntity::class, MapEntryEntity::class, SnailTrailPointEntity::class, EventEntity::class, GroupExtensionEntity::class],
     exportSchema = true,
     version = 88
 )

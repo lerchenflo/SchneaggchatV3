@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.database
 
 import androidx.room.TypeConverter
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
@@ -9,6 +10,10 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipation
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionOwnerType
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionItem
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 
@@ -87,6 +92,34 @@ class RoomTypeConverters {
     @TypeConverter
     fun stringToLocationDataList(value: String): List<LocationData> =
         json.decodeFromString(value)
+
+    @TypeConverter
+    fun extensionSettingsToString(settings: ExtensionSettings): String =
+        json.encodeToString(ExtensionSettings.serializer(), settings)
+
+    @TypeConverter
+    fun stringToExtensionSettings(value: String): ExtensionSettings =
+        json.decodeFromString(ExtensionSettings.serializer(), value)
+
+    @TypeConverter
+    fun extensionItemListToString(items: List<GroupExtensionItem>): String =
+        json.encodeToString(ListSerializer(GroupExtensionItem.serializer()), items)
+
+    @TypeConverter
+    fun stringToExtensionItemList(value: String): List<GroupExtensionItem> =
+        json.decodeFromString(ListSerializer(GroupExtensionItem.serializer()), value)
+
+    @TypeConverter
+    fun extensionOwnerTypeToString(type: ExtensionOwnerType): String = type.name
+
+    @TypeConverter
+    fun stringToExtensionOwnerType(value: String): ExtensionOwnerType = ExtensionOwnerType.valueOf(value)
+
+    @TypeConverter
+    fun groupExtensionTypeToString(type: GroupExtensionType): String = type.name
+
+    @TypeConverter
+    fun stringToGroupExtensionType(value: String): GroupExtensionType = GroupExtensionType.valueOf(value)
 
     @TypeConverter
     fun latLongToString(latLong: LatLong?): String? =

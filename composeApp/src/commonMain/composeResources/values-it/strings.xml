@@ -22,6 +22,7 @@
     <string name="messagesync">messaggi</string>
     <string name="mapsync">voci mappa</string>
     <string name="eventssync">eventi</string>
+    <string name="groupextensionssync">estensioni dei gruppi</string>
     <string name="mediasync">media</string>
 
     <string name="status_infotext">Questo stato è visibile a tutti i tuoi amici. Al momento non è impostato.</string>

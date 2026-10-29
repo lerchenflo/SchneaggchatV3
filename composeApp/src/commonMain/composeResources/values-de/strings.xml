@@ -22,6 +22,7 @@
     <string name="messagesync">Nachrichten</string>
     <string name="mapsync">Map</string>
     <string name="eventssync">Events</string>
+    <string name="groupextensionssync">Gruppen-Erweiterungen</string>
     <string name="mediasync">Medien</string>
 
     <string name="status_infotext">Dieser Status ist für alle deine Freunde lesbar. Aktuell ist er leer.</string>

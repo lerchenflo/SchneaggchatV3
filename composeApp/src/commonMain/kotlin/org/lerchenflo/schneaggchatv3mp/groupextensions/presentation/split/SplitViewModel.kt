@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
@@ -14,8 +14,8 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionItemData.SplitExpense
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
@@ -67,11 +67,8 @@ class SplitViewModel(
                     if (extension == null) {
                         flowOf(null)
                     } else {
-                        combine(
-                            groupExtensionRepository.getItemsForExtensionFlow(extensionId),
-                            groupRepository.getGroupFlow(extension.ownerId),
-                        ) { items, group ->
-                            SplitSource(extension, items, group?.members.orEmpty())
+                        groupRepository.getGroupByIdFlow(extension.ownerId).map { group ->
+                            SplitSource(extension, extension.items, group?.members.orEmpty())
                         }
                     }
                 }

@@ -9,6 +9,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 data class SplitExpenseEditorState(
     val isLoading: Boolean = true,
     val isNew: Boolean = true,
+    /** Item creator, extension creator or group admin */
+    val canDelete: Boolean = false,
     /** Money transfer between two people instead of a shared expense */
     val isTransfer: Boolean = false,
 

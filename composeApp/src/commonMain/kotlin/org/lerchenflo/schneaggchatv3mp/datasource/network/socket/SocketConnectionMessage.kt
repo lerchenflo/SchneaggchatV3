@@ -23,7 +23,10 @@ import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupExtensionResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MapEntryResponse
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.local.GroupExtensionLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.dto.toGroupExtension
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.toEvent
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toMapEntry
@@ -86,6 +89,14 @@ sealed interface SocketConnectionMessage {
     data class MapChange(
         val mapEntry: MapEntryResponse,
         val newEntry: Boolean,
+        val deleted: Boolean,
+    ) : SocketConnectionMessage
+
+    /** Any write to a group extension or one of its items; carries the whole extension. */
+    @Serializable
+    @SerialName("groupextensionchange")
+    data class GroupExtensionChange(
+        val extension: GroupExtensionResponse,
         val deleted: Boolean,
     ) : SocketConnectionMessage
 
@@ -188,6 +199,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
     val messageLocalDataSource = KoinPlatform.getKoin().get<MessageLocalDataSource>()
     val groupLocalDataSource = KoinPlatform.getKoin().get<GroupLocalDataSource>()
     val mapLocalDataSource = KoinPlatform.getKoin().get<MapLocalDataSource>()
+    val groupExtensionLocalDataSource = KoinPlatform.getKoin().get<GroupExtensionLocalDataSource>()
     val eventLocalDataSource = KoinPlatform.getKoin().get<EventLocalDataSource>()
     val settingsRepository = KoinPlatform.getKoin().get<SettingsRepository>()
     val userRepository = KoinPlatform.getKoin().get<UserRepository>()
@@ -489,6 +501,14 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     mapLocalDataSource.deleteMapEntry(socketMessage.mapEntry.id)
                 } else {
                     mapLocalDataSource.upsertMapEntry(socketMessage.mapEntry.toMapEntry())
+                }
+            }
+
+            is SocketConnectionMessage.GroupExtensionChange -> {
+                if (socketMessage.deleted) {
+                    groupExtensionLocalDataSource.deleteExtension(socketMessage.extension.id)
+                } else {
+                    groupExtensionLocalDataSource.upsertExtension(socketMessage.extension.toGroupExtension())
                 }
             }
 

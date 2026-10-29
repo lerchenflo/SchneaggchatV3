@@ -4,6 +4,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.eventssync
+import schneaggchatv3mp.composeapp.generated.resources.groupextensionssync
 import schneaggchatv3mp.composeapp.generated.resources.groupsync
 import schneaggchatv3mp.composeapp.generated.resources.mapsync
 import schneaggchatv3mp.composeapp.generated.resources.mediasync
@@ -21,6 +22,7 @@ fun DataSyncJobType.toUiText() : UiText {
         DataSyncJobType.MESSAGES -> UiText.StringResourceText(Res.string.messagesync)
         DataSyncJobType.MAP -> UiText.StringResourceText(Res.string.mapsync)
         DataSyncJobType.EVENTS -> UiText.StringResourceText(Res.string.eventssync)
+        DataSyncJobType.GROUP_EXTENSIONS -> UiText.StringResourceText(Res.string.groupextensionssync)
         DataSyncJobType.MEDIA -> UiText.StringResourceText(Res.string.mediasync)
     }
 }

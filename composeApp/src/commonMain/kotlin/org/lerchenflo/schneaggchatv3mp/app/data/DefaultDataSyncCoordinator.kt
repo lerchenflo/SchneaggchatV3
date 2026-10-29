@@ -29,6 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.MAP
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.MESSAGES
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.USERS
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
 
 /**
  * [DataSyncCoordinator] running the repositories' own syncs. Moved verbatim from AppRepository
@@ -44,6 +45,7 @@ class DefaultDataSyncCoordinator(
     private val messageRepository: MessageRepository,
     private val mapRepository: MapRepository,
     private val eventRepository: EventRepository,
+    private val groupExtensionRepository: GroupExtensionRepository,
     private val loggingRepository: Logger,
     private val externalScope: CoroutineScope,
 ) : DataSyncCoordinator {
@@ -230,13 +232,38 @@ class DefaultDataSyncCoordinator(
                             }
                         }
 
+                        val groupExtensionJob = async {
+                            try {
+                                updateSyncJob(
+                                    type = DataSyncJobType.GROUP_EXTENSIONS,
+                                    status = DataSyncJobStatus.RUNNING,
+                                    error = null
+                                )
+                                groupExtensionRepository.syncGroupExtensions()
+                                updateSyncJob(
+                                    type = DataSyncJobType.GROUP_EXTENSIONS,
+                                    status = DataSyncJobStatus.SUCCESS,
+                                    error = null
+                                )
+                            } catch (e: Exception) {
+                                ensureActive()
+                                updateSyncJob(
+                                    type = DataSyncJobType.GROUP_EXTENSIONS,
+                                    status = DataSyncJobStatus.FAILED,
+                                    error = e.message
+                                )
+                                loggingRepository.logWarning("Group extension sync failed: ${e.message}")
+                            }
+                        }
+
                         // Wait for all to complete (errors are already handled)
-                        awaitAll(userJob, messageJob, groupJob, mapJob, eventJob)
+                        awaitAll(userJob, messageJob, groupJob, mapJob, eventJob, groupExtensionJob)
 
                         // The message job runs in parallel and may have re-inserted rows just
                         // after groupIdSync's inline purge ran, so repeat it once everything
                         // has settled.
                         messageRepository.deleteMessagesForGroups(removedGroupIds)
+                        groupExtensionRepository.deleteExtensionsForGroups(removedGroupIds)
 
                         try {
                             updateSyncJob(

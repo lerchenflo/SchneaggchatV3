@@ -50,6 +50,7 @@ class RoomGroupDataSource(
             transactor.immediateTransaction {
                 database.messageReaderDao().deleteReadersForGroupMessages(groupid)
                 database.messageDao().deleteMessagesForGroup(groupid)
+                database.groupExtensionDao().deleteForOwners(listOf(groupid))
                 database.groupDao().deleteMembersForGroup(groupid)
                 database.groupDao().deleteGroup(groupid)
             }
