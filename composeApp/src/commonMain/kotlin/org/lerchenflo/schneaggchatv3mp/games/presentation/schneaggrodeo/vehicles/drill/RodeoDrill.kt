@@ -145,10 +145,12 @@ internal class RodeoDrill : RodeoVehicle(RodeoVehicleKind.DRILL) {
         drilling = (jumpHeld || diveHeld) && phase == VehiclePhase.RIDING
     }
 
-    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
     override fun update(world: RodeoWorld, dt: Float, scroll: Float) {
         finds.scrollAlong(scroll) { it.x < -ROCK_RADIUS }
-        trail.replaceAll { (trailX, trailY) -> trailX - scroll to trailY }
+        for (index in trail.indices) {
+            val (trailX, trailY) = trail[index]
+            trail[index] = trailX - scroll to trailY
+        }
         trail.removeAll { it.first < -6f }
         when (phase) {
             VehiclePhase.IDLE -> Unit

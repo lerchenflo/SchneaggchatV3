@@ -106,7 +106,7 @@
     <string name="loadinginfo_offline">Du bist derzeit offline...</string>
     <string name="read">gelesen</string>
     <string name="useMarkdown">Markdown-formatierung verwenden</string>
-    <string name="markdownInfo">Damit wird die Markdown-formatierung von Nachrichten aktiviert. Dies kann jedoch das Scrollen im Chat verlangsamen</string>
+    <string name="markdownInfo">Damit wird die Markdown-formatierung von Nachrichten aktiviert.</string>
     <string name="highlight_todays_message_timestamp">Heutigen Zeitstempel hervorheben</string>
     <string name="highlight_todays_message_timestamp_info">Hebt den Zeitstempel von heute empfangenen Nachrichten in der Chat-Auswahl grün hervor.</string>
     <string name="quick_reactions">Schnellreaktionen</string>
@@ -1362,7 +1362,8 @@
     <string name="ttt_new_chat_search_friends_freeroam">Versuche, einen neuen Freund hinzuzufügen.</string>
 
 
-    <string name="ttt_new_chat_create_group">Tippe hier, um eine neue Gruppe zu erstellen</string>
+    <string name="ttt_new_chat_create_group">Gruppen erstellen</string>
+    <string name="ttt_new_chat_create_group_description">Hier kannst du später einen Gruppenchat mit mehreren Freunden starten.</string>
 
     <string name="ttt_new_chat_go_back">Lass uns zurück zur Chat-Auswahl gehen</string>
 
@@ -1445,6 +1446,9 @@
 
     <string name="ttt_hint_tap_highlighted">Drücke die hervorgehobene Fläche um fortzufahren</string>
     <string name="ttt_hint_tap_anywhere">Drücke irgendwo um fortzufahren</string>
+    <string name="ttt_previous_step">Vorheriger Schritt</string>
+    <string name="ttt_highlighted_element">Hervorgehobenes Element</string>
+    <string name="ttt_got_it">Verstanden</string>
 
     <string name="navbar_chats">Chats</string>
     

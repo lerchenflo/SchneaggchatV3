@@ -4,7 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import io.github.lerchenflo.taptarget.FreeRoamBarPosition
 import io.github.lerchenflo.taptarget.TapTargetTour
+import io.github.lerchenflo.taptarget.TourDescription
+import io.github.lerchenflo.taptarget.TourTitle
 import io.github.lerchenflo.taptarget.tapTargetTour
+import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.notifications
@@ -28,6 +31,7 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_misc_settings_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_create_group
+import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_create_group_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_description
@@ -83,12 +87,13 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
             )
 
             //Navigate to new chat screen to show features
+            //The tap reaches the search field, so it is focused for the free roam step
             tapStep(
                 id = "new_chat_search_friends",
                 title = Res.string.ttt_new_chat_search_friends,
                 description = Res.string.ttt_new_chat_search_friends_description,
                 route = Route.NewChat,
-                requireExactTap = false
+                passTapToTarget = true,
             )
 
             freeRoamStep(
@@ -98,11 +103,12 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 route = Route.NewChat
             )
 
-            tapStep(
+            //Only informs about the button: "Got it" or a tap next to it continues, a tap on it does nothing
+            highlightStep(
                 id = "new_chat_create_group",
                 title = Res.string.ttt_new_chat_create_group,
+                description = Res.string.ttt_new_chat_create_group_description,
                 route = Route.NewChat, //Set route in case the user navigated from the screen in the free roam
-                requireExactTap = false
             )
 
             //Point to the back button to navigate back
@@ -127,12 +133,11 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 route = Route.SettingsScreen
             )
 
-            tapStep(
+            highlightStep(
                 id = "user_settings_phone_number",
                 title = Res.string.ttt_user_settings_phone_number,
                 description = Res.string.ttt_user_settings_phone_number_description,
-                route = Route.UserSettings,
-                requireExactTap = false
+                route = Route.UserSettings
             )
 
             freeRoamStep(
@@ -149,12 +154,11 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 route = Route.UserSettings
             )
 
-            tapStep(
+            highlightStep(
                 id = "settings_privacy",
                 title = Res.string.ttt_settings_privacy,
                 description = Res.string.ttt_settings_privacy_description,
-                route = Route.SettingsScreen,
-                requireExactTap = false
+                route = Route.SettingsScreen
             )
 
             if (isAndroid) {
@@ -165,12 +169,11 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     route = Route.SettingsScreen
                 )
 
-                tapStep(
+                highlightStep(
                     id = "settings_notifications_wake",
                     title = Res.string.ttt_settings_wake,
                     description = Res.string.ttt_settings_wake_description,
-                    route = Route.NotificationSettings,
-                    requireExactTap = false
+                    route = Route.NotificationSettings
                 )
 
                 //Point to back button
@@ -180,12 +183,11 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     route = Route.NotificationSettings
                 )
             } else {
-                tapStep(
+                highlightStep(
                     id = "settings_notifications",
                     title = Res.string.notifications,
                     description = Res.string.ttt_settings_notifications_description,
-                    route = Route.SettingsScreen,
-                    requireExactTap = false
+                    route = Route.SettingsScreen
                 )
             }
 
@@ -196,12 +198,11 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 route = Route.SettingsScreen,
             )
 
-            tapStep(
+            highlightStep(
                 id = "appearance_settings_language",
                 title = Res.string.ttt_appearance_settings_language,
                 description = Res.string.ttt_appearance_settings_language_description,
-                route = Route.AppearanceSettings,
-                requireExactTap = false
+                route = Route.AppearanceSettings
             )
 
             freeRoamStep(
@@ -224,19 +225,17 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 route = Route.SettingsScreen
             )
 
-            tapStep(
+            highlightStep(
                 id = "settings_misc_bugreport",
                 description = Res.string.ttt_settings_misc_bugreport,
-                route = Route.MiscSettings,
-                requireExactTap = false
+                route = Route.MiscSettings
             )
 
-            tapStep(
+            highlightStep(
                 id = "settings_misc_app_broken",
                 title = Res.string.ttt_settings_misc_app_broken,
                 description = Res.string.ttt_settings_misc_app_broken_description,
-                route = Route.MiscSettings,
-                requireExactTap = false
+                route = Route.MiscSettings
             )
 
             //Point to back button
@@ -254,12 +253,11 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 route = Route.ChatSelector
             )
 
-            tapStep(
+            highlightStep(
                 id = "events_create_button",
                 title = Res.string.ttt_events_create_button,
                 description = Res.string.ttt_events_create_button_description,
-                route = Route.Events(),
-                requireExactTap = false
+                route = Route.Events()
             )
 
             //Mobile only
@@ -272,14 +270,15 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     route = Route.ChatSelector
                 )
 
-                tapStep(
+                //Places and snail trails both live in this dropdown, so one step explains both
+                highlightStep(
                     id = "schneaggmap_location_dropdown",
-                    title = Res.string.ttt_schneaggmap_locations,
-                    description = Res.string.ttt_schneaggmap_locations_description,
                     route = Route.Schneaggmap(),
-                    requireExactTap = false
-
-                )
+                ) {
+                    TourTitle(stringResource(Res.string.ttt_schneaggmap_locations))
+                    TourDescription(stringResource(Res.string.ttt_schneaggmap_locations_description))
+                    TourDescription(stringResource(Res.string.ttt_schneaggmap_snailtrail_description))
+                }
 
                 freeRoamStep(
                     title = Res.string.ttt_schneaggmap_locations_freeroam,
@@ -288,21 +287,13 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     route = Route.Schneaggmap()
                 )
 
-                tapStep(
+                highlightStep(
                     id = "schneaggmap_settings_button",
                     title = Res.string.ttt_schneaggmap_settings,
                     description = Res.string.ttt_schneaggmap_settings_description,
                     route = Route.Schneaggmap(), //Navigate to map in case the user navigated back while freeroaming
-                    requireExactTap = false
                 )
 
-                //Snail trails are toggled in the filter dropdown, so point at its button
-                tapStep(
-                    id = "schneaggmap_location_dropdown",
-                    description = Res.string.ttt_schneaggmap_snailtrail_description,
-                    route = Route.Schneaggmap(),
-                    requireExactTap = false
-                )
 
 
                 tapStep(
@@ -313,20 +304,18 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
             }
 
 
-            tapStep(
+            highlightStep(
                 id = "games_difficulty_selector",
                 title = Res.string.ttt_games_difficulty,
                 description = Res.string.ttt_games_difficulty_description,
-                route = Route.GamesSelector,
-                requireExactTap = false
+                route = Route.GamesSelector
             )
 
-            tapStep(
+            highlightStep(
                 id = "games_global_ranking_button",
                 title = Res.string.ttt_games_global_highscore,
                 description = Res.string.ttt_games_global_highscore_description,
-                route = Route.GamesSelector,
-                requireExactTap = false
+                route = Route.GamesSelector
             )
 
             infoStep(

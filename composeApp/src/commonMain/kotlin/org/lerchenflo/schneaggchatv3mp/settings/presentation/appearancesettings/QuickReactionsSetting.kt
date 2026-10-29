@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.TouchApp
@@ -243,14 +244,22 @@ private fun QuickReactionsDialog(
 
                 Spacer(modifier = Modifier.size(12.dp))
 
+                // Plus only: with a text label both buttons did not fit next to each other in the dialog
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     NormalButton(
-                        text = stringResource(Res.string.add_quick_reaction),
+                        text = "",
                         onClick = { showAddDialog = true },
-                        primary = false
+                        primary = false,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(Res.string.add_quick_reaction)
+                            )
+                        }
                     )
 
                     TextButton(

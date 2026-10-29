@@ -30,7 +30,7 @@ class DefaultErrorChannel : ErrorChannel {
      * A 401 from an authenticated request is the session's business, not the caller's: the
      * request already failed after the auth layer could not refresh (offline, backoff, server
      * busy) and the session stays logged in. Only a real invalidation shows a popup, together
-     * with the logout (`ActionEvent.AuthInvalidated` in `App.kt`).
+     * with the logout (`AppAuthEventSink.onSessionInvalidated`).
      */
     private fun ErrorEvent.isSessionError(): Boolean = error is NetworkingError.Unauthorized
 }

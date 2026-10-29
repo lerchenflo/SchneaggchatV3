@@ -11,9 +11,13 @@ interface SessionTerminator {
     /**
      * Logs this device out. Credentials are cleared first, everything else after.
      * @param endSessionOnServer false when the server session is already gone (e.g. after
-     * [logoutAllDevices] or an invalidated session), so no second server call is made
+     * [logoutAllDevices]), so no second server call is made. An invalidated session keeps true:
+     * the refresh token is gone, but the call still sends the push token, so the server stops
+     * pushing to this device
+     * @param showSnackbar false when the caller already told the user (forced logout popup),
+     * so the "Successfully logged out" snackbar is skipped
      */
-    suspend fun logout(endSessionOnServer: Boolean = true)
+    suspend fun logout(endSessionOnServer: Boolean = true, showSnackbar: Boolean = true)
 
     /**
      * Resets this device's local copy of the account but stays logged in: clears the database,

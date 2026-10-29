@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material.icons.filled.Public
@@ -68,6 +69,8 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -96,6 +99,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToDuration
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.poll_add_custom_answer
@@ -211,21 +215,50 @@ private fun PollLevelView(
     //Past the close date the server rejects every vote, so don't offer any (sub polls share the root's date)
     val isClosed = poll.isExpired()
 
+    //Same accent as the checkboxes and the sub poll header: onPrimary on an own bubble, primary otherwise
+    val accentColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+
     Column {
 
-        //Title
+        //Header: "POLL" label and the question on the left, the info box on the right
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
-            ComboText(
-                text = poll.title,
-                useMD = useMD,
-                textColor = contentColor,
-                style = if (depth == 0) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f)
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                //The root poll only - a sub poll already sits under its own labelled header row
+                if (depth == 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Poll,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = accentColor
+                        )
+                        Text(
+                            text = stringResource(Res.string.poll).uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 1.sp,
+                            color = accentColor
+                        )
+                    }
 
-            Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
+                }
+
+                ComboText(
+                    text = poll.title,
+                    useMD = useMD,
+                    textColor = contentColor,
+                    style = (if (depth == 0) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall)
+                        .copy(fontWeight = FontWeight.SemiBold)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
 
 
             val tooltipState = rememberTooltipState(isPersistent = true)
@@ -282,20 +315,37 @@ private fun PollLevelView(
             }
         }
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-        //Description
-        poll.description?.let {
+        //Description: smaller and muted, as a quote with an accent bar on the root poll, so it never
+        //reads like a second title. A sub poll already has the guide line on its left, so no bar there.
+        poll.description?.takeIf { it.isNotBlank() }?.let { description ->
+            val barColor = accentColor.copy(alpha = 0.6f)
             ComboText(
-                text = poll.description,
+                text = description,
                 useMD = useMD,
-                textColor = contentColor,
-                style = MaterialTheme.typography.bodyMedium
+                textColor = contentColor.copy(alpha = 0.8f),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .fillMaxWidth()
+                    .then(
+                        if (depth == 0) {
+                            Modifier
+                                .drawBehind {
+                                    drawRoundRect(
+                                        color = barColor,
+                                        size = Size(3.dp.toPx(), size.height),
+                                        cornerRadius = CornerRadius(1.5.dp.toPx())
+                                    )
+                                }
+                                .padding(start = 11.dp)
+                        } else {
+                            Modifier
+                        }
+                    )
             )
-
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
 
         val cannot_vote_on_unsent_message_text = stringResource(Res.string.poll_cannot_vote_on_unsent)
@@ -1039,7 +1089,8 @@ fun PollSmallInfoWindow(
         modifier = modifier
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.primary,
+                //primary would vanish on an own (primary) bubble
+                color = if (myMessage) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(size = 4.dp)
             )
             .padding(4.dp)

@@ -106,7 +106,7 @@
     <string name="loadinginfo_offline">Du bisch offline...</string>
     <string name="read">gleasa</string>
     <string name="useMarkdown">Markdown-formatierung verwenda</string>
-    <string name="markdownInfo">Des aktiviert Markdown im Chat, es kann aber si dassas denn kle laggt</string>
+    <string name="markdownInfo">Des aktiviert Markdown im Chat</string>
     <string name="highlight_todays_message_timestamp">Hütige Zitstempel fürraheba</string>
     <string name="highlight_todays_message_timestamp_info">Markiert da Zitstempel vo hüt empfangana Nochrichta in da Chat-Uswahl grün</string>
     <string name="quick_reactions">Schneallreaktion</string>
@@ -1360,9 +1360,10 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_new_chat_search_friends_description">Do kannsch du nach Freunden suacha. Wenn du mindestens uan Freund hosch, werrand gemeinsame Freunde azoagt.</string>
 
     <string name="ttt_new_chat_search_friends_freeroam">Versuach, an neua Freund hinzufüga</string>
+    <string name="ttt_new_chat_create_group">Gruppe erstella</string>
+    <string name="ttt_new_chat_create_group_description">Do kannsch später an Gruppenchat mit a paar Freunden starta.</string>
 
 
-    <string name="ttt_new_chat_create_group">Tipp do zum a neue Gruppe erstella</string>
 
     <string name="ttt_new_chat_go_back">Gomma zruck zur Chatuswahl</string>
 
@@ -1445,6 +1446,9 @@ Mealds, egal wie klenn.</string>
 
     <string name="ttt_hint_tap_highlighted">Druck uf die hervorghobene Fläche zum Wittamacha</string>
     <string name="ttt_hint_tap_anywhere">Druck irgendwo zum wittamacha</string>
+    <string name="ttt_previous_step">Schritt zruck</string>
+    <string name="ttt_highlighted_element">Fürraghobenes Element</string>
+    <string name="ttt_got_it">Passt</string>
 
     <string name="navbar_chats">Chats</string>
     
@@ -1824,4 +1828,37 @@ Mealds, egal wie klenn.</string>
     <string name="announcement_delete_confirm">Ankündigung #%1$s löscha? Se verschwindat für alle.</string>
     <string name="poll_option_reorder">Verschiaba</string>
     <string name="wake_failed">S Wecka hot ned klappt</string>
+    <string name="games_tictactoe_title">Tic Tac Toe</string>
+    <string name="games_tictactoe_description">Klassisch zu zwoat, Chaos zu dritt und zu viert: größere Fealda, verschwindende Zeicha, Schwerkraft, Bomba und Verschiabunga</string>
+    <string name="tictactoe_players_title">Spieler</string>
+    <string name="tictactoe_choose_players">Spieler uswähla</string>
+    <string name="tictactoe_players_hint">2 bis 4 Spieler spieland ufam glicha Handy</string>
+    <string name="tictactoe_too_many_players">Maximal %1$d Spieler künnand mitspiela - entfern d andra</string>
+    <string name="tictactoe_board_info">%1$d×%1$d Feald · %2$d in a Reihe</string>
+    <string name="tictactoe_twists_title">Spezialregla</string>
+    <string name="tictactoe_twist_vanishing">Verschwindende Zeicha</string>
+    <string name="tictactoe_twist_vanishing_description">Jeder bhebt nur sine letzta %1$d Zeicha. Wer a neus setzt, verliart s ältaste - kua Unentschieda.</string>
+    <string name="tictactoe_twist_gravity">Schwerkraft</string>
+    <string name="tictactoe_twist_gravity_description">Zeicha falland ins unterste freie Feald vo ihra Spalte.</string>
+    <string name="tictactoe_twist_bombs">Bomba-Joker</string>
+    <string name="tictactoe_twist_bombs_description">Oamol pro Runde darf jeder statt am Setza a gegnerischs Zeicha in d Luft jaga.</string>
+    <string name="tictactoe_twist_chaos">Chaos-Mischer</string>
+    <string name="tictactoe_twist_chaos_description">Alle %1$d Züge verschiabt sich a zufällige Zeile oda Spalte um oa Feald.</string>
+    <string name="tictactoe_start">Spiel starta</string>
+    <string name="tictactoe_round">Runde %1$d</string>
+    <string name="tictactoe_turn">%1$s isch dra</string>
+    <string name="tictactoe_winner">%1$s gwinnt!</string>
+    <string name="tictactoe_draw">Unentschieda - niemand gwinnt</string>
+    <string name="tictactoe_next_round">Nächste Runde</string>
+    <string name="tictactoe_finish_match">Partie beenda</string>
+    <string name="tictactoe_bomb">Bombe werfa</string>
+    <string name="tictactoe_bomb_used">Bombe isch weg</string>
+    <string name="tictactoe_bomb_armed">Tipp uf a gegnerischs Zeicha, denn flügts in d Luft</string>
+    <string name="tictactoe_shift_countdown">Nächste Verschiabung in: %1$d</string>
+    <string name="tictactoe_shift_row">Chaos! Zeile %1$d verschoba</string>
+    <string name="tictactoe_shift_column">Chaos! Spalte %1$d verschoba</string>
+    <string name="tictactoe_rules">Regla</string>
+    <string name="tictactoe_rules_title">So wird gspielt</string>
+    <string name="tictactoe_rules_text">Setzand abwechselnd eure Zeicha. Wer zersch a Linie hot - waagrecht, senkrecht oda diagonal - gwinnt d Runde.\n\n2 Spieler spieland uf 3×3 und bruchand 3 in a Reihe. 3 Spieler spieland uf 5×5, 4 Spieler uf 6×6, beide bruchand 4 in a Reihe.\n\nA Linie, die durchs Falla oda Verschiaba entstoht, zellt o. Kriagand mehrere Spieler glichzitig oane, gwinnt da Spieler, der am Zug gsi isch, sus da nächste in da Reihafolg.\n\nDa Startspieler weachslat jede Runde. Wenn ihr d Partie beendand, künnand alle Sieg uf oamol in d Highscores gschrieba werra.</string>
+    <string name="tictactoe_cell_description">Zeile %1$d, Spalte %2$d</string>
 </resources>

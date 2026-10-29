@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.painterResource
@@ -33,9 +35,17 @@ fun ImageMessageContentView(
 ) {
     var showFullscreen by remember { mutableStateOf(false) }
 
+    // Width / height of the loaded picture. Sizing the node to it makes the clip below follow the
+    // picture's own edges - with a node larger than the drawn picture the rounded corners would
+    // fall on empty space next to it.
+    var aspectRatio by remember(message.pictureUrl) { mutableStateOf<Float?>(null) }
+
     val imageModifier = modifier
         .fillMaxWidth()
-        .clip(RoundedCornerShape(15.dp))
+        .then(aspectRatio?.let { Modifier.aspectRatio(it) } ?: Modifier)
+        // Display only, the picture itself stays square-cornered. 9dp = the bubble's 15dp corner minus
+        // its 6dp padding, so the picture's corners run parallel to the bubble's.
+        .clip(RoundedCornerShape(9.dp))
         .pointerInput(Unit) {
             detectTapGestures(
                 onTap = { showFullscreen = true },
@@ -52,7 +62,11 @@ fun ImageMessageContentView(
                 model = message.pictureUrl,
                 modifier = imageModifier,
                 contentDescription = "image",
-                //contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.Crop,
+                onSuccess = { state ->
+                    val image = state.result.image
+                    if (image.width > 0 && image.height > 0) aspectRatio = image.width.toFloat() / image.height
+                },
             )
         }else {
             Image(
