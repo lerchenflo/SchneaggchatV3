@@ -1861,4 +1861,6 @@
     <string name="tictactoe_rules_title">So wird gespielt</string>
     <string name="tictactoe_rules_text">Setzt abwechselnd euer Zeichen. Wer zuerst eine Linie hat - waagrecht, senkrecht oder diagonal - gewinnt die Runde.\n\n2 Spieler spielen auf 3×3 und brauchen 3 in einer Reihe. 3 Spieler spielen auf 5×5, 4 Spieler auf 6×6, beide brauchen 4 in einer Reihe.\n\nEine Linie, die durch Fallen oder Verschieben entsteht, zählt auch. Bekommen mehrere Spieler gleichzeitig eine, gewinnt der Spieler, der am Zug war, sonst der nächste in der Zugreihenfolge.\n\nDer Startspieler wechselt jede Runde. Wenn ihr die Partie beendet, können alle Siege auf einmal in die Bestenliste eingetragen werden.</string>
     <string name="tictactoe_cell_description">Zeile %1$d, Spalte %2$d</string>
+    <string name="desktop_tray_open">Schneaggchat öffnen</string>
+    <string name="desktop_tray_quit">Beenden</string>
 </resources>

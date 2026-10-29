@@ -1855,4 +1855,6 @@
     <string name="tictactoe_rules_title">Come si gioca</string>
     <string name="tictactoe_rules_text">Mettete a turno il vostro simbolo. Chi per primo fa una linea - orizzontale, verticale o diagonale - vince il round.\n\nIn 2 si gioca su 3×3 e servono 3 in fila. In 3 si gioca su 5×5, in 4 su 6×6, e servono 4 in fila.\n\nVale anche una linea creata da una caduta o da uno spostamento. Se più giocatori ne fanno una insieme, vince chi era di turno, altrimenti il prossimo nell'ordine di gioco.\n\nIl giocatore che inizia cambia ogni round. Quando terminate la partita, le vittorie di tutti possono essere aggiunte alla classifica in una volta.</string>
     <string name="tictactoe_cell_description">Riga %1$d, colonna %2$d</string>
+    <string name="desktop_tray_open">Apri Schneaggchat</string>
+    <string name="desktop_tray_quit">Esci</string>
 </resources>
