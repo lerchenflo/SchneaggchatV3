@@ -76,7 +76,6 @@ import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
@@ -127,7 +126,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TestModeBar
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
@@ -137,7 +135,6 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_got_it
 import schneaggchatv3mp.composeapp.generated.resources.ttt_highlighted_element
 import schneaggchatv3mp.composeapp.generated.resources.ttt_previous_step
 import schneaggchatv3mp.composeapp.generated.resources.ttt_skip
-import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.press_back_again_to_exit
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -175,7 +172,6 @@ fun App() {
 
         // Root composable: the one exception that may koinInject data-layer access, interfaces only (plan §2.5)
         val authRepository = koinInject<AuthRepository>()
-        val sessionTerminator = koinInject<SessionTerminator>()
         val appVersion = koinInject<AppVersion>()
 
         val navigationState = rememberNavigationState(
@@ -437,15 +433,7 @@ fun App() {
             scope.launch {
                 when (action) {
                     ActionEvent.AuthInvalidated -> {
-                        //Throwing an error message for the user
-                        errorChannel.trySendError(
-                            event = ErrorEvent(
-                                401,
-                                errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
-                                duration = 5000L,
-                            )
-                        )
-                        sessionTerminator.logout()
+                        // Popup and wipe already happened in AppAuthEventSink
                         navigator.navigate(
                             Route.Login,
                             navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)

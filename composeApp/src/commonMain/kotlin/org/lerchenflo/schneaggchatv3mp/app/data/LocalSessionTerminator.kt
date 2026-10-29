@@ -66,14 +66,14 @@ class LocalSessionTerminator(
      * still be ended best-effort; a throw anywhere after step 2 can no longer leave a session on
      * disk that the next start would silently pick up again.
      */
-    override suspend fun logout(endSessionOnServer: Boolean){
+    override suspend fun logout(endSessionOnServer: Boolean, showSnackbar: Boolean){
         val logout = logoutLock.withLock {
-            logoutInFlight?.takeIf { it.isActive } ?: startLogout(endSessionOnServer).also { logoutInFlight = it }
+            logoutInFlight?.takeIf { it.isActive } ?: startLogout(endSessionOnServer, showSnackbar).also { logoutInFlight = it }
         }
         logout.await()
     }
 
-    private fun startLogout(endSessionOnServer: Boolean): Deferred<Unit> =
+    private fun startLogout(endSessionOnServer: Boolean, showSnackbar: Boolean): Deferred<Unit> =
         externalScope.async {
             val refreshToken = authSessionManager.currentTokens()?.refreshToken
 
@@ -98,7 +98,7 @@ class LocalSessionTerminator(
 
             socketConnectionManager.close() //Close socket connection
 
-            SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
+            if (showSnackbar) SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
         }
 
     /**

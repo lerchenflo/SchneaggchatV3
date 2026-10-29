@@ -169,10 +169,11 @@ val sharedmodule = module{
 
     // Session layer (see plans/AUTH_SESSION_REBUILD_PLAN.md). Construction order matters and is
     // cycle-free: the refresh API only needs the NOT_AUTHENTICATED client, the AUTHENTICATED
-    // client needs the manager, the remote data sources below need the clients.
+    // client needs the manager, the remote data sources below need the clients. The sink reaches the
+    // session terminator lazily: the terminator needs the manager, which needs the sink.
     single<AuthSessionStore> { PreferenceAuthSessionStore(get()) }
     single<AuthRefreshApi> { KtorAuthRefreshApi(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get()) }
-    single<AuthEventSink> { AppAuthEventSink(get(), get()) }
+    single<AuthEventSink> { AppAuthEventSink(get(), get(), inject<SessionTerminator>(), get(), get<ApplicationScope>()) }
     single<AuthClock> { SystemAuthClock }
     single<AuthLog> { LoggingAuthLog(get(), get<ApplicationScope>()) }
     single {
