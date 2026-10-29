@@ -1,9 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.events.domain
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
 @Serializable
 data class Event(

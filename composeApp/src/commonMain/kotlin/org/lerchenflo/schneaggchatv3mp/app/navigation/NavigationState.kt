@@ -117,11 +117,21 @@ fun NavigationState.resetTabRoot(tabKey: NavKey) {
 }
 
 /**
+ * Resets every tab to its bare root, e.g. when the session ends. Pops the sub-screens of the tabs
+ * that are not visible too, so their ViewModels are cleared instead of surviving into the next
+ * account's session with the old account's state.
+ */
+fun NavigationState.resetAllTabs() {
+    backStacks.keys.forEach { resetTabRoot(it) }
+}
+
+/**
  * Sends the app back through the startup auth flow: the home tab is reset to
  * `AutoLoginCredChecker` and selected, which then routes to login, email verification or the
  * chat selector just like a cold start.
  */
 fun NavigationState.restartAuthFlow() {
+    resetAllTabs()
     backStacks[homeRoute]?.let { stack ->
         stack.clear()
         stack.add(Route.AutoLoginCredChecker)
@@ -157,6 +167,7 @@ private val authFlowRoutes: Set<KClass<out NavKey>> = setOf(
 private val gameRoutes: Set<KClass<out NavKey>> = setOf(
     Route.DartCounter::class,
     Route.Undercover::class,
+    Route.TicTacToe::class,
     Route.TowerStack::class,
     Route.Yatzi::class,
     Route.Tetris::class,
@@ -220,6 +231,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.GamesSelector::class, Route.GamesSelector.serializer())
             subclass(Route.DartCounter::class, Route.DartCounter.serializer())
             subclass(Route.Undercover::class, Route.Undercover.serializer())
+            subclass(Route.TicTacToe::class, Route.TicTacToe.serializer())
             subclass(Route.TowerStack::class, Route.TowerStack.serializer())
             subclass(Route.Yatzi::class, Route.Yatzi.serializer())
             subclass(Route.Tetris::class, Route.Tetris.serializer())

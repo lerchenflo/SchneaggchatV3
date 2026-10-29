@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
@@ -259,10 +259,11 @@ fun EventJoinPopup(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                val shareUtils = koinInject<ShareUtils>()
+
                 NormalButton(
                     text = stringResource(Res.string.event_add_to_calendar),
                     onClick = {
+                        val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
                         shareUtils.addEventToCalendar(
                             title = event.title,
                             description = event.description,
@@ -311,30 +312,32 @@ fun EventJoinPopup(
 @Preview
 @Composable
 private fun EventJoinPopupPreview() {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        EventJoinPopup(
-            event = Event(
-                id = "",
-                creatorId = "",
-                type = EventType.OTHER,
-                title = "Lets go shopping",
-                description = "bla bla bla",
-                groupId = null,
-                location = null,
-                startDate = Clock.System.now().toEpochMilliseconds(),
-                closeDate = null,
-                invitedUsers = emptyList(),
-                visibility = EventVisibility.PUBLIC,
-                createdAt = Clock.System.now().toEpochMilliseconds(),
-                updatedAt = Clock.System.now().toEpochMilliseconds(),
-                updatedBy = "awdawd",
-                creatorName = "Flo"
-            ),
-            onDismiss = { },
-            onJoin = { },
-            onOpenGroupChat = { }
-        )
+    MaterialTheme {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            EventJoinPopup(
+                event = Event(
+                    id = "",
+                    creatorId = "",
+                    type = EventType.OTHER,
+                    title = "Bier trinka",
+                    description = "bla bla bla",
+                    groupId = null,
+                    location = null,
+                    startDate = 11111111111,
+                    closeDate = null,
+                    invitedUsers = emptyList(),
+                    visibility = EventVisibility.PUBLIC,
+                    createdAt = 1111111,
+                    updatedAt = 1111111,
+                    updatedBy = "awdawd",
+                    creatorName = "Flo"
+                ),
+                onDismiss = { },
+                onJoin = { },
+                onOpenGroupChat = { }
+            )
+        }
     }
 }

@@ -69,8 +69,9 @@ import schneaggchatv3mp.composeapp.generated.resources.yes
 fun MessageOptionPopup(
     expanded: Boolean,
     message: Message,
-    /** The user's own quick reactions, synced across devices. Empty is a valid choice - the
-     *  custom-reaction button stays available either way. */
+    /** The user's own quick reactions, synced across devices. The first one is the double tap
+     *  reaction and isn't shown. Empty is a valid choice - the custom-reaction button stays
+     *  available either way. */
     quickReactions: List<String> = DEFAULT_QUICK_REACTIONS,
     onDismissRequest: () -> Unit,
     onReply: () -> Unit,
@@ -115,17 +116,9 @@ fun MessageOptionPopup(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.horizontalScrollWithMouseWheel()
                     ) {
-
-                        /* Default heart is with double tap
-                        NormalButton(
-                            text = "❤\uFE0F",
-                            onClick = { onReact("❤\uFE0F"); onDismissRequest() },
-                            primary = false
-                        )
-
-                         */
-
-                        quickReactions.forEach { reaction ->
+                        // The first quick reaction is given by double tapping the message, so it
+                        // doesn't take up room here
+                        quickReactions.drop(1).forEach { reaction ->
                             NormalButton(
                                 text = reaction,
                                 onClick = { onReact(reaction); onDismissRequest() },

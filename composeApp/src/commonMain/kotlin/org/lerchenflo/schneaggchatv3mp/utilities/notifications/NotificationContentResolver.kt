@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
@@ -16,11 +18,15 @@ import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_message_reaction
 import schneaggchatv3mp.composeapp.generated.resources.new_event_noti_title
+import schneaggchatv3mp.composeapp.generated.resources.notification_fallback_body
 import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
 import kotlin.math.absoluteValue
+
+//Title of a last-resort notification when not even a sender name is known
+internal const val NOTIFICATION_FALLBACK_TITLE = "Schneaggchat"
 
 suspend fun resolveLocalizedContent(
     decoded: DecodedNotification,
@@ -75,11 +81,32 @@ private suspend fun resolveMessage(
 
 private suspend fun resolveReaction(
     decoded: DecodedNotification.Message,
-): NotificationContent {
-    val reactionEmoji = decoded.content
+): NotificationContent = reactionNotificationContent(
+    msgId = decoded.msgId,
+    reactorId = decoded.senderId,
+    reactorName = decoded.senderName,
+    emoji = decoded.content,
+    messageType = decoded.messageType,
+    groupMessage = decoded.groupMessage,
+    groupId = decoded.groupId,
+)
 
+/**
+ * Someone reacted to one of our messages. Shows the reactor's profile picture and opens the chat
+ * the message lives in: the group for group messages, the 1:1 chat with the reactor otherwise.
+ * Used by the push path and by the socket path (which spots new reactions itself).
+ */
+suspend fun reactionNotificationContent(
+    msgId: String,
+    reactorId: String,
+    reactorName: String,
+    emoji: String,
+    messageType: MessageType,
+    groupMessage: Boolean,
+    groupId: String,
+): NotificationContent {
     val typeWord = getString(
-        when (decoded.messageType) {
+        when (messageType) {
             MessageType.TEXT  -> Res.string.message
             MessageType.IMAGE -> Res.string.image
             MessageType.AUDIO -> Res.string.audio
@@ -88,14 +115,21 @@ private suspend fun resolveReaction(
         }
     )
 
-    val title = getString(Res.string.new_message_reaction, decoded.senderName, typeWord)
+    val title = getString(Res.string.new_message_reaction, reactorName, typeWord)
 
     return NotificationContent(
-        id = "reaction:${decoded.msgId}:${decoded.senderName}:$reactionEmoji".hashCode().absoluteValue,
+        id = reactionNotificationId(msgId, reactorName, emoji),
         title = title,
-        body = reactionEmoji,
+        body = emoji,
+        chatId = (if (groupMessage) groupId else reactorId).ifBlank { null },
+        groupChat = groupMessage,
+        avatarUserId = reactorId.ifBlank { null },
+        kind = NotificationKind.REACTION,
     )
 }
+
+private fun reactionNotificationId(msgId: String, reactorName: String, emoji: String): Int =
+    "reaction:$msgId:$reactorName:$emoji".hashCode().absoluteValue
 
 private suspend fun resolveFriendRequest(
     decoded: DecodedNotification.FriendRequest,
@@ -109,10 +143,14 @@ private suspend fun resolveFriendRequest(
         title = getString(Res.string.new_friend_request_noti, decoded.requesterName)
         body = getString(Res.string.new_friend_request_noti_body, decoded.requesterName)
     }
+    //Older servers put our own id into requesterId - never show our own picture on someone else's request
+    val ownId = SessionCache.requireLoggedIn()?.userId
     return NotificationContent(
         id = NotificationManager.NotiIdType.FRIEND_REQUEST.baseId,
         title = title,
         body = body,
+        avatarUserId = decoded.requesterId.takeIf { ownId != null && it.isNotBlank() && it != ownId },
+        kind = NotificationKind.SOCIAL,
     )
 }
 
@@ -140,6 +178,8 @@ private suspend fun resolveBirthday(
         id = NotificationManager.NotiIdType.BIRTHDAY.baseId,
         title = title,
         body = body,
+        avatarUserId = decoded.birthdayUserId.ifBlank { null },
+        kind = NotificationKind.SOCIAL,
     )
 }
 
@@ -151,5 +191,63 @@ private suspend fun resolveEvent(
         id = NotificationManager.NotiIdType.EVENT.baseId,
         title = title,
         body = decoded.eventTitle,
+        avatarUserId = decoded.creatorId.ifBlank { null },
+        kind = NotificationKind.SOCIAL,
     )
 }
+
+/**
+ * Last-resort content for when [resolveLocalizedContent] failed or timed out: built from the raw
+ * push fields only, no database lookups. Never throws. Null for wakes - the alarm service owns those.
+ */
+suspend fun resolveFallbackContent(decoded: DecodedNotification): NotificationContent? {
+    val fallbackBody = stringOrEmpty(Res.string.notification_fallback_body)
+    return when (decoded) {
+        is DecodedNotification.Message -> {
+            val chatId = decoded.chatTargetId
+            val title = listOf(decoded.senderName, decoded.groupName)
+                .filter { it.isNotBlank() }
+                .joinToString(" - ")
+                .ifBlank { NOTIFICATION_FALLBACK_TITLE }
+            NotificationContent(
+                //Same id as the chat's conversation notification, so it doesn't stack a second one -
+                //except for reactions, which never replace the chat's messages
+                id = if (decoded.reaction || chatId == null) {
+                    reactionNotificationId(decoded.msgId, decoded.senderName, decoded.content)
+                } else {
+                    chatId.hashCode().absoluteValue
+                },
+                title = title,
+                body = decoded.content.takeIf { decoded.reaction || decoded.messageType == MessageType.TEXT }
+                    ?.ifBlank { null }
+                    ?: fallbackBody,
+                chatId = chatId,
+                groupChat = decoded.groupMessage,
+                kind = if (decoded.reaction) NotificationKind.REACTION else NotificationKind.MESSAGE,
+            )
+        }
+        is DecodedNotification.FriendRequest -> NotificationContent(
+            id = NotificationManager.NotiIdType.FRIEND_REQUEST.baseId,
+            title = decoded.requesterName.ifBlank { NOTIFICATION_FALLBACK_TITLE },
+            body = fallbackBody,
+            kind = NotificationKind.SOCIAL,
+        )
+        is DecodedNotification.System -> resolveSystem(decoded)
+        is DecodedNotification.Birthday -> NotificationContent(
+            id = NotificationManager.NotiIdType.BIRTHDAY.baseId,
+            title = decoded.birthdayUserName.ifBlank { NOTIFICATION_FALLBACK_TITLE },
+            body = fallbackBody,
+            kind = NotificationKind.SOCIAL,
+        )
+        is DecodedNotification.Wake -> null
+        is DecodedNotification.Event -> NotificationContent(
+            id = NotificationManager.NotiIdType.EVENT.baseId,
+            title = decoded.creatorName.ifBlank { NOTIFICATION_FALLBACK_TITLE },
+            body = decoded.eventTitle.ifBlank { fallbackBody },
+            kind = NotificationKind.SOCIAL,
+        )
+    }
+}
+
+private suspend fun stringOrEmpty(resource: StringResource): String =
+    runCatching { getString(resource) }.getOrDefault("")

@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import org.jetbrains.compose.resources.StringResource
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTag
@@ -65,30 +64,21 @@ fun FeedbackTag.labelRes(): StringResource = when (this) {
 /** Container + content color pair, both taken from the theme. */
 data class FeedbackColors(val container: Color, val content: Color)
 
-// Same rainbow palette as the TowerStack and Schneagg Rodeo games (explicitly requested for tags)
-private val TAG_PALETTE = listOf(
-    Color(0xFFFF0000), // Red
-    Color(0xFFFF7F00), // Orange
-    Color(0xFF00FF00), // Green
-    Color(0xFF0000FF)  // Blue
-)
-
-/**
- * Tags cycle through the game rainbow palette - enough to tell neighbouring tags apart, not a
- * per-tag legend. Text is black or white, whichever reads better on the color.
- */
-fun FeedbackTag.colors(): FeedbackColors {
-    val container = TAG_PALETTE[ordinal % TAG_PALETTE.size]
-    val content = if (container.luminance() > 0.3f) Color.Black else Color.White
-    return FeedbackColors(container, content)
+/** Tags are plain metadata, so they stay neutral and leave color to the status. */
+@Composable
+fun FeedbackTag.colors(): FeedbackColors = with(MaterialTheme.colorScheme) {
+    FeedbackColors(surfaceContainerHighest, onSurfaceVariant)
 }
 
-/** Done (implemented / fixed) and in-progress entries are colored, requested / open stay neutral. */
+/**
+ * Done (implemented / fixed) and in-progress entries get a soft container tone, requested / open
+ * stay neutral. The pill text names the status, so color is never the only signal.
+ */
 @Composable
 fun FeedbackStatus.colors(): FeedbackColors = with(MaterialTheme.colorScheme) {
     when (this@colors) {
-        FeedbackStatus.IMPLEMENTED, FeedbackStatus.FIXED -> FeedbackColors(tertiary, onTertiary)
-        FeedbackStatus.PLANNED, FeedbackStatus.CONFIRMED -> FeedbackColors(secondary, onSecondary)
+        FeedbackStatus.IMPLEMENTED, FeedbackStatus.FIXED -> FeedbackColors(tertiaryContainer, onTertiaryContainer)
+        FeedbackStatus.PLANNED, FeedbackStatus.CONFIRMED -> FeedbackColors(secondaryContainer, onSecondaryContainer)
         FeedbackStatus.REQUESTED, FeedbackStatus.OPEN -> FeedbackColors(surfaceVariant, onSurfaceVariant)
     }
 }

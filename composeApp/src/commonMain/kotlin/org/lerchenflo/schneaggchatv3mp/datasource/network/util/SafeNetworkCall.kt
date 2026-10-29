@@ -11,21 +11,22 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 
 /**
  * Runs one HTTP call and maps its result - success body, HTTP error status, or thrown exception -
- * to a [NetworkResult]. Shared by [org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils]
- * and the auth refresh API, which must not depend on `NetworkUtils` (that would close a dependency
- * cycle through the authenticated HTTP client).
+ * to a [NetworkResult]. Shared by the remote data sources (via
+ * [org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient]) and the auth refresh API,
+ * which must not depend on `KtorAuthRemoteDataSource` (that would close a dependency cycle through
+ * the authenticated HTTP client).
  *
  * `response.body()` deserializes inside the try - a socket drop or serialization failure while
  * reading a successful reply lands in a catch below and comes back as an Error, even though the
  * server already committed the write. Callers that need idempotency rely on their own keys
- * (see `AppRepository.sendMessage`) rather than on this helper avoiding the case.
+ * (see `OfflineFirstMessageRepository.sendMessage`) rather than on this helper avoiding the case.
  */
 suspend inline fun <reified R> safeNetworkCall(
-    loggingRepository: LoggingRepository,
+    loggingRepository: Logger,
     crossinline block: suspend () -> HttpResponse
 ): NetworkResult<R, NetworkingError> {
     return try {

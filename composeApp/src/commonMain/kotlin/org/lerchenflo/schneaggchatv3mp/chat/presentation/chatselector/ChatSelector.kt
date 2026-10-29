@@ -80,10 +80,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_URL
 import org.lerchenflo.schneaggchatv3mp.getDonationsUrl
@@ -92,8 +90,6 @@ import io.github.lerchenflo.taptarget.LocalTapTargetController
 import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ChatSelectorDismissableInfo
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
@@ -128,6 +124,7 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_popup
 import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_start
 import schneaggchatv3mp.composeapp.generated.resources.unpin_chat
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 @OptIn(ExperimentalMaterial3Api::class) // PullToRefreshBox is experimental
 @Composable
@@ -136,8 +133,6 @@ fun Chatauswahlscreen(
 ) {
 
     val viewModel = koinViewModel<ChatSelectorViewModel>()
-    val preferencemanager = koinInject<Preferencemanager>()
-    val appRepository = koinInject<AppRepository>()
 
     val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by viewModel.searchTerm.collectAsStateWithLifecycle()
@@ -151,6 +146,7 @@ fun Chatauswahlscreen(
     val changelogPopup by viewModel.changelogPopup.collectAsStateWithLifecycle()
     val contributePopupShown by viewModel.contributePopupShown.collectAsStateWithLifecycle()
     val newVersionAvailable by viewModel.newVersionAvailable.collectAsStateWithLifecycle()
+    val announcement by viewModel.announcement.collectAsStateWithLifecycle()
 
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
@@ -158,13 +154,13 @@ fun Chatauswahlscreen(
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
-    val dataSyncState by appRepository.dataSyncState.collectAsStateWithLifecycle()
+    val dataSyncState by viewModel.dataSyncState.collectAsStateWithLifecycle()
 
-    val onboardingCompleted by preferencemanager.getOnboardingSeenFlow()
-        .collectAsStateWithLifecycle(initialValue = false)
+    val onboardingCompleted by viewModel.onboardingCompleted.collectAsStateWithLifecycle()
     
-    val highlightTodaysTimestamp by preferencemanager.getHighlightTodaysMessageTimestampFlow()
-        .collectAsStateWithLifecycle(initialValue = true)
+    val highlightTodaysTimestamp by viewModel.highlightTodaysTimestamp.collectAsStateWithLifecycle()
+
+    val serverUrl by viewModel.serverUrl.collectAsStateWithLifecycle()
 
     val notificationPermissionState by viewModel.notificationPermissionState.collectAsStateWithLifecycle()
 
@@ -239,7 +235,6 @@ fun Chatauswahlscreen(
                 Row(
                     modifier = Modifier
                         .clickable {
-                            val serverUrl = runBlocking { preferencemanager.getServerUrl() }
                             uriHandler.openUri(serverUrl)
                         }
                         .weight(1f)
@@ -372,27 +367,6 @@ fun Chatauswahlscreen(
                  */
 
 
-                /*
-                //Map
-                if (appRepository.appVersion.isMobile()) {
-                    Box(
-                        modifier = Modifier
-                            .size(touchSize)
-                            .clip(CircleShape)
-                            .clickable { viewModel.onMapClick() }
-                            .tapTarget("chatselector_map_button"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Map,
-                            contentDescription = stringResource(Res.string.schneaggmap),
-                            modifier = Modifier.size(iconSize),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-
-                 */
 
 
                 //Recap (only during the recap season, see RecapAvailability)
@@ -582,10 +556,8 @@ fun Chatauswahlscreen(
                 }
 
 
-                val appRepository = koinInject<AppRepository>()
-
                 //Reload button for desktop only
-                if (appRepository.appVersion.isDesktop()) {
+                if (viewModel.isDesktop) {
                     Spacer(Modifier.width(10.dp))
 
                     Box(
@@ -698,7 +670,7 @@ fun Chatauswahlscreen(
                     state = liststate
                 ) {
 
-                    if (notificationPermissionState != PermissionState.GRANTED && !appRepository.appVersion.isDesktop()) {
+                    if (notificationPermissionState != PermissionState.GRANTED && !viewModel.isDesktop) {
                         item {
                             ChatSelectorDismissableInfo(
                                 title = stringResource(Res.string.notification_banner_title),
@@ -708,7 +680,17 @@ fun Chatauswahlscreen(
                                     viewModel.requestNotificationPermission()
                                 },
                                 onDismiss = null,
-                                backgroundColor = MaterialTheme.colorScheme.errorContainer
+                                backgroundColor = MaterialTheme.warningColors.warningContainer,
+                                contentColor = MaterialTheme.warningColors.onWarningContainer,
+                            )
+                        }
+                    }
+
+                    announcement?.let { shown ->
+                        item(key = "announcement_${shown.id}") {
+                            AnnouncementBanner(
+                                announcement = shown,
+                                onDismiss = { viewModel.onAnnouncementDismiss(shown) },
                             )
                         }
                     }
@@ -876,7 +858,6 @@ fun Chatauswahlscreen(
                 },
                 onOpenDonationPage = {
                     viewModel.onContributeDismiss()
-                    val serverUrl = runBlocking { preferencemanager.getServerUrl() }
                     uriHandler.openUri(getDonationsUrl(serverUrl))
                 }
             )

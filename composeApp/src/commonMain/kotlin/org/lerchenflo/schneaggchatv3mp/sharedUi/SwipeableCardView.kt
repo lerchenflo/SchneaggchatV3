@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -124,10 +126,14 @@ fun SwipeableCardView(
                     elevation = CardDefaults.cardElevation(defaultElevation = cardElevation),
                     shape = MaterialTheme.shapes.large
                 ) {
+                    // Scrolls when the card is taller than the page (keyboard open, landscape):
+                    // a fixed Column would squash its last children instead
                     Column(
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier
+                            .then(if (item.scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
+                            .padding(16.dp)
                     ) {
-                        scope.cards[page].content()
+                        item.content()
                     }
                 }
             }
@@ -206,15 +212,21 @@ fun SwipeableCardView(
 }
 
 interface CardContainerScope {
+    /**
+     * @param scrollable false for content that scrolls itself (e.g. a LazyColumn), which crashes
+     * inside a vertical scroll
+     */
     @Composable
     fun CardItem(
         modifier: Modifier = Modifier,
+        scrollable: Boolean = true,
         content: @Composable () -> Unit
     )
 }
 
 private data class CardItemData(
     val modifier: Modifier,
+    val scrollable: Boolean,
     val content: @Composable () -> Unit
 )
 
@@ -224,9 +236,10 @@ private class CardContainerScopeImpl : CardContainerScope {
     @Composable
     override fun CardItem(
         modifier: Modifier,
+        scrollable: Boolean,
         content: @Composable () -> Unit
     ) {
-        cards.add(CardItemData(modifier, content))
+        cards.add(CardItemData(modifier, scrollable, content))
     }
 }
 

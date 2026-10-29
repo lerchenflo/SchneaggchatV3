@@ -51,6 +51,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 @Composable
 fun LogsDialog(
@@ -286,7 +287,7 @@ private fun LogEntryItem(log: LogEntry) {
 private fun getLogColor(type: LogType): Color {
     return when (type) {
         LogType.INFO -> Color(0xFF03A9F4)
-        LogType.WARNING -> Color(0xFFFFC107)
+        LogType.WARNING -> MaterialTheme.warningColors.warning
         LogType.ERROR -> Color(0xFFB00020)
         LogType.DEBUG -> Color(0xFF8BC34A)
     }

@@ -8,15 +8,26 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SharedSettingsViewmodel(
-    private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
-    private val loggingRepository: LoggingRepository
+    private val appVersion: AppVersion,
+    private val userRepository: UserRepository,
+    private val settingsRepository: SettingsRepository,
+    private val loggingRepository: Logger,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     var serverUrl by mutableStateOf("")
@@ -33,7 +44,7 @@ class SharedSettingsViewmodel(
 
     init {
         viewModelScope.launch { // Developer Settings
-            preferenceManager.getDevSettingsFlow()
+            settingsRepository.getDevSettingsFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting Developer Settings preference: ${exception.message}")
                 }
@@ -43,7 +54,7 @@ class SharedSettingsViewmodel(
         }
 
         viewModelScope.launch { // Server URL
-            preferenceManager.getServerUrlFlow()
+            settingsRepository.getServerUrlFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting Server URL preference: ${exception.message}")
                 }
@@ -53,21 +64,25 @@ class SharedSettingsViewmodel(
         }
 
         viewModelScope.launch { // Own user
-            val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
-
-            appRepository.getUserByIdFlow(ownId).collect { value ->
-                ownUser = value
-            }
+            // Follows the logged-in account: the settings tab root keeps this ViewModel across a
+            // logout and the next login, so reading the id once would keep showing the old account.
+            SessionCache.authState
+                .map { (it as? SessionCache.AuthState.LoggedIn)?.userId }
+                .distinctUntilChanged()
+                .flatMapLatest { ownId -> ownId?.let { userRepository.getUserByIdFlow(it) } ?: flowOf(null) }
+                .collect { value ->
+                    ownUser = value
+                }
         }
 
-        isAndroid = appRepository.appVersion.isAndroid()
+        isAndroid = appVersion.isAndroid()
     }
 
     // Developer Settings
 
     fun updateDevSettings(newValue: Boolean){
-        viewModelScope.launch {
-            appRepository.setDevSettings(newValue)
+        applicationScope.launchOnMain {
+            settingsRepository.setDevSettings(newValue)
             SessionCache.updateDeveloper(newValue)
         }
     }
@@ -76,7 +91,7 @@ class SharedSettingsViewmodel(
     fun updateServerUrl(newValue: String) {
         serverUrl = newValue
         viewModelScope.launch {
-            preferenceManager.saveServerUrl(newValue)
+            settingsRepository.saveServerUrl(newValue)
         }
     }
 

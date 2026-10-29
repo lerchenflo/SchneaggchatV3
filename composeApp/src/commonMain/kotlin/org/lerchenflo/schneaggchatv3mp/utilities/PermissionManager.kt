@@ -4,7 +4,7 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 /**
  * for checking and Requesting Permissions (todo JVM)
  */
-expect class PermissionManager {
+interface PermissionManager {
     /**
      * returns the permissions state of the microphone permission
      */

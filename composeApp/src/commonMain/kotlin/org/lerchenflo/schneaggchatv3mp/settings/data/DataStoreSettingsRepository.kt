@@ -1,0 +1,281 @@
+package org.lerchenflo.schneaggchatv3mp.settings.data
+
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Draft
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.settings.data.remote.SettingsRemoteDataSource
+
+/** [SettingsRepository] on top of the DataStore wrapper [Preferencemanager], pushing synced settings via [SettingsRemoteDataSource]. */
+class DataStoreSettingsRepository(
+    private val preferencemanager: Preferencemanager,
+    private val settingsRemoteDataSource: SettingsRemoteDataSource,
+    private val languageService: LanguageService,
+    private val externalScope: CoroutineScope,
+) : SettingsRepository {
+
+    /**
+     * Runs a setter in [externalScope] (plan R2), started before its first suspension point: the
+     * local write and the push to the server both finish even when the caller (a settings screen
+     * being left) is cancelled meanwhile, so this device and the server never disagree.
+     */
+    private suspend fun outliveCaller(block: suspend () -> Unit) {
+        externalScope.async { block() }.await()
+    }
+
+    // ─── Server URL ────────────────────────────────────────────────────────────
+
+    override fun getServerUrlFlow(): Flow<String> {
+        return preferencemanager.getServerUrlFlow()
+    }
+
+    override suspend fun getServerUrl(): String {
+        return preferencemanager.getServerUrl()
+    }
+
+    override suspend fun saveServerUrl(url: String) {
+        preferencemanager.saveServerUrl(url)
+    }
+
+    // ─── Personal settings (theme, language, pinned chats, ...) ────────────────
+    // Synced across every device of this account via SelfUserResponse.settings. Push side:
+    // write the local preference first so the UI reacts instantly, then fire the partial-update
+    // request in the background and ignore its result - an offline edit is reconciled by the next
+    // /users/sync or UserChange socket push, which always wins (see applyServerSettings below).
+
+    /**
+     * Applies the server's settings onto local DataStore, overwriting whatever was there. Called
+     * from both the /users/sync SelfUserResponse branch and the UserChange socket push, so a
+     * settings change made on another device of the same account takes effect here without the
+     * user touching a setting themselves.
+     */
+    override suspend fun applyServerSettings(settings: SyncedSettings) {
+        preferencemanager.applySyncedSettings(settings)
+
+        // Language has to go through LanguageService/LanguageManager to actually switch the
+        // platform locale (recreates the Activity on Android), so only touch it when it changed.
+        val newLanguage = LanguageSetting.entries.firstOrNull { it.name == settings.language } ?: LanguageSetting.SYSTEM
+        if (preferencemanager.getLanguageSetting() != newLanguage) {
+            languageService.applyLanguage(newLanguage)
+        }
+    }
+
+    override fun getUseMdFlow(): Flow<Boolean> {
+        return preferencemanager.getUseMdFlow()
+    }
+
+    override suspend fun setUseMd(value: Boolean) {
+        outliveCaller {
+            preferencemanager.saveUseMd(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(mdFormat = value)).trackConnectivity()
+        }
+    }
+
+    override fun getDevSettingsFlow(): Flow<Boolean> {
+        return preferencemanager.getDevSettingsFlow()
+    }
+
+    override suspend fun setDevSettings(value: Boolean) {
+        outliveCaller {
+            preferencemanager.saveDevSettings(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(developerSettings = value)).trackConnectivity()
+        }
+    }
+
+    override fun getHighlightTodaysMessageTimestampFlow(): Flow<Boolean> {
+        return preferencemanager.getHighlightTodaysMessageTimestampFlow()
+    }
+
+    override suspend fun setHighlightTodaysMessageTimestamp(value: Boolean) {
+        outliveCaller {
+            preferencemanager.saveHighlightTodaysMessageTimestamp(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(highlightTodaysMessageTimestamp = value)).trackConnectivity()
+        }
+    }
+
+    override fun getThemeFlow(): Flow<ThemeSetting> {
+        return preferencemanager.getThemeFlow()
+    }
+
+    override suspend fun setThemeSetting(theme: ThemeSetting) {
+        outliveCaller {
+            preferencemanager.saveThemeSetting(theme)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(theme = theme.name)).trackConnectivity()
+        }
+    }
+
+    override suspend fun setLanguageSetting(language: LanguageSetting) {
+        outliveCaller {
+            languageService.applyLanguage(language)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(language = language.name)).trackConnectivity()
+        }
+    }
+
+    override fun getMergeMapLocationsFlow(): Flow<Boolean> {
+        return preferencemanager.getMergeMapLocationsFlow()
+    }
+
+    override suspend fun setMergeMapLocations(value: Boolean) {
+        outliveCaller {
+            preferencemanager.saveMergeMapLocations(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(mergeMapLocations = value)).trackConnectivity()
+        }
+    }
+
+    override fun getMergeMapUsersFlow(): Flow<Boolean> {
+        return preferencemanager.getMergeMapUsersFlow()
+    }
+
+    override suspend fun setMergeMapUsers(value: Boolean) {
+        outliveCaller {
+            preferencemanager.saveMergeMapUsers(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(mergeMapUsers = value)).trackConnectivity()
+        }
+    }
+
+    override fun getMapStyleSettingFlow(): Flow<MapStyleSetting> {
+        return preferencemanager.getMapStyleSettingFlow()
+    }
+
+    override fun getMapStyleUrlFlow(): Flow<String> {
+        return preferencemanager.getMapStyleUrlFlow()
+    }
+
+    override suspend fun setMapStyleSetting(style: MapStyleSetting) {
+        outliveCaller {
+            preferencemanager.saveMapStyleSetting(style)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(mapStyle = style.name)).trackConnectivity()
+        }
+    }
+
+    override fun getQuickReactionsFlow(): Flow<List<String>> {
+        return preferencemanager.getQuickReactionsFlow()
+    }
+
+    /**
+     * Replaces the quick reaction list wholesale (server stores it as one value, like pinned chats).
+     * An empty list is a valid choice and is stored as such - use [resetQuickReactions] to go back
+     * to the app defaults.
+     */
+    override suspend fun setQuickReactions(reactions: List<String>) {
+        outliveCaller {
+            preferencemanager.saveQuickReactions(reactions)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(quickReactions = reactions)).trackConnectivity()
+        }
+    }
+
+    /** Clears the customised list so DEFAULT_QUICK_REACTIONS applies again, here and on every device. */
+    override suspend fun resetQuickReactions() {
+        outliveCaller {
+            preferencemanager.clearQuickReactions()
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(resetQuickReactions = true)).trackConnectivity()
+        }
+    }
+
+    override suspend fun getLastContributePopupShown(): Long {
+        return preferencemanager.getLastContributePopupShown()
+    }
+
+    override suspend fun setLastContributePopupShown(epochMillis: Long) {
+        outliveCaller {
+            preferencemanager.saveLastContributePopupShown(epochMillis)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis)).trackConnectivity()
+        }
+    }
+
+    override fun getLastDismissedAnnouncementIdFlow(): Flow<Long> {
+        return preferencemanager.getLastDismissedAnnouncementIdFlow()
+    }
+
+    override suspend fun setLastDismissedAnnouncementId(id: Long) {
+        outliveCaller {
+            preferencemanager.saveLastDismissedAnnouncementId(id)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastDismissedAnnouncementId = id)).trackConnectivity()
+        }
+    }
+
+    // ─── Pinned chats ──────────────────────────────────────────────────────────
+    // Local only: ChatListRepository.setPinnedChat pushes the resulting list to the server.
+
+    override fun getPinnedChatsFlow(): Flow<List<PinnedChat>> {
+        return preferencemanager.getPinnedChatsFlow()
+    }
+
+    override suspend fun getPinnedChats(): List<PinnedChat> {
+        return preferencemanager.getPinnedChats()
+    }
+
+    override suspend fun addPinnedChat(chat: PinnedChat) {
+        preferencemanager.addPinnedChat(chat)
+    }
+
+    override suspend fun removePinnedChat(chatId: String) {
+        preferencemanager.removePinnedChat(chatId)
+    }
+
+    // ─── This device only ──────────────────────────────────────────────────────
+
+    override fun getDemoModeFlow(): Flow<Boolean> {
+        return preferencemanager.getDemoModeFlow()
+    }
+
+    override suspend fun saveDemoMode(value: Boolean) {
+        preferencemanager.saveDemoMode(value)
+    }
+
+    override fun getOnboardingSeenFlow(): Flow<Boolean> {
+        return preferencemanager.getOnboardingSeenFlow()
+    }
+
+    override suspend fun setOnboardingSeen(value: Boolean) {
+        preferencemanager.setOnboardingSeen(value)
+    }
+
+    override suspend fun getLastStartedVersion(): String {
+        return preferencemanager.getLastStartedVersion()
+    }
+
+    override suspend fun saveLastStartedVersion(value: String) {
+        preferencemanager.saveLastStartedVersion(value)
+    }
+
+    override fun getEventsViewModeFlow(): Flow<EventsViewMode> {
+        return preferencemanager.getEventsViewModeFlow()
+    }
+
+    override suspend fun saveEventsViewMode(mode: EventsViewMode) {
+        preferencemanager.saveEventsViewMode(mode)
+    }
+
+    override fun getDraft(chatId: String, group: Boolean) : Flow<String?> {
+        return preferencemanager.getDraftsFlow(
+            chatId = chatId,
+            group = group
+        )
+    }
+
+    override fun saveDraft(chatId: String, group: Boolean, string: String) {
+        externalScope.launch {
+            preferencemanager.addDraft(
+                draft = Draft(
+                    chatId = chatId,
+                    group = group,
+                    string = string
+                )
+            )
+        }
+    }
+
+}

@@ -30,7 +30,7 @@ Property name, `AttributeKey` constant, JSON key and Mongo field name are always
 | `LongDef(min, max)` | `LongValue` | Number field (plain long - **no longer a date picker**) | Range |
 | `BoolDef` | `BoolValue` | Switch | Type |
 | `EnumDef(options)` | `StringValue` holding the enum **constant name** (never the ordinal) | Dropdown with translated labels; unknown names are shown raw | Value must be one of `options` |
-| `DateTimeDef` | `LongValue` (epoch millis) | Date + time picker | Type |
+| `DateTimeDef(showNow)` | `LongValue` (epoch millis) | Date + time picker, plus a clear button when optional and set. Only with `showNow` (police last seen, not upcoming dates like the next tournament): a Now button, which on the read-only card saves at once | Type |
 | `PriceDef(max)` | `DoubleValue` (euros) | Decimal field, `€` suffix, max 2 decimals, `.` or `,` | Not negative, max |
 | `DistanceDef(unit, max)` | `DoubleValue` in `unit` (`METERS`, `KILOMETERS`) | Decimal field with unit suffix | Not negative, max |
 | `RatingDef(min, max)` | `IntValue` | Slider, value saved on release | Within `min..max` |
@@ -44,7 +44,7 @@ server it is `List<String>`.
 
 ## Enums
 
-Defined in `model/AttributeOptions.kt` (server) and `domain/AttributeOptions.kt` (client). Constant names are
+Defined in `model/AttributeOptions.kt` (server) and `schneaggmap/domain/AttributeOptions.kt` (client). Constant names are
 the stored values - **never rename a constant without a migration, only add new ones**.
 
 | Enum | Options | Used by |
@@ -120,7 +120,7 @@ re-sync it (map sync only sends entries newer than the client's copy).
 
 ## Icons (client only)
 
-`LocationType.drawableRes()` in `domain/LocationData.kt`. All icons are 1024x1024 transparent PNGs in a flat
+`LocationType.drawableRes()` in `schneaggmap/domain/LocationData.kt`. All icons are 1024x1024 transparent PNGs in a flat
 style with bold black outlines.
 
 - New: `icon_food_austrian` (schnitzel + flag), `icon_climbingspot` (climbing wall, was the swimming icon),
@@ -138,14 +138,14 @@ standalone image and not referenced from code yet.
 
 **New enum attribute**
 1. Server: add the enum to `model/AttributeOptions.kt`, use `EnumDef(key, required, options = X.entries.map { it.name })`.
-2. Client: add the same enum to `domain/AttributeOptions.kt` implementing `AttributeOption` with a label per
+2. Client: add the same enum to `schneaggmap/domain/AttributeOptions.kt` implementing `AttributeOption` with a label per
    option, use `EnumDef(key, required, options = X.entries)`.
 3. Add option labels to `values`, `values-de`, `values-it`.
 
 **New definition type** (reusing an existing `AttributeValue`)
 1. Add the subtype to `AttributeDefinition` on both sides (server: `@JsonSubTypes`, client: `@SerialName`).
 2. Server: add a branch in `SchneaggmapService.validate` (the compiler forces it).
-3. Client: add a branch in `KeyValueView` (the compiler forces it).
+3. Client: add a branch in `KeyValueView` (edit form) and `KeyValueReadOnlyView` (detail card) - the compiler forces both.
 
 **New location type** - follow the checklist at the top of `LocationData.kt` in each repo.
 

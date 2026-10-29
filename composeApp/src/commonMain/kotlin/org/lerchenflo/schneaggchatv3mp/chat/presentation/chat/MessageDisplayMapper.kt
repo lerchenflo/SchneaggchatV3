@@ -47,11 +47,13 @@ class MessageDisplayMapper(
         senderNames: Map<String, String>,
         groupMembers: List<GroupMember>,
         newMessagesBoundaryId: String?,
+        /** Shown for a sender that is neither a known user nor a group member. */
+        unknownSenderName: String,
     ): List<MessageDisplayItem> {
         val groupMap = groupMembers.associateBy { it.userId }
         val messagesById = messages.associateBy { it.id }
 
-        fun resolveName(userId: String) = senderNames[userId] ?: groupMap[userId]?.memberName ?: "Unknown"
+        fun resolveName(userId: String) = senderNames[userId] ?: groupMap[userId]?.memberName ?: unknownSenderName
 
         fun senderInfoFor(userId: String) = SenderInfo(
             name = resolveName(userId),

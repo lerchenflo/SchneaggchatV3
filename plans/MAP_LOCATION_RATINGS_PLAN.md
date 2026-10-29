@@ -37,13 +37,13 @@ V3 keeps the V2 semantics (one rating per user per entry, whole-star input, half
 | Server validation | `util/ValidationUtils.kt:141` | `validatePicture()`: jpeg/png/gif/webp, ≤ 3 MB; `application.properties` multipart max-file 3 MB / max-request 10 MB |
 | Server per-user-per-parent precedent | `group/model/GroupMember.kt:16` | `@CompoundIndex(name = "userid_groupId_idx", def = "{'userid': 1, 'groupId': 1}", unique = true)` |
 | Client domain | `schneaggmap/domain/MapEntry.kt` | Plain data class, `updatedByName` resolved server side |
-| Client Room | `schneaggmap/data/dtos/MapEntryDto.kt`, `datasource/database/Daos.kt:431 MapEntryDao` | DB version **84**, `fallbackToDestructiveMigration(dropAllTables = true)` (`CreateDatabase.kt:12`), `RoomTypeConverters.stringListToString` exists (:121) |
-| Client wire | `datasource/network/requestResponseDataClasses/MapNetworkDtos.kt` + `MapResponseMapper.kt` | `MapEntryResponse`, `MapSyncResponse`, `MapEntryRequest` |
-| Client network | `datasource/network/NetworkUtils.kt:1138-1160` | `mapSync`, `upsertMapEntry`, `deleteMapEntry`; `safePostMultipart` (:112) + `appendProfilePic` (:129) |
-| Client sync | `datasource/AppRepository.kt:629 mapEntryIdSync()` | Runs inside `dataSync(reason = "mapInit")` job type `MAP`, triggered from `SchneaggmapViewModel.kt:479` on map open |
-| Client CRUD | `AppRepository.kt:660-702` | Network call → on success write to `MapRepository` (Room) |
+| Client Room | `schneaggmap/data/local/entity/MapEntryEntity.kt` (+ `MapEntryEntityMapper.kt`), `datasource/database/Daos.kt:431 MapEntryDao` | DB version **84**, `fallbackToDestructiveMigration(dropAllTables = true)` (`CreateDatabase.kt:12`), `RoomTypeConverters.stringListToString` exists (:121) |
+| Client wire | `schneaggmap/data/remote/dto/MapNetworkDtos.kt` + `MapResponseMapper.kt`; `MapEntryResponse` in `datasource/network/dto/MapNetworkDtos.kt` (the socket uses it) | `MapEntryResponse`, `MapSyncResponse`, `MapEntryRequest` |
+| Client network | `schneaggmap/data/remote/MapRemoteDataSource.kt` + `KtorMapRemoteDataSource.kt` | `mapSync`, `upsertMapEntry`, `deleteMapEntry`; `ServerClient.safePostMultipart`, `appendProfilePic`, `appendFile`, `appendJsonPart` in `datasource/network/KtorHttpHelpers.kt` |
+| Client sync | `schneaggmap/data/OfflineFirstMapRepository.kt:33 syncMapEntries()` (was `AppRepository.mapEntryIdSync()`) | Runs inside `dataSync(reason = "mapInit")` job type `MAP` (`app/data/DefaultDataSyncCoordinator.kt:189`), triggered from `SchneaggmapViewModel.kt:479` on map open |
+| Client CRUD | `OfflineFirstMapRepository.kt:64-107` | Network call → on success write to `MapLocalDataSource` (Room) |
 | Client socket | `datasource/network/socket/SocketConnectionMessage.kt:65,420` | `MapChange` → `mapRepository.upsertMapEntry` / `deleteMapEntry` |
-| Client image download | `AppRepository.kt:2241 getPicturesForMessageIds` | `networkUtils.getImageForImageMessage(id)` → `pictureManager.savePictureToStorage(bytes, id + PICTURE_FILE_NAME)` → path into Room; `getMissingPics()` (:873) only fetches when `checkImageExists()` is false |
+| Client image download | `chat/data/OfflineFirstMessageRepository.kt:120 getPicturesForMessageIds` | `networkUtils.getImageForImageMessage(id)` → `pictureManager.savePictureToStorage(bytes, id + PICTURE_FILE_NAME)` → path into Room; `fetchMissingMessageMedia()` (:160) only fetches when `checkImageExists()` is false |
 | Client image display | `chat/.../ImageMessageContentView.kt`, `FullScreenImageDialog.kt`, `sharedUi/picture/ProfilePictureView.kt` | Coil3 `AsyncImage(model = absoluteFilePath)`; `AppImageLoader.kt` caps parallel decodes at 3 |
 | Client image pick | `chat/presentation/newchat/GroupCreator.kt:230` | `rememberImagePickerKMP(ImagePickerKMPConfig(galleryConfig = GalleryConfig(...)))` → `loadBytes()` → `pictureManager.downscaleImage(bytes, 500_000)` |
 | Client info sheet | `schneaggmap/presentation/uielements/MapEntryInfoCard.kt` | `ModalBottomSheet`; `EntryTitleView` has the literal `//TODO: Small row with ratings` (line ~270) |
@@ -97,19 +97,19 @@ Rules:
 
 ### 2.3 Client Room
 
-`schneaggmap/data/dtos/MapEntryRatingDto.kt` → `@Entity(tableName = "map_entry_ratings", indices = [Index("entryId")])`, `imageIds: List<String>` via existing `stringListToString`. DB version **84 → 85** (destructive migration already configured, no migration script needed).
+`schneaggmap/data/local/entity/MapEntryRatingEntity.kt` → `@Entity(tableName = "map_entry_ratings", indices = [Index("entryId")])`, `imageIds: List<String>` via existing `stringListToString`. DB version **84 → 85** (destructive migration already configured, no migration script needed).
 
 `MapEntryRatingDao` (in `Daos.kt`, next to `MapEntryDao`):
 
 ```kotlin
-@Upsert suspend fun upsert(dto: MapEntryRatingDto)
+@Upsert suspend fun upsert(dto: MapEntryRatingEntity)
 @Query("DELETE FROM map_entry_ratings WHERE id = :id") suspend fun delete(id: String)
 @Query("DELETE FROM map_entry_ratings WHERE entryId = :entryId") suspend fun deleteByEntryId(entryId: String)
 @Query("DELETE FROM map_entry_ratings") suspend fun clear()             // add to the existing clearAll() logout path
 @Query("SELECT id, updatedAt FROM map_entry_ratings") suspend fun getIdsWithChangeDates(): List<IdChangeDate>
-@Query("SELECT * FROM map_entry_ratings WHERE entryId = :entryId ORDER BY updatedAt DESC") fun getForEntryFlow(entryId: String): Flow<List<MapEntryRatingDto>>
+@Query("SELECT * FROM map_entry_ratings WHERE entryId = :entryId ORDER BY updatedAt DESC") fun getForEntryFlow(entryId: String): Flow<List<MapEntryRatingEntity>>
 @Query("SELECT entryId, AVG(stars) AS average, COUNT(*) AS count FROM map_entry_ratings GROUP BY entryId") fun getSummariesFlow(): Flow<List<RatingSummary>>
-@Query("SELECT * FROM map_entry_ratings WHERE userId = :userId ORDER BY updatedAt DESC") fun getByUserFlow(userId: String): Flow<List<MapEntryRatingDto>>  // for "my ratings" (phase 4)
+@Query("SELECT * FROM map_entry_ratings WHERE userId = :userId ORDER BY updatedAt DESC") fun getByUserFlow(userId: String): Flow<List<MapEntryRatingEntity>>  // for "my ratings" (phase 4)
 ```
 
 ---
@@ -160,28 +160,28 @@ Run `schneaggchat-security-check` on the four new endpoints (ownership of `keepI
 
 ### 4.2 Wire + mappers
 
-`MapNetworkDtos.kt`: `MapRatingResponse`, `MapRatingSyncResponse`, `MapRatingRequest(entryId, stars, text, keepImageIds)`. `MapResponseMapper.kt`: `MapRatingResponse.toMapEntryRating()`, `MapEntryRating.toDto()`, `MapEntryRatingDto.toMapEntryRating()`, `RatingSummary` needs no mapper (Room projection class).
+`MapNetworkDtos.kt`: `MapRatingResponse` in `datasource/network/dto/` (the socket's `MapRatingChange` uses it), `MapRatingSyncResponse`, `MapRatingRequest(entryId, stars, text, keepImageIds)` in `schneaggmap/data/remote/dto/`. `MapResponseMapper.kt`: `MapRatingResponse.toMapEntryRating()`. `schneaggmap/data/local/entity/MapEntryRatingEntityMapper.kt`: `MapEntryRating.toEntity()`, `MapEntryRatingEntity.toMapEntryRating()`. `RatingSummary` needs no mapper (Room projection class).
 
-`NetworkUtils.kt` (Map section):
+`MapRemoteDataSource` / `KtorMapRemoteDataSource` (`schneaggmap/data/remote/`):
 
 ```kotlin
 suspend fun mapRatingSync(entries: List<IdTimeStamp>, page: Int): NetworkResult<MapRatingSyncResponse, NetworkingError>
 suspend fun upsertMapRating(request: MapRatingRequest, images: List<ByteArray>): NetworkResult<MapRatingResponse, NetworkingError>
-    // safePostMultipart("/map/ratings/upsert") { append("request", json, ContentType.Application.Json); images.forEachIndexed { i, b -> appendImage("images", b, "rating_$i.jpg") } }
+    // server.safePostMultipart("/map/ratings/upsert") { appendJsonPart("request", MapRatingRequest.serializer(), request); images.forEachIndexed { i, b -> appendFile("images", b, "rating_$i.jpg", "image/jpeg") } }
 suspend fun deleteMapRating(entryId: String): NetworkResult<Unit, NetworkingError>
 suspend fun getMapRatingImage(imageId: String, thumb: Boolean): NetworkResult<ByteArray, NetworkingError>
 ```
 
-`appendImage(partName, bytes, fileName)` = generalisation of the existing `appendProfilePic` (keep the old one untouched, add the new helper beside it).
+`appendFile(key, bytes, fileName, contentType)` (`datasource/network/KtorHttpHelpers.kt`) is the generalisation of `appendProfilePic`; it already exists, no new helper needed.
 
 ### 4.3 Repositories
 
-Keep the existing split: **`MapRepository` = Room only, `AppRepository` = network + sync + writes into `MapRepository`** (same as map entries today).
+Keep the existing split: **`MapLocalDataSource` = Room only, `OfflineFirstMapRepository` (interface `schneaggmap/domain/MapRepository`) = network + sync + writes into `MapLocalDataSource`** (same as map entries today).
 
-`MapRepository` additions: `getRatingChangeIds()`, `upsertRating()`, `deleteRating(id)`, `deleteRatingsForEntry(entryId)`, `getRatingsForEntryFlow(entryId)`, `getRatingSummariesFlow()`, `getOwnRatingsFlow(userId)`. `deleteMapEntry(id)` also calls `deleteRatingsForEntry(id)`.
+`MapLocalDataSource` additions: `getRatingChangeIds()`, `upsertRating()`, `deleteRating(id)`, `deleteRatingsForEntry(entryId)`, `getRatingsForEntryFlow(entryId)`, `getRatingSummariesFlow()`, `getOwnRatingsFlow(userId)`. `deleteMapEntry(id)` also calls `deleteRatingsForEntry(id)`.
 
-`AppRepository` additions:
-- `mapRatingIdSync()` - clone of `mapEntryIdSync()`; called right after it inside the `MAP` sync job so the map's existing `dataSync(reason = "mapInit")` trigger covers both.
+`OfflineFirstMapRepository` additions (and the matching `MapRepository` interface methods):
+- `syncMapRatings()` - clone of `syncMapEntries()`; `DefaultDataSyncCoordinator` calls it right after `syncMapEntries()` inside the `MAP` sync job so the map's existing `dataSync(reason = "mapInit")` trigger covers both.
 - `upsertMapRating(entryId, stars, text, keepImageIds, newImages: List<ByteArray>)` and `deleteMapRating(entryId)` - clone of the map CRUD pair (`sendErrorSuspend` on error, upsert/delete Room on success).
 - `getMapRatingImagePath(imageId: String, thumb: Boolean): String?` - the **lazy loader**: `pictureManager.getMapRatingImageFilePath(imageId, thumb)`; if `checkImageExists` → return path; else download via `getMapRatingImage`, `savePictureToStorage(bytes, fileName)`, return path; `null` on error (logged with `loggingRepository.logWarning`). No Room column needed - the file name is derived from the id, exactly like profile pictures.
 - `clearAll()`/logout path: clear the new table.
@@ -190,7 +190,7 @@ Keep the existing split: **`MapRepository` = Room only, `AppRepository` = networ
 
 ### 4.4 Socket
 
-`SocketConnectionMessage.MapRatingChange` + handler next to `MapChange` (:420): `deleted` → `mapRepository.deleteRating(id)` else `upsertRating(toMapEntryRating())`. `MapChange(deleted = true)` already routes through `mapRepository.deleteMapEntry`, which now cascades.
+`SocketConnectionMessage.MapRatingChange` + handler next to `MapChange` (:420): `deleted` → `mapLocalDataSource.deleteRating(id)` else `upsertRating(toMapEntryRating())`. `MapChange(deleted = true)` already routes through `mapLocalDataSource.deleteMapEntry`, which now cascades.
 
 ---
 
@@ -256,7 +256,7 @@ Save validation (mirrors server): `draftStars in 1..5` else inline error, text t
 ### 5.4 Navigation + DI
 
 - `Route.MapEntryRatings(entryId: String)` in `Route.kt`; `entry<Route.MapEntryRatings>` in `App.kt` next to `Route.SchneaggmapSettings` (:670), inside the map tab so back returns to the map.
-- `di/Modules.kt`: `viewModel { (entryId: String) -> MapEntryRatingsViewModel(entryId = entryId, navigator = get(), mapRepository = get(), appRepository = get(), pictureManager = get()) }`.
+- `di/Modules.kt`: `viewModel { (entryId: String) -> MapEntryRatingsViewModel(entryId = entryId, navigator = get(), mapRepository = get(), pictureManager = get()) }`.
 
 ### 5.5 Strings (`values/strings.xml` + `values-de` + `values-it`; never `values-de-rAT`)
 
@@ -269,7 +269,7 @@ Save validation (mirrors server): `draftStars in 1..5` else inline error, text t
 | # | Phase | Repo | Deliverable |
 |---|---|---|---|
 | 1 | Server data + endpoints | server | Model, repository, service, controller (4 endpoints), `ImageManager` map dir + thumbnail, docker volume, cascade on entry delete, `LogType`s, socket message + `notifyMapRatingUpdate`, security-check pass |
-| 2 | Client data | client | Domain, Room entity/DAO/version 85, wire DTOs + mappers, `NetworkUtils`, `MapRepository`, `AppRepository` sync/CRUD/lazy image loader, `PictureManager` path fn (3 actuals), socket handler, logout clear |
+| 2 | Client data | client | Domain, Room entity/DAO/version 85, wire DTOs + mappers, `MapRemoteDataSource`, `MapLocalDataSource`, `MapRepository` / `OfflineFirstMapRepository` sync/CRUD/lazy image loader, `DefaultDataSyncCoordinator` `MAP` job, `PictureManager` path fn (3 actuals), socket handler, logout clear |
 | 3 | Client UI | client | `StarRatingBar`, summary row in `MapEntryInfoCard`, ratings screen (state/action/VM/screen + 3 uielements), route + `App.kt` entry + Koin, strings en/de/it |
 | 4 | Optional follow-ups | both | "My ratings" list in map settings (V2 parity, `getOwnRatingsFlow` already planned); average badge on map markers; local image cache eviction; FCM for ratings on own entries |
 | post | Agents | client | `readme-changelog-updater`, then `string-resource-extractor` |

@@ -54,10 +54,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
-import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import io.github.lerchenflo.taptarget.tapTarget
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.BirthdatePickerPopup
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
@@ -102,7 +100,6 @@ fun UserSettings(
     sharedSettingsViewmodel: SharedSettingsViewmodel,
     onBackClick : () -> Unit
 ) {
-    val preferencemanager = koinInject<Preferencemanager>()
 
     val ownuser = sharedSettingsViewmodel.ownUser
 

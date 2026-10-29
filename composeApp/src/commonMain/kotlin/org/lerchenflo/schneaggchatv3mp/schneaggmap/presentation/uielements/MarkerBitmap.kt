@@ -162,6 +162,32 @@ private fun DrawScope.drawCenteredImage(image: ImageBitmap, center: Offset, size
 }
 
 /**
+ * Draws [icon] scaled into a square bitmap of [size], so a map marker can use the bitmap directly
+ * instead of a Painter that maplibre would first have to render.
+ */
+fun scaleMarkerIcon(icon: ImageBitmap, density: Density, size: Dp): ImageBitmap {
+    val sizePx = with(density) { size.toPx() }.roundToInt().coerceAtLeast(1)
+
+    val result = ImageBitmap(
+        width = sizePx,
+        height = sizePx,
+        config = ImageBitmapConfig.Argb8888,
+        hasAlpha = true,
+    )
+
+    CanvasDrawScope().draw(
+        density = density,
+        layoutDirection = LayoutDirection.Ltr,
+        canvas = Canvas(result),
+        size = Size(sizePx.toFloat(), sizePx.toFloat()),
+    ) {
+        drawCenteredImage(icon, center, sizePx.toFloat())
+    }
+
+    return result
+}
+
+/**
  * Composites [profilePictures] into a ring around a translucent [backgroundColor] disc, with a
  * [beerIcon] between each adjacent pair of avatars - a "Hock" (group hangout) marker for several
  * users merged into one point on the map. [avatarSize] is the diameter of each avatar; the ring

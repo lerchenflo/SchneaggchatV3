@@ -43,8 +43,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapAvailability
 import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
@@ -93,7 +91,6 @@ fun SettingsScreen(
     navigateSchneaggmapSettings: () -> Unit,
     navigateRecap: () -> Unit
 ){
-    val appRepository = koinInject<AppRepository>()
 
 
     val ownuser = sharedSettingsViewmodel.ownUser
@@ -265,7 +262,7 @@ fun SettingsScreen(
         val scope = rememberCoroutineScope()
 
         Text(
-            text = stringResource(Res.string.version, appRepository.appVersion.getVersionName()) + " Buildnr: " + appRepository.appVersion.getVersionCode(),
+            text = stringResource(Res.string.version, settingsViewmodel.versionName) + " Buildnr: " + settingsViewmodel.versionCode,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             modifier = Modifier

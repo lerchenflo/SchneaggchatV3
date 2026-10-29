@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,14 +57,12 @@ import io.github.ismoy.imagepickerkmp.picker.ImagePickerResult
 import io.github.ismoy.imagepickerkmp.picker.CompressionLevel
 import io.github.ismoy.imagepickerkmp.picker.MimeType
 import io.github.ismoy.imagepickerkmp.picker.rememberImagePickerKMP
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.getPrivacyPolicyUrl
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
@@ -101,10 +100,12 @@ import schneaggchatv3mp.composeapp.generated.resources.username
 @Composable
 fun SignUpScreenRoot(){
     val viewModel = koinViewModel<SignUpViewModel>()
+    val serverUrl by viewModel.serverUrl.collectAsStateWithLifecycle()
 
     SignUpScreen(
         onAction = viewModel::onAction,
-        state = viewModel.state
+        state = viewModel.state,
+        serverUrl = serverUrl
     )
 }
 
@@ -113,9 +114,9 @@ fun SignUpScreenRoot(){
 fun SignUpScreen(
     modifier: Modifier = Modifier.fillMaxSize(),
     onAction : (SignupAction) -> Unit = {},
-    state: SignupState = SignupState()
+    state: SignupState = SignupState(),
+    serverUrl: String = BASE_SERVER_URL // privacy policy link points to this server
 ){
-    val preferencemanager = koinInject<Preferencemanager>()
     SchneaggchatTheme {
         var showImagePickerDialog by remember { mutableStateOf(false) }
 
@@ -373,7 +374,7 @@ fun SignUpScreen(
 
                                 withLink(
                                     LinkAnnotation.Url(
-                                        url = getPrivacyPolicyUrl(runBlocking { preferencemanager.getServerUrl() }),
+                                        url = getPrivacyPolicyUrl(serverUrl),
                                         styles = TextLinkStyles(
                                             style = SpanStyle(
                                                 color = MaterialTheme.colorScheme.primary,

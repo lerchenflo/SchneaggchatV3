@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -46,8 +48,12 @@ fun GameStartOverlay(
             .pointerInput(options == null) { if (options == null) detectTapGestures { onStart() } else detectTapGestures { } },
         contentAlignment = Alignment.Center
     ) {
+        // Scrolls when taller than the space (landscape, short game area); a fixed Column would
+        // squash the explanation and the start buttons
         Column(
-            modifier = Modifier.padding(32.dp),
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(

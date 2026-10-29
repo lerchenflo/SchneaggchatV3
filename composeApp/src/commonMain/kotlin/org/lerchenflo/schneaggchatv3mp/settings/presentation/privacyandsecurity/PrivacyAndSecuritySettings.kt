@@ -78,6 +78,7 @@ import schneaggchatv3mp.composeapp.generated.resources.privacy_policy
 import schneaggchatv3mp.composeapp.generated.resources.privacy_policy_info
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 @Composable
 fun PrivacyAndSecuritySettings(
@@ -147,7 +148,7 @@ fun PrivacyAndSecuritySettings(
                             Icon(
                                 imageVector = Icons.Rounded.Warning,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error,
+                                tint = MaterialTheme.warningColors.warning,
                                 modifier = Modifier
                                     .size(30.dp)
                                     .clickable {

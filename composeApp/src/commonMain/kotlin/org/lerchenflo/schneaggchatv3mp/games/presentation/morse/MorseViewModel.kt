@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
@@ -59,7 +59,7 @@ private const val CHALLENGE_POINTS_PER_CHAR = 10
 
 class MorseViewModel(
     private val gameHighscoreRepository: GameHighscoreRepository,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val languageService: LanguageService,
     gameSaveRepository: GameSaveRepository,
 ) : ViewModel() {

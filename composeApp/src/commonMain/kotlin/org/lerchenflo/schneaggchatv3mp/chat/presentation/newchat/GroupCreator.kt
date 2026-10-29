@@ -122,8 +122,8 @@ private fun GroupCreatorScreen(
                 }
             }
         ){
-            //User selection card
-            CardItem {
+            //User selection card - MemberSelector scrolls its own LazyColumn
+            CardItem(scrollable = false) {
                 MemberSelector(
                     availableUsers = state.availableUsers,
                     selectedUsers = state.selectedUsers,

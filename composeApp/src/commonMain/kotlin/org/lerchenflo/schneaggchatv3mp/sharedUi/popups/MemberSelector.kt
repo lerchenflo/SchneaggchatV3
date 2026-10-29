@@ -73,13 +73,6 @@ fun MemberSelector(
 
         // Selected users horizontal scroll view - always reserves its height (even with an empty
         // selection) via a placeholder box, so the UI doesn't jump when the first member is added.
-        if (selectedUsers.isNotEmpty() && selectedUsers.size < minUsers){
-            Text(
-                text = stringResource(Res.string.at_least_members, minUsers.toString()),
-                color = MaterialTheme.colorScheme.error
-            )
-        }
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -238,6 +231,16 @@ fun MemberSelector(
                     thickness = 0.5.dp
                 )
             }
+        }
+
+        // Under the list, not above the selection: there it pushed the whole selector down and
+        // up again when the first and the second member were added
+        if (selectedUsers.isNotEmpty() && selectedUsers.size < minUsers){
+            Text(
+                text = stringResource(Res.string.at_least_members, minUsers.toString()),
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
         }
     }
 }

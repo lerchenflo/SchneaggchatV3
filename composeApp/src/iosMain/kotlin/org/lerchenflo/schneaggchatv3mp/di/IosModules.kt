@@ -13,12 +13,23 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createAuthenticatedHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.IosAppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.IosAudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.IosLanguageManager
+import org.lerchenflo.schneaggchatv3mp.utilities.IosPermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.IosPictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.IosShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
+import org.lerchenflo.schneaggchatv3mp.utilities.battery.IosBatteryService
+import org.lerchenflo.schneaggchatv3mp.utilities.location.IosLocationService
+import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.IosNotifier
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 
 val IosDatabaseModule = module {
@@ -44,33 +55,33 @@ val IosKSafeModule = module {
 }
 
 val IosVersionModule = module {
-    single { AppVersion() }
+    single<AppVersion> { IosAppVersion() }
 }
 
 val IosPictureManagerModule = module {
-    single { PictureManager() }
+    single<PictureManager> { IosPictureManager() }
 }
 
 val IosPermissionManagerModule = module {
-    single { PermissionManager() }
-    single { org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService() }
-    single { org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService() }
+    single<PermissionManager> { IosPermissionManager() }
+    single<LocationService> { IosLocationService() }
+    single<BatteryService> { IosBatteryService() }
 }
 
 
 val IosAudioManagerModule = module {
-    single { AudioManager() }
+    single<AudioManager> { IosAudioManager() }
 }
 
 
 val IosShareUtilsModule = module {
-    single { ShareUtils() }
+    single<ShareUtils> { IosShareUtils() }
 }
 
 val IosLanguageManagerModule = module {
-    single { LanguageManager(get()) }
+    single<LanguageManager> { IosLanguageManager(get()) }
 }
 
 val IosNotifierModule = module {
-    single { Notifier(get()) }
+    single<Notifier> { IosNotifier(get()) }
 }

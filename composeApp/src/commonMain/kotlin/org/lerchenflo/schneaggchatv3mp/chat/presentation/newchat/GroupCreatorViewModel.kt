@@ -9,10 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -26,8 +24,10 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.InputfieldState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -52,8 +52,7 @@ data class GroupCreatorState(
 ) {
     fun valid() : Boolean {
         return (selectedUsers.size >= 2 &&
-            groupname.text.length > 2 &&
-            groupname.text.length < 25 &&
+            groupname.text.length in MIN_GROUPNAME_LENGTH..MAX_GROUPNAME_LENGTH &&
                 profilepic != null)
     }
 
@@ -105,7 +104,9 @@ sealed interface GroupCreatorAction {
 }
 
 class GroupCreatorViewModel (
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
+    private val chatListRepository: ChatListRepository,
+    private val groupRepository: GroupRepository,
     private val pictureManager: PictureManager,
 
     private val navigator: Navigator
@@ -137,7 +138,7 @@ class GroupCreatorViewModel (
                     val loggedIn = authState as? SessionCache.AuthState.LoggedIn
                         ?: return@flatMapLatest flowOf(emptyList())
 
-                    appRepository.getChatSelectorFlow(
+                    chatListRepository.getChatSelectorFlow(
                         searchTerm = searchTerm,
                         userId = loggedIn.userId,
                         filter = ChatFilter.NONE
@@ -155,31 +156,42 @@ class GroupCreatorViewModel (
 
 
     fun onAction(action: GroupCreatorAction) {
-        viewModelScope.launch {
-            when (action) {
-                is GroupCreatorAction.updateGroupdescription -> {
-                    state = state.copy(
-                        groupdescription = state.groupdescription.copy(
-                            text = action.newValue,
-                        )
+        // State is written synchronously, so the next action (e.g. tapping create) always sees it.
+        // Only the error text and the picture load suspend; they write their result afterwards.
+        when (action) {
+            is GroupCreatorAction.updateGroupdescription -> {
+                state = state.copy(
+                    groupdescription = state.groupdescription.copy(
+                        text = action.newValue,
                     )
-                }
-                is GroupCreatorAction.updateGroupname -> {
-                    val newtext = action.newValue
+                )
+            }
+            is GroupCreatorAction.updateGroupname -> {
+                val newtext = action.newValue
+                state = state.copy(
+                    groupname = state.groupname.copy(
+                        text = newtext
+                    )
+                )
+                viewModelScope.launch {
+                    val errorMessage = if (newtext.length > MAX_GROUPNAME_LENGTH) getString(Res.string.name_too_long) else if (newtext.length < MIN_GROUPNAME_LENGTH) getString(Res.string.name_too_short) else null
+                    // Typed on meanwhile: that newer name's own coroutine sets its error text
+                    if (state.groupname.text != newtext) return@launch
                     state = state.copy(
                         groupname = state.groupname.copy(
-                            text = newtext,
-                            errorMessage = if (newtext.length > MAX_GROUPNAME_LENGTH) getString(Res.string.name_too_long) else if (newtext.length < MIN_GROUPNAME_LENGTH) getString(Res.string.name_too_short) else null
+                            errorMessage = errorMessage
                         )
                     )
                 }
-                is GroupCreatorAction.updateSearchterm -> {
-                    state = state.copy(
-                        searchterm = action.newValue
-                    )
-                    _searchTermFlow.value = action.newValue
-                }
-                is GroupCreatorAction.updateProfilePic -> {
+            }
+            is GroupCreatorAction.updateSearchterm -> {
+                state = state.copy(
+                    searchterm = action.newValue
+                )
+                _searchTermFlow.value = action.newValue
+            }
+            is GroupCreatorAction.updateProfilePic -> {
+                viewModelScope.launch {
                     val bytearray = action.profilePicUri
                         .loadBytes()
 
@@ -192,34 +204,36 @@ class GroupCreatorViewModel (
                     state = state.copy(
                         profilepic = downscaledimage
                     )
-                }
-
-                is GroupCreatorAction.addGroupMember -> {
-                    state = state.copy(
-                        selectedUsers = state.selectedUsers + action.member
-                    )
-                }
-                is GroupCreatorAction.removeGroupMember -> {
-                    state = state.copy(
-                        selectedUsers = state.selectedUsers - action.member
-                    )
-                }
-                GroupCreatorAction.createGroup -> {
-                    onCreateGroup()
-                }
-
-                GroupCreatorAction.navigateBack -> {
-                    onBackClick()
+                    updateCreationPermitted()
                 }
             }
 
+            is GroupCreatorAction.addGroupMember -> {
+                state = state.copy(
+                    selectedUsers = state.selectedUsers + action.member
+                )
+            }
+            is GroupCreatorAction.removeGroupMember -> {
+                state = state.copy(
+                    selectedUsers = state.selectedUsers - action.member
+                )
+            }
+            GroupCreatorAction.createGroup -> {
+                onCreateGroup()
+            }
 
-            //Validation
-            state = state.copy(
-                creationPermitted = state.valid()
-            )
-
+            GroupCreatorAction.navigateBack -> {
+                onBackClick()
+            }
         }
+
+        updateCreationPermitted()
+    }
+
+    private fun updateCreationPermitted() {
+        state = state.copy(
+            creationPermitted = state.valid()
+        )
     }
 
 
@@ -235,7 +249,7 @@ class GroupCreatorViewModel (
             state = state.copy(isLoading = true)
 
             try {
-                val groupId = appRepository.createGroup(
+                val groupId = groupRepository.createGroup(
                     name = state.groupname.text,
                     description = state.groupdescription.text,
                     memberIds = state.selectedUsers.map { member ->
@@ -248,9 +262,10 @@ class GroupCreatorViewModel (
                 if (groupId != null) {
                     println("Group created: groupid: $groupId")
 
-                    //Launch sync
-                    CoroutineScope(Dispatchers.IO).launch {
-                        appRepository.dataSync(reason = "groupCreated")
+                    //Launch sync. UNDISPATCHED: it is started before the navigation below can clear
+                    //this ViewModel; it then runs in the app-wide scope (plan R2).
+                    viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                        dataSyncCoordinator.dataSync(reason = "groupCreated")
                     }
 
                     //Navigate directly into the new group chat, keeping only the chat selector below it

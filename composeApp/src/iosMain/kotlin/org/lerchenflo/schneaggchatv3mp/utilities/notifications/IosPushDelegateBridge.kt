@@ -7,7 +7,9 @@ import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 class IosPushDelegateBridge {
@@ -17,7 +19,7 @@ class IosPushDelegateBridge {
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 if (SessionCache.authState.value is SessionCache.AuthState.LoggedIn) {
-                    KoinPlatform.getKoin().get<AppRepository>().setNotificationToken(hexToken)
+                    KoinPlatform.getKoin().get<AuthRepository>().setNotificationToken(hexToken)
                 }
             }
         }
@@ -28,13 +30,13 @@ class IosPushDelegateBridge {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                 if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
-                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                    val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
                     // A foreground push never reaches the NSE queue, so upsert directly here
                     // before the sync below - mirrors AppFirebaseMessagingService on Android.
                     (PayloadDecoder.decode(data) as? DecodedNotification.Message)?.let {
-                        appRepository.applyPushMessage(it)
+                        messageRepository.applyPushMessage(it)
                     }
-                    appRepository.messageIdSync()
+                    messageRepository.syncMessages()
                 }
             }
         }
@@ -50,10 +52,10 @@ class IosPushDelegateBridge {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                 if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
-                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                    val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
                     SharedNotificationDefaults.takePendingPushMessages().forEach { raw ->
                         (PayloadDecoder.decode(raw) as? DecodedNotification.Message)?.let {
-                            appRepository.applyPushMessage(it)
+                            messageRepository.applyPushMessage(it)
                         }
                     }
                 }
@@ -74,7 +76,7 @@ class IosPushDelegateBridge {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                 if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
-                    KoinPlatform.getKoin().get<AppRepository>().dataSync(reason = "iosNotificationTap")
+                    KoinPlatform.getKoin().get<DataSyncCoordinator>().dataSync(reason = "iosNotificationTap")
                 }
             }
         }

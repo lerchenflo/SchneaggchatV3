@@ -12,9 +12,9 @@ import org.koin.mp.KoinPlatformTools
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
@@ -27,6 +27,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 import schneaggchatv3mp.composeapp.generated.resources.games_2048_title
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
+import schneaggchatv3mp.composeapp.generated.resources.games_tictactoe_title
 import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
 import schneaggchatv3mp.composeapp.generated.resources.unknown_event
 import schneaggchatv3mp.composeapp.generated.resources.unknown_game
@@ -45,6 +46,8 @@ import kotlin.time.Clock
 fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     // getOrNull keeps @Previews (no Koin context) working — they just render raw text
     val koin = KoinPlatformTools.defaultContext().getOrNull() ?: return emptyList()
+    // Shared UI used inside many screens, so it reads the repository interfaces itself instead of
+    // getting the names from every host ViewModel (plan Phase 7)
     val mapRepository = remember(koin) { koin.get<MapRepository>() }
     val userRepository = remember(koin) { koin.get<UserRepository>() }
     val eventRepository = remember(koin) { koin.get<EventRepository>() }
@@ -82,13 +85,14 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     val gameFingerPickerTitle = stringResource(Res.string.games_fingerpicker_title)
     val gameDartCounterTitle = stringResource(Res.string.games_dartcounter_title)
     val gameUndercoverTitle = stringResource(Res.string.games_undercover_title)
+    val gameTicTacToeTitle = stringResource(Res.string.games_tictactoe_title)
     val gameYatziTitle = stringResource(Res.string.games_yahtzee_title)
     val game2048Title = stringResource(Res.string.games_2048_title)
 
     val gameNames = remember(
         gameTetrisTitle, gameTowerstackTitle, gameMorseTitle, gameSchneaggaHusTitle,
         gameGridRushTitle, gameOddOneOutTitle, gameCoinFlipTitle, gameFingerPickerTitle,
-        gameDartCounterTitle, gameUndercoverTitle, gameYatziTitle, game2048Title
+        gameDartCounterTitle, gameUndercoverTitle, gameTicTacToeTitle, gameYatziTitle, game2048Title
     ) {
         mapOf(
             "tetris" to gameTetrisTitle,
@@ -101,6 +105,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
             "fingerpicker" to gameFingerPickerTitle,
             "dartcounter" to gameDartCounterTitle,
             "undercover" to gameUndercoverTitle,
+            "tictactoe" to gameTicTacToeTitle,
             "yatzi" to gameYatziTitle,
             "2048" to game2048Title,
         )
@@ -160,6 +165,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                         "fingerpicker" -> Route.FingerPicker
                         "dartcounter" -> Route.DartCounter
                         "undercover" -> Route.Undercover
+                        "tictactoe" -> Route.TicTacToe
                         "yatzi" -> Route.Yatzi
                         "2048" -> Route.Game2048
                         else -> Route.GamesSelector

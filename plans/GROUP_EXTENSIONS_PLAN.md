@@ -60,10 +60,10 @@ Open next: phase 1 (server), then uncomment the reads in `RoomGroupExtensionRepo
 
 | Collection | Client entity | Server model | Sync shape | Live push | Scope |
 |---|---|---|---|---|---|
-| map entries | `MapEntryDto` (`map_entries`) | `MapEntry` (`map_entries`) | **IdTimeStamp**: client POSTs `List<IdTimeStamp(id, updatedAt)>`, server diffs by `updatedAt` (`SchneaggmapService.mapSync`) | `MapChange` broadcast to everyone | global |
-| events | `EventDto` (`events`) | `Event` (`events`) | IdTimeStamp, filtered by visibility (`EventService.eventIdSync`) | `EventChange` targeted to invited + friends | per user |
-| groups | `GroupDto` + `GroupMemberDto` | `Group` + `GroupMember` | IdTimeStamp (`/groups/sync`) | `GroupChange` targeted to members | per user |
-| messages | `MessageDto` (has `version`) | `Message` (has `version`) | **Version watermark**: `GET /messages/sync?since=` bounded by `VersionCounterService.safeWatermark`, race-safe, deletions on every page | `MessageChange` targeted | per user + group membership |
+| map entries | `MapEntryEntity` (`map_entries`) | `MapEntry` (`map_entries`) | **IdTimeStamp**: client POSTs `List<IdTimeStamp(id, updatedAt)>`, server diffs by `updatedAt` (`SchneaggmapService.mapSync`) | `MapChange` broadcast to everyone | global |
+| events | `EventEntity` (`events`) | `Event` (`events`) | IdTimeStamp, filtered by visibility (`EventService.eventIdSync`) | `EventChange` targeted to invited + friends | per user |
+| groups | `GroupEntity` + `GroupMemberEntity` | `Group` + `GroupMember` | IdTimeStamp (`/groups/sync`) | `GroupChange` targeted to members | per user |
+| messages | `MessageEntity` (has `version`) | `Message` (has `version`) | **Version watermark**: `GET /messages/sync?since=` bounded by `VersionCounterService.safeWatermark`, race-safe, deletions on every page | `MessageChange` targeted | per user + group membership |
 
 Only `SyncCollection.MESSAGES` exists in the counter enum today; the comment there already reserves `USERS/GROUPS/EVENTS/MAP` for a later migration.
 
@@ -78,12 +78,12 @@ The discriminator names and property names must be identical on both sides becau
 
 ### 1.3 Client sync plumbing
 
-- `AppRepository.dataSync()` runs one `async` job per `DataSyncJobType` (`USERS, GROUPS, MESSAGES, MAP, EVENTS, MEDIA`) and reports progress through `DataSyncState`.
-- Each feature has a thin Room-only repository (`MapRepository`, `EventRepository`) exposing `getXChangeIds()`, `upsertX()`, `deleteX()`, `getAllXFlow()`; the network calls live in `NetworkUtils`, orchestration in `AppRepository`.
-- Socket handling is one `when` in `SocketConnectionMessage.kt:178-509`; `MapChange`/`EventChange` just upsert/delete the local row.
-- Group removal purge: `GroupRepository.deleteGroup` deletes messages + readers for the group, and `dataSync` repeats the purge after all jobs finished (`AppRepository.kt:588`, after `awaitAll` at :583) because the message job runs in parallel.
-- Room DB is at version 86 with `fallbackToDestructiveMigration(dropAllTables = true)`; a schema change is a version bump + full re-sync.
-- Map "pick a location" flow: `Route.Schneaggmap(currentlyEditedEvent)` puts the map tab into `pickLocationMode`; `OnConfirmLocationPick` navigates **forward** to `Route.Events(selectedEvent = updatedEvent)` with `exitPreviousScreen` (`SchneaggmapViewModel.kt:116`). There is no generic back-with-result mechanism, and the flow is hardwired to `Event`.
+- `DataSyncCoordinator.dataSync()` (`app/data/DefaultDataSyncCoordinator.kt`, was `AppRepository.dataSync()`) runs one `async` job per `DataSyncJobType` (`USERS, GROUPS, MESSAGES, MAP, EVENTS, MEDIA`) and reports progress through `DataSyncState`.
+- Each feature has a thin Room-only local data source (`MapLocalDataSource`, `EventLocalDataSource`) exposing `getXChangeIds()`, `upsertX()`, `deleteX()`, `getAllXFlow()`; the network calls live in a remote data source per feature (interface + Ktor implementation in `<feature>/data/remote/`, e.g. `MapRemoteDataSource` / `KtorMapRemoteDataSource`), orchestration in an offline-first repository behind an interface in the feature's `domain/` (`OfflineFirstMapRepository`, `OfflineFirstEventRepository`; `AppRepository` is gone, see `REPOSITORY_INTERFACE_MIGRATION_PLAN.md`).
+- Socket handling is one `when` in `SocketConnectionMessage.kt:172-468`; `MapChange`/`EventChange` just upsert/delete the local row.
+- Group removal purge: `RoomGroupDataSource.deleteGroup` (`chat/data/local/RoomGroupDataSource.kt:47`) deletes messages + readers for the group, and `dataSync` repeats the purge after all jobs finished (`DefaultDataSyncCoordinator.kt:237`, via `MessageRepository.deleteMessagesForGroups`) because the message job runs in parallel.
+- Room DB is at version 82 with `fallbackToDestructiveMigration(dropAllTables = true)`; a schema change is a version bump + full re-sync.
+- Map "pick a location" flow: `Route.Schneaggmap(currentlyEditedEvent)` puts the map tab into `pickLocationMode`; `OnConfirmLocationPick` navigates **forward** to `Route.Events(selectedEvent = updatedEvent)` with `exitPreviousScreen` (`SchneaggmapViewModel.kt:118-143`). There is no generic back-with-result mechanism, and the flow is hardwired to `Event`.
 
 ### 1.4 Server plumbing to reuse
 
@@ -364,10 +364,13 @@ groupextensions/
     split/SplitCalculator.kt       computeBalances(), suggestSettlements()  (pure)
     route/RouteMetrics.kt          totalDistanceMeters() (pure, sums utilities/MapUtils.distanceMeters over consecutive points; formatDistance exists there too)
   data/
-    DemoGroupExtensionRepository.kt [exists, temporary] in-memory stub - delete in phase 2
-    RoomGroupExtensionRepository.kt Room-backed implementation of the domain interface (phase 2), bound with `singleOf(::RoomGroupExtensionRepository) { bind<GroupExtensionRepository>() }`
-    dtos/GroupExtensionDto.kt      @Entity("group_extensions"), index on ownerId
-    dtos/GroupExtensionItemDto.kt  @Entity("group_extension_items"), indices on extensionId and ownerId
+    DemoGroupExtensionRepository.kt           [exists, temporary] in-memory stub - delete in phase 2
+    local/entity/GroupExtensionEntity.kt      @Entity("group_extensions"), index on ownerId
+    local/entity/GroupExtensionItemEntity.kt  @Entity("group_extension_items"), indices on extensionId and ownerId
+    remote/dto/GroupExtensionNetworkDtos.kt   ExtensionRequest, ItemRequest, GroupExtensionSyncResponse (GroupExtensionResponse + GroupExtensionItemResponse go to datasource/network/dto/, the socket uses them)
+    remote/dto/GroupExtensionResponseMapper.kt toGroupExtension()/toEntity()/toItem() (same trio as MapResponseMapper; domain <-> entity mappers go to local/entity/, like MapEntryEntityMapper.kt)
+    local/GroupExtensionLocalDataSource.kt    Room-only, same shape as EventLocalDataSource (impl RoomGroupExtensionDataSource.kt next to it)
+    OfflineFirstGroupExtensionRepository.kt   network + sync + CRUD (§4.3), implements groupextensions/domain/GroupExtensionRepository
   presentation/
     GroupExtensionTypeUi.kt        [exists] GroupExtensionType.toUiText() / .icon() (exhaustive when)
     ExtensionListSection.kt        [exists] composable used inside ChatDetails (list + "add" dropdown) + ExtensionListAction
@@ -380,10 +383,7 @@ groupextensions/
     quotes/      QuotesScreen + ViewModel + State + Action
     routeplanner/RoutePlannerScreen (maplibre) + MapEntryPickerSheet + ViewModel + State + Action
 schneaggmap/domain/
-    MapEntryFilter.kt              filterMapEntries(entries, term, groups, types) - extracted from SchneaggmapViewModel's search (≈ lines 63-92: term match on name/description/type label plus the group/type filter) and reused there
-datasource/network/requestResponseDataClasses/
-    GroupExtensionNetworkDtos.kt   ExtensionRequest, ItemRequest, GroupExtensionResponse, GroupExtensionItemResponse, GroupExtensionSyncResponse
-    GroupExtensionResponseMapper.kt toGroupExtension()/toDto()/toItem() (same trio as MapResponseMapper)
+    MapEntryFilter.kt              filterMapEntries(entries, term, groups, types) - extracted from SchneaggmapViewModel's search (≈ lines 95-102) and reused there
 ```
 
 ### 4.2 Room
@@ -400,12 +400,10 @@ datasource/network/requestResponseDataClasses/
 
 ### 4.3 Network + sync
 
-- [done 2026-10-16, replaces the sync job below] `NetworkUtils.groupIdSync(groupIds, extensionsSince)`; `AppRepository.groupIdSync` applies the extension fields via `applyGroupExtensionChanges` in one Room transaction, before the group deletions so their purge also covers them. No `DataSyncJobType.GROUP_EXTENSIONS`.
-- `NetworkUtils`: `upsertGroupExtension(request)`, `deleteGroupExtension(id)`, `upsertGroupExtensionItems(list)`, `deleteGroupExtensionItem(id)` - all through the existing `safeGet/safePost/safeDelete`.
-- `AppRepository`:
-  - `DataSyncJobType.GROUP_EXTENSIONS` + default `DataSyncJobState` entry + a new `async` job in `dataSync` calling `groupExtensionSync()`.
-  - `groupExtensionSync()` copies the `messageIdSync` loop: `since = dao.getLastSyncedVersion()`, apply deletions first, then upserts sorted by version, `since = response.newVersion`, loop while `moreEntries`.
-  - CRUD wrappers `upsertGroupExtension(...)`, `deleteGroupExtension(id)`, `upsertGroupExtensionItems(...)`, `deleteGroupExtensionItem(id)` following the `upsertEvent` shape: network first, on success upsert/delete locally, on error `sendErrorSuspend(ErrorChannel.ErrorEvent(error))`.
+- [done 2026-10-16, replaces the sync job below] `/groups/sync?extensionsSince=` carries the extension changes; the group sync applies them (`applyGroupExtensionChanges`) in one Room transaction, before the group deletions so their purge also covers them. No `DataSyncJobType.GROUP_EXTENSIONS`.
+- `GroupExtensionRemoteDataSource` + `KtorGroupExtensionRemoteDataSource` (`groupextensions/data/remote/`): `upsertGroupExtension(request)`, `deleteGroupExtension(id)`, `upsertGroupExtensionItems(list)`, `deleteGroupExtensionItem(id)` - all through the existing `ServerClient.safeGet/safePost/safeDelete` (`datasource/network/KtorHttpHelpers.kt`).
+- `GroupExtensionRepository` (interface in `groupextensions/domain/`, the feature that holds the implementation) / `OfflineFirstGroupExtensionRepository` (`AppRepository` is gone):
+  - CRUD wrappers `upsertGroupExtension(...)`, `deleteGroupExtension(id)`, `upsertGroupExtensionItems(...)`, `deleteGroupExtensionItem(id)` following the `upsertEvent` shape: network first, on success upsert/delete locally, on error `errorChannel.sendErrorSuspend(ErrorEvent(error = error))`.
 - `SocketConnectionMessage.kt`: add `GroupExtensionChange` / `GroupExtensionItemChange` (`@SerialName` must match the server names) and two `when` branches that upsert/delete locally.
 
 ### 4.4 Navigation + DI
@@ -416,9 +414,9 @@ datasource/network/requestResponseDataClasses/
 
 ### 4.5 Group details integration (the only entry point)
 
-- `ChatDetailsViewmodel`: [done] `val groupExtensions: StateFlow<List<GroupExtension>>` from `groupExtensionRepository.getExtensionsForOwnerFlow(chatId)` (only when `isGroup`) and `onExtensionAction(ExtensionListAction)`; `OnExtensionClick` navigates to `Route.GroupExtension(id)`. Open: `OnAddExtensionClick(type)` opens `AddExtensionDialog`, confirm calls `appRepository.upsertGroupExtension(...)`; add `OnDeleteExtensionClick(id)` with a confirmation (`confirm_delete_extension`).
+- `ChatDetailsViewmodel`: [done] `val groupExtensions: StateFlow<List<GroupExtension>>` from `groupExtensionRepository.getExtensionsForOwnerFlow(chatId)` (only when `isGroup`) and `onExtensionAction(ExtensionListAction)`; `OnExtensionClick` navigates to `Route.GroupExtension(id)`. Open: `OnAddExtensionClick(type)` opens `AddExtensionDialog`, confirm calls `groupExtensionRepository.upsertGroupExtension(...)`; add `OnDeleteExtensionClick(id)` with a confirmation (`confirm_delete_extension`).
 - `ChatDetails.kt`: [done] `ExtensionListSection` for groups, after the description row and before the shared-content rows, followed by its own `HorizontalDivider()`; one `ListItem` per extension (type icon, title, supporting text = type name) and an "Add extension" row with a dropdown of all types. Open: supporting text = item count or "last edited by X", trailing delete for creator/admin, developer gate removal.
-- Purge on group loss: `GroupRepository.deleteGroup` additionally calls `groupExtensionDao.deleteAllForOwner(groupId)`, and the post-`awaitAll` purge loop in `dataSync` (`AppRepository.kt:542`) also purges extensions for `removedGroupIds` (the extension job runs in parallel with the group job, same race as messages).
+- Purge on group loss: `RoomGroupDataSource.deleteGroup` additionally calls `groupExtensionDao.deleteAllForOwner(groupId)`. The extensions ride along with the group sync, so the post-`awaitAll` purge race of the message job does not apply to them.
 
 ### 4.6 Presentation per extension (v1 scope)
 

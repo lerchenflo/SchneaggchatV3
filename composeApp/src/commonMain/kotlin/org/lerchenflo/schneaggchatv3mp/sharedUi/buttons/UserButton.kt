@@ -41,7 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.systemEventText
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberProfilePicturePlaceholder
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
@@ -160,7 +160,7 @@ fun UserButton(
                         Icon(
                             imageVector = Icons.Default.PushPin,
                             contentDescription = "pinned",
-                            tint = MaterialTheme.colorScheme.errorContainer,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
                                 .size(18.dp)
                                 .rotate(45f) // Rotates the pin to look like it's sticking in
@@ -263,7 +263,7 @@ fun UserButton(
                                     if (lastMessage.myMessage) {
                                         stringResource(Res.string.you_sender) + ": "
                                     } else if (lastMessage.isGroupMessage()) {
-                                        lastMessage.senderAsString + ": "
+                                        lastMessage.senderAsString.ifBlank { stringResource(Res.string.unknown_user) } + ": "
                                     } else {
                                         lastMessage.senderAsString + ": "
                                     }
@@ -297,7 +297,7 @@ fun UserButton(
             }
 
             // Bottom Text (status ...)
-            if (chat.friendshipStatus == NetworkUtils.FriendshipStatus.PENDING){
+            if (chat.friendshipStatus == FriendshipStatus.PENDING){
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {

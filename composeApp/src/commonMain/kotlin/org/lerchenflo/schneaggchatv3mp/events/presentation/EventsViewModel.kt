@@ -4,6 +4,7 @@ package org.lerchenflo.schneaggchatv3mp.events.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,20 +22,20 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.events.domain.hasEnded
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
@@ -53,12 +54,12 @@ import kotlin.time.Duration.Companion.milliseconds
 class EventsViewModel(
     private val navigator: Navigator,
     private val eventRepository: EventRepository,
-    private val appRepository: AppRepository,
+    private val appVersion: AppVersion,
+    private val dataSyncCoordinator: DataSyncCoordinator,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
-    private val preferenceManager: Preferencemanager,
+    private val settingsRepository: SettingsRepository,
     private val pictureManager: PictureManager,
-    private val applicationScope: ApplicationScope,
 
     private val initialEntryId: String? = null,
     private val initialEntry: Event? = null
@@ -69,7 +70,7 @@ class EventsViewModel(
     // picks up the id once autologin finishes.
     private val ownUserFlow = SessionCache.authState.flatMapLatest { auth ->
         (auth as? SessionCache.AuthState.LoggedIn)
-            ?.let { appRepository.getUserByIdFlow(it.userId) }
+            ?.let { userRepository.getUserByIdFlow(it.userId) }
             ?: flowOf(null)
     }
 
@@ -77,16 +78,16 @@ class EventsViewModel(
         (it as? SessionCache.AuthState.LoggedIn)?.userId
     }
 
-    private val _state = MutableStateFlow(EventsState(isMobile = appRepository.appVersion.isMobile(), selectedEvent = initialEntry))
+    private val _state = MutableStateFlow(EventsState(isMobile = appVersion.isMobile(), selectedEvent = initialEntry))
     val state = combine(
         _state,
         eventRepository.getAllEventsFlow(),
         userRepository.getAllUsersFlow(),
-        groupRepository.getAllGroupswithMembersFlow(),
-        preferenceManager.getMapStyleUrlFlow(),
+        groupRepository.getAllGroupsFlow(),
+        settingsRepository.getMapStyleUrlFlow(),
     ) { currentState, events, users, groups, mapStyleUrl ->
         val friendsMap = users
-            .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
+            .filter { it.friendshipStatus == FriendshipStatus.ACCEPTED }
             .associateBy { it.id }
 
         // Events arrive sorted by startDate ASC; groupBy/append below keep that encounter order,
@@ -112,7 +113,7 @@ class EventsViewModel(
             usersById = ownUser?.let { currentState.friendsById + (it.id to it) } ?: currentState.friendsById,
             birthdaysByMonthDay = buildBirthdaysByMonthDay(currentState.friendsById.values, ownUser)
         )
-    }.combine(preferenceManager.getEventsViewModeFlow()) { currentState, viewMode ->
+    }.combine(settingsRepository.getEventsViewModeFlow()) { currentState, viewMode ->
         // Persisted view mode is the single source of truth - OnViewModeChange only writes the
         // preference, so the switch survives app restarts and never flickers back to a default.
         currentState.copy(viewMode = viewMode)
@@ -138,7 +139,7 @@ class EventsViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EventsState(isMobile = appRepository.appVersion.isMobile(), selectedEvent = initialEntry),
+        initialValue = EventsState(isMobile = appVersion.isMobile(), selectedEvent = initialEntry),
     )
 
     fun onAction(action: EventsAction) {
@@ -157,7 +158,7 @@ class EventsViewModel(
                 val ownId = state.value.ownUserId
                 if (clickedEvent != null && ownId != null && clickedEvent.isUnseenBy(ownId)) {
                     viewModelScope.launch {
-                        appRepository.setEventParticipation(clickedEvent.id, EventParticipationStatus.SEEN)
+                        eventRepository.setEventParticipation(clickedEvent.id, EventParticipationStatus.SEEN)
                     }
                 }
             }
@@ -210,7 +211,7 @@ class EventsViewModel(
                         val profilePic = action.typeIcon?.let { pictureManager.encodeImageBitmap(it) }
                         val eventid = if (event.id == "") null else event.id
 
-                        val saved = appRepository.upsertEvent(
+                        val saved = eventRepository.upsertEvent(
                             eventId = eventid,
                             type = event.type,
                             title = event.title,
@@ -277,13 +278,15 @@ class EventsViewModel(
                     _state.update { it.copy(isJoiningEvent = true) }
 
                     try {
-                        val groupId = appRepository.joinEvent(
+                        val groupId = eventRepository.joinEvent(
                             action.eventId
                         )
 
                         if (groupId != null) {
-                            applicationScope.launch { //Launch in app scope to run while navigating away
-                                appRepository.dataSync("Started after joining event to get messages")
+                            // UNDISPATCHED: the sync is started before the navigation below can clear
+                            // this ViewModel; it then runs in the app-wide scope (plan R2).
+                            viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                                dataSyncCoordinator.dataSync("Started after joining event to get messages")
                             }
                             _state.update { it.copy(selectedEvent = null) }
                             navigator.navigate(Route.Chat(chatId = groupId, isGroup = true))
@@ -303,7 +306,7 @@ class EventsViewModel(
 
             is EventsAction.OnDeleteEvent -> {
                 viewModelScope.launch {
-                    val success = appRepository.detachEvent(
+                    val success = eventRepository.detachEvent(
                         eventId = action.event.id,
                         groupId = action.event.groupId,
                         deleteGroup = action.deleteGroup,
@@ -318,7 +321,7 @@ class EventsViewModel(
 
             is EventsAction.OnViewModeChange -> {
                 viewModelScope.launch {
-                    preferenceManager.saveEventsViewMode(action.mode)
+                    settingsRepository.saveEventsViewMode(action.mode)
                 }
             }
 
@@ -361,7 +364,7 @@ class EventsViewModel(
 
 
     private suspend fun setParticipation(eventId: String, status: EventParticipationStatus): Boolean {
-        val success = appRepository.setEventParticipation(eventId, status)
+        val success = eventRepository.setEventParticipation(eventId, status)
         if (!success) {
             SnackbarManager.showMessage(getString(Res.string.event_participation_failed))
         }

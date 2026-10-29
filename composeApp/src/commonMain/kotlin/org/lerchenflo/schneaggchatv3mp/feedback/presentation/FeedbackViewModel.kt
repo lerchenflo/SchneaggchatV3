@@ -15,7 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onSuccess
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.toUiText
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
-import org.lerchenflo.schneaggchatv3mp.feedback.data.FeedbackRepository
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote

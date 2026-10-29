@@ -4,9 +4,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.PollResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NotificationResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserResponse
 
 /**
  * Deserializer for all polymorphic JSON objects
@@ -19,16 +21,16 @@ object AppJson {
         //https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-polymorphic-serializer/
 
         serializersModule = SerializersModule {
-            polymorphic(NetworkUtils.UserResponse::class) {
-                subclass(NetworkUtils.UserResponse.SimpleUserResponse::class)
-                subclass(NetworkUtils.UserResponse.FriendUserResponse::class)
-                subclass(NetworkUtils.UserResponse.SelfUserResponse::class)
+            polymorphic(UserResponse::class) {
+                subclass(UserResponse.SimpleUserResponse::class)
+                subclass(UserResponse.FriendUserResponse::class)
+                subclass(UserResponse.SelfUserResponse::class)
             }
 
-            polymorphic(NetworkUtils.NotificationResponse::class) {
-                subclass(NetworkUtils.NotificationResponse.MessageNotificationResponse::class)
-                subclass(NetworkUtils.NotificationResponse.FriendRequestNotificationResponse::class)
-                subclass(NetworkUtils.NotificationResponse.SystemNotificationResponse::class)
+            polymorphic(NotificationResponse::class) {
+                subclass(NotificationResponse.MessageNotificationResponse::class)
+                subclass(NotificationResponse.FriendRequestNotificationResponse::class)
+                subclass(NotificationResponse.SystemNotificationResponse::class)
             }
 
             polymorphic(SocketConnectionMessage::class) {

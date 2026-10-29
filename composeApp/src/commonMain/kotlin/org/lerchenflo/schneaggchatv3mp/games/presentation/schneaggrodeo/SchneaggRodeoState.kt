@@ -75,6 +75,8 @@ data class SchneaggRodeoState(
     val runTimeMillis: Long = 0L,
     val snailsCaught: Int = 0,
     val superJumpCharges: Int = 0,
+    /** False on the rainbow: the super jump is made for fences, so its button hides there. */
+    val superJumpAllowed: Boolean = true,
     /** Collected lucky horseshoes, each absorbs one crash. */
     val luckyCharms: Int = 0,
     /** Thrown off the horse: the lasso button is highlighted, it is the only way back up. */
@@ -99,9 +101,14 @@ data class SchneaggRodeoState(
     val friendJoined: String? = null,
     /** The ravens are carrying the cowboy off: a restart button lets the player skip the ending. */
     val isEnding: Boolean = false,
+    /** The horse may buck after a big jump: a warning tells the player to keep the jumps small. */
+    val horseRestless: Boolean = false,
 ) {
     /** Flying (plane, rocket): left half of the play area steers up, right half down. */
     val steers: Boolean get() = ride?.steers == true
+
+    /** The ridden vehicle takes S / arrow down as its down input instead of the lasso. */
+    val downKey: Boolean get() = ride?.downKey == true
 }
 
 // Render model of the world, rebuilt every frame by SchneaggRodeoEngine.toFrame. Positions are in world

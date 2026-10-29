@@ -105,13 +105,14 @@
     <string name="loadinginfo_offline">Sei attualmente offline...</string>
     <string name="read">letto</string>
     <string name="useMarkdown">usa la formattazione Markdown</string>
-    <string name="markdownInfo">Questo aggiungerà la formattazione Markdown ai messaggi, ma rallenterà il caricamento dei messaggi in chat.</string>
+    <string name="markdownInfo">Questo aggiungerà la formattazione Markdown ai messaggi.</string>
     <string name="highlight_todays_message_timestamp">Evidenzia l'orario di oggi</string>
     <string name="highlight_todays_message_timestamp_info">Evidenzia in verde l'orario dei messaggi ricevuti oggi nel selettore chat.</string>
     <string name="quick_reactions">Reazioni rapide</string>
-    <string name="quick_reactions_info">Emoji proposte quando tieni premuto un messaggio. Trascina per riordinare, sincronizzate su tutti i tuoi dispositivi.</string>
-    <string name="quick_reactions_empty">Nessuna reazione rapida - puoi comunque aggiungerne una personalizzata su qualsiasi messaggio.</string>
+    <string name="quick_reactions_info">La prima emoji si aggiunge con un doppio tocco sul messaggio, le altre vengono proposte quando lo tieni premuto. Trascina per riordinare.</string>
+    <string name="quick_reactions_empty">Nessuna reazione rapida - il doppio tocco non fa nulla, ma puoi comunque aggiungerne una personalizzata su qualsiasi messaggio.</string>
     <string name="quick_reactions_reorder">Riordina reazione rapida</string>
+    <string name="quick_reactions_double_tap">Doppio tocco</string>
     <string name="add_quick_reaction">Aggiungi reazione rapida</string>
     <string name="restore_defaults">Ripristina predefiniti</string>
     <string name="something_wrong_message">Qualcosa è andato storto con questo messaggio</string>
@@ -242,6 +243,7 @@
     <string name="event_no_group">Questo evento non ha una chat di gruppo</string>
     <string name="user_description">descrizione utente</string>
     <string name="leave_group">abbandona gruppo</string>
+    <string name="delete_group">elimina gruppo</string>
     <string name="add_users_to_group">aggiungi utenti</string>
     <string name="member_since">membro dal %1$s</string>
     <string name="change_group_name">Modifica il nome di questo Gruppo</string>
@@ -315,9 +317,15 @@
 
     <string name="use_default_server">Usa server predefinito</string>
     <string name="use_test_server">Usa server di test</string>
+    <string name="test_server_connection">Verifica connessione al server</string>
 
 
     <string name="you_have_new_messages">Hai nuovi messaggi</string>
+    <string name="notification_fallback_body">Tocca per vedere di più</string>
+    <string name="notification_channel_messages">Messaggi</string>
+    <string name="notification_channel_reactions">Reazioni</string>
+    <string name="notification_channel_social">Amici ed eventi</string>
+    <string name="notification_channel_general">Generale</string>
     <string name="new_messages">Nuovi messaggi</string>
     <string name="new_message_noti_single_title">Nuova chat da %1$s</string>
     <string name="new_message_noti_group_title">Nuova chat da %1$s in %2$s</string>
@@ -507,6 +515,7 @@
 
     <!-- Confirmation dialogs -->
     <string name="confirm_leave_group">Sei sicuro di voler abbandonare questo gruppo?</string>
+    <string name="confirm_delete_group">Eliminare questo gruppo per tutti i membri? La chat e tutti i messaggi andranno persi per tutti. L'operazione non può essere annullata.</string>
     <string name="confirm_remove_friend">Sei sicuro di voler rimuovere %1$s dagli amici?</string>
     <string name="confirm_remove_member">Sei sicuro di voler rimuovere %1$s dal gruppo?</string>
 
@@ -694,6 +703,8 @@
 
     <string name="poll_settings_allowdeleteoptions">Consenti l'eliminazione delle opzioni</string>
     <string name="poll_settings_allowdeleteoptions_info">Lascia che il creatore del sondaggio elimini qualsiasi opzione, e che ogni utente elimini le opzioni che ha creato lui stesso</string>
+
+    <string name="poll_settings_more">Altre impostazioni</string>
 
     <string name="poll_visibility_title">Visibilità: %1$s</string>
 
@@ -1047,17 +1058,33 @@
     <string name="contribute_donate_action">Apri la pagina delle donazioni</string>
     <string name="contribute_later">Forse più tardi</string>
 
-    <!-- Roadmap -->
     <string name="custom_reaction">Reazione personalizzata</string>
     <string name="enter_reaction">Inserisci reazione</string>
 
     <!-- Schneaggmap -->
     <string name="schneaggmap_filter_location_types">Tipi di posizione</string>
-    <string name="location_belongs_to_type">Appartiene a: %1$s</string>
+    <string name="schneaggmap_filter_snail_trails">Scie</string>
+    <string name="schneaggmap_chip_places">Luoghi · %1$d/%2$d</string>
+    <string name="schneaggmap_chip_events">Eventi</string>
+    <string name="schneaggmap_chip_state_on">%1$s, attivo</string>
+    <string name="schneaggmap_chip_state_off">%1$s, disattivo</string>
     <string name="location_add_type">Aggiungi un nuovo tipo</string>
+    <string name="schneaggmap_entry_type_required">Aggiungi almeno un tipo</string>
 
     <string name="schneaggmap_entry_title">Nome</string>
     <string name="schneaggmap_entry_description">Descrizione</string>
+    <string name="schneaggmap_entry_new">Nuova voce della mappa</string>
+    <string name="schneaggmap_entry_edit">Modifica voce della mappa</string>
+    <string name="schneaggmap_secret_show">Mostra</string>
+    <string name="schneaggmap_secret_hide">Nascondi</string>
+    <string name="schneaggmap_attribute_required">Obbligatorio</string>
+    <string name="schneaggmap_attribute_invalid_number">Numero non valido</string>
+    <string name="schneaggmap_attribute_min">Min: %1$s</string>
+    <string name="schneaggmap_attribute_max">Max: %1$s</string>
+    <string name="schneaggmap_attribute_max_chars">Max %1$s caratteri</string>
+    <string name="schneaggmap_datetime_picker_title">Seleziona data e ora</string>
+    <string name="schneaggmap_datetime_now">Ora</string>
+    <string name="schneaggmap_datetime_not_set">Non impostato</string>
 
     <string name="schneaggmap_entry_delete">Elimina questa voce. Verrà eliminata anche per tutti gli altri. Non potrai ripristinarla.</string>
 
@@ -1329,7 +1356,8 @@
     <string name="ttt_new_chat_search_friends_freeroam">Prova ad aggiungere un nuovo amico.</string>
 
 
-    <string name="ttt_new_chat_create_group">Puoi toccare qui per creare un nuovo gruppo</string>
+    <string name="ttt_new_chat_create_group">Creare gruppi</string>
+    <string name="ttt_new_chat_create_group_description">Qui potrai poi avviare una chat di gruppo con più amici.</string>
 
     <string name="ttt_new_chat_go_back">Torniamo alla selezione chat</string>
 
@@ -1412,6 +1440,9 @@
 
     <string name="ttt_hint_tap_highlighted">Tocca l'area evidenziata per continuare</string>
     <string name="ttt_hint_tap_anywhere">Tocca ovunque per continuare</string>
+    <string name="ttt_previous_step">Passo precedente</string>
+    <string name="ttt_highlighted_element">Elemento evidenziato</string>
+    <string name="ttt_got_it">Ho capito</string>
 
     <string name="navbar_chats">chat</string>
 
@@ -1439,7 +1470,7 @@
     <string name="user_settings_group_features">Funzionalità</string>
     <string name="user_settings_group_danger_zone">Azioni account</string>
 
-    <string name="misc_group_feedback">Feedback &amp; Roadmap</string>
+    <string name="misc_group_feedback">Feedback</string>
     <string name="misc_group_diagnostics">Diagnostica &amp; Risoluzione problemi</string>
     <string name="misc_group_data_reset">Ripristino &amp; Riparazione</string>
 
@@ -1589,7 +1620,7 @@
     <string name="games_schneaggrodeo_snails">Lumache: %1$d</string>
     <string name="games_schneaggrodeo_horseshoes">Ferri di cavallo: %1$d</string>
     <string name="games_schneaggrodeo_plane_controls">Metà sinistra: sali · Metà destra: scendi</string>
-    <string name="games_schneaggrodeo_plane_controls_keys">Spazio / W: sali · S / ↓: scendi</string>
+    <string name="games_schneaggrodeo_plane_controls_keys">Spazio / W / ↑: sali · S / ↓: scendi</string>
     <string name="games_schneaggrodeo_super_jump">Super salto ×%1$d</string>
     <string name="games_schneaggrodeo_crash_pilot">Bruchpilot</string>
     <string name="games_schneaggrodeo_lawn_tractor">Rasatraktor</string>
@@ -1609,6 +1640,7 @@
     <string name="games_schneaggrodeo_helicopter_controls">Tieni premuto per salire – raggiungi l\'arcobaleno!</string>
     <string name="games_schneaggrodeo_helicopter_controls_keys">Tieni premuto Spazio / W per salire – raggiungi l\'arcobaleno!</string>
     <string name="games_schneaggrodeo_map_welcome">Benvenuto</string>
+    <string name="games_schneaggrodeo_horse_restless">Il cavallo è agitato – solo salti piccoli!</string>
     <string name="games_schneaggrodeo_map_cave">nella grotta</string>
     <string name="games_schneaggrodeo_map_sea">in mare aperto</string>
     <string name="games_schneaggrodeo_map_rainbow">sull\'arcobaleno</string>
@@ -1617,7 +1649,7 @@
     <string name="games_schneaggrodeo_pirate_ship_controls">Niente da premere – squali e forzieri danno punti!</string>
     <string name="games_schneaggrodeo_drill">Trivella!</string>
     <string name="games_schneaggrodeo_drill_controls">Tieni premuto: trivella · Rilascia: risali</string>
-    <string name="games_schneaggrodeo_drill_controls_keys">Tieni premuto Spazio / W: trivella · Rilascia: risali</string>
+    <string name="games_schneaggrodeo_drill_controls_keys">Tieni premuto Spazio / ↓: trivella · Rilascia: risali</string>
     <string name="games_schneaggrodeo_drill_boarding">Drill, baby, drill!</string>
     <string name="games_schneaggrodeo_double_points">×2 punti</string>
     <string name="games_schneaggrodeo_train">Wälderbähnle</string>
@@ -1625,43 +1657,46 @@
     <string name="games_schneaggrodeo_rocket_name">Schneagg-Rakete</string>
     <string name="games_schneaggrodeo_rocket">Razzo</string>
     <string name="games_schneaggrodeo_train_controls">Tieni premuto per abbassarti sotto i ponti</string>
-    <string name="games_schneaggrodeo_train_controls_keys">Tieni premuto spazio per abbassarti sotto i ponti</string>
+    <string name="games_schneaggrodeo_train_controls_keys">Tieni premuto spazio / ↓ per abbassarti sotto i ponti</string>
     <string name="games_schneaggrodeo_milk_truck_controls">Prendi i bidoni del latte col lazo!</string>
-    <string name="games_schneaggrodeo_lawn_tractor_controls">Tieniti forte!</string>
+    <string name="games_schneaggrodeo_milk_truck_controls_keys">L: prendi i bidoni del latte col lazo!</string>
+    <string name="games_schneaggrodeo_lawn_tractor_controls">Niente da premere – falcia tutto!</string>
     <string name="games_schneaggrodeo_next_to_beat">Prossimo da battere: %1$s (%2$d)</string>
     <string name="games_schneaggrodeo_car_wreck">Escort-Wrack</string>
-    <string name="games_schneaggrodeo_car_wreck_controls">Tieniti forte!</string>
+    <string name="games_schneaggrodeo_car_wreck_controls">Niente da premere – sfonda i recinti!</string>
     <string name="games_schneaggrodeo_car_money">%1$s €</string>
     <string name="games_schneaggrodeo_bull">Muni-Ritt</string>
-    <string name="games_schneaggrodeo_bull_controls">Avanti → tieni a sinistra · Indietro → tieni a destra · 6 s!</string>
-    <string name="games_schneaggrodeo_bull_controls_keys">Avanti → tieni spazio · Indietro → tieni S · 6 s!</string>
+    <string name="games_schneaggrodeo_bull_controls">Cadi in avanti? Tieni a sinistra · Indietro? Tieni a destra · Resta su 6 s!</string>
+    <string name="games_schneaggrodeo_bull_controls_keys">Cadi in avanti? Tieni spazio · Indietro? Tieni S / ↓ · Resta su 6 s!</string>
     <string name="games_schneaggrodeo_cable_car">Seilbahn</string>
-    <string name="games_schneaggrodeo_cable_car_controls">Goditi il panorama!</string>
+    <string name="games_schneaggrodeo_cable_car_controls">Niente da premere – goditi il panorama!</string>
     <string name="games_schneaggrodeo_candy_bus">Free Candy Bus</string>
     <string name="games_schneaggrodeo_candy_bus_controls">Premi Cattura!</string>
+    <string name="games_schneaggrodeo_candy_bus_controls_keys">L: cattura Stanislaus!</string>
     <string name="games_schneaggrodeo_candy_bus_sign">FREE CANDY</string>
     <string name="games_schneaggrodeo_capture">Cattura</string>
     <string name="games_schneaggrodeo_pocket_bike">Pocketbike</string>
-    <string name="games_schneaggrodeo_pocket_bike_controls">Tutto gas!</string>
+    <string name="games_schneaggrodeo_pocket_bike_controls">Niente da premere – tutto gas!</string>
     <string name="games_schneaggrodeo_shopping_cart">Ikoufswäga</string>
-    <string name="games_schneaggrodeo_shopping_cart_controls">Le lumache finiscono nel carrello!</string>
+    <string name="games_schneaggrodeo_shopping_cart_controls">Niente da premere – le lumache finiscono nel carrello!</string>
     <string name="games_schneaggrodeo_balloon">Heißluftballon</string>
     <string name="games_schneaggrodeo_balloon_controls">Tieni premuto per salire – prendi i ferri di cavallo!</string>
-    <string name="games_schneaggrodeo_balloon_controls_keys">Tieni premuto spazio per salire – prendi i ferri di cavallo!</string>
+    <string name="games_schneaggrodeo_balloon_controls_keys">Tieni premuto Spazio / ↑: sali · ↓: scendi – prendi i ferri di cavallo!</string>
     <string name="games_schneaggrodeo_cow">Kuah-Ritt</string>
-    <string name="games_schneaggrodeo_cow_controls">Goditi la cavalcata!</string>
+    <string name="games_schneaggrodeo_cow_controls">Niente da premere – il campanaccio spaventa i corvi!</string>
     <string name="games_schneaggrodeo_rowboat">Ruderboot</string>
     <string name="games_schneaggrodeo_rowboat_controls">Prendi i pesci col lazo!</string>
+    <string name="games_schneaggrodeo_rowboat_controls_keys">L: prendi i pesci col lazo!</string>
     <string name="games_schneaggrodeo_uboat">U-Boot</string>
     <string name="games_schneaggrodeo_uboat_controls">Tieni premuto: risali · Rilascia: immergiti – evita le mine!</string>
-    <string name="games_schneaggrodeo_uboat_controls_keys">Tieni premuto Spazio / W: risali · Rilascia: immergiti – evita le mine!</string>
+    <string name="games_schneaggrodeo_uboat_controls_keys">Tieni premuto Spazio / ↑: risali · Rilascia / ↓: immergiti – evita le mine!</string>
     <string name="games_schneaggrodeo_oil_tanker">Öltanker</string>
-    <string name="games_schneaggrodeo_oil_tanker_controls">Avanti tutta!</string>
+    <string name="games_schneaggrodeo_oil_tanker_controls">Niente da premere – avanti tutta!</string>
     <string name="games_schneaggrodeo_flamingo">Flamingo</string>
     <string name="games_schneaggrodeo_flamingo_controls">Tocca per rimbalzare – prendi i ferri di cavallo!</string>
     <string name="games_schneaggrodeo_flamingo_controls_keys">Spazio per rimbalzare – prendi i ferri di cavallo!</string>
     <string name="games_schneaggrodeo_mine_cart">Grubenhunt</string>
-    <string name="games_schneaggrodeo_mine_cart_controls">Tieniti forte!</string>
+    <string name="games_schneaggrodeo_mine_cart_controls">Niente da premere – distruggi le stalagmiti!</string>
     <string name="games_schneaggrodeo_friend_joined_title">%1$s cavalca con te!</string>
     <string name="games_schneaggrodeo_friend_joined">Da adesso cavalchi anche per il record di %1$s: appena scendi da cavallo, i tuoi punti finora valgono anche per %1$s.</string>
 
@@ -1767,36 +1802,6 @@
     <string name="games_cchallenge_bug_wrong_bracket">L'indice di un array va chiuso con una parentesi quadra, non con una tonda.</string>
     <string name="dev_settings_demo_mode">Modalità demo</string>
     <string name="dev_settings_demo_mode_desc">Nasconde le barre offline e del server di test, ad es. per gli screenshot dello store</string>
-    <string name="games_ghettoguesser_title">GhettoGuesser</string>
-    <string name="games_ghettoguesser_description">Indovina dove è stata scattata la foto</string>
-    <string name="games_ghettoguesser_choose_map">Scegli una mappa</string>
-    <string name="games_ghettoguesser_map_info">%1$d round · foto da Wikimedia Commons</string>
-    <string name="games_ghettoguesser_round">Round %1$d / %2$d</string>
-    <string name="games_ghettoguesser_loading">Cerco una foto…</string>
-    <string name="games_ghettoguesser_open_map">Indovina sulla mappa</string>
-    <string name="games_ghettoguesser_show_photo">Mostra foto</string>
-    <string name="games_ghettoguesser_skip">Salta foto</string>
-    <string name="games_ghettoguesser_submit">Conferma</string>
-    <string name="games_ghettoguesser_place_pin">Tocca la mappa per piazzare la tua ipotesi</string>
-    <string name="games_ghettoguesser_next_round">Round successivo</string>
-    <string name="games_ghettoguesser_show_total">Mostra risultato</string>
-    <string name="games_ghettoguesser_round_result">A %1$s · %2$d punti</string>
-    <string name="games_ghettoguesser_total_points">%1$d di %2$d punti</string>
-    <string name="games_ghettoguesser_total_time">Tempo: %1$s</string>
-    <string name="games_ghettoguesser_game_over">Partita finita</string>
-    <string name="games_ghettoguesser_play_again">Gioca ancora</string>
-    <string name="games_ghettoguesser_back_to_maps">Altra mappa</string>
-    <string name="games_ghettoguesser_no_network">Impossibile caricare una foto. Controlla la connessione a internet e riprova.</string>
-    <string name="games_ghettoguesser_no_photos">In questa zona non sono state trovate foto adatte.</string>
-    <string name="games_ghettoguesser_retry">Riprova</string>
-    <string name="games_ghettoguesser_photo_credit">Foto: %1$s, %2$s</string>
-    <string name="games_ghettoguesser_unknown_author">autore sconosciuto</string>
-    <string name="games_ghettoguesser_credits_title">Crediti foto</string>
-    <string name="games_ghettoguesser_credits_author">Autore: %1$s</string>
-    <string name="games_ghettoguesser_credits_license">Licenza: %1$s</string>
-    <string name="games_ghettoguesser_credits_file_page">Apri la pagina del file su Wikimedia Commons</string>
-    <string name="games_ghettoguesser_credits_unchanged">La foto è mostrata invariata e ridimensionata.</string>
-    <string name="games_ghettoguesser_close">Chiudi</string>
 
     <!-- Group extensions -->
     <string name="group_extensions_title">Estensioni della chat</string>
@@ -1864,4 +1869,59 @@
     <string name="split_icon_custom_label">Oppure inserisci un emoji qualsiasi</string>
     <string name="split_icon_use">Usa emoji</string>
     <string name="split_icon_remove">Rimuovi icona</string>
+    <string name="dev_announcements">Annunci</string>
+    <string name="dev_announcements_desc">Crea e gestisci annunci per tutti gli utenti (solo admin)</string>
+    <string name="announcement_new">Nuovo annuncio</string>
+    <string name="announcement_edit_title">Modifica annuncio #%1$s</string>
+    <string name="announcement_empty">Ancora nessun annuncio</string>
+    <string name="announcement_not_allowed">Solo gli admin possono gestire gli annunci</string>
+    <string name="announcement_expired">Scaduto</string>
+    <string name="announcement_expires_at">Scade il %1$s</string>
+    <string name="announcement_field_title">Titolo</string>
+    <string name="announcement_field_body">Testo (facoltativo)</string>
+    <string name="announcement_required_language">%1$s (obbligatorio)</string>
+    <string name="announcement_language_hint">Il tedesco è obbligatorio. Le lingue mancanti mostrano il tedesco, l'italiano prima l'inglese.</string>
+    <string name="announcement_edit_hint">Chi l'ha già chiuso non lo vedrà di nuovo.</string>
+    <string name="announcement_expiry">Visibile fino al</string>
+    <string name="announcement_expiry_days">%1$s giorni</string>
+    <string name="announcement_expiry_custom">Scegli data</string>
+    <string name="announcement_preview">Anteprima</string>
+    <string name="announcement_delete_confirm">Eliminare l'annuncio #%1$s? Sparisce per tutti.</string>
+    <string name="poll_option_reorder">Riordina</string>
+    <string name="wake_failed">Impossibile inviare la sveglia</string>
+    <string name="games_tictactoe_title">Tris</string>
+    <string name="games_tictactoe_description">Classico in due, caos in tre e in quattro: campi più grandi, segni che svaniscono, gravità, bombe e spostamenti</string>
+    <string name="tictactoe_players_title">Giocatori</string>
+    <string name="tictactoe_choose_players">Scegli giocatori</string>
+    <string name="tictactoe_players_hint">Da 2 a 4 giocatori su un solo telefono</string>
+    <string name="tictactoe_too_many_players">Possono giocare al massimo %1$d giocatori - rimuovi gli altri</string>
+    <string name="tictactoe_board_info">Campo %1$d×%1$d · %2$d in fila</string>
+    <string name="tictactoe_twists_title">Regole speciali</string>
+    <string name="tictactoe_twist_vanishing">Segni che svaniscono</string>
+    <string name="tictactoe_twist_vanishing_description">Ognuno tiene solo i suoi ultimi %1$d segni. Chi ne mette uno nuovo perde il più vecchio - niente pareggi.</string>
+    <string name="tictactoe_twist_gravity">Gravità</string>
+    <string name="tictactoe_twist_gravity_description">I segni cadono nella casella libera più bassa della loro colonna.</string>
+    <string name="tictactoe_twist_bombs">Jolly bomba</string>
+    <string name="tictactoe_twist_bombs_description">Una volta per round, ognuno può far esplodere un segno avversario invece di metterne uno.</string>
+    <string name="tictactoe_twist_chaos">Mescolata caotica</string>
+    <string name="tictactoe_twist_chaos_description">Ogni %1$d mosse una riga o colonna a caso si sposta di una casella.</string>
+    <string name="tictactoe_start">Inizia partita</string>
+    <string name="tictactoe_round">Round %1$d</string>
+    <string name="tictactoe_turn">Tocca a %1$s</string>
+    <string name="tictactoe_winner">%1$s vince!</string>
+    <string name="tictactoe_draw">Pareggio - nessuno vince</string>
+    <string name="tictactoe_next_round">Prossimo round</string>
+    <string name="tictactoe_finish_match">Termina partita</string>
+    <string name="tictactoe_bomb">Lancia bomba</string>
+    <string name="tictactoe_bomb_used">Bomba usata</string>
+    <string name="tictactoe_bomb_armed">Tocca un segno avversario per farlo esplodere</string>
+    <string name="tictactoe_shift_countdown">Prossimo spostamento tra: %1$d</string>
+    <string name="tictactoe_shift_row">Caos! Riga %1$d spostata</string>
+    <string name="tictactoe_shift_column">Caos! Colonna %1$d spostata</string>
+    <string name="tictactoe_rules">Regole</string>
+    <string name="tictactoe_rules_title">Come si gioca</string>
+    <string name="tictactoe_rules_text">Mettete a turno il vostro simbolo. Chi per primo fa una linea - orizzontale, verticale o diagonale - vince il round.\n\nIn 2 si gioca su 3×3 e servono 3 in fila. In 3 si gioca su 5×5, in 4 su 6×6, e servono 4 in fila.\n\nVale anche una linea creata da una caduta o da uno spostamento. Se più giocatori ne fanno una insieme, vince chi era di turno, altrimenti il prossimo nell'ordine di gioco.\n\nIl giocatore che inizia cambia ogni round. Quando terminate la partita, le vittorie di tutti possono essere aggiunte alla classifica in una volta.</string>
+    <string name="tictactoe_cell_description">Riga %1$d, colonna %2$d</string>
+    <string name="desktop_tray_open">Apri Schneaggchat</string>
+    <string name="desktop_tray_quit">Esci</string>
 </resources>

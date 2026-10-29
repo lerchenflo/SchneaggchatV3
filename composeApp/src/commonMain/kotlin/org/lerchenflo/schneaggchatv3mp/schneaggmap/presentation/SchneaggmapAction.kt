@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
@@ -10,6 +9,8 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 sealed interface SchneaggmapAction {
     data object OnBackClicked : SchneaggmapAction
     data object ToggleFilterDropdown : SchneaggmapAction
+    // Leading part of the places split button: hides all shown places, or shows every type when none are shown
+    data object ToggleAllPlaces : SchneaggmapAction
 
     data object ToggleShowUsers: SchneaggmapAction
     data object ToggleShowEvents: SchneaggmapAction
@@ -28,7 +29,8 @@ sealed interface SchneaggmapAction {
 
     data object OnPopupDismiss: SchneaggmapAction
     data object OnFocusEntryHandled: SchneaggmapAction
-    data class OnEntryPopupSave(val entry: MapEntry): SchneaggmapAction
+    // keepPopupOpen: quick changes on the read-only card (a date's Now button) leave the popup open
+    data class OnEntryPopupSave(val entry: MapEntry, val keepPopupOpen: Boolean = false): SchneaggmapAction
 
     data class OnEntryPopupDelete(val entryId: String): SchneaggmapAction
 
@@ -37,8 +39,6 @@ sealed interface SchneaggmapAction {
 
     data object ToggleSnailTrails: SchneaggmapAction
 
-    data object ToggleMapStyleDropdown: SchneaggmapAction
-    data class SelectMapStyle(val style: MapStyleSetting): SchneaggmapAction
 
 
     data class OnSearchTermChange(val newTerm: String) : SchneaggmapAction

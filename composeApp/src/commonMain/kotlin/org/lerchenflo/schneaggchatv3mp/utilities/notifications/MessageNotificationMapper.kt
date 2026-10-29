@@ -43,5 +43,7 @@ suspend fun Message.toNotificationContent(fallbackGroupName: String? = null): No
         senderName = senderAsString,
         timestampMillis = getSendDateAsLong(),
         groupName = fallbackGroupName,
+        conversation = true,
+        kind = NotificationKind.MESSAGE,
     )
 }

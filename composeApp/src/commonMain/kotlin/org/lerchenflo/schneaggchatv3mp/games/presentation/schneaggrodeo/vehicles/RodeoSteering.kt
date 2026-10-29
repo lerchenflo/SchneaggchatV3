@@ -29,11 +29,15 @@ internal class RodeoSteering(
         vy = 0f
     }
 
-    /** Moves [y] on by [dt] and returns the new height, never above [ceiling]. */
-    fun fly(y: Float, dt: Float, ceiling: Float): Float {
+    /**
+     * Moves [y] on by [dt] and returns the new height, never above [ceiling]. Without [sinks] it
+     * holds its height while there is no input (a moment of grace at the start of a ride).
+     */
+    fun fly(y: Float, dt: Float, ceiling: Float, sinks: Boolean = true): Float {
         val accel = when {
             climb && !dive -> climbAccel
             dive && !climb -> -diveAccel
+            !sinks && !climb && !dive -> 0f
             else -> -sinkAccel
         }
         vy = (vy + accel * dt).coerceIn(-maxSink, maxClimb)

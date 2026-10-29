@@ -8,7 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -16,6 +15,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.email_provider_warning
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 private val ALLOWED_DOMAINS = listOf(
     "gmail.com",
@@ -63,7 +63,7 @@ fun EmailInputField(
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = warning,
-                color = Color(0xFFF57C00),
+                color = MaterialTheme.warningColors.warning,
                 style = MaterialTheme.typography.bodySmall
             )
         }

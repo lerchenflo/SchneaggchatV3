@@ -15,7 +15,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,7 +41,6 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.BottomAppBar
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -52,14 +50,16 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.TOP_LEVEL_DESTINATIONS
 import org.lerchenflo.schneaggchatv3mp.app.navigation.decoratedEntriesMap
 import org.lerchenflo.schneaggchatv3mp.app.navigation.getVisibleTopLevelDestinations
 import org.lerchenflo.schneaggchatv3mp.app.navigation.rememberNavigationState
+import org.lerchenflo.schneaggchatv3mp.app.navigation.resetAllTabs
 import org.lerchenflo.schneaggchatv3mp.app.navigation.resetTabRoot
 import org.lerchenflo.schneaggchatv3mp.app.navigation.restartAuthFlow
-import io.github.lerchenflo.taptarget.LocalTapTargetController
-import io.github.lerchenflo.taptarget.TapTargetController
-import io.github.lerchenflo.taptarget.TapTargetOverlay
+import io.github.lerchenflo.taptarget.FreeRoamLeaveBehavior
+import io.github.lerchenflo.taptarget.TapTargetHost
+import io.github.lerchenflo.taptarget.TourBackBehavior
 import io.github.lerchenflo.taptarget.TourSettings
 import io.github.lerchenflo.taptarget.TourSkipButton
 import io.github.lerchenflo.taptarget.TourStrings
+import io.github.lerchenflo.taptarget.rememberTapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreenRoot
@@ -70,14 +70,19 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswah
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.MessageChatSelector
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.app.domain.ActionChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.ActionEvent
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterRoot
-import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.fingerpicker.FingerPickerScreen
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCalculatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordScreenRoot
@@ -86,7 +91,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.cchallenge.CChallengeS
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
-import org.lerchenflo.schneaggchatv3mp.games.presentation.ghettoguesser.GhettoGuesserScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusScreenRoot
@@ -94,6 +98,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.tictactoe.TicTacToeRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerRoot
@@ -118,9 +123,9 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.SnackbarPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TestModeBar
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.GroupExtensionScreenRoot
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor.SplitExpenseEditorScreenRoot
@@ -128,8 +133,10 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
 import schneaggchatv3mp.composeapp.generated.resources.ttt_hint_tap_anywhere
 import schneaggchatv3mp.composeapp.generated.resources.ttt_hint_tap_highlighted
+import schneaggchatv3mp.composeapp.generated.resources.ttt_got_it
+import schneaggchatv3mp.composeapp.generated.resources.ttt_highlighted_element
+import schneaggchatv3mp.composeapp.generated.resources.ttt_previous_step
 import schneaggchatv3mp.composeapp.generated.resources.ttt_skip
-import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.press_back_again_to_exit
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -137,15 +144,17 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 @Preview(showBackground = true)
 fun App() {
-    val preferenceManager = koinInject<Preferencemanager>()
+    val settingsRepository = koinInject<SettingsRepository>()
     val languageService = koinInject<LanguageService>()
-    val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
+    val themeSetting by settingsRepository.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
-    val loggingRepository = koinInject<LoggingRepository>()
+    val loggingRepository = koinInject<Logger>()
+    val errorChannel = koinInject<ErrorChannel>()
+    val actionChannel = koinInject<ActionChannel>()
 
     val globalViewModel = koinInject<GlobalViewModel>() //Init instantly for flow collections to start correctly
 
-    val isDeveloper by preferenceManager.getDevSettingsFlow().collectAsStateWithLifecycle(false)
+    val isDeveloper by settingsRepository.getDevSettingsFlow().collectAsStateWithLifecycle(false)
 
     // Apply saved language on app startup
     LaunchedEffect(Unit) {
@@ -163,8 +172,9 @@ fun App() {
         val scope = rememberCoroutineScope()
 
 
-        //Initialize global repository
-        val appRepository = koinInject<AppRepository>()
+        // Root composable: the one exception that may koinInject data-layer access, interfaces only (plan §2.5)
+        val authRepository = koinInject<AuthRepository>()
+        val appVersion = koinInject<AppVersion>()
 
         val navigationState = rememberNavigationState(
             startRoute = Route.AutoLoginCredChecker,
@@ -182,7 +192,7 @@ fun App() {
         LaunchedEffect(Unit) {
             if (sessionRestored) return@LaunchedEffect
             try {
-                val savedCreds = appRepository.loadSavedLoginConfig()
+                val savedCreds = authRepository.loadSavedLoginConfig()
                 if (savedCreds.credsSaved && savedCreds.emailVerified) {
                     AppLifecycleManager.notifyStartupRoutingDone()
                 } else {
@@ -199,7 +209,7 @@ fun App() {
             }
         }
 
-        val isMobile = remember { appRepository.appVersion.isMobile() }
+        val isMobile = remember { appVersion.isMobile() }
         val visibleTopLevelRoutes = remember(isMobile, isDeveloper, navigationState.topLevelRoute) {
             getVisibleTopLevelDestinations(
                 selectedKey = navigationState.topLevelRoute,
@@ -324,6 +334,13 @@ fun App() {
         ) { action ->
             val navigationOptions = action.navigationOptions
 
+            // Login means the session ended (logout, invalidated session): no tab may keep a
+            // sub-screen - and its ViewModel - of the old account. Only the current tab is
+            // cleared below, so the others are reset here.
+            if (action is NavigationAction.Navigate && action.destination is Route.Login) {
+                navigationState.resetAllTabs()
+            }
+
             if (navigationOptions.exitPreviousScreen) {
                 navigationState.backStacks[navigationState.topLevelRoute]?.let { stack ->
                     if (stack.size > 1) {
@@ -413,20 +430,12 @@ fun App() {
 
 
         ObserveAsEvents(
-            flow = AppRepository.ActionChannel.actions,
+            flow = actionChannel.actions,
         ) { action ->
             scope.launch {
                 when (action) {
-                    AppRepository.ActionChannel.ActionEvent.AuthInvalidated -> {
-                        //Throwing an error message for the user
-                        AppRepository.ErrorChannel.trySendError(
-                            event = AppRepository.ErrorChannel.ErrorEvent(
-                                401,
-                                errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
-                                duration = 5000L,
-                            )
-                        )
-                        appRepository.logout()
+                    ActionEvent.AuthInvalidated -> {
+                        // Popup and wipe already happened in AppAuthEventSink
                         navigator.navigate(
                             Route.Login,
                             navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
@@ -439,9 +448,9 @@ fun App() {
 
 
         //Error popup handling
-        var currentError by remember { mutableStateOf<AppRepository.ErrorChannel.ErrorEvent?>(null) }
+        var currentError by remember { mutableStateOf<ErrorEvent?>(null) }
         LaunchedEffect(Unit) {
-            AppRepository.ErrorChannel.errors.collect { error ->
+            errorChannel.errors.collect { error ->
                 //println("Error popup thrown: $error")
                 currentError = error
                 delay(error.duration.milliseconds)
@@ -476,476 +485,473 @@ fun App() {
 
 
 
-        val tour = rememberOnboardingTour(appRepository.appVersion.isAndroid(), appRepository.appVersion.isDesktop())
+        val tour = rememberOnboardingTour(appVersion.isAndroid(), appVersion.isDesktop())
 
-        val tourController = remember {
-            TapTargetController(
-                tour = tour,
-                onNavigateToRoute = { targetRoute ->
-                    println("Onboarding: Navigating $targetRoute")
-                    val activeTab = navigationState.topLevelRoute
-                    val activeStack = navigationState.backStacks[activeTab]
+        val tourController = rememberTapTargetController(
+            tour = tour,
+            onNavigateToRoute = { targetRoute ->
+                println("Onboarding: Navigating $targetRoute")
+                val activeTab = navigationState.topLevelRoute
+                val activeStack = navigationState.backStacks[activeTab]
 
-                    // If already on the correct tab and the target is that tab's root screen,
-                    // just reset the sub-backstack instead of pushing a duplicate.
-                    if (targetRoute == activeStack?.firstOrNull()) {
-                        while ((activeStack.size) > 1) {
-                            activeStack.removeAt(activeStack.size - 1)
-                        }
-                    } else {
-                        navigator.navigate(targetRoute as Route)
+                // If already on the correct tab and the target is that tab's root screen,
+                // just reset the sub-backstack instead of pushing a duplicate.
+                if (targetRoute == activeStack?.firstOrNull()) {
+                    while ((activeStack.size) > 1) {
+                        activeStack.removeAt(activeStack.size - 1)
                     }
-                },
-                currentRoute = {
-                    // Return the last visible entry in the active tab's backstack —
-                    // this is what tour step `route` values are compared against.
-                    val activeTab = navigationState.topLevelRoute
-                    val activeRoute = navigationState.backStacks[activeTab]?.lastOrNull() as? Route
-                        ?: activeTab as? Route
-                    println("Onboarding: Currentroute $activeRoute")
-                    activeRoute
-                },
-                onFinished = {
-                    scope.launch {
-                        preferenceManager.setOnboardingSeen(true)
-                    }
-                },
-                tourSettings = TourSettings(
-                    iconPadding = 12.dp
-                )
+                } else {
+                    navigator.navigate(targetRoute as Route)
+                }
+            },
+            currentRoute = {
+                // Return the last visible entry in the active tab's backstack —
+                // this is what tour step `route` values are compared against.
+                val activeTab = navigationState.topLevelRoute
+                val activeRoute = navigationState.backStacks[activeTab]?.lastOrNull() as? Route
+                    ?: activeTab as? Route
+                println("Onboarding: Currentroute $activeRoute")
+                activeRoute
+            },
+            onFinished = {
+                scope.launch {
+                    settingsRepository.setOnboardingSeen(true)
+                }
+            },
+            tourSettings = TourSettings(
+                iconPadding = 12.dp,
+                // System back does nothing during free-roam steps, so the user cannot leave the step's screen that way
+                freeRoamBackBehavior = TourBackBehavior.Block,
+                // Leaving the step's screen any other way (back arrow, tabs) brings the user back to it
+                freeRoamLeaveBehavior = FreeRoamLeaveBehavior.ReturnToStepRoute,
             )
-        }
+        )
 
-        CompositionLocalProvider(LocalTapTargetController provides tourController) {
-
-            Box(
-                // IOSKEYBOARDFIX: without an explicit background here, the root Scaffold's
-                // Surface is the only thing painting the window - and it shrinks with the
-                // keyboard (see contentWindowInsets below), briefly exposing the bare iOS
-                // host view (plain white/black) as a gray-looking band under the keyboard.
+        TapTargetHost(
+            controller = tourController,
+            // IOSKEYBOARDFIX: without an explicit background here, the root Scaffold's
+            // Surface is the only thing painting the window - and it shrinks with the
+            // keyboard (see contentWindowInsets below), briefly exposing the bare iOS
+            // host view (plain white/black) as a gray-looking band under the keyboard.
+            modifier = Modifier.background(MaterialTheme.colorScheme.background),
+            strings = TourStrings(
+                tapHighlighted = stringResource(Res.string.ttt_hint_tap_highlighted),
+                tapAnywhere = stringResource(Res.string.ttt_hint_tap_anywhere),
+                continueButton = stringResource(Res.string.ttt_continue),
+                skipTour = stringResource(Res.string.ttt_skip),
+                previousStep = stringResource(Res.string.ttt_previous_step),
+                highlightedTarget = stringResource(Res.string.ttt_highlighted_element),
+                gotIt = stringResource(Res.string.ttt_got_it),
+            ),
+            skipButton = { onSkip ->
+                TourSkipButton(text = stringResource(Res.string.ttt_skip), onSkip = onSkip)
+            },
+        ) {
+            Scaffold(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                Scaffold(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clearFocusOnTap(),
-                    // IOSKEYBOARDFIX: moved imePadding() off the Scaffold's own modifier and
-                    // into contentWindowInsets, so the Scaffold's Surface always covers the
-                    // full window and only its *content* padding grows for the keyboard -
-                    // instead of the whole Surface shrinking and exposing what's behind it.
-                    contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.ime),
-                    bottomBar = {
+                    .clearFocusOnTap(),
+                // IOSKEYBOARDFIX: moved imePadding() off the Scaffold's own modifier and
+                // into contentWindowInsets, so the Scaffold's Surface always covers the
+                // full window and only its *content* padding grows for the keyboard -
+                // instead of the whole Surface shrinking and exposing what's behind it.
+                contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.ime),
+                bottomBar = {
 
-                        if (navigationState.showNavBar) {
-                            // Read inside the bottomBar slot so a changing badge recomposes the bar
-                            // alone, not the whole app.
-                            val badgeCounts by globalViewModel.navigationBadgeCounts.collectAsStateWithLifecycle()
+                    if (navigationState.showNavBar) {
+                        // Read inside the bottomBar slot so a changing badge recomposes the bar
+                        // alone, not the whole app.
+                        val badgeCounts by globalViewModel.navigationBadgeCounts.collectAsStateWithLifecycle()
 
-                            BottomAppBar(
-                                selectedKey = navigationState.topLevelRoute,
-                                onSelectKey = {
-                                    scope.launch {
-                                        navigator.navigate(it)
-                                    }
-                                },
-                                mobile = appRepository.appVersion.isMobile(),
-                                developer = isDeveloper,
-                                badgeCounts = badgeCounts,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-
+                        BottomAppBar(
+                            selectedKey = navigationState.topLevelRoute,
+                            onSelectKey = {
+                                scope.launch {
+                                    navigator.navigate(it)
+                                }
+                            },
+                            mobile = appVersion.isMobile(),
+                            developer = isDeveloper,
+                            badgeCounts = badgeCounts,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
 
-                ) { innerpadding ->
+                }
 
-                    Column(
-                        modifier = Modifier
-                            .padding(innerpadding),
-                    ) {
+            ) { innerpadding ->
 
-                        val online by SessionCache.onlineFlow.collectAsStateWithLifecycle()
-                        // Demo mode (developer setting) hides both bars, e.g. for store screenshots
-                        val demoMode by preferenceManager.getDemoModeFlow().collectAsStateWithLifecycle(initialValue = false)
+                Column(
+                    modifier = Modifier
+                        .padding(innerpadding),
+                ) {
 
-                        //Show offline bar when offline
-                        if (!online && !demoMode) {
-                            OfflineBar(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            )
-                        }
+                    val online by SessionCache.onlineFlow.collectAsStateWithLifecycle()
+                    // Demo mode (developer setting) hides both bars, e.g. for store screenshots
+                    val demoMode by settingsRepository.getDemoModeFlow().collectAsStateWithLifecycle(initialValue = false)
 
-                        val serverUrl by preferenceManager.getServerUrlFlow().collectAsStateWithLifecycle(initialValue = BASE_SERVER_URL)
+                    //Show offline bar when offline
+                    if (!online && !demoMode) {
+                        OfflineBar(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
 
-                        //Show a persistent indicator while pinned to the test server (e.g. after logging in with the test account)
-                        if (serverUrl == BASE_SERVER_URL_TEST && !demoMode) {
-                            TestModeBar(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            )
-                        }
+                    val serverUrl by settingsRepository.getServerUrlFlow().collectAsStateWithLifecycle(initialValue = BASE_SERVER_URL)
 
-
-                        val entriesMap = navigationState.decoratedEntriesMap(
-                            entryProvider = entryProvider {
-
-                                    //Authentication
-                                    entry<Route.AutoLoginCredChecker> {
-                                        AutoLoginCredCheckerRoot()
-                                    }
-
-                                    entry<Route.Login> {
-                                        LoginScreen()
-                                    }
-
-                                    entry<Route.SignUp> {
-                                        SignUpScreenRoot()
-                                    }
-
-                                    entry<Route.EmailVerifiedCheck> {
-                                        EmailVerifiedCheckScreenRoot()
-                                    }
+                    //Show a persistent indicator while pinned to the test server (e.g. after logging in with the test account)
+                    if (serverUrl == BASE_SERVER_URL_TEST && !demoMode) {
+                        TestModeBar(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
 
 
+                    val entriesMap = navigationState.decoratedEntriesMap(
+                        entryProvider = entryProvider {
 
-                                    //Chat
-                                    entry<Route.ChatSelector> {
-                                        Chatauswahlscreen()
-                                    }
-
-                                    entry<Route.Chat> { route ->
-                                        ChatScreenRoot(
-                                            chatId = route.chatId,
-                                            isGroup = route.isGroup,
-                                            highlightMessageId = route.highlightMessageId
-                                        )
-                                    }
-                                    entry<Route.ChatDetails> { route ->
-                                        ChatDetails(
-                                            chatId = route.chatId,
-                                            isGroup = route.isGroup
-                                        )
-                                    }
-                                    entry<Route.ChatSharedContent> { route ->
-                                        SharedContentScreenRoot(
-                                            chatId = route.chatId,
-                                            isGroup = route.isGroup,
-                                            initialTab = route.initialTab
-                                        )
-                                    }
-                                    entry<Route.GroupExtension> { route ->
-                                        GroupExtensionScreenRoot(
-                                            extensionId = route.extensionId
-                                        )
-                                    }
-                                    entry<Route.SplitExpenseEditor> { route ->
-                                        SplitExpenseEditorScreenRoot(route = route)
-                                    }
-                                    entry<Route.Birthdays> {
-                                        BirthdaysScreenRoot()
-                                    }
-                                    entry<Route.MessageChatSelector> {
-                                        MessageChatSelector()
-                                    }
-
-
-                                    //New chat
-                                    entry<Route.NewChat> {
-                                        NewChat()
-                                    }
-
-                                    entry<Route.GroupCreator> {
-                                        GroupCreatorScreenRoot()
-                                    }
-
-                                    entry<Route.Schneaggmap> { route ->
-                                        SchneaggmapScreenRoot(
-                                            initialEntryId = route.initialEntryId,
-                                            currentlyEditedEvent = route.currentlyEditedEvent
-                                        )
-                                    }
-
-                                    entry<Route.FriendCompass> { route ->
-                                        FriendCompassRoot(
-                                            targetUserId = route.targetUserId
-                                        )
-                                    }
-
-
-
-                                    //Settings
-                                    entry<Route.SettingsScreen> {
-                                        SettingsScreen(
-                                            settingsViewmodel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(), // see note below on scoping
-                                            onBackClick = {
-                                                 scope.launch { navigator.navigateBack() }
-                                            },
-                                            navigateUserSettings = { scope.launch { navigator.navigate(Route.UserSettings) } },
-                                            navigatePrivacyAndSecurity = { scope.launch { navigator.navigate(Route.PrivacyAndSecuritySettings) } },
-                                            navigateNotificationSettings = { scope.launch { navigator.navigate(Route.NotificationSettings) } },
-                                            navigateDevSettings = { scope.launch { navigator.navigate(Route.DeveloperSettings) } },
-                                            navigateAppearanceSettings = { scope.launch { navigator.navigate(Route.AppearanceSettings) } },
-                                            navigateMiscSettings = { scope.launch { navigator.navigate(Route.MiscSettings) } },
-                                            navigateSchneaggmapSettings = { scope.launch { navigator.navigate(Route.SchneaggmapSettings) } },
-                                            navigateRecap = { scope.launch { navigator.navigate(Route.Recap) } }
-                                        )
-                                    }
-
-                                    entry<Route.DeveloperSettings> {
-                                        DeveloperSettings(
-                                            devSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.UserSettings> {
-                                        UserSettings(
-                                            userSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.PrivacyAndSecuritySettings> {
-                                        PrivacyAndSecuritySettings(
-                                            viewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
-                                            onBackClick = { scope.launch { navigator.navigateBack() } },
-                                            navigateLoggedInDevices = { scope.launch { navigator.navigate(Route.LoggedInDevices) } }
-                                        )
-                                    }
-
-                                    entry<Route.LoggedInDevices> {
-                                        LoggedInDevicesScreen(
-                                            viewModel = koinInject(),
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.NotificationSettings> {
-                                        NotificationSettings(
-                                            viewModel = koinInject(),
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.AppearanceSettings> {
-                                        AppearanceSettings(
-                                            appearanceSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.MiscSettings> {
-                                        MiscSettings(
-                                            miscSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
-                                            onBackClick = { scope.launch { navigator.navigateBack() } },
-                                            navigateFeedback = { scope.launch { navigator.navigate(Route.Feedback) } }
-                                        )
-                                    }
-
-                                    entry<Route.SchneaggmapSettings> {
-                                        SchneaggmapSettings(
-                                            schneaggmapSettingsViewModel = koinInject(),
-                                            sharedSettingsViewmodel = koinInject(),
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.Feedback> {
-                                        FeedbackScreenRoot()
-                                    }
-
-                                    entry<Route.Events> {
-                                        EventsRoot(
-                                            initialEntryId = it.selectedEventId,
-                                            initialEntry = it.selectedEvent
-                                        )
-                                    }
-
-
-
-
-                                    entry<Route.GamesSelector> {
-                                        val gameSelectorViewModel = koinViewModel<GameSelectorViewModel>()
-                                        GameSelectorScreen(
-                                            onBackClick = {
-                                                scope.launch { navigator.navigateBack() }
-                                            },
-                                            onGameSelection = {
-                                                scope.launch { navigator.navigate(it) }
-                                            },
-                                            viewModel = gameSelectorViewModel
-                                        )
-                                    }
-
-                                    entry<Route.DartCounter> {
-                                        DartCounterRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.Undercover> {
-                                        UndercoverRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.TowerStack> {
-                                        TowerStackScreen(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.Yatzi> {
-                                        YatziScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.Tetris> {
-                                        val tetrisViewModel: TetrisViewModel = koinViewModel<TetrisViewModel>()
-                                        TetrisScreen(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } },
-                                            viewModel = tetrisViewModel
-                                        )
-                                    }
-
-                                    entry<Route.Morse> {
-                                        val morseViewModel: MorseViewModel = koinViewModel()
-                                        MorseScreen(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } },
-                                            viewModel = morseViewModel
-                                        )
-                                    }
-
-                                    entry<Route.SchneaggaHus> {
-                                        SchneaggaHusScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.GridRush> {
-                                        GridRushScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.CChallenge> {
-                                        CChallengeScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.OddOneOut> {
-                                        OddOneOutScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.GhettoGuesser> {
-                                        GhettoGuesserScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.SchneaggRodeo> {
-                                        SchneaggRodeoRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.Recap> {
-                                        RecapScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.CoinFlip> {
-                                        CoinFlipScreen(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.FingerPicker> {
-                                        FingerPickerScreen(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.FuelCalculator> {
-                                        FuelCalculatorScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.Game2048> {
-                                        Game2048ScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.Crossword> {
-                                        CrosswordScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.Wordle> {
-                                        WordleScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
+                                //Authentication
+                                entry<Route.AutoLoginCredChecker> {
+                                    AutoLoginCredCheckerRoot()
                                 }
-                            )
 
-                        if (sessionRestored) {
-                            HorizontalPager(
-                                state = pagerState,
-                                modifier = Modifier.fillMaxSize(),
-                                userScrollEnabled = navigationState.enableSwipeNavigation,
-                                key = { pageIndex ->
-                                    visibleTopLevelRoutes.getOrNull(pageIndex)?.let { it::class.simpleName ?: it.toString() } ?: pageIndex.toString()
+                                entry<Route.Login> {
+                                    LoginScreen()
                                 }
-                            ) { pageIndex ->
-                                val tabKey = visibleTopLevelRoutes.getOrNull(pageIndex)
-                                val entries = entriesMap[tabKey]
-                                if (!entries.isNullOrEmpty()) {
-                                    NavDisplay(
-                                        entries = entries,
-                                        onBack = { scope.launch { navigator.navigateBack() } },
-                                        // HorizontalPager centers pages vertically by default; without an explicit
-                                        // fillMaxSize, screens shorter than the viewport wrap-size and get centered,
-                                        // showing a top gap instead of just filling down to the bottom nav bar.
-                                        modifier = Modifier.fillMaxSize()
+
+                                entry<Route.SignUp> {
+                                    SignUpScreenRoot()
+                                }
+
+                                entry<Route.EmailVerifiedCheck> {
+                                    EmailVerifiedCheckScreenRoot()
+                                }
+
+
+
+                                //Chat
+                                entry<Route.ChatSelector> {
+                                    Chatauswahlscreen()
+                                }
+
+                                entry<Route.Chat> { route ->
+                                    ChatScreenRoot(
+                                        chatId = route.chatId,
+                                        isGroup = route.isGroup,
+                                        highlightMessageId = route.highlightMessageId
+                                    )
+                                }
+                                entry<Route.ChatDetails> { route ->
+                                    ChatDetails(
+                                        chatId = route.chatId,
+                                        isGroup = route.isGroup
+                                    )
+                                }
+                                entry<Route.ChatSharedContent> { route ->
+                                    SharedContentScreenRoot(
+                                        chatId = route.chatId,
+                                        isGroup = route.isGroup,
+                                        initialTab = route.initialTab
+                                    )
+                                }
+                                entry<Route.GroupExtension> { route ->
+                                    GroupExtensionScreenRoot(
+                                        extensionId = route.extensionId
+                                    )
+                                }
+                                entry<Route.SplitExpenseEditor> { route ->
+                                    SplitExpenseEditorScreenRoot(route = route)
+                                }
+                                entry<Route.Birthdays> {
+                                    BirthdaysScreenRoot()
+                                }
+                                entry<Route.MessageChatSelector> {
+                                    MessageChatSelector()
+                                }
+
+
+                                //New chat
+                                entry<Route.NewChat> {
+                                    NewChat()
+                                }
+
+                                entry<Route.GroupCreator> {
+                                    GroupCreatorScreenRoot()
+                                }
+
+                                entry<Route.Schneaggmap> { route ->
+                                    SchneaggmapScreenRoot(
+                                        initialEntryId = route.initialEntryId,
+                                        currentlyEditedEvent = route.currentlyEditedEvent
+                                    )
+                                }
+
+                                entry<Route.FriendCompass> { route ->
+                                    FriendCompassRoot(
+                                        targetUserId = route.targetUserId
+                                    )
+                                }
+
+
+
+                                //Settings
+                                entry<Route.SettingsScreen> {
+                                    SettingsScreen(
+                                        settingsViewmodel = koinViewModel(),
+                                        sharedSettingsViewmodel = koinViewModel(),
+                                        onBackClick = {
+                                             scope.launch { navigator.navigateBack() }
+                                        },
+                                        navigateUserSettings = { scope.launch { navigator.navigate(Route.UserSettings) } },
+                                        navigatePrivacyAndSecurity = { scope.launch { navigator.navigate(Route.PrivacyAndSecuritySettings) } },
+                                        navigateNotificationSettings = { scope.launch { navigator.navigate(Route.NotificationSettings) } },
+                                        navigateDevSettings = { scope.launch { navigator.navigate(Route.DeveloperSettings) } },
+                                        navigateAppearanceSettings = { scope.launch { navigator.navigate(Route.AppearanceSettings) } },
+                                        navigateMiscSettings = { scope.launch { navigator.navigate(Route.MiscSettings) } },
+                                        navigateSchneaggmapSettings = { scope.launch { navigator.navigate(Route.SchneaggmapSettings) } },
+                                        navigateRecap = { scope.launch { navigator.navigate(Route.Recap) } }
+                                    )
+                                }
+
+                                entry<Route.DeveloperSettings> {
+                                    DeveloperSettings(
+                                        devSettingsViewModel = koinViewModel(),
+                                        sharedSettingsViewmodel = koinViewModel(),
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.UserSettings> {
+                                    UserSettings(
+                                        userSettingsViewModel = koinViewModel(),
+                                        sharedSettingsViewmodel = koinViewModel(),
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.PrivacyAndSecuritySettings> {
+                                    PrivacyAndSecuritySettings(
+                                        viewModel = koinViewModel(),
+                                        sharedSettingsViewmodel = koinViewModel(),
+                                        onBackClick = { scope.launch { navigator.navigateBack() } },
+                                        navigateLoggedInDevices = { scope.launch { navigator.navigate(Route.LoggedInDevices) } }
+                                    )
+                                }
+
+                                entry<Route.LoggedInDevices> {
+                                    LoggedInDevicesScreen(
+                                        viewModel = koinViewModel(),
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.NotificationSettings> {
+                                    NotificationSettings(
+                                        viewModel = koinViewModel(),
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.AppearanceSettings> {
+                                    AppearanceSettings(
+                                        appearanceSettingsViewModel = koinViewModel(),
+                                        sharedSettingsViewmodel = koinViewModel(),
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.MiscSettings> {
+                                    MiscSettings(
+                                        miscSettingsViewModel = koinViewModel(),
+                                        sharedSettingsViewmodel = koinViewModel(),
+                                        onBackClick = { scope.launch { navigator.navigateBack() } },
+                                        navigateFeedback = { scope.launch { navigator.navigate(Route.Feedback) } }
+                                    )
+                                }
+
+                                entry<Route.SchneaggmapSettings> {
+                                    SchneaggmapSettings(
+                                        schneaggmapSettingsViewModel = koinViewModel(),
+                                        sharedSettingsViewmodel = koinViewModel(),
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.Feedback> {
+                                    FeedbackScreenRoot()
+                                }
+
+                                entry<Route.Events> {
+                                    EventsRoot(
+                                        initialEntryId = it.selectedEventId,
+                                        initialEntry = it.selectedEvent
+                                    )
+                                }
+
+
+
+
+                                entry<Route.GamesSelector> {
+                                    val gameSelectorViewModel = koinViewModel<GameSelectorViewModel>()
+                                    GameSelectorScreen(
+                                        onBackClick = {
+                                            scope.launch { navigator.navigateBack() }
+                                        },
+                                        onGameSelection = {
+                                            scope.launch { navigator.navigate(it) }
+                                        },
+                                        viewModel = gameSelectorViewModel
+                                    )
+                                }
+
+                                entry<Route.DartCounter> {
+                                    DartCounterRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.Undercover> {
+                                    UndercoverRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.TicTacToe> {
+                                    TicTacToeRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.TowerStack> {
+                                    TowerStackScreen(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.Yatzi> {
+                                    YatziScreenRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.Tetris> {
+                                    val tetrisViewModel: TetrisViewModel = koinViewModel<TetrisViewModel>()
+                                    TetrisScreen(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } },
+                                        viewModel = tetrisViewModel
+                                    )
+                                }
+
+                                entry<Route.Morse> {
+                                    val morseViewModel: MorseViewModel = koinViewModel()
+                                    MorseScreen(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } },
+                                        viewModel = morseViewModel
+                                    )
+                                }
+
+                                entry<Route.SchneaggaHus> {
+                                    SchneaggaHusScreenRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.GridRush> {
+                                    GridRushScreenRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.CChallenge> {
+                                    CChallengeScreenRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.OddOneOut> {
+                                    OddOneOutScreenRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.SchneaggRodeo> {
+                                    SchneaggRodeoRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.Recap> {
+                                    RecapScreenRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.CoinFlip> {
+                                    CoinFlipScreen(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.FingerPicker> {
+                                    FingerPickerScreen(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.FuelCalculator> {
+                                    FuelCalculatorScreenRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.Game2048> {
+                                    Game2048ScreenRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.Crossword> {
+                                    CrosswordScreenRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.Wordle> {
+                                    WordleScreenRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
                                     )
                                 }
                             }
+                        )
+
+                    if (sessionRestored) {
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.fillMaxSize(),
+                            userScrollEnabled = navigationState.enableSwipeNavigation,
+                            key = { pageIndex ->
+                                visibleTopLevelRoutes.getOrNull(pageIndex)?.let { it::class.simpleName ?: it.toString() } ?: pageIndex.toString()
+                            }
+                        ) { pageIndex ->
+                            val tabKey = visibleTopLevelRoutes.getOrNull(pageIndex)
+                            val entries = entriesMap[tabKey]
+                            if (!entries.isNullOrEmpty()) {
+                                NavDisplay(
+                                    entries = entries,
+                                    onBack = { scope.launch { navigator.navigateBack() } },
+                                    // HorizontalPager centers pages vertically by default; without an explicit
+                                    // fillMaxSize, screens shorter than the viewport wrap-size and get centered,
+                                    // showing a top gap instead of just filling down to the bottom nav bar.
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
                         }
-
-
                     }
+
+
                 }
-
-                TapTargetOverlay(
-                    controller = tourController,
-                    strings = TourStrings(
-                        tapHighlighted = stringResource(Res.string.ttt_hint_tap_highlighted),
-                        tapAnywhere = stringResource(Res.string.ttt_hint_tap_anywhere),
-                        continueButton = stringResource(Res.string.ttt_continue),
-                    ),
-                    skipButton = { onSkip ->
-                        TourSkipButton(text = stringResource(Res.string.ttt_skip), onSkip = onSkip)
-                    }
-                )
-
             }
         }
 

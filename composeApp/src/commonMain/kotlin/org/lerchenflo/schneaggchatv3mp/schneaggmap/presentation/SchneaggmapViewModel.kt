@@ -21,15 +21,18 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.Chat
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
@@ -41,8 +44,8 @@ import kotlin.time.Clock
 class SchneaggmapViewModel(
     private val navigator: Navigator,
     private val mapRepository: MapRepository,
-    private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
+    private val dataSyncCoordinator: DataSyncCoordinator,
+    private val settingsRepository: SettingsRepository,
     private val locationService: LocationService,
     private val userRepository: UserRepository,
     private val eventRepository: EventRepository,
@@ -55,12 +58,18 @@ class SchneaggmapViewModel(
 
     private val _state = MutableStateFlow(SchneaggmapState(pickLocationMode = pickLocationMode))
 
+    // Driven off authState (not a one-shot read) so the event filter picks up the id once autologin finishes
+    private val ownUserIdFlow = SessionCache.authState.map {
+        (it as? SessionCache.AuthState.LoggedIn)?.userId
+    }
+
     val state = combine(
         _state,
         mapRepository.getAllMapEntriesFlow(),
         userRepository.onlineFriendIdsFlow,
         eventRepository.getAllEventsFlow(),
-    ) { state, entries, onlineFriendIds, events ->
+        ownUserIdFlow,
+    ) { state, entries, onlineFriendIds, events, ownUserId ->
 
         // Types the search is restricted to: explicitly picked types win within their group,
         // a selected group with no individual picks counts as the whole group.
@@ -93,11 +102,21 @@ class SchneaggmapViewModel(
 
         //println("Results: ${results.size}")
 
+        // Events the user marked as not interested are hidden from the map
+        val eventsWithLocation = events.filter { event ->
+            event.location != null &&
+                (ownUserId == null || event.statusOf(ownUserId) != EventParticipationStatus.DISMISSED)
+        }
 
         state.copy(
             entries = entries,
             onlineFriendIds = onlineFriendIds,
-            eventsWithLocation = events.filter { it.location != null },
+            eventsWithLocation = eventsWithLocation,
+            joinedEventIds = ownUserId?.let { id ->
+                eventsWithLocation
+                    .filter { it.statusOf(id) == EventParticipationStatus.ACCEPTED }
+                    .mapTo(mutableSetOf()) { it.id }
+            } ?: emptySet(),
 
             searchResults = results
         )
@@ -147,9 +166,16 @@ class SchneaggmapViewModel(
             SchneaggmapAction.ToggleFilterDropdown -> _state.update {
                 it.copy(
                     isFilterDropdownVisible = !it.isFilterDropdownVisible,
-                    isMapStyleDropdownVisible = false,
                     selectedEntry = null,
                 )
+            }
+            SchneaggmapAction.ToggleAllPlaces -> {
+                val allPlaceTypes = LocationGroup.entries.flatMapTo(mutableSetOf()) { it.types }
+
+                // Anything shown (even only some types): hide all. Nothing shown: show every type
+                _state.update {
+                    it.copy(enabledTypes = if (it.enabledTypes.isNotEmpty()) emptySet() else allPlaceTypes)
+                }
             }
             is SchneaggmapAction.ToggleMainType -> {
                 val enabled = state.value.enabledTypes
@@ -185,10 +211,10 @@ class SchneaggmapViewModel(
                 // open the unrelated "create a public map entry" flow.
                 if (_state.value.pickLocationMode) return
 
-                //Dismiss filter/map-style dropdowns on map click
-                if (_state.value.isFilterDropdownVisible || _state.value.isMapStyleDropdownVisible) {
+                //Dismiss filter dropdown on map click
+                if (_state.value.isFilterDropdownVisible) {
                     _state.update {
-                        it.copy(isFilterDropdownVisible = false, isMapStyleDropdownVisible = false)
+                        it.copy(isFilterDropdownVisible = false)
                     }
                 }
 
@@ -284,7 +310,7 @@ class SchneaggmapViewModel(
 
                 _state.update { s ->
                     s.copy(
-                        selectedEntry = null,
+                        selectedEntry = if (action.keepPopupOpen) entry else null,
                         enabledTypes = s.enabledTypes + entry.locationData.map { it.locationtype }
                     )
                 }
@@ -293,7 +319,7 @@ class SchneaggmapViewModel(
 
                     println("Map upsert: $entry")
 
-                    appRepository.upsertMapEntry(
+                    mapRepository.upsertMapEntry(
                         entryId = entry.id.ifEmpty { null },
                         name = entry.name,
                         description = entry.description,
@@ -306,7 +332,7 @@ class SchneaggmapViewModel(
 
             is SchneaggmapAction.OnEntryPopupDelete -> {
                 viewModelScope.launch {
-                    appRepository.deleteMapEntry(action.entryId)
+                    mapRepository.deleteMapEntry(action.entryId)
                 }
 
                 _state.update {
@@ -362,21 +388,6 @@ class SchneaggmapViewModel(
 
             SchneaggmapAction.ToggleSnailTrails -> _state.update {
                 it.copy(showSnailTrails = !it.showSnailTrails)
-            }
-
-            SchneaggmapAction.ToggleMapStyleDropdown -> _state.update {
-                it.copy(
-                    isMapStyleDropdownVisible = !it.isMapStyleDropdownVisible,
-                    isFilterDropdownVisible = false,
-                    selectedEntry = null,
-                )
-            }
-
-            is SchneaggmapAction.SelectMapStyle -> {
-                _state.update { it.copy(isMapStyleDropdownVisible = false) }
-                viewModelScope.launch {
-                    appRepository.setMapStyleSetting(action.style)
-                }
             }
 
             SchneaggmapAction.ToggleShowUsers -> {
@@ -477,11 +488,11 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
-            appRepository.dataSync(reason = "mapInit")
+            dataSyncCoordinator.dataSync(reason = "mapInit")
         }
 
         viewModelScope.launch {
-            preferenceManager.getMergeMapLocationsFlow()
+            settingsRepository.getMergeMapLocationsFlow()
                 .collectLatest { clustering ->
                     _state.update {
                         it.copy(
@@ -492,7 +503,7 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
-            preferenceManager.getMergeMapUsersFlow()
+            settingsRepository.getMergeMapUsersFlow()
                 .collectLatest { mergeUsers ->
                     _state.update {
                         it.copy(
@@ -503,7 +514,7 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
-            preferenceManager.getMapStyleSettingFlow()
+            settingsRepository.getMapStyleSettingFlow()
                 .collectLatest { style ->
                     _state.update { it.copy(mapStyle = style, mapStyleUrl = style.tileUrl) }
                 }
@@ -521,13 +532,13 @@ class SchneaggmapViewModel(
 
         viewModelScope.launch {
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
-            appRepository.getUserByIdFlow(ownId).collectLatest { ownUser ->
+            userRepository.getUserByIdFlow(ownId).collectLatest { ownUser ->
                 _state.update { it.copy(ownLocationShared = ownUser?.locationShared ?: false, ownUser = ownUser) }
             }
         }
 
         viewModelScope.launch {
-            appRepository.getFriendsFlow("")
+            userRepository.getFriendsFlow("")
                 .collectLatest { userList ->
                     userList.mapNotNull {
                         if (it.isLocationValid()) {
@@ -556,7 +567,7 @@ class SchneaggmapViewModel(
                     if (!enabled || userIds.isEmpty()) {
                         flowOf(emptyMap<String, List<SnailTrailPoint>>())
                     } else {
-                        combine(userIds.map { id -> appRepository.getSnailTrailFlow(id).map { id to it } }) { pairs ->
+                        combine(userIds.map { id -> userRepository.getSnailTrailFlow(id).map { id to it } }) { pairs ->
                             pairs.toMap()
                         }
                     }

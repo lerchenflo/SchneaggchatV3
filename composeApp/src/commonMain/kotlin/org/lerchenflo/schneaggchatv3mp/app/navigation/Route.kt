@@ -126,6 +126,9 @@ sealed interface Route : NavKey {
     data object Undercover: Route
 
     @Serializable
+    data object TicTacToe: Route
+
+    @Serializable
     data object TowerStack: Route
 
     @Serializable

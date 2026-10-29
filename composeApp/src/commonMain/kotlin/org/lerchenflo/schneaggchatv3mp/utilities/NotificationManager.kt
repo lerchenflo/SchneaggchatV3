@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationContent
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationKind
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.toNotificationContent
 import kotlin.math.absoluteValue
@@ -38,8 +39,19 @@ object NotificationManager {
         EVENT(5),
     }
 
-    fun showNotification(titletext: String, bodytext: String, notiId: NotiId) {
-        notifier().showLocalNotification(NotificationContent(notiId.asInt, titletext, bodytext))
+    /** [avatarUserId]: user whose profile picture the notification shows, if any. */
+    fun showNotification(
+        titletext: String,
+        bodytext: String,
+        notiId: NotiId,
+        avatarUserId: String? = null,
+        kind: NotificationKind = NotificationKind.GENERAL,
+    ) {
+        notifier().showLocalNotification(NotificationContent(notiId.asInt, titletext, bodytext, avatarUserId = avatarUserId, kind = kind))
+    }
+
+    fun showNotification(content: NotificationContent) {
+        notifier().showLocalNotification(content)
     }
 
     fun showNotification(message: Message, fallbackGroupName: String? = null) {
@@ -66,6 +78,11 @@ object NotificationManager {
 
     fun removeMessageNotifications(ids: List<Int>) {
         notifier().cancelMessageNotifications(ids)
+    }
+
+    /** Removes everything shown for this chat - messages and reactions. See [Notifier.cancelChatNotifications]. */
+    fun removeChatNotifications(chatId: String) {
+        notifier().cancelChatNotifications(chatId)
     }
 
     suspend fun getToken(): String = notifier().getToken() ?: ""

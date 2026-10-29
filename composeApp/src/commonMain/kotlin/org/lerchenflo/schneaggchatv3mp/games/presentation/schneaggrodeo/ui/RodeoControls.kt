@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
@@ -51,7 +52,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoAction
@@ -76,25 +76,30 @@ private val BUTTON_PADDING = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
 private val POWER_BUTTON_SIZE = 44.dp
 private val POWER_ICON_SIZE = 22.dp
 private val COST_SNAIL_SIZE = 12.dp
-/** The lasso button floats over the rider on the left, so it stays see-through and slim. */
-private const val LASSO_BUTTON_ALPHA = 0.35f
-// A fixed height: Material's 40 dp button minimum would win over a smaller heightIn. The touch
-// target stays 48 dp regardless (Surface's minimumInteractiveComponentSize).
-private val LASSO_BUTTON_HEIGHT = 32.dp
-private val LASSO_BUTTON_PADDING = PaddingValues(horizontal = 10.dp, vertical = 2.dp)
+/**
+ * The lasso button sits in the bottom right corner, under the right thumb (like the punch button
+ * of Rayman Jungle Run): far from the rider on the left, and out of the way of the left thumb
+ * jumping. Over the track it stays a bit see-through so the way ahead shows behind it.
+ */
+private const val LASSO_BUTTON_ALPHA_ON_TRACK = 0.8f
+private val LASSO_BUTTON_HEIGHT = 56.dp
+private val LASSO_BUTTON_MIN_WIDTH = 96.dp
+private val LASSO_BUTTON_PADDING = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
 /** How long a hint on how to play stays before it fades away. */
 private const val HINT_VISIBLE_MILLIS = 3_000L
 
 /**
- * The buttons floating on the track: the lasso on the left, the small round buttons for what the
- * caught snails buy (super jump, rocket, golden carriage) in a row at the bottom center, each with
- * its price. Taps that miss the buttons fall through to the play area and jump. Thrown off, the
+ * The buttons floating on the track: the lasso in the bottom right corner (unless [lassoOnTrack]
+ * is false: then the screen shows it under the track, see RodeoLassoButton), the small round
+ * buttons for what the caught snails buy (super jump, rocket, golden carriage) in a row at the
+ * bottom center, each with its price. Taps that miss the buttons fall through to the play area and jump. Thrown off, the
  * lasso moves to the bottom center - it is the only way back up. While riding a vehicle a hint on
  * how to ride it takes the bottom center.
  */
 @Composable
 internal fun RodeoControls(
     superJumpCharges: Int,
+    superJumpAllowed: Boolean,
     isOnFoot: Boolean,
     canCatchHorse: Boolean,
     ride: RodeoVehicleKind?,
@@ -104,6 +109,7 @@ internal fun RodeoControls(
     enabled: Boolean,
     onAction: (SchneaggRodeoAction) -> Unit,
     modifier: Modifier = Modifier,
+    lassoOnTrack: Boolean = true,
 ) {
     Box(modifier = modifier) {
         when {
@@ -132,9 +138,6 @@ internal fun RodeoControls(
                     showKeyHints = showKeyHints,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
-                if (ride.keepsButtons) {
-                    LassoButton(showKeyHints, enabled, onAction, Modifier.align(Alignment.CenterStart), label = ride.lassoLabel)
-                }
             }
             else -> {
                 Row(
@@ -143,7 +146,7 @@ internal fun RodeoControls(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     AnimatedVisibility(
-                        visible = superJumpCharges > 0,
+                        visible = superJumpCharges > 0 && superJumpAllowed,
                         enter = fadeIn() + expandHorizontally(),
                         exit = fadeOut() + shrinkHorizontally()
                     ) {
@@ -196,39 +199,58 @@ internal fun RodeoControls(
                         )
                     }
                 }
-                LassoButton(showKeyHints, enabled, onAction, Modifier.align(Alignment.CenterStart))
             }
+        }
+        if (lassoOnTrack) {
+            RodeoLassoButton(
+                isOnFoot = isOnFoot,
+                ride = ride,
+                showKeyHints = showKeyHints,
+                enabled = enabled,
+                onAction = onAction,
+                onTrack = true,
+                modifier = Modifier.align(Alignment.BottomEnd)
+            )
         }
     }
 }
 
+/**
+ * The lasso button, while riding the horse or a vehicle that keeps it (see
+ * RodeoVehicleKind.keepsButtons); nothing otherwise. Thrown off, the catch-the-horse button in
+ * RodeoControls takes over. [onTrack]: floats over the picture, so it stays a bit see-through.
+ */
 @Composable
-private fun LassoButton(
+internal fun RodeoLassoButton(
+    isOnFoot: Boolean,
+    ride: RodeoVehicleKind?,
     showKeyHints: Boolean,
     enabled: Boolean,
     onAction: (SchneaggRodeoAction) -> Unit,
+    onTrack: Boolean,
     modifier: Modifier = Modifier,
-    label: StringResource? = null,
 ) {
+    if (isOnFoot || (ride != null && !ride.keepsButtons)) return
     val colors = MaterialTheme.colorScheme
+    val alpha = if (onTrack) LASSO_BUTTON_ALPHA_ON_TRACK else 1f
     FilledTonalButton(
         onClick = { onAction(SchneaggRodeoAction.OnLassoClick) },
         enabled = enabled,
         contentPadding = LASSO_BUTTON_PADDING,
-        // See-through so the rider behind it stays visible
         colors = ButtonDefaults.filledTonalButtonColors(
-            containerColor = colors.secondaryContainer.copy(alpha = LASSO_BUTTON_ALPHA),
+            containerColor = colors.secondaryContainer.copy(alpha = alpha),
             contentColor = colors.onSecondaryContainer,
-            disabledContainerColor = colors.onSurface.copy(alpha = LASSO_BUTTON_ALPHA / 3),
+            disabledContainerColor = colors.onSurface.copy(alpha = alpha * 0.12f),
         ),
         // Keeps keyboard focus on the play area so space / L keep working after a click
         modifier = modifier
             .height(LASSO_BUTTON_HEIGHT)
+            .widthIn(min = LASSO_BUTTON_MIN_WIDTH)
             .focusProperties { canFocus = false }
     ) {
         Text(
-            text = stringResource(label ?: Res.string.games_schneaggrodeo_lasso) + keyHint("L", showKeyHints),
-            style = MaterialTheme.typography.labelMedium
+            text = stringResource(ride?.lassoLabel ?: Res.string.games_schneaggrodeo_lasso) + keyHint("L", showKeyHints),
+            style = MaterialTheme.typography.titleMedium
         )
     }
 }

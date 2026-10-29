@@ -6,20 +6,23 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 class MiscSettingsViewModel(
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
+    private val sessionTerminator: SessionTerminator,
     private val navigator: Navigator,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
+    private val settingsRepository: SettingsRepository,
     private val applicationScope: ApplicationScope,
-    private val preferencemanager: Preferencemanager
 ): ViewModel() {
 
     var logs by mutableStateOf<List<LogEntry>>(emptyList())
@@ -41,11 +44,13 @@ class MiscSettingsViewModel(
         }
     }
 
-    fun deleteAllAppData(){
-        viewModelScope.launch {
-            appRepository.deleteAllAppData()
-            applicationScope.launch {
-                appRepository.dataSync(reason = "appDataDeleted") //Trigger datasync that user does not get stuck in the email verify screen
+    fun resetLocalData(){
+        applicationScope.launchOnMain {
+            sessionTerminator.resetLocalData()
+            // Not awaited: the navigation below runs right away. Main.immediate starts the sync
+            // before that, and it then runs in the app-wide scope (plan R2).
+            launch {
+                dataSyncCoordinator.dataSync(reason = "appDataDeleted") //Trigger datasync that user does not get stuck in the email verify screen
             }
             navigator.navigate(Route.AutoLoginCredChecker, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
 
@@ -54,7 +59,7 @@ class MiscSettingsViewModel(
 
     fun resetOnboardingTour() {
         viewModelScope.launch {
-            preferencemanager.setOnboardingSeen(false)
+            settingsRepository.setOnboardingSeen(false)
         }
     }
 

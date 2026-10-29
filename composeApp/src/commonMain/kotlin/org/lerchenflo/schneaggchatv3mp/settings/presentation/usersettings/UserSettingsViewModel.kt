@@ -13,11 +13,13 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -29,14 +31,19 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 class UserSettingsViewModel(
-    private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
+    private val dataSyncCoordinator: DataSyncCoordinator,
+    private val userRepository: UserRepository,
+    private val authRepository: AuthRepository,
+    private val sessionTerminator: SessionTerminator,
     private val pictureManager: PictureManager,
     private val navigator: Navigator,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
+    private val applicationScope: ApplicationScope,
 ): ViewModel() {
 
     var lastEmailVerificationTime: Instant = Instant.DISTANT_PAST
@@ -47,11 +54,11 @@ class UserSettingsViewModel(
         val bytearrayfullsize = newImage
             .loadBytes()
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
 
             val bytearray = pictureManager.downscaleImage(bytearrayfullsize)
 
-            val success = appRepository.changeProfilePic(bytearray)
+            val success = userRepository.changeProfilePic(bytearray)
 
             if (success) {
                 SnackbarManager.showMessage(getString(Res.string.please_restart_app)) //Des image caching vo coil isch so guat dassas sich ned abtöta loht. ma künnt profilbild mit datum speichra aber denn wirds ned überschrieba und unendlich speicherverbrauch
@@ -66,8 +73,8 @@ class UserSettingsViewModel(
         }
 
         lastEmailVerificationTime = Clock.System.now()
-        viewModelScope.launch {
-            appRepository.sendEmailVerify()
+        applicationScope.launchOnMain {
+            authRepository.sendEmailVerify()
         }
 
         viewModelScope.launch {
@@ -87,54 +94,52 @@ class UserSettingsViewModel(
             return
         }
 
-        viewModelScope.launch {
-            appRepository.changeUsername(newUsername)
+        applicationScope.launchOnMain {
+            userRepository.changeUsername(newUsername)
         }
     }
 
     fun changeEmail(newEmail: String){
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        viewModelScope.launch {
-            appRepository.changeUserDetails(newEmail = newEmail, userId = userId)
-            appRepository.dataSync(reason = "emailChanged")
+        applicationScope.launchOnMain {
+            userRepository.changeUserDetails(newEmail = newEmail, userId = userId)
+            dataSyncCoordinator.dataSync(reason = "emailChanged")
         }
     }
 
     fun changeStatus(newStatus: String) {
-        viewModelScope.launch {
-            val userId = SessionCache.requireLoggedIn()?.userId ?: return@launch
+        applicationScope.launchOnMain {
+            val userId = SessionCache.requireLoggedIn()?.userId ?: return@launchOnMain
 
-            appRepository.changeUserDetails(newStatus = newStatus, userId = userId)
-            appRepository.dataSync(reason = "statusChanged")
+            userRepository.changeUserDetails(newStatus = newStatus, userId = userId)
+            dataSyncCoordinator.dataSync(reason = "statusChanged")
         }
     }
 
     fun changeBirthDate(newBirthDate: String) {
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        viewModelScope.launch {
-            appRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId)
-            appRepository.dataSync(reason = "birthDateChanged")
+        applicationScope.launchOnMain {
+            userRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId)
+            dataSyncCoordinator.dataSync(reason = "birthDateChanged")
         }
     }
 
     fun changePhoneNumber(newPhoneNumber: String) {
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        viewModelScope.launch {
-            appRepository.changeUserDetails(newPhoneNumber = newPhoneNumber, userId = userId)
-            appRepository.dataSync(reason = "phoneNumberChanged")
+        applicationScope.launchOnMain {
+            userRepository.changeUserDetails(newPhoneNumber = newPhoneNumber, userId = userId)
+            dataSyncCoordinator.dataSync(reason = "phoneNumberChanged")
         }
     }
 
 
     fun logout(){
-        viewModelScope.launch {
-            appRepository.logout()
-            viewModelScope.launch {
-                navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
-            }
+        applicationScope.launchOnMain {
+            sessionTerminator.logout()
+            navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
         }
     }
 

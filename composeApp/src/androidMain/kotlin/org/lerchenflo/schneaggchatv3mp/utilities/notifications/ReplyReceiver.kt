@@ -9,7 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
@@ -18,8 +20,7 @@ const val ACTION_REPLY = "org.lerchenflo.schneaggchatv3mp.REPLY"
 const val KEY_REPLY_TEXT = "reply_text"
 
 /**
- * Handles the voice/typed "Reply" action on a message notification - the path Android Auto's
- * voice reply and the phone notification's inline reply both go through.
+ * Handles the "Reply" action on a message notification (the notification's inline reply).
  */
 class ReplyReceiver : BroadcastReceiver() {
 
@@ -35,40 +36,53 @@ class ReplyReceiver : BroadcastReceiver() {
 
         if (replyText.isNullOrEmpty()) return
 
+        val notifId = NotificationManager.NotiId.HexString(chatId).asInt
+        val notifier = KoinPlatform.getKoin().get<AndroidNotifier>()
+
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
-                val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
 
                 //The app process may have been started just for this broadcast
                 if (SessionCache.authState.value !is SessionCache.AuthState.LoggedIn) {
                     SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)
                 }
-                val ownId = (SessionCache.authState.value as? SessionCache.AuthState.LoggedIn)
-                    ?.userId ?: return@runCatching
+                val ownId = (SessionCache.authState.value as? SessionCache.AuthState.LoggedIn)?.userId
+                if (ownId == null) {
+                    logError("Reply not sent: no valid session")
+                    //The notification must be updated either way, or its reply spinner keeps spinning
+                    notifier.refreshConversation(notifId, chatId, groupChat)
+                    return@runCatching
+                }
 
-                appRepository.sendMessage(
+                messageRepository.sendMessage(
                     ownId = ownId,
                     messageId = null,
                     empfaenger = chatId,
                     gruppe = groupChat,
-                    content = AppRepository.MessageContent.TextContent(replyText),
+                    content = MessageContent.TextContent(replyText),
                     answerid = null,
                 )
 
-                appRepository.setAllChatMessagesRead(
+                messageRepository.setAllChatMessagesRead(
                     chatid = chatId,
                     gruppe = groupChat,
                     timestamp = getCurrentTimeMillisString()
                 )
 
-                val notifId = NotificationManager.NotiId.HexString(chatId).asInt
-                KoinPlatform.getKoin().get<Notifier>().appendSentReply(notifId, replyText)
+                notifier.appendSentReply(notifId, chatId, groupChat, replyText)
             }.onFailure { e ->
-                println("[ReplyReceiver] Error sending reply: ${e.message}")
+                logError("Sending the reply failed: ${e::class.simpleName}: ${e.message}")
+                runCatching { notifier.refreshConversation(notifId, chatId, groupChat) }
             }
             pendingResult.finish()
         }
+    }
+
+    private suspend fun logError(message: String) {
+        println("[ReplyReceiver] $message")
+        runCatching { KoinPlatform.getKoin().get<Logger>().logError("[ReplyReceiver] $message") }
     }
 }

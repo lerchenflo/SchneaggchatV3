@@ -228,6 +228,17 @@ val phWhite = Color(0xFFFFFFFF)
 val phOrangeLightVariant = Color(0xFFffbb57)
 
 
+// Warning - Material 3 has no warning role (see WarningColors.kt). Amber tones, same in every theme.
+val warningLight = Color(0xFF825500)
+val onWarningLight = Color(0xFFFFFFFF)
+val warningContainerLight = Color(0xFFFFDDB3)
+val onWarningContainerLight = Color(0xFF291800)
+val warningDark = Color(0xFFFFB951)
+val onWarningDark = Color(0xFF452B00)
+val warningContainerDark = Color(0xFF633F00)
+val onWarningContainerDark = Color(0xFFFFDDB3)
+
+
 // Ethereal Signal - Variant 1 Colors
 val etherealMidnight = Color(0xFF060E20)       // Base Background
 val etherealMidnightLow = Color(0xFF091328)    // surface-container-low
@@ -238,6 +249,12 @@ val electricViolet = Color(0xFFBA9EFF)         // Primary
 val electricVioletDim = Color(0xFF8455EF)      // Primary Dim / Container
 val etherealTeal = Color(0xFF53DDFC)           // Secondary (Status)
 val etherealText = Color(0xFFDEE5FF)           // on-background / on-surface
+
+// Filled in 2026-10-17 so no role falls back to the Material defaults
+val etherealTealContainer = Color(0xFF004F5E)  // Secondary container: deep teal
+val etherealPink = Color(0xFFFF8AD8)           // Tertiary: third accent next to violet and teal
+val etherealPinkContainer = Color(0xFF7A2463)  // Tertiary container
+val etherealOutline = etherealText.copy(alpha = 0.4f) // Stronger than the 15% ghost border
 
 
 // The Digital Curator - Dark Variant 2
@@ -257,6 +274,17 @@ val curatorSurfaceHighest = Color(0xFFD1D5D9)   // Inferred for received bubbles
 
 // Accessibility Fallback
 val curatorGhostBorder = Color(0x26ABADB0)      // Outline-variant at 15% opacity
+
+// Filled in 2026-10-17 so no role falls back to the Material defaults
+val curatorSecondary = Color(0xFF5B5D8C)        // Muted indigo next to the violet primary
+val curatorOnSecondary = Color(0xFFFFFFFF)
+val curatorSecondaryContainer = Color(0xFFE1E0FF)
+val curatorOnSecondaryContainer = Color(0xFF181A47)
+val curatorTertiary = Color(0xFF8E3B6B)         // Berry accent
+val curatorOnTertiary = Color(0xFFFFFFFF)
+val curatorTertiaryContainer = Color(0xFFFFD8EA)
+val curatorOnTertiaryContainer = Color(0xFF3A0B29)
+val curatorOutline = Color(0xFF8A8D90)          // Between the label grey and the ghost border
 
 
 // The Neon Pulse - Core Palette
@@ -280,6 +308,12 @@ val neonSurfaceHighest = Color(0xFF262626)   // Active bubbles/modals
 
 val neonOnSurfaceVariant = Color(0xFFADAAAA) // Secondary body text
 val neonGhostBorder = Color(0x26494847)      // Outline-variant at 15% opacity
+
+// Filled in 2026-10-17 so no role falls back to the Material defaults
+val neonOnTertiary = Color(0xFF3D3100)       // Label on the yellow tertiary
+val neonTertiaryContainer = Color(0xFF5C4B00)
+val neonOutline = Color(0xFF767575)          // Between the secondary body text and the surfaces
+val neonInverseSurface = Color(0xFFFCF8F8)   // Light snackbar/tooltip surface
 
 
 // Anna Theme - SchneaggchatV2Android Colors
@@ -313,6 +347,9 @@ val annaSurfaceContainerHighest = Color(0xFF7A2568) // Bright plum/lila incoming
 val annaOutline = Color(0xFFC08AAD)           // Bright pink-lila, brighter than old annaschwarz
 val annaOutlineVariant = Color(0xFF4A3B39)
 
+// Filled in 2026-10-17 so no role falls back to the Material defaults
+val annaTertiaryContainer = Color(0xFF5A2D78)  // Darker purple under the lila tertiary
+
 
 // Flos Theme - dark blue + white
 val flosPrimary = Color(0xFF15477E)           // Darker blue
@@ -344,3 +381,6 @@ val flosSurfaceContainerHighest = Color(0xFF1C232C)
 
 val flosOutline = Color(0xFF4A5568)
 val flosOutlineVariant = Color(0xFF2B333D)
+
+// Filled in 2026-10-17 so no role falls back to the Material defaults
+val flosTertiaryContainer = Color(0xFF1E4A78)  // Darker blue under the light blue tertiary

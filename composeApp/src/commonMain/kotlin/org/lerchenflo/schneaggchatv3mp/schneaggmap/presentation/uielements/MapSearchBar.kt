@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import org.lerchenflo.schneaggchatv3mp.sharedUi.horizontalScrollWithMouseWheel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +16,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -35,6 +37,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.lerchenflo.taptarget.tapTarget
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -54,8 +57,15 @@ fun MapSearchBar(
     state: SchneaggmapState,
     onAction: (SchneaggmapAction) -> Unit,
     modifier: Modifier = Modifier,
+    onExpandedChange: (Boolean) -> Unit = {},
 ) {
     val searchbarstate = rememberSearchBarState()
+
+    //Report expand/collapse so the screen can hide chrome that belongs to the collapsed bar
+    LaunchedEffect(searchbarstate) {
+        snapshotFlow { searchbarstate.currentValue == SearchBarValue.Expanded }
+            .collect { onExpandedChange(it) }
+    }
     val textfieldstate = rememberTextFieldState(initialText = state.searchTerm)
     val scope = rememberCoroutineScope()
 
@@ -103,16 +113,37 @@ fun MapSearchBar(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                } else {
+                    //Opens the full-screen search
+                    IconButton(onClick = { scope.launch { searchbarstate.animateToExpanded() } }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
 
 
             },
             trailingIcon = {
-                //Clear search
                 if (state.searchTerm.isNotEmpty()) {
+                    //Clear search
                     IconButton(onClick = { onAction(SchneaggmapAction.OnSearchTermChange("")) }) {
                         Icon(
                             imageVector = Icons.Default.Close,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                } else if (searchbarstate.currentValue != SearchBarValue.Expanded) {
+                    //Map settings
+                    IconButton(
+                        onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
+                        modifier = Modifier.tapTarget("schneaggmap_settings_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -138,7 +169,7 @@ fun MapSearchBar(
             //Filter by location group, and within selected groups by individual type
             Row(
                 modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
+                    .horizontalScrollWithMouseWheel()
                     .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -154,7 +185,7 @@ fun MapSearchBar(
             AnimatedVisibility(visible = state.searchSelectedGroups.isNotEmpty()) {
                 Row(
                     modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
+                        .horizontalScrollWithMouseWheel()
                         .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -205,7 +236,7 @@ fun MapSearchResult(
         headlineContent = { Text(entry.name) },
         leadingContent = {
             Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                modifier = Modifier.horizontalScrollWithMouseWheel(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {

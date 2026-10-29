@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.tools.domain
 
-import kotlin.math.abs
-import kotlin.math.roundToLong
+import org.lerchenflo.schneaggchatv3mp.utilities.toFixed
 
 const val MILLILITRES_PER_LITRE = 1000.0
 
@@ -66,20 +65,6 @@ fun calculateFuelMix(basis: FuelMixBasis, amountLitres: Double, ratio: Int): Fue
 /** Parses a typed amount, accepting the comma as a decimal separator like the keypad produces it. */
 fun parseFuelAmount(input: String): Double? =
     input.trim().replace(',', '.').toDoubleOrNull()?.takeIf { it.isFinite() && it > 0.0 }
-
-/**
- * Fixed-decimal formatting, because kotlin common has no printf and toString() would fall back to
- * scientific notation on the extremes.
- */
-private fun Double.toFixed(decimals: Int): String {
-    var factor = 1L
-    repeat(decimals) { factor *= 10 }
-    val scaled = (abs(this) * factor).roundToLong()
-    val sign = if (this < 0) "-" else ""
-    val whole = scaled / factor
-    if (decimals == 0) return "$sign$whole"
-    return "$sign$whole.${(scaled % factor).toString().padStart(decimals, '0')}"
-}
 
 /** Litres with two decimals - the resolution of a jerrycan scale. */
 fun formatLitres(litres: Double): String = litres.toFixed(2)

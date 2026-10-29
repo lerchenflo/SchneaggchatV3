@@ -14,15 +14,19 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,
     private val securePrefs: KSafe,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
 ) {
 
     private val json = Json {
@@ -44,7 +48,7 @@ class Preferencemanager(
     // Key under which the pre-E2E push decryption key used to live. Only referenced to purge it.
     private val legacyEncryptionKey = "encryption_key"
 
-    suspend fun saveTokens(tokenPair: NetworkUtils.TokenPair) {
+    suspend fun saveTokens(tokenPair: TokenPair) {
         try {
             //loggingRepository.logDebug("Secure storage: Saving access token")
             securePrefs.put(SecureKey.ACCESS_TOKEN.key, tokenPair.accessToken)
@@ -63,11 +67,11 @@ class Preferencemanager(
         }
     }
 
-    suspend fun getTokens(): NetworkUtils.TokenPair {
+    suspend fun getTokens(): TokenPair {
         val accessToken = securePrefs.get(SecureKey.ACCESS_TOKEN.key, "")
         val refreshToken = securePrefs.get(SecureKey.REFRESH_TOKEN.key, "")
 
-        return NetworkUtils.TokenPair(
+        return TokenPair(
             accessToken = accessToken,
             refreshToken = refreshToken,
         )
@@ -126,6 +130,7 @@ class Preferencemanager(
         val DRAFTS = stringPreferencesKey("drafts")
         val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
         val LAST_CONTRIBUTE_POPUP_SHOWN = longPreferencesKey("last_contribute_popup_shown")
+        val LAST_DISMISSED_ANNOUNCEMENT_ID = longPreferencesKey("last_dismissed_announcement_id")
         val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
         val EVENTS_VIEW_MODE = stringPreferencesKey("events_view_mode")
     }
@@ -288,6 +293,15 @@ class Preferencemanager(
         return prefs.data.first()[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN] ?: 0L
     }
 
+    // Last dismissed announcement (synced)
+    fun getLastDismissedAnnouncementIdFlow(): Flow<Long> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.LAST_DISMISSED_ANNOUNCEMENT_ID] ?: 0L
+    }
+
+    suspend fun saveLastDismissedAnnouncementId(id: Long) {
+        prefs.edit { it[PrefsKeys.LAST_DISMISSED_ANNOUNCEMENT_ID] = id }
+    }
+
     // Onboarding Seen
     suspend fun setOnboardingSeen(value: Boolean) {
         prefs.edit { it[PrefsKeys.ONBOARDING_SEEN] = value }
@@ -395,9 +409,9 @@ class Preferencemanager(
      * Overwrites every server-synced preference with the server's authoritative values, in one
      * DataStore edit so observers see a single coherent update. Language is deliberately excluded -
      * applying a new language has to go through LanguageService/LanguageManager to actually switch
-     * the platform locale, so AppRepository.applyServerSettings handles that field separately.
+     * the platform locale, so SettingsRepository.applyServerSettings handles that field separately.
      */
-    suspend fun applySyncedSettings(settings: NetworkUtils.PersonalUserSettings) {
+    suspend fun applySyncedSettings(settings: SyncedSettings) {
         val theme = ThemeSetting.entries.firstOrNull { it.name == settings.theme } ?: ThemeSetting.SYSTEM
         val mapStyle = MapStyleSetting.entries.firstOrNull { it.name == settings.mapStyle } ?: MapStyleSetting.LIBERTY
 
@@ -419,6 +433,8 @@ class Preferencemanager(
             }
             it[PrefsKeys.DEVELOPER_SETTINGS] = settings.developerSettings
             it[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN] = settings.lastContributePopupShown
+            // A dismissal made offline is undone here - the announcement simply shows once more
+            it[PrefsKeys.LAST_DISMISSED_ANNOUNCEMENT_ID] = settings.lastDismissedAnnouncementId
         }
     }
 

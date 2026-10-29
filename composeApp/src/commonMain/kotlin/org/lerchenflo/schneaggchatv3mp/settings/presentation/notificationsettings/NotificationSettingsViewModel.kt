@@ -10,22 +10,23 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.WakePermissionDraft
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import kotlin.time.ExperimentalTime
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 class NotificationSettingsViewModel(
-    private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
+    private val userRepository: UserRepository,
     private val navigator: Navigator,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     var notificationPermissionState by mutableStateOf(PermissionState.NOT_DETERMINED)
@@ -43,7 +44,7 @@ class NotificationSettingsViewModel(
         viewModelScope.launch { // Global wake status
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
-            appRepository.getUserByIdFlow(ownId)
+            userRepository.getUserByIdFlow(ownId)
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting own user for wake settings: ${exception.message}")
                 }
@@ -53,7 +54,7 @@ class NotificationSettingsViewModel(
         }
 
         viewModelScope.launch { // Friends for per-friend wake sharing
-            appRepository.getFriendsFlow("")
+            userRepository.getFriendsFlow("")
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting friends for notification settings: ${exception.message}")
                 }
@@ -101,18 +102,23 @@ class NotificationSettingsViewModel(
         val wasGlobal = wakeEnabledGlobal
         val currentByFriendId = friends.associate { it.id to it.wakeupEnabled }
 
-        viewModelScope.launch {
+        // The server writes outlive the screen; the permission prompt belongs to it and is
+        // dropped when the screen is gone
+        val writes = applicationScope.launchOnMain {
             if (newGlobal != wasGlobal) {
-                appRepository.setWakeGlobal(newGlobal)
+                userRepository.setWakeGlobal(newGlobal)
             }
 
             friendDrafts.forEach { draft ->
                 if (currentByFriendId[draft.friendId] != draft.allowWake) {
-                    appRepository.setWakePermission(draft.friendId, draft.allowWake)
+                    userRepository.setWakePermission(draft.friendId, draft.allowWake)
                 }
             }
+        }
 
-            if (newGlobal && !wasGlobal) {
+        if (newGlobal && !wasGlobal) {
+            viewModelScope.launch {
+                writes.join()
                 requestFullScreenIntentPermissionIfNeeded()
             }
         }

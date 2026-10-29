@@ -6,9 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToUiText
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onSuccess
@@ -45,6 +44,7 @@ import schneaggchatv3mp.composeapp.generated.resources.recap_type_image
 import schneaggchatv3mp.composeapp.generated.resources.recap_type_poll
 import schneaggchatv3mp.composeapp.generated.resources.recap_type_text
 import kotlin.math.roundToInt
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.GameRemoteDataSource
 
 data class RecapState(
     val isLoading: Boolean = true,
@@ -57,9 +57,9 @@ sealed interface RecapAction {
 }
 
 class RecapViewModel(
-    private val networkUtils: NetworkUtils,
-    private val userRepository: UserRepository,
-    private val groupRepository: GroupRepository,
+    private val gameRemoteDataSource: GameRemoteDataSource,
+    private val userRepository: UserLocalDataSource,
+    private val groupRepository: GroupLocalDataSource,
 ): ViewModel() {
 
     private val _state = MutableStateFlow(RecapState())
@@ -78,7 +78,7 @@ class RecapViewModel(
     private fun loadRecap() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
-            networkUtils.getRecap(year = RecapAvailability.recapYear())
+            gameRemoteDataSource.getRecap(year = RecapAvailability.recapYear())
                 .trackConnectivity()
                 .onSuccess { response ->
                     _state.update { it.copy(isLoading = false, recap = response.toRecapUi()) }

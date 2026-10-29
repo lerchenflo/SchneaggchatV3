@@ -7,15 +7,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.extensions.loadBytes
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getMissingPasswordRequirements
@@ -33,16 +39,21 @@ import schneaggchatv3mp.composeapp.generated.resources.you_need_to_select_a_prof
 
 
 class SignUpViewModel(
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
+    private val authRepository: AuthRepository,
     private val navigator: Navigator,
     private val pictureManager: PictureManager,
-    private val loggingRepository: LoggingRepository,
-    private val applicationScope: ApplicationScope,
-    private val languageService: LanguageService
+    private val loggingRepository: Logger,
+    private val languageService: LanguageService,
+    settingsRepository: SettingsRepository,
 ): ViewModel() {
 
     var state by mutableStateOf(SignupState())
         private set
+
+    /** The saved server URL; the privacy policy link opens this server's page. */
+    val serverUrl: StateFlow<String> = settingsRepository.getServerUrlFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, BASE_SERVER_URL)
 
 
     fun onAction(action: SignupAction){
@@ -216,7 +227,7 @@ class SignUpViewModel(
 
                 if (state.isInputComplete()) {
                     var accCreationSuccessful = false
-                    appRepository.createAccount(
+                    authRepository.createAccount(
                         username = state.usernameState.text,
                         email = state.emailState.text,
                         password = state.passwordState.text,
@@ -232,10 +243,12 @@ class SignUpViewModel(
                     }
 
                     if (accCreationSuccessful){
-                        appRepository.login(state.usernameState.text, state.passwordState.text) { success ->
+                        authRepository.login(state.usernameState.text, state.passwordState.text) { success ->
                             if (success){
-                                applicationScope.launch {
-                                    appRepository.dataSync(reason = "signUpSuccess")
+                                // UNDISPATCHED: the sync is started before the navigation below can clear
+                                // this ViewModel; it then runs in the app-wide scope (plan R2).
+                                viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                                    dataSyncCoordinator.dataSync(reason = "signUpSuccess")
                                 }
                                 viewModelScope.launch {
                                     navigator.navigate(Route.EmailVerifiedCheck, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))

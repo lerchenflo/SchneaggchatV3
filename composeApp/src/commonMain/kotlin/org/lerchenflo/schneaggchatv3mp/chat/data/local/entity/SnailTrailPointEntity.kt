@@ -1,0 +1,26 @@
+package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
+
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
+
+/** One sampled point of a friend's snail trail (see `FriendLocationSnapshotEntry.snailTrail` and
+ * `SocketConnectionMessage.SnailTrailPointAdded`). */
+@Entity(
+    tableName = "snail_trail_points",
+    // locationTime trails userId so the per-user trail queries read in ORDER BY order.
+    indices = [Index(value = ["userId", "locationTime"])]
+)
+data class SnailTrailPointEntity(
+    @PrimaryKey(autoGenerate = true)
+    val localPk: Long = 0L,
+
+    val userId: String,
+
+    val lat: Double,
+    val long: Double,
+    val locationTime: Long,
+
+    val speed: Double? = null,
+    val heading: Double? = null,
+)

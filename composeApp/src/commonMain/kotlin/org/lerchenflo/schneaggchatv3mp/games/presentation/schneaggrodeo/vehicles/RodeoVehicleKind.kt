@@ -12,6 +12,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_helic
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_helicopter_controls_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_rowboat
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_rowboat_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_rowboat_controls_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_uboat
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_uboat_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_uboat_controls_keys
@@ -39,6 +40,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_cable
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_cable_car_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_candy_bus
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_candy_bus_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_candy_bus_controls_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_capture
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_car_wreck
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_car_wreck_controls
@@ -47,6 +49,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lawn_
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lawn_tractor_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_milk_truck
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_milk_truck_controls
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_milk_truck_controls_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_plane_controls
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_plane_controls_keys
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_pocket_bike
@@ -74,6 +77,11 @@ enum class RodeoVehicleKind(
      * uses the same halves to lean back and forward).
      */
     val steers: Boolean = false,
+    /**
+     * On desktop S / arrow down are its down input (dive, sink, duck; see RodeoVehicle.onDive)
+     * instead of the lasso.
+     */
+    val downKey: Boolean = steers,
     /** The buttons stay (next to the hint) while riding, e.g. for the lasso. */
     val keepsButtons: Boolean = false,
     /** The lasso button's text while riding, if the vehicle uses it for something else. */
@@ -95,10 +103,12 @@ enum class RodeoVehicleKind(
         title = Res.string.games_schneaggrodeo_train,
         rideHint = Res.string.games_schneaggrodeo_train_controls,
         rideHintKeys = Res.string.games_schneaggrodeo_train_controls_keys,
+        downKey = true,
     ),
     MILK_TRUCK(
         title = Res.string.games_schneaggrodeo_milk_truck,
         rideHint = Res.string.games_schneaggrodeo_milk_truck_controls,
+        rideHintKeys = Res.string.games_schneaggrodeo_milk_truck_controls_keys,
         keepsButtons = true,
     ),
     BULL(
@@ -114,6 +124,7 @@ enum class RodeoVehicleKind(
     CANDY_BUS(
         title = Res.string.games_schneaggrodeo_candy_bus,
         rideHint = Res.string.games_schneaggrodeo_candy_bus_controls,
+        rideHintKeys = Res.string.games_schneaggrodeo_candy_bus_controls_keys,
         keepsButtons = true,
         lassoLabel = Res.string.games_schneaggrodeo_capture,
     ),
@@ -129,6 +140,7 @@ enum class RodeoVehicleKind(
         title = Res.string.games_schneaggrodeo_balloon,
         rideHint = Res.string.games_schneaggrodeo_balloon_controls,
         rideHintKeys = Res.string.games_schneaggrodeo_balloon_controls_keys,
+        downKey = true,
     ),
     COW(
         title = Res.string.games_schneaggrodeo_cow,
@@ -138,12 +150,14 @@ enum class RodeoVehicleKind(
     ROWBOAT(
         title = Res.string.games_schneaggrodeo_rowboat,
         rideHint = Res.string.games_schneaggrodeo_rowboat_controls,
+        rideHintKeys = Res.string.games_schneaggrodeo_rowboat_controls_keys,
         keepsButtons = true,
     ),
     U_BOAT(
         title = Res.string.games_schneaggrodeo_uboat,
         rideHint = Res.string.games_schneaggrodeo_uboat_controls,
         rideHintKeys = Res.string.games_schneaggrodeo_uboat_controls_keys,
+        downKey = true,
     ),
     OIL_TANKER(
         title = Res.string.games_schneaggrodeo_oil_tanker,
@@ -179,6 +193,7 @@ enum class RodeoVehicleKind(
         title = Res.string.games_schneaggrodeo_drill,
         rideHint = Res.string.games_schneaggrodeo_drill_controls,
         rideHintKeys = Res.string.games_schneaggrodeo_drill_controls_keys,
+        downKey = true,
         boardingCall = Res.string.games_schneaggrodeo_drill_boarding,
     ),
     /** Bought with snails, like the rocket. */

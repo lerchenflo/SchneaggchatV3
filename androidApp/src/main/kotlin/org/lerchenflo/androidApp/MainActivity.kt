@@ -1,7 +1,9 @@
 package org.lerchenflo.androidApp
 
 import android.content.Intent
+import android.content.LocusId
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,12 +20,14 @@ import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.App
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
+import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.utilities.ActivityHolder
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_CHAT_ID
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_FROM_NOTIFICATION
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_GROUP_CHAT
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.chatShortcutId
 
 class MainActivity : ComponentActivity() {
 
@@ -52,6 +56,16 @@ class MainActivity : ComponentActivity() {
         }
 
         ActivityHolder.set(this)
+
+        //Reports the open chat with the LocusId of its conversation shortcut, so Android also ranks
+        //conversations by in-app use (as the conversation notification docs recommend)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            lifecycleScope.launch {
+                OpenChatTracker.current.collect { chat ->
+                    runCatching { setLocusContext(chat?.let { LocusId(chatShortcutId(it.chatId)) }, null) }
+                }
+            }
+        }
 
         lifecycleScope.launch {
             KoinPlatform.getKoin().get<PermissionManager>().requestNotificationPermission()

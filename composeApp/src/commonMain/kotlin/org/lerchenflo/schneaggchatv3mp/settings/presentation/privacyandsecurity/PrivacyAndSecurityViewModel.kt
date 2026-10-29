@@ -11,12 +11,15 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.FriendShareDraft
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -28,13 +31,19 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 class PrivacyAndSecurityViewModel(
-    private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
+    private val dataSyncCoordinator: DataSyncCoordinator,
+    private val userRepository: UserRepository,
+    private val authRepository: AuthRepository,
+    private val sessionTerminator: SessionTerminator,
+    private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     var lastEmailVerificationTime: Instant = Instant.DISTANT_PAST
@@ -52,7 +61,7 @@ class PrivacyAndSecurityViewModel(
         viewModelScope.launch { // Global location sharing status
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
-            appRepository.getUserByIdFlow(ownId)
+            userRepository.getUserByIdFlow(ownId)
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting own user for location sharing: ${exception.message}")
                 }
@@ -62,7 +71,7 @@ class PrivacyAndSecurityViewModel(
         }
 
         viewModelScope.launch { // Friends for per-friend location sharing
-            appRepository.getFriendsFlow("")
+            userRepository.getFriendsFlow("")
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting friends for privacy settings: ${exception.message}")
                 }
@@ -73,15 +82,15 @@ class PrivacyAndSecurityViewModel(
     }
 
     fun changePassword(oldPassword: String, newPassword: String, onFinished: (Boolean) -> Unit) {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             // Guard set synchronously, before any suspend call, so a second
             // near-simultaneous tap can't slip through while this coroutine is
             // still suspended inside changePassword() below.
-            if (isChangingPassword) return@launch
+            if (isChangingPassword) return@launchOnMain
             isChangingPassword = true
 
             try {
-                val success = appRepository.changePassword(oldPassword, newPassword)
+                val success = authRepository.changePassword(oldPassword, newPassword)
                 if (success) {
                     SnackbarManager.showMessage(getString(Res.string.password_changed_successfully))
                     onFinished(true)
@@ -101,8 +110,8 @@ class PrivacyAndSecurityViewModel(
         }
 
         lastEmailVerificationTime = Clock.System.now()
-        viewModelScope.launch {
-            appRepository.sendEmailVerify()
+        applicationScope.launchOnMain {
+            authRepository.sendEmailVerify()
             SnackbarManager.showMessage(getString(Res.string.verification_email_sent))
         }
     }
@@ -110,24 +119,26 @@ class PrivacyAndSecurityViewModel(
     fun changeEmail(newEmail: String) {
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        viewModelScope.launch {
-            appRepository.changeUserDetails(newEmail = newEmail, userId = userId)
-            appRepository.dataSync(reason = "emailChanged")
+        applicationScope.launchOnMain {
+            userRepository.changeUserDetails(newEmail = newEmail, userId = userId)
+            dataSyncCoordinator.dataSync(reason = "emailChanged")
         }
     }
 
     fun saveLocationSharing(newGlobalShare: Boolean, friendDrafts: List<FriendShareDraft>) {
         val wasGlobalShared = shareLocationGlobal
 
-        viewModelScope.launch {
+        // The server writes outlive the screen; the permission prompt belongs to it and is
+        // dropped when the screen is gone
+        val writes = applicationScope.launchOnMain {
             when {
                 newGlobalShare && !wasGlobalShared -> {
                     friendDrafts.forEach { draft ->
-                        appRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
+                        userRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
                     }
                 }
                 !newGlobalShare && wasGlobalShared -> {
-                    appRepository.disableLocationSharingForAllFriends()
+                    userRepository.disableLocationSharingForAllFriends()
                 }
                 else -> {
                     friendDrafts.forEach { draft ->
@@ -136,25 +147,28 @@ class PrivacyAndSecurityViewModel(
                                 friend.shareSpeedHeading != draft.shareSpeedHeading ||
                                 friend.snailTrail != draft.snailTrail
                         if (changed) {
-                            appRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
+                            userRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
                         }
                     }
                 }
             }
+        }
 
-            if (newGlobalShare) {
+        if (newGlobalShare) {
+            viewModelScope.launch {
+                writes.join()
                 permissionManager.requestLocationPermission()
             }
         }
     }
 
     suspend fun getServerUrl(): String {
-        return preferenceManager.getServerUrl()
+        return settingsRepository.getServerUrl()
     }
 
     fun logout() {
-        viewModelScope.launch {
-            appRepository.logout()
+        applicationScope.launchOnMain {
+            sessionTerminator.logout()
             navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
         }
     }
@@ -164,9 +178,9 @@ class PrivacyAndSecurityViewModel(
     fun logoutAllDevices() {
         if (isLoggingOutAllDevices) return
         isLoggingOutAllDevices = true
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             try {
-                if (appRepository.logoutAllDevices()) {
+                if (sessionTerminator.logoutAllDevices()) {
                     navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                 }
             } finally {

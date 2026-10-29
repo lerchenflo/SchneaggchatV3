@@ -50,6 +50,8 @@ private const val PLANE_TAKEOFF_HEIGHT = 20f
 private const val PLANE_BOARD_HOP = 8f
 /** The tank runs dry after this long: the cowboy jumps back into the saddle, the plane flies off. */
 private const val PLANE_FLIGHT_SECONDS = 16f
+/** Seconds after take-off the plane holds its height without input. */
+private const val PLANE_GRACE_SECONDS = 1f
 private const val PLANE_LEAVE_SPEED = 25f
 /** Nose up while climbing, down while diving: degrees per u/s of vertical speed, and the limit. */
 private const val PLANE_PITCH_PER_SPEED = 0.7f
@@ -235,7 +237,8 @@ internal class RodeoPlane : RodeoVehicle(RodeoVehicleKind.PLANE) {
     }
 
     private fun fly(world: RodeoWorld, dt: Float, scroll: Float) {
-        y = steering.fly(y, dt, ceiling = PLANE_MAX_HEIGHT)
+        // Holds its height for a moment after take-off, so there is time to find the controls
+        y = steering.fly(y, dt, ceiling = PLANE_MAX_HEIGHT, sinks = phaseTime >= PLANE_GRACE_SECONDS)
 
         nextBuildingIn -= scroll
         if (nextBuildingIn <= 0f) spawnBuilding(world)

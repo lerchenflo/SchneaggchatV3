@@ -34,7 +34,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
-import org.lerchenflo.schneaggchatv3mp.settings.data.DEVICETYPE
+import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle

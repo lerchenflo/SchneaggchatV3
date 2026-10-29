@@ -6,26 +6,26 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.safeNetworkCall
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
-import org.lerchenflo.schneaggchatv3mp.settings.data.DEVICETYPE
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 /**
  * `POST /auth/refresh` through the client **without** the Auth plugin. Deliberately not routed
- * through `NetworkUtils`: that class depends on the authenticated client, which depends on
- * `AuthSessionManager`, which depends on this - a cycle Koin cannot construct.
+ * through `KtorAuthRemoteDataSource`: that class depends on the authenticated client, which
+ * depends on `AuthSessionManager`, which depends on this - a cycle Koin cannot construct.
  */
 class KtorAuthRefreshApi(
     private val plainHttpClient: HttpClient,
     private val preferencemanager: Preferencemanager,
     private val appVersion: AppVersion,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
 ) : AuthRefreshApi {
 
     @Serializable

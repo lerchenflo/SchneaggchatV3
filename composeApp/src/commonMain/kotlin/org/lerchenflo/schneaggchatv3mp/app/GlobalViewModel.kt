@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -19,15 +20,19 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationBadgeCounts
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.hasEnded
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -36,18 +41,24 @@ import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GlobalViewModel(
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
+    private val chatListRepository: ChatListRepository,
+    private val messageRepository: MessageRepository,
+    private val userRepository: UserRepository,
     private val eventRepository: EventRepository,
-    private val preferenceManager: Preferencemanager,
+    private val appInfoRepository: AppInfoRepository,
+    private val settingsRepository: SettingsRepository,
     private val socketConnectionManager: SocketConnectionManager,
     private val navigator: Navigator,
     private val locationService: LocationService,
     private val batteryService: BatteryService,
-    private val appVersion: AppVersion
+    private val appVersion: AppVersion,
+    private val notifier: Notifier,
 ): ViewModel() {
 
     /** Guards the app-resume handler so overlapping resume events are dropped instead of queued. */
@@ -66,7 +77,7 @@ class GlobalViewModel(
     /** Unread/unseen counts behind the bottom navigation bar's badges. */
     val navigationBadgeCounts: StateFlow<NavigationBadgeCounts> = combine(
         SessionCache.authState,
-        appRepository.getUnreadChatCountFlow(),
+        chatListRepository.getUnreadChatCountFlow(),
         eventRepository.getAllEventsFlow(),
         badgeClock,
     ) { authState, unreadChats, events, nowMillis ->
@@ -91,6 +102,18 @@ class GlobalViewModel(
     init {
 
         NotificationManager.initialize()
+
+        //A chat on screen - just opened, or the app came back with it open - has its notifications
+        //dismissed, messages and reactions alike. Deliberately not tied to marking it read: a chat
+        //read on another device has nothing unread here, but its notification must still go.
+        viewModelScope.launch {
+            combine(OpenChatTracker.current, AppLifecycleManager.isAppInForegroundFlow) { chat, foreground ->
+                chat.takeIf { foreground }
+            }
+                .distinctUntilChanged()
+                .filterNotNull()
+                .collect { chat -> notifier.cancelChatNotifications(chat.chatId) }
+        }
 
 
         viewModelScope.launch {
@@ -121,11 +144,11 @@ class GlobalViewModel(
                             updateLocationTracking()
 
                             //println("App resumed and logged in, triggering sync...")
-                            appRepository.sendOfflineMessages(ownId)
-                            appRepository.dataSync(reason = "appResumed")
+                            messageRepository.sendOfflineMessages(ownId)
+                            dataSyncCoordinator.dataSync(reason = "appResumed")
 
                             //On resume clear all error notis
-                            NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
+                            notifier.cancelNotification(NotificationManager.NotiIdType.ERROR.baseId)
 
                             //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
                             if(IncomingDataManager.isNewDataAvailable()){
@@ -152,34 +175,6 @@ class GlobalViewModel(
 
 
 
-        /*
-
-        // Sync when app is resumed
-        viewModelScope.launch {
-            AppLifecycleManager.appResumedEvent.collectLatest {
-                //println("App resumed, checking loggedin status")
-                val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collectLatest
-
-                if (SessionCache.isLoggedIn()) {
-                    //println("App resumed and logged in, triggering sync...")
-                    appRepository.sendOfflineMessages(ownId)
-                    appRepository.dataSync(reason = "appResumed")
-
-                    //On resume clear all error notis
-                    NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
-
-                    //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
-                    if(IncomingDataManager.isNewDataAvailable()){
-                        navigator.navigate(Route.MessageChatSelector) // todo build backstack?
-                    }
-
-                    startSocketConnection()
-                    updateLocationTracking()
-                }
-            }
-        }
-
-         */
 
         viewModelScope.launch {
             while (true) {
@@ -191,8 +186,8 @@ class GlobalViewModel(
 
                         if (appVersion.isDesktop()) { //On desktop always try to hold the socket connection for notifications
                             startSocketConnection()
-                        } else { //On Mobile only connect if the app (or a car session) is active
-                            if (AppLifecycleManager.isAppOrCarActive) {
+                        } else { //On Mobile only connect if the app is active
+                            if (AppLifecycleManager.isAppInForeground) {
                                 startSocketConnection()
                             }
                         }
@@ -201,12 +196,12 @@ class GlobalViewModel(
                     // Session (re)establishment is owned by AuthSessionManager's own scheduler;
                     // raising a Login action from here every 5 s is what produced the refresh storm.
                     SessionCache.requireLoggedIn()?.userId?.let {
-                        appRepository.sendOfflineMessages(it)
+                        messageRepository.sendOfflineMessages(it)
                     }
 
                 } else {
                     //Offline
-                    appRepository.testServer(preferenceManager.getServerUrl())
+                    appInfoRepository.testServer(settingsRepository.getServerUrl())
 
                 }
 
@@ -218,10 +213,6 @@ class GlobalViewModel(
             // Plain collect (not collectLatest): a close in progress must never be cancelled by
             // a follow-up lifecycle event, or the socket could survive into the background.
             AppLifecycleManager.appBackgroundedEvent.collect {
-                // A car session keeps the socket/location tracking "foreground" even while the
-                // phone itself is backgrounded (screen off in a pocket) - see isAppOrCarActive.
-                if (AppLifecycleManager.isCarSessionActive.value) return@collect
-
                 // Mobile: drop the socket the moment the app leaves the foreground (home, app
                 // switch, screen lock), so the server switches this user to FCM/APNs delivery.
                 // Desktop: the socket is the only notification channel, so it stays up while the
@@ -259,8 +250,8 @@ class GlobalViewModel(
                     // again (ObserveAsEvents only collects from then on), and the sync that brings
                     // the chat up to date must not queue behind that.
                     viewModelScope.launch {
-                        appRepository.sendOfflineMessages(ownId)
-                        appRepository.dataSync(reason = "notificationOpened")
+                        messageRepository.sendOfflineMessages(ownId)
+                        dataSyncCoordinator.dataSync(reason = "notificationOpened")
                     }
 
                     // Navigate to the chat that the notification belongs to. Switch to the chat
@@ -278,20 +269,12 @@ class GlobalViewModel(
         viewModelScope.launch {
             SessionCache.authState.flatMapLatest { authState ->
                 if (authState is SessionCache.AuthState.LoggedIn) {
-                    appRepository.getUserByIdFlow(authState.userId)
+                    userRepository.getUserByIdFlow(authState.userId)
                 } else {
                     flowOf(null)
                 }
             }.collectLatest { ownUser ->
                 ownLocationShared = ownUser?.locationShared ?: false
-                updateLocationTracking()
-            }
-        }
-
-        // Login state and the share setting are handled above; a car session starting/stopping
-        // needs its own re-evaluation too, since it doesn't touch either of those.
-        viewModelScope.launch {
-            AppLifecycleManager.isCarSessionActive.collectLatest {
                 updateLocationTracking()
             }
         }
@@ -301,7 +284,7 @@ class GlobalViewModel(
 
     /** Re-evaluates login state, foreground state, and the share setting, then starts/stops tracking. */
     private fun updateLocationTracking() {
-        if (SessionCache.isLoggedIn() && AppLifecycleManager.isAppOrCarActive && ownLocationShared) {
+        if (SessionCache.isLoggedIn() && AppLifecycleManager.isAppInForeground && ownLocationShared) {
             startLocationTracking()
         } else {
             stopLocationTracking()
@@ -312,7 +295,7 @@ class GlobalViewModel(
     fun startSocketConnection() {
         viewModelScope.launch {
             if (!socketConnectionManager.isConnectedNow() && SessionCache.isLoggedIn()){
-                val serverurl = SocketConnectionManager.getSocketUrl(preferenceManager.getServerUrl())
+                val serverurl = SocketConnectionManager.getSocketUrl(settingsRepository.getServerUrl())
                 socketConnectionManager.connect(
                     serverUrl = serverurl,
                     onError = {
@@ -361,7 +344,7 @@ class GlobalViewModel(
                 // don't prompt again on every resume/sync; they can re-enable it manually.
                 println("Location tracking: Permission denied, disabling location sharing")
                 ownLocationShared = false
-                appRepository.disableLocationSharingForAllFriends()
+                userRepository.disableLocationSharingForAllFriends()
             }
 
             if (permission != PermissionState.GRANTED) {
@@ -380,7 +363,7 @@ class GlobalViewModel(
                     .collect { location ->
 
                         // Speed and heading are sent if any user in the friends list has shareSpeedHeading enabled
-                        val shareSpeedHeading = appRepository.getFriends("").any { it.shareSpeedHeading }
+                        val shareSpeedHeading = userRepository.getFriends("").any { it.shareSpeedHeading }
                         val update = SocketConnectionMessage.LocationUpdate(
                             lat = location.coordinates.lat,
                             long = location.coordinates.long,

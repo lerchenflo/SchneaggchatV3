@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,21 +26,31 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.announcement.domain.Announcement
+import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementRepository
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
-import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.applySearchAndFilter
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.chat.domain.applySearchAndFilter
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isNetworkerror
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -59,11 +70,18 @@ import kotlin.time.Duration.Companion.milliseconds
 private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
 
 class ChatSelectorViewModel(
-    private val appRepository: AppRepository,
+    private val appVersion: AppVersion,
+    private val dataSyncCoordinator: DataSyncCoordinator,
+    private val chatListRepository: ChatListRepository,
+    private val messageRepository: MessageRepository,
+    private val authRepository: AuthRepository,
+    private val appInfoRepository: AppInfoRepository,
     private val navigator: Navigator,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
-    private val preferencemanager: Preferencemanager,
+    private val settingsRepository: SettingsRepository,
+    private val announcementRepository: AnnouncementRepository,
+    private val notifier: Notifier,
 ): ViewModel() {
 
     private val _notificationPermissionState = MutableStateFlow(PermissionState.GRANTED)
@@ -83,22 +101,66 @@ class ChatSelectorViewModel(
     private val _newVersionAvailable = MutableStateFlow<String?>(null)
     val newVersionAvailable: StateFlow<String?> = _newVersionAvailable.asStateFlow()
 
+    /** Newest announcement from the server, loaded once at start. */
+    private val _latestAnnouncement = MutableStateFlow<Announcement?>(null)
+
+    /**
+     * The announcement banner, null when there is none to show. Hidden as soon as its number is
+     * dismissed (here, or on another device via the synced settings) and when it expires, also
+     * while the chat list stays open.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val announcement: StateFlow<Announcement?> = combine(
+        _latestAnnouncement,
+        settingsRepository.getLastDismissedAnnouncementIdFlow(),
+    ) { latest, lastDismissedId ->
+        latest?.takeIf { it.id > lastDismissedId }
+    }
+        .distinctUntilChanged()
+        .flatMapLatest { shown ->
+            flow {
+                val remainingMillis = shown?.let { it.expiresAt - Clock.System.now().toEpochMilliseconds() } ?: 0L
+                if (shown != null && remainingMillis > 0) {
+                    emit(shown)
+                    delay(remainingMillis.milliseconds)
+                }
+                emit(null)
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Progress of the full sync, for the sync icon and its detail popup. */
+    val dataSyncState: StateFlow<DataSyncState> = dataSyncCoordinator.dataSyncState
+
+    /** Desktop has a reload button and no notification permission banner. */
+    val isDesktop: Boolean = appVersion.isDesktop()
+
+    val onboardingCompleted: StateFlow<Boolean> = settingsRepository.getOnboardingSeenFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    val highlightTodaysTimestamp: StateFlow<Boolean> = settingsRepository.getHighlightTodaysMessageTimestampFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+
+    /** The server URL as saved right now; the website and donation links open this one. */
+    val serverUrl: StateFlow<String> = settingsRepository.getServerUrlFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, BASE_SERVER_URL)
+
     init {
         checkNotificationPermission()
 
         viewModelScope.launch {
-            val token = KoinPlatform.getKoin().get<Notifier>().getToken()
+            val token = notifier.getToken()
 
             //println("Chatselector notificationtoken: $token")
 
             if (!token.isNullOrEmpty()) {
-                appRepository.setNotificationToken(token)
+                authRepository.setNotificationToken(token)
             }
         }
 
         viewModelScope.launch {
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
-            appRepository.getPendingFriends("").collectLatest { list ->
+            chatListRepository.getPendingFriends("").collectLatest { list ->
                 val size = list.filter {
                     it.requesterId != ownId
                 }.size
@@ -113,7 +175,11 @@ class ChatSelectorViewModel(
             checkStartupPopups()
         }
 
-        if (appRepository.appVersion.isDesktop()) {
+        viewModelScope.launch {
+            loadAnnouncement()
+        }
+
+        if (appVersion.isDesktop()) {
             viewModelScope.launch {
                 _newVersionAvailable.value = checkNewGitHubRelease()
             }
@@ -131,8 +197,8 @@ class ChatSelectorViewModel(
 
         refreshJob = viewModelScope.launch {
             try {
-                appRepository.sendOfflineMessages(ownId)
-                appRepository.dataSync(reason = "chatSelectorRefresh")
+                messageRepository.sendOfflineMessages(ownId)
+                dataSyncCoordinator.dataSync(reason = "chatSelectorRefresh")
             } catch (e: Exception) {
                 ensureActive()
                 loggingRepository.logWarning("ChatSelector refresh failed: ${e.message}")
@@ -228,7 +294,7 @@ class ChatSelectorViewModel(
 
     fun pinUnpinChat(chat: ChatListItem) {
         viewModelScope.launch {
-            appRepository.setPinnedChat(chat.id, group = chat.isGroup, pinned = chat.pinned <= 0L)
+            chatListRepository.setPinnedChat(chat.id, group = chat.isGroup, pinned = chat.pinned <= 0L)
         }
     }
 
@@ -241,42 +307,62 @@ class ChatSelectorViewModel(
         // and the contribute timestamp is written to the server
         SessionCache.authState.first { it is SessionCache.AuthState.LoggedIn }
 
-        val currentVersion = appRepository.appVersion.getVersionName()
+        val currentVersion = appInfoRepository.getVersionName()
 
-        if (preferencemanager.getLastStartedVersion() != currentVersion) {
-            val changelog = appRepository.getChangeLog(currentVersion)
+        if (settingsRepository.getLastStartedVersion() != currentVersion) {
+            val changelog = appInfoRepository.getChangeLog(currentVersion)
             if (changelog != null) {
                 // The version is only saved on dismiss, so a changelog that was never seen
                 // (process death before it appeared) shows again on the next start
                 _changelogPopup.value = changelog
             } else {
                 // Nothing to show (offline or no entry for this version)
-                preferencemanager.saveLastStartedVersion(currentVersion)
+                settingsRepository.saveLastStartedVersion(currentVersion)
             }
             return
         }
 
         val now = Clock.System.now().toEpochMilliseconds()
-        val lastShown = preferencemanager.getLastContributePopupShown()
+        val lastShown = settingsRepository.getLastContributePopupShown()
 
         when {
             // Never seeded on any device yet: seed the timestamp so the popup is due
             // one interval from now, not immediately. Normally already set server-side
             // (at registration, or by the migration for older accounts) and picked up by
             // the next sync — this only covers that sync not having landed yet.
-            lastShown == 0L -> appRepository.setLastContributePopupShown(now)
+            lastShown == 0L -> settingsRepository.setLastContributePopupShown(now)
 
             now - lastShown >= CONTRIBUTE_POPUP_INTERVAL_MILLIS -> {
                 _contributePopupShown.value = true
-                appRepository.setLastContributePopupShown(now)
+                settingsRepository.setLastContributePopupShown(now)
             }
+        }
+    }
+
+    private suspend fun loadAnnouncement() {
+        SessionCache.authState.first { it is SessionCache.AuthState.LoggedIn }
+
+        when (val result = announcementRepository.getLatest()) {
+            is NetworkResult.Success -> _latestAnnouncement.value = result.data
+            is NetworkResult.Error -> {
+                // Offline: nothing to show, the next start tries again
+                if (!result.error.isNetworkerror()) {
+                    loggingRepository.logWarning("Loading the latest announcement failed: ${result.error}")
+                }
+            }
+        }
+    }
+
+    fun onAnnouncementDismiss(announcement: Announcement) {
+        viewModelScope.launch {
+            settingsRepository.setLastDismissedAnnouncementId(announcement.id)
         }
     }
 
     fun onChangelogDismiss() {
         _changelogPopup.value = null
         viewModelScope.launch {
-            preferencemanager.saveLastStartedVersion(appRepository.appVersion.getVersionName())
+            settingsRepository.saveLastStartedVersion(appInfoRepository.getVersionName())
         }
     }
 
@@ -290,13 +376,11 @@ class ChatSelectorViewModel(
 
     private suspend fun checkNewGitHubRelease(): String?{
         // get the github release name
-        val releaseJson = appRepository.getLatestGitHubVersionAsString()
-        println("github json: ${releaseJson}")
-        val tagName = getTagName(releaseJson?:"") ?:"v0.0.0"
+        val tagName = appInfoRepository.getLatestGitHubVersionAsString() ?: "v0.0.0"
         println("github tag name: ${tagName}")
 
         // get the current app name
-        val appversion = appRepository.appVersion.getVersionName()
+        val appversion = appInfoRepository.getVersionName()
         println("app version: ${appversion}")
 
         // check if the GitHub version is newer than your version
@@ -322,7 +406,7 @@ class ChatSelectorViewModel(
             val loggedIn = authState as? SessionCache.AuthState.LoggedIn
                 ?: return@flatMapLatest flowOf(emptyList())
 
-            appRepository.getChatListFlow(userId = loggedIn.userId)
+            chatListRepository.getChatListFlow(userId = loggedIn.userId)
         }
         .flowOn(Dispatchers.Default)
         .distinctUntilChanged()
@@ -360,7 +444,7 @@ class ChatSelectorViewModel(
             val loggedIn = authState as? SessionCache.AuthState.LoggedIn
                 ?: return@flatMapLatest flowOf(emptyList<MessageSearchResult>())
 
-            appRepository.getMessageSearchFlow(
+            chatListRepository.getMessageSearchFlow(
                 searchTerm = term,
                 userId = loggedIn.userId
             )

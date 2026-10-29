@@ -1,0 +1,36 @@
+package org.lerchenflo.schneaggchatv3mp.events.data.local.entity
+
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipation
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+
+@Entity(
+    tableName = "events",
+    indices = [Index(value = ["groupId"])]
+)
+data class EventEntity(
+    @PrimaryKey val id: String,
+    val creatorId: String,
+    val type: EventType,
+    val title: String,
+    val description: String,
+    val groupId: String?,
+    val location: LatLong?,
+    val startDate: Long,
+    val closeDate: Long?,
+    val invitedUsers: List<String>,
+    val participations: List<EventParticipation>,
+    val visibility: EventVisibility,
+    val maxUsers: Int? = null,
+    val groupDeleteDelay: GroupDeleteDelay,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val updatedBy: String,
+    val creatorName: String
+
+)

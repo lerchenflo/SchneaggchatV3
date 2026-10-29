@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
@@ -41,11 +41,12 @@ data class SchneaggmapState(
     val showUsers: Boolean = true,
 
     val eventsWithLocation: List<Event> = emptyList(),
-    val showEvents: Boolean = false,
+    // Events the own user is going to (accepted, joined or created) - their pins use the primary color
+    val joinedEventIds: Set<String> = emptySet(),
+    val showEvents: Boolean = true,
 
     val mapStyle: MapStyleSetting = MapStyleSetting.LIBERTY,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
-    val isMapStyleDropdownVisible: Boolean = false,
 
     //Searching
     val searchTerm: String = "",

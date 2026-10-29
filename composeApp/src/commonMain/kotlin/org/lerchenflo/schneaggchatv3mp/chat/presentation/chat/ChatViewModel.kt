@@ -7,7 +7,6 @@ import io.github.ismoy.imagepickerkmp.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
 import io.github.lerchenflo.voicemessages.VoiceRecorder
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,58 +30,53 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
-import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MarkReadGuard
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
+import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPoll
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVote
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
-import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import kotlin.time.TimeSource
+import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 class ChatViewModel(
-    private val appRepository: AppRepository,
+    private val appVersion: AppVersion,
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
-    private val loggingRepository: LoggingRepository,
+    private val loggingRepository: Logger,
     private val pictureManager: PictureManager,
     private val permissionsManager: PermissionManager,
     private val audioManager: AudioManager,
-    private val applicationScope: ApplicationScope,
 
     val chatId: String,
     val isGroup: Boolean,
@@ -121,20 +115,10 @@ class ChatViewModel(
     private var newMessagesBoundaryComputed = false
     private val newMessagesBoundaryId = MutableStateFlow<String?>(null)
 
-    // Guards setAllMessagesRead(): without this it re-runs (and hits the network) on every
-    // single messageDisplayItemsFlow emission, including ones with nothing unread - which then
-    // re-emits the messages flow and reprocesses the whole list again.
-    //
-    // Only set once the server has actually accepted the read. A failed or lost attempt leaves it
-    // null so the next emission retries - the read state itself lives on the server now, so a
-    // chat can legitimately come back unread after we already asked once.
-    private var lastMarkedReadMessageId: String? = null
-
-    // Serialises the requests instead of dropping overlapping ones: a message arriving while a
-    // request is in flight would otherwise be swallowed by the guard and then left unread, because
-    // the in-flight run finishes by advancing lastMarkedReadMessageId past it. Queued callers
-    // re-check under the lock, so the redundant ones cost nothing.
-    private val markReadMutex = Mutex()
+    // Guards setAllMessagesRead() (lastMarkedReadMessageId + the lock that serialises the
+    // requests, see MarkReadGuard). Owned by this screen, so the dedup lives as long as it does;
+    // the requests themselves run in the repository's app-wide scope.
+    private val markReadGuard = MarkReadGuard()
 
     /**
      * Centralized action handler for all chat-screen user interactions.
@@ -185,34 +169,24 @@ class ChatViewModel(
     /**
      * Asks the server to mark this chat read. Nothing is written locally - the repository pulls
      * the server's answer back in, which is what finally flips `readByMe` (see
-     * [AppRepository.setAllChatMessagesRead]).
+     * [MessageRepository.setAllChatMessagesRead]).
      */
     fun setAllMessagesRead() {
 
         SessionCache.requireLoggedIn() ?: return
 
-        //One notification per chat (keyed by chatId, see Message.toNotificationContent), so a
-        //single cancel by chatId clears it - no need to enumerate individual message ids.
-        NotificationManager.removeMessageNotifications(listOf(NotificationManager.NotiId.HexString(chatId).asInt))
+        //The chat's notifications are dismissed by GlobalViewModel as soon as the chat is on screen,
+        //whether or not anything here is unread
 
-        //applicationScope, not viewModelScope: leaving the chat must not cancel the request or
-        //the sync that pulls the server's read receipt back in.
-        applicationScope.launch {
-            markReadMutex.withLock {
-                val newestMessageId = newestMessageId()
-                //Whoever held the lock before us may already have covered this exact state.
-                if (newestMessageId != null && newestMessageId == lastMarkedReadMessageId) {
-                    return@withLock
-                }
-
-                val accepted = appRepository.setAllChatMessagesRead(
-                    chatid = chatId,
-                    gruppe = isGroup,
-                    timestamp = getCurrentTimeMillisString()
-                )
-                lastMarkedReadMessageId = if (accepted) newestMessageId else null
-            }
-        }
+        //App-wide scope (in the repository), not viewModelScope: leaving the chat must not cancel
+        //the request, a request still queued behind the lock, or the sync that pulls the server's
+        //read receipt back in.
+        messageRepository.markChatReadInBackground(
+            chatid = chatId,
+            gruppe = isGroup,
+            guard = markReadGuard,
+            readNewestMessageId = ::newestMessageId,
+        )
     }
 
     /** Newest message currently on screen - the list is newest-first (see MessageDao.getMessagesByUserIdFlow). */
@@ -223,17 +197,16 @@ class ChatViewModel(
     private fun hasUnreadMessages(): Boolean = _state.value.displayItems
         .any { it is MessageDisplayItem.MessageItem && !it.message.readByMe }
 
+    // No scope needed: the repository writes in the app-wide scope, so this also works from onCleared
     private fun saveDraft(){
-        CoroutineScope(Dispatchers.IO).launch {
-            // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
-            val sendContent = state.value.sendContent
-            if(sendContent is TextContent) { // schoua ob es textfeld leer isch
-                settingsRepository.saveDraft(
-                    chatId = chatId,
-                    group = isGroup,
-                    string = sendContent.textMessage.text
-                )
-            }
+        // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
+        val sendContent = state.value.sendContent
+        if(sendContent is TextContent) { // schoua ob es textfeld leer isch
+            settingsRepository.saveDraft(
+                chatId = chatId,
+                group = isGroup,
+                string = sendContent.textMessage.text
+            )
         }
     }
 
@@ -253,20 +226,16 @@ class ChatViewModel(
             is TextContent -> {
                 if (message.textMessage.text.isBlank()) return
 
-                require(message.textMessage.text.length < 10000) {
-                    runBlocking {
-                        SnackbarManager.showMessage(getString(Res.string.message_too_long))
-                    }
+                if (message.textMessage.text.length >= 10000) {
+                    showMessageTooLong()
                     return
                 }
             }
             is SendMessageContent.ImageContent -> {
                 if (message.images.isEmpty()) return
 
-                require(message.text.text.length < 10000) {
-                    runBlocking {
-                        SnackbarManager.showMessage(getString(Res.string.message_too_long))
-                    }
+                if (message.text.text.length >= 10000) {
+                    showMessageTooLong()
                     return
                 }
 
@@ -282,15 +251,15 @@ class ChatViewModel(
         }
 
 
-        // Sends run in the application scope (not viewModelScope) so an in-flight send survives
-        // leaving the chat screen
+        // An in-flight send survives leaving the chat screen: MessageRepository.sendMessage runs
+        // in the app-wide scope, so cancelling viewModelScope only stops waiting for it
         when (message) {
             is TextContent -> {
-                applicationScope.launch {
-                    appRepository.sendMessage(
+                viewModelScope.launch {
+                    messageRepository.sendMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
-                        content = AppRepository.MessageContent.TextContent(message.textMessage.text),
+                        content = MessageContent.TextContent(message.textMessage.text),
                         answerid = replyTo?.id,
                         messageId = null,
                         ownId = ownId,
@@ -300,11 +269,11 @@ class ChatViewModel(
 
             is SendMessageContent.ImageContent -> {
                 message.images.forEachIndexed { index, image ->
-                    applicationScope.launch {
-                        appRepository.sendMessage(
+                    viewModelScope.launch {
+                        messageRepository.sendMessage(
                             empfaenger = chatId,
                             gruppe = isGroup,
-                            content = AppRepository.MessageContent.ImageContent(
+                            content = MessageContent.ImageContent(
                                 image = image,
                                 text = if (index == 0) message.text.text else ""
                             ),
@@ -317,17 +286,12 @@ class ChatViewModel(
             }
 
             is SendMessageContent.AudioContent -> {
-                applicationScope.launch {
-                    appRepository.sendMessage(
+                viewModelScope.launch {
+                    messageRepository.sendVoiceMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
-                        content = AppRepository.MessageContent.AudioContent(
-                            audio = getAudioBytes(
-                                audioManager.getRecordingPath(message.audioPath.substringAfterLast('/'))
-                            )
-                        ),
+                        recordingPath = audioManager.getRecordingPath(message.audioPath.substringAfterLast('/')),
                         answerid = replyTo?.id,
-                        messageId = null,
                         ownId = ownId
                     )
                 }
@@ -354,16 +318,16 @@ class ChatViewModel(
 
     }
 
-    private fun createPollMessage(poll: NetworkUtils.PollCreateRequest) {
+    private fun createPollMessage(poll: NewPoll) {
 
         val ownId = SessionCache.requireLoggedIn()?.userId ?: return
         val replyMessage = state.value.replyMessage
 
-        applicationScope.launch {
-            appRepository.sendMessage(
+        viewModelScope.launch {
+            messageRepository.sendMessage(
                 empfaenger = chatId,
                 gruppe = isGroup,
-                content = AppRepository.MessageContent.PollContent(poll),
+                content = MessageContent.PollContent(poll),
                 answerid = replyMessage?.id,
                 messageId = null,
                 ownId = ownId
@@ -376,10 +340,10 @@ class ChatViewModel(
     private fun deleteMessage(message: Message) {
         viewModelScope.launch {
             if (message.id == null) {
-                appRepository.deleteLocalMessage(message.localPK)
+                messageRepository.deleteLocalMessage(message.localPK)
                 println("Offline message deleted")
             } else {
-                appRepository.deleteMessage(message.id!!)
+                messageRepository.deleteMessage(message.id!!)
                 println("Remote message deleted")
             }
         }
@@ -396,8 +360,8 @@ class ChatViewModel(
         when (action) {
             is MessageAction.VotePoll -> {
                 viewModelScope.launch {
-                    appRepository.votePoll(
-                        pollVoteRequest = PollVoteRequest(
+                    messageRepository.votePoll(
+                        pollVote = PollVote(
                             messageId = action.messageId,
                             id = action.optionId,
                             text = null,
@@ -411,9 +375,9 @@ class ChatViewModel(
 
             is MessageAction.AddCustomPollOption -> {
                 viewModelScope.launch {
-                    appRepository.votePoll(
+                    messageRepository.votePoll(
                         ownId = ownId,
-                        pollVoteRequest = PollVoteRequest(
+                        pollVote = PollVote(
                             messageId = action.messageId,
                             id = null,
                             text = action.text,
@@ -426,7 +390,7 @@ class ChatViewModel(
             }
             is MessageAction.DeletePollOption -> {
                 viewModelScope.launch {
-                    appRepository.deletePollOption(
+                    messageRepository.deletePollOption(
                         ownId = ownId,
                         messageId = action.messageId,
                         optionId = action.optionId
@@ -473,7 +437,7 @@ class ChatViewModel(
             is MessageAction.ReplyToMessage -> updateReplyMessage(action.message, action.sender)
             is MessageAction.ToggleReaction -> {
                 viewModelScope.launch {
-                    appRepository.reactToMessage(
+                    messageRepository.reactToMessage(
                         action.messageId,
                         action.reaction
                     )
@@ -495,25 +459,31 @@ class ChatViewModel(
             //Block empty edit
             if (content.textMessage.text.isBlank()) return@launch
 
-            appRepository.editMessage(
+            val saved = messageRepository.editMessage(
                 message = message,
                 newContent = content.textMessage.text
             )
 
             println("Edit: Newcontent: ${content.textMessage}")
 
-            //Clear text after editing message
-            onMessageAction(MessageAction.CancelEditMessage)
+            //Clear text after editing message - a failed edit keeps it, so it can be sent again
+            if (saved) onMessageAction(MessageAction.CancelEditMessage)
         }
     }
 
 
 
 
+    private fun showMessageTooLong() {
+        viewModelScope.launch {
+            SnackbarManager.showMessage(getString(Res.string.message_too_long))
+        }
+    }
+
     private fun onBackClick() {
         saveDraft()
 
-        runBlocking {
+        viewModelScope.launch {
             navigator.navigateBack(navigationOptions = Navigator.NavigationOptions(
                 removeAllScreensByClass = listOf(Route.ChatDetails::class, Route.Chat::class)
             ))
@@ -729,8 +699,8 @@ class ChatViewModel(
                 val olderReplyTargets = if (missingReplyIds.isEmpty()) {
                     emptyMap()
                 } else {
-                    messageRepository.getMessageDtosByIds(missingReplyIds)
-                        .mapNotNull { dto -> dto.id?.let { id -> id to dto.toMessage() } }
+                    messageRepository.getMessagesByIds(missingReplyIds)
+                        .mapNotNull { message -> message.id?.let { id -> id to message } }
                         .toMap()
                 }
                 messages to olderReplyTargets
@@ -760,7 +730,7 @@ class ChatViewModel(
             }
         ) { (messages, olderReplyTargets), senderNames, groupMembers ->
             captureNewMessagesBoundary(messages)
-            messageDisplayMapper.map(messages, olderReplyTargets, senderNames, groupMembers, newMessagesBoundaryId.value)
+            messageDisplayMapper.map(messages, olderReplyTargets, senderNames, groupMembers, newMessagesBoundaryId.value, getString(Res.string.unknown_user))
         }
             .distinctUntilChanged()
             .flowOn(Dispatchers.Default)
@@ -786,12 +756,12 @@ class ChatViewModel(
         // Chat partner (user or group) for the top bar, kept up to date from the database.
         viewModelScope.launch {
             val chatPartnerFlow = if (isGroup) {
-                groupRepository.getGroupFlow(chatId).map { group ->
+                groupRepository.getGroupByIdFlow(chatId).map { group ->
                     group?.toChatListItem()
                 }
             } else {
                 combine(
-                    userRepository.getUserFlow(chatId),
+                    userRepository.getUserByIdFlow(chatId),
                     userRepository.onlineFriendIdsFlow
                 ) { user, onlineFriendIds ->
                     user?.toChatListItem(isOnline = chatId in onlineFriendIds)
@@ -803,7 +773,7 @@ class ChatViewModel(
         }
 
         viewModelScope.launch {
-            settingsRepository.getUsemd()
+            settingsRepository.getUseMdFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("ChatViewModel: Problem getting MD preference: ${exception.message}")
                 }
@@ -813,7 +783,7 @@ class ChatViewModel(
         }
 
         viewModelScope.launch {
-            settingsRepository.getQuickReactions()
+            settingsRepository.getQuickReactionsFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("ChatViewModel: Problem getting quick reactions: ${exception.message}")
                 }
@@ -887,7 +857,7 @@ class ChatViewModel(
                     // lastMarkedReadMessageId is advanced by setAllMessagesRead() itself, and only
                     // if the server accepted - so a sync that brings this chat back unread retries
                     // instead of being swallowed by the guard.
-                    if (hasUnread && newestMessageId != lastMarkedReadMessageId) {
+                    if (hasUnread && newestMessageId != markReadGuard.lastMarkedReadMessageId) {
                         setAllMessagesRead()
                     }
                 }
@@ -926,7 +896,7 @@ class ChatViewModel(
     }
 
     private fun isDesktop(): Boolean{
-        return appRepository.appVersion.isDesktop()
+        return appVersion.isDesktop()
     }
 
 }

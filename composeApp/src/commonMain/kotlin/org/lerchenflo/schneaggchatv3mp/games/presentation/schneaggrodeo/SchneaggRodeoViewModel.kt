@@ -18,7 +18,7 @@ import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.readByteArray
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
@@ -35,7 +35,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.W
 class SchneaggRodeoViewModel(
     private val gameHighscoreRepository: GameHighscoreRepository,
     gameSaveRepository: GameSaveRepository,
-    private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SchneaggRodeoState())
@@ -198,6 +198,7 @@ class SchneaggRodeoViewModel(
                 runTimeMillis = engine.runTimeSeconds.toLong() * 1000L,
                 snailsCaught = engine.snailsCaught,
                 superJumpCharges = engine.superJumpCharges,
+                superJumpAllowed = engine.superJumpAllowed,
                 luckyCharms = engine.luckyCharms,
                 isOnFoot = engine.isOnFoot,
                 canCatchHorse = engine.canCatchHorse,
@@ -209,6 +210,7 @@ class SchneaggRodeoViewModel(
                 mapTitle = engine.mapTitle,
                 nextToBeat = ghosts.firstOrNull { ghost -> ghost.score > score },
                 isEnding = engine.isEnding,
+                horseRestless = engine.horseRestless,
             )
         }
     }
@@ -257,7 +259,7 @@ class SchneaggRodeoViewModel(
             )
             if (result !is NetworkResult.Success) return@launch
             val ownUserId = SessionCache.requireLoggedIn()?.userId
-            val friendIds = appRepository.getFriends("").map { it.id }.toSet()
+            val friendIds = userRepository.getFriends("").map { it.id }.toSet()
             ghosts = result.data
                 .filter { it.score > 0 }
                 .map { entry ->
@@ -282,7 +284,7 @@ class SchneaggRodeoViewModel(
     private fun loadPeople() {
         peopleJob?.cancel()
         peopleJob = viewModelScope.launch {
-            val picturePaths = appRepository.getFriends("").associate { it.id to it.profilePictureUrl }
+            val picturePaths = userRepository.getFriends("").associate { it.id to it.profilePictureUrl }
             val pictures = withContext(Dispatchers.IO) {
                 picturePaths.mapNotNull { (userId, path) -> loadPicture(path)?.let { userId to it } }.toMap()
             }

@@ -151,7 +151,7 @@ sealed class LocationData {
         val policeLastSeenValue get() = policeLastSeen?.asLong
 
         override fun schema() = listOf(
-            AttributeDefinition.DateTimeDef(key = AttributeKey.POLICE_LAST_SEEN, required = false),
+            AttributeDefinition.DateTimeDef(key = AttributeKey.POLICE_LAST_SEEN, required = false, showNow = true),
         )
     }
 

@@ -8,11 +8,14 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 /** Draft per-friend location sharing settings edited in the dialog, only sent to the server on Save. */
 data class FriendShareDraft(
@@ -23,16 +26,20 @@ data class FriendShareDraft(
 )
 
 class SchneaggmapSettingsViewModel(
-    private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
-    private val loggingRepository: LoggingRepository,
+    private val userRepository: UserRepository,
+    private val settingsRepository: SettingsRepository,
+    private val loggingRepository: Logger,
     private val permissionManager: PermissionManager,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     var mergeMapLocations by mutableStateOf(true)
         private set
 
     var mergeMapUsers by mutableStateOf(true)
+        private set
+
+    var mapStyle by mutableStateOf(MapStyleSetting.LIBERTY)
         private set
 
     // Derived server-side from whether any friend has locationShared=true. Only used to seed
@@ -45,7 +52,7 @@ class SchneaggmapSettingsViewModel(
 
     init {
         viewModelScope.launch { // Merge map locations when zooming
-            preferenceManager.getMergeMapLocationsFlow()
+            settingsRepository.getMergeMapLocationsFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting merge map locations preference: ${exception.message}")
                 }
@@ -55,7 +62,7 @@ class SchneaggmapSettingsViewModel(
         }
 
         viewModelScope.launch { // Merge map users when zooming
-            preferenceManager.getMergeMapUsersFlow()
+            settingsRepository.getMergeMapUsersFlow()
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting merge map users preference: ${exception.message}")
                 }
@@ -64,10 +71,20 @@ class SchneaggmapSettingsViewModel(
                 }
         }
 
+        viewModelScope.launch { // Base map style of the Schneaggmap
+            settingsRepository.getMapStyleSettingFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting map style preference: ${exception.message}")
+                }
+                .collect { value ->
+                    mapStyle = value
+                }
+        }
+
         viewModelScope.launch { // Global "share my location at all" switch (own user) - derived, read-only
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
-            appRepository.getUserByIdFlow(ownId)
+            userRepository.getUserByIdFlow(ownId)
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting own user for location sharing: ${exception.message}")
                 }
@@ -77,7 +94,7 @@ class SchneaggmapSettingsViewModel(
         }
 
         viewModelScope.launch { // Per-friend "share my location with them" switches
-            appRepository.getFriendsFlow("")
+            userRepository.getFriendsFlow("")
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting friends for location sharing: ${exception.message}")
                 }
@@ -89,13 +106,19 @@ class SchneaggmapSettingsViewModel(
 
     fun updateMergeMapLocations(newValue: Boolean) {
         viewModelScope.launch {
-            appRepository.setMergeMapLocations(newValue)
+            settingsRepository.setMergeMapLocations(newValue)
         }
     }
 
     fun updateMergeMapUsers(newValue: Boolean) {
         viewModelScope.launch {
-            appRepository.setMergeMapUsers(newValue)
+            settingsRepository.setMergeMapUsers(newValue)
+        }
+    }
+
+    fun updateMapStyle(newValue: MapStyleSetting) {
+        viewModelScope.launch {
+            settingsRepository.setMapStyleSetting(newValue)
         }
     }
 
@@ -109,15 +132,17 @@ class SchneaggmapSettingsViewModel(
     fun saveLocationSharing(newGlobalShare: Boolean, friendDrafts: List<FriendShareDraft>) {
         val wasGlobalShared = shareLocationGlobal
 
-        viewModelScope.launch {
+        // The server writes outlive the screen; the permission prompt belongs to it and is
+        // dropped when the screen is gone
+        val writes = applicationScope.launchOnMain {
             when {
                 newGlobalShare && !wasGlobalShared -> {
                     friendDrafts.forEach { draft ->
-                        appRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
+                        userRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
                     }
                 }
                 !newGlobalShare && wasGlobalShared -> {
-                    appRepository.disableLocationSharingForAllFriends()
+                    userRepository.disableLocationSharingForAllFriends()
                 }
                 else -> {
                     friendDrafts.forEach { draft ->
@@ -126,13 +151,16 @@ class SchneaggmapSettingsViewModel(
                                 friend.shareSpeedHeading != draft.shareSpeedHeading ||
                                 friend.snailTrail != draft.snailTrail
                         if (changed) {
-                            appRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
+                            userRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
                         }
                     }
                 }
             }
+        }
 
-            if (newGlobalShare) {
+        if (newGlobalShare) {
+            viewModelScope.launch {
+                writes.join()
                 permissionManager.requestLocationPermission()
             }
         }

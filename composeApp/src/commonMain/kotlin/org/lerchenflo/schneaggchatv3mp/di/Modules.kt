@@ -4,16 +4,29 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
-import org.koin.core.module.dsl.bind
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.app.data.DefaultActionChannel
+import org.lerchenflo.schneaggchatv3mp.app.data.DefaultDataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.data.LocalSessionTerminator
+import org.lerchenflo.schneaggchatv3mp.app.data.RemoteAppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.app.logging.RoomLoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.MessageLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstChatListRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstGroupRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstMessageRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstUserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomGroupDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomMessageDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomUserDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsViewmodel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays.BirthdaysViewModel
@@ -22,10 +35,21 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedconte
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChatViewModel
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.app.domain.ActionChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AppAuthEventSink
@@ -49,10 +73,10 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresViewModel
 import org.lerchenflo.schneaggchatv3mp.games.data.WordleRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewModel
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip.CoinFlipViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerViewModel
+import org.lerchenflo.schneaggchatv3mp.tools.presentation.fingerpicker.FingerPickerViewModel
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCalculatorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
@@ -69,12 +93,16 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.tictactoe.TicTacToeViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
+import org.lerchenflo.schneaggchatv3mp.login.data.RemoteAuthRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
-import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.data.local.EventLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.events.data.OfflineFirstEventRepository
+import org.lerchenflo.schneaggchatv3mp.events.data.local.RoomEventDataSource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.DemoGroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.RoomGroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
@@ -84,16 +112,20 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackViewModel
-import org.lerchenflo.schneaggchatv3mp.feedback.data.FeedbackRepository
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.feedback.data.RemoteFeedbackRepository
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.MapLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.OfflineFirstMapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.RoomMapDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassViewModel
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
-import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
+import org.lerchenflo.schneaggchatv3mp.settings.data.DataStoreSettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSettingsViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements.AnnouncementAdminViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.notificationsettings.NotificationSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecurityViewModel
@@ -101,6 +133,30 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.loggedindevices.Log
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.app.data.remote.AppInfoRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.app.data.remote.KtorAppInfoRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.GroupRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.KtorGroupRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.KtorMessageRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.KtorUserRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.MessageRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.UserRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.EventRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.KtorEventRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.FeedbackRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.KtorFeedbackRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.announcement.data.RemoteAnnouncementRepository
+import org.lerchenflo.schneaggchatv3mp.announcement.data.remote.AnnouncementRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.announcement.data.remote.KtorAnnouncementRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.GameRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.KtorGameRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.login.data.remote.AuthRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.login.data.remote.KtorAuthRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.KtorMapRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.MapRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.settings.data.remote.KtorSettingsRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.settings.data.remote.SettingsRemoteDataSource
 
 enum class HTTPCLIENTTYPE {
     AUTHENTICATED,
@@ -116,12 +172,17 @@ val sharedmodule = module{
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
+    // App-wide error / action events (shown and handled by App.kt)
+    singleOf(::DefaultErrorChannel) bind ErrorChannel::class
+    singleOf(::DefaultActionChannel) bind ActionChannel::class
+
     // Session layer (see plans/AUTH_SESSION_REBUILD_PLAN.md). Construction order matters and is
     // cycle-free: the refresh API only needs the NOT_AUTHENTICATED client, the AUTHENTICATED
-    // client needs the manager, NetworkUtils needs both clients.
+    // client needs the manager, the remote data sources below need the clients. The sink reaches the
+    // session terminator lazily: the terminator needs the manager, which needs the sink.
     single<AuthSessionStore> { PreferenceAuthSessionStore(get()) }
     single<AuthRefreshApi> { KtorAuthRefreshApi(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get()) }
-    single<AuthEventSink> { AppAuthEventSink() }
+    single<AuthEventSink> { AppAuthEventSink(get(), get(), inject<SessionTerminator>(), get(), get<ApplicationScope>()) }
     single<AuthClock> { SystemAuthClock }
     single<AuthLog> { LoggingAuthLog(get(), get<ApplicationScope>()) }
     single {
@@ -137,9 +198,20 @@ val sharedmodule = module{
         )
     }
 
-    single<NetworkUtils> {
-        NetworkUtils(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get())
+    // Remote data sources. Explicit lambdas: the HttpClients are only registered by name.
+    single<UserRemoteDataSource> { KtorUserRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<GroupRemoteDataSource> { KtorGroupRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<MessageRemoteDataSource> { KtorMessageRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<AuthRemoteDataSource> {
+        KtorAuthRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get())
     }
+    single<AppInfoRemoteDataSource> { KtorAppInfoRemoteDataSource(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get()) }
+    single<SettingsRemoteDataSource> { KtorSettingsRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<EventRemoteDataSource> { KtorEventRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<MapRemoteDataSource> { KtorMapRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<FeedbackRemoteDataSource> { KtorFeedbackRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<AnnouncementRemoteDataSource> { KtorAnnouncementRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
+    single<GameRemoteDataSource> { KtorGameRemoteDataSource(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get()) }
 
     // AUTHENTICATED / NOT_AUTHENTICATED / SOCKET HttpClients are platform-specific (they need a
     // concrete HttpClientEngine) - see androidHttpModule, IosHttpModule, desktopHttpModule. Not
@@ -149,21 +221,83 @@ val sharedmodule = module{
 
 
     //Repository
-    single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+    single<SettingsRepository> {
+        DataStoreSettingsRepository(
+            preferencemanager = get(),
+            settingsRemoteDataSource = get(),
+            languageService = get(),
+            externalScope = get<ApplicationScope>(),
+        )
     }
-    singleOf(::SettingsRepository)
-    singleOf(::GroupRepository)
-    singleOf(::UserRepository)
-    singleOf(::MessageRepository)
-    singleOf(::LoggingRepository)
-    singleOf(::MapRepository)
-    singleOf(::EventRepository)
-    singleOf(::DemoGroupExtensionRepository) { bind<GroupExtensionRepository>() }
+    singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
+    singleOf(::OfflineFirstGroupRepository) bind GroupRepository::class
+    singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
+    singleOf(::OfflineFirstUserRepository) bind UserRepository::class
+    singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
+    // Explicit lambda so the dispatcher keeps its default (Dispatchers.IO); tests pass their own (plan R4).
+    // Sends and mark-read run in the app-wide scope, so they outlive the screen that started them (plan R2).
+    single<MessageRepository> {
+        OfflineFirstMessageRepository(
+            database = get(),
+            messageLocalDataSource = get(),
+            messageRemoteDataSource = get(),
+            pictureManager = get(),
+            audioManager = get(),
+            loggingRepository = get(),
+            errorChannel = get(),
+            externalScope = get<ApplicationScope>(),
+        )
+    }
+    // Explicit lambda so the dispatcher keeps its default (Dispatchers.Default); tests pass their own (plan R4)
+    single<ChatListRepository> {
+        OfflineFirstChatListRepository(
+            userLocalDataSource = get(),
+            groupLocalDataSource = get(),
+            messageLocalDataSource = get(),
+            settingsRepository = get(),
+            settingsRemoteDataSource = get(),
+        )
+    }
+    singleOf(::RoomLoggingRepository) bind Logger::class
+    singleOf(::RoomMapDataSource) bind MapLocalDataSource::class
+    singleOf(::RoomEventDataSource) bind EventLocalDataSource::class
+    singleOf(::OfflineFirstMapRepository) bind MapRepository::class
+    singleOf(::OfflineFirstEventRepository) bind EventRepository::class
+    singleOf(::RemoteAppInfoRepository) bind AppInfoRepository::class
+    singleOf(::RemoteFeedbackRepository) bind FeedbackRepository::class
+    singleOf(::RemoteAnnouncementRepository) bind AnnouncementRepository::class
+    singleOf(::RemoteAuthRepository) bind AuthRepository::class
+    single<SessionTerminator> {
+        LocalSessionTerminator(
+            database = get(),
+            preferencemanager = get(),
+            authSessionManager = get(),
+            authRepository = get(),
+            notifier = get(),
+            socketConnectionManager = get(),
+            loggingRepository = get(),
+            pictureManager = get(),
+            audioManager = get(),
+            externalScope = get<ApplicationScope>(),
+        )
+    }
+    // Explicit lambda for the scope: the sync runs in the app-wide scope, so it outlives the
+    // screen that started it (plan R2). Depends on repositories only, never the other way round.
+    single<DataSyncCoordinator> {
+        DefaultDataSyncCoordinator(
+            userRepository = get(),
+            groupRepository = get(),
+            messageRepository = get(),
+            mapRepository = get(),
+            eventRepository = get(),
+            loggingRepository = get(),
+            externalScope = get<ApplicationScope>(),
+        )
+    }
+    singleOf(::DemoGroupExtensionRepository) bind GroupExtensionRepository::class
     // Holds the synced extensions. Swap with the demo line above once the server serves extensions
-    // (see RoomGroupExtensionRepository): singleOf(::RoomGroupExtensionRepository) { bind<GroupExtensionRepository>() }
+    // (see RoomGroupExtensionRepository): singleOf(::RoomGroupExtensionRepository) bind GroupExtensionRepository::class
     singleOf(::RoomGroupExtensionRepository)
-    singleOf(::FeedbackRepository)
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
     singleOf(::GameSaveRepository)
@@ -223,7 +357,7 @@ val sharedmodule = module{
 
     viewModel { (chatId: String, isGroup: Boolean) ->
         ChatViewModel(
-            appRepository = get(),
+            appVersion = get(),
             messageRepository = get(),
             userRepository = get(),
             groupRepository = get(),
@@ -233,7 +367,6 @@ val sharedmodule = module{
             pictureManager = get(),
             permissionsManager = get(),
             audioManager = get(),
-            applicationScope = get(),
             chatId = chatId,
             isGroup = isGroup
         )
@@ -246,7 +379,6 @@ val sharedmodule = module{
             groupRepository = get(),
             navigator = get(),
             userRepository = get(),
-            appRepository = get(),
             pictureManager = get(),
             eventRepository = get(),
             messageRepository = get(),
@@ -304,8 +436,8 @@ val sharedmodule = module{
         SchneaggmapViewModel(
             navigator = get(),
             mapRepository = get(),
-            appRepository = get(),
-            preferenceManager = get(),
+            dataSyncCoordinator = get(),
+            settingsRepository = get(),
             locationService = get(),
             userRepository = get(),
             eventRepository = get(),
@@ -319,7 +451,7 @@ val sharedmodule = module{
         FriendCompassViewModel(
             targetUserId = targetUserId,
             navigator = get(),
-            appRepository = get(),
+            userRepository = get(),
             locationService = get()
         )
     }
@@ -327,13 +459,13 @@ val sharedmodule = module{
     viewModel { (initialEntryId: String?, initialEntry: Event?) ->
         EventsViewModel(
             navigator = get(),
-            appRepository = get(),
+            appVersion = get(),
+            dataSyncCoordinator = get(),
             eventRepository = get(),
             userRepository = get(),
             groupRepository = get(),
-            preferenceManager = get(),
+            settingsRepository = get(),
             pictureManager = get(),
-            applicationScope = get(),
             initialEntryId = initialEntryId,
             initialEntry = initialEntry
         )
@@ -351,9 +483,11 @@ val sharedmodule = module{
 
 
     viewModelOf(::DevSettingsViewModel)
+    viewModelOf(::AnnouncementAdminViewModel)
     viewModelOf(::DartCounterViewModel)
     viewModelOf(::TowerstackViewModel)
     viewModelOf(::UndercoverViewModel)
+    viewModelOf(::TicTacToeViewModel)
     viewModelOf(::YatziViewModel)
     viewModelOf(::TetrisViewModel)
     viewModelOf(::MorseViewModel)

@@ -1,12 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.domain
 
-import kotlinx.serialization.Serializable
 
-@Serializable
 enum class FeedbackType { FEATURE, BUG }
 
 /** Features only use REQUESTED / PLANNED / IMPLEMENTED, bugs only OPEN / CONFIRMED / FIXED. */
-@Serializable
 enum class FeedbackStatus {
     REQUESTED,
     PLANNED,
@@ -23,7 +20,6 @@ enum class FeedbackStatus {
     }
 }
 
-@Serializable
 enum class FeedbackTag { CHAT, GROUPS, EVENTS, MAP, GAMES, SETTINGS, UI, NOTIFICATIONS, PERFORMANCE, OTHER }
 
 /**
@@ -31,7 +27,6 @@ enum class FeedbackTag { CHAT, GROUPS, EVENTS, MAP, GAMES, SETTINGS, UI, NOTIFIC
  * DIDNT_KNOW is only allowed on implemented features and does not change the score.
  * NONE removes the vote.
  */
-@Serializable
 enum class FeedbackVote { UP, DOWN, DIDNT_KNOW, NONE }
 
 data class FeedbackEntry(
@@ -55,8 +50,6 @@ data class FeedbackEntry(
 ) {
     /** Up and downvotes cancel out, "didn't know" is neutral. */
     val score: Int get() = upvotes - downvotes
-
-    val isDone: Boolean get() = status == FeedbackStatus.IMPLEMENTED || status == FeedbackStatus.FIXED
 
     /** User-created entries stay pinned (and highlighted) at the top for [NEW_ENTRY_PIN_MILLIS]. */
     fun isPinned(nowMillis: Long): Boolean =

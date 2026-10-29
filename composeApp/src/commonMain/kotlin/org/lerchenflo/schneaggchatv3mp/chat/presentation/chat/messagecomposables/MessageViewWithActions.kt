@@ -15,6 +15,8 @@ import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
@@ -52,11 +54,18 @@ fun MessageViewWithActions(
     onReplyCall: () -> Unit = {},
     onLongPress: () -> Unit = {},
     onAction: (MessageAction) -> Unit = {},
+    /** Reaction toggled by a double tap - the first quick reaction, null when the list is empty. */
+    doubleTapReaction: String? = null,
     playbackProgress: StateFlow<PlaybackProgress>? = null,
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ){
-
+    // pointerInput(Unit) keeps its gesture loop alive across recompositions, so it has to read the
+    // latest values - e.g. the quick reactions can change while the chat is open (synced from another device)
+    val currentMessage by rememberUpdatedState(message)
+    val currentOnLongPress by rememberUpdatedState(onLongPress)
+    val currentOnAction by rememberUpdatedState(onAction)
+    val currentDoubleTapReaction by rememberUpdatedState(doubleTapReaction)
 
     //Swipe right to reply, same library usage as LocationAttributeView on the map
     Swipeable(
@@ -88,7 +97,7 @@ fun MessageViewWithActions(
 
                         // ── Desktop right-click → long press ──────────────────────────
                         if (currentEvent.buttons.isSecondaryPressed) {
-                            onLongPress()
+                            currentOnLongPress()
                             down.consume()
                             return@awaitEachGesture
                         }
@@ -108,13 +117,16 @@ fun MessageViewWithActions(
 
                             // withTimeoutOrNull timed out → genuine long press
                             firstUp == null -> {
-                                onLongPress()
+                                currentOnLongPress()
                                 down.consume()
                                 return@awaitEachGesture
                             }
                         }
 
                         // ── Double-tap detection ───────────────────────────────────────
+                        // No quick reactions → no double tap reaction
+                        val reaction = currentDoubleTapReaction ?: return@awaitEachGesture
+
                         val secondDown = withTimeoutOrNull(viewConfig.doubleTapTimeoutMillis) {
                             awaitFirstDown(requireUnconsumed = false)
                         }
@@ -122,7 +134,7 @@ fun MessageViewWithActions(
                         if (secondDown != null) {
                             secondDown.consume()
                             waitForUpOrCancellation()
-                            onAction(MessageAction.ToggleReaction(message.id ?: "", "❤\uFE0F"))
+                            currentOnAction(MessageAction.ToggleReaction(currentMessage.id ?: "", reaction))
                         } else {
                             // single tap — handle if needed
                         }

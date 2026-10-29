@@ -48,6 +48,8 @@ private const val UBOAT_UNLOAD_SECONDS = 0.8f
 private const val UBOAT_SPEED_FACTOR = 1.1f
 private const val THING_INTERVAL = 0.45f
 private const val MINE_SHARE = 0.3f
+/** Seconds into the dive before the first mine: time to find the controls. */
+private const val MINE_GRACE_SECONDS = 1.8f
 private const val TREASURE_SHARE = 0.15f
 private const val PEARL_POINTS = 15
 private const val TREASURE_POINTS = 40
@@ -61,7 +63,7 @@ private class Thing(override var x: Float, val y: Float, val kind: ThingKind) : 
 
 internal class RodeoUBoat : RodeoVehicle(RodeoVehicleKind.U_BOAT) {
 
-    private val steering = RodeoSteering(climbAccel = 60f, diveAccel = 0f, sinkAccel = 40f, maxClimb = 22f, maxSink = 22f)
+    private val steering = RodeoSteering(climbAccel = 60f, diveAccel = 70f, sinkAccel = 40f, maxClimb = 22f, maxSink = 22f)
     private val things = mutableListOf<Thing>()
     /** Underside of the hull. */
     private var y = SURFACED_Y
@@ -104,6 +106,11 @@ internal class RodeoUBoat : RodeoVehicle(RodeoVehicleKind.U_BOAT) {
 
     override fun onJump(pressed: Boolean) {
         steering.climb = pressed && phase == VehiclePhase.RIDING
+    }
+
+    /** S / arrow down on desktop: dives a bit quicker than just letting go. */
+    override fun onDive(pressed: Boolean) {
+        steering.dive = pressed && phase == VehiclePhase.RIDING
     }
 
     /** The view dives along with it. */
@@ -151,7 +158,7 @@ internal class RodeoUBoat : RodeoVehicle(RodeoVehicleKind.U_BOAT) {
             thingIn = THING_INTERVAL
             val roll = Random.nextFloat()
             val kind = when {
-                roll < MINE_SHARE -> ThingKind.MINE
+                roll < MINE_SHARE && phaseTime >= MINE_GRACE_SECONDS -> ThingKind.MINE
                 roll < MINE_SHARE + TREASURE_SHARE -> ThingKind.TREASURE
                 else -> ThingKind.PEARL
             }

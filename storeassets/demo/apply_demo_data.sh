@@ -41,16 +41,17 @@ python3 "$HERE/seed_demo_data.py" "$WORK/database.db"
 
 echo "== profile pictures"
 # avatars/<name>.jpeg -> <userId>.upb (PNG), user ids come from seed_demo_data.py
-declare -A IDS=(
-  [jonas]=de0000000000000000000001 [sophie]=de0000000000000000000002 [max]=de0000000000000000000003
-  [mia]=de0000000000000000000004 [paul]=de0000000000000000000005 [lena]=de0000000000000000000006
-  [tobias]=de0000000000000000000007 [alex]=de0000000000000000000008
+# name:id pairs instead of an associative array, so the stock macOS bash 3.2 can run this too
+IDS=(
+  jonas:de0000000000000000000001 sophie:de0000000000000000000002 max:de0000000000000000000003
+  mia:de0000000000000000000004 paul:de0000000000000000000005 lena:de0000000000000000000006
+  tobias:de0000000000000000000007 alex:de0000000000000000000008
 )
 # Round with a transparent outside, so map markers and lists never show square corners
 circle() { magick "$1" -resize 512x512^ -gravity center -extent 512x512 \
   \( -size 512x512 xc:black -fill white -draw "circle 256,256 256,0" \) -alpha off -compose CopyOpacity -composite "PNG32:$2"; }
-for name in "${!IDS[@]}"; do
-  circle "$HERE/avatars/$name.jpeg" "$WORK/${IDS[$name]}.upb"
+for pair in "${IDS[@]}"; do
+  circle "$HERE/avatars/${pair%%:*}.jpeg" "$WORK/${pair#*:}.upb"
 done
 # Group pictures: 2x2 collage of member faces
 collage() { magick "$HERE/avatars/$2.jpeg" "$HERE/avatars/$3.jpeg" "$HERE/avatars/$4.jpeg" "$HERE/avatars/$5.jpeg" \

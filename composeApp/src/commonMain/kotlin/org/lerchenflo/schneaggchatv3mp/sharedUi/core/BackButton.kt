@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.go_back
 

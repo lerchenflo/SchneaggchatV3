@@ -150,13 +150,14 @@ fun LocationData.getValueByKey(key: AttributeKey): AttributeValue? = when (this)
     }
 }
 
-fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): LocationData = when (this) {
+// null clears an optional value; required (non-null) properties ignore it
+fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue?): LocationData = when (this) {
 
     // Traffic & Hazards
     is LocationData.Radar -> when (key) {
-        AttributeKey.RADAR_SPEED_LIMIT -> copy(radarSpeedLimit = value)
+        AttributeKey.RADAR_SPEED_LIMIT -> value?.let { copy(radarSpeedLimit = it) } ?: this
         AttributeKey.RADAR_MOBILE      -> copy(radarMobile = value)
-        AttributeKey.RADAR_RED_LIGHT   -> copy(radarRedLight = value)
+        AttributeKey.RADAR_RED_LIGHT   -> value?.let { copy(radarRedLight = it) } ?: this
         else                           -> this
     }
 
@@ -177,7 +178,7 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): Loca
         else                                       -> this
     }
     is LocationData.OffroadMotorcycle -> when (key) {
-        AttributeKey.OFFROAD_MOTORCYCLE_LEGAL     -> copy(offroadMotorcycleLegal = value)
+        AttributeKey.OFFROAD_MOTORCYCLE_LEGAL     -> value?.let { copy(offroadMotorcycleLegal = it) } ?: this
         AttributeKey.OFFROAD_MOTORCYCLE_DISCIPLINE -> copy(offroadMotorcycleDiscipline = value)
         else                                       -> this
     }
@@ -216,8 +217,8 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): Loca
         else                                -> this
     }
     is LocationData.Bicycle -> when (key) {
-        AttributeKey.BICYCLE_LEGAL            -> copy(bicycleLegal = value)
-        AttributeKey.BICYCLE_DIFFICULTY       -> copy(bicycleDifficulty = value)
+        AttributeKey.BICYCLE_LEGAL            -> value?.let { copy(bicycleLegal = it) } ?: this
+        AttributeKey.BICYCLE_DIFFICULTY       -> value?.let { copy(bicycleDifficulty = it) } ?: this
         AttributeKey.BICYCLE_UNDERGROUND_TYPE -> copy(bicycleUndergroundType = value)
         else                                   -> this
     }
@@ -295,7 +296,7 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue): Loca
     is LocationData.FoodGreek -> this
     is LocationData.FoodAustrian -> this
     is LocationData.FoodOther -> when (key) {
-        AttributeKey.FOOD_OTHER_CUISINE -> copy(foodOtherCuisine = value)
+        AttributeKey.FOOD_OTHER_CUISINE -> value?.let { copy(foodOtherCuisine = it) } ?: this
         else                             -> this
     }
 }

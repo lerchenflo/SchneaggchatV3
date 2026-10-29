@@ -4,20 +4,15 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -46,59 +40,39 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.events_screen_title
-import schneaggchatv3mp.composeapp.generated.resources.location_type_user
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_location_types
 
+/**
+ * The "Location types" filter menu. Anchors to its parent Box (the places chip in
+ * [MapFilterChipsRow]).
+ */
 @Composable
 fun ShownLocationsDropdown(
     state: SchneaggmapState,
     onAction: (SchneaggmapAction) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier, horizontalAlignment = Alignment.End) {
-        FloatingActionButton(
-            onClick = { onAction(SchneaggmapAction.ToggleFilterDropdown) },
-        ) {
-            if (state.isLoading) {
-                CircularProgressIndicator()
-            } else {
-                Icon(Icons.Default.FilterList, contentDescription = null)
-            }
-        }
-
-        DropdownMenu(
-            expanded = state.isFilterDropdownVisible,
-            onDismissRequest = { onAction(SchneaggmapAction.ToggleFilterDropdown) },
-        ) {
-            LocationDropdownContent(
-                onTypeClick = {
-                    onAction(SchneaggmapAction.ToggleMainType(it))
-                },
-                onGroupClick = {
-                    onAction(SchneaggmapAction.ToggleGroup(it))
-                },
-                onGroupExpandClick = {
-                    onAction(SchneaggmapAction.ToggleGroupExpanded(it))
-                },
-                enabledTypes = state.enabledTypes,
-                expandedGroups = state.expandedFilterGroups,
-                onToggleShowUsersClick = { onAction(SchneaggmapAction.ToggleShowUsers) },
-                showUsers = state.showUsers,
-                onToggleShowEventsClick = { onAction(SchneaggmapAction.ToggleShowEvents) },
-                showEvents = state.showEvents,
-            )
-        }
+    DropdownMenu(
+        expanded = state.isFilterDropdownVisible,
+        onDismissRequest = { onAction(SchneaggmapAction.ToggleFilterDropdown) },
+    ) {
+        LocationDropdownContent(
+            onTypeClick = {
+                onAction(SchneaggmapAction.ToggleMainType(it))
+            },
+            onGroupClick = {
+                onAction(SchneaggmapAction.ToggleGroup(it))
+            },
+            onGroupExpandClick = {
+                onAction(SchneaggmapAction.ToggleGroupExpanded(it))
+            },
+            enabledTypes = state.enabledTypes,
+            expandedGroups = state.expandedFilterGroups,
+        )
     }
 }
 
 @Composable
 fun LocationDropdownContent(
-    onToggleShowUsersClick: () -> Unit,
-    showUsers: Boolean,
-    onToggleShowEventsClick: () -> Unit,
-    showEvents: Boolean,
-
     onTypeClick: (LocationType) -> Unit,
     onGroupClick: (LocationGroup) -> Unit,
     onGroupExpandClick: (LocationGroup) -> Unit,
@@ -112,36 +86,6 @@ fun LocationDropdownContent(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
         HorizontalDivider()
-
-        // Toggle users separately
-        DropdownMenuItem(
-            text = { Text(stringResource(Res.string.location_type_user)) },
-            onClick = onToggleShowUsersClick,
-            leadingIcon = {
-                Checkbox(
-                    checked = showUsers,
-                    onCheckedChange = { onToggleShowUsersClick() },
-                )
-            },
-            trailingIcon = {
-                Box(modifier = Modifier.size(24.dp))
-            },
-        )
-
-        // Toggle events separately
-        DropdownMenuItem(
-            text = { Text(stringResource(Res.string.events_screen_title)) },
-            onClick = onToggleShowEventsClick,
-            leadingIcon = {
-                Checkbox(
-                    checked = showEvents,
-                    onCheckedChange = { onToggleShowEventsClick() },
-                )
-            },
-            trailingIcon = {
-                Box(modifier = Modifier.size(24.dp))
-            },
-        )
 
         LocationGroup.entries.forEach { group ->
             val expanded = group in expandedGroups

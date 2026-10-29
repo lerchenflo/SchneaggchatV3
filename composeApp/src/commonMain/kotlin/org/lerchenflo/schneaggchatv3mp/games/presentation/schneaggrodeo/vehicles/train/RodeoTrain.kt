@@ -36,7 +36,8 @@ private const val TRAIN_SPEED_FACTOR = 1.5f          // world scroll while ridin
 private const val TRAIN_LEAVE_SPEED = 50f            // u/s it puffs off to the right afterwards
 private const val TRAIN_ROCK_DEGREES = 0.6f
 
-private const val BRIDGE_FIRST_SECONDS = 1f
+/** The first bridge waits until the boarding banner is gone, so there is time to find the controls. */
+private const val BRIDGE_FIRST_SECONDS = 1.8f
 private const val BRIDGE_INTERVAL_MIN = 1f
 private const val BRIDGE_INTERVAL_RANDOM = 0.7f
 private const val BRIDGE_LAST_SECONDS = 1.3f         // no new bridge this close to the end of the ride
@@ -66,7 +67,8 @@ internal class RodeoTrain : RodeoDeckVehicle(RodeoVehicleKind.TRAIN) {
     private val smoke = mutableListOf<Smoke>()
     private var nextBridgeIn = 0f
     private var nextSmokeIn = 0f
-    private var duckHeld = false
+    private var duckJumpHeld = false
+    private var duckDiveHeld = false
     private var duck = 0f
 
     /** Engine and coach are too long to tilt as one piece over the hills. */
@@ -86,17 +88,24 @@ internal class RodeoTrain : RodeoDeckVehicle(RodeoVehicleKind.TRAIN) {
         bridges.clear()
         smoke.clear()
         duck = 0f
-        duckHeld = false
+        duckJumpHeld = false
+        duckDiveHeld = false
     }
 
     override fun spawn(world: RodeoWorld) {
         super.spawn(world)
         duck = 0f
-        duckHeld = false
+        duckJumpHeld = false
+        duckDiveHeld = false
     }
 
     override fun onJump(pressed: Boolean) {
-        duckHeld = pressed
+        duckJumpHeld = pressed
+    }
+
+    /** S / arrow down on desktop ducks too. */
+    override fun onDive(pressed: Boolean) {
+        duckDiveHeld = pressed
     }
 
     override val rideSpeedFactor = TRAIN_SPEED_FACTOR
@@ -110,7 +119,7 @@ internal class RodeoTrain : RodeoDeckVehicle(RodeoVehicleKind.TRAIN) {
     } else null
 
     override fun updateAlways(world: RodeoWorld, dt: Float, scroll: Float) {
-        val duckTarget = if (duckHeld && isRiding) 1f else 0f
+        val duckTarget = if ((duckJumpHeld || duckDiveHeld) && isRiding) 1f else 0f
         duck += (duckTarget - duck) * min(1f, dt * DUCK_RESPONSE)
         stepSmoke(dt, scroll)
         bridges.scrollAlong(scroll) { it.x + BRIDGE_WIDTH < 0f }

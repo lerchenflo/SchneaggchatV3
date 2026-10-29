@@ -4,22 +4,30 @@ package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
-import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.email_check_check_emails_snackbar
@@ -31,13 +39,20 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 class EmailVerifiedCheckViewModel(
-    private val appRepository: AppRepository,
+    private val dataSyncCoordinator: DataSyncCoordinator,
+    private val userRepository: UserRepository,
+    private val authRepository: AuthRepository,
+    private val sessionTerminator: SessionTerminator,
     private val navigator: Navigator,
-    private val applicationScope: ApplicationScope
+    settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EmailVerifiedCheckState())
     val state = _state.asStateFlow()
+
+    /** The saved server URL; the FAQ link opens this server's page. */
+    val serverUrl: StateFlow<String> = settingsRepository.getServerUrlFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, BASE_SERVER_URL)
 
     private var lastEmailVerificationTime: Instant = Instant.DISTANT_PAST
 
@@ -65,7 +80,7 @@ class EmailVerifiedCheckViewModel(
 
         state.value.userData?.let { user ->
             viewModelScope.launch {
-                appRepository.changeUserDetails(newEmail = newEmail, userId = user.id)
+                userRepository.changeUserDetails(newEmail = newEmail, userId = user.id)
                 showEmailDialog(false)
                 resendEmail()
             }
@@ -87,7 +102,7 @@ class EmailVerifiedCheckViewModel(
 
             try {
                 lastEmailVerificationTime = Clock.System.now()
-                appRepository.sendEmailVerify()
+                authRepository.sendEmailVerify()
             } finally {
                 _state.update { it.copy(isResendingEmail = false) }
             }
@@ -96,23 +111,23 @@ class EmailVerifiedCheckViewModel(
 
     private fun logout() {
         viewModelScope.launch {
-            appRepository.logout()
+            sessionTerminator.logout()
             navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
         }
     }
 
     private fun checkVerification() {
         println("authstate : ${SessionCache.authState.value}")
-        viewModelScope.launch {
+        // UNDISPATCHED: the sync is started right away, even if this ViewModel is cleared before the
+        // main thread gets to it; it runs in the app-wide scope (plan R2).
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
             _state.update {
                 it.copy(
                     isLoading = true
                 )
             }
-            val syncJob = applicationScope.launch {
-                appRepository.dataSync(reason = "emailVerifiedCheck") //Launch in application scope to not cancel when logging in suddenly
-            }
-            syncJob.join() //await data sync finish
+            //Runs in the app-wide scope, so it is not cancelled when logging in suddenly
+            dataSyncCoordinator.dataSync(reason = "emailVerifiedCheck") //await data sync finish
 
             _state.update {
                 it.copy(
@@ -131,8 +146,10 @@ class EmailVerifiedCheckViewModel(
 
     init {
 
-        applicationScope.launch {
-            appRepository.dataSync(reason = "emailVerifiedCheckInit")
+        // UNDISPATCHED: the sync is started before the rerouting below can clear this ViewModel;
+        // it then runs in the app-wide scope (plan R2).
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            dataSyncCoordinator.dataSync(reason = "emailVerifiedCheckInit")
         }
 
         viewModelScope.launch {
@@ -146,7 +163,7 @@ class EmailVerifiedCheckViewModel(
                 .flatMapLatest { authState ->
                     //println("AUTHSTATE CHANGED: $authState")
                     if (authState is SessionCache.AuthState.LoggedIn) {
-                        appRepository.getUserByIdFlow(userId = authState.userId)
+                        userRepository.getUserByIdFlow(userId = authState.userId)
                     } else {
                         flowOf(null) // emit null and stop when logged out
                     }

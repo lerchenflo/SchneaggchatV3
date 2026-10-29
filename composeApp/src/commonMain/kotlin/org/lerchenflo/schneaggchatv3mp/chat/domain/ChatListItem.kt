@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 /**
  * Flat presentation model for a chat row (chat selector, member pickers, chat header).
@@ -14,7 +13,7 @@ data class ChatListItem(
     val profilePictureUrl: String = "",
     val status: String? = null,
     val description: String? = null,
-    val friendshipStatus: NetworkUtils.FriendshipStatus? = null,
+    val friendshipStatus: FriendshipStatus? = null,
     val requesterId: String? = null, //Requester of the friendship
 
     val unreadMessageCount: Int = 0,
@@ -27,7 +26,7 @@ data class ChatListItem(
     // Optional phone number, shared with accepted friends. Null for groups.
     val phoneNumber: String? = null,
 
-    // Live "online right now" (never persisted, see UserRepository.onlineFriendIdsFlow) and the
+    // Live "online right now" (never persisted, see UserLocalDataSource.onlineFriendIdsFlow) and the
     // persisted last-seen timestamp (epoch millis) - both null/false when unknown.
     val isOnline: Boolean = false,
     val lastSeen: Long? = null,

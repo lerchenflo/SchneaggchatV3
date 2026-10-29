@@ -30,13 +30,17 @@ object SnackbarManager {
 
     fun showMessage(message: String, showTime: Long = 3000) {
         scope?.launch {
-            scope?.launch {
-                _channel.send(SnackbarEvent(
-                    showTime = showTime,
-                    message = message
-                ))
-            }
+            _channel.send(SnackbarEvent(
+                showTime = showTime,
+                message = message
+            ))
         }
+    }
+
+    /** Test-only (plan D19): forgets the scope from [init] and drops every queued snackbar. Never call it from app code. */
+    internal fun resetForTest() {
+        scope = null
+        while (_channel.tryReceive().isSuccess) Unit
     }
 
 

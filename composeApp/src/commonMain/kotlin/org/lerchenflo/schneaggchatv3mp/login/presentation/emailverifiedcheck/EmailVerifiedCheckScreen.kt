@@ -27,7 +27,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,11 +41,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.getFaqUrl
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
@@ -74,8 +70,7 @@ fun EmailVerifiedCheckScreenRoot() {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     val uriHandler = LocalUriHandler.current
-    val preferencemanager = koinInject<Preferencemanager>()
-    val serverUrl by preferencemanager.getServerUrlFlow().collectAsState(initial = BASE_SERVER_URL)
+    val serverUrl by viewModel.serverUrl.collectAsStateWithLifecycle()
 
     if (state.userData == null || (state.userData != null && state.userData!!.emailVerifiedAt != null)) {
         EmailCheckLoadingIndicator(username = state.userData?.name)

@@ -35,12 +35,20 @@ login/             — Authentication (data/domain/presentation)
 settings/          — User settings
 games/             — Games feature
 schneaggmap/       — Map feature
-todolist/          — To-do list feature
+events/            — Events (data/domain/presentation)
+feedback/          — User feedback (data/domain/presentation)
+announcement/      — Server announcements (data/domain)
+tools/             — Tools screen (domain/presentation)
 sharedUi/          — Shared UI components
 datasource/        — Database, network, preferences
 di/                — Koin DI modules
 utilities/         — Shared helpers
+constants.kt       — App-wide constants
 ```
+
+Repository interfaces + their models live in the domain/ of the feature that holds the implementation (data/); features may import each other's domain/ only.
+
+Feature data layer: data/ (repositories), data/local/ (local data sources + entity/), data/remote/ (remote data sources + dto/).
 
 ## Build Commands
 
@@ -82,14 +90,15 @@ When a task matches a skill, read and follow it.
 
 - **Always respond in English**, no matter which language the user writes in (German, Vorarlbergerisch, etc.).
 - **Never hardcode colors**: Always use `MaterialTheme.colorScheme` colors (or `contentColorFor(...)`). If a specific non-theme color is needed, ask the user first.
-- **String resources**: Whenever a string is added OR its value is changed in default `strings.xml` (in `values/`), redo the translation in `values-de/strings.xml` (German) and `values-it/strings.xml` (Italian) to match. Never add or change strings in `values-de-rAT` (Austrian) — that locale is translated manually. The only allowed edit there: always delete keys that no longer exist in the default `values/strings.xml` (orphaned keys), whenever a key is removed. Exception: when the user explicitly invokes the `vori-translator` skill, write its Vori translations straight into the file for the user to review with `git diff`, then follow the skill's learning loop.
-- **Never run Gradle builds**: Do not run `./gradlew` commands or build tasks unless explicitly requested by the user.
+- **String resources**: Whenever a string is added OR its value is changed in default `strings.xml` (in `values/`), redo the translation in `values-de/strings.xml` (German) and `values-it/strings.xml` (Italian) to match. Never add or change strings in `values-de-rAT` (Austrian) — that locale is translated manually. The only allowed edits there are deletions: always delete keys that no longer exist in the default `values/strings.xml` (orphaned keys), whenever a key is removed, and always delete a key whose value was changed in `values/strings.xml`, so no outdated Austrian text stays behind (the key then shows up as missing for the `vori-translator` skill). Exception: when the user explicitly invokes the `vori-translator` skill, write its Vori translations straight into the file for the user to review with `git diff`, then follow the skill's learning loop.
+- **Gradle — compile tasks only, and only when not on a laptop**: You may run the compile tasks (`:composeApp:compileKotlinJvm`, `:composeApp:compileAndroidMain`, `:composeApp:compileKotlinIosSimulatorArm64`, `:composeApp:compileTestKotlinIosSimulatorArm64`) freely to check your changes, but only if the machine is not a laptop. Check first: macOS `pmset -g batt | grep -q InternalBattery` (match = laptop); Linux `ls /sys/class/power_supply/BAT*` (exists = laptop); Windows `Get-CimInstance Win32_Battery` (any result = laptop). On a laptop, and for every other Gradle task (tests, `assemble*`, `run*`, `install*`, `build`, publish), do not run `./gradlew` unless explicitly requested by the user.
 - **Do not assume anything**: If an instruction or requirement is ambiguous or unclear, ask the user for clarification before proceeding.
 - **Use available skills**: Always check and apply relevant skills from the skills directory when working on tasks.
-- After adding or changing dependencies: remind the user to verify versions are up to date and run a Gradle sync. Do not attempt to build or run the project yourself.
+- After adding or changing dependencies: remind the user to verify versions are up to date and run a Gradle sync. Do not build or run the project yourself (compile checks per the Gradle rule above are fine).
 - Do not create documentation files (README, ARCHITECTURE, etc.) unless explicitly asked.
 - Do not refactor or restructure code you were not asked to touch.
 - Do not add tests unless explicitly asked.
+- **Todo list — no thought gets lost**: Whenever you notice something worth doing that is outside the current task (bugs, tech debt, stale comments, deferred refactors, open questions, follow-ups from a plan), add it to `plans/Todo.md` with its source and file:line. Do not fix it unasked; the user reviews the list.
 - Run the readme-changelog-updater agent after every fix (Add even small fixes, the user will remove them again if unnecessary.)
 - Before implementing new functions, utils, repositories, or mappers, run the code-reuse-scout agent with the planned function list (name + one-line intent per item) so it can research existing code to reuse or extend first. It reports a REUSE/EXTEND/NEW verdict per item and maintains `.claude/code-index.md`; it never edits source code itself.
 - **Never look at the `games/` folder for reference** (structure, functions, patterns, reuse candidates, etc.) when working on anything outside of `games/` — the code there is low quality and must not be copied or mirrored elsewhere. Only read it when the task is actually about the games feature.
