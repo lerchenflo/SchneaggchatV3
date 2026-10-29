@@ -1,5 +1,5 @@
 ## Webseite
-https://schneaggchatv3.lerchenflo.eu/
+https://schneaggchat.lerchenflo.eu/
 
 # Schneaggchat V3
 CMP Multiplatform Chat - App für Android, iOS und Desktop
