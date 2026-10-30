@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.graphics.ImageBitmap
@@ -20,10 +21,13 @@ import androidx.compose.ui.window.TrayState
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.isTraySupported
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.App
+import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.maplibre.compose.desktop.ProvideMapPresentationHost
 import org.maplibre.compose.desktop.rememberAwtComposeMapPresentationHost
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -33,6 +37,7 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggchat_logo_v3
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.desktop.AppReopenedListener
+import kotlin.time.Duration.Companion.seconds
 
 private const val TRAY_LOGO_PATH = "files/schneaggchat_logo_v3_transparent.png"
 
@@ -56,6 +61,22 @@ fun main() = application {
     // size the user resized it to
     val windowState = rememberWindowState(size = DpSize(1600.dp, 1000.dp))
 
+    // The socket stays up while the window is hidden, so quitting is where it ends: close it first,
+    // so the server gets a close frame and marks the user offline at once instead of waiting for
+    // its keepalive sweep. Bounded (close() can wait for a connect in flight), so quitting never hangs.
+    val socketConnectionManager = remember { KoinPlatform.getKoin().get<SocketConnectionManager>() }
+    val quitScope = rememberCoroutineScope()
+    var quitting by remember { mutableStateOf(false) }
+    fun quit() {
+        if (quitting) return
+        quitting = true
+        windowVisible = false
+        quitScope.launch {
+            withTimeoutOrNull(2.seconds) { socketConnectionManager.close() }
+            exitApplication()
+        }
+    }
+
     val logo = trayLogo
     if (isTraySupported && logo != null) {
         val logoBitmap = logo.getOrNull()
@@ -66,7 +87,7 @@ fun main() = application {
             onAction = { windowVisible = true }, // click (Windows) / double click on the icon
             menu = {
                 Item(stringResource(Res.string.desktop_tray_open), onClick = { windowVisible = true })
-                Item(stringResource(Res.string.desktop_tray_quit), onClick = ::exitApplication)
+                Item(stringResource(Res.string.desktop_tray_quit), onClick = ::quit)
             }
         )
     }
@@ -82,7 +103,7 @@ fun main() = application {
     }
 
     Window(
-        onCloseRequest = { if (isTraySupported) windowVisible = false else exitApplication() },
+        onCloseRequest = { if (isTraySupported) windowVisible = false else quit() },
         state = windowState,
         visible = windowVisible,
         title = "SchneaggchatV3 Desktop",
