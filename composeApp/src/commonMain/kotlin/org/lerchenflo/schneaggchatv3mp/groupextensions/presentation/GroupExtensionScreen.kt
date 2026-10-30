@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
@@ -23,8 +24,11 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitScreenRoot
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_not_found
+import schneaggchatv3mp.composeapp.generated.resources.group_extension_rename
+import schneaggchatv3mp.composeapp.generated.resources.group_extension_title_label
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_under_construction
 
 @Composable
@@ -35,14 +39,49 @@ fun GroupExtensionScreenRoot(
         parametersOf(extensionId)
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val onAction = viewModel::onAction
+
+    // Rename / delete live in the top bar of every type's screen
+    val topBarActions: @Composable RowScope.() -> Unit = {
+        if (state.extension != null) {
+            ExtensionMenu(
+                canDelete = state.canDelete,
+                onRenameClick = { onAction(GroupExtensionAction.OnRenameClick) },
+                onDeleteClick = { onAction(GroupExtensionAction.OnDeleteClick) }
+            )
+        }
+    }
 
     // Types with their own screen take over once the container is loaded
     when (state.extension?.type) {
-        GroupExtensionType.SPLIT -> SplitScreenRoot(extensionId = extensionId)
+        GroupExtensionType.SPLIT -> SplitScreenRoot(
+            extensionId = extensionId,
+            topBarActions = topBarActions
+        )
         else -> GroupExtensionScreen(
             state = state,
-            onAction = viewModel::onAction
+            onAction = onAction,
+            topBarActions = topBarActions
         )
+    }
+
+    val extension = state.extension ?: return
+    when (state.dialog) {
+        GroupExtensionDialog.RENAME -> ChangeStringDialog(
+            title = stringResource(Res.string.group_extension_rename),
+            oldString = extension.title,
+            maxLines = 1,
+            placeholder = stringResource(Res.string.group_extension_title_label),
+            errorMessage = state.renameError,
+            onDismiss = { onAction(GroupExtensionAction.OnDialogDismiss) },
+            updateString = { title -> onAction(GroupExtensionAction.OnRenameConfirm(title)) }
+        )
+        GroupExtensionDialog.DELETE -> DeleteExtensionDialog(
+            title = extension.title,
+            onConfirm = { onAction(GroupExtensionAction.OnDeleteConfirm) },
+            onDismiss = { onAction(GroupExtensionAction.OnDialogDismiss) }
+        )
+        null -> Unit
     }
 }
 
@@ -50,11 +89,13 @@ fun GroupExtensionScreenRoot(
 fun GroupExtensionScreen(
     state: GroupExtensionState,
     onAction: (GroupExtensionAction) -> Unit,
+    topBarActions: @Composable RowScope.() -> Unit = {},
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         ActivityTitle(
             title = state.extension?.title.orEmpty(),
-            onBackClick = { onAction(GroupExtensionAction.OnBackClick) }
+            onBackClick = { onAction(GroupExtensionAction.OnBackClick) },
+            actions = topBarActions
         )
 
         HorizontalDivider()

@@ -436,8 +436,16 @@ class ChatDetailsViewmodel(
                     navigator.navigate(Route.GroupExtension(extensionId = action.extensionId))
                 }
             }
-            is ExtensionListAction.OnAddExtensionClick -> {
-                // todo: AddExtensionDialog (title + per-type settings), GROUP_EXTENSIONS_PLAN.md phase 3
+            is ExtensionListAction.OnCreateExtension -> {
+                viewModelScope.launch {
+                    val extensionId = groupExtensionRepository.createExtension(
+                        groupId = chatId,
+                        type = action.type,
+                        title = action.title,
+                        settings = action.settings,
+                    ) ?: return@launch
+                    navigator.navigate(Route.GroupExtension(extensionId = extensionId))
+                }
             }
         }
     }

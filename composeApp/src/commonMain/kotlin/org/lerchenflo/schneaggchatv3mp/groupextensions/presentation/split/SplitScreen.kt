@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -71,6 +72,7 @@ import schneaggchatv3mp.composeapp.generated.resources.split_transfer_title
 @Composable
 fun SplitScreenRoot(
     extensionId: String,
+    topBarActions: @Composable RowScope.() -> Unit = {},
 ) {
     val viewModel = koinViewModel<SplitViewModel> {
         parametersOf(extensionId)
@@ -79,7 +81,8 @@ fun SplitScreenRoot(
 
     SplitScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = viewModel::onAction,
+        topBarActions = topBarActions
     )
 }
 
@@ -88,6 +91,7 @@ fun SplitScreenRoot(
 fun SplitScreen(
     state: SplitState,
     onAction: (SplitAction) -> Unit,
+    topBarActions: @Composable RowScope.() -> Unit = {},
 ) {
     val showExpenses = state.selectedTab == SplitTab.EXPENSES && !state.isLoading && !state.extensionMissing
 
@@ -99,7 +103,8 @@ fun SplitScreen(
             Column {
                 ActivityTitle(
                     title = state.title,
-                    onBackClick = { onAction(SplitAction.OnBackClick) }
+                    onBackClick = { onAction(SplitAction.OnBackClick) },
+                    actions = topBarActions
                 )
                 if (!state.isLoading && !state.extensionMissing) {
                     CountSegmentedSwitch(

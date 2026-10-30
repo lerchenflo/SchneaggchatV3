@@ -1813,6 +1813,19 @@
     <string name="group_extension_type_route_planner">Pianificatore di tour</string>
     <string name="group_extension_not_found">Questa estensione non esiste più.</string>
     <string name="group_extension_under_construction">%1$s è ancora in costruzione.</string>
+    <string name="group_extension_create_title">Crea %1$s</string>
+    <string name="group_extension_create">Crea</string>
+    <string name="group_extension_title_label">Titolo</string>
+    <string name="group_extension_currency">Valuta</string>
+    <string name="group_extension_currency_hint">Codice di 3 lettere, ad es. EUR, CHF o USD</string>
+    <string name="group_extension_rename">Rinomina</string>
+    <string name="group_extension_delete">Elimina estensione</string>
+    <string name="group_extension_delete_confirm">Eliminare «%1$s» con tutte le voci per tutti in questo gruppo? L\'operazione non può essere annullata.</string>
+    <string name="group_extension_more_options">Altre opzioni</string>
+    <plurals name="group_extension_item_count">
+        <item quantity="one">%1$d voce</item>
+        <item quantity="other">%1$d voci</item>
+    </plurals>
 
     <!-- Group extension: money split -->
     <string name="split_tab_expenses">Spese</string>

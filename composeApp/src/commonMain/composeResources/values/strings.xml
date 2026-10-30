@@ -1819,6 +1819,19 @@
     <string name="group_extension_type_route_planner">Tour planner</string>
     <string name="group_extension_not_found">This extension no longer exists.</string>
     <string name="group_extension_under_construction">%1$s is still under construction.</string>
+    <string name="group_extension_create_title">New %1$s</string>
+    <string name="group_extension_create">Create</string>
+    <string name="group_extension_title_label">Title</string>
+    <string name="group_extension_currency">Currency</string>
+    <string name="group_extension_currency_hint">3-letter code, e.g. EUR, CHF or USD</string>
+    <string name="group_extension_rename">Rename</string>
+    <string name="group_extension_delete">Delete extension</string>
+    <string name="group_extension_delete_confirm">Delete “%1$s” with all its entries for everyone in this group? This cannot be undone.</string>
+    <string name="group_extension_more_options">More options</string>
+    <plurals name="group_extension_item_count">
+        <item quantity="one">%1$d entry</item>
+        <item quantity="other">%1$d entries</item>
+    </plurals>
 
     <!-- Group extension: money split -->
     <string name="split_tab_expenses">Expenses</string>

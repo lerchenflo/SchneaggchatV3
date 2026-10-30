@@ -174,7 +174,6 @@ fun ChatDetails(
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
     val iAmAdmin =
         (selectedChat as? ChatDetailsState.GroupDetails)?.members?.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
-    val isDeveloper = SessionCache.requireLoggedIn()?.developer == true
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
@@ -515,8 +514,7 @@ fun ChatDetails(
                 }
             }
             
-            // Developer only until the extension backend exists
-            if (isGroup && isDeveloper) {
+            if (isGroup) {
                 ExtensionListSection(
                     extensions = groupExtensions,
                     onAction = chatdetailsViewmodel::onExtensionAction

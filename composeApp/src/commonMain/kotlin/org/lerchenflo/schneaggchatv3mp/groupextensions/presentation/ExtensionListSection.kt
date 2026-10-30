@@ -17,21 +17,32 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_add
+import schneaggchatv3mp.composeapp.generated.resources.group_extension_item_count
 import schneaggchatv3mp.composeapp.generated.resources.group_extensions_title
 
 sealed interface ExtensionListAction {
     data class OnExtensionClick(val extensionId: String) : ExtensionListAction
-    data class OnAddExtensionClick(val type: GroupExtensionType) : ExtensionListAction
+    data class OnCreateExtension(
+        val type: GroupExtensionType,
+        val title: String,
+        val settings: ExtensionSettings,
+    ) : ExtensionListAction
 }
 
-/** The extensions section of the group details screen: one row per extension plus an "add" row. */
+/**
+ * The extensions section of the group details screen: one row per extension plus an "add" row,
+ * whose type menu opens the dialog for the new extension's title.
+ */
 @Composable
 fun ExtensionListSection(
     extensions: List<GroupExtension>,
@@ -39,6 +50,18 @@ fun ExtensionListSection(
     modifier: Modifier = Modifier,
 ) {
     var showAddMenu by remember { mutableStateOf(false) }
+    var addType by rememberSaveable { mutableStateOf<GroupExtensionType?>(null) }
+
+    addType?.let { type ->
+        AddExtensionDialog(
+            type = type,
+            onDismiss = { addType = null },
+            onCreate = { title, settings ->
+                addType = null
+                onAction(ExtensionListAction.OnCreateExtension(type, title, settings))
+            }
+        )
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(stringResource(Res.string.group_extensions_title))
@@ -57,7 +80,16 @@ fun ExtensionListSection(
                         )
                     },
                     headlineContent = { Text(extension.title) },
-                    supportingContent = { Text(extension.type.toUiText().asString()) }
+                    supportingContent = {
+                        val typeName = extension.type.toUiText().asString()
+                        // A shared text is one document, counting its entries says nothing
+                        if (extension.type == GroupExtensionType.SHARED_TEXT) {
+                            Text(typeName)
+                        } else {
+                            val count = extension.items.size
+                            Text("$typeName · ${pluralStringResource(Res.plurals.group_extension_item_count, count, count)}")
+                        }
+                    }
                 )
             }
         }
@@ -92,7 +124,7 @@ fun ExtensionListSection(
                         },
                         onClick = {
                             showAddMenu = false
-                            onAction(ExtensionListAction.OnAddExtensionClick(type))
+                            addType = type
                         }
                     )
                 }

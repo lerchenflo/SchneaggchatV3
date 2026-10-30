@@ -392,6 +392,7 @@ val sharedmodule = module{
     viewModel { (extensionId: String) ->
         GroupExtensionViewModel(
             groupExtensionRepository = get(),
+            groupRepository = get(),
             navigator = get(),
             extensionId = extensionId
         )
