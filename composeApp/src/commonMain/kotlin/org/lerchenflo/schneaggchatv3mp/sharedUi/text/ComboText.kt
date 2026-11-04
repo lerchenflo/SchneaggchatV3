@@ -9,6 +9,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.LinkAnnotation
@@ -20,13 +21,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
+import com.mikepenz.markdown.compose.components.markdownComponents
+import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeBlock
+import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
 import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.elements.MarkdownCheckBox
 import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.DefaultMarkdownAlertIcons
 import com.mikepenz.markdown.model.DefaultMarkdownColors
 import com.mikepenz.markdown.model.markdownAlertColors
 import com.mikepenz.markdown.model.markdownAnnotator
 import com.mikepenz.markdown.model.markdownAnnotatorConfig
+import dev.snipme.highlights.Highlights
+import dev.snipme.highlights.model.SyntaxThemes
 
 /**
  * Displays text as plain text or markdown (merged into one composable) and resolves
@@ -86,6 +93,12 @@ fun ComboText(
             }
         }
 
+        // The syntax theme follows the code background, not the system: light text = dark background
+        val darkCode = textColor.luminance() > 0.5f
+        val highlightsBuilder = remember(darkCode) {
+            Highlights.Builder().theme(SyntaxThemes.default(darkMode = darkCode))
+        }
+
         CompositionLocalProvider(LocalUriHandler provides uriHandler) {
             Markdown(
                 content = markdownContent,
@@ -95,16 +108,39 @@ fun ComboText(
                 // space like CommonMark soft breaks
                 annotator = markdownAnnotator(config = markdownAnnotatorConfig(eolAsNewLine = true)),
 
+                // Code text uses textColor, so every background is tinted from it: readable in
+                // both bubble colors and all themes
                 colors = DefaultMarkdownColors(
                     text = textColor,
-                    inlineCodeBackground = MaterialTheme.colorScheme.error,
-                    dividerColor = MaterialTheme.colorScheme.onPrimary,
-                    tableBackground = MaterialTheme.colorScheme.onSurface,
-                    codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
+                    inlineCodeBackground = textColor.copy(alpha = 0.15f),
+                    dividerColor = textColor.copy(alpha = 0.3f),
+                    tableBackground = textColor.copy(alpha = 0.05f),
+                    codeBackground = textColor.copy(alpha = 0.12f),
                     alert = markdownAlertColors(darkTheme = isSystemInDarkTheme()),
                     highlightText = MaterialTheme.colorScheme.primary,
                     highlightBackground = MaterialTheme.colorScheme.primaryContainer,
-                )
+                ),
+                components = markdownComponents(
+                    checkbox = { MarkdownCheckBox(it.content, it.node, it.typography.text) },
+                    codeFence = {
+                        MarkdownHighlightedCodeFence(
+                            content = it.content,
+                            node = it.node,
+                            style = it.typography.code,
+                            highlightsBuilder = highlightsBuilder,
+                            showHeader = true,
+                        )
+                    },
+                    codeBlock = {
+                        MarkdownHighlightedCodeBlock(
+                            content = it.content,
+                            node = it.node,
+                            style = it.typography.code,
+                            highlightsBuilder = highlightsBuilder,
+                            showHeader = true,
+                        )
+                    },
+                ),
             )
         }
     } else {
