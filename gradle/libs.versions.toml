@@ -141,6 +141,7 @@ koin-compose-viewmodel-navigation = { module = "io.insert-koin:koin-compose-view
 koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
 
 mikepenzMultiplatformMarkdownM3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "mikepenz-markdown" }
+mikepenzMultiplatformMarkdownCode = { module = "com.mikepenz:multiplatform-markdown-renderer-code", version.ref = "mikepenz-markdown" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }

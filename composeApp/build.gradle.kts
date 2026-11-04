@@ -207,6 +207,7 @@ kotlin {
             // Markdown
             //implementation(libs.mikepenzMultiplatformMarkdown)
             implementation(libs.mikepenzMultiplatformMarkdownM3)
+            implementation(libs.mikepenzMultiplatformMarkdownCode)
 
             //Base64 encoding
             implementation(libs.base64)

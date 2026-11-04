@@ -310,16 +310,6 @@ class GlobalViewModel(
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        viewModelScope.launch {
-            socketConnectionManager.close()
-        }
-    }
-
-
-
-
     private var permissionRequestJob: Job? = null
     private var locationTrackingJob: Job? = null
 
