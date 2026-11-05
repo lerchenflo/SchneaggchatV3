@@ -299,6 +299,8 @@
     <string name="merge_map_locations_info">Raggruppa le posizioni vicine in un unico marcatore quando si riduce lo zoom</string>
     <string name="merge_map_users">Unisci amici durante lo zoom</string>
     <string name="merge_map_users_info">Raggruppa gli amici vicini in un unico marcatore quando si riduce lo zoom</string>
+    <string name="sort_map_users_by_pinned">Mostra prima gli amici fissati</string>
+    <string name="sort_map_users_by_pinned_info">Gli amici fissati appaiono per primi nella barra degli amici sulla mappa</string>
     <string name="schneaggmap_map_style">Stile mappa</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Bright</string>

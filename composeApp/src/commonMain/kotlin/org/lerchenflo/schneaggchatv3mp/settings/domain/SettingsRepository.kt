@@ -42,6 +42,9 @@ interface SettingsRepository {
     fun getMergeMapUsersFlow(): Flow<Boolean>
     suspend fun setMergeMapUsers(value: Boolean)
 
+    fun getSortMapUsersByPinnedFlow(): Flow<Boolean>
+    suspend fun setSortMapUsersByPinned(value: Boolean)
+
     fun getMapStyleSettingFlow(): Flow<MapStyleSetting>
     fun getMapStyleUrlFlow(): Flow<String>
     suspend fun setMapStyleSetting(style: MapStyleSetting)

@@ -514,6 +514,17 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
+            combine(
+                settingsRepository.getSortMapUsersByPinnedFlow(),
+                settingsRepository.getPinnedChatsFlow(),
+            ) { sortByPinned, pinnedChats ->
+                if (sortByPinned) pinnedChats.filterNot { it.group }.map { it.chatId }.toSet() else emptySet()
+            }.collectLatest { pinnedFriendIds ->
+                _state.update { it.copy(pinnedFriendIds = pinnedFriendIds) }
+            }
+        }
+
+        viewModelScope.launch {
             settingsRepository.getMapStyleSettingFlow()
                 .collectLatest { style ->
                     _state.update { it.copy(mapStyle = style, mapStyleUrl = style.tileUrl) }

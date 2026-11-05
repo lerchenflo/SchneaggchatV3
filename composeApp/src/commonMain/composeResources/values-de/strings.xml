@@ -300,6 +300,8 @@
     <string name="merge_map_locations_info">Orte mit wenig Abstand werden beim Zoomen zu einem Ort zusammengefügt</string>
     <string name="merge_map_users">Freunde beim Zoomen zusammenfassen</string>
     <string name="merge_map_users_info">Fasst nah beieinander liegende Freunde zu einem Marker zusammen, wenn herausgezoomt ist</string>
+    <string name="sort_map_users_by_pinned">Angepinnte Freunde zuerst anzeigen</string>
+    <string name="sort_map_users_by_pinned_info">Angepinnte Freunde stehen in der Freundesleiste auf der Karte vorne</string>
     <string name="schneaggmap_map_style">Mapdesign</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Hell</string>

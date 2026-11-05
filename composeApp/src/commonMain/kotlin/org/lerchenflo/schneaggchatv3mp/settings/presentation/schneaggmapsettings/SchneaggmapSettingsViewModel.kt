@@ -39,6 +39,9 @@ class SchneaggmapSettingsViewModel(
     var mergeMapUsers by mutableStateOf(true)
         private set
 
+    var sortMapUsersByPinned by mutableStateOf(true)
+        private set
+
     var mapStyle by mutableStateOf(MapStyleSetting.LIBERTY)
         private set
 
@@ -68,6 +71,16 @@ class SchneaggmapSettingsViewModel(
                 }
                 .collect { value ->
                     mergeMapUsers = value
+                }
+        }
+
+        viewModelScope.launch { // Pinned friends first in the map's friends bar
+            settingsRepository.getSortMapUsersByPinnedFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting sort map users by pinned preference: ${exception.message}")
+                }
+                .collect { value ->
+                    sortMapUsersByPinned = value
                 }
         }
 
@@ -113,6 +126,12 @@ class SchneaggmapSettingsViewModel(
     fun updateMergeMapUsers(newValue: Boolean) {
         viewModelScope.launch {
             settingsRepository.setMergeMapUsers(newValue)
+        }
+    }
+
+    fun updateSortMapUsersByPinned(newValue: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setSortMapUsersByPinned(newValue)
         }
     }
 

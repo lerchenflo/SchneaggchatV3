@@ -124,6 +124,7 @@ class Preferencemanager(
         val MERGE_MAP_LOCATIONS = booleanPreferencesKey("merge_map_locations")
         val DEMO_MODE = booleanPreferencesKey("demo_mode")
         val MERGE_MAP_USERS = booleanPreferencesKey("merge_map_users")
+        val SORT_MAP_USERS_BY_PINNED = booleanPreferencesKey("sort_map_users_by_pinned")
         val MAP_STYLE = intPreferencesKey("map_style")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
         val QUICK_REACTIONS = stringPreferencesKey("quick_reactions")
@@ -245,6 +246,15 @@ class Preferencemanager(
 
     fun getMergeMapUsersFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.MERGE_MAP_USERS] ?: true //Default to true
+    }
+
+    // Pinned friends first in the map's friends bar
+    suspend fun saveSortMapUsersByPinned(value: Boolean) {
+        prefs.edit { it[PrefsKeys.SORT_MAP_USERS_BY_PINNED] = value }
+    }
+
+    fun getSortMapUsersByPinnedFlow(): Flow<Boolean> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.SORT_MAP_USERS_BY_PINNED] ?: true //Default to true
     }
 
     // Map style
@@ -421,6 +431,8 @@ class Preferencemanager(
             it[PrefsKeys.THEME] = theme.ordinal
             it[PrefsKeys.MERGE_MAP_LOCATIONS] = settings.mergeMapLocations
             it[PrefsKeys.MERGE_MAP_USERS] = settings.mergeMapUsers
+            // Null from a server that doesn't store this field yet - keep the local value
+            settings.sortMapUsersByPinned?.let { value -> it[PrefsKeys.SORT_MAP_USERS_BY_PINNED] = value }
             it[PrefsKeys.MAP_STYLE] = mapStyle.ordinal
             it[PrefsKeys.PINNED_CHATS] = json.encodeToString(settings.pinnedChats)
             // A null from the server means "never customised" - drop the key entirely so the

@@ -383,6 +383,7 @@ fun SchneaggmapScreen(
                         FriendLocationsPreview(
                             friends = state.usersWithLocation,
                             onlineFriendIds = state.onlineFriendIds,
+                            pinnedFriendIds = state.pinnedFriendIds,
                             onUserClick = { user ->
                                 val loc = user.location ?: return@FriendLocationsPreview
                                 isFollowingLocation = false

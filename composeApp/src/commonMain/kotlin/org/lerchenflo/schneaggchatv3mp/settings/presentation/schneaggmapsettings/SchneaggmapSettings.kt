@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.HorizontalDivider
@@ -41,6 +42,8 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_map_style
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
+import schneaggchatv3mp.composeapp.generated.resources.sort_map_users_by_pinned
+import schneaggchatv3mp.composeapp.generated.resources.sort_map_users_by_pinned_info
 
 @Composable
 fun SchneaggmapSettings(
@@ -110,6 +113,17 @@ fun SchneaggmapSettings(
                 switchchecked = schneaggmapSettingsViewModel.mergeMapUsers,
                 onSwitchChange = { schneaggmapSettingsViewModel.updateMergeMapUsers(it) },
                 icon = Icons.Default.Group
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Pinned friends first in the friends bar at the bottom of the map
+            SettingsSwitch(
+                titletext = stringResource(Res.string.sort_map_users_by_pinned),
+                infotext = stringResource(Res.string.sort_map_users_by_pinned_info),
+                switchchecked = schneaggmapSettingsViewModel.sortMapUsersByPinned,
+                onSwitchChange = { schneaggmapSettingsViewModel.updateSortMapUsersByPinned(it) },
+                icon = Icons.Default.PushPin
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)

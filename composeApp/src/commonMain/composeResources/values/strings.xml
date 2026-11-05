@@ -300,6 +300,8 @@
     <string name="merge_map_locations_info">Group nearby locations into one marker when zoomed out</string>
     <string name="merge_map_users">Merge friends when zooming</string>
     <string name="merge_map_users_info">Group nearby friends into one marker when zoomed out</string>
+    <string name="sort_map_users_by_pinned">Show pinned friends first</string>
+    <string name="sort_map_users_by_pinned_info">Pinned friends come first in the friends bar on the map</string>
     <string name="schneaggmap_map_style">Map style</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Bright</string>

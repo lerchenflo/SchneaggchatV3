@@ -33,6 +33,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Gruppen: Admins können Gruppe löschen
 - Schneagg Rodeo verbessert
 - Schneaggmap: UI verbessert, Standort-Alter anzeigen
+- Schneaggmap: Angepinnte Freunde zuerst anzeigen (Einstellung)
 - Umfragen: Einfachere Einstellungen
 - Neues Spiel: C Coding, Tic Tac Toe
 - Quick Reactions: Custom Doppeltip Reaktion
