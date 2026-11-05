@@ -173,7 +173,7 @@ kotlin {
             implementation(libs.github.imagepickerkmp)
 
             // Voice messages (local module, not published)
-            implementation(projects.kmpVoiceMessageLibrary)
+            implementation(libs.kmp.voice.messages)
             implementation(libs.kmp.taptarget)
 
             //Jwt parsing
@@ -386,6 +386,14 @@ compose.desktop {
                 bundleID = "org.lerchenflo.schneaggchatv3"
 
                 iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_v3.icns"))
+
+                infoPlist {
+                    // Without a usage text macOS blocks the microphone (desktop voice messages)
+                    extraKeysRawXml = """
+                        <key>NSMicrophoneUsageDescription</key>
+                        <string>Schneaggchat uses the microphone to record voice messages.</string>
+                    """.trimIndent()
+                }
             }
         }
         buildTypes.release.proguard {

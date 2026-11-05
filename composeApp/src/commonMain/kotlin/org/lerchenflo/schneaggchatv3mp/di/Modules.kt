@@ -357,7 +357,6 @@ val sharedmodule = module{
 
     viewModel { (chatId: String, isGroup: Boolean) ->
         ChatViewModel(
-            appVersion = get(),
             messageRepository = get(),
             userRepository = get(),
             groupRepository = get(),

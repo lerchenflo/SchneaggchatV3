@@ -20,6 +20,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeEventRepository
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository.MemberCall
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeMessageRepository
@@ -86,6 +87,7 @@ class ChatDetailsViewmodelTest {
             pictureManager = FakePictureManager(),
             eventRepository = FakeEventRepository(),
             messageRepository = FakeMessageRepository(),
+            groupExtensionRepository = FakeGroupExtensionRepository(),
             chatId = chatId,
             isGroup = isGroup,
         )

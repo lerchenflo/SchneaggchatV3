@@ -44,7 +44,7 @@ firebase-messaging-version = "24.1.2"
 google-services = "4.5.0"
 play-services-location = "21.4.0"
 
-cmpNavigation3 = "1.1.2"
+cmpNavigation3 = "1.2.0"
 appUpdateKtx = "2.1.0"
 coreKtx = "1.19.1"
 junit = "4.13.2"
@@ -63,6 +63,7 @@ map = "0.20.0"
 swipeableKmp = "1.0.7"
 reorderable = "3.1.0"
 kmpTaptarget = "1.0.4" #Onboarding tour library, https://github.com/lerchenflo/kmp-taptarget (JitPack)
+kmpVoiceMessages = "1.0.1" #Voice message recording and playback, https://github.com/lerchenflo/kmp-voice-messages (JitPack)
 
 
 [libraries]
@@ -157,6 +158,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 ksafe-compose = { module = "eu.anifantakis:ksafe-compose", version.ref = "ksafe" }
 ksafe = { module = "eu.anifantakis:ksafe", version.ref = "ksafe" }
 kmp-taptarget = { module = "com.github.lerchenflo.kmp-taptarget:kmp-taptarget", version.ref = "kmpTaptarget" }
+kmp-voice-messages = { module = "com.github.lerchenflo.kmp-voice-messages:kmp-voice-messages", version.ref = "kmpVoiceMessages" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

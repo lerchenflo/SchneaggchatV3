@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
+import io.github.lerchenflo.voicemessages.voiceMessageDurationMs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -57,33 +58,8 @@ class DesktopAudioManager : AudioManager {
     }
 
     override suspend fun getMediaDuration(path: String): Long = withContext(Dispatchers.IO) {
-        try {
-            val file = File(path)
-            if (!file.exists()) return@withContext 0L
-
-            val audioInputStream = AudioSystem.getAudioInputStream(file)
-            val format = audioInputStream.format
-            val frames = audioInputStream.frameLength
-            val frameRate = format.frameRate
-
-            // Duration in milliseconds: (frames / frameRate) * 1000
-            val durationMs = (frames / frameRate * 1000).toLong()
-
-            audioInputStream.close()
-            durationMs
-        } catch (e: Exception) {
-            println("Desktop: Failed to get duration (likely unsupported format): ${e.message}")
-
-            // Fallback for MP3/MPEG if using SPI libraries (see below)
-            try {
-                val fileFormat = AudioSystem.getAudioFileFormat(File(path))
-                val properties = fileFormat.properties()
-                val microseconds = properties["duration"] as? Long ?: 0L
-                microseconds / 1000
-            } catch (ex: Exception) {
-                0L
-            }
-        }
+        // Reads both formats: AAC .m4a from phones and WAV recorded on desktop
+        voiceMessageDurationMs(path)
     }
 
     override fun prepareBeep(frequencyHz: Int) {

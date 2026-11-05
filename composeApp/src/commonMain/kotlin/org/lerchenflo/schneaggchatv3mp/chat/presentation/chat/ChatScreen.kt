@@ -106,7 +106,6 @@ fun ChatScreen(
                 useMarkdown = state.markdownEnabled,
                 chatId = state.chatId,
                 ownId = ownId,
-                isDesktop = state.isDesktop,
                 maxVoiceMsgTime = state.maxVoiceMsgTime,
                 playbackProgress = playbackProgress,
                 onAction = onAction,
