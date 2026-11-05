@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Battery5Bar
 import androidx.compose.material.icons.filled.Battery6Bar
 import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Straighten
@@ -49,6 +50,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.distanceMeters
 import org.lerchenflo.schneaggchatv3mp.utilities.formatDistance
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -61,9 +63,14 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_battery_
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_distance_24h_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_distance_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_last_online_label
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_location_old_info
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_location_time_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_speed_label
 import kotlin.math.roundToInt
+
+/** 10 minutes: a friend's position counts as old when it is this much older than their last time online. */
+private const val OLD_LOCATION_THRESHOLD_MILLIS = 10 * 60 * 1000L
 
 /** One stat tile's content - an icon (with its own tint), a caption, and the formatted value. */
 private data class StatTileData(
@@ -141,6 +148,17 @@ fun UserInfoCard(
                         }
                     )
                 )
+                // The own location is the live GPS fix, its time is always now
+                if (!isOwnUser && location != null) {
+                    add(
+                        StatTileData(
+                            icon = Icons.Default.LocationOn,
+                            tint = onSurfaceVariant,
+                            caption = stringResource(Res.string.schneaggmap_user_location_time_label),
+                            value = millisToTimeDateOrYesterday(location.date)
+                        )
+                    )
+                }
                 if (!isOwnUser) {
                     add(
                         StatTileData(
@@ -204,6 +222,24 @@ fun UserInfoCard(
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
+            }
+
+            // "Last online" says nothing about the position, a friend can be online on an old one
+            val locationIsOld = remember(location, isOnline, user.lastSeen, isOwnUser) {
+                val lastOnline = if (isOnline) getCurrentTimeMillisLong() else user.lastSeen
+                !isOwnUser && location != null && lastOnline != null &&
+                    lastOnline - location.date > OLD_LOCATION_THRESHOLD_MILLIS
+            }
+
+            if (locationIsOld) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = stringResource(Res.string.schneaggmap_user_location_old_info),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
