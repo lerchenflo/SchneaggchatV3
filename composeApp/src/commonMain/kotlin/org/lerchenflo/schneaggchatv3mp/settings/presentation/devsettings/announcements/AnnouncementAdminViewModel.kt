@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.Announcement
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementLimits
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementRepository
@@ -27,6 +29,7 @@ import kotlin.time.Clock
  */
 class AnnouncementAdminViewModel(
     private val announcementRepository: AnnouncementRepository,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AnnouncementAdminState())
@@ -80,7 +83,7 @@ class AnnouncementAdminViewModel(
         val form = current.form ?: return
         if (current.isSubmitting || !form.isValid(nowMillis())) return
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             _state.update { it.copy(isSubmitting = true, error = null) }
             val draft = form.toDraft()
             val result = form.editingId
@@ -104,7 +107,7 @@ class AnnouncementAdminViewModel(
         val candidate = _state.value.deleteCandidate ?: return
         _state.update { it.copy(deleteCandidate = null, error = null) }
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             when (val result = announcementRepository.delete(candidate.id)) {
                 is NetworkResult.Success -> _state.update { state ->
                     state.copy(announcements = state.announcements.filterNot { it.id == candidate.id })

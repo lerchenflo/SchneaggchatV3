@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.wake.WakeAlarmService
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.wake_notification_title
@@ -54,7 +55,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
             //but the user still has to learn that something arrived
             runBlocking(Dispatchers.IO) {
                 logError("Push payload could not be read, showing a generic notification (_class=${message.data["_class"]}, keys=${message.data.keys.sorted()})")
-                showGenericNewMessagesNotification(idKey = "unreadable_push")
+                showGenericNewMessagesNotification()
             }
             return
         }
@@ -102,7 +103,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
     override fun onDeletedMessages() {
         runBlocking(Dispatchers.IO) {
             logError("FCM dropped pending pushes, showing a generic notification and syncing")
-            showGenericNewMessagesNotification(idKey = "fcm_deleted_messages")
+            showGenericNewMessagesNotification()
         }
 
         KoinPlatform.getKoin().get<ApplicationScope>().launch {
@@ -158,18 +159,18 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     /** "You have new messages" without any details - for pushes that were dropped or can't be read. Never throws. */
-    private suspend fun showGenericNewMessagesNotification(idKey: String) {
+    private suspend fun showGenericNewMessagesNotification() {
         try {
             KoinPlatform.getKoin().get<Notifier>().showLocalNotification(
                 NotificationContent(
-                    id = idKey.hashCode().absoluteValue,
+                    id = NotificationManager.NotiIdType.GENERIC_MESSAGES.baseId,
                     title = NOTIFICATION_FALLBACK_TITLE,
                     body = runCatching { getString(Res.string.you_have_new_messages) }.getOrDefault(""),
                     kind = NotificationKind.MESSAGE,
                 )
             )
         } catch (e: Throwable) {
-            logError("Generic notification ($idKey) failed, nothing could be shown", e)
+            logError("Generic notification failed, nothing could be shown", e)
         }
     }
 

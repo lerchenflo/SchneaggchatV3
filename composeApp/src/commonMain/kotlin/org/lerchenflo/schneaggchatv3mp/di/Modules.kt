@@ -382,6 +382,7 @@ val sharedmodule = module{
             eventRepository = get(),
             messageRepository = get(),
             groupExtensionRepository = get(),
+            applicationScope = get(),
             chatId = chatId,
             isGroup = isGroup
         )

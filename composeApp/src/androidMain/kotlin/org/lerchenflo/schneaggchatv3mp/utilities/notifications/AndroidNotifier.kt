@@ -88,7 +88,7 @@ private const val CHAT_SHORTCUT_PREFIX = "chat_"
 //All chat notifications (messages and reactions) are bundled under one summary, like WhatsApp does
 private const val CHAT_GROUP_KEY = "schneaggchat_chats"
 
-//Id of that summary - next to the fixed ids 1-5 of NotificationManager.NotiIdType. Chat
+//Id of that summary - next to the fixed ids 1-5 and 7 of NotificationManager.NotiIdType. Chat
 //notification ids are chat id hashes, so a collision is practically impossible.
 private const val CHAT_SUMMARY_ID = 6
 

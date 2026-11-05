@@ -147,12 +147,13 @@ class GlobalViewModel(
                             messageRepository.sendOfflineMessages(ownId)
                             dataSyncCoordinator.dataSync(reason = "appResumed")
 
-                            //On resume clear all error notis
+                            //On resume clear all error notis and the generic "new messages" one
                             notifier.cancelNotification(NotificationManager.NotiIdType.ERROR.baseId)
+                            notifier.cancelNotification(NotificationManager.NotiIdType.GENERIC_MESSAGES.baseId)
 
                             //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
                             if(IncomingDataManager.isNewDataAvailable()){
-                                navigator.navigate(Route.MessageChatSelector) // todo build backstack?
+                                navigator.navigate(Route.MessageChatSelector)
                             }
                         }
                     }

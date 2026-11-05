@@ -102,6 +102,7 @@
     <string name="ok">ok</string>
     <string name="cancel">cancel</string>
     <string name="version">Version: %1$s</string>
+    <string name="build_number">Build: %1$s</string>
     <string name="app_broken">App broken</string>
     <string name="loadinginfo_messages">Loading messages...</string>
     <string name="loadinginfo_offline">You are currently offline...</string>

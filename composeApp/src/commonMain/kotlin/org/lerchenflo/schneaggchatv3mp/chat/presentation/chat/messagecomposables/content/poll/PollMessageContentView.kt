@@ -210,13 +210,13 @@ private fun PollLevelView(
     parentOptionId: String?,
     lockedByOptionText: String?,
 ) {
-    val contentColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    val contentColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
     val canAnswer = lockedByOptionText == null
     //Past the close date the server rejects every vote, so don't offer any (sub polls share the root's date)
     val isClosed = poll.isExpired()
 
-    //Same accent as the checkboxes and the sub poll header: onPrimary on an own bubble, primary otherwise
-    val accentColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+    //Same accent as the checkboxes and the sub poll header: onPrimaryContainer on an own bubble, primary otherwise
+    val accentColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.primary
 
     Column {
 
@@ -457,7 +457,7 @@ private fun PollLevelView(
                     .border(
                         width = 1.dp,
                         color = if (myMessage) {
-                            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f)
                         } else {
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                         },
@@ -472,7 +472,7 @@ private fun PollLevelView(
                     contentDescription = "Add custom option",
                     modifier = Modifier.size(20.dp),
                     tint = if (myMessage) {
-                        MaterialTheme.colorScheme.onPrimary
+                        MaterialTheme.colorScheme.onPrimaryContainer
                     } else {
                         MaterialTheme.colorScheme.primary
                     }
@@ -484,7 +484,7 @@ private fun PollLevelView(
                     text = stringResource(Res.string.poll_add_custom_answer),
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (myMessage) {
-                        MaterialTheme.colorScheme.onPrimary
+                        MaterialTheme.colorScheme.onPrimaryContainer
                     } else {
                         MaterialTheme.colorScheme.primary
                     }
@@ -572,8 +572,8 @@ private fun SubPollSection(
         if (pickedByMe) expanded = true
     }
 
-    val accentColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
-    val contentColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    val accentColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.primary
+    val contentColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
     val annotationSources = rememberComboAnnotationSources()
 
     //Indented to line up with the option text next to the 24dp checkbox + 8dp gap
@@ -890,9 +890,9 @@ fun PollMessageOptionView(
                     enabled = selectable,
                     modifier = Modifier.size(24.dp),
                     colors = CheckboxDefaults.colors(
-                        checkedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                        uncheckedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant,
-                        checkmarkColor = if (myMessage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
+                        checkedColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.primary,
+                        uncheckedColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant,
+                        checkmarkColor = if (myMessage) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.onPrimary
                     )
                 )
             } else {
@@ -902,8 +902,8 @@ fun PollMessageOptionView(
                     enabled = selectable,
                     modifier = Modifier.size(24.dp),
                     colors = RadioButtonDefaults.colors(
-                        selectedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                        unselectedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant
+                        selectedColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.primary,
+                        unselectedColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
             }
@@ -938,13 +938,13 @@ fun PollMessageOptionView(
                             imageVector = Icons.Default.PersonAdd,
                             contentDescription = "Custom user answer",
                             modifier = Modifier.size(24.dp),
-                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         ComboText(
                             text = option.text,
                             useMD = useMD,
-                            textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            textColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 4,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -953,7 +953,7 @@ fun PollMessageOptionView(
                     ComboText(
                         text = option.text,
                         useMD = useMD,
-                        textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        textColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 4,
                         overflow = TextOverflow.Ellipsis,
                         modifier = locModifier
@@ -976,7 +976,7 @@ fun PollMessageOptionView(
                             color = if (full) {
                                 MaterialTheme.colorScheme.error
                             } else if (myMessage) {
-                                MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             }
@@ -1013,7 +1013,7 @@ fun PollMessageOptionView(
                             Text(
                                 text = "+$anonymousVoterCount",
                                 fontSize = 12.sp,
-                                color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -1090,7 +1090,7 @@ fun PollSmallInfoWindow(
             .border(
                 width = 1.dp,
                 //primary would vanish on an own (primary) bubble
-                color = if (myMessage) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.primary,
+                color = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f) else MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(size = 4.dp)
             )
             .padding(4.dp)
@@ -1105,7 +1105,7 @@ fun PollSmallInfoWindow(
                     text = stringResource(Res.string.poll_answers_count, poll.getTotalVoteCount()),
                     fontSize = 10.sp,
                     lineHeight = 12.sp,
-                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -1114,7 +1114,7 @@ fun PollSmallInfoWindow(
                     text = stringResource(Res.string.poll_user_count, poll.getUniqueVoterCount()),
                     fontSize = 10.sp,
                     lineHeight = 12.sp,
-                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -1127,14 +1127,14 @@ fun PollSmallInfoWindow(
                         imageVector = Icons.AutoMirrored.Filled.List,
                         contentDescription = "List",
                         modifier = Modifier.size(12.dp),
-                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else if (poll.acceptsMultipleAnswers()) {
                     Icon(
                         imageVector = Icons.Default.CheckBox,
                         contentDescription = "Multiple answers",
                         modifier = Modifier.size(12.dp),
-                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     if (poll.maxAnswers != null && poll.maxAnswers != 10) {
@@ -1142,7 +1142,7 @@ fun PollSmallInfoWindow(
                             text = poll.maxAnswers.toString(),
                             fontSize = 10.sp,
                             lineHeight = 12.sp,
-                            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 } else {
@@ -1150,7 +1150,7 @@ fun PollSmallInfoWindow(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = "Single answers",
                         modifier = Modifier.size(12.dp),
-                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -1160,7 +1160,7 @@ fun PollSmallInfoWindow(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Custom answers",
                         modifier = Modifier.size(12.dp),
-                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     if (poll.maxAllowedCustomAnswers != null && poll.maxAllowedCustomAnswers != 10) {
@@ -1168,7 +1168,7 @@ fun PollSmallInfoWindow(
                             text = poll.maxAllowedCustomAnswers.toString(),
                             fontSize = 10.sp,
                             lineHeight = 12.sp,
-                            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -1180,7 +1180,7 @@ fun PollSmallInfoWindow(
                             imageVector = Icons.Default.Public,
                             contentDescription = "Public",
                             modifier = Modifier.size(12.dp),
-                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     PollVisibility.PRIVATE -> {
@@ -1188,7 +1188,7 @@ fun PollSmallInfoWindow(
                             imageVector = Icons.Default.PersonSearch,
                             contentDescription = "Private",
                             modifier = Modifier.size(12.dp),
-                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     PollVisibility.ANONYMOUS -> {
@@ -1196,7 +1196,7 @@ fun PollSmallInfoWindow(
                             imageVector = Icons.Default.Blind,
                             contentDescription = "Anonymous",
                             modifier = Modifier.size(12.dp),
-                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -1207,7 +1207,7 @@ fun PollSmallInfoWindow(
                         imageVector = Icons.Default.Lock,
                         contentDescription = "Limited entries",
                         modifier = Modifier.size(12.dp),
-                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -1217,7 +1217,7 @@ fun PollSmallInfoWindow(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Options can be deleted",
                         modifier = Modifier.size(12.dp),
-                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -1353,7 +1353,7 @@ fun PollCountdownTimer(expiresAt: Long, myMessage: Boolean) {
             stringResource(Res.string.poll_closed)
         },
         fontSize = 10.sp,
-        color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+        color = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
 

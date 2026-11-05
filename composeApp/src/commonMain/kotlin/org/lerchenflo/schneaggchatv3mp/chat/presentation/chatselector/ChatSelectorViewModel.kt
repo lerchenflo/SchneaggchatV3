@@ -50,6 +50,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isNetworkerror
+import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
@@ -224,8 +225,10 @@ class ChatSelectorViewModel(
         }
     }
 
-    // for MessageChatSelector
+    // for MessageChatSelector. Back cancels the share, otherwise the next app resume opens the screen again
     fun onBackClick() {
+        IncomingDataManager.clearAllData()
+        _searchTerm.value = ""
         viewModelScope.launch {
             navigator.navigateBack()
         }
@@ -408,7 +411,6 @@ class ChatSelectorViewModel(
 
             chatListRepository.getChatListFlow(userId = loggedIn.userId)
         }
-        .flowOn(Dispatchers.Default)
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
@@ -449,7 +451,6 @@ class ChatSelectorViewModel(
                 userId = loggedIn.userId
             )
         }
-        .flowOn(Dispatchers.Default)
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,

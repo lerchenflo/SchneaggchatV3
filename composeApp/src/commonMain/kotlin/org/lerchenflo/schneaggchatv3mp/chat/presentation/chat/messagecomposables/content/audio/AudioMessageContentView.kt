@@ -72,7 +72,7 @@ fun AudioMessageContentView(
     val duration = if (isThisMessagePlaying) progress.duration else prefetchedDuration
     val isPlaying = isThisMessagePlaying && progress.isPlaying
 
-    val textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    val textColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
 
     AudioPlayerView(
         isPlaying = isPlaying,

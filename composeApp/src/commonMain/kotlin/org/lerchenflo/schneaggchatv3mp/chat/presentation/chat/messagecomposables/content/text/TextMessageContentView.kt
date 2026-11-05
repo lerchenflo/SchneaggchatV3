@@ -17,7 +17,7 @@ fun TextMessageContentView(
     ComboText(
         text = message.content,
         useMD = useMD,
-        textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        textColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier
     )
 }

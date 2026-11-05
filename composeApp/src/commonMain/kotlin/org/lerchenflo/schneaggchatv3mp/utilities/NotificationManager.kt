@@ -37,6 +37,7 @@ object NotificationManager {
         FRIEND_REQUEST(3),
         BIRTHDAY(4),
         EVENT(5),
+        GENERIC_MESSAGES(7), //6 is the Android chat summary (CHAT_SUMMARY_ID in AndroidNotifier)
     }
 
     /** [avatarUserId]: user whose profile picture the notification shows, if any. */

@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -46,6 +48,7 @@ class NewChatViewModel (
     private val shareUtils: ShareUtils,
     private val settingsRepository: SettingsRepository,
     private val notifier: Notifier,
+    private val applicationScope: ApplicationScope,
 ): ViewModel() {
 
     private val _searchTerm = MutableStateFlow("")
@@ -101,7 +104,7 @@ class NewChatViewModel (
     }
 
     fun addFriend(friendId: String) {
-        viewModelScope.launch { //The repository is main-safe
+        applicationScope.launchOnMain { //The repository is main-safe
             val success = userRepository.sendFriendRequest(friendId)
             SnackbarManager.showMessage(
                 if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)
@@ -124,14 +127,14 @@ class NewChatViewModel (
     }
 
     fun acceptFriend(friendId: String){
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             userRepository.sendFriendRequest(friendId)
         }
         dismissPendingFriendDialog()
     }
 
     fun denyFriend(friendId: String){
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             userRepository.denyFriendRequest(friendId)
         }
         dismissPendingFriendDialog()

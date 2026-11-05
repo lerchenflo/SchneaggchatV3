@@ -9,12 +9,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
@@ -63,6 +64,7 @@ private const val MIN_SPINS = 3
 private const val MAX_SPINS = 5
 private val THROW_HEIGHT = 150.dp
 private val SWIPE_THRESHOLD = 60.dp
+private val COIN_SIZE = 160.dp
 
 //Secondary wobble layered on top of the main X-axis flip so the coin tumbles diagonally instead
 //of rotating flat on one axis. Kept well under 90° - the X-axis counter-rotation trick (see the
@@ -102,7 +104,7 @@ fun CoinFlipScreen(
         var swipeAccumulator by remember { mutableStateOf(0f) }
         val swipeThresholdPx = with(LocalDensity.current) { SWIPE_THRESHOLD.toPx() }
 
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
@@ -123,14 +125,15 @@ fun CoinFlipScreen(
                         }
                     )
                 },
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            contentAlignment = Alignment.Center
         ) {
             Coin(
                 result = state.result,
                 flipTrigger = state.flipTrigger,
                 tailsLabel = state.tailsLabel.ifBlank { stringResource(Res.string.games_coinflip_tails_default) },
-                onAnimationFinished = { viewModel.onAction(CoinFlipAction.AnimationFinished) }
+                onAnimationFinished = { viewModel.onAction(CoinFlipAction.AnimationFinished) },
+                // Keyboard or landscape: shrink the whole coin evenly, so it stays round
+                scale = (maxHeight / COIN_SIZE).coerceAtMost(1f)
             )
         }
 
@@ -165,6 +168,7 @@ private fun Coin(
     flipTrigger: Int,
     tailsLabel: String,
     onAnimationFinished: () -> Unit,
+    scale: Float,
     modifier: Modifier = Modifier
 ) {
     val rotation = remember { Animatable(0f) }
@@ -237,8 +241,10 @@ private fun Coin(
 
     Box(
         modifier = modifier
-            .size(160.dp)
+            .requiredSize(COIN_SIZE)
             .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
                 translationY = offsetY.value
                 rotationX = rotation.value
                 rotationY = wobbleAmplitudeY.value * wobbleEnvelope
