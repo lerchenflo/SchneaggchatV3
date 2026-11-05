@@ -26,7 +26,6 @@ fun SendActionButtons(
     isEditing: Boolean,
     isRecording: Boolean,
     hasContent: Boolean,
-    isDesktop: Boolean,
     onSend: () -> Unit,
     onConfirmEdit: () -> Unit,
     onCancelEdit: () -> Unit,
@@ -35,8 +34,8 @@ fun SendActionButtons(
 ) {
     if (!isEditing) { // schoua ob mir gad a nachricht bearbeitend
 
-        // show send when content is not empty or on desktop (no microphone implementation for desktop)
-        if (hasContent || isDesktop) {
+        // show send when content is not empty, the microphone otherwise
+        if (hasContent) {
             if (isRecording) {
                 IconButton(
                     onClick = onStopRecording

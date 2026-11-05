@@ -19,13 +19,8 @@ import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.readByteArray
-import org.jetbrains.compose.resources.getString
-import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.audio_playback_on_desktop_not_supported_yet
 
-class AudioPlayer(
-    val isDesktop: Boolean = false
-) {
+class AudioPlayer {
     private val voicePlayer = VoicePlayer()
     private var pollingJob: Job? = null
 
@@ -47,42 +42,38 @@ class AudioPlayer(
     val playbackProgress: StateFlow<PlaybackProgress> = _playbackProgress.asStateFlow()
 
     suspend fun playAudio(messageId: String, path: String) {
-        if(isDesktop){
-            SnackbarManager.showMessage(getString(Res.string.audio_playback_on_desktop_not_supported_yet))
-        }else {
-            try {
-                // 1. If we are already playing this specific audio, just resume it
-                if (currentlyPlayingId == messageId && !isPlaying) {
-                    voicePlayer.resume()
-                    isPlaying = true
-                    _playbackProgress.value = _playbackProgress.value.copy(isPlaying = true)
-                    startPolling(messageId)
-                    println("this audio is already playing")
-                    return
-                }
-
-                // 2. If a different audio was playing, stop it first
-                if (currentlyPlayingId != null) {
-                    stopAudio()
-                    println("stopped other audio playing")
-                }
-
-
-                currentlyPlayingId = messageId
+        try {
+            // 1. If we are already playing this specific audio, just resume it
+            if (currentlyPlayingId == messageId && !isPlaying) {
+                voicePlayer.resume()
                 isPlaying = true
-
-                // 4. Start playback
-                voicePlayer.play(path)
-                println("started playing ...")
-
-                // 5. Poll for progress updates (replaces the old push-based listener)
+                _playbackProgress.value = _playbackProgress.value.copy(isPlaying = true)
                 startPolling(messageId)
-            } catch (e: Exception) {
-                currentCoroutineContext().ensureActive()
-                //loggingRepository.logWarning("Failed to play audio: ${e.message}")
-                println("Failed to play audio: ${e.message}")
-                stopAudio()
+                println("this audio is already playing")
+                return
             }
+
+            // 2. If a different audio was playing, stop it first
+            if (currentlyPlayingId != null) {
+                stopAudio()
+                println("stopped other audio playing")
+            }
+
+
+            currentlyPlayingId = messageId
+            isPlaying = true
+
+            // 4. Start playback
+            voicePlayer.play(path)
+            println("started playing ...")
+
+            // 5. Poll for progress updates (replaces the old push-based listener)
+            startPolling(messageId)
+        } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
+            //loggingRepository.logWarning("Failed to play audio: ${e.message}")
+            println("Failed to play audio: ${e.message}")
+            stopAudio()
         }
     }
 

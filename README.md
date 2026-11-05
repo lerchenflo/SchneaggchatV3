@@ -33,6 +33,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Neues Spiel: C Coding, Tic Tac Toe
 - Quick Reactions: Custom Doppeltip Reaktion
 - Chat: Code-Blöcke mit Highlighting
+- Sprachnachrichten: Auf Desktop verfügbar
 
 #### Bugfixes
 - Benachrichtigungen: Alles mögliche repariert

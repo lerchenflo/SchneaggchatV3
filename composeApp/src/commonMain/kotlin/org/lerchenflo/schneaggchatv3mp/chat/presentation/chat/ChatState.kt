@@ -22,7 +22,6 @@ data class ChatState(
     val editMessage: Message? = null,
     val markdownEnabled: Boolean = false,
     val quickReactions: List<String> = DEFAULT_QUICK_REACTIONS,
-    val isDesktop: Boolean = false,
     val maxVoiceMsgTime: Long = 0L,
 )
 

@@ -40,7 +40,10 @@ object SnackbarManager {
     /** Test-only (plan D19): forgets the scope from [init] and drops every queued snackbar. Never call it from app code. */
     internal fun resetForTest() {
         scope = null
-        while (_channel.tryReceive().isSuccess) Unit
+        // Each tryReceive removes one queued snackbar; stop once the channel is empty
+        do {
+            val received = _channel.tryReceive()
+        } while (received.isSuccess)
     }
 
 

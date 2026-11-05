@@ -47,7 +47,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
@@ -67,7 +66,6 @@ import kotlin.time.TimeSource
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 class ChatViewModel(
-    private val appVersion: AppVersion,
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
@@ -93,13 +91,12 @@ class ChatViewModel(
 
     private var voiceRecorder: VoiceRecorder? = null // Object for Audio Recording
     private var recordingTickerJob: Job? = null // live elapsed-time updates + auto-stop while recording
-    private var audioPlayer: AudioPlayer = AudioPlayer(isDesktop = isDesktop())
+    private var audioPlayer: AudioPlayer = AudioPlayer()
 
     private val _state = MutableStateFlow(
         ChatState(
             chatId = chatId,
             isGroup = isGroup,
-            isDesktop = isDesktop(),
             maxVoiceMsgTime = MAX_VOICE_MSG_TIME
         )
     )
@@ -893,10 +890,6 @@ class ChatViewModel(
     override fun onCleared() {
         super.onCleared()
         saveDraft()
-    }
-
-    private fun isDesktop(): Boolean{
-        return appVersion.isDesktop()
     }
 
 }

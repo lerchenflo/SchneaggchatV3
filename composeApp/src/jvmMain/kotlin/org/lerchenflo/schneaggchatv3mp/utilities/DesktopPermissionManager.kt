@@ -1,14 +1,24 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
+import javax.sound.sampled.AudioSystem
+import javax.sound.sampled.Line
+import javax.sound.sampled.TargetDataLine
+
 class DesktopPermissionManager : PermissionManager {
 
-    //todo real implementation for Desktop permissions
+    // Java has no microphone permission API. macOS asks the user itself on first use (it needs
+    // NSMicrophoneUsageDescription in the app bundle, see composeApp/build.gradle.kts), so this
+    // only checks that the computer has a microphone at all.
     override suspend fun checkMicrophonePermission(): PermissionState {
-        return PermissionState.NOT_DETERMINED
+        return if (AudioSystem.isLineSupported(Line.Info(TargetDataLine::class.java))) {
+            PermissionState.GRANTED
+        } else {
+            PermissionState.DENIED
+        }
     }
 
     override suspend fun requestMicrophonePermission(): PermissionState {
-        return PermissionState.NOT_DETERMINED
+        return checkMicrophonePermission()
     }
 
     // No GPS on Desktop — always report as not available
