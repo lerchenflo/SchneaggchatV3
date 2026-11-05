@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -115,6 +116,15 @@ class GlobalViewModel(
                 .collect { chat -> notifier.cancelChatNotifications(chat.chatId) }
         }
 
+        //The app on screen shows what the generic "new messages" notification announces. Not part of
+        //the resume block below: that one waits for the sync and also re-runs for token and online
+        //changes in the background, where it would remove a notification nobody has seen yet.
+        viewModelScope.launch {
+            AppLifecycleManager.isAppInForegroundFlow
+                .filter { foreground -> foreground }
+                .collect { notifier.cancelNotification(NotificationManager.NotiIdType.GENERIC_MESSAGES.baseId) }
+        }
+
 
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent
@@ -147,9 +157,8 @@ class GlobalViewModel(
                             messageRepository.sendOfflineMessages(ownId)
                             dataSyncCoordinator.dataSync(reason = "appResumed")
 
-                            //On resume clear all error notis and the generic "new messages" one
+                            //On resume clear all error notis
                             notifier.cancelNotification(NotificationManager.NotiIdType.ERROR.baseId)
-                            notifier.cancelNotification(NotificationManager.NotiIdType.GENERIC_MESSAGES.baseId)
 
                             //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
                             if(IncomingDataManager.isNewDataAvailable()){
