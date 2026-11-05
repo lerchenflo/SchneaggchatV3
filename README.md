@@ -21,14 +21,18 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 ### 3.0.19
 
+##### Highlights
+- Gruppenerweiterungen
+
 #### Features
 - Ankündigungen
+- Gruppenerweiterungen
 - Bearbeitete Nachrichten Anzeige
 - Chatdetails überarbeitet
 - Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit
 - Gruppen: Admins können Gruppe löschen
 - Schneagg Rodeo verbessert
-- Schneaggmap: UI verbessert
+- Schneaggmap: UI verbessert, Standort-Alter anzeigen
 - Umfragen: Einfachere Einstellungen
 - Neues Spiel: C Coding, Tic Tac Toe
 - Quick Reactions: Custom Doppeltip Reaktion
@@ -36,10 +40,11 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Sprachnachrichten: Auf Desktop verfügbar
 
 #### Bugfixes
-- Benachrichtigungen: Alles mögliche repariert
+- Benachrichtigungen: Alles mögliche repariert, Allgemeine Nachricht verbessert
 - Chat: Lange Chats laden fix, Nachrichten senden fix, Markdown-Darstellung lesbar
 - Übersetzungen verbessert
 - Spiele: Scroll fix in Auswahl
+- Sprachnachrichten: Slider-Farben und Aufnahme-Anzeige verbessert
 
 ### 3.0.18
 

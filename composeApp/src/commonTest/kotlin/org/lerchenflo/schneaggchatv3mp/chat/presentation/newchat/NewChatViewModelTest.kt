@@ -115,6 +115,7 @@ class NewChatViewModelTest {
         assertThat(viewModel.pendingFriends.value.map { it.id }).containsExactly("carla", "dani")
 
         viewModel.updateSearchterm("car")
+        advanceUntilIdle()
 
         assertThat(viewModel.pendingFriends.value.map { it.id }).containsExactly("carla")
     }

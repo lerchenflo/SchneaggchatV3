@@ -616,7 +616,8 @@ class OfflineFirstMessageRepository(
                                     },
                                     // Bypasses /messages/sync - never let it advance the sync
                                     // cursor (MAX(version) over the messages table).
-                                    version = existing?.version ?: 0L
+                                    version = existing?.version ?: 0L,
+                                    clientMessageId = clientMessageIdIntern
                                 )
                             )
 
@@ -821,6 +822,7 @@ class OfflineFirstMessageRepository(
                                     existingLocalPK = existing?.localPK ?: 0L,
                                     existingPictureUrl = existing?.pictureUrl,
                                     existingAudioPath = existing?.audioPath,
+                                    existingClientMessageId = existing?.clientMessageId,
                                     version = messageResponse.version
                                 )
                             }

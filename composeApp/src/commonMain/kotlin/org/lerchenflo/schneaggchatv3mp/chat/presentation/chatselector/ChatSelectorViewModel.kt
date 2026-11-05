@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Person3
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -83,6 +84,7 @@ class ChatSelectorViewModel(
     private val settingsRepository: SettingsRepository,
     private val announcementRepository: AnnouncementRepository,
     private val notifier: Notifier,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ): ViewModel() {
 
     private val _notificationPermissionState = MutableStateFlow(PermissionState.GRANTED)
@@ -426,7 +428,7 @@ class ChatSelectorViewModel(
     ) { chats, term, filter ->
         chats.applySearchAndFilter(searchTerm = term, filter = filter)
     }
-        .flowOn(Dispatchers.Default)
+        .flowOn(defaultDispatcher)
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,

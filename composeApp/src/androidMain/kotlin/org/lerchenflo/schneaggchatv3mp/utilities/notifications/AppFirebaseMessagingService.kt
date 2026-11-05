@@ -9,6 +9,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -57,6 +58,8 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
                 logError("Push payload could not be read, showing a generic notification (_class=${message.data["_class"]}, keys=${message.data.keys.sorted()})")
                 showGenericNewMessagesNotification()
             }
+            //No notification while the app is open, so a sync has to bring what arrived
+            if (AppLifecycleManager.isAppInForeground) syncMissedMessages(reason = "unreadablePush")
             return
         }
 
@@ -106,12 +109,16 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
             showGenericNewMessagesNotification()
         }
 
+        syncMissedMessages(reason = "fcmDeletedMessages")
+    }
+
+    private fun syncMissedMessages(reason: String) {
         KoinPlatform.getKoin().get<ApplicationScope>().launch {
             runCatching {
                 if (restoreSession()) {
-                    KoinPlatform.getKoin().get<DataSyncCoordinator>().dataSync(reason = "fcmDeletedMessages")
+                    KoinPlatform.getKoin().get<DataSyncCoordinator>().dataSync(reason = reason)
                 }
-            }.onFailure { e -> logError("Sync after the dropped pushes failed", e) }
+            }.onFailure { e -> logError("Sync after missed pushes failed ($reason)", e) }
         }
     }
 
@@ -158,8 +165,12 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
         KoinPlatform.getKoin().get<Notifier>().showLocalNotification(content)
     }
 
-    /** "You have new messages" without any details - for pushes that were dropped or can't be read. Never throws. */
+    /**
+     * "You have new messages" without any details - for pushes that were dropped or can't be read.
+     * Not while the app is open: only the next open would remove it. Never throws.
+     */
     private suspend fun showGenericNewMessagesNotification() {
+        if (AppLifecycleManager.isAppInForeground) return
         try {
             KoinPlatform.getKoin().get<Notifier>().showLocalNotification(
                 NotificationContent(
