@@ -84,6 +84,7 @@ class ChatSelectorViewModelTest {
             settingsRepository = settingsRepository,
             announcementRepository = FakeAnnouncementRepository(),
             notifier = notifier,
+            defaultDispatcher = mainDispatcher.testDispatcher,
         )
     )
 

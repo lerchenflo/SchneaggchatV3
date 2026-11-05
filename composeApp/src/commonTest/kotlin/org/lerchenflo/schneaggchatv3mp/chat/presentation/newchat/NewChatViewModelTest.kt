@@ -10,6 +10,7 @@ import assertk.assertions.isNull
 import assertk.assertions.single
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -79,6 +80,7 @@ class NewChatViewModelTest {
             shareUtils = shareUtils,
             settingsRepository = settingsRepository,
             notifier = notifier,
+            applicationScope = ApplicationScope(),
         )
     )
 
@@ -113,6 +115,7 @@ class NewChatViewModelTest {
         assertThat(viewModel.pendingFriends.value.map { it.id }).containsExactly("carla", "dani")
 
         viewModel.updateSearchterm("car")
+        advanceUntilIdle()
 
         assertThat(viewModel.pendingFriends.value.map { it.id }).containsExactly("carla")
     }
@@ -167,7 +170,7 @@ class NewChatViewModelTest {
 
         viewModel.addFriend("ben")
 
-        // Runs on Dispatchers.IO, not in viewModelScope
+        // Runs in the app-wide scope, not in viewModelScope
         assertThat(userRepository.friendRequestsSent.awaitCount(1)).containsExactly("ben")
         assertThat(userRepository.availableUserSearches.awaitCount(2)).containsExactly("be", "be")
     }

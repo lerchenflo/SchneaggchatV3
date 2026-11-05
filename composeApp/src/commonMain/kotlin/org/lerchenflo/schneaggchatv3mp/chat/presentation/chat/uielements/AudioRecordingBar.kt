@@ -3,7 +3,9 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -36,6 +38,9 @@ import org.lerchenflo.schneaggchatv3mp.utilities.formatMillis
  * message id yet - the message doesn't exist until sent).
  */
 private const val DRAFT_AUDIO_MESSAGE_ID = "audio_record_tmp"
+
+private val VISUALIZER_BAR_WIDTH = 3.dp
+private val VISUALIZER_BAR_SPACING = 2.dp
 
 /**
  * Input-bar content while recording, or while a just-recorded voice message is staged to send:
@@ -80,23 +85,29 @@ fun AudioRecordingBar(
             )
 
             // Visualizer Placeholder
-            // todo actual visualizer
-            Row(
+            BoxWithConstraints(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 12.dp)
             ) {
-                // Simple static bars to represent audio levels
-                repeat(15) { index ->
-                    Box(
-                        modifier = Modifier
-                            .width(3.dp)
-                            .height((10..24).random().dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
-                    )
+                // As many bars as fit, so they fill the space between the timer and the delete button
+                val barCount = ((maxWidth + VISUALIZER_BAR_SPACING) / (VISUALIZER_BAR_WIDTH + VISUALIZER_BAR_SPACING)).toInt()
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Simple static bars to represent audio levels
+                    repeat(barCount) {
+                        Box(
+                            modifier = Modifier
+                                .width(VISUALIZER_BAR_WIDTH)
+                                .height((10..24).random().dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
+                        )
+                    }
                 }
             }
 

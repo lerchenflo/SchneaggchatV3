@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -34,8 +36,11 @@ import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
 import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.invitation_text
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
+
+private val SEARCH_DEBOUNCE = 300.milliseconds
 
 class NewChatViewModel (
     private val appVersion: AppVersion,
@@ -46,6 +51,7 @@ class NewChatViewModel (
     private val shareUtils: ShareUtils,
     private val settingsRepository: SettingsRepository,
     private val notifier: Notifier,
+    private val applicationScope: ApplicationScope,
 ): ViewModel() {
 
     private val _searchTerm = MutableStateFlow("")
@@ -69,7 +75,7 @@ class NewChatViewModel (
         // Kombiniere searchTerm mit einem Flow der die Daten lädt
         viewModelScope.launch {
             searchterm
-                .debounce(300.milliseconds) // Warte 300ms nach letzter Eingabe
+                .debounce(SEARCH_DEBOUNCE) // Warte 300ms nach letzter Eingabe
                 .distinctUntilChanged() // Nur wenn sich der Wert ändert
                 .collectLatest { term ->
                     loadAvailableUsers(term)
@@ -78,6 +84,9 @@ class NewChatViewModel (
 
         viewModelScope.launch {
             searchterm
+                // No wait for an empty term, so the list is there right when the screen opens
+                .debounce { term -> if (term.isEmpty()) Duration.ZERO else SEARCH_DEBOUNCE }
+                .distinctUntilChanged()
                 .collectLatest {
                     chatListRepository.getPendingFriends(it).collectLatest { pendingfriendsList ->
                         _pendingFriends.value = pendingfriendsList
@@ -101,7 +110,7 @@ class NewChatViewModel (
     }
 
     fun addFriend(friendId: String) {
-        viewModelScope.launch { //The repository is main-safe
+        applicationScope.launchOnMain { //The repository is main-safe
             val success = userRepository.sendFriendRequest(friendId)
             SnackbarManager.showMessage(
                 if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)
@@ -124,14 +133,14 @@ class NewChatViewModel (
     }
 
     fun acceptFriend(friendId: String){
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             userRepository.sendFriendRequest(friendId)
         }
         dismissPendingFriendDialog()
     }
 
     fun denyFriend(friendId: String){
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             userRepository.denyFriendRequest(friendId)
         }
         dismissPendingFriendDialog()

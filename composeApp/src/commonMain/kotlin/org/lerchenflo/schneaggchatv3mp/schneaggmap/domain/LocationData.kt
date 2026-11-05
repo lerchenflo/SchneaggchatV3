@@ -33,7 +33,7 @@ import schneaggchatv3mp.composeapp.generated.resources.*
  * 7. Add string entries in strings.xml:
  *    - location_type_[name] for the type name
  *    - location_[type]_[attribute] for each attribute label
- * 8. Add icon mapping in SchneaggmapScreen.kt with TODO comment for proper icon
+ * 8. Add icon mapping in LocationType.drawableRes() below, with TODO comment for proper icon
  * 9. Update GetSetValueForKey.kt - the compiler forces this too (exhaustive `when` over
  *    LocationData in both getValueByKey() and withValueForKey())
  *

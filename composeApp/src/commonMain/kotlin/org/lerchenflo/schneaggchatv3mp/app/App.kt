@@ -565,9 +565,15 @@ fun App() {
 
                         BottomAppBar(
                             selectedKey = navigationState.topLevelRoute,
-                            onSelectKey = {
-                                scope.launch {
-                                    navigator.navigate(it)
+                            onSelectKey = { key ->
+                                val topLevelRoute = navigationState.topLevelRoute
+                                if (key == topLevelRoute || key::class == topLevelRoute::class) {
+                                    // Tapping the open tab again goes to its root, e.g. from feedback to the chat list
+                                    navigationState.resetTabRoot(topLevelRoute)
+                                } else {
+                                    scope.launch {
+                                        navigator.navigate(key)
+                                    }
                                 }
                             },
                             mobile = appVersion.isMobile(),

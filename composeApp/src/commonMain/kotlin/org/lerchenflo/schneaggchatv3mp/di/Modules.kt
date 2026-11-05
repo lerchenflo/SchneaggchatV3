@@ -336,7 +336,23 @@ val sharedmodule = module{
 
     //Alle viewmodels mit factory für desktop
 
-    viewModelOf(::ChatSelectorViewModel)
+    // Explicit lambda so the dispatcher keeps its default (Dispatchers.Default); tests pass their own
+    viewModel {
+        ChatSelectorViewModel(
+            appVersion = get(),
+            dataSyncCoordinator = get(),
+            chatListRepository = get(),
+            messageRepository = get(),
+            authRepository = get(),
+            appInfoRepository = get(),
+            navigator = get(),
+            loggingRepository = get(),
+            permissionManager = get(),
+            settingsRepository = get(),
+            announcementRepository = get(),
+            notifier = get(),
+        )
+    }
 
 
     viewModelOf(::BirthdaysViewModel)
@@ -382,6 +398,7 @@ val sharedmodule = module{
             eventRepository = get(),
             messageRepository = get(),
             groupExtensionRepository = get(),
+            applicationScope = get(),
             chatId = chatId,
             isGroup = isGroup
         )

@@ -54,6 +54,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.appearance_settings
 import schneaggchatv3mp.composeapp.generated.resources.appearance_settings_info
+import schneaggchatv3mp.composeapp.generated.resources.build_number
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
 import schneaggchatv3mp.composeapp.generated.resources.misc_setting_info
@@ -262,7 +263,7 @@ fun SettingsScreen(
         val scope = rememberCoroutineScope()
 
         Text(
-            text = stringResource(Res.string.version, settingsViewmodel.versionName) + " Buildnr: " + settingsViewmodel.versionCode,
+            text = stringResource(Res.string.version, settingsViewmodel.versionName) + " " + stringResource(Res.string.build_number, settingsViewmodel.versionCode),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             modifier = Modifier

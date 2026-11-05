@@ -61,6 +61,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChang
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.build_number
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings_logs
 import schneaggchatv3mp.composeapp.generated.resources.version
@@ -375,7 +376,7 @@ fun LoginScreen(
 @Composable
 fun VersionText(versionName: String, versionCode: String) {
     Text(
-        text = stringResource(Res.string.version, versionName) + " Buildnr: " + versionCode,
+        text = stringResource(Res.string.version, versionName) + " " + stringResource(Res.string.build_number, versionCode),
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 16.dp),

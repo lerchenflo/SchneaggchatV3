@@ -101,6 +101,7 @@
     <string name="ok">ok</string>
     <string name="cancel">annulla</string>
     <string name="version">Versione: %1$s</string>
+    <string name="build_number">Build: %1$s</string>
     <string name="app_broken">App non funzionante</string>
     <string name="loadinginfo_messages">Caricamento messaggi...</string>
     <string name="loadinginfo_offline">Sei attualmente offline...</string>
@@ -1094,6 +1095,8 @@
     <string name="longitude">Longitudine</string>
 
     <string name="schneaggmap_user_last_online_label">Ultimo accesso</string>
+    <string name="schneaggmap_user_location_time_label">Posizione aggiornata</string>
+    <string name="schneaggmap_user_location_old_info">Questa posizione è molto più vecchia dell'ultimo accesso.</string>
     <string name="schneaggmap_user_distance_label">Distanza</string>
     <string name="schneaggmap_user_online">Online</string>
     <string name="schneaggmap_entry_last_changed_label">Ultima modifica</string>

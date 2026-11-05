@@ -42,6 +42,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -65,6 +68,12 @@ fun MessageChatSelector(
     val searchterm by chatSelectorViewModel.searchTerm.collectAsStateWithLifecycle()
     val highlightTodaysTimestamp by chatSelectorViewModel.highlightTodaysTimestamp.collectAsStateWithLifecycle()
 
+    // System back cancels the share too, same as the back arrow
+    NavigationBackHandler(
+        state = rememberNavigationEventState(currentInfo = NavigationEventInfo.None),
+        onBackCompleted = chatSelectorViewModel::onBackClick
+    )
+
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
@@ -74,9 +83,7 @@ fun MessageChatSelector(
     ) {
         ActivityTitle(
             title = stringResource(Res.string.send_to),
-            onBackClick = {
-                // todo navigate to actual chatSelector
-            }
+            onBackClick = chatSelectorViewModel::onBackClick
         )
 
         Row(

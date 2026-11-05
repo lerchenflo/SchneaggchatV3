@@ -66,11 +66,10 @@ class MessageSendTest {
     }
 
     /**
-     * Also pins two things the send path does on purpose or by accident:
+     * Also pins two things the send path does on purpose:
      * - the server's `version` from the send response is not stored (the row keeps 0), so a send
      *   never moves the `/messages/sync` cursor (`MAX(version)`);
-     * - the stored row loses its `clientMessageId` once the server copy is written (the success
-     *   upsert does not copy it over). Harmless today, see `plans/Todo.md`.
+     * - the stored row keeps its `clientMessageId` once the server copy is written.
      */
     @Test
     fun `text send inserts a pending row first, then writes the server copy onto that row`() =
@@ -113,7 +112,7 @@ class MessageSendTest {
             assertThat(row.answerId).isEqualTo("srv-older")
             assertThat(row.sendDate).isEqualTo(serverCopy.sendDate.toString())
             assertThat(row.version).isEqualTo(0L)
-            assertThat(row.clientMessageId).isNull()
+            assertThat(row.clientMessageId).isEqualTo(request.clientMessageId)
         }
 
     @Test

@@ -11,6 +11,7 @@ fun MessageResponse.toDomainMessage(
     existingLocalPK: Long = 0L,
     existingPictureUrl: String? = null,
     existingAudioPath: String? = null,
+    existingClientMessageId: String? = null,
     version: Long = 0L
 ): Message = Message(
     localPK = existingLocalPK,
@@ -41,5 +42,6 @@ fun MessageResponse.toDomainMessage(
         )
     },
     reactions = reactions.map { Reaction(userId = it.userId, content = it.content, reactedAt = it.reactedAt) },
-    version = version
+    version = version,
+    clientMessageId = existingClientMessageId
 )

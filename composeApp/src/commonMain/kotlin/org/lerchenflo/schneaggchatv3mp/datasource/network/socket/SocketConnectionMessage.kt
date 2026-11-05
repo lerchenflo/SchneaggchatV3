@@ -225,6 +225,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     existingLocalPK = existing?.localPK ?: 0L,
                     existingPictureUrl = existing?.pictureUrl,
                     existingAudioPath = existing?.audioPath,
+                    existingClientMessageId = existing?.clientMessageId,
                     // Pushes bypass /messages/sync - never let them advance the sync cursor
                     // (MAX(version) over the messages table), or messages sent while this
                     // client was offline could get skipped on the next sync.

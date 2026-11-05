@@ -3,6 +3,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
 import androidx.compose.runtime.getValue
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,6 +26,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
@@ -120,6 +123,7 @@ class ChatDetailsViewmodel(
     private val eventRepository: EventRepository,
     private val messageRepository: MessageRepository,
     private val groupExtensionRepository: GroupExtensionRepository,
+    private val applicationScope: ApplicationScope,
 
     val chatId: String,
     val isGroup: Boolean,
@@ -181,7 +185,7 @@ class ChatDetailsViewmodel(
      * a wake nobody permitted would look identical to one that worked.
      */
     fun sendWake(reason: String) {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             val chatName = chatDetails.value.name
             val result = userRepository.sendWake(
                 targetId = chatId,
@@ -202,7 +206,7 @@ class ChatDetailsViewmodel(
                             else -> getString(Res.string.wake_failed)
                         }
                     )
-                    return@launch
+                    return@launchOnMain
                 }
             }
 
@@ -393,7 +397,7 @@ class ChatDetailsViewmodel(
     }
 
     fun detachConnectedEvent(eventId: String, deleteGroup: Boolean, deleteEvent: Boolean) {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             val success = eventRepository.detachEvent(
                 eventId = eventId,
                 groupId = chatId,
@@ -437,14 +441,17 @@ class ChatDetailsViewmodel(
                 }
             }
             is ExtensionListAction.OnCreateExtension -> {
-                viewModelScope.launch {
+                applicationScope.launchOnMain {
                     val extensionId = groupExtensionRepository.createExtension(
                         groupId = chatId,
                         type = action.type,
                         title = action.title,
                         settings = action.settings,
-                    ) ?: return@launch
-                    navigator.navigate(Route.GroupExtension(extensionId = extensionId))
+                    ) ?: return@launchOnMain
+                    // Don't pull the user back here when the screen was left meanwhile
+                    if (viewModelScope.isActive) {
+                        navigator.navigate(Route.GroupExtension(extensionId = extensionId))
+                    }
                 }
             }
         }
@@ -460,7 +467,7 @@ class ChatDetailsViewmodel(
     }
 
     fun updateDescription(){
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             if (isGroup) {
                 groupRepository.changeGroupDescription(chatId, descriptionText.text)
             }else {
@@ -471,7 +478,7 @@ class ChatDetailsViewmodel(
 
     fun removeFriend() {
         if (!isGroup) {
-            viewModelScope.launch {
+            applicationScope.launchOnMain {
                 if(userRepository.removeFriend(chatId)){
                     navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                 }
@@ -480,7 +487,7 @@ class ChatDetailsViewmodel(
     }
 
     fun changeAdminStatus(member: GroupMember){
-        viewModelScope.launch{
+        applicationScope.launchOnMain{
             groupRepository.changeGroupMembers(
                 action = if(member.admin) GroupMemberAction.REMOVE_ADMIN else GroupMemberAction.MAKE_ADMIN,
                 memberId = member.userId,
@@ -490,7 +497,7 @@ class ChatDetailsViewmodel(
     }
 
     fun updateProfilePic (profilePicUri: GalleryPhotoResult) {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             val bytearray = profilePicUri
                 .loadBytes()
 
@@ -511,7 +518,7 @@ class ChatDetailsViewmodel(
     }
 
     fun addMember(userId: String){
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             groupRepository.changeGroupMembers(
                 action = GroupMemberAction.ADD_USER,
                 memberId = userId,
@@ -521,7 +528,7 @@ class ChatDetailsViewmodel(
     }
 
     fun removeMember(memberId: String){
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             groupRepository.changeGroupMembers(
                 action = GroupMemberAction.REMOVE_USER,
                 memberId = memberId,
@@ -535,7 +542,7 @@ class ChatDetailsViewmodel(
     }
 
     fun updateGroupName(name: String){
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             groupRepository.changeGroupName(chatId, name)
         }
     }
@@ -545,7 +552,7 @@ class ChatDetailsViewmodel(
      * else, and the UI only offers it to admins.
      */
     fun setGroupExpiry(expiresAt: Long?) {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             groupRepository.changeGroupExpiry(chatId, expiresAt)
         }
     }
@@ -555,7 +562,7 @@ class ChatDetailsViewmodel(
      * the UI only offers it to admins. Errors reach the user through the repository's ErrorChannel.
      */
     fun deleteGroup() {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             if (groupRepository.deleteGroup(chatId)) {
                 navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
             }
@@ -563,7 +570,7 @@ class ChatDetailsViewmodel(
     }
 
     fun sendFriendRequest(id: String){
-        viewModelScope.launch { //The repository is main-safe
+        applicationScope.launchOnMain { //The repository is main-safe
             val success = userRepository.sendFriendRequest(id)
             SnackbarManager.showMessage(
                 if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)
@@ -579,7 +586,7 @@ class ChatDetailsViewmodel(
 
 
     fun updateNickname(newNickname: String) {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             userRepository.changeUserDetails(
                 userId = chatId,
                 newNickName = newNickname

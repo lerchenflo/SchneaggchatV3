@@ -72,7 +72,7 @@ fun AudioMessageContentView(
     val duration = if (isThisMessagePlaying) progress.duration else prefetchedDuration
     val isPlaying = isThisMessagePlaying && progress.isPlaying
 
-    val textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    val textColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
 
     AudioPlayerView(
         isPlaying = isPlaying,
@@ -155,10 +155,10 @@ fun AudioPlayerView(
                 isUserDragging = false
                 onSeek(sliderPosition.toLong())
             },
-            colors = SliderDefaults.colors( // todo bessere farba usdenka. i bin noch ned ganz glücklich
+            colors = SliderDefaults.colors(
                 thumbColor = textColor,
-                activeTrackColor = MaterialTheme.colorScheme.secondary,
-                inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer
+                activeTrackColor = textColor,
+                inactiveTrackColor = textColor.copy(alpha = 0.3f)
             )
         )
 

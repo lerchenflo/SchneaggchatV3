@@ -154,7 +154,7 @@ class MessageSendEchoDedupTest {
             assertThat(row.localPK).isEqualTo(queued.localPK)
             assertThat(row.id).isEqualTo("srv-1")
             assertThat(row.sent).isTrue()
-            assertThat(row.clientMessageId).isNull()
+            assertThat(row.clientMessageId).isEqualTo(queued.clientMessageId)
 
             fixture.sendOfflineMessages()
 

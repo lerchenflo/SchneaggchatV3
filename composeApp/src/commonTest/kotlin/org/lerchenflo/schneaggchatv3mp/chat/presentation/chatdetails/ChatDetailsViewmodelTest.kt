@@ -13,6 +13,7 @@ import assertk.assertions.prop
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -88,6 +89,7 @@ class ChatDetailsViewmodelTest {
             eventRepository = FakeEventRepository(),
             messageRepository = FakeMessageRepository(),
             groupExtensionRepository = FakeGroupExtensionRepository(),
+            applicationScope = ApplicationScope(),
             chatId = chatId,
             isGroup = isGroup,
         )
@@ -225,7 +227,7 @@ class ChatDetailsViewmodelTest {
 
         viewModel.sendFriendRequest("left-user")
 
-        // Runs on Dispatchers.IO, not in viewModelScope
+        // Runs in the app-wide scope, not in viewModelScope
         assertThat(userRepository.friendRequestsSent.awaitCount(1)).containsExactly("left-user")
     }
 

@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
@@ -34,6 +36,7 @@ import kotlin.time.Clock
 class FeedbackViewModel(
     private val feedbackRepository: FeedbackRepository,
     private val navigator: Navigator,
+    private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FeedbackState())
@@ -107,7 +110,7 @@ class FeedbackViewModel(
 
         // Optimistic: the buttons react at once, the server answer replaces the guess
         replaceEntry(entry.withVote(newVote))
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             feedbackRepository.vote(entryId, newVote)
                 .onSuccess { replaceEntry(it) }
                 .onError {
@@ -138,7 +141,7 @@ class FeedbackViewModel(
 
         val entryId = detailState.entry.id
         updateDetail(entryId) { it.copy(isSendingComment = true) }
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             feedbackRepository.comment(entryId, text, isBug = detailState.entry.type == FeedbackType.BUG)
                 .onSuccess { comment ->
                     updateDetail(entryId) { detailState ->
@@ -166,7 +169,7 @@ class FeedbackViewModel(
 
     private fun deleteComment(commentId: String) {
         val entryId = _state.value.detail?.entry?.id ?: return
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             feedbackRepository.deleteComment(commentId)
                 .onSuccess {
                     var remainingDevComment: String? = null
@@ -189,7 +192,7 @@ class FeedbackViewModel(
     }
 
     private fun deleteEntry(entryId: String) {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             feedbackRepository.deleteEntry(entryId)
                 .onSuccess {
                     updateBoard { state ->
@@ -205,7 +208,7 @@ class FeedbackViewModel(
     }
 
     private fun changeStatus(entryId: String, status: FeedbackStatus) {
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             feedbackRepository.setStatus(entryId, status)
                 .onSuccess { replaceEntry(it) }
                 .onError { showError(it) }
@@ -215,7 +218,7 @@ class FeedbackViewModel(
     private fun create(newEntry: NewFeedbackEntry) {
         if (_state.value.isCreating) return
         _state.update { it.copy(isCreating = true) }
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             feedbackRepository.create(newEntry)
                 .onSuccess { created ->
                     updateBoard { state ->
