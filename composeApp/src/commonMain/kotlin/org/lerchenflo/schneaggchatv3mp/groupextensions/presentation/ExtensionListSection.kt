@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,9 +7,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +23,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_add
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_item_count
@@ -64,48 +64,37 @@ fun ExtensionListSection(
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(stringResource(Res.string.group_extensions_title))
+        SettingsDivider(
+            title = stringResource(Res.string.group_extensions_title),
+            showTopDivider = false
+        )
 
         extensions.forEach { extension ->
             key(extension.id) {
-                ListItem(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onAction(ExtensionListAction.OnExtensionClick(extension.id)) },
-                    leadingContent = {
-                        Icon(
-                            imageVector = extension.type.icon(),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                val typeName = extension.type.toUiText().asString()
+                val count = extension.items.size
+
+                SettingsOption(
+                    icon = extension.type.icon(),
+                    text = extension.title,
+                    // A shared text is one document, counting its entries says nothing
+                    subtext = if (extension.type == GroupExtensionType.SHARED_TEXT) {
+                        typeName
+                    } else {
+                        "$typeName · ${pluralStringResource(Res.plurals.group_extension_item_count, count, count)}"
                     },
-                    headlineContent = { Text(extension.title) },
-                    supportingContent = {
-                        val typeName = extension.type.toUiText().asString()
-                        // A shared text is one document, counting its entries says nothing
-                        if (extension.type == GroupExtensionType.SHARED_TEXT) {
-                            Text(typeName)
-                        } else {
-                            val count = extension.items.size
-                            Text("$typeName · ${pluralStringResource(Res.plurals.group_extension_item_count, count, count)}")
-                        }
-                    }
+                    onClick = { onAction(ExtensionListAction.OnExtensionClick(extension.id)) }
                 )
+
+                HorizontalDivider()
             }
         }
 
         Box(modifier = Modifier.fillMaxWidth()) {
-            ListItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showAddMenu = true },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null,
-                    )
-                },
-                headlineContent = { Text(stringResource(Res.string.group_extension_add)) }
+            SettingsOption(
+                icon = Icons.Default.Add,
+                text = stringResource(Res.string.group_extension_add),
+                onClick = { showAddMenu = true }
             )
 
             // A group can hold several extensions of the same type, so every type is always offered
