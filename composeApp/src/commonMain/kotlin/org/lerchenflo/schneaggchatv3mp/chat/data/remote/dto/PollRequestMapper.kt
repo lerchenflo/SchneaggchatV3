@@ -25,6 +25,7 @@ fun NewPollOption.toPollVoteOptionCreateRequest(): PollVoteOptionCreateRequest =
         text = text,
         maxVoters = maxVoters,
         subPoll = subPoll?.toPollCreateRequest(),
+        id = id,
     )
 
 // ─── Poll vote ───────────────────────────────────────────────────────────────

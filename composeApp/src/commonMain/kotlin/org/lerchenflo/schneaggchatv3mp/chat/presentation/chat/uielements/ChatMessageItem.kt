@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
@@ -86,7 +87,10 @@ fun ChatMessageItem(
                 showMessageOptionPopup = false
             },
             onEdit = {
-                onAction(MessageAction.StartEditMessage(message))
+                onAction(
+                    if (message.msgType == MessageType.POLL) MessageAction.StartEditPoll(message)
+                    else MessageAction.StartEditMessage(message)
+                )
                 showMessageOptionPopup = false
             },
             onDetails = {

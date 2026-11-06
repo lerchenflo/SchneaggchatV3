@@ -30,10 +30,11 @@ data class NewPoll(
  * field for field.
  */
 data class NewPollOption(
-    //Ids get assigned by the server
     val text: String,
     val maxVoters: Int? = null, // null = unlimited
     val subPoll: NewPoll? = null, //Follow-up poll for users who pick this option
+    //Only set on a poll edit: the server id of the existing option. Null = new option, the server assigns the id
+    val id: String? = null,
 )
 
 /**
@@ -93,4 +94,22 @@ fun PollMessage.toNewPoll(): NewPoll {
         showCheckboxes = showCheckboxes,
         visibleToAll = visibleToAll,
     )
+}
+
+private fun NewPoll.allOptions(): List<NewPollOption> =
+    voteOptions.flatMap { option -> listOf(option) + option.subPoll?.allOptions().orEmpty() }
+
+private fun PollMessage.allOptions(): List<PollVoteOption> =
+    voteOptions.flatMap { option -> listOf(option) + option.subPoll?.allOptions().orEmpty() }
+
+/** Ids of the options, sub polls included, that are gone in [edited]. The server deletes only these. */
+fun PollMessage.optionIdsRemovedBy(edited: NewPoll): List<String> {
+    val keptIds = edited.allOptions().mapNotNull { it.id }.toSet()
+    return allOptions().map { it.id }.filter { it !in keptIds }
+}
+
+/** Whether saving [edited] drops votes: the server drops them for a removed option and for a changed text. */
+fun PollMessage.losesVotesBy(edited: NewPoll): Boolean {
+    val editedTexts = edited.allOptions().filter { it.id != null }.associate { it.id to it.text.trim() }
+    return allOptions().any { option -> option.voters.isNotEmpty() && editedTexts[option.id] != option.text.trim() }
 }

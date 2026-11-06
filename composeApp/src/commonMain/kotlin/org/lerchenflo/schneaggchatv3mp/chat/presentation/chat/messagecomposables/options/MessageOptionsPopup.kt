@@ -174,7 +174,10 @@ fun MessageOptionPopup(
 
             if (message.myMessage) {
 
-                if (message.msgType == MessageType.TEXT || message.msgType == MessageType.IMAGE) {
+                //Only a sent poll can be edited: the server does the edit, there is no offline queue for it
+                val isSentPoll = message.msgType == MessageType.POLL && message.id != null && message.poll != null
+
+                if (message.msgType == MessageType.TEXT || message.msgType == MessageType.IMAGE || isSentPoll) {
                     DropdownMenuItem(
                         text = { Text(stringResource(Res.string.edit)) },
                         onClick = {

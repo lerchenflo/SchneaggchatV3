@@ -35,6 +35,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Schneaggmap: UI verbessert, Standort-Alter anzeigen
 - Schneaggmap: Angepinnte Freunde zuerst anzeigen (Einstellung)
 - Umfragen: Einfachere Einstellungen
+- Umfragen: Nach dem Senden bearbeiten
 - Neues Spiel: C Coding, Tic Tac Toe
 - Quick Reactions: Custom Doppeltip Reaktion
 - Chat: Code-Blöcke mit Highlighting

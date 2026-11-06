@@ -15,6 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageSyncResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollCreateRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollEditRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollMessageRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollVoteRequest
@@ -34,6 +35,13 @@ class KtorMessageRemoteDataSource(
         return server.safePost(
             endpoint = "/messages/pollvote",
             body = pollVoteRequest,
+        )
+    }
+
+    override suspend fun editPoll(request: PollEditRequest) : DataResult<MessageResponse, DataError> {
+        return server.safePost(
+            endpoint = "/messages/edit/poll",
+            body = request,
         )
     }
 

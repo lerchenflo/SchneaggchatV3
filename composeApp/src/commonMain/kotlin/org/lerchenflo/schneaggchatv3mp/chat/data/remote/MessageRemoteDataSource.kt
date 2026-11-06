@@ -5,6 +5,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageSyncResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollCreateRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollEditRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollVoteRequest
 
@@ -14,6 +15,8 @@ interface MessageRemoteDataSource {
     suspend fun votePoll(pollVoteRequest: PollVoteRequest) : DataResult<MessageResponse, DataError>
 
     suspend fun deletePollOption(request: PollOptionDeleteRequest) : DataResult<MessageResponse, DataError>
+
+    suspend fun editPoll(request: PollEditRequest) : DataResult<MessageResponse, DataError>
 
     suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?, clientMessageId: String) : DataResult<MessageResponse, DataError>
 

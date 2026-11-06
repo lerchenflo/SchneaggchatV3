@@ -40,6 +40,8 @@ fun ChatInputBar(
     replyMessage: Message?,
     replyMessageSender: SenderInfo?,
     editMessage: Message?,
+    editPollMessage: Message?,
+    isSavingPollEdit: Boolean,
     useMarkdown: Boolean,
     chatId: String,
     ownId: String,
@@ -110,10 +112,19 @@ fun ChatInputBar(
             if (showPollDialog) {
                 PollDialog(
                     onDismiss = { showPollDialog = false },
-                    onCreatePoll = { poll ->
+                    onSubmit = { poll ->
                         println("Poll created: $poll")
                         onAction(ChatAction.OnCreatePoll(poll))
                     }
+                )
+            }
+
+            editPollMessage?.poll?.let { poll ->
+                PollDialog(
+                    onDismiss = { onAction(ChatAction.OnMessageAction(MessageAction.CancelEditPoll)) },
+                    onSubmit = { onAction(ChatAction.OnSaveEditedPoll(it)) },
+                    editingPoll = poll,
+                    isSaving = isSavingPollEdit,
                 )
             }
 

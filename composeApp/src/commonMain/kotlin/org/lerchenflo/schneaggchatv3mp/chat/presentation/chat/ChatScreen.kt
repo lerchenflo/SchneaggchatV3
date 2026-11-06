@@ -103,6 +103,8 @@ fun ChatScreen(
                 replyMessage = state.replyMessage,
                 replyMessageSender = state.replyMessageSender,
                 editMessage = state.editMessage,
+                editPollMessage = state.editPollMessage,
+                isSavingPollEdit = state.isSavingPollEdit,
                 useMarkdown = state.markdownEnabled,
                 chatId = state.chatId,
                 ownId = ownId,

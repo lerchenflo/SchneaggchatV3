@@ -39,6 +39,8 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.isTransient
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportLastingErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
@@ -144,6 +146,7 @@ class ChatViewModel(
 
             is ChatAction.OnImagesSelected -> onImagesSelected(action.results)
             is ChatAction.OnCreatePoll -> createPollMessage(action.poll)
+            is ChatAction.OnSaveEditedPoll -> saveEditedPoll(action.poll)
 
             ChatAction.OnStartRecording -> startRecording()
             ChatAction.OnStopRecording -> stopRecording()
@@ -344,6 +347,25 @@ class ChatViewModel(
         }
     }
 
+    private fun saveEditedPoll(poll: NewPoll) {
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+        val message = state.value.editPollMessage ?: return
+        val messageId = message.id ?: return
+        val original = message.poll ?: return
+        if (state.value.isSavingPollEdit) return
+
+        _state.update { it.copy(isSavingPollEdit = true) }
+
+        viewModelScope.launch {
+            val result = messageRepository.editPoll(ownId, messageId, original, poll).reportErrorTo(errorChannel)
+
+            //A network error keeps the popup open for another try. If the server rejected the edit
+            //the poll may have changed meanwhile: the popup closes, the next edit opens the stored poll
+            val canRetry = result is DataResult.Error && result.error.isTransient()
+            _state.update { it.copy(isSavingPollEdit = false, editPollMessage = it.editPollMessage.takeIf { canRetry }) }
+        }
+    }
+
     private fun deleteMessage(message: Message) {
         viewModelScope.launch {
             if (message.id == null) {
@@ -404,6 +426,8 @@ class ChatViewModel(
                     ).reportErrorTo(errorChannel)
                 }
             }
+            is MessageAction.StartEditPoll -> _state.update { it.copy(editPollMessage = action.message) }
+            MessageAction.CancelEditPoll -> _state.update { it.copy(editPollMessage = null) }
             MessageAction.PollMessageNotSent -> {
                 viewModelScope.launch {
                     errorChannel.sendError(UiText.StringResourceText(Res.string.poll_cannot_vote_on_unsent))

@@ -77,7 +77,10 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPoll
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPollOption
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.chat.domain.losesVotesBy
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -92,6 +95,9 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_create_description_p
 import schneaggchatv3mp.composeapp.generated.resources.poll_create_screentitle
 import schneaggchatv3mp.composeapp.generated.resources.poll_create_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_create_title_placeholder
+import schneaggchatv3mp.composeapp.generated.resources.poll_edit_screentitle
+import schneaggchatv3mp.composeapp.generated.resources.poll_edit_visibility_hint
+import schneaggchatv3mp.composeapp.generated.resources.poll_edit_votes_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_expiry_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_expiry_title_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_expiry_title_withdate
@@ -130,8 +136,10 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_shown_for
 import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_too_many_options
 import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_untitled
 import schneaggchatv3mp.composeapp.generated.resources.poll_option_reorder
+import schneaggchatv3mp.composeapp.generated.resources.save
 import sh.calvin.reorderable.ReorderableColumn
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 /**
  * Mutable holder for a single poll option row so text, its per-entry vote limit and its sub poll
@@ -141,6 +149,7 @@ class PollOptionInput(
     text: TextFieldValue = TextFieldValue(""),
     maxVoters: Int? = null,
     subPoll: PollDraft? = null,
+    val id: String? = null, //Server id of an option that already exists, see NewPollOption.id
 ) {
     var text by mutableStateOf(text)
     var maxVoters by mutableStateOf(maxVoters)
@@ -157,6 +166,9 @@ internal const val POLL_OPTION_MAX_LENGTH = 250 //Also used for custom answers i
 private const val POLL_MAX_VOTE_OPTIONS = 20
 private const val POLL_MAX_DEPTH = 5 //Poll levels in one message, the root poll included
 private const val POLL_MAX_TREE_OPTIONS = 60 //Options of the root poll and all sub polls together
+//An edit allows more, so a poll that grew by custom answers can still be edited
+private const val POLL_EDIT_MAX_VOTE_OPTIONS = 50
+private const val POLL_EDIT_MAX_TREE_OPTIONS = 150
 
 /**
  * Editable state of one poll level in the creator. A sub poll is another [PollDraft] hanging off
@@ -167,6 +179,8 @@ class PollDraft(
     title: String = "",
     description: String = "",
     options: List<PollOptionInput> = listOf(PollOptionInput(), PollOptionInput()),
+    //An existing poll can't switch between voting and a plain list, the server rejects that
+    val showCheckboxesLocked: Boolean = false,
 ) {
     var title by mutableStateOf(TextFieldValue(title))
     var description by mutableStateOf(TextFieldValue(description))
@@ -271,12 +285,48 @@ class PollDraft(
                         maxVoters = if (showCheckboxes && limitVotersPerEntry) it.maxVoters else null,
                         //Sub polls stay in the draft while the switch is off, but are only sent while it's on
                         subPoll = if (subPollsActive) it.subPoll?.toRequest(visibility, closeDate) else null,
+                        id = it.id,
                     )
                 },
             allowDeleteOptions = allowDeleteOptions,
             showCheckboxes = showCheckboxes,
             visibleToAll = visibleToAll,
         )
+    }
+}
+
+/**
+ * The draft of an existing poll, sub polls included: the inverse of [PollDraft.toRequest]. The empty
+ * last row is there to add an option, and keeps the list from being empty on a custom answers only poll.
+ */
+internal fun PollMessage.toDraft(): PollDraft {
+    val poll = this
+
+    return PollDraft(
+        title = title,
+        description = description.orEmpty(),
+        options = voteOptions.map { option ->
+            PollOptionInput(
+                text = TextFieldValue(option.text),
+                maxVoters = option.maxVoters,
+                subPoll = option.subPoll?.toDraft(),
+                id = option.id,
+            )
+        } + PollOptionInput(),
+        showCheckboxesLocked = true,
+    ).apply {
+        //10 is the slider position for unlimited
+        allowCustomAnswers = poll.customAnswersEnabled
+        allowedCustomAnswerCount = if (poll.customAnswersEnabled) poll.maxAllowedCustomAnswers ?: 10 else 1
+
+        allowMultipleAnswers = poll.showCheckboxes && poll.maxAnswers != 1
+        allowedAnswerCount = poll.maxAnswers ?: 10
+
+        limitVotersPerEntry = poll.voteOptions.any { it.maxVoters != null }
+        showCheckboxes = poll.showCheckboxes
+        allowDeleteOptions = poll.allowDeleteOptions
+        subPollsEnabled = poll.voteOptions.any { it.subPoll != null }
+        visibleToAll = poll.visibleToAll
     }
 }
 
@@ -294,17 +344,34 @@ private data class PollEditorLevel(val draft: PollDraft, val depth: Int)
 @Composable
 fun PollDialog(
     onDismiss: () -> Unit = {},
-    onCreatePoll: (NewPoll) -> Unit = {},
+    onSubmit: (NewPoll) -> Unit = {},
     initialDraft: PollDraft? = null, //Prefilled draft, used by previews
+    editingPoll: PollMessage? = null, //Edits this poll instead of creating a new one
+    isSaving: Boolean = false, //An edit is on its way to the server
 ) {
-    val rootDraft = remember { initialDraft ?: PollDraft() }
+    val isEditing = editingPoll != null
+    val maxTreeOptions = if (isEditing) POLL_EDIT_MAX_TREE_OPTIONS else POLL_MAX_TREE_OPTIONS
 
-    var visibility by remember { mutableStateOf(PollVisibility.PUBLIC) }
+    val rootDraft = remember { initialDraft ?: editingPoll?.toDraft() ?: PollDraft() }
 
-    var expiresAt by remember { mutableStateOf<LocalDateTime?>(null) }
+    var visibility by remember { mutableStateOf(editingPoll?.visibility ?: PollVisibility.PUBLIC) }
+
+    val initialExpiresAt = remember {
+        editingPoll?.expiresAt?.let { Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()) }
+    }
+    var expiresAt by remember { mutableStateOf(initialExpiresAt) }
     var showExpiresAtDatePickerDialog by remember { mutableStateOf(false) }
 
     var tooManyOptionsError by remember { mutableStateOf(false) }
+
+    //Edit that would drop votes, waiting for the creator to confirm it
+    var editToConfirm by remember { mutableStateOf<NewPoll?>(null) }
+
+    fun submit(poll: NewPoll) {
+        onSubmit(poll)
+        //An edit waits for the server, the caller closes the popup when it is saved
+        if (!isEditing) onDismiss()
+    }
 
     //Sub polls being edited, outermost first. Empty = editing the root poll
     val editPath = remember { mutableStateListOf<SubPollEditStep>() }
@@ -327,7 +394,7 @@ fun PollDialog(
     }
 
     LaunchedEffect(rootDraft.totalOptionCount()) {
-        if (tooManyOptionsError && rootDraft.totalOptionCount() <= POLL_MAX_TREE_OPTIONS) {
+        if (tooManyOptionsError && rootDraft.totalOptionCount() <= maxTreeOptions) {
             tooManyOptionsError = false
         }
     }
@@ -377,7 +444,11 @@ fun PollDialog(
                     //Title to navigate back for ios users
                     ActivityTitle(
                         title = stringResource(
-                            if (level.depth == 0) Res.string.poll_create_screentitle else Res.string.poll_subpoll_screentitle
+                            when {
+                                level.depth > 0 -> Res.string.poll_subpoll_screentitle
+                                isEditing -> Res.string.poll_edit_screentitle
+                                else -> Res.string.poll_create_screentitle
+                            }
                         ),
                         onBackClick = { goBack() }
                     )
@@ -405,24 +476,38 @@ fun PollDialog(
                         draft = level.draft,
                         isSubPoll = level.depth > 0,
                         canAddSubPolls = level.depth + 1 < POLL_MAX_DEPTH,
+                        maxOptions = if (isEditing) POLL_EDIT_MAX_VOTE_OPTIONS else POLL_MAX_VOTE_OPTIONS,
                         onEditSubPoll = { option -> openSubPoll(option) },
                         extraMoreSettingsChanged = level.depth == 0 && (visibility != PollVisibility.PUBLIC || expiresAt != null),
                         extraMoreSettings = {
                             if (level.depth == 0) {
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                                //Answer visibility - shared by all sub polls
+                                //Answer visibility - shared by all sub polls. An existing poll can only get
+                                //stricter (entries go from open to strict): votes were cast under its
+                                //visibility, so a change must never show more of them
                                 var dropDownMenuShown by remember { mutableStateOf(false) }
+                                val visibilityChoices = PollVisibility.entries.filter { it >= (editingPoll?.visibility ?: PollVisibility.PUBLIC) }
 
                                 NormalButton(
                                     text = stringResource(Res.string.poll_visibility_title, visibility.toUiText().asString()),
                                     onClick = {
                                         dropDownMenuShown = true
                                     },
+                                    disabled = visibilityChoices.size == 1,
                                     primary = false,
-                                    showOutline = true,
+                                    showOutline = visibilityChoices.size > 1, //The outline does not gray out with the button
                                     modifier = Modifier.fillMaxWidth()
                                 )
+
+                                if (editingPoll != null && visibility != editingPoll.visibility) {
+                                    Text(
+                                        text = stringResource(Res.string.poll_edit_visibility_hint),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(top = 4.dp)
+                                    )
+                                }
 
                                 Column {
                                     DropdownMenu(
@@ -431,7 +516,7 @@ fun PollDialog(
                                         modifier = Modifier.fillMaxWidth(),
                                         scrollState = rememberScrollState(),
                                     ) {
-                                        PollVisibility.entries.forEach { entry ->
+                                        visibilityChoices.forEach { entry ->
                                             DropdownMenuItem(
                                                 onClick = {
                                                     visibility = entry
@@ -510,9 +595,17 @@ fun PollDialog(
                             )
                         }
 
+                        editToConfirm?.let { edit ->
+                            ConfirmationDialog(
+                                message = stringResource(Res.string.poll_edit_votes_warning),
+                                onConfirm = { submit(edit) },
+                                onDismiss = { editToConfirm = null },
+                            )
+                        }
+
                         if (tooManyOptionsError) {
                             Text(
-                                text = stringResource(Res.string.poll_subpoll_too_many_options, POLL_MAX_TREE_OPTIONS.toString()),
+                                text = stringResource(Res.string.poll_subpoll_too_many_options, maxTreeOptions.toString()),
                                 color = MaterialTheme.colorScheme.error
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -534,22 +627,23 @@ fun PollDialog(
                             NormalButton(
                                 onClick = {
                                     if (!rootDraft.validate()) return@NormalButton
-                                    if (rootDraft.totalOptionCount() > POLL_MAX_TREE_OPTIONS) {
+                                    if (rootDraft.totalOptionCount() > maxTreeOptions) {
                                         tooManyOptionsError = true
                                         return@NormalButton
                                     }
 
-                                    onCreatePoll(
-                                        rootDraft.toRequest(
-                                            visibility = visibility,
-                                            closeDate = expiresAt?.toInstant(TimeZone.currentSystemDefault())
-                                                ?.toEpochMilliseconds(),
-                                        )
+                                    val poll = rootDraft.toRequest(
+                                        visibility = visibility,
+                                        //The server only accepts a past close date while it stays exactly the same
+                                        closeDate = if (expiresAt == initialExpiresAt) editingPoll?.expiresAt else {
+                                            expiresAt?.toInstant(TimeZone.currentSystemDefault())?.toEpochMilliseconds()
+                                        },
                                     )
 
-                                    onDismiss()
+                                    if (editingPoll?.losesVotesBy(poll) == true) editToConfirm = poll else submit(poll)
                                 },
-                                text = stringResource(Res.string.poll_create),
+                                text = stringResource(if (isEditing) Res.string.save else Res.string.poll_create),
+                                isLoading = isSaving,
                             )
                         }
                     } else {
@@ -582,6 +676,7 @@ private fun PollDraftEditor(
     draft: PollDraft,
     isSubPoll: Boolean,
     canAddSubPolls: Boolean,
+    maxOptions: Int,
     onEditSubPoll: (PollOptionInput) -> Unit,
     extraMoreSettingsChanged: Boolean = false,
     extraMoreSettings: @Composable () -> Unit = {},
@@ -734,7 +829,7 @@ private fun PollDraftEditor(
         }
 
         //Auto add new entry if last entry is not empty
-        if (options.size < POLL_MAX_VOTE_OPTIONS && options[options.size-1].text.text.isNotEmpty()) {
+        if (options.size < maxOptions && options[options.size-1].text.text.isNotEmpty()) {
             options.add(PollOptionInput())
         }
 
@@ -816,7 +911,8 @@ private fun PollDraftEditor(
                             draft.limitVotersPerEntry = false
                         }
                     },
-                    icon = null
+                    icon = null,
+                    enabled = !draft.showCheckboxesLocked,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

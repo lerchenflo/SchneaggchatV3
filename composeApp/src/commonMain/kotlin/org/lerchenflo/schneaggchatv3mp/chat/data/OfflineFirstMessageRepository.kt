@@ -39,7 +39,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent.PollContent
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPoll
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVote
+import org.lerchenflo.schneaggchatv3mp.chat.domain.optionIdsRemovedBy
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toDomainMessage
@@ -60,6 +63,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageSyncResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollEditRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.MessageRemoteDataSource
 
@@ -306,6 +310,17 @@ class OfflineFirstMessageRepository(
             .onSuccess { storePollResponse(ownId, it) }
             .asEmptyDataResult()
 
+    override suspend fun editPoll(ownId: String, messageId: String, original: PollMessage, edited: NewPoll): EmptyDataResult<DataError> =
+        messageRemoteDataSource.editPoll(
+            PollEditRequest(
+                messageId = messageId,
+                poll = edited.toPollCreateRequest(),
+                deletedOptionIds = original.optionIdsRemovedBy(edited),
+            )
+        ).trackConnectivity()
+            .onSuccess { storePollResponse(ownId, it) }
+            .asEmptyDataResult()
+
     private suspend fun storePollResponse(ownId: String, response: MessageResponse) {
         val existing = messageLocalDataSource.getMessageById(response.messageId)
         //Skip a response older than what is stored - a socket push or a later vote's
@@ -314,6 +329,7 @@ class OfflineFirstMessageRepository(
             messageLocalDataSource.upsertMessage(existing.copy(
                 poll = response.pollResponse?.toPollMessage(ownId),
                 changeDate = response.lastChanged.toString(),
+                edited = response.edited,
             ))
         }
     }

@@ -675,6 +675,9 @@
 
     <!-- polls -->
     <string name="poll_create_screentitle">Crea sondaggio</string>
+    <string name="poll_edit_screentitle">Modifica sondaggio</string>
+    <string name="poll_edit_votes_warning">Le opzioni modificate o eliminate perdono i loro voti. Salvare comunque?</string>
+    <string name="poll_edit_visibility_hint">Non si può annullare: dopo il salvataggio la visibilità può solo diventare più restrittiva.</string>
     <string name="poll_create_title">Domanda</string>
     <string name="poll_create_title_placeholder">Fai una domanda ...</string>
 

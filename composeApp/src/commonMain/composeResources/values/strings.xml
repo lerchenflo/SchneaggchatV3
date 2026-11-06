@@ -676,6 +676,9 @@
 
     <!-- polls -->
     <string name="poll_create_screentitle">Create Poll</string>
+    <string name="poll_edit_screentitle">Edit Poll</string>
+    <string name="poll_edit_votes_warning">Changed or deleted options lose their votes. Save anyway?</string>
+    <string name="poll_edit_visibility_hint">This cannot be undone: after saving, visibility can only get stricter.</string>
     <string name="poll_create_title">Question</string>
     <string name="poll_create_title_placeholder">Ask a question ...</string>
 

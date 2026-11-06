@@ -20,6 +20,8 @@ data class ChatState(
     val replyMessage: Message? = null,
     val replyMessageSender: SenderInfo? = null,
     val editMessage: Message? = null,
+    val editPollMessage: Message? = null,
+    val isSavingPollEdit: Boolean = false,
     val markdownEnabled: Boolean = false,
     val quickReactions: List<String> = DEFAULT_QUICK_REACTIONS,
     val maxVoiceMsgTime: Long = 0L,
@@ -37,6 +39,7 @@ sealed interface ChatAction {
 
     data class OnImagesSelected(val results: List<GalleryPhotoResult>) : ChatAction
     data class OnCreatePoll(val poll: NewPoll) : ChatAction
+    data class OnSaveEditedPoll(val poll: NewPoll) : ChatAction
 
     data object OnStartRecording : ChatAction
     data object OnStopRecording : ChatAction

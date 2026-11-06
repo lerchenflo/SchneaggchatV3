@@ -78,10 +78,22 @@ data class PollCreateRequest(
  */
 @Serializable
 data class PollVoteOptionCreateRequest(
-    //Ids get assigned by the server
     val text: String,
     val maxVoters: Int? = null, // null = unlimited
     val subPoll: PollCreateRequest? = null, //Follow-up poll for users who pick this option
+    //Only read on a poll edit: the existing option this entry stands for. Null = new option
+    val id: String? = null,
+)
+
+/**
+ * Edit a poll: [poll] is the whole poll as the creator wants it to be.
+ */
+@Serializable
+data class PollEditRequest(
+    val messageId: String,
+    val poll: PollCreateRequest,
+    //Options the creator removed, sub polls included. An option that is neither here nor in [poll] stays
+    val deletedOptionIds: List<String>,
 )
 
 /**

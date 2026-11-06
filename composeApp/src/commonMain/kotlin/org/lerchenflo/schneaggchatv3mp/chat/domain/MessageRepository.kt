@@ -78,6 +78,13 @@ interface MessageRepository {
 
     suspend fun deletePollOption(ownId: String, messageId: String, optionId: String): EmptyDataResult<DataError>
 
+    /**
+     * Saves the creator's [edited] version of a sent poll, online only: on an error the stored poll
+     * stays as it is. [original] is the poll the edit started from, the server deletes the options
+     * that are gone compared to it.
+     */
+    suspend fun editPoll(ownId: String, messageId: String, original: PollMessage, edited: NewPoll): EmptyDataResult<DataError>
+
     // ─── Send / offline queue / sync ──────────────────────────────────────────
 
     /**

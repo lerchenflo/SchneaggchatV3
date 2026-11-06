@@ -676,6 +676,9 @@
 
     <!-- polls -->
     <string name="poll_create_screentitle">Umfrage erstellen</string>
+    <string name="poll_edit_screentitle">Umfrage bearbeiten</string>
+    <string name="poll_edit_votes_warning">Geänderte oder gelöschte Optionen verlieren ihre Stimmen. Trotzdem speichern?</string>
+    <string name="poll_edit_visibility_hint">Das lässt sich nicht rückgängig machen: Nach dem Speichern kann die Sichtbarkeit nur noch strenger werden.</string>
     <string name="poll_create_title">Frage</string>
     <string name="poll_create_title_placeholder">Stelle eine Frage ...</string>
 

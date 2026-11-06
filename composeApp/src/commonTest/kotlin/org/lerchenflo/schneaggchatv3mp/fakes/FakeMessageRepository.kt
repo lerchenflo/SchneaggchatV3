@@ -11,6 +11,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MarkReadGuard
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPoll
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVote
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotification
 
@@ -164,6 +166,9 @@ class FakeMessageRepository : MessageRepository {
         deletePollOptionCalls.record(DeletePollOptionCall(ownId, messageId, optionId))
         return DataResult.Success(Unit)
     }
+
+    override suspend fun editPoll(ownId: String, messageId: String, original: PollMessage, edited: NewPoll): EmptyDataResult<DataError> =
+        DataResult.Success(Unit)
 
     // ─── Send / offline queue / sync ──────────────────────────────────────────
 

@@ -9,6 +9,8 @@ sealed interface MessageAction {
     data class AddCustomPollOption(val messageId: String, val text: String, val maxAnswers: Int?, val parentOptionId: String? = null) : MessageAction
     data class DeletePollOption(val messageId: String, val optionId: String) : MessageAction
     data object PollMessageNotSent : MessageAction
+    data class StartEditPoll(val message: Message) : MessageAction
+    data object CancelEditPoll : MessageAction
 
     // Audio actions
     data class PlayAudio(val messageId: String, val audioPath: String, ) : MessageAction
