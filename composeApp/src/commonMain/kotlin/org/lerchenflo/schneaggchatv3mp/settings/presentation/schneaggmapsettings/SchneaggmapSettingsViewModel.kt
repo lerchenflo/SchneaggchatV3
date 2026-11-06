@@ -8,13 +8,16 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportFirstErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 /** Draft per-friend location sharing settings edited in the dialog, only sent to the server on Save. */
@@ -26,6 +29,7 @@ data class FriendShareDraft(
 )
 
 class SchneaggmapSettingsViewModel(
+    private val errorChannel: ErrorChannel,
     private val userRepository: UserRepository,
     private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger,
@@ -37,6 +41,9 @@ class SchneaggmapSettingsViewModel(
         private set
 
     var mergeMapUsers by mutableStateOf(true)
+        private set
+
+    var sortMapUsersByPinned by mutableStateOf(true)
         private set
 
     var mapStyle by mutableStateOf(MapStyleSetting.LIBERTY)
@@ -68,6 +75,16 @@ class SchneaggmapSettingsViewModel(
                 }
                 .collect { value ->
                     mergeMapUsers = value
+                }
+        }
+
+        viewModelScope.launch { // Pinned friends first in the map's friends bar
+            settingsRepository.getSortMapUsersByPinnedFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting sort map users by pinned preference: ${exception.message}")
+                }
+                .collect { value ->
+                    sortMapUsersByPinned = value
                 }
         }
 
@@ -116,6 +133,12 @@ class SchneaggmapSettingsViewModel(
         }
     }
 
+    fun updateSortMapUsersByPinned(newValue: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setSortMapUsersByPinned(newValue)
+        }
+    }
+
     fun updateMapStyle(newValue: MapStyleSetting) {
         viewModelScope.launch {
             settingsRepository.setMapStyleSetting(newValue)
@@ -137,23 +160,25 @@ class SchneaggmapSettingsViewModel(
         val writes = applicationScope.launchOnMain {
             when {
                 newGlobalShare && !wasGlobalShared -> {
-                    friendDrafts.forEach { draft ->
+                    friendDrafts.map { draft ->
                         userRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
-                    }
+                    }.reportFirstErrorTo(errorChannel)
                 }
                 !newGlobalShare && wasGlobalShared -> {
-                    userRepository.disableLocationSharingForAllFriends()
+                    userRepository.disableLocationSharingForAllFriends().reportErrorTo(errorChannel)
                 }
                 else -> {
-                    friendDrafts.forEach { draft ->
-                        val friend = friends.find { it.id == draft.friendId } ?: return@forEach
+                    friendDrafts.mapNotNull { draft ->
+                        val friend = friends.find { it.id == draft.friendId } ?: return@mapNotNull null
                         val changed = friend.locationShared != draft.share ||
                                 friend.shareSpeedHeading != draft.shareSpeedHeading ||
                                 friend.snailTrail != draft.snailTrail
                         if (changed) {
                             userRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
+                        } else {
+                            null
                         }
-                    }
+                    }.reportFirstErrorTo(errorChannel)
                 }
             }
         }

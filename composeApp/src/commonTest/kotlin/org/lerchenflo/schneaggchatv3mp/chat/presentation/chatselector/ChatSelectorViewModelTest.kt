@@ -5,6 +5,8 @@ import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
 import kotlinx.coroutines.CompletableDeferred
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -15,6 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.fakes.FakeAppVersion
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAuthRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeChatListRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeDataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeErrorChannel
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeMessageRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeNotifier
@@ -37,6 +40,8 @@ private const val OWN_ID = "me"
 
 /** Chat list, search, pins, the pending-request badge and pull-to-refresh of the chat selector. */
 class ChatSelectorViewModelTest {
+
+    private val errorChannel = FakeErrorChannel()
 
     private val mainDispatcher = MainDispatcherRule()
     private val viewModels = TestViewModelStore()
@@ -72,6 +77,8 @@ class ChatSelectorViewModelTest {
 
     private fun createViewModel() = viewModels.add(
         ChatSelectorViewModel(
+            errorChannel = errorChannel,
+            applicationScope = ApplicationScope(),
             appVersion = FakeAppVersion(),
             dataSyncCoordinator = dataSyncCoordinator,
             chatListRepository = chatListRepository,
@@ -218,6 +225,16 @@ class ChatSelectorViewModelTest {
         viewModel.refresh()
 
         assertThat(dataSyncCoordinator.syncReasons.count).isEqualTo(2)
+    }
+
+    @Test
+    fun `refresh shows the errors of the offline queue`() = runViewModelTest(viewModels) {
+        messageRepository.offlineQueueErrors = listOf(DataError.BadRequest())
+        val viewModel = createViewModel()
+
+        viewModel.refresh()
+
+        assertThat(errorChannel.sent.calls.map { it.error }).containsExactly(DataError.BadRequest())
     }
 
     @Test

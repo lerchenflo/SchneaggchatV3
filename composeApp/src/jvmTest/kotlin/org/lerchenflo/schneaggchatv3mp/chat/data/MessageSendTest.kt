@@ -1,13 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data
 
-import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
-import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import assertk.assertions.matches
@@ -15,9 +13,11 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.isTransient
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.testutil.FRIEND_ID
 import org.lerchenflo.schneaggchatv3mp.testutil.FakeMessageServer.Reply
 import org.lerchenflo.schneaggchatv3mp.testutil.OWN_USER_ID
@@ -116,11 +116,11 @@ class MessageSendTest {
         }
 
     @Test
-    fun `server error keeps the row queued with its clientMessageId without a popup`() =
+    fun `server error keeps the row queued with its clientMessageId and reports a transient error`() =
         runSendPathTest {
             fixture.server.onTextSend = { Reply.Fail(HttpStatusCode.InternalServerError) }
 
-            fixture.sendText("Hello")
+            val result = fixture.sendText("Hello")
 
             val request = fixture.server.textSendRequests.single()
             val row = fixture.storedMessages().single()
@@ -129,46 +129,42 @@ class MessageSendTest {
             assertThat(row.content).isEqualTo("Hello")
             assertThat(row.clientMessageId).isEqualTo(request.clientMessageId)
 
-            // Retried by the offline queue, so no popup (it would repeat on every retry)
-            fixture.errorChannel.errors.test { expectNoEvents() }
+            // Retried by the offline queue, so the caller shows no popup (it would repeat on every retry)
+            assertThat((result as DataResult.Error).error.isTransient()).isTrue()
         }
 
     @Test
-    fun `dropped connection keeps the row queued without a popup`() =
+    fun `dropped connection keeps the row queued and reports a transient error`() =
         runSendPathTest {
             fixture.server.onTextSend = { Reply.ConnectionDrop }
 
-            fixture.sendText("Hello")
+            val result = fixture.sendText("Hello")
 
             val row = fixture.storedMessages().single()
             assertThat(row.sent).isFalse()
             assertThat(row.id).isNull()
-            fixture.errorChannel.errors.test { expectNoEvents() }
+            assertThat((result as DataResult.Error).error.isTransient()).isTrue()
         }
 
     @Test
     fun `bad request deletes the local row`() = runSendPathTest {
         fixture.server.onTextSend = { Reply.Fail(HttpStatusCode.BadRequest) }
 
-        fixture.sendText("Hello")
+        val result = fixture.sendText("Hello")
 
         assertThat(fixture.server.textSendRequests).hasSize(1)
         assertThat(fixture.storedMessages()).isEmpty()
-        fixture.errorChannel.errors.test {
-            assertThat(awaitItem().error).isNotNull().isInstanceOf<NetworkingError.BadRequest>()
-        }
+        assertThat((result as DataResult.Error).error).isInstanceOf<DataError.BadRequest>()
     }
 
     @Test
     fun `conflict deletes the local row`() = runSendPathTest {
         fixture.server.onTextSend = { Reply.Fail(HttpStatusCode.Conflict) }
 
-        fixture.sendText("Hello")
+        val result = fixture.sendText("Hello")
 
         assertThat(fixture.server.textSendRequests).hasSize(1)
         assertThat(fixture.storedMessages()).isEmpty()
-        fixture.errorChannel.errors.test {
-            assertThat(awaitItem().error).isNotNull().isInstanceOf<NetworkingError.Conflict>()
-        }
+        assertThat((result as DataResult.Error).error).isInstanceOf<DataError.Conflict>()
     }
 }

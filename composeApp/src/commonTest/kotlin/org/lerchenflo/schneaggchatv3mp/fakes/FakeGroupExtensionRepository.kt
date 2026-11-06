@@ -3,6 +3,9 @@ package org.lerchenflo.schneaggchatv3mp.fakes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionItemData
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
@@ -34,13 +37,13 @@ class FakeGroupExtensionRepository : GroupExtensionRepository {
         type: GroupExtensionType,
         title: String,
         settings: ExtensionSettings,
-    ): String? = if (writeResult) "fake-extension" else null
+    ): DataResult<String, DataError> = (if (writeResult) "fake-extension" else null).toFakeDataResult()
 
-    override suspend fun renameExtension(extensionId: String, title: String): Boolean = writeResult
+    override suspend fun renameExtension(extensionId: String, title: String): EmptyDataResult<DataError> = writeResult.toFakeResult()
 
-    override suspend fun deleteExtension(extensionId: String): Boolean = writeResult
+    override suspend fun deleteExtension(extensionId: String): EmptyDataResult<DataError> = writeResult.toFakeResult()
 
-    override suspend fun upsertItem(extensionId: String, itemId: String?, data: ExtensionItemData): Boolean = writeResult
+    override suspend fun upsertItem(extensionId: String, itemId: String?, data: ExtensionItemData): EmptyDataResult<DataError> = writeResult.toFakeResult()
 
-    override suspend fun deleteItem(extensionId: String, itemId: String): Boolean = writeResult
+    override suspend fun deleteItem(extensionId: String, itemId: String): EmptyDataResult<DataError> = writeResult.toFakeResult()
 }

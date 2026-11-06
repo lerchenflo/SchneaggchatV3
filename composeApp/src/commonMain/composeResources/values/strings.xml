@@ -228,7 +228,6 @@
     <string name="group_timer_picker_title">Delete group at</string>
     <string name="group_timer_picker_info">At this time the group chat and all its messages are deleted for everyone. Only admins can change the timer.</string>
     <string name="delete_event">Delete event</string>
-    <string name="event_delete_failed">❌ Failed to delete event</string>
     <string name="event_delete_warning_message">Choose what happens to the event and its group chat. Unlinking keeps both, deleting removes only what you choose.</string>
     <string name="event_delete_confirm_no_group_message">Delete this event? This cannot be undone.</string>
     <string name="event_delete_detach_only">Unlink only (keep event &amp; group)</string>
@@ -281,7 +280,6 @@
     <string name="send_friend_request">Send friend request</string>
     <string name="send_friend_request_description">Do you want to add %1$s as a friend?</string>
     <string name="friend_request_sent">✔ Friend request sent</string>
-    <string name="error_friend_request">❌ Error while sending friend request</string>
 
     <string name="server_not_reachable">Could not establish a connection to the server</string>
 
@@ -300,6 +298,8 @@
     <string name="merge_map_locations_info">Group nearby locations into one marker when zoomed out</string>
     <string name="merge_map_users">Merge friends when zooming</string>
     <string name="merge_map_users_info">Group nearby friends into one marker when zoomed out</string>
+    <string name="sort_map_users_by_pinned">Show pinned friends first</string>
+    <string name="sort_map_users_by_pinned_info">Pinned friends come first in the friends bar on the map</string>
     <string name="schneaggmap_map_style">Map style</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Bright</string>
@@ -1502,7 +1502,6 @@
     <string name="new_password">New password</string>
     <string name="confirm_new_password">Confirm new password</string>
     <string name="password_changed_successfully">Password changed successfully</string>
-    <string name="password_change_failed">Failed to change password. Please verify your current password.</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="privacy_policy_info">Read our data privacy terms and policy</string>
 
@@ -1554,7 +1553,6 @@
     <string name="event_participation_dismissed">Not interested</string>
     <string name="event_participation_count">%1$s (%2$d)</string>
     <string name="event_participation_at">%1$s, %2$s</string>
-    <string name="event_participation_failed">Could not save your answer</string>
 
     <!-- Shared content (images and links of a chat) -->
     <string name="shared_content_title">Shared content</string>
@@ -1878,8 +1876,6 @@
     <string name="split_error_amount_too_large">The amount is too large.</string>
     <string name="split_error_no_participants">Select at least one person.</string>
     <string name="split_error_same_person">Choose someone other than the sender.</string>
-    <string name="split_save_failed">Could not save. Please try again.</string>
-    <string name="split_delete_failed">Could not delete. Please try again.</string>
     <string name="split_item_not_found">This entry no longer exists.</string>
     <string name="split_mode_by_amount">By amount</string>
     <string name="split_amounts_left">%1$s left to assign</string>

@@ -11,7 +11,12 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportFirstErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
@@ -24,7 +29,6 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.password_change_failed
 import schneaggchatv3mp.composeapp.generated.resources.password_changed_successfully
 import schneaggchatv3mp.composeapp.generated.resources.verification_email_sent
 import kotlin.time.Clock
@@ -35,6 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 class PrivacyAndSecurityViewModel(
+    private val errorChannel: ErrorChannel,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
@@ -90,14 +95,11 @@ class PrivacyAndSecurityViewModel(
             isChangingPassword = true
 
             try {
-                val success = authRepository.changePassword(oldPassword, newPassword)
+                val success = authRepository.changePassword(oldPassword, newPassword).reportErrorTo(errorChannel).isSuccess
                 if (success) {
                     SnackbarManager.showMessage(getString(Res.string.password_changed_successfully))
-                    onFinished(true)
-                } else {
-                    SnackbarManager.showMessage(getString(Res.string.password_change_failed))
-                    onFinished(false)
                 }
+                onFinished(success)
             } finally {
                 isChangingPassword = false
             }
@@ -111,8 +113,9 @@ class PrivacyAndSecurityViewModel(
 
         lastEmailVerificationTime = Clock.System.now()
         applicationScope.launchOnMain {
-            authRepository.sendEmailVerify()
-            SnackbarManager.showMessage(getString(Res.string.verification_email_sent))
+            authRepository.sendEmailVerify().reportErrorTo(errorChannel).onSuccess {
+                SnackbarManager.showMessage(getString(Res.string.verification_email_sent))
+            }
         }
     }
 
@@ -120,7 +123,7 @@ class PrivacyAndSecurityViewModel(
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
         applicationScope.launchOnMain {
-            userRepository.changeUserDetails(newEmail = newEmail, userId = userId)
+            userRepository.changeUserDetails(newEmail = newEmail, userId = userId).reportErrorTo(errorChannel)
             dataSyncCoordinator.dataSync(reason = "emailChanged")
         }
     }
@@ -133,23 +136,25 @@ class PrivacyAndSecurityViewModel(
         val writes = applicationScope.launchOnMain {
             when {
                 newGlobalShare && !wasGlobalShared -> {
-                    friendDrafts.forEach { draft ->
+                    friendDrafts.map { draft ->
                         userRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
-                    }
+                    }.reportFirstErrorTo(errorChannel)
                 }
                 !newGlobalShare && wasGlobalShared -> {
-                    userRepository.disableLocationSharingForAllFriends()
+                    userRepository.disableLocationSharingForAllFriends().reportErrorTo(errorChannel)
                 }
                 else -> {
-                    friendDrafts.forEach { draft ->
-                        val friend = friends.find { it.id == draft.friendId } ?: return@forEach
+                    friendDrafts.mapNotNull { draft ->
+                        val friend = friends.find { it.id == draft.friendId } ?: return@mapNotNull null
                         val changed = friend.locationShared != draft.share ||
                                 friend.shareSpeedHeading != draft.shareSpeedHeading ||
                                 friend.snailTrail != draft.snailTrail
                         if (changed) {
                             userRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
+                        } else {
+                            null
                         }
-                    }
+                    }.reportFirstErrorTo(errorChannel)
                 }
             }
         }
@@ -180,7 +185,7 @@ class PrivacyAndSecurityViewModel(
         isLoggingOutAllDevices = true
         applicationScope.launchOnMain {
             try {
-                if (sessionTerminator.logoutAllDevices()) {
+                sessionTerminator.logoutAllDevices().reportErrorTo(errorChannel).onSuccess {
                     navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                 }
             } finally {

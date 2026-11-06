@@ -17,12 +17,17 @@ import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.isNetworkerror
+import org.lerchenflo.schneaggchatv3mp.app.domain.isTransient
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MarkReadGuard
@@ -43,9 +48,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toNewPoll
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollVoteRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isNetworkerror
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -83,7 +85,6 @@ class OfflineFirstMessageRepository(
     private val pictureManager: PictureManager,
     private val audioManager: AudioManager,
     private val loggingRepository: Logger,
-    private val errorChannel: ErrorChannel,
     private val externalScope: CoroutineScope,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : MessageRepository {
@@ -124,8 +125,8 @@ class OfflineFirstMessageRepository(
             val savefilename = messageId + PICTURE_FILE_NAME
 
             when (val picture = messageRemoteDataSource.getImageForImageMessage(messageId).trackConnectivity()) {
-                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Picture error for messageid $messageId")}
-                is NetworkResult.Success<ByteArray> -> {
+                is DataResult.Error<*> -> {loggingRepository.logWarning("Picture error for messageid $messageId")}
+                is DataResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
                     messageLocalDataSource.updatePictureUrl(messageId, filepath)
@@ -140,8 +141,8 @@ class OfflineFirstMessageRepository(
             //println("Fetching Audio for messageid $messageId")
 
             when (val audio = messageRemoteDataSource.getAudioForAudioMessage(messageId).trackConnectivity()) {
-                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Audio error for messageid $messageId")}
-                is NetworkResult.Success<ByteArray> -> {
+                is DataResult.Error<*> -> {loggingRepository.logWarning("Audio error for messageid $messageId")}
+                is DataResult.Success<ByteArray> -> {
                     val filepath = audioManager.saveAudioToStorage(audio.data, savefilename)
                     //println("Audio saved to $filepath")
                     // Persist the bare filename, not the absolute container path: on iOS the
@@ -204,7 +205,7 @@ class OfflineFirstMessageRepository(
 
     // ─── Writes ───────────────────────────────────────────────────────────────
 
-    override suspend fun editMessage(message: Message, newContent: String): Boolean {
+    override suspend fun editMessage(message: Message, newContent: String): EmptyDataResult<DataError> {
 
         if (message.id == null) {
             //edit a not sent message
@@ -215,7 +216,7 @@ class OfflineFirstMessageRepository(
                     sent = false
                 ))
             }
-            return true
+            return DataResult.Success(Unit)
 
         } else {
             val request = messageRemoteDataSource.editMessage(
@@ -223,25 +224,20 @@ class OfflineFirstMessageRepository(
                 newContent = newContent
             ).trackConnectivity()
 
-            return when (request) {
-                is NetworkResult.Error<NetworkingError> ->  {
-                    //The message stays as it is: marking a sent message unsent would make the
-                    //offline queue resend it as a new message
-                    errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
-                    false
-                }
-                is NetworkResult.Success<MessageResponse> -> {
-                    val existing = messageLocalDataSource.getMessageById(request.data.messageId)
+            //On an error the message stays as it is: marking a sent message unsent would make the
+            //offline queue resend it as a new message
+            return request
+                .onSuccess { response ->
+                    val existing = messageLocalDataSource.getMessageById(response.messageId)
                     if (existing != null) {
                         messageLocalDataSource.upsertMessage(existing.copy(
-                            content = request.data.content,
-                            changeDate = request.data.lastChanged.toString(),
+                            content = response.content,
+                            changeDate = response.lastChanged.toString(),
                             edited = true,
                         ))
                     }
-                    true
                 }
-            }
+                .asEmptyDataResult()
         }
 
     }
@@ -254,17 +250,17 @@ class OfflineFirstMessageRepository(
      */
     private suspend fun retryStuckEdit(m: Message): Boolean {
         val result = messageRemoteDataSource.editMessage(messageId = m.id!!, newContent = m.content).trackConnectivity()
-        if (result is NetworkResult.Error && result.error.isNetworkerror()) return false
+        if (result is DataResult.Error && result.error.isNetworkerror()) return false
 
         val existing = messageLocalDataSource.getMessageById(m.localPK) ?: return true
         when (result) {
-            is NetworkResult.Success -> messageLocalDataSource.upsertMessage(existing.copy(
+            is DataResult.Success -> messageLocalDataSource.upsertMessage(existing.copy(
                 content = result.data.content,
                 changeDate = result.data.lastChanged.toString(),
                 edited = true,
                 sent = true,
             ))
-            is NetworkResult.Error -> {
+            is DataResult.Error -> {
                 loggingRepository.logWarning("Offline queue: edit of message ${m.id} failed for good (${result.error}), marked sent")
                 messageLocalDataSource.upsertMessage(existing.copy(sent = true))
             }
@@ -276,86 +272,49 @@ class OfflineFirstMessageRepository(
         messageLocalDataSource.deleteMessage(localpk)
     }
 
-    override suspend fun deleteMessage(messageId: String){
-        val request = messageRemoteDataSource.deleteMessage(
-            messageId = messageId
-        ).trackConnectivity()
+    override suspend fun deleteMessage(messageId: String): EmptyDataResult<DataError> =
+        messageRemoteDataSource.deleteMessage(messageId = messageId).trackConnectivity()
+            .onSuccess { messageLocalDataSource.deleteMessage(messageId) }
+            .asEmptyDataResult()
 
-        when (request) {
-            is NetworkResult.Error<NetworkingError> ->  {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
-            }
-            is NetworkResult.Success<*> -> {
-                messageLocalDataSource.deleteMessage(messageId)
-            }
-
-        }
-    }
-
-    override suspend fun reactToMessage(messageId: String, content: String) {
-        val  request = messageRemoteDataSource.reactToMessage(messageId = messageId, content = content).trackConnectivity()
-        when (request) {
-            is NetworkResult.Error -> errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
-            is NetworkResult.Success -> {
-                val existing = messageLocalDataSource.getMessageById(request.data.messageId)
+    override suspend fun reactToMessage(messageId: String, content: String): EmptyDataResult<DataError> =
+        messageRemoteDataSource.reactToMessage(messageId = messageId, content = content).trackConnectivity()
+            .onSuccess { response ->
+                val existing = messageLocalDataSource.getMessageById(response.messageId)
                 if (existing != null) {
                     messageLocalDataSource.upsertMessage(
                         existing.copy(
-                            reactions = request.data.reactions.map {
+                            reactions = response.reactions.map {
                                 Reaction(userId = it.userId, content = it.content, reactedAt = it.reactedAt)
                             },
-                            changeDate = request.data.lastChanged.toString()
+                            changeDate = response.lastChanged.toString()
                         )
                     )
                 }
             }
-        }
-    }
+            .asEmptyDataResult()
 
-    override suspend fun votePoll(ownId: String, pollVote: PollVote) {
-        val request = messageRemoteDataSource.votePoll(
-            pollVote.toPollVoteRequest()
-        ).trackConnectivity()
+    override suspend fun votePoll(ownId: String, pollVote: PollVote): EmptyDataResult<DataError> =
+        messageRemoteDataSource.votePoll(pollVote.toPollVoteRequest()).trackConnectivity()
+            .onSuccess { storePollResponse(ownId, it) }
+            .asEmptyDataResult()
 
-        when (request) {
-            is NetworkResult.Error<NetworkingError> ->  {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
-            }
-            is NetworkResult.Success<MessageResponse> -> {
-                val existing = messageLocalDataSource.getMessageById(request.data.messageId)
-                //Skip a response older than what is stored - a socket push or a later vote's
-                //response may have landed first, and must not be rolled back
-                if (existing != null && !existing.isNewerThan(request.data.lastChanged)) {
-                    messageLocalDataSource.upsertMessage(existing.copy(
-                        poll = request.data.pollResponse?.toPollMessage(ownId),
-                        changeDate = request.data.lastChanged.toString(),
-                    ))
-                }
-
-            }
-        }
-    }
-
-    override suspend fun deletePollOption(ownId: String, messageId: String, optionId: String) {
-        val request = messageRemoteDataSource.deletePollOption(
+    override suspend fun deletePollOption(ownId: String, messageId: String, optionId: String): EmptyDataResult<DataError> =
+        messageRemoteDataSource.deletePollOption(
             PollOptionDeleteRequest(messageId = messageId, optionId = optionId)
         ).trackConnectivity()
+            .onSuccess { storePollResponse(ownId, it) }
+            .asEmptyDataResult()
 
-        when (request) {
-            is NetworkResult.Error<NetworkingError> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = request.error))
-            }
-            is NetworkResult.Success<MessageResponse> -> {
-                val existing = messageLocalDataSource.getMessageById(request.data.messageId)
-                //Skip a response older than what is stored - a socket push or a later vote's
-                //response may have landed first, and must not be rolled back
-                if (existing != null && !existing.isNewerThan(request.data.lastChanged)) {
-                    messageLocalDataSource.upsertMessage(existing.copy(
-                        poll = request.data.pollResponse?.toPollMessage(ownId),
-                        changeDate = request.data.lastChanged.toString(),
-                    ))
-                }
-            }
+    private suspend fun storePollResponse(ownId: String, response: MessageResponse) {
+        val existing = messageLocalDataSource.getMessageById(response.messageId)
+        //Skip a response older than what is stored - a socket push or a later vote's
+        //response may have landed first, and must not be rolled back
+        if (existing != null && !existing.isNewerThan(response.lastChanged)) {
+            messageLocalDataSource.upsertMessage(existing.copy(
+                poll = response.pollResponse?.toPollMessage(ownId),
+                changeDate = response.lastChanged.toString(),
+            ))
         }
     }
 
@@ -371,20 +330,23 @@ class OfflineFirstMessageRepository(
      * defeat it. Never pass this for a brand-new message - one is minted below.
      *
      */
-    override suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long, clientMessageId: String?) {
-        sendMessageForResult(ownId, messageId, empfaenger, gruppe, content, answerid, localpk, clientMessageId)
+    override suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long, clientMessageId: String?): EmptyDataResult<DataError> {
+        return sendMessageForResult(ownId, messageId, empfaenger, gruppe, content, answerid, localpk, clientMessageId).toSendResult()
     }
 
-    override suspend fun sendVoiceMessage(ownId: String, empfaenger: String, gruppe: Boolean, recordingPath: String, answerid: String?) {
+    override suspend fun sendVoiceMessage(ownId: String, empfaenger: String, gruppe: Boolean, recordingPath: String, answerid: String?): EmptyDataResult<DataError> {
         // externalScope (plan R2): the file read is part of the send, so it must not die with the caller either
-        externalScope.async {
+        return externalScope.async {
             val audio = withContext(ioDispatcher) { getAudioBytes(recordingPath) }
-            sendMessageForResult(ownId, null, empfaenger, gruppe, AudioContent(audio), answerid, 0L, null)
+            sendMessageForResult(ownId, null, empfaenger, gruppe, AudioContent(audio), answerid, 0L, null).toSendResult()
         }.await()
     }
 
+    private fun DataError?.toSendResult(): EmptyDataResult<DataError> =
+        if (this == null) DataResult.Success(Unit) else DataResult.Error(this)
+
     /** [sendMessage] that also reports the outcome: null when sent, else the server's error. */
-    private suspend fun sendMessageForResult(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long, clientMessageId: String?): NetworkingError? {
+    private suspend fun sendMessageForResult(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long, clientMessageId: String?): DataError? {
 
         // externalScope (plan R2): started before the first suspension point, so the send
         // finishes even when the caller (e.g. a closed chat screen) is cancelled meanwhile.
@@ -540,7 +502,7 @@ class OfflineFirstMessageRepository(
                 }.trackConnectivity()
 
                 when (serverrequest){
-                    is NetworkResult.Error<NetworkingError> -> {
+                    is DataResult.Error<DataError> -> {
 
                         val error = serverrequest.error
                         //Rejected for good (malformed, duplicate, no access, chat gone, too large):
@@ -551,12 +513,6 @@ class OfflineFirstMessageRepository(
                         }
 
                         println("Message senden error: ${serverrequest.error}")
-                        //A queue-stopping error (offline, session, server down) keeps the row
-                        //queued and retries it on resume / reconnect - no popup, or every retry
-                        //would show the same one again
-                        if (!error.stopsOfflineQueue()) {
-                            errorChannel.sendErrorSuspend(ErrorEvent(error = error))
-                        }
 
                         //Kept for the offline queue, removed with a dropped message
                         when (content) {
@@ -578,7 +534,7 @@ class OfflineFirstMessageRepository(
 
                         error
                     }
-                    is NetworkResult.Success<MessageResponse> -> {
+                    is DataResult.Success<MessageResponse> -> {
                         withContext(ioDispatcher) {
 
                             println("Messageid returned from server: ${serverrequest.data.messageId}")
@@ -647,7 +603,7 @@ class OfflineFirstMessageRepository(
      * Always wait for the send lock to be unlocked, that way there can not be an unsent message
      * be retrieved from the db as unsent while it is already sending.
      */
-    override suspend fun sendOfflineMessages(ownId: String){
+    override suspend fun sendOfflineMessages(ownId: String, onError: suspend (DataError) -> Unit) {
         sendOfflineLock.withLock {
 
             //A chat whose message failed for an unclear reason is skipped for the rest of this
@@ -733,14 +689,14 @@ class OfflineFirstMessageRepository(
                     clientMessageId = m.clientMessageId
                 ) ?: continue
 
-                when {
-                    error.rejectsMessageForGood() -> continue //Already dropped by the send
-                    error.stopsOfflineQueue() -> return //Retry everything later
-                    else -> skippedChats += chatKey
+                if (error.isTransient()) return //Retry everything later
+
+                if (error.rejectsMessageForGood()) {
+                    onError(error) //Already dropped by the send, this tells the user it is gone
+                } else {
+                    skippedChats += chatKey //Stays queued, a report here would repeat on every run
                 }
             }
-
-
         }
     }
 
@@ -778,12 +734,12 @@ class OfflineFirstMessageRepository(
                 val messageSyncResponse = messageRemoteDataSource.messageSync(since = since).trackConnectivity()
 
                 when (messageSyncResponse) {
-                    is NetworkResult.Error<*> -> {
+                    is DataResult.Error<*> -> {
                         loggingRepository.logWarning("messageid sync error: ${messageSyncResponse.error}")
                         break // Stop on error, never advance past a batch we failed to fetch
                     }
 
-                    is NetworkResult.Success<MessageSyncResponse> -> {
+                    is DataResult.Success<MessageSyncResponse> -> {
                         val updatedMessages = messageSyncResponse.data.updatedMessages
                         val deletedMessages = messageSyncResponse.data.deletedMessages
                         moreMessages = messageSyncResponse.data.moreMessages
@@ -955,8 +911,8 @@ class OfflineFirstMessageRepository(
             SessionCache.requireLoggedIn() ?: return@async false
 
             val result = messageRemoteDataSource.setMessagesRead(chatid, gruppe, timestamp.toLong()).trackConnectivity()
-            if (result !is NetworkResult.Success) {
-                loggingRepository.logWarning("Setting chat $chatid read failed: ${(result as? NetworkResult.Error<*>)?.error}")
+            if (result !is DataResult.Success) {
+                loggingRepository.logWarning("Setting chat $chatid read failed: ${(result as? DataResult.Error<*>)?.error}")
                 return@async false
             }
 
@@ -999,18 +955,11 @@ class OfflineFirstMessageRepository(
 }
 
 /** The server turned the message down for good: it can never be sent, so it is dropped. */
-private fun NetworkingError.rejectsMessageForGood(): Boolean = when (this) {
-    is NetworkingError.BadRequest,
-    is NetworkingError.Conflict,
-    is NetworkingError.Forbidden,
-    is NetworkingError.NotFound,
-    is NetworkingError.PayloadTooLarge -> true
+private fun DataError.rejectsMessageForGood(): Boolean = when (this) {
+    is DataError.BadRequest,
+    is DataError.Conflict,
+    is DataError.Forbidden,
+    is DataError.NotFound,
+    is DataError.PayloadTooLarge -> true
     else -> false
 }
-
-/** Hits every queued message alike (no connection, rate limit, session, server down): retry all later. */
-private fun NetworkingError.stopsOfflineQueue(): Boolean =
-    isNetworkerror() ||
-        this is NetworkingError.TooManyRequests ||
-        this is NetworkingError.Unauthorized ||
-        this is NetworkingError.ServerError

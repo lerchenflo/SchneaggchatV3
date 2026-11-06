@@ -9,14 +9,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.Announcement
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementLimits
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementRepository
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementText
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.toUiText
+import org.lerchenflo.schneaggchatv3mp.app.toUiText
 import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -72,8 +72,8 @@ class AnnouncementAdminViewModel(
         loadJob = viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             when (val result = announcementRepository.getAll()) {
-                is NetworkResult.Success -> _state.update { it.copy(announcements = result.data, isLoading = false) }
-                is NetworkResult.Error -> _state.update { it.copy(isLoading = false, error = result.error.toAdminUiText()) }
+                is DataResult.Success -> _state.update { it.copy(announcements = result.data, isLoading = false) }
+                is DataResult.Error -> _state.update { it.copy(isLoading = false, error = result.error.toAdminUiText()) }
             }
         }
     }
@@ -91,14 +91,14 @@ class AnnouncementAdminViewModel(
                 ?: announcementRepository.create(draft)
 
             when (result) {
-                is NetworkResult.Success -> _state.update { state ->
+                is DataResult.Success -> _state.update { state ->
                     state.copy(
                         isSubmitting = false,
                         form = null,
                         announcements = state.announcements.withSaved(result.data),
                     )
                 }
-                is NetworkResult.Error -> _state.update { it.copy(isSubmitting = false, error = result.error.toAdminUiText()) }
+                is DataResult.Error -> _state.update { it.copy(isSubmitting = false, error = result.error.toAdminUiText()) }
             }
         }
     }
@@ -109,10 +109,10 @@ class AnnouncementAdminViewModel(
 
         applicationScope.launchOnMain {
             when (val result = announcementRepository.delete(candidate.id)) {
-                is NetworkResult.Success -> _state.update { state ->
+                is DataResult.Success -> _state.update { state ->
                     state.copy(announcements = state.announcements.filterNot { it.id == candidate.id })
                 }
-                is NetworkResult.Error -> _state.update { it.copy(error = result.error.toAdminUiText()) }
+                is DataResult.Error -> _state.update { it.copy(error = result.error.toAdminUiText()) }
             }
         }
     }
@@ -133,6 +133,6 @@ private fun List<Announcement>.withSaved(saved: Announcement): List<Announcement
     (filterNot { it.id == saved.id } + saved).sortedByDescending { it.id }
 
 // The server hides its admin routes behind NotFound for everyone who is not an admin
-private fun NetworkingError.toAdminUiText(): UiText =
-    if (this is NetworkingError.NotFound) UiText.StringResourceText(Res.string.announcement_not_allowed)
+private fun DataError.toAdminUiText(): UiText =
+    if (this is DataError.NotFound) UiText.StringResourceText(Res.string.announcement_not_allowed)
     else toUiText()

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
@@ -97,7 +97,7 @@ class HighscoreUploadController(
                 repository.submitBatchScores(game, difficulty, scores)
             }
             val newStatus = when (result) {
-                is NetworkResult.Success -> HighscoreUploadStatus.UPLOADED
+                is DataResult.Success -> HighscoreUploadStatus.UPLOADED
                 // A failure and a timed-out request both need the same way out: retry or skip
                 else -> HighscoreUploadStatus.FAILED
             }

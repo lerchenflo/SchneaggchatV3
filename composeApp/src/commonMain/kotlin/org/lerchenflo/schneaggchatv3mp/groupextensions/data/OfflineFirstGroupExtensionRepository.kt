@@ -3,13 +3,15 @@ package org.lerchenflo.schneaggchatv3mp.groupextensions.data
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.map
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupExtensionResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.local.GroupExtensionLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.GroupExtensionRemoteDataSource
@@ -33,7 +35,6 @@ class OfflineFirstGroupExtensionRepository(
     private val groupExtensionLocalDataSource: GroupExtensionLocalDataSource,
     private val groupExtensionRemoteDataSource: GroupExtensionRemoteDataSource,
     private val loggingRepository: Logger,
-    private val errorChannel: ErrorChannel,
 ) : GroupExtensionRepository {
 
     override fun getExtensionsForOwnerFlow(ownerId: String): Flow<List<GroupExtension>> =
@@ -56,8 +57,8 @@ class OfflineFirstGroupExtensionRepository(
                 page = currentPage,
             ).trackConnectivity()
             when (response) {
-                is NetworkResult.Error<*> -> { loggingRepository.logWarning("Group extension sync error: ${response.error}"); break }
-                is NetworkResult.Success -> {
+                is DataResult.Error<*> -> { loggingRepository.logWarning("Group extension sync error: ${response.error}"); break }
+                is DataResult.Success -> {
                     val updated = response.data.updatedExtensions.decodeGroupExtensionResponses()
                     val skipped = response.data.updatedExtensions.size - updated.size
                     if (skipped > 0) {
@@ -83,7 +84,7 @@ class OfflineFirstGroupExtensionRepository(
         type: GroupExtensionType,
         title: String,
         settings: ExtensionSettings,
-    ): String? {
+    ): DataResult<String, DataError> {
         val result = groupExtensionRemoteDataSource.upsertExtension(
             ExtensionRequest(
                 extensionId = null,
@@ -94,11 +95,12 @@ class OfflineFirstGroupExtensionRepository(
                 settings = settings,
             )
         ).trackConnectivity()
-        return result.storeOrReport()?.id
+        return result.store().map { it.id }
     }
 
-    override suspend fun renameExtension(extensionId: String, title: String): Boolean {
-        val extension = groupExtensionLocalDataSource.getExtensionFlow(extensionId).firstOrNull() ?: return false
+    override suspend fun renameExtension(extensionId: String, title: String): EmptyDataResult<DataError> {
+        val extension = groupExtensionLocalDataSource.getExtensionFlow(extensionId).firstOrNull()
+            ?: return DataResult.Error(DataError.Unknown(debugInfo = "extension $extensionId is not stored locally"))
         val result = groupExtensionRemoteDataSource.upsertExtension(
             ExtensionRequest(
                 extensionId = extension.id,
@@ -109,43 +111,30 @@ class OfflineFirstGroupExtensionRepository(
                 settings = extension.settings,
             )
         ).trackConnectivity()
-        return result.storeOrReport() != null
+        return result.store().asEmptyDataResult()
     }
 
-    override suspend fun deleteExtension(extensionId: String): Boolean {
-        return when (val result = groupExtensionRemoteDataSource.deleteExtension(extensionId).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
+    override suspend fun deleteExtension(extensionId: String): EmptyDataResult<DataError> =
+        groupExtensionRemoteDataSource.deleteExtension(extensionId).trackConnectivity()
+            .onSuccess {
                 groupExtensionLocalDataSource.deleteExtension(extensionId)
-                true
             }
-        }
-    }
+            .asEmptyDataResult()
 
-    override suspend fun upsertItem(extensionId: String, itemId: String?, data: ExtensionItemData): Boolean {
+    override suspend fun upsertItem(extensionId: String, itemId: String?, data: ExtensionItemData): EmptyDataResult<DataError> {
         val result = groupExtensionRemoteDataSource.upsertItem(
             ItemRequest(extensionId = extensionId, itemId = itemId, data = data)
         ).trackConnectivity()
-        return result.storeOrReport() != null
+        return result.store().asEmptyDataResult()
     }
 
-    override suspend fun deleteItem(extensionId: String, itemId: String): Boolean {
+    override suspend fun deleteItem(extensionId: String, itemId: String): EmptyDataResult<DataError> {
         val result = groupExtensionRemoteDataSource.deleteItem(extensionId = extensionId, itemId = itemId).trackConnectivity()
-        return result.storeOrReport() != null
+        return result.store().asEmptyDataResult()
     }
 
-    /** Stores the extension the server returned, or sends the error to the [errorChannel]. */
-    private suspend fun NetworkResult<GroupExtensionResponse, NetworkingError>.storeOrReport(): GroupExtension? =
-        when (this) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = error))
-                null
-            }
-            is NetworkResult.Success<GroupExtensionResponse> -> {
-                data.toGroupExtension().also { groupExtensionLocalDataSource.upsertExtension(it) }
-            }
-        }
+    /** Stores the extension the server returned. */
+    private suspend fun DataResult<GroupExtensionResponse, DataError>.store(): DataResult<GroupExtension, DataError> =
+        map { it.toGroupExtension() }
+            .onSuccess { groupExtensionLocalDataSource.upsertExtension(it) }
 }

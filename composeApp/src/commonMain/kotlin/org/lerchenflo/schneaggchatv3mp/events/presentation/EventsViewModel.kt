@@ -23,6 +23,10 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
@@ -46,12 +50,11 @@ import org.lerchenflo.schneaggchatv3mp.utilities.monthDayKey
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_and_group_created
 import schneaggchatv3mp.composeapp.generated.resources.event_created
-import schneaggchatv3mp.composeapp.generated.resources.event_delete_failed
-import schneaggchatv3mp.composeapp.generated.resources.event_participation_failed
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
 class EventsViewModel(
+    private val errorChannel: ErrorChannel,
     private val navigator: Navigator,
     private val eventRepository: EventRepository,
     private val appVersion: AppVersion,
@@ -153,8 +156,8 @@ class EventsViewModel(
                         )
                     }
                 }
-                // Opening the event is what marks it seen. Fire-and-forget: the server ignores a
-                // repeated SEEN, so a failed call just retries the next time the sheet opens.
+                // Opening the event is what marks it seen. Fire-and-forget without a popup: the server
+                // ignores a repeated SEEN, so a failed call just retries the next time the sheet opens.
                 val ownId = state.value.ownUserId
                 if (clickedEvent != null && ownId != null && clickedEvent.isUnseenBy(ownId)) {
                     viewModelScope.launch {
@@ -225,10 +228,10 @@ class EventsViewModel(
                             maxUsers = event.maxUsers,
                             groupDeleteDelay = event.groupDeleteDelay,
                             profilePic = profilePic,
-                        )
+                        ).reportErrorTo(errorChannel).isSuccess
 
-                        // The error is already on the ErrorChannel. The popup stays open with the
-                        // draft so the user can retry instead of losing everything they typed.
+                        // The popup stays open with the draft so the user can retry instead of
+                        // losing everything they typed.
                         if (!saved) return@launch
 
                         //Newly created event
@@ -278,11 +281,9 @@ class EventsViewModel(
                     _state.update { it.copy(isJoiningEvent = true) }
 
                     try {
-                        val groupId = eventRepository.joinEvent(
+                        eventRepository.joinEvent(
                             action.eventId
-                        )
-
-                        if (groupId != null) {
+                        ).reportErrorTo(errorChannel).onSuccess { groupId ->
                             // UNDISPATCHED: the sync is started before the navigation below can clear
                             // this ViewModel; it then runs in the app-wide scope (plan R2).
                             viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
@@ -306,15 +307,12 @@ class EventsViewModel(
 
             is EventsAction.OnDeleteEvent -> {
                 viewModelScope.launch {
-                    val success = eventRepository.detachEvent(
+                    eventRepository.detachEvent(
                         eventId = action.event.id,
                         groupId = action.event.groupId,
                         deleteGroup = action.deleteGroup,
                         deleteEvent = action.deleteEvent,
-                    )
-                    if (!success) {
-                        SnackbarManager.showMessage(getString(Res.string.event_delete_failed))
-                    }
+                    ).reportErrorTo(errorChannel)
                     _state.update { it.copy(selectedEvent = null) }
                 }
             }
@@ -363,13 +361,8 @@ class EventsViewModel(
     }
 
 
-    private suspend fun setParticipation(eventId: String, status: EventParticipationStatus): Boolean {
-        val success = eventRepository.setEventParticipation(eventId, status)
-        if (!success) {
-            SnackbarManager.showMessage(getString(Res.string.event_participation_failed))
-        }
-        return success
-    }
+    private suspend fun setParticipation(eventId: String, status: EventParticipationStatus): Boolean =
+        eventRepository.setEventParticipation(eventId, status).reportErrorTo(errorChannel).isSuccess
 
     init {
         viewModelScope.launch {

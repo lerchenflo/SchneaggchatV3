@@ -3,6 +3,9 @@ package org.lerchenflo.schneaggchatv3mp.fakes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
@@ -25,7 +28,7 @@ class FakeGroupRepository : GroupRepository {
 
     val groups = MutableStateFlow<List<Group>>(emptyList())
 
-    /** What every Boolean write answers. */
+    /** Whether every write succeeds. */
     var writeResult: Boolean = true
 
     /** What [createGroup] answers; null means the creation failed. */
@@ -84,38 +87,38 @@ class FakeGroupRepository : GroupRepository {
         description: String,
         memberIds: List<String>,
         profilePic: ByteArray,
-    ): String? {
+    ): DataResult<String, DataError> {
         createCalls.record(CreateCall(name, description, memberIds, profilePic))
-        return createdGroupId
+        return createdGroupId.toFakeDataResult()
     }
 
-    override suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray): Boolean {
+    override suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray): EmptyDataResult<DataError> {
         profilePicChanges.record(groupId to newPic)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun changeGroupDescription(groupId: String, newDescription: String): Boolean {
+    override suspend fun changeGroupDescription(groupId: String, newDescription: String): EmptyDataResult<DataError> {
         descriptionChanges.record(groupId to newDescription)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun changeGroupName(groupId: String, newName: String): Boolean {
+    override suspend fun changeGroupName(groupId: String, newName: String): EmptyDataResult<DataError> {
         nameChanges.record(groupId to newName)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): Boolean {
+    override suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): EmptyDataResult<DataError> {
         memberChanges.record(MemberCall(action, memberId, groupId))
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): Boolean {
+    override suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): EmptyDataResult<DataError> {
         expiryChanges.record(groupId to expiresAt)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun deleteGroup(groupId: String): Boolean {
+    override suspend fun deleteGroup(groupId: String): EmptyDataResult<DataError> {
         deleteCalls.record(groupId)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 }

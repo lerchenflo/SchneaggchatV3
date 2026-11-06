@@ -1,11 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.domain
 
 import kotlinx.coroutines.flow.Flow
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 
 /**
  * Extensions of the user's groups: reads come from the local database, writes go to the server
- * first and store the returned extension. Errors of the write calls are sent to the [ErrorChannel].
+ * first and store the returned extension. Write calls return their error, the caller maps it to UI.
  */
 interface GroupExtensionRepository {
 
@@ -26,23 +28,19 @@ interface GroupExtensionRepository {
 
     // ─── Writes ───────────────────────────────────────────────────────────────
 
-    /** @return the id of the created extension, null on error */
+    /** @return the id of the created extension */
     suspend fun createExtension(
         groupId: String,
         type: GroupExtensionType,
         title: String,
         settings: ExtensionSettings,
-    ): String?
+    ): DataResult<String, DataError>
+    suspend fun renameExtension(extensionId: String, title: String): EmptyDataResult<DataError>
 
-    /** @return true on success */
-    suspend fun renameExtension(extensionId: String, title: String): Boolean
+    /** Deletes the extension with all its items (creator or group admin). */
+    suspend fun deleteExtension(extensionId: String): EmptyDataResult<DataError>
 
-    /** Deletes the extension with all its items (creator or group admin). @return true on success */
-    suspend fun deleteExtension(extensionId: String): Boolean
-
-    /** Creates ([itemId] null) or replaces an item of [extensionId]. @return true on success */
-    suspend fun upsertItem(extensionId: String, itemId: String?, data: ExtensionItemData): Boolean
-
-    /** @return true on success */
-    suspend fun deleteItem(extensionId: String, itemId: String): Boolean
+    /** Creates ([itemId] null) or replaces an item of [extensionId]. */
+    suspend fun upsertItem(extensionId: String, itemId: String?, data: ExtensionItemData): EmptyDataResult<DataError>
+    suspend fun deleteItem(extensionId: String, itemId: String): EmptyDataResult<DataError>
 }

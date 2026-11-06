@@ -9,13 +9,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.onError
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onSuccess
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.toUiText
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
@@ -23,7 +23,6 @@ import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.NewFeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.feedback_created
 import kotlin.time.Clock
@@ -37,6 +36,7 @@ class FeedbackViewModel(
     private val feedbackRepository: FeedbackRepository,
     private val navigator: Navigator,
     private val applicationScope: ApplicationScope,
+    private val errorChannel: ErrorChannel,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FeedbackState())
@@ -87,7 +87,7 @@ class FeedbackViewModel(
             val featureResult = features.await()
             val bugResult = bugs.await()
 
-            if (featureResult is NetworkResult.Success && bugResult is NetworkResult.Success) {
+            if (featureResult is DataResult.Success && bugResult is DataResult.Success) {
                 updateBoard {
                     it.copy(
                         features = featureResult.data.entries,
@@ -115,7 +115,7 @@ class FeedbackViewModel(
                 .onSuccess { replaceEntry(it) }
                 .onError {
                     replaceEntry(entry)
-                    showError(it)
+                    errorChannel.sendError(it)
                 }
         }
     }
@@ -162,7 +162,7 @@ class FeedbackViewModel(
                 }
                 .onError {
                     updateDetail(entryId) { it.copy(isSendingComment = false) }
-                    showError(it)
+                    errorChannel.sendError(it)
                 }
         }
     }
@@ -187,7 +187,7 @@ class FeedbackViewModel(
                         )
                     }
                 }
-                .onError { showError(it) }
+                .onError { errorChannel.sendError(it) }
         }
     }
 
@@ -203,7 +203,7 @@ class FeedbackViewModel(
                         )
                     }
                 }
-                .onError { showError(it) }
+                .onError { errorChannel.sendError(it) }
         }
     }
 
@@ -211,7 +211,7 @@ class FeedbackViewModel(
         applicationScope.launchOnMain {
             feedbackRepository.setStatus(entryId, status)
                 .onSuccess { replaceEntry(it) }
-                .onError { showError(it) }
+                .onError { errorChannel.sendError(it) }
         }
     }
 
@@ -237,7 +237,7 @@ class FeedbackViewModel(
                 }
                 .onError {
                     _state.update { it.copy(isCreating = false) }
-                    showError(it)
+                    errorChannel.sendError(it)
                 }
         }
     }
@@ -273,14 +273,6 @@ class FeedbackViewModel(
     /** Every change to the lists or filters goes through here, so [FeedbackState.visibleEntries] stays in sync. */
     private fun updateBoard(block: (FeedbackState) -> FeedbackState) {
         _state.update { block(it).withVisibleEntries() }
-    }
-
-    private suspend fun showError(error: NetworkingError) {
-        val message = when (val text = error.toUiText()) {
-            is UiText.DynamicString -> text.value
-            is UiText.StringResourceText -> getString(text.resId, *text.args)
-        }
-        SnackbarManager.showMessage(message)
     }
 }
 

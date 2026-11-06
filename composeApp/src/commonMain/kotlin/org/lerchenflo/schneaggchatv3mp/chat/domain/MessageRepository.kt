@@ -1,13 +1,14 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import kotlinx.coroutines.flow.Flow
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotification
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 
 /**
  * Messages: reads come from the local database, edits, deletes, reactions and poll votes go to
  * the server first. Sends are stored locally first and queued while they can't be delivered.
- * Errors of the write calls are sent to the [ErrorChannel].
+ * Write calls return their error, the caller maps it to UI.
  */
 interface MessageRepository {
 
@@ -59,24 +60,23 @@ interface MessageRepository {
 
     /**
      * Edits a message. A message that was never sent is only changed locally. A sent message
-     * needs the server: if the edit fails (e.g. offline) the message stays unchanged and the
-     * error is shown. @return true when the edit was saved
+     * needs the server: if the edit fails (e.g. offline) the message stays unchanged.
      */
-    suspend fun editMessage(message: Message, newContent: String): Boolean
+    suspend fun editMessage(message: Message, newContent: String): EmptyDataResult<DataError>
 
     /** Deletes a message that was never sent, by its local primary key (local only). */
     suspend fun deleteLocalMessage(localpk: Long)
 
     /** Deletes a sent message on the server, then locally. */
-    suspend fun deleteMessage(messageId: String)
+    suspend fun deleteMessage(messageId: String): EmptyDataResult<DataError>
 
     /** Reacts to a message with [content]; the stored reactions are replaced by the server's list. */
-    suspend fun reactToMessage(messageId: String, content: String)
+    suspend fun reactToMessage(messageId: String, content: String): EmptyDataResult<DataError>
 
     /** Votes in a poll, or adds a custom option ([PollVote.id] null). */
-    suspend fun votePoll(ownId: String, pollVote: PollVote)
+    suspend fun votePoll(ownId: String, pollVote: PollVote): EmptyDataResult<DataError>
 
-    suspend fun deletePollOption(ownId: String, messageId: String, optionId: String)
+    suspend fun deletePollOption(ownId: String, messageId: String, optionId: String): EmptyDataResult<DataError>
 
     // ─── Send / offline queue / sync ──────────────────────────────────────────
 
@@ -88,6 +88,8 @@ interface MessageRepository {
      * Runs in the app-wide scope: the send finishes even when the caller (e.g. a closed chat
      * screen) is cancelled while it is in flight.
      *
+     * @return the send's outcome. After a [DataError.isTransient] error the message stays queued
+     * and is retried, so the caller shows no popup for it: every retry would repeat it.
      * @param localpk Local pk, only pass if already in db
      * @param clientMessageId Send idempotency key of an already-queued message. REQUIRED when
      * [localpk] is non-zero (a resend). Never pass this for a brand-new message.
@@ -101,7 +103,7 @@ interface MessageRepository {
         answerid: String?,
         localpk: Long = 0,
         clientMessageId: String? = null,
-    )
+    ): EmptyDataResult<DataError>
 
     /**
      * [sendMessage] for a recorded voice message: reads the recording at [recordingPath] off the
@@ -113,13 +115,16 @@ interface MessageRepository {
         gruppe: Boolean,
         recordingPath: String,
         answerid: String?,
-    )
+    ): EmptyDataResult<DataError>
 
     /**
      * Resends the unsent messages one by one, oldest first, and stops at the first one that is
      * still unsent after its attempt. Waits for a send in flight before picking the next row.
+     * A [DataError.isTransient] error stops the run. A message the server rejects for good is
+     * dropped and its error goes to [onError], so the user learns it is gone. Any other failure
+     * stays queued without a report, because every later run would repeat it.
      */
-    suspend fun sendOfflineMessages(ownId: String)
+    suspend fun sendOfflineMessages(ownId: String, onError: suspend (DataError) -> Unit)
 
     /**
      * Pulls every message change since the newest stored version from the server.

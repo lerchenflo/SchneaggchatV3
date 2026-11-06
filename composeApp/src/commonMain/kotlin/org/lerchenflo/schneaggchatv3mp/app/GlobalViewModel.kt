@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationBadgeCounts
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -47,6 +49,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GlobalViewModel(
+    private val errorChannel: ErrorChannel,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val chatListRepository: ChatListRepository,
     private val messageRepository: MessageRepository,
@@ -154,7 +157,7 @@ class GlobalViewModel(
                             updateLocationTracking()
 
                             //println("App resumed and logged in, triggering sync...")
-                            messageRepository.sendOfflineMessages(ownId)
+                            messageRepository.sendOfflineMessages(ownId) { errorChannel.sendError(it) }
                             dataSyncCoordinator.dataSync(reason = "appResumed")
 
                             //On resume clear all error notis
@@ -206,7 +209,7 @@ class GlobalViewModel(
                     // Session (re)establishment is owned by AuthSessionManager's own scheduler;
                     // raising a Login action from here every 5 s is what produced the refresh storm.
                     SessionCache.requireLoggedIn()?.userId?.let {
-                        messageRepository.sendOfflineMessages(it)
+                        messageRepository.sendOfflineMessages(it) { error -> errorChannel.sendError(error) }
                     }
 
                 } else {
@@ -260,7 +263,7 @@ class GlobalViewModel(
                     // again (ObserveAsEvents only collects from then on), and the sync that brings
                     // the chat up to date must not queue behind that.
                     viewModelScope.launch {
-                        messageRepository.sendOfflineMessages(ownId)
+                        messageRepository.sendOfflineMessages(ownId) { errorChannel.sendError(it) }
                         dataSyncCoordinator.dataSync(reason = "notificationOpened")
                     }
 
@@ -344,6 +347,7 @@ class GlobalViewModel(
                 // don't prompt again on every resume/sync; they can re-enable it manually.
                 println("Location tracking: Permission denied, disabling location sharing")
                 ownLocationShared = false
+                // No popup: this runs on its own after the permission prompt, the user can't act on it
                 userRepository.disableLocationSharingForAllFriends()
             }
 

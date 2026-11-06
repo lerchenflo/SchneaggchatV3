@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.Chat
@@ -42,6 +44,7 @@ import kotlin.time.Clock
 
 
 class SchneaggmapViewModel(
+    private val errorChannel: ErrorChannel,
     private val navigator: Navigator,
     private val mapRepository: MapRepository,
     private val dataSyncCoordinator: DataSyncCoordinator,
@@ -326,13 +329,13 @@ class SchneaggmapViewModel(
                         lat = entry.coordinates.lat,
                         lon = entry.coordinates.long,
                         locationData = entry.locationData
-                    )
+                    ).reportErrorTo(errorChannel)
                 }
             }
 
             is SchneaggmapAction.OnEntryPopupDelete -> {
                 viewModelScope.launch {
-                    mapRepository.deleteMapEntry(action.entryId)
+                    mapRepository.deleteMapEntry(action.entryId).reportErrorTo(errorChannel)
                 }
 
                 _state.update {
@@ -511,6 +514,17 @@ class SchneaggmapViewModel(
                         )
                     }
                 }
+        }
+
+        viewModelScope.launch {
+            combine(
+                settingsRepository.getSortMapUsersByPinnedFlow(),
+                settingsRepository.getPinnedChatsFlow(),
+            ) { sortByPinned, pinnedChats ->
+                if (sortByPinned) pinnedChats.filterNot { it.group }.map { it.chatId }.toSet() else emptySet()
+            }.collectLatest { pinnedFriendIds ->
+                _state.update { it.copy(pinnedFriendIds = pinnedFriendIds) }
+            }
         }
 
         viewModelScope.launch {

@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,8 +36,13 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.Announcement
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementRepository
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.isNetworkerror
+import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
@@ -49,8 +55,6 @@ import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isNetworkerror
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
@@ -72,6 +76,8 @@ import kotlin.time.Duration.Companion.milliseconds
 private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
 
 class ChatSelectorViewModel(
+    private val errorChannel: ErrorChannel,
+    private val applicationScope: ApplicationScope,
     private val appVersion: AppVersion,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val chatListRepository: ChatListRepository,
@@ -200,7 +206,11 @@ class ChatSelectorViewModel(
 
         refreshJob = viewModelScope.launch {
             try {
-                messageRepository.sendOfflineMessages(ownId)
+                // In the app-wide scope: the queue can drop a rejected message, and the user has
+                // to hear about it even when this screen is gone by then
+                applicationScope.async(Dispatchers.Main.immediate) {
+                    messageRepository.sendOfflineMessages(ownId) { errorChannel.sendError(it) }
+                }.await()
                 dataSyncCoordinator.dataSync(reason = "chatSelectorRefresh")
             } catch (e: Exception) {
                 ensureActive()
@@ -348,8 +358,8 @@ class ChatSelectorViewModel(
         SessionCache.authState.first { it is SessionCache.AuthState.LoggedIn }
 
         when (val result = announcementRepository.getLatest()) {
-            is NetworkResult.Success -> _latestAnnouncement.value = result.data
-            is NetworkResult.Error -> {
+            is DataResult.Success -> _latestAnnouncement.value = result.data
+            is DataResult.Error -> {
                 // Offline: nothing to show, the next start tries again
                 if (!result.error.isNetworkerror()) {
                     loggingRepository.logWarning("Loading the latest announcement failed: ${result.error}")

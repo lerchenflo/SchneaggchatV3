@@ -7,12 +7,16 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.map
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
@@ -24,14 +28,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeResult
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toAvailableUser
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toWakeResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.map
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NewFriendsUserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.UserRemoteDataSource
@@ -48,7 +48,6 @@ class OfflineFirstUserRepository(
     private val pictureManager: PictureManager,
     private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger,
-    private val errorChannel: ErrorChannel,
 ) : UserRepository {
 
     // ─── Reads ────────────────────────────────────────────────────────────────
@@ -109,10 +108,10 @@ class OfflineFirstUserRepository(
             val profilePicsToGet = emptyList<String>().toMutableList()
 
             when (userSyncResponse) {
-                is NetworkResult.Error<*> -> {
+                is DataResult.Error<*> -> {
                     loggingRepository.logWarning("userid sync error: ${userSyncResponse.error}")
                 }
-                is NetworkResult.Success<UserSyncResponse> -> {
+                is DataResult.Success<UserSyncResponse> -> {
                     //println("Userid sync response: ${userSyncResponse.data.toString()}")
 
                     val updatedUsers = userSyncResponse.data.updatedUsers
@@ -256,8 +255,8 @@ class OfflineFirstUserRepository(
         userIds.forEach { userId ->
             val savefilename = userId + USERPROFILEPICTURE_FILE_NAME
             when (val picture = userRemoteDataSource.getProfilePicForUserId(userId).trackConnectivity()) {
-                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for userid $userId")}
-                is NetworkResult.Success<ByteArray> -> {
+                is DataResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for userid $userId")}
+                is DataResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
                     userLocalDataSource.updateUserProfilePicUrl(userId, filepath)
@@ -289,100 +288,57 @@ class OfflineFirstUserRepository(
      * Get all availavble users from the server
      * @param searchTerm the searchterm which the user entered
      */
-    override suspend fun getAvailableUsers(searchTerm: String) : List<AvailableUser> {
-        return when (val response = userRemoteDataSource.getAvailableUsers(searchTerm).trackConnectivity()) {
-            is NetworkResult.Error<NetworkingError> -> {
-                errorChannel.sendErrorSuspend(
-                    ErrorEvent(
-                        error = response.error
-                    )
-                )
-                emptyList()
-            }
-            is NetworkResult.Success<List<NewFriendsUserResponse>> -> {
-                response.data.map { it.toAvailableUser() }
-            }
-        }
-
-    }
+    override suspend fun getAvailableUsers(searchTerm: String): DataResult<List<AvailableUser>, DataError> =
+        userRemoteDataSource.getAvailableUsers(searchTerm).trackConnectivity()
+            .map { users -> users.map { it.toAvailableUser() } }
 
     /**
      * Send or accept friend request from / to an userid
      */
-    override suspend fun sendFriendRequest(friendId: String) : Boolean {
-        when (val success = userRemoteDataSource.sendFriendRequest(friendId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+    override suspend fun sendFriendRequest(friendId: String): EmptyDataResult<DataError> =
+        userRemoteDataSource.sendFriendRequest(friendId).trackConnectivity()
+            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+            .onSuccess {
                 syncUsers()
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 
     /**
      * deny a friendrequest from an userid / cancel an outgoing friend request to an userid
      */
-    override suspend fun denyFriendRequest(friendId: String) : Boolean {
-        when (val success = userRemoteDataSource.denyFriendRequest(friendId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+    override suspend fun denyFriendRequest(friendId: String): EmptyDataResult<DataError> =
+        userRemoteDataSource.denyFriendRequest(friendId).trackConnectivity()
+            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+            .onSuccess {
                 syncUsers()
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 
 
-    override suspend fun removeFriend(friendId: String) : Boolean {
-        when (val success = userRemoteDataSource.removeFriend(friendId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+    override suspend fun removeFriend(friendId: String): EmptyDataResult<DataError> =
+        userRemoteDataSource.removeFriend(friendId).trackConnectivity()
+            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+            .onSuccess {
                 syncUsers()
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 
 
-    override suspend fun changeUsername(newUsername: String) : Boolean {
-        when (val success = userRemoteDataSource.changeUsername(newUsername).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+    override suspend fun changeUsername(newUsername: String): EmptyDataResult<DataError> =
+        userRemoteDataSource.changeUsername(newUsername).trackConnectivity()
+            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+            .onSuccess {
                 syncUsers()
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 
-    override suspend fun changeProfilePic(newPic: ByteArray) : Boolean {
-        when (val success = userRemoteDataSource.changeProfilePic(newPic).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+    override suspend fun changeProfilePic(newPic: ByteArray): EmptyDataResult<DataError> =
+        userRemoteDataSource.changeProfilePic(newPic).trackConnectivity()
+            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+            .onSuccess {
                 syncUsers()
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 
     /**
      * Change status and description. if userid = self then only status, else only description
@@ -395,8 +351,8 @@ class OfflineFirstUserRepository(
         newBirthDate: String?,
         newNickName: String?,
         newPhoneNumber: String?,
-        ) : Boolean {
-        return when (val success = userRemoteDataSource.changeProfile(
+        ): EmptyDataResult<DataError> =
+        userRemoteDataSource.changeProfile(
             userId = userId,
             newStatus = newStatus,
             newDescription = newDescription,
@@ -404,17 +360,8 @@ class OfflineFirstUserRepository(
             newBirthDate = newBirthDate,
             newNickName = newNickName,
             newPhoneNumber = newPhoneNumber,
-        ).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                //dataSync()
-                true
-            }
-        }
-    }
+        ).trackConnectivity()
+            .asEmptyDataResult()
 
 
     // ─── Location sharing ─────────────────────────────────────────────────────
@@ -429,15 +376,11 @@ class OfflineFirstUserRepository(
         share: Boolean,
         shareSpeedHeading: Boolean,
         snailTrail: Boolean,
-    ): Boolean {
-        return when (val result = userRemoteDataSource.shareLocation(friendId, share, shareSpeedHeading, snailTrail).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                // Optimistically reflect the new value locally so UI updates immediately;
-                // the next /users/sync or UserChange socket push reconciles the authoritative value.
+    ): EmptyDataResult<DataError> =
+        userRemoteDataSource.shareLocation(friendId, share, shareSpeedHeading, snailTrail).trackConnectivity()
+            // Optimistically reflect the new value locally so UI updates immediately;
+            // the next /users/sync or UserChange socket push reconciles the authoritative value.
+            .onSuccess {
                 userLocalDataSource.getUserById(friendId)?.let { friend ->
                     userLocalDataSource.upsertUser(friend.copy(
                         locationShared = share,
@@ -445,20 +388,20 @@ class OfflineFirstUserRepository(
                         snailTrail = snailTrail,
                     ).toEntity())
                 }
-                true
             }
-        }
-    }
+            .asEmptyDataResult()
 
     /**
      * Disables location sharing towards every friend. User.locationShared is derived
      * server-side from whether any friend has share=true, so this is the real way to turn
      * sharing off entirely (there's no standalone global switch to write to anymore).
      */
-    override suspend fun disableLocationSharingForAllFriends(): Boolean {
-        return getFriends("").all { friend ->
-            setLocationSharing(friend.id, share = false, friend.shareSpeedHeading, friend.snailTrail)
+    override suspend fun disableLocationSharingForAllFriends(): EmptyDataResult<DataError> {
+        getFriends("").forEach { friend ->
+            val result = setLocationSharing(friend.id, share = false, friend.shareSpeedHeading, friend.snailTrail)
+            if (result is DataResult.Error) return result
         }
+        return DataResult.Success(Unit)
     }
 
     // ─── Wake ─────────────────────────────────────────────────────────────────
@@ -467,39 +410,27 @@ class OfflineFirstUserRepository(
      * Per-friend toggle: may this friend wake us. Stored on the friend's local row as
      * [UserEntity.wakeupEnabled] - on our own row that same column is the master switch instead.
      */
-    override suspend fun setWakePermission(friendId: String, allowWake: Boolean): Boolean {
-        return when (val result = userRemoteDataSource.setWakePermission(friendId, allowWake).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
-                // Optimistic local write, reconciled by the next /users/sync or UserChange push.
+    override suspend fun setWakePermission(friendId: String, allowWake: Boolean): EmptyDataResult<DataError> =
+        userRemoteDataSource.setWakePermission(friendId, allowWake).trackConnectivity()
+            // Optimistic local write, reconciled by the next /users/sync or UserChange push.
+            .onSuccess {
                 userLocalDataSource.getUserById(friendId)?.let { friend ->
                     userLocalDataSource.upsertUser(friend.copy(wakeupEnabled = allowWake).toEntity())
                 }
-                true
             }
-        }
-    }
+            .asEmptyDataResult()
 
     /** Master switch: while off nobody can wake us, whatever the per-friend toggles say. */
-    override suspend fun setWakeGlobal(enabled: Boolean): Boolean {
-        return when (val result = userRemoteDataSource.setWakeGlobal(enabled).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
+    override suspend fun setWakeGlobal(enabled: Boolean): EmptyDataResult<DataError> =
+        userRemoteDataSource.setWakeGlobal(enabled).trackConnectivity()
+            .onSuccess {
                 SessionCache.requireLoggedIn()?.userId?.let { ownId ->
                     userLocalDataSource.getUserById(ownId)?.let { own ->
                         userLocalDataSource.upsertUser(own.copy(wakeupEnabled = enabled).toEntity())
                     }
                 }
-                true
             }
-        }
-    }
+            .asEmptyDataResult()
 
 
     /**
@@ -511,7 +442,7 @@ class OfflineFirstUserRepository(
         targetId: String,
         isGroup: Boolean,
         reason: String,
-    ): NetworkResult<WakeResult, NetworkingError> {
+    ): DataResult<WakeResult, DataError> {
         return userRemoteDataSource.sendWake(targetId, isGroup, reason).trackConnectivity().map { it.toWakeResult() }
     }
 }

@@ -18,8 +18,8 @@ import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.readByteArray
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
@@ -257,7 +257,7 @@ class SchneaggRodeoViewModel(
                 difficulty = RODEO_BOARD,
                 period = LeaderboardPeriod.ALL_TIME,
             )
-            if (result !is NetworkResult.Success) return@launch
+            if (result !is DataResult.Success) return@launch
             val ownUserId = SessionCache.requireLoggedIn()?.userId
             val friendIds = userRepository.getFriends("").map { it.id }.toSet()
             ghosts = result.data

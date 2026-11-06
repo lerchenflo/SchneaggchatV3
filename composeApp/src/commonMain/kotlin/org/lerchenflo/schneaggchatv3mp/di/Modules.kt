@@ -246,7 +246,6 @@ val sharedmodule = module{
             pictureManager = get(),
             audioManager = get(),
             loggingRepository = get(),
-            errorChannel = get(),
             externalScope = get<ApplicationScope>(),
         )
     }
@@ -339,6 +338,8 @@ val sharedmodule = module{
     // Explicit lambda so the dispatcher keeps its default (Dispatchers.Default); tests pass their own
     viewModel {
         ChatSelectorViewModel(
+            errorChannel = get(),
+            applicationScope = get(),
             appVersion = get(),
             dataSyncCoordinator = get(),
             chatListRepository = get(),
@@ -373,6 +374,8 @@ val sharedmodule = module{
 
     viewModel { (chatId: String, isGroup: Boolean) ->
         ChatViewModel(
+            errorChannel = get(),
+            applicationScope = get(),
             messageRepository = get(),
             userRepository = get(),
             groupRepository = get(),
@@ -391,6 +394,7 @@ val sharedmodule = module{
     // Explicit lambda because the runtime chatId/isGroup can't be resolved by viewModelOf
     viewModel { (chatId: String, isGroup: Boolean) ->
         ChatDetailsViewmodel(
+            errorChannel = get(),
             groupRepository = get(),
             navigator = get(),
             userRepository = get(),
@@ -407,6 +411,7 @@ val sharedmodule = module{
     // Explicit lambda because the runtime extensionId can't be resolved by viewModelOf
     viewModel { (extensionId: String) ->
         GroupExtensionViewModel(
+            errorChannel = get(),
             groupExtensionRepository = get(),
             groupRepository = get(),
             navigator = get(),
@@ -428,6 +433,7 @@ val sharedmodule = module{
     // The whole route is passed, its itemId/transfer are nullable
     viewModel { (route: Route.SplitExpenseEditor) ->
         SplitExpenseEditorViewModel(
+            errorChannel = get(),
             groupExtensionRepository = get(),
             groupRepository = get(),
             userRepository = get(),
@@ -451,6 +457,7 @@ val sharedmodule = module{
 
     viewModel { (initialEntryId: String?, currentlyEditedEvent: Event?) ->
         SchneaggmapViewModel(
+            errorChannel = get(),
             navigator = get(),
             mapRepository = get(),
             dataSyncCoordinator = get(),
@@ -475,6 +482,7 @@ val sharedmodule = module{
 
     viewModel { (initialEntryId: String?, initialEntry: Event?) ->
         EventsViewModel(
+            errorChannel = get(),
             navigator = get(),
             appVersion = get(),
             dataSyncCoordinator = get(),

@@ -6,6 +6,7 @@ import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
+import assertk.assertions.isInstanceOf
 import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import io.ktor.http.HttpStatusCode
@@ -16,6 +17,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.testutil.FRIEND_ID
@@ -114,9 +116,11 @@ class OfflineMessageQueueTest {
                 if (request.content == "second") Reply.Fail(HttpStatusCode.InternalServerError)
                 else fixture.server.accept(request)
             }
+            val errors = mutableListOf<DataError>()
 
-            fixture.sendOfflineMessages()
+            fixture.sendOfflineMessages { errors += it }
 
+            assertThat(errors).isEmpty()
             assertThat(fixture.server.textSendRequests.map { it.content }).containsExactly("first", "second")
 
             val (first, second, third) = fixture.storedMessages()
@@ -144,9 +148,11 @@ class OfflineMessageQueueTest {
                 if (request.content == "rejected") Reply.Fail(HttpStatusCode.BadRequest)
                 else fixture.server.accept(request)
             }
+            val errors = mutableListOf<DataError>()
 
-            fixture.sendOfflineMessages()
+            fixture.sendOfflineMessages { errors += it }
 
+            assertThat(errors.single()).isInstanceOf<DataError.BadRequest>()
             assertThat(fixture.server.textSendRequests.map { it.content }).containsExactly("rejected", "fine")
             val row = fixture.storedMessages().single()
             assertThat(row.content).isEqualTo("fine")

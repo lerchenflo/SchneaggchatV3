@@ -29,6 +29,7 @@ class FakeSettingsRepository : SettingsRepository {
     val language = MutableStateFlow(LanguageSetting.SYSTEM)
     val mergeMapLocations = MutableStateFlow(false)
     val mergeMapUsers = MutableStateFlow(false)
+    val sortMapUsersByPinned = MutableStateFlow(true)
     val mapStyle = MutableStateFlow(MapStyleSetting.entries.first())
     val mapStyleUrl = MutableStateFlow("")
     val quickReactions = MutableStateFlow(DEFAULT_QUICK_REACTIONS)
@@ -89,6 +90,11 @@ class FakeSettingsRepository : SettingsRepository {
     override fun getMergeMapUsersFlow(): Flow<Boolean> = mergeMapUsers
     override suspend fun setMergeMapUsers(value: Boolean) {
         mergeMapUsers.value = value
+    }
+
+    override fun getSortMapUsersByPinnedFlow(): Flow<Boolean> = sortMapUsersByPinned
+    override suspend fun setSortMapUsersByPinned(value: Boolean) {
+        sortMapUsersByPinned.value = value
     }
 
     override fun getMapStyleSettingFlow(): Flow<MapStyleSetting> = mapStyle

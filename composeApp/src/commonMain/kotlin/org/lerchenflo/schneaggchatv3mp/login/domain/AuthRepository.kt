@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.login.domain
 
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
 
 /**
@@ -9,17 +11,10 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
  */
 interface AuthRepository {
 
-    /**
-     * Password login. On success the session is persisted before [onResult] gets true; on failure
-     * an error is sent to the [ErrorChannel] and [onResult] gets false.
-     */
-    suspend fun login(
-        username: String,
-        password: String,
-        onResult: (Boolean) -> Unit
-    )
+    /** Password login. On success the session is persisted before this returns. */
+    suspend fun login(username: String, password: String): EmptyDataResult<DataError>
 
-    /** Registers a new account. [onResult] gets false (error already sent) if the server refused it. */
+    /** Registers a new account. */
     suspend fun createAccount(
         username: String,
         email: String,
@@ -28,8 +23,7 @@ interface AuthRepository {
         profilePic: ByteArray,
         phoneNumber: String? = null,
         language: String? = null,
-        onResult: (Boolean) -> Unit
-    )
+    ): EmptyDataResult<DataError>
 
     /**
      * Function to load all initial data on app start: restores a stored session (no network call)
@@ -37,21 +31,18 @@ interface AuthRepository {
      */
     suspend fun loadSavedLoginConfig(): SavedCredsResult
 
-    /** Sends the verification email again. @return false if it failed (error already sent) */
-    suspend fun sendEmailVerify(): Boolean
+    /** Sends the verification email again. */
+    suspend fun sendEmailVerify(): EmptyDataResult<DataError>
 
-    /** @return false if the password was not changed (error already sent) */
-    suspend fun changePassword(oldPassword: String, newPassword: String): Boolean
+    suspend fun changePassword(oldPassword: String, newPassword: String): EmptyDataResult<DataError>
 
-    /**
-     * Logged-in devices of the own account, or null when loading failed (error already sent).
-     */
-    suspend fun getSessions(): List<DeviceSession>?
+    /** Logged-in devices of the own account. */
+    suspend fun getSessions(): DataResult<List<DeviceSession>, DataError>
 
     /**
      * Logs one of the own devices out remotely.
      */
-    suspend fun endSession(sessionId: String): Boolean
+    suspend fun endSession(sessionId: String): EmptyDataResult<DataError>
 
     /** Registers this device's push token with the server. Empty tokens are ignored. */
     suspend fun setNotificationToken(token: String)
@@ -73,10 +64,8 @@ interface AuthRepository {
 
     /**
      * The server half of logging the account out everywhere: ends every session (this device's
-     * too) and drops all push tokens. Not best effort: on failure the error is sent and the other
-     * devices are still logged in. The local logout afterwards is
-     * [SessionTerminator.logoutAllDevices]'s job.
-     * @return true if the server logged the account out everywhere
+     * too) and drops all push tokens. Not best effort: on failure the other devices are still
+     * logged in. The local logout afterwards is [SessionTerminator.logoutAllDevices]'s job.
      */
-    suspend fun logoutAllDevicesOnServer(): Boolean
+    suspend fun logoutAllDevicesOnServer(): EmptyDataResult<DataError>
 }

@@ -16,6 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeChatListRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeChatListRepository.SelectorRequest
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeDataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeErrorChannel
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakePictureManager
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.InputfieldState
@@ -69,6 +70,7 @@ class GroupCreatorViewModelTest {
 
     private fun createViewModel() = viewModels.add(
         GroupCreatorViewModel(
+            errorChannel = FakeErrorChannel(),
             dataSyncCoordinator = dataSyncCoordinator,
             chatListRepository = chatListRepository,
             groupRepository = groupRepository,

@@ -1,5 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.data
 
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.map
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCreateRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackStatusRequest
@@ -8,10 +12,6 @@ import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toFeedbackCommen
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toFeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toFeedbackEntryDetail
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toFeedbackList
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.EmptyResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.map
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackComment
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryDetail
@@ -40,13 +40,13 @@ class RemoteFeedbackRepository(
     private val versionName get() = appVersion.getVersionName()
     private val platformName get() = appVersion.getDeviceType().name
 
-    override suspend fun getEntries(type: FeedbackType): NetworkResult<FeedbackList, NetworkingError> =
+    override suspend fun getEntries(type: FeedbackType): DataResult<FeedbackList, DataError> =
         feedbackRemoteDataSource.getFeedbackList(type.toNetworkFeedbackType()).map { it.toFeedbackList() }
 
-    override suspend fun getDetails(entryId: String): NetworkResult<FeedbackEntryDetail, NetworkingError> =
+    override suspend fun getDetails(entryId: String): DataResult<FeedbackEntryDetail, DataError> =
         feedbackRemoteDataSource.getFeedbackDetails(entryId).map { it.toFeedbackEntryDetail() }
 
-    override suspend fun create(entry: NewFeedbackEntry): NetworkResult<FeedbackEntry, NetworkingError> {
+    override suspend fun create(entry: NewFeedbackEntry): DataResult<FeedbackEntry, DataError> {
         val isBug = entry.type == FeedbackType.BUG
         return feedbackRemoteDataSource.createFeedback(
             FeedbackCreateRequest(
@@ -62,12 +62,12 @@ class RemoteFeedbackRepository(
         ).map { it.toFeedbackEntry() }
     }
 
-    override suspend fun vote(entryId: String, vote: FeedbackVote): NetworkResult<FeedbackEntry, NetworkingError> =
+    override suspend fun vote(entryId: String, vote: FeedbackVote): DataResult<FeedbackEntry, DataError> =
         feedbackRemoteDataSource.voteFeedback(FeedbackVoteRequest(entryId = entryId, vote = vote.toNetworkFeedbackVote()))
             .map { it.toFeedbackEntry() }
 
     /** [isBug] attaches app version and platform, which only matter for bug reports. */
-    override suspend fun comment(entryId: String, text: String, isBug: Boolean): NetworkResult<FeedbackComment, NetworkingError> =
+    override suspend fun comment(entryId: String, text: String, isBug: Boolean): DataResult<FeedbackComment, DataError> =
         feedbackRemoteDataSource.commentFeedback(
             FeedbackCommentRequest(
                 entryId = entryId,
@@ -77,13 +77,13 @@ class RemoteFeedbackRepository(
             )
         ).map { it.toFeedbackComment() }
 
-    override suspend fun deleteEntry(entryId: String): EmptyResult<NetworkingError> =
+    override suspend fun deleteEntry(entryId: String): EmptyDataResult<DataError> =
         feedbackRemoteDataSource.deleteFeedback(entryId)
 
-    override suspend fun deleteComment(commentId: String): EmptyResult<NetworkingError> =
+    override suspend fun deleteComment(commentId: String): EmptyDataResult<DataError> =
         feedbackRemoteDataSource.deleteFeedbackComment(commentId)
 
-    override suspend fun setStatus(entryId: String, status: FeedbackStatus): NetworkResult<FeedbackEntry, NetworkingError> =
+    override suspend fun setStatus(entryId: String, status: FeedbackStatus): DataResult<FeedbackEntry, DataError> =
         feedbackRemoteDataSource.setFeedbackStatus(FeedbackStatusRequest(entryId = entryId, status = status.toNetworkFeedbackStatus()))
             .map { it.toFeedbackEntry() }
 }

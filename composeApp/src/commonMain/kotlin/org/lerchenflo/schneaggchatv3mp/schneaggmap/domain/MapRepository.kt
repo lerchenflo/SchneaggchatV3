@@ -1,12 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 
 import kotlinx.coroutines.flow.Flow
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 
 /**
  * Schneaggmap entries: reads come from the local database, writes go to the server first and
- * update the local row with the server's answer. Errors of the write calls are sent to the
- * [ErrorChannel].
+ * update the local row with the server's answer. Write calls return their error, the caller maps it to UI.
  */
 interface MapRepository {
 
@@ -23,8 +23,6 @@ interface MapRepository {
         lat: Double,
         lon: Double,
         locationData: List<LocationData>,
-    )
-
-    /** @return true on success */
-    suspend fun deleteMapEntry(entryId: String): Boolean
+    ): EmptyDataResult<DataError>
+    suspend fun deleteMapEntry(entryId: String): EmptyDataResult<DataError>
 }

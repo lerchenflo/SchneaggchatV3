@@ -15,6 +15,8 @@ data class SchneaggmapState(
 
     val usersWithLocation: List<User> = emptyList(),
     val onlineFriendIds: Set<String> = emptySet(),
+    // Friends to show first in the friends bar, empty while the setting is off
+    val pinnedFriendIds: Set<String> = emptySet(),
     val showSnailTrails: Boolean = false,
     val snailTrails: Map<String, List<SnailTrailPoint>> = emptyMap(),
 

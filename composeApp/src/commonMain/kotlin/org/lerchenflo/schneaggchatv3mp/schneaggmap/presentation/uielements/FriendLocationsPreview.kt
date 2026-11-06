@@ -44,10 +44,16 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 
 @Composable
-fun FriendLocationsPreview(friends: List<User>, onlineFriendIds: Set<String>, onUserClick: (User) -> Unit) {
-    val sortedFriends = remember(friends, onlineFriendIds) {
+fun FriendLocationsPreview(
+    friends: List<User>,
+    onlineFriendIds: Set<String>,
+    pinnedFriendIds: Set<String>,
+    onUserClick: (User) -> Unit,
+) {
+    val sortedFriends = remember(friends, onlineFriendIds, pinnedFriendIds) {
         friends.sortedWith(
-            compareByDescending<User> { it.id in onlineFriendIds }
+            compareByDescending<User> { it.id in pinnedFriendIds }
+                .thenByDescending { it.id in onlineFriendIds }
                 .thenByDescending { it.lastSeen ?: Long.MIN_VALUE }
         )
     }

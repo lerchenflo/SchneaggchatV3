@@ -21,6 +21,9 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
@@ -39,6 +42,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 class EmailVerifiedCheckViewModel(
+    private val errorChannel: ErrorChannel,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
@@ -80,9 +84,9 @@ class EmailVerifiedCheckViewModel(
 
         state.value.userData?.let { user ->
             viewModelScope.launch {
-                userRepository.changeUserDetails(newEmail = newEmail, userId = user.id)
+                val changed = userRepository.changeUserDetails(newEmail = newEmail, userId = user.id).reportErrorTo(errorChannel).isSuccess
                 showEmailDialog(false)
-                resendEmail()
+                if (changed) resendEmail()
             }
         }
     }
@@ -102,7 +106,7 @@ class EmailVerifiedCheckViewModel(
 
             try {
                 lastEmailVerificationTime = Clock.System.now()
-                authRepository.sendEmailVerify()
+                authRepository.sendEmailVerify().reportErrorTo(errorChannel)
             } finally {
                 _state.update { it.copy(isResendingEmail = false) }
             }

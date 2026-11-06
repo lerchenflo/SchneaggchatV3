@@ -16,11 +16,17 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.onError
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.login.presentation.toLoginErrorEvent
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -39,6 +45,7 @@ import schneaggchatv3mp.composeapp.generated.resources.you_need_to_select_a_prof
 
 
 class SignUpViewModel(
+    private val errorChannel: ErrorChannel,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val authRepository: AuthRepository,
     private val navigator: Navigator,
@@ -226,8 +233,7 @@ class SignUpViewModel(
                 if (!checkenableCreateButton()) return@launch
 
                 if (state.isInputComplete()) {
-                    var accCreationSuccessful = false
-                    authRepository.createAccount(
+                    val accCreationSuccessful = authRepository.createAccount(
                         username = state.usernameState.text,
                         email = state.emailState.text,
                         password = state.passwordState.text,
@@ -235,16 +241,12 @@ class SignUpViewModel(
                         profilePic = state.profilePic!!,
                         phoneNumber = state.phoneNumberState.text.takeIf { it.isNotBlank() },
                         language = languageService.getCurrentLanguage().name,
-                    ) { success ->
-                        if (success) {
-                            accCreationSuccessful = true
-                            println("Account erstellen erfolgreich")
-                        }
-                    }
+                    ).reportErrorTo(errorChannel).isSuccess
 
                     if (accCreationSuccessful){
-                        authRepository.login(state.usernameState.text, state.passwordState.text) { success ->
-                            if (success){
+                        authRepository.login(state.usernameState.text, state.passwordState.text)
+                            .onError { errorChannel.sendErrorSuspend(it.toLoginErrorEvent()) }
+                            .onSuccess {
                                 // UNDISPATCHED: the sync is started before the navigation below can clear
                                 // this ViewModel; it then runs in the app-wide scope (plan R2).
                                 viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
@@ -254,7 +256,6 @@ class SignUpViewModel(
                                     navigator.navigate(Route.EmailVerifiedCheck, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                                 }
                             }
-                        }
                     }
                 }
 

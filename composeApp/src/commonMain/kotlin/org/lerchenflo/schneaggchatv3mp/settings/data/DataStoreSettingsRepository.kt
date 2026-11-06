@@ -145,6 +145,17 @@ class DataStoreSettingsRepository(
         }
     }
 
+    override fun getSortMapUsersByPinnedFlow(): Flow<Boolean> {
+        return preferencemanager.getSortMapUsersByPinnedFlow()
+    }
+
+    override suspend fun setSortMapUsersByPinned(value: Boolean) {
+        outliveCaller {
+            preferencemanager.saveSortMapUsersByPinned(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(sortMapUsersByPinned = value)).trackConnectivity()
+        }
+    }
+
     override fun getMapStyleSettingFlow(): Flow<MapStyleSetting> {
         return preferencemanager.getMapStyleSettingFlow()
     }

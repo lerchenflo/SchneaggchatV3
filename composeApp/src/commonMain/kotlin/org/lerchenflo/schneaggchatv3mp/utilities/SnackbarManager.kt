@@ -9,6 +9,7 @@ import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
+/** Success and info messages only. Errors go to the global popup, see `ErrorChannel`. */
 object SnackbarManager {
     private var scope: CoroutineScope? = null
 

@@ -1,11 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import kotlinx.coroutines.flow.Flow
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 
 /**
  * Groups and their members: reads come from the local database, writes go to the server first.
- * Errors of the write calls are sent to the [ErrorChannel].
+ * Write calls return their error, the caller maps it to UI.
  */
 interface GroupRepository {
 
@@ -41,32 +43,26 @@ interface GroupRepository {
 
     // ─── Writes ───────────────────────────────────────────────────────────────
 
-    /** @return the id of the created group to directly open the chat, null on error */
+    /** @return the id of the created group to directly open the chat */
     suspend fun createGroup(
         name: String,
         description: String,
         memberIds: List<String>,
         profilePic: ByteArray,
-    ): String?
+    ): DataResult<String, DataError>
+    suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray): EmptyDataResult<DataError>
+    suspend fun changeGroupDescription(groupId: String, newDescription: String): EmptyDataResult<DataError>
+    suspend fun changeGroupName(groupId: String, newName: String): EmptyDataResult<DataError>
 
-    /** @return true on success */
-    suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray): Boolean
+    /** Adds or removes a member, or changes their admin flag. */
+    suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): EmptyDataResult<DataError>
 
-    /** @return true on success */
-    suspend fun changeGroupDescription(groupId: String, newDescription: String): Boolean
-
-    /** @return true on success */
-    suspend fun changeGroupName(groupId: String, newName: String): Boolean
-
-    /** Adds or removes a member, or changes their admin flag. @return true on success */
-    suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): Boolean
-
-    /** Pass null for [expiresAt] to clear the expiry (group never auto-expires). @return true on success */
-    suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): Boolean
+    /** Pass null for [expiresAt] to clear the expiry (group never auto-expires). */
+    suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): EmptyDataResult<DataError>
 
     /**
      * Deletes the whole group for every member (admins only). A connected event is detached and
-     * survives. @return true on success
+     * survives.
      */
-    suspend fun deleteGroup(groupId: String): Boolean
+    suspend fun deleteGroup(groupId: String): EmptyDataResult<DataError>
 }

@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data
 
-import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.hasSize
@@ -14,6 +13,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.isTransient
 import org.lerchenflo.schneaggchatv3mp.testutil.FakeMessageServer.Reply
 import org.lerchenflo.schneaggchatv3mp.testutil.OWN_USER_ID
 import org.lerchenflo.schneaggchatv3mp.testutil.SendPathFixture
@@ -140,12 +141,12 @@ class MessageSendEchoDedupTest {
                 Reply.ConnectionDrop
             }
 
-            fixture.sendText("Hello")
+            val result = fixture.sendText("Hello")
 
             val queued = fixture.storedMessages().single()
             assertThat(queued.sent).isFalse()
             assertThat(queued.id).isNull()
-            fixture.errorChannel.errors.test { expectNoEvents() }
+            assertThat((result as DataResult.Error).error.isTransient()).isTrue()
 
             fixture.server.enqueueSyncPage(listOf(fixture.server.storedMessage("srv-1")))
             fixture.syncMessages()

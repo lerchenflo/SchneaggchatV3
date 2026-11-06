@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.games.data.remote
 
 import io.ktor.client.HttpClient
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.GameScoreResponse
@@ -8,8 +10,6 @@ import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.GlobalRankingRespon
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.HighscoresResponse
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoresBatchRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 
@@ -22,17 +22,17 @@ class KtorGameRemoteDataSource(
 
     private val server = ServerClient(httpClient, preferenceManager, loggingRepository)
 
-    override suspend fun getGameHighscores(gameId: String, difficulty: String, period: String): NetworkResult<HighscoresResponse, NetworkingError> {
+    override suspend fun getGameHighscores(gameId: String, difficulty: String, period: String): DataResult<HighscoresResponse, DataError> {
         return server.safeGet(endpoint = "/games/highscores?gameid=$gameId&difficulty=$difficulty&period=$period")
     }
 
-    override suspend fun getGlobalRanking(period: String): NetworkResult<GlobalRankingResponse, NetworkingError> {
+    override suspend fun getGlobalRanking(period: String): DataResult<GlobalRankingResponse, DataError> {
         return server.safeGet(endpoint = "/games/globalranking?period=$period")
     }
 
     override suspend fun submitGameScore(
         request: SubmitGameScoreRequest,
-    ): NetworkResult<GameScoreResponse, NetworkingError> {
+    ): DataResult<GameScoreResponse, DataError> {
         return server.safePost(
             endpoint = "/games/upsert",
             body = request)
@@ -40,13 +40,13 @@ class KtorGameRemoteDataSource(
 
     override suspend fun submitGameScoresBatch(
         request: SubmitGameScoresBatchRequest,
-    ): NetworkResult<List<GameScoreResponse>, NetworkingError> {
+    ): DataResult<List<GameScoreResponse>, DataError> {
         return server.safePost(
             endpoint = "/games/upsertbatch",
             body = request)
     }
 
-    override suspend fun getRecap(year: Int?): NetworkResult<RecapResponse, NetworkingError> {
+    override suspend fun getRecap(year: Int?): DataResult<RecapResponse, DataError> {
         val endpoint = if (year != null) "/recap?year=$year" else "/recap"
         return server.safeGet(endpoint)
     }

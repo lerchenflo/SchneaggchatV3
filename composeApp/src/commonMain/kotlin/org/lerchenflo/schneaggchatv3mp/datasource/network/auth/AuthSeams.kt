@@ -2,10 +2,10 @@
 
 package org.lerchenflo.schneaggchatv3mp.datasource.network.auth
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 /**
@@ -21,7 +21,7 @@ interface AuthSessionStore {
 
 /** `POST /auth/refresh`. Must never go through the authenticated client (it would recurse). */
 interface AuthRefreshApi {
-    suspend fun refresh(refreshToken: String): NetworkResult<TokenPair, NetworkingError>
+    suspend fun refresh(refreshToken: String): DataResult<TokenPair, DataError>
 }
 
 /**
@@ -36,7 +36,7 @@ interface AuthEventSink {
     fun onSessionInvalidated(reason: InvalidationReason)
 
     /** Several consecutive refreshes failed permanently (wrong server URL, blocking proxy). Credentials are kept. */
-    fun onServerUnreachable(error: NetworkingError)
+    fun onServerUnreachable(error: DataError)
 }
 
 /** Time source for token expiry and backoff so tests can drive virtual time. */

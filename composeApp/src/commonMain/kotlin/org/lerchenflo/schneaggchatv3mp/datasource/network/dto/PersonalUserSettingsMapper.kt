@@ -9,6 +9,7 @@ fun PersonalUserSettings.toSyncedSettings(): SyncedSettings = SyncedSettings(
     language = language,
     mergeMapLocations = mergeMapLocations,
     mergeMapUsers = mergeMapUsers,
+    sortMapUsersByPinned = sortMapUsersByPinned,
     mapStyle = mapStyle,
     pinnedChats = pinnedChats,
     quickReactions = quickReactions,

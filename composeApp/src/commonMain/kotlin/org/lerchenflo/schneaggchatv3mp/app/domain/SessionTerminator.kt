@@ -38,7 +38,6 @@ interface SessionTerminator {
      *
      * Unlike [logout] this is not best effort: if the server call fails, the other devices are
      * still logged in, so the user stays logged in here too and sees the error.
-     * @return true if the account was logged out everywhere
      */
-    suspend fun logoutAllDevices(): Boolean
+    suspend fun logoutAllDevices(): EmptyDataResult<DataError>
 }

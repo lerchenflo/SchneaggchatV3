@@ -22,8 +22,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import kotlin.concurrent.Volatile
 import kotlin.time.Duration
@@ -153,7 +153,7 @@ class AuthSessionManager(
      * re-arm anything, and nothing but the timer itself fires a `Scheduled` attempt.
      */
     private var schedulerJob: Job? = null
-    private var lastError: NetworkingError? = null
+    private var lastError: DataError? = null
     private var lastResetTriggeredRefreshAt: Instant? = null
     private var consecutiveBroken = 0
     private var brokenNotified = false
@@ -252,7 +252,7 @@ class AuthSessionManager(
             val current = mirror
             if (current == null && !mirrorLoaded) {
                 // Storage could not be read (case 28): not a dead session, just unknown right now.
-                val error = NetworkingError.Unknown(message = "token storage unreadable")
+                val error = DataError.Unknown(debugInfo = "token storage unreadable")
                 return@withLock null to RefreshOutcome.Retryable(error, config.storageFailureRetry)
             }
             if (current == null || current.tokens.refreshToken.isBlank()) {
@@ -285,7 +285,7 @@ class AuthSessionManager(
 
             if (!reason.attemptedOffline && !onlineFlow.value) {
                 log.debug("AuthSession: refresh($reason) skipped, offline")
-                val skipped = RefreshOutcome.Retryable(NetworkingError.NoInternetConnection, Duration.ZERO)
+                val skipped = RefreshOutcome.Retryable(DataError.NoInternetConnection, Duration.ZERO)
                 return@withLock null to skipped
             }
 
@@ -296,7 +296,7 @@ class AuthSessionManager(
                     log.debug(
                         "AuthSession: refresh($reason) suppressed, backoff active ${remaining.inWholeSeconds} s more"
                     )
-                    val suppressed = RefreshOutcome.Retryable(lastError ?: NetworkingError.Unknown(), remaining)
+                    val suppressed = RefreshOutcome.Retryable(lastError ?: DataError.Unknown(), remaining)
                     return@withLock null to suppressed
                 }
             }
@@ -437,12 +437,12 @@ class AuthSessionManager(
         reason: RefreshReason,
         attempt: Int,
     ): RefreshOutcome {
-        val result: NetworkResult<TokenPair, NetworkingError>? = try {
+        val result: DataResult<TokenPair, DataError>? = try {
             withTimeoutOrNull(config.refreshTimeout) { api.refresh(current.tokens.refreshToken) }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            NetworkResult.Error(NetworkingError.Unknown(message = e.message))
+            DataResult.Error(DataError.Unknown(debugInfo = e.message))
         }
         return try {
             mutex.withLock { commitLocked(current, startedUnderGeneration, reason, attempt, result) }
@@ -453,8 +453,8 @@ class AuthSessionManager(
             // throw): the sink. Every commit branch has already applied its own state by the time
             // it reports, so nothing is half done; the waiters get one retryable outcome instead
             // of an exception each, and the deferred completes normally.
-            val error = NetworkingError.Unknown(message = "commit failed: ${e.message}")
-            log.error("AuthSession: refresh($reason) #$attempt ${error.message}")
+            val error = DataError.Unknown(debugInfo = "commit failed: ${e.message}")
+            log.error("AuthSession: refresh($reason) #$attempt ${error.debugInfo}")
             RefreshOutcome.Retryable(error, config.storageFailureRetry)
         }
     }
@@ -464,7 +464,7 @@ class AuthSessionManager(
         startedUnderGeneration: Int,
         reason: RefreshReason,
         attempt: Int,
-        result: NetworkResult<TokenPair, NetworkingError>?,
+        result: DataResult<TokenPair, DataError>?,
     ): RefreshOutcome {
         if (startedUnderGeneration != generation) {
             // A login or logout happened while this refresh was in flight - its result must not
@@ -485,31 +485,31 @@ class AuthSessionManager(
         val now = clock.now()
         return when (result) {
             null -> {
-                val timeout = NetworkingError.NetworkTimeout(message = "refresh exceeded ${config.refreshTimeout}")
+                val timeout = DataError.NetworkTimeout(debugInfo = "refresh exceeded ${config.refreshTimeout}")
                 failRetryable(timeout, null, reason, attempt, now)
             }
 
-            is NetworkResult.Error -> when (val error = result.error) {
-                is NetworkingError.Unauthorized -> {
+            is DataResult.Error -> when (val error = result.error) {
+                is DataError.Unauthorized -> {
                     log.warn("AuthSession: refresh($reason) #$attempt rejected by server (401)")
                     invalidateLocked(InvalidationReason.RejectedByServer)
                 }
-                is NetworkingError.NoInternetConnection,
-                is NetworkingError.NetworkTimeout,
-                is NetworkingError.ServerError,
-                is NetworkingError.TooManyRequests -> {
-                    failRetryable(error, RetryAfter.parse(error), reason, attempt, now)
+                is DataError.NoInternetConnection,
+                is DataError.NetworkTimeout,
+                is DataError.ServerError,
+                is DataError.TooManyRequests -> {
+                    failRetryable(error, (error as? DataError.TooManyRequests)?.retryAfter, reason, attempt, now)
                 }
-                is NetworkingError.BadRequest,
-                is NetworkingError.Forbidden,
-                is NetworkingError.NotFound,
-                is NetworkingError.Conflict,
-                is NetworkingError.PayloadTooLarge,
-                is NetworkingError.SerializationError,
-                is NetworkingError.Unknown -> failBroken(error, reason, attempt, now)
+                is DataError.BadRequest,
+                is DataError.Forbidden,
+                is DataError.NotFound,
+                is DataError.Conflict,
+                is DataError.PayloadTooLarge,
+                is DataError.SerializationError,
+                is DataError.Unknown -> failBroken(error, reason, attempt, now)
             }
 
-            is NetworkResult.Success -> commitSuccessLocked(current, result.data, reason, attempt, now)
+            is DataResult.Success -> commitSuccessLocked(current, result.data, reason, attempt, now)
         }
     }
 
@@ -526,7 +526,7 @@ class AuthSessionManager(
         if (unusable) {
             // 200 with garbage (empty body survives as blank fields, captive portals as parse failures
             // upstream). Never persist something the next attempt could not use (case 51).
-            val error = NetworkingError.SerializationError(message = "refresh returned an unusable token pair")
+            val error = DataError.SerializationError(debugInfo = "refresh returned an unusable token pair")
             return failBroken(error, reason, attempt, now)
         }
         if (current.subject.isNotBlank() && next.subject != current.subject) {
@@ -542,7 +542,7 @@ class AuthSessionManager(
             // presents it and is rescued by the server's one-hop replay (case 27). Short retry,
             // no backoff growth - a long wait would only push the recovery out.
             log.error("AuthSession: refresh($reason) #$attempt token write failed: ${e.message}")
-            val error = NetworkingError.Unknown(message = "token storage write failed: ${e.message}")
+            val error = DataError.Unknown(debugInfo = "token storage write failed: ${e.message}")
             lastError = error
             cooldownUntil = now + config.storageFailureRetry
             backoffArmed = true
@@ -564,7 +564,7 @@ class AuthSessionManager(
     }
 
     private suspend fun failRetryable(
-        error: NetworkingError,
+        error: DataError,
         retryAfter: Duration?,
         reason: RefreshReason,
         attempt: Int,
@@ -579,14 +579,14 @@ class AuthSessionManager(
         _state.value = AuthSessionState.Degraded(error, now + delay)
         scheduleLocked(now + delay, RefreshReason.Scheduled)
         log.warn(
-            "AuthSession: refresh($reason) #$attempt retryable (${error.errorCode}): ${error.message}; " +
+            "AuthSession: refresh($reason) #$attempt retryable (${error.errorCode}): ${error.debugInfo}; " +
                 "backoff ${backoff.attempt}, next in ${delay.inWholeSeconds} s"
         )
         return RefreshOutcome.Retryable(error, delay)
     }
 
     private suspend fun failBroken(
-        error: NetworkingError,
+        error: DataError,
         reason: RefreshReason,
         attempt: Int,
         now: Instant,
@@ -599,7 +599,7 @@ class AuthSessionManager(
         _state.value = AuthSessionState.Degraded(error, now + delay)
         scheduleLocked(now + delay, RefreshReason.Scheduled)
         log.error(
-            "AuthSession: refresh($reason) #$attempt broken (${error.errorCode}): ${error.message}; " +
+            "AuthSession: refresh($reason) #$attempt broken (${error.errorCode}): ${error.debugInfo}; " +
                 "$consecutiveBroken in a row, next in ${delay.inWholeSeconds} s"
         )
         if (consecutiveBroken >= config.brokenThreshold && !brokenNotified) {

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
@@ -101,8 +101,8 @@ class HighscoresViewModel(
             val result = repository.getHighscores(game, current.selectedDifficulty, current.selectedPeriod)
             _state.update {
                 when (result) {
-                    is NetworkResult.Success -> it.copy(entries = result.data, isLoading = false, hasError = false)
-                    is NetworkResult.Error -> it.copy(entries = emptyList(), isLoading = false, hasError = true)
+                    is DataResult.Success -> it.copy(entries = result.data, isLoading = false, hasError = false)
+                    is DataResult.Error -> it.copy(entries = emptyList(), isLoading = false, hasError = true)
                 }
             }
         }

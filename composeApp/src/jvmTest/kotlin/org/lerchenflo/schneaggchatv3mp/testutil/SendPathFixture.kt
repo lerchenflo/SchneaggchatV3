@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.testutil
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
-import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstMessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomMessageDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.KtorMessageRemoteDataSource
@@ -27,7 +27,7 @@ const val FRIEND_ID = "friend"
  * - a real [KtorMessageRemoteDataSource] ([createTestMessageRemoteDataSource]) on a Ktor client
  *   built by the app's own `createHttpClient()` (JSON set up like in the app), whose engine is
  *   [FakeMessageServer]'s `MockEngine`;
- * - a real [DefaultErrorChannel] and a [FakeLogger];
+ * - a [FakeLogger];
  * - [unusedDependency] stubs for every constructor parameter the send path never touches. Text
  *   messages never use `PictureManager` / `AudioManager`, so they are stubs too.
  *
@@ -46,8 +46,6 @@ class SendPathFixture(testScope: TestScope, val ownUserId: String = OWN_USER_ID)
 
     val logger = FakeLogger()
 
-    val errorChannel = DefaultErrorChannel()
-
     private val httpClient = createHttpClient(server.engine)
 
     private val messageLocalDataSource = RoomMessageDataSource(database)
@@ -61,7 +59,6 @@ class SendPathFixture(testScope: TestScope, val ownUserId: String = OWN_USER_ID)
         pictureManager = unusedDependency(),
         audioManager = unusedDependency(),
         loggingRepository = logger,
-        errorChannel = errorChannel,
         externalScope = testScope.backgroundScope,
         ioDispatcher = StandardTestDispatcher(testScope.testScheduler),
     )
@@ -86,7 +83,8 @@ class SendPathFixture(testScope: TestScope, val ownUserId: String = OWN_USER_ID)
     )
 
     /** Drains the offline queue, as `GlobalViewModel` does on resume / reconnect. */
-    suspend fun sendOfflineMessages() = repository.sendOfflineMessages(ownUserId)
+    suspend fun sendOfflineMessages(onError: suspend (DataError) -> Unit = {}) =
+        repository.sendOfflineMessages(ownUserId, onError)
 
     /** One message sync; needs a logged-in `SessionCache` ([loginTestUser]). */
     suspend fun syncMessages() = repository.syncMessages()

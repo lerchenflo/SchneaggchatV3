@@ -4,9 +4,9 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 
 //Errorchannel for global error events (Show in every screen)
 class DefaultErrorChannel : ErrorChannel {
@@ -32,5 +32,5 @@ class DefaultErrorChannel : ErrorChannel {
      * busy) and the session stays logged in. Only a real invalidation shows a popup, together
      * with the logout (`AppAuthEventSink.onSessionInvalidated`).
      */
-    private fun ErrorEvent.isSessionError(): Boolean = error is NetworkingError.Unauthorized
+    private fun ErrorEvent.isSessionError(): Boolean = error is DataError.Unauthorized
 }

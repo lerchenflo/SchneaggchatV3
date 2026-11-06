@@ -3,6 +3,9 @@ package org.lerchenflo.schneaggchatv3mp.fakes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
@@ -59,23 +62,23 @@ class FakeEventRepository : EventRepository {
         maxUsers: Int?,
         groupDeleteDelay: GroupDeleteDelay,
         profilePic: ByteArray?,
-    ): Boolean {
+    ): EmptyDataResult<DataError> {
         upsertedEventIds.record(eventId)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun setEventParticipation(eventId: String, status: EventParticipationStatus): Boolean {
+    override suspend fun setEventParticipation(eventId: String, status: EventParticipationStatus): EmptyDataResult<DataError> {
         participationChanges.record(eventId to status)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun joinEvent(eventId: String): String? {
+    override suspend fun joinEvent(eventId: String): DataResult<String, DataError> {
         joinedEvents.record(eventId)
-        return joinedGroupId
+        return joinedGroupId.toFakeDataResult()
     }
 
-    override suspend fun detachEvent(eventId: String, groupId: String?, deleteGroup: Boolean, deleteEvent: Boolean): Boolean {
+    override suspend fun detachEvent(eventId: String, groupId: String?, deleteGroup: Boolean, deleteEvent: Boolean): EmptyDataResult<DataError> {
         detachCalls.record(DetachCall(eventId, groupId, deleteGroup, deleteEvent))
-        return writeResult
+        return writeResult.toFakeResult()
     }
 }

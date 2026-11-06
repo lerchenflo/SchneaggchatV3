@@ -5,6 +5,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.AvailableUser
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
@@ -12,8 +15,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeOutcome
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 
 /**
  * In-memory [UserRepository]. The reads serve [users]; the writes are recorded and answer with
@@ -48,11 +49,11 @@ class FakeUserRepository : UserRepository {
     /** What [getAvailableUsers] answers, whatever the search term. */
     var availableUsers: List<AvailableUser> = emptyList()
 
-    /** What every Boolean write answers. */
+    /** Whether every write succeeds. */
     var writeResult: Boolean = true
 
-    var wakeResult: NetworkResult<WakeResult, NetworkingError> =
-        NetworkResult.Success(WakeResult(outcome = WakeOutcome.WOKEN, userCount = 1, deviceCount = 1))
+    var wakeResult: DataResult<WakeResult, DataError> =
+        DataResult.Success(WakeResult(outcome = WakeOutcome.WOKEN, userCount = 1, deviceCount = 1))
 
     var onSyncUsers: suspend () -> Unit = {}
     var onFetchMissingProfilePictures: suspend () -> Unit = {}
@@ -106,36 +107,36 @@ class FakeUserRepository : UserRepository {
 
     // ─── Friends ──────────────────────────────────────────────────────────────
 
-    override suspend fun getAvailableUsers(searchTerm: String): List<AvailableUser> {
+    override suspend fun getAvailableUsers(searchTerm: String): DataResult<List<AvailableUser>, DataError> {
         availableUserSearches.record(searchTerm)
-        return availableUsers
+        return DataResult.Success(availableUsers)
     }
 
-    override suspend fun sendFriendRequest(friendId: String): Boolean {
+    override suspend fun sendFriendRequest(friendId: String): EmptyDataResult<DataError> {
         friendRequestsSent.record(friendId)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun denyFriendRequest(friendId: String): Boolean {
+    override suspend fun denyFriendRequest(friendId: String): EmptyDataResult<DataError> {
         friendRequestsDenied.record(friendId)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun removeFriend(friendId: String): Boolean {
+    override suspend fun removeFriend(friendId: String): EmptyDataResult<DataError> {
         friendsRemoved.record(friendId)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
     // ─── Profile ──────────────────────────────────────────────────────────────
 
-    override suspend fun changeUsername(newUsername: String): Boolean {
+    override suspend fun changeUsername(newUsername: String): EmptyDataResult<DataError> {
         usernameChanges.record(newUsername)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun changeProfilePic(newPic: ByteArray): Boolean {
+    override suspend fun changeProfilePic(newPic: ByteArray): EmptyDataResult<DataError> {
         profilePicChanges.record(newPic)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
     override suspend fun changeUserDetails(
@@ -146,11 +147,11 @@ class FakeUserRepository : UserRepository {
         newBirthDate: String?,
         newNickName: String?,
         newPhoneNumber: String?,
-    ): Boolean {
+    ): EmptyDataResult<DataError> {
         detailsChanges.record(
             DetailsCall(userId, newStatus, newDescription, newEmail, newBirthDate, newNickName, newPhoneNumber)
         )
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
     // ─── Location sharing / wake ──────────────────────────────────────────────
@@ -160,31 +161,31 @@ class FakeUserRepository : UserRepository {
         share: Boolean,
         shareSpeedHeading: Boolean,
         snailTrail: Boolean,
-    ): Boolean {
+    ): EmptyDataResult<DataError> {
         locationSharingChanges.record(LocationSharingCall(friendId, share, shareSpeedHeading, snailTrail))
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun disableLocationSharingForAllFriends(): Boolean {
+    override suspend fun disableLocationSharingForAllFriends(): EmptyDataResult<DataError> {
         disableLocationSharingCalls.record(Unit)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun setWakePermission(friendId: String, allowWake: Boolean): Boolean {
+    override suspend fun setWakePermission(friendId: String, allowWake: Boolean): EmptyDataResult<DataError> {
         wakePermissionChanges.record(friendId to allowWake)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
-    override suspend fun setWakeGlobal(enabled: Boolean): Boolean {
+    override suspend fun setWakeGlobal(enabled: Boolean): EmptyDataResult<DataError> {
         wakeGlobalChanges.record(enabled)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 
     override suspend fun sendWake(
         targetId: String,
         isGroup: Boolean,
         reason: String,
-    ): NetworkResult<WakeResult, NetworkingError> {
+    ): DataResult<WakeResult, DataError> {
         wakeCalls.record(WakeCall(targetId, isGroup, reason))
         return wakeResult
     }

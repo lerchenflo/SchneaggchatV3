@@ -1,9 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote
 
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupExtensionResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.dto.ExtensionRequest
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.dto.GroupExtensionSyncResponse
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.dto.ItemRequest
@@ -14,13 +14,13 @@ interface GroupExtensionRemoteDataSource {
     suspend fun groupExtensionSync(
         entries: List<IdTimeStamp>,
         page: Int,
-    ): NetworkResult<GroupExtensionSyncResponse, NetworkingError>
+    ): DataResult<GroupExtensionSyncResponse, DataError>
 
-    suspend fun upsertExtension(request: ExtensionRequest): NetworkResult<GroupExtensionResponse, NetworkingError>
+    suspend fun upsertExtension(request: ExtensionRequest): DataResult<GroupExtensionResponse, DataError>
 
-    suspend fun deleteExtension(extensionId: String): NetworkResult<Unit, NetworkingError>
+    suspend fun deleteExtension(extensionId: String): DataResult<Unit, DataError>
 
-    suspend fun upsertItem(request: ItemRequest): NetworkResult<GroupExtensionResponse, NetworkingError>
+    suspend fun upsertItem(request: ItemRequest): DataResult<GroupExtensionResponse, DataError>
 
-    suspend fun deleteItem(extensionId: String, itemId: String): NetworkResult<GroupExtensionResponse, NetworkingError>
+    suspend fun deleteItem(extensionId: String, itemId: String): DataResult<GroupExtensionResponse, DataError>
 }

@@ -11,6 +11,10 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
+import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
@@ -29,7 +33,6 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.format
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.isValidAmountInput
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.parseAmountToCents
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.resolveSplitMembers
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToLocalDate
 import org.lerchenflo.schneaggchatv3mp.utilities.toFormattedString
@@ -39,7 +42,6 @@ import schneaggchatv3mp.composeapp.generated.resources.split_amounts_complete
 import schneaggchatv3mp.composeapp.generated.resources.split_amounts_left
 import schneaggchatv3mp.composeapp.generated.resources.split_amounts_too_much
 import schneaggchatv3mp.composeapp.generated.resources.split_decimal_separator
-import schneaggchatv3mp.composeapp.generated.resources.split_delete_failed
 import schneaggchatv3mp.composeapp.generated.resources.split_error_amount_required
 import schneaggchatv3mp.composeapp.generated.resources.split_error_amount_too_large
 import schneaggchatv3mp.composeapp.generated.resources.split_error_amounts_mismatch
@@ -48,7 +50,6 @@ import schneaggchatv3mp.composeapp.generated.resources.split_error_same_person
 import schneaggchatv3mp.composeapp.generated.resources.split_error_title_required
 import schneaggchatv3mp.composeapp.generated.resources.split_error_title_too_long
 import schneaggchatv3mp.composeapp.generated.resources.split_item_not_found
-import schneaggchatv3mp.composeapp.generated.resources.split_save_failed
 import kotlin.time.ExperimentalTime
 
 private const val MAX_TITLE_LENGTH = 100
@@ -60,6 +61,7 @@ private const val MAX_EMOJI_LENGTH = 10
  * (opened from an existing transfer or prefilled from a settle-up suggestion).
  */
 class SplitExpenseEditorViewModel(
+    private val errorChannel: ErrorChannel,
     private val groupExtensionRepository: GroupExtensionRepository,
     private val groupRepository: GroupRepository,
     private val userRepository: UserRepository,
@@ -92,7 +94,7 @@ class SplitExpenseEditorViewModel(
         val existing = existingItem?.data as? SplitExpense
         // Deleted meanwhile (e.g. by another member)
         if (extension == null || (route.itemId != null && existing == null)) {
-            SnackbarManager.showMessage(getString(Res.string.split_item_not_found))
+            errorChannel.sendError(UiText.StringResourceText(Res.string.split_item_not_found))
             navigator.navigateBack()
             return
         }
@@ -348,12 +350,11 @@ class SplitExpenseEditorViewModel(
                 extensionId = route.extensionId,
                 itemId = route.itemId,
                 data = current.toExpense(dateMillis = current.dateMillis()),
-            )
+            ).reportErrorTo(errorChannel).isSuccess
             if (success) {
                 navigator.navigateBack()
             } else {
                 _state.update { it.copy(isSaving = false) }
-                SnackbarManager.showMessage(getString(Res.string.split_save_failed))
             }
         }
     }
@@ -363,10 +364,8 @@ class SplitExpenseEditorViewModel(
         _state.update { it.copy(isDeleteDialogVisible = false) }
 
         viewModelScope.launch {
-            if (groupExtensionRepository.deleteItem(extensionId = route.extensionId, itemId = itemId)) {
+            if (groupExtensionRepository.deleteItem(extensionId = route.extensionId, itemId = itemId).reportErrorTo(errorChannel).isSuccess) {
                 navigator.navigateBack()
-            } else {
-                SnackbarManager.showMessage(getString(Res.string.split_delete_failed))
             }
         }
     }
