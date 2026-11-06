@@ -263,7 +263,6 @@ fun LoginScreen(
                             onusernameTextChange = { viewModel.updateUsername(it) },
                             passwordText = viewModel.password,
                             onPasswordTextChange = { viewModel.updatePassword(it) },
-                            passwordTextError = viewModel.errorMessage,
                             loginbuttondisabled = viewModel.loginButtonDisabled,
                             modifier = Modifier
                                 .fillMaxWidth(),
@@ -307,7 +306,6 @@ fun LoginScreen(
                                 onusernameTextChange = { viewModel.updateUsername(it) },
                                 passwordText = viewModel.password,
                                 onPasswordTextChange = { viewModel.updatePassword(it) },
-                                passwordTextError = viewModel.errorMessage,
                                 loginbuttondisabled = viewModel.loginButtonDisabled,
                                 modifier = Modifier
                                     .weight(1f),
@@ -348,7 +346,6 @@ fun LoginScreen(
                             onusernameTextChange = { viewModel.updateUsername(it) },
                             passwordText = viewModel.password,
                             onPasswordTextChange = { viewModel.updatePassword(it) },
-                            passwordTextError = viewModel.errorMessage,
                             loginbuttondisabled = viewModel.loginButtonDisabled,
                             modifier = Modifier
                                 .widthIn(max = 540.dp),

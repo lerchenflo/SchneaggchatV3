@@ -43,7 +43,7 @@ class FakeMessageServer(private val ownUserId: String) {
         /** HTTP 200 with this message as body. */
         data class Ok(val message: MessageResponse) : Reply
 
-        /** An HTTP error status; the client maps it to a `NetworkingError`. */
+        /** An HTTP error status; the client maps it to a `DataError`. */
         data class Fail(val status: HttpStatusCode, val body: String = status.description) : Reply
 
         /** The connection breaks before a response arrives (the client sees an `IOException`). */

@@ -2,9 +2,13 @@ package org.lerchenflo.schneaggchatv3mp.events.data
 
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.map
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.events.data.local.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
@@ -14,11 +18,8 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventJoinResponse
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.toEvent
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.EventRemoteDataSource
@@ -33,7 +34,6 @@ class OfflineFirstEventRepository(
     private val groupLocalDataSource: GroupLocalDataSource,
     private val eventRemoteDataSource: EventRemoteDataSource,
     private val loggingRepository: Logger,
-    private val errorChannel: ErrorChannel,
 ) : EventRepository {
 
     override fun getAllEventsFlow(): Flow<List<Event>> =
@@ -56,8 +56,8 @@ class OfflineFirstEventRepository(
                 page = currentPage,
             ).trackConnectivity()
             when (response) {
-                is NetworkResult.Error<*> -> { loggingRepository.logWarning("Event sync error: ${response.error}"); break }
-                is NetworkResult.Success -> {
+                is DataResult.Error<*> -> { loggingRepository.logWarning("Event sync error: ${response.error}"); break }
+                is DataResult.Success -> {
                     response.data.updatedEvents.forEach { eventLocalDataSource.upsertEvent(it.toEvent()) }
                     response.data.deletedEvents.forEach { eventLocalDataSource.deleteEvent(it) }
                     moreEntries = response.data.moreEntries
@@ -84,8 +84,8 @@ class OfflineFirstEventRepository(
         maxUsers: Int?,
         groupDeleteDelay: GroupDeleteDelay,
         profilePic: ByteArray?,
-    ): Boolean {
-        val result = eventRemoteDataSource.upsertEvent(
+    ): EmptyDataResult<DataError> =
+        eventRemoteDataSource.upsertEvent(
             EventRequest(
                 eventId = eventId,
                 type = type,
@@ -102,60 +102,36 @@ class OfflineFirstEventRepository(
             ),
             profilePic = profilePic,
         ).trackConnectivity()
-
-        return when (result) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<EventResponse> -> {
-                eventLocalDataSource.upsertEvent(result.data.toEvent())
-                true
-            }
-        }
-    }
+            .onSuccess { eventLocalDataSource.upsertEvent(it.toEvent()) }
+            .asEmptyDataResult()
 
     /**
      * Records how the current user responded to an event (opened it, accepted or dismissed it).
      * The server answers with the full event, so the local row is fresh before the matching
      * EventChange push even arrives.
      */
-    override suspend fun setEventParticipation(eventId: String, status: EventParticipationStatus): Boolean {
-        return when (val result = eventRemoteDataSource.setEventParticipation(eventId, status).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
+    override suspend fun setEventParticipation(eventId: String, status: EventParticipationStatus): EmptyDataResult<DataError> =
+        eventRemoteDataSource.setEventParticipation(eventId, status).trackConnectivity()
+            .onSuccess {
+                eventLocalDataSource.upsertEvent(it.toEvent())
             }
-            is NetworkResult.Success<EventResponse> -> {
-                eventLocalDataSource.upsertEvent(result.data.toEvent())
-                true
-            }
-        }
-    }
+            .asEmptyDataResult()
 
     /**
      * Joins the event, upserts the group belonging to the event and returns the group id
      * @return The id of the group belonging to the event
      */
-    override suspend fun joinEvent(eventId: String): String? {
-        return when (val response = eventRemoteDataSource.joinEvent(eventId).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = response.error))
-                null
-            }
-            is NetworkResult.Success<EventJoinResponse> -> {
+    override suspend fun joinEvent(eventId: String): DataResult<String, DataError> =
+        eventRemoteDataSource.joinEvent(eventId).trackConnectivity()
+            .onSuccess { response ->
                 // The joiner is not necessarily in the event's push audience (a stranger joining a
                 // public event is neither invited nor a friend of the creator), so their own
                 // ACCEPTED would otherwise only land on the next full sync
-                response.data.event?.let { eventLocalDataSource.upsertEvent(it.toEvent()) }
+                response.event?.let { eventLocalDataSource.upsertEvent(it.toEvent()) }
 
-                val groupResponse = response.data.groupResponse
-
-                groupLocalDataSource.upsertGroup(groupResponse.toGroup())
-                groupResponse.id
+                groupLocalDataSource.upsertGroup(response.groupResponse.toGroup())
             }
-        }
-    }
+            .map { it.groupResponse.id }
 
     /**
      * Breaks the event <-> group link. Both flags false detaches only - the event and its group
@@ -164,21 +140,15 @@ class OfflineFirstEventRepository(
      * path, the server's own group deletion + notifyGroupUpdate / group sync converge on the same
      * result regardless.
      */
-    override suspend fun detachEvent(eventId: String, groupId: String?, deleteGroup: Boolean, deleteEvent: Boolean): Boolean {
-        return when (val result = eventRemoteDataSource.detachEvent(eventId, deleteGroup, deleteEvent).trackConnectivity()) {
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = result.error))
-                false
-            }
-            is NetworkResult.Success<*> -> {
+    override suspend fun detachEvent(eventId: String, groupId: String?, deleteGroup: Boolean, deleteEvent: Boolean): EmptyDataResult<DataError> =
+        eventRemoteDataSource.detachEvent(eventId, deleteGroup, deleteEvent).trackConnectivity()
+            .onSuccess {
                 if (deleteEvent) {
                     eventLocalDataSource.deleteEvent(eventId)
                 }
                 if (deleteGroup && groupId != null) {
                     groupLocalDataSource.deleteGroup(groupId)
                 }
-                true
             }
-        }
-    }
+            .asEmptyDataResult()
 }

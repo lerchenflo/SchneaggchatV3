@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.remote
 
 import io.ktor.client.HttpClient
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
@@ -17,8 +19,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollMessageRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.ReactionRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 /** [MessageRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */
@@ -30,21 +30,21 @@ class KtorMessageRemoteDataSource(
 
     private val server = ServerClient(httpClient, preferenceManager, loggingRepository)
 
-    override suspend fun votePoll(pollVoteRequest: PollVoteRequest) : NetworkResult<MessageResponse, NetworkingError>{
+    override suspend fun votePoll(pollVoteRequest: PollVoteRequest) : DataResult<MessageResponse, DataError>{
         return server.safePost(
             endpoint = "/messages/pollvote",
             body = pollVoteRequest,
         )
     }
 
-    override suspend fun deletePollOption(request: PollOptionDeleteRequest) : NetworkResult<MessageResponse, NetworkingError> {
+    override suspend fun deletePollOption(request: PollOptionDeleteRequest) : DataResult<MessageResponse, DataError> {
         return server.safePost(
             endpoint = "/messages/polloption/delete",
             body = request,
         )
     }
 
-    override suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?, clientMessageId: String) : NetworkResult<MessageResponse, NetworkingError> {
+    override suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?, clientMessageId: String) : DataResult<MessageResponse, DataError> {
         val messageRequest = MessageRequest(
             messageId = messageId,
             receiverId = empfaenger,
@@ -70,7 +70,7 @@ class KtorMessageRemoteDataSource(
         text: String,
         answerid: String?,
         clientMessageId: String
-    ): NetworkResult<MessageResponse, NetworkingError> {
+    ): DataResult<MessageResponse, DataError> {
 
         val messageRequest = ImageMessageRequest(
             messageId = null,
@@ -97,7 +97,7 @@ class KtorMessageRemoteDataSource(
         audio: ByteArray,
         answerid: String?,
         clientMessageId: String
-    ): NetworkResult<MessageResponse, NetworkingError> {
+    ): DataResult<MessageResponse, DataError> {
 
         val messageRequest = AudioMessageRequest(
             messageId = null,
@@ -117,7 +117,7 @@ class KtorMessageRemoteDataSource(
         )
     }
 
-    override suspend fun sendPollMessageToServer(empfaenger: String, gruppe: Boolean, content: PollCreateRequest, answerid: String?, clientMessageId: String) : NetworkResult<MessageResponse, NetworkingError> {
+    override suspend fun sendPollMessageToServer(empfaenger: String, gruppe: Boolean, content: PollCreateRequest, answerid: String?, clientMessageId: String) : DataResult<MessageResponse, DataError> {
         val pollRequest = PollMessageRequest(
             receiverId = empfaenger,
             groupMessage = gruppe,
@@ -135,20 +135,20 @@ class KtorMessageRemoteDataSource(
         )
     }
 
-    override suspend fun messageSync(since: Long) : NetworkResult<MessageSyncResponse, NetworkingError>{
+    override suspend fun messageSync(since: Long) : DataResult<MessageSyncResponse, DataError>{
         return server.safeGet(
             endpoint = "/messages/sync?since=$since&page_size=400",
         )
     }
 
-    override suspend fun setMessagesRead(chatId: String, group: Boolean, timeStamp: Long) : NetworkResult<String, NetworkingError>{
+    override suspend fun setMessagesRead(chatId: String, group: Boolean, timeStamp: Long) : DataResult<String, DataError>{
         return server.safePost(
             endpoint = "/messages/setread?userid=$chatId&group=$group&timestamp=$timeStamp",
             body = "",
         )
     }
 
-    override suspend fun editMessage(messageId: String, newContent: String): NetworkResult<MessageResponse, NetworkingError> {
+    override suspend fun editMessage(messageId: String, newContent: String): DataResult<MessageResponse, DataError> {
         return server.safePost(
             endpoint = "/messages/edit",
             body = EditMessageRequest(
@@ -158,26 +158,26 @@ class KtorMessageRemoteDataSource(
         )
     }
 
-    override suspend fun deleteMessage(messageId: String): NetworkResult<Any, NetworkingError> {
+    override suspend fun deleteMessage(messageId: String): DataResult<Any, DataError> {
         return server.safeDelete(
             endpoint = "/messages/delete?messageid=$messageId"
         )
     }
 
-    override suspend fun reactToMessage(messageId: String, content: String): NetworkResult<MessageResponse, NetworkingError> {
+    override suspend fun reactToMessage(messageId: String, content: String): DataResult<MessageResponse, DataError> {
         return server.safePost(
             endpoint = "/messages/react",
             body = ReactionRequest(messageId = messageId, content = content)
         )
     }
 
-    override suspend fun getImageForImageMessage(messageId: String) : NetworkResult<ByteArray, NetworkingError> {
+    override suspend fun getImageForImageMessage(messageId: String) : DataResult<ByteArray, DataError> {
         return server.safeGet(
             endpoint = "/messages/images/$messageId"
         )
     }
 
-    override suspend fun getAudioForAudioMessage(messageId: String) : NetworkResult<ByteArray, NetworkingError> {
+    override suspend fun getAudioForAudioMessage(messageId: String) : DataResult<ByteArray, DataError> {
         return server.safeGet(
             endpoint = "/messages/audios/$messageId"
         )

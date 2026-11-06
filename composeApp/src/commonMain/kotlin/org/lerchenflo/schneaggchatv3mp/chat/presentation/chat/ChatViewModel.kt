@@ -33,9 +33,16 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportLastingErrorTo
+import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MarkReadGuard
@@ -58,14 +65,17 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import kotlin.time.TimeSource
+import schneaggchatv3mp.composeapp.generated.resources.poll_cannot_vote_on_unsent
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 class ChatViewModel(
+    private val errorChannel: ErrorChannel,
+    private val applicationScope: ApplicationScope,
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
@@ -248,11 +258,11 @@ class ChatViewModel(
         }
 
 
-        // An in-flight send survives leaving the chat screen: MessageRepository.sendMessage runs
-        // in the app-wide scope, so cancelling viewModelScope only stops waiting for it
+        // An in-flight send survives leaving the chat screen, and so does its error popup: a
+        // rejected message is gone, so the user has to hear about it
         when (message) {
             is TextContent -> {
-                viewModelScope.launch {
+                applicationScope.launchOnMain {
                     messageRepository.sendMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
@@ -260,13 +270,13 @@ class ChatViewModel(
                         answerid = replyTo?.id,
                         messageId = null,
                         ownId = ownId,
-                    )
+                    ).reportLastingErrorTo(errorChannel)
                 }
             }
 
             is SendMessageContent.ImageContent -> {
                 message.images.forEachIndexed { index, image ->
-                    viewModelScope.launch {
+                    applicationScope.launchOnMain {
                         messageRepository.sendMessage(
                             empfaenger = chatId,
                             gruppe = isGroup,
@@ -277,20 +287,20 @@ class ChatViewModel(
                             answerid = replyTo?.id,
                             messageId = null,
                             ownId = ownId
-                        )
+                        ).reportLastingErrorTo(errorChannel)
                     }
                 }
             }
 
             is SendMessageContent.AudioContent -> {
-                viewModelScope.launch {
+                applicationScope.launchOnMain {
                     messageRepository.sendVoiceMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
                         recordingPath = audioManager.getRecordingPath(message.audioPath.substringAfterLast('/')),
                         answerid = replyTo?.id,
                         ownId = ownId
-                    )
+                    ).reportLastingErrorTo(errorChannel)
                 }
             }
         }
@@ -320,7 +330,7 @@ class ChatViewModel(
         val ownId = SessionCache.requireLoggedIn()?.userId ?: return
         val replyMessage = state.value.replyMessage
 
-        viewModelScope.launch {
+        applicationScope.launchOnMain {
             messageRepository.sendMessage(
                 empfaenger = chatId,
                 gruppe = isGroup,
@@ -328,7 +338,7 @@ class ChatViewModel(
                 answerid = replyMessage?.id,
                 messageId = null,
                 ownId = ownId
-            )
+            ).reportLastingErrorTo(errorChannel)
 
             updateReplyMessage(null)
         }
@@ -340,7 +350,7 @@ class ChatViewModel(
                 messageRepository.deleteLocalMessage(message.localPK)
                 println("Offline message deleted")
             } else {
-                messageRepository.deleteMessage(message.id!!)
+                messageRepository.deleteMessage(message.id!!).reportErrorTo(errorChannel)
                 println("Remote message deleted")
             }
         }
@@ -366,7 +376,7 @@ class ChatViewModel(
                             selected = action.checked
                         ),
                         ownId = ownId
-                    )
+                    ).reportErrorTo(errorChannel)
                 }
             }
 
@@ -382,7 +392,7 @@ class ChatViewModel(
                             selected = true,
                             parentOptionId = action.parentOptionId,
                         )
-                    )
+                    ).reportErrorTo(errorChannel)
                 }
             }
             is MessageAction.DeletePollOption -> {
@@ -391,7 +401,12 @@ class ChatViewModel(
                         ownId = ownId,
                         messageId = action.messageId,
                         optionId = action.optionId
-                    )
+                    ).reportErrorTo(errorChannel)
+                }
+            }
+            MessageAction.PollMessageNotSent -> {
+                viewModelScope.launch {
+                    errorChannel.sendError(UiText.StringResourceText(Res.string.poll_cannot_vote_on_unsent))
                 }
             }
             is MessageAction.PlayAudio -> {
@@ -437,7 +452,7 @@ class ChatViewModel(
                     messageRepository.reactToMessage(
                         action.messageId,
                         action.reaction
-                    )
+                    ).reportErrorTo(errorChannel)
                 }
             }
         }
@@ -459,7 +474,7 @@ class ChatViewModel(
             val saved = messageRepository.editMessage(
                 message = message,
                 newContent = content.textMessage.text
-            )
+            ).reportErrorTo(errorChannel).isSuccess
 
             println("Edit: Newcontent: ${content.textMessage}")
 
@@ -473,7 +488,7 @@ class ChatViewModel(
 
     private fun showMessageTooLong() {
         viewModelScope.launch {
-            SnackbarManager.showMessage(getString(Res.string.message_too_long))
+            errorChannel.sendError(UiText.StringResourceText(Res.string.message_too_long))
         }
     }
 

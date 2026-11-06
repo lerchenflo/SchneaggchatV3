@@ -76,6 +76,7 @@ import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.login.presentation.sessionExpiredErrorEvent
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
@@ -193,6 +194,7 @@ fun App() {
             if (sessionRestored) return@LaunchedEffect
             try {
                 val savedCreds = authRepository.loadSavedLoginConfig()
+                if (savedCreds.sessionExpired) errorChannel.sendErrorSuspend(sessionExpiredErrorEvent())
                 if (savedCreds.credsSaved && savedCreds.emailVerified) {
                     AppLifecycleManager.notifyStartupRoutingDone()
                 } else {

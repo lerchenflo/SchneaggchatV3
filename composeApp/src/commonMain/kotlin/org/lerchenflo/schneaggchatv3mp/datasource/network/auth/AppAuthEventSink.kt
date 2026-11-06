@@ -7,11 +7,11 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.ActionChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ActionEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
@@ -62,7 +62,7 @@ class AppAuthEventSink(
         }
     }
 
-    override fun onServerUnreachable(error: NetworkingError) {
+    override fun onServerUnreachable(error: DataError) {
         errorChannel.trySendError(
             ErrorEvent(
                 error = error,

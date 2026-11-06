@@ -9,6 +9,9 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
@@ -123,14 +126,11 @@ class LocalSessionTerminator(
      *
      * Unlike [logout] this is not best effort: if the server call fails, the other devices are
      * still logged in, so the user stays logged in here too and sees the error.
-     * @return true if the account was logged out everywhere
      */
-    override suspend fun logoutAllDevices(): Boolean {
+    override suspend fun logoutAllDevices(): EmptyDataResult<DataError> {
         return externalScope.async {
-            if (!authRepository.logoutAllDevicesOnServer()) return@async false
-
-            logout(endSessionOnServer = false)
-            true
+            authRepository.logoutAllDevicesOnServer()
+                .onSuccess { logout(endSessionOnServer = false) }
         }.await()
     }
 }

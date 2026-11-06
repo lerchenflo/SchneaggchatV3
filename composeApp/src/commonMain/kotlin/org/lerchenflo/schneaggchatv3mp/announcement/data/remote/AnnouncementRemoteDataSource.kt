@@ -3,19 +3,19 @@ package org.lerchenflo.schneaggchatv3mp.announcement.data.remote
 import org.lerchenflo.schneaggchatv3mp.announcement.data.remote.dto.AnnouncementRequest
 import org.lerchenflo.schneaggchatv3mp.announcement.data.remote.dto.AnnouncementResponse
 import org.lerchenflo.schneaggchatv3mp.announcement.data.remote.dto.LatestAnnouncementResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 
 /** Server calls for announcements. The admin calls answer NotFound to non-admins. */
 interface AnnouncementRemoteDataSource {
 
-    suspend fun getLatestAnnouncement(): NetworkResult<LatestAnnouncementResponse, NetworkingError>
+    suspend fun getLatestAnnouncement(): DataResult<LatestAnnouncementResponse, DataError>
 
-    suspend fun getAllAnnouncements(): NetworkResult<List<AnnouncementResponse>, NetworkingError>
+    suspend fun getAllAnnouncements(): DataResult<List<AnnouncementResponse>, DataError>
 
-    suspend fun createAnnouncement(request: AnnouncementRequest): NetworkResult<AnnouncementResponse, NetworkingError>
+    suspend fun createAnnouncement(request: AnnouncementRequest): DataResult<AnnouncementResponse, DataError>
 
-    suspend fun updateAnnouncement(request: AnnouncementRequest): NetworkResult<AnnouncementResponse, NetworkingError>
+    suspend fun updateAnnouncement(request: AnnouncementRequest): DataResult<AnnouncementResponse, DataError>
 
-    suspend fun deleteAnnouncement(id: Long): NetworkResult<Unit, NetworkingError>
+    suspend fun deleteAnnouncement(id: Long): DataResult<Unit, DataError>
 }

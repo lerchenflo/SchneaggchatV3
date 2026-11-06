@@ -6,5 +6,7 @@ package org.lerchenflo.schneaggchatv3mp.login.domain
  */
 data class SavedCredsResult(
     val credsSaved: Boolean,
-    val emailVerified: Boolean
+    val emailVerified: Boolean,
+    /** Tokens were stored, but the session can't be restored from them any more. */
+    val sessionExpired: Boolean = false,
 )

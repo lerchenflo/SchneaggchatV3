@@ -228,7 +228,6 @@
     <string name="group_timer_picker_title">Gruppe löschen am</string>
     <string name="group_timer_picker_info">Zu diesem Zeitpunkt werden der Gruppenchat und alle Nachrichten für alle gelöscht. Nur Admins können den Timer ändern.</string>
     <string name="delete_event">Event löschen</string>
-    <string name="event_delete_failed">❌ Event konnte nicht gelöscht werden</string>
     <string name="event_delete_warning_message">Wähle, was mit dem Event und seinem Gruppenchat passieren soll. Trennen behält beides, Löschen entfernt nur das Ausgewählte.</string>
     <string name="event_delete_confirm_no_group_message">Dieses Event löschen? Das kann nicht rückgängig gemacht werden.</string>
     <string name="event_delete_detach_only">Nur trennen (Event &amp; Gruppe bleiben)</string>
@@ -281,7 +280,6 @@
     <string name="send_friend_request">Freundschaftsanfrage senden</string>
     <string name="send_friend_request_description">Willst du %1$s eine Freundschaftsanfrage senden?</string>
     <string name="friend_request_sent">✔ Freunschaftsanfrage gesendet</string>
-    <string name="error_friend_request">❌ Fehler beim Senden der Freundschaftsanfrage</string>
 
     <string name="server_not_reachable">Verbindung zum Server konnte nicht hergestellt werden.</string>
 
@@ -1504,7 +1502,6 @@
     <string name="new_password">Neues Passwort</string>
     <string name="confirm_new_password">Neues Passwort bestätigen</string>
     <string name="password_changed_successfully">Passwort erfolgreich geändert</string>
-    <string name="password_change_failed">Passwort konnte nicht geändert werden. Bitte überprüfe dein aktuelles Passwort.</string>
     <string name="privacy_policy">Datenschutzerklärung</string>
     <string name="privacy_policy_info">Lies unsere Datenschutzbestimmungen und Richtlinien</string>
 
@@ -1556,7 +1553,6 @@
     <string name="event_participation_dismissed">Kein Interesse</string>
     <string name="event_participation_count">%1$s (%2$d)</string>
     <string name="event_participation_at">%1$s, %2$s</string>
-    <string name="event_participation_failed">Deine Antwort konnte nicht gespeichert werden</string>
 
     <!-- Shared content (images and links of a chat) -->
     <string name="shared_content_title">Geteilte Inhalte</string>
@@ -1880,8 +1876,6 @@
     <string name="split_error_amount_too_large">Der Betrag ist zu hoch.</string>
     <string name="split_error_no_participants">Wähle mindestens eine Person aus.</string>
     <string name="split_error_same_person">Wähle eine andere Person als den Absender.</string>
-    <string name="split_save_failed">Speichern fehlgeschlagen. Bitte versuche es erneut.</string>
-    <string name="split_delete_failed">Löschen fehlgeschlagen. Bitte versuche es erneut.</string>
     <string name="split_item_not_found">Dieser Eintrag existiert nicht mehr.</string>
     <string name="split_mode_by_amount">Nach Betrag</string>
     <string name="split_amounts_left">Noch %1$s zu verteilen</string>

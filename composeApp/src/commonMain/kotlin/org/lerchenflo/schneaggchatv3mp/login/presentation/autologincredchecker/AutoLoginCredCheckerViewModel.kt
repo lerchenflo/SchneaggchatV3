@@ -8,12 +8,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.login.presentation.sessionExpiredErrorEvent
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 
 class AutoLoginCredCheckerViewModel(
+    private val errorChannel: ErrorChannel,
     private val authRepository: AuthRepository,
     private val navigator: Navigator
 ) : ViewModel() {
@@ -36,6 +39,7 @@ class AutoLoginCredCheckerViewModel(
             _state.update { it.copy(isLoading = true) }
 
             val savedCreds = authRepository.loadSavedLoginConfig()
+            if (savedCreds.sessionExpired) errorChannel.sendErrorSuspend(sessionExpiredErrorEvent())
 
             if (SessionCache.isLoggedIn()) {
                 // User got logged in when loading the saved config

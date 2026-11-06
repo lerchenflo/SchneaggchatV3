@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.events.data.remote
 
 import io.ktor.client.HttpClient
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.appendJsonPart
@@ -12,8 +14,6 @@ import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 
@@ -29,7 +29,7 @@ class KtorEventRemoteDataSource(
     override suspend fun eventSync(
         entries: List<IdTimeStamp>,
         page: Int,
-    ): NetworkResult<EventSyncResponse, NetworkingError> {
+    ): DataResult<EventSyncResponse, DataError> {
         return server.safePost(
             endpoint = "/events/sync?page=$page&page_size=400",
             body = entries,
@@ -39,7 +39,7 @@ class KtorEventRemoteDataSource(
     override suspend fun upsertEvent(
         request: EventRequest,
         profilePic: ByteArray?,
-    ): NetworkResult<EventResponse, NetworkingError> {
+    ): DataResult<EventResponse, DataError> {
         return server.safePostMultipart(
             endpoint = "/events/upsert",
             parts = {
@@ -53,7 +53,7 @@ class KtorEventRemoteDataSource(
 
     override suspend fun joinEvent(
         eventId: String
-    ): NetworkResult<EventJoinResponse, NetworkingError> {
+    ): DataResult<EventJoinResponse, DataError> {
         return server.safePost(
             endpoint = "/events/join",
             body = EventJoinRequest(
@@ -65,7 +65,7 @@ class KtorEventRemoteDataSource(
     override suspend fun setEventParticipation(
         eventId: String,
         status: EventParticipationStatus,
-    ): NetworkResult<EventResponse, NetworkingError> {
+    ): DataResult<EventResponse, DataError> {
         return server.safePost(
             endpoint = "/events/participation",
             body = EventParticipationRequest(
@@ -75,7 +75,7 @@ class KtorEventRemoteDataSource(
         )
     }
 
-    override suspend fun detachEvent(eventId: String, deleteGroup: Boolean, deleteEvent: Boolean): NetworkResult<Unit, NetworkingError> {
+    override suspend fun detachEvent(eventId: String, deleteGroup: Boolean, deleteEvent: Boolean): DataResult<Unit, DataError> {
         return server.safeDelete(endpoint = "/events/delete?eventid=$eventId&deletegroup=$deleteGroup&deleteevent=$deleteEvent")
     }
 }

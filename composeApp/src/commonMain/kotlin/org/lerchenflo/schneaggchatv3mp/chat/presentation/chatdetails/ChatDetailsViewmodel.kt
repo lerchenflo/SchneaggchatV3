@@ -4,6 +4,13 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
 import androidx.compose.runtime.getValue
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
+import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import androidx.compose.runtime.mutableStateOf
@@ -40,8 +47,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
@@ -54,10 +59,9 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.ExtensionLis
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.extractLinks
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
-import schneaggchatv3mp.composeapp.generated.resources.event_delete_failed
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
 import schneaggchatv3mp.composeapp.generated.resources.wake_no_devices
@@ -116,6 +120,7 @@ sealed interface ChatDetailsState {
 }
 
 class ChatDetailsViewmodel(
+    private val errorChannel: ErrorChannel,
     private val groupRepository: GroupRepository,
     private val navigator: Navigator,
     private val userRepository: UserRepository,
@@ -194,45 +199,49 @@ class ChatDetailsViewmodel(
             )
 
             val response = when (result) {
-                is NetworkResult.Success -> result.data
-                is NetworkResult.Error -> {
+                is DataResult.Success -> result.data
+                is DataResult.Error -> {
                     //The server rejects waking a non-friend outright rather than reporting it
                     //as an outcome, so it arrives here as a 403.
-                    SnackbarManager.showMessage(
-                        when (result.error) {
-                            is NetworkingError.Forbidden -> getString(Res.string.wake_not_friends)
-                            is NetworkingError.NoInternetConnection -> getString(Res.string.network_error_no_internet)
-                            is NetworkingError.NetworkTimeout -> getString(Res.string.network_error_timeout)
-                            else -> getString(Res.string.wake_failed)
-                        }
+                    errorChannel.sendError(
+                        UiText.StringResourceText(
+                            when (result.error) {
+                                is DataError.Forbidden -> Res.string.wake_not_friends
+                                is DataError.NoInternetConnection -> Res.string.network_error_no_internet
+                                is DataError.NetworkTimeout -> Res.string.network_error_timeout
+                                else -> Res.string.wake_failed
+                            }
+                        )
                     )
                     return@launchOnMain
                 }
             }
 
-            val message = when (response.outcome) {
+            when (response.outcome) {
                 WakeOutcome.WOKEN -> {
                     val base = if (isGroup) {
                         getString(Res.string.wake_sent_users, response.userCount, response.deviceCount)
                     } else {
                         getString(Res.string.wake_sent_user, chatName, response.deviceCount)
                     }
-                    if (response.skippedCount > 0) {
-                        getString(Res.string.wake_sent_skipped, base, response.skippedCount)
-                    } else {
-                        base
-                    }
+                    SnackbarManager.showMessage(
+                        if (response.skippedCount > 0) {
+                            getString(Res.string.wake_sent_skipped, base, response.skippedCount)
+                        } else {
+                            base
+                        }
+                    )
                 }
 
-                WakeOutcome.NOT_ALLOWED ->
-                    if (isGroup) getString(Res.string.wake_not_allowed_group)
-                    else getString(Res.string.wake_not_allowed_user, chatName)
+                WakeOutcome.NOT_ALLOWED -> errorChannel.sendError(
+                    if (isGroup) UiText.StringResourceText(Res.string.wake_not_allowed_group)
+                    else UiText.StringResourceText(Res.string.wake_not_allowed_user, arrayOf(chatName))
+                )
 
-                WakeOutcome.NO_DEVICES ->
-                    getString(Res.string.wake_no_devices, chatName)
+                WakeOutcome.NO_DEVICES -> errorChannel.sendError(
+                    UiText.StringResourceText(Res.string.wake_no_devices, arrayOf(chatName))
+                )
             }
-
-            SnackbarManager.showMessage(message)
         }
     }
 
@@ -398,15 +407,12 @@ class ChatDetailsViewmodel(
 
     fun detachConnectedEvent(eventId: String, deleteGroup: Boolean, deleteEvent: Boolean) {
         applicationScope.launchOnMain {
-            val success = eventRepository.detachEvent(
+            eventRepository.detachEvent(
                 eventId = eventId,
                 groupId = chatId,
                 deleteGroup = deleteGroup,
                 deleteEvent = deleteEvent,
-            )
-            if (!success) {
-                SnackbarManager.showMessage(getString(Res.string.event_delete_failed))
-            }
+            ).reportErrorTo(errorChannel)
         }
     }
 
@@ -442,15 +448,16 @@ class ChatDetailsViewmodel(
             }
             is ExtensionListAction.OnCreateExtension -> {
                 applicationScope.launchOnMain {
-                    val extensionId = groupExtensionRepository.createExtension(
+                    groupExtensionRepository.createExtension(
                         groupId = chatId,
                         type = action.type,
                         title = action.title,
                         settings = action.settings,
-                    ) ?: return@launchOnMain
-                    // Don't pull the user back here when the screen was left meanwhile
-                    if (viewModelScope.isActive) {
-                        navigator.navigate(Route.GroupExtension(extensionId = extensionId))
+                    ).reportErrorTo(errorChannel).onSuccess { extensionId ->
+                        // Don't pull the user back here when the screen was left meanwhile
+                        if (viewModelScope.isActive) {
+                            navigator.navigate(Route.GroupExtension(extensionId = extensionId))
+                        }
                     }
                 }
             }
@@ -469,9 +476,9 @@ class ChatDetailsViewmodel(
     fun updateDescription(){
         applicationScope.launchOnMain {
             if (isGroup) {
-                groupRepository.changeGroupDescription(chatId, descriptionText.text)
+                groupRepository.changeGroupDescription(chatId, descriptionText.text).reportErrorTo(errorChannel)
             }else {
-                userRepository.changeUserDetails(newStatus = null, newDescription =  descriptionText.text, userId = chatId)
+                userRepository.changeUserDetails(newStatus = null, newDescription =  descriptionText.text, userId = chatId).reportErrorTo(errorChannel)
             }
         }
     }
@@ -479,7 +486,7 @@ class ChatDetailsViewmodel(
     fun removeFriend() {
         if (!isGroup) {
             applicationScope.launchOnMain {
-                if(userRepository.removeFriend(chatId)){
+                if (userRepository.removeFriend(chatId).reportErrorTo(errorChannel).isSuccess) {
                     navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                 }
             }
@@ -492,7 +499,7 @@ class ChatDetailsViewmodel(
                 action = if(member.admin) GroupMemberAction.REMOVE_ADMIN else GroupMemberAction.MAKE_ADMIN,
                 memberId = member.userId,
                 groupId = member.groupId
-            )
+            ).reportErrorTo(errorChannel)
         }
     }
 
@@ -509,7 +516,7 @@ class ChatDetailsViewmodel(
             val success = groupRepository.changeGroupProfilePic(
                 groupId = chatId,
                 newPic = downscaledimage
-            )
+            ).reportErrorTo(errorChannel).isSuccess
 
             if (success) {
                 SnackbarManager.showMessage(getString(Res.string.please_restart_app)) //Des image caching vo coil isch so guat dassas sich ned abtöta loht. ma künnt profilbild mit datum speichra aber denn wirds ned überschrieba und unendlich speicherverbrauch
@@ -523,7 +530,7 @@ class ChatDetailsViewmodel(
                 action = GroupMemberAction.ADD_USER,
                 memberId = userId,
                 groupId = chatId
-            )
+            ).reportErrorTo(errorChannel)
         }
     }
 
@@ -533,7 +540,7 @@ class ChatDetailsViewmodel(
                 action = GroupMemberAction.REMOVE_USER,
                 memberId = memberId,
                 groupId = chatId
-            )
+            ).reportErrorTo(errorChannel)
         }
     }
 
@@ -543,7 +550,7 @@ class ChatDetailsViewmodel(
 
     fun updateGroupName(name: String){
         applicationScope.launchOnMain {
-            groupRepository.changeGroupName(chatId, name)
+            groupRepository.changeGroupName(chatId, name).reportErrorTo(errorChannel)
         }
     }
 
@@ -553,17 +560,17 @@ class ChatDetailsViewmodel(
      */
     fun setGroupExpiry(expiresAt: Long?) {
         applicationScope.launchOnMain {
-            groupRepository.changeGroupExpiry(chatId, expiresAt)
+            groupRepository.changeGroupExpiry(chatId, expiresAt).reportErrorTo(errorChannel)
         }
     }
 
     /**
      * Delete the whole group for every member. Admins only - the server rejects anyone else, and
-     * the UI only offers it to admins. Errors reach the user through the repository's ErrorChannel.
+     * the UI only offers it to admins.
      */
     fun deleteGroup() {
         applicationScope.launchOnMain {
-            if (groupRepository.deleteGroup(chatId)) {
+            if (groupRepository.deleteGroup(chatId).reportErrorTo(errorChannel).isSuccess) {
                 navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
             }
         }
@@ -571,10 +578,9 @@ class ChatDetailsViewmodel(
 
     fun sendFriendRequest(id: String){
         applicationScope.launchOnMain { //The repository is main-safe
-            val success = userRepository.sendFriendRequest(id)
-            SnackbarManager.showMessage(
-                if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)
-            )
+            userRepository.sendFriendRequest(id).reportErrorTo(errorChannel).onSuccess {
+                SnackbarManager.showMessage(getString(Res.string.friend_request_sent))
+            }
         }
     }
 
@@ -590,7 +596,7 @@ class ChatDetailsViewmodel(
             userRepository.changeUserDetails(
                 userId = chatId,
                 newNickName = newNickname
-            )
+            ).reportErrorTo(errorChannel)
         }
     }
 

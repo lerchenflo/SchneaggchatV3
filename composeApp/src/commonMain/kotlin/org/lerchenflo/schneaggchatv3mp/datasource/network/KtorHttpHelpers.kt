@@ -13,9 +13,9 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import kotlinx.serialization.SerializationStrategy
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.safeNetworkCall
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
@@ -30,8 +30,8 @@ class ServerClient(
     @PublishedApi internal val logger: Logger,
 ) {
 
-    suspend inline fun <reified T> safeGet(endpoint: String): NetworkResult<T, NetworkingError> {
-        return safeNetworkCall(logger) {
+    suspend inline fun <reified T> safeGet(endpoint: String): DataResult<T, DataError> {
+        return safeNetworkCall(logger, "GET $endpoint") {
             client.get(preferenceManager.buildServerUrl(endpoint))
         }
     }
@@ -40,8 +40,8 @@ class ServerClient(
     suspend inline fun <reified T, reified R> safePost(
         endpoint: String,
         body: T
-    ): NetworkResult<R, NetworkingError> {
-        return safeNetworkCall(logger) {
+    ): DataResult<R, DataError> {
+        return safeNetworkCall(logger, "POST $endpoint") {
             client.post(preferenceManager.buildServerUrl(endpoint)) {
                 contentType(ContentType.Application.Json)
                 setBody(body)
@@ -53,16 +53,16 @@ class ServerClient(
     suspend inline fun <reified R> safePostMultipart(
         endpoint: String,
         crossinline parts: FormBuilder.() -> Unit
-    ): NetworkResult<R, NetworkingError> {
-        return safeNetworkCall(logger) {
+    ): DataResult<R, DataError> {
+        return safeNetworkCall(logger, "POST $endpoint") {
             client.post(preferenceManager.buildServerUrl(endpoint)) {
                 setBody(MultiPartFormDataContent(formData { parts() }))
             }
         }
     }
 
-    suspend inline fun <reified T> safeDelete(endpoint: String): NetworkResult<T, NetworkingError> {
-        return safeNetworkCall(logger) {
+    suspend inline fun <reified T> safeDelete(endpoint: String): DataResult<T, DataError> {
+        return safeNetworkCall(logger, "DELETE $endpoint") {
             client.delete(preferenceManager.buildServerUrl(endpoint))
         }
     }

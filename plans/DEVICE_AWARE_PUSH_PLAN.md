@@ -1,6 +1,6 @@
 # Device-aware push fallback (plan, not decided)
 
-Status: plan only, decide later (user, 2026-10-21). Needs server changes, which are not wanted right now.
+Status: superseded by `SchneaggchatV3server/docs/UNIFIED_NOTIFICATIONS_PLAN.md` (2026-11-06). Kept for history.
 
 ## Problem
 

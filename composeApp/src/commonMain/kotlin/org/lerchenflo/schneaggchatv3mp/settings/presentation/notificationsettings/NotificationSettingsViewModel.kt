@@ -10,7 +10,9 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportFirstErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
@@ -22,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 class NotificationSettingsViewModel(
+    private val errorChannel: ErrorChannel,
     private val userRepository: UserRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
@@ -105,15 +108,17 @@ class NotificationSettingsViewModel(
         // The server writes outlive the screen; the permission prompt belongs to it and is
         // dropped when the screen is gone
         val writes = applicationScope.launchOnMain {
-            if (newGlobal != wasGlobal) {
-                userRepository.setWakeGlobal(newGlobal)
-            }
+            val globalResult = if (newGlobal != wasGlobal) userRepository.setWakeGlobal(newGlobal) else null
 
-            friendDrafts.forEach { draft ->
+            val friendResults = friendDrafts.mapNotNull { draft ->
                 if (currentByFriendId[draft.friendId] != draft.allowWake) {
                     userRepository.setWakePermission(draft.friendId, draft.allowWake)
+                } else {
+                    null
                 }
             }
+
+            (listOfNotNull(globalResult) + friendResults).reportFirstErrorTo(errorChannel)
         }
 
         if (newGlobal && !wasGlobal) {

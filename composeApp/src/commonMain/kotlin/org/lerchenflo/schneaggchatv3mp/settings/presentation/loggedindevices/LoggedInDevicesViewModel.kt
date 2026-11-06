@@ -7,6 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.onError
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
@@ -34,6 +39,7 @@ data class LoggedInDevice(
 )
 
 class LoggedInDevicesViewModel(
+    private val errorChannel: ErrorChannel,
     private val authRepository: AuthRepository,
     private val sessionTerminator: SessionTerminator,
     private val appVersion: AppVersion,
@@ -59,18 +65,17 @@ class LoggedInDevicesViewModel(
             isLoading = true
             loadFailed = false
 
-            val sessions = authRepository.getSessions()
-            if (sessions == null) {
-                loadFailed = true
-            } else {
-                val ownName = appVersion.getDeviceName()
-                val ownType = appVersion.getDeviceType()
+            authRepository.getSessions()
+                .onError { loadFailed = true }
+                .onSuccess { sessions ->
+                    val ownName = appVersion.getDeviceName()
+                    val ownType = appVersion.getDeviceType()
 
-                devices = sessions
-                    .map { it.toLoggedInDevice(isCurrentDevice = it.deviceName == ownName && it.deviceType == ownType) }
-                    // Own device on top, the rest by last activity (server order)
-                    .sortedByDescending { it.isCurrentDevice }
-            }
+                    devices = sessions
+                        .map { it.toLoggedInDevice(isCurrentDevice = it.deviceName == ownName && it.deviceType == ownType) }
+                        // Own device on top, the rest by last activity (server order)
+                        .sortedByDescending { it.isCurrentDevice }
+                }
 
             isLoading = false
         }
@@ -80,7 +85,7 @@ class LoggedInDevicesViewModel(
         if (device.isCurrentDevice) return // The own device logs out via the normal logout
 
         applicationScope.launchOnMain {
-            if (authRepository.endSession(device.id)) {
+            if (authRepository.endSession(device.id).reportErrorTo(errorChannel).isSuccess) {
                 devices = devices.filterNot { it.id == device.id }
                 SnackbarManager.showMessage(getString(Res.string.logged_in_devices_logged_out))
             }
@@ -94,7 +99,7 @@ class LoggedInDevicesViewModel(
         isLoggingOutAllDevices = true
         applicationScope.launchOnMain {
             try {
-                if (sessionTerminator.logoutAllDevices()) {
+                sessionTerminator.logoutAllDevices().reportErrorTo(errorChannel).onSuccess {
                     navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                 }
             } finally {

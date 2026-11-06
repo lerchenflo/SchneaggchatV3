@@ -21,6 +21,9 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
@@ -104,6 +107,7 @@ sealed interface GroupCreatorAction {
 }
 
 class GroupCreatorViewModel (
+    private val errorChannel: ErrorChannel,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val chatListRepository: ChatListRepository,
     private val groupRepository: GroupRepository,
@@ -249,17 +253,14 @@ class GroupCreatorViewModel (
             state = state.copy(isLoading = true)
 
             try {
-                val groupId = groupRepository.createGroup(
+                groupRepository.createGroup(
                     name = state.groupname.text,
                     description = state.groupdescription.text,
                     memberIds = state.selectedUsers.map { member ->
                         member.id
                     },
                     profilePic = state.profilepic!!
-                )
-
-                //Group creation not failed
-                if (groupId != null) {
+                ).reportErrorTo(errorChannel).onSuccess { groupId ->
                     println("Group created: groupid: $groupId")
 
                     //Launch sync. UNDISPATCHED: it is started before the navigation below can clear

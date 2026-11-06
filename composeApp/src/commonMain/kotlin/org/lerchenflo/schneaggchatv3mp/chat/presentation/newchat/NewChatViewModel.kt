@@ -17,6 +17,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.getOrNull
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportLastingErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -33,7 +38,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
-import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.invitation_text
 import kotlin.time.Duration
@@ -43,6 +47,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 private val SEARCH_DEBOUNCE = 300.milliseconds
 
 class NewChatViewModel (
+    private val errorChannel: ErrorChannel,
     private val appVersion: AppVersion,
     private val chatListRepository: ChatListRepository,
     private val userRepository: UserRepository,
@@ -97,9 +102,9 @@ class NewChatViewModel (
 
     private suspend fun loadAvailableUsers(searchTerm: String) {
         try {
-            val response = userRepository.getAvailableUsers(searchTerm)
+            val response = userRepository.getAvailableUsers(searchTerm).reportLastingErrorTo(errorChannel)
             println("reloading users: $response")
-            _availableChats.value = response
+            _availableChats.value = response.getOrNull().orEmpty()
                 .sortedByDescending { it.commonFriendCount }
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
@@ -111,11 +116,10 @@ class NewChatViewModel (
 
     fun addFriend(friendId: String) {
         applicationScope.launchOnMain { //The repository is main-safe
-            val success = userRepository.sendFriendRequest(friendId)
-            SnackbarManager.showMessage(
-                if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)
-            )
-            loadAvailableUsers(searchterm.value)
+            userRepository.sendFriendRequest(friendId).reportErrorTo(errorChannel).onSuccess {
+                SnackbarManager.showMessage(getString(Res.string.friend_request_sent))
+                loadAvailableUsers(searchterm.value)
+            }
         }
     }
 
@@ -134,14 +138,14 @@ class NewChatViewModel (
 
     fun acceptFriend(friendId: String){
         applicationScope.launchOnMain {
-            userRepository.sendFriendRequest(friendId)
+            userRepository.sendFriendRequest(friendId).reportErrorTo(errorChannel)
         }
         dismissPendingFriendDialog()
     }
 
     fun denyFriend(friendId: String){
         applicationScope.launchOnMain {
-            userRepository.denyFriendRequest(friendId)
+            userRepository.denyFriendRequest(friendId).reportErrorTo(errorChannel)
         }
         dismissPendingFriendDialog()
     }

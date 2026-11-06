@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.AvailableUser
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAppVersion
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeChatListRepository
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeErrorChannel
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeNotifier
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeSettingsRepository
@@ -72,6 +73,7 @@ class NewChatViewModelTest {
 
     private fun createViewModel() = viewModels.add(
         NewChatViewModel(
+            errorChannel = FakeErrorChannel(),
             appVersion = FakeAppVersion(),
             chatListRepository = chatListRepository,
             userRepository = userRepository,

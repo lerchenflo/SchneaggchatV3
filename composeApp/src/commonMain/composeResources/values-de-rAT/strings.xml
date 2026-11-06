@@ -226,7 +226,6 @@
     <string name="group_timer_picker_title">Gruppe löscha am</string>
     <string name="group_timer_picker_info">Zu deam Zitpunkt wird da Gruppenchat und alle Nochrichta für alle glöscht. Nur Admins künnand dean Timer ändra.</string>
     <string name="delete_event">Event löscha</string>
-    <string name="event_delete_failed">❌ Event hot ned glöscht werra künna</string>
     <string name="event_delete_warning_message">Wähl, was mit deam Event und sinem Gruppenchat passiera söll. Trenna bhebt beides, löscha entfernt nur des, was du uswählsch.</string>
     <string name="event_delete_confirm_no_group_message">Des Event löscha? Es kann num rückgängig gmacht werra.</string>
     <string name="event_delete_detach_only">Nur trenna (Event &amp; Gruppe blieband)</string>
@@ -279,7 +278,6 @@
     <string name="send_friend_request">Freundschaftsanfrog senda</string>
     <string name="send_friend_request_description">Willsch du %1$s a Freundschaftsanfrog senda?</string>
     <string name="friend_request_sent">✔ Freundschaftsanfrog gsendet</string>
-    <string name="error_friend_request">❌ Fehler beim Senda vo da Freundschaftsanfrog</string>
 
     <string name="server_not_reachable">D Verbindung zum Server funktioniert ned.</string>
 
@@ -1498,7 +1496,6 @@ Mealds, egal wie klenn.</string>
     <string name="new_password">Neues Passwort</string>
     <string name="confirm_new_password">Neus Passwort bestätiga</string>
     <string name="password_changed_successfully">Passwort erfolgreich gändert</string>
-    <string name="password_change_failed">Passwort hot ned gändert werra künna. Bitte prüf din aktuells Passwort.</string>
     <string name="privacy_policy">Datenschutzerklärung</string>
     <string name="privacy_policy_info">Leas üsre Datenschutzbestimmunga und Richtlinia</string>
 
@@ -1550,7 +1547,6 @@ Mealds, egal wie klenn.</string>
     <string name="event_participation_dismissed">Kua Interesse</string>
     <string name="event_participation_count">%1$s (%2$d)</string>
     <string name="event_participation_at">%1$s, %2$s</string>
-    <string name="event_participation_failed">Dine Antwort hot ned gspeichert werra künna</string>
 
     <!-- Shared content (images and links of a chat) -->
     <string name="shared_content_title">Toalte Inhalte</string>

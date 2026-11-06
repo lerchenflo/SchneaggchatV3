@@ -256,7 +256,6 @@ fun LoginFormSection(
     onPasswordTextChange: (String) -> Unit,
     onLoginButtonClick: () -> Unit,
     onSignupButtonClick: () -> Unit,
-    passwordTextError: String? = null,
     loginbuttondisabled: Boolean = false,
     loginbuttonloading: Boolean = false,
     usernameFocusRequester: FocusRequester,
@@ -293,7 +292,6 @@ fun LoginFormSection(
             hint = stringResource(Res.string.password),
             imeAction = ImeAction.Done,
             keyboardType = KeyboardType.Password,
-            errortext = passwordTextError,
             focusRequester = passwordFocusRequester,
             nextFocusRequester = loginFocusRequester,
             onDoneClick = onLoginButtonClick, // bei done drucka direkt login

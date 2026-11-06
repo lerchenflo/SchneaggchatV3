@@ -6,9 +6,9 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.safeNetworkCall
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -35,8 +35,8 @@ class KtorAuthRefreshApi(
         val deviceType: DEVICETYPE,
     )
 
-    override suspend fun refresh(refreshToken: String): NetworkResult<TokenPair, NetworkingError> {
-        return safeNetworkCall<TokenPair>(loggingRepository) {
+    override suspend fun refresh(refreshToken: String): DataResult<TokenPair, DataError> {
+        return safeNetworkCall<TokenPair>(loggingRepository, "POST /auth/refresh") {
             plainHttpClient.post(preferencemanager.buildServerUrl("/auth/refresh")) {
                 contentType(ContentType.Application.Json)
                 setBody(

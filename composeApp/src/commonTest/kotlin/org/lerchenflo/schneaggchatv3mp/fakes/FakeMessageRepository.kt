@@ -3,6 +3,9 @@ package org.lerchenflo.schneaggchatv3mp.fakes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MarkReadGuard
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
@@ -73,6 +76,12 @@ class FakeMessageRepository : MessageRepository {
     val audioRequests = CallLog<List<String>>()
     val fetchMissingMediaCalls = CallLog<Unit>()
 
+    /** What [sendMessage] and [sendVoiceMessage] answer. */
+    var sendResult: EmptyDataResult<DataError> = DataResult.Success(Unit)
+
+    /** What [sendOfflineMessages] reports to its callback. */
+    var offlineQueueErrors: List<DataError> = emptyList()
+
     var onSendMessage: suspend (SendCall) -> Unit = {}
     var onSendOfflineMessages: suspend (ownId: String) -> Unit = {}
     var onSyncMessages: suspend (fetchMedia: Boolean) -> Unit = {}
@@ -129,23 +138,32 @@ class FakeMessageRepository : MessageRepository {
     /** What [editMessage] answers - false like a failed (e.g. offline) edit. */
     var editSucceeds = true
 
-    override suspend fun editMessage(message: Message, newContent: String): Boolean {
+    override suspend fun editMessage(message: Message, newContent: String): EmptyDataResult<DataError> {
         editCalls.record(EditCall(message, newContent))
-        return editSucceeds
+        return editSucceeds.toFakeResult()
     }
 
     override suspend fun deleteLocalMessage(localpk: Long) = deleteLocalCalls.record(localpk)
 
-    override suspend fun deleteMessage(messageId: String) = deleteCalls.record(messageId)
+    override suspend fun deleteMessage(messageId: String): EmptyDataResult<DataError> {
+        deleteCalls.record(messageId)
+        return DataResult.Success(Unit)
+    }
 
-    override suspend fun reactToMessage(messageId: String, content: String) =
+    override suspend fun reactToMessage(messageId: String, content: String): EmptyDataResult<DataError> {
         reactCalls.record(ReactCall(messageId, content))
+        return DataResult.Success(Unit)
+    }
 
-    override suspend fun votePoll(ownId: String, pollVote: PollVote) =
+    override suspend fun votePoll(ownId: String, pollVote: PollVote): EmptyDataResult<DataError> {
         votePollCalls.record(VotePollCall(ownId, pollVote))
+        return DataResult.Success(Unit)
+    }
 
-    override suspend fun deletePollOption(ownId: String, messageId: String, optionId: String) =
+    override suspend fun deletePollOption(ownId: String, messageId: String, optionId: String): EmptyDataResult<DataError> {
         deletePollOptionCalls.record(DeletePollOptionCall(ownId, messageId, optionId))
+        return DataResult.Success(Unit)
+    }
 
     // ─── Send / offline queue / sync ──────────────────────────────────────────
 
@@ -158,10 +176,11 @@ class FakeMessageRepository : MessageRepository {
         answerid: String?,
         localpk: Long,
         clientMessageId: String?,
-    ) {
+    ): EmptyDataResult<DataError> {
         val call = SendCall(ownId, messageId, empfaenger, gruppe, content, answerid, localpk, clientMessageId)
         sendCalls.record(call)
         onSendMessage(call)
+        return sendResult
     }
 
     override suspend fun sendVoiceMessage(
@@ -170,13 +189,15 @@ class FakeMessageRepository : MessageRepository {
         gruppe: Boolean,
         recordingPath: String,
         answerid: String?,
-    ) {
+    ): EmptyDataResult<DataError> {
         sendVoiceCalls.record(SendVoiceCall(ownId, empfaenger, gruppe, recordingPath, answerid))
+        return sendResult
     }
 
-    override suspend fun sendOfflineMessages(ownId: String) {
+    override suspend fun sendOfflineMessages(ownId: String, onError: suspend (DataError) -> Unit) {
         sendOfflineCalls.record(ownId)
         onSendOfflineMessages(ownId)
+        offlineQueueErrors.forEach { onError(it) }
     }
 
     override suspend fun syncMessages(fetchMedia: Boolean) {

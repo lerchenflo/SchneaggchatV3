@@ -227,7 +227,6 @@
     <string name="group_timer_picker_title">Elimina il gruppo il</string>
     <string name="group_timer_picker_info">A quest'ora la chat di gruppo e tutti i suoi messaggi vengono eliminati per tutti. Solo gli admin possono modificare il timer.</string>
     <string name="delete_event">Elimina evento</string>
-    <string name="event_delete_failed">❌ Impossibile eliminare l'evento</string>
     <string name="event_delete_warning_message">Scegli cosa fare dell'evento e della sua chat di gruppo. Scollegare mantiene entrambi, eliminare rimuove solo ciò che scegli.</string>
     <string name="event_delete_confirm_no_group_message">Eliminare questo evento? Questa azione non può essere annullata.</string>
     <string name="event_delete_detach_only">Scollega soltanto (evento e gruppo restano)</string>
@@ -280,7 +279,6 @@
     <string name="send_friend_request">Invia richiesta di amicizia</string>
     <string name="send_friend_request_description">Vuoi aggiungere %1$s come amico?</string>
     <string name="friend_request_sent">✔ Richiesta di amicizia inviata</string>
-    <string name="error_friend_request">❌ Errore durante l'invio della richiesta di amicizia</string>
 
     <string name="server_not_reachable">Impossibile stabilire una connessione al server</string>
 
@@ -1498,7 +1496,6 @@
     <string name="new_password">Nuova password</string>
     <string name="confirm_new_password">Conferma nuova password</string>
     <string name="password_changed_successfully">Password cambiata con successo</string>
-    <string name="password_change_failed">Impossibile cambiare la password. Verifica la tua password attuale.</string>
     <string name="privacy_policy">Informativa sulla privacy</string>
     <string name="privacy_policy_info">Leggi i nostri termini e la nostra informativa sulla privacy</string>
 
@@ -1550,7 +1547,6 @@
     <string name="event_participation_dismissed">Non interessato</string>
     <string name="event_participation_count">%1$s (%2$d)</string>
     <string name="event_participation_at">%1$s, %2$s</string>
-    <string name="event_participation_failed">Impossibile salvare la tua risposta</string>
 
     <!-- Shared content (images and links of a chat) -->
     <string name="shared_content_title">Contenuti condivisi</string>
@@ -1874,8 +1870,6 @@
     <string name="split_error_amount_too_large">L'importo è troppo alto.</string>
     <string name="split_error_no_participants">Seleziona almeno una persona.</string>
     <string name="split_error_same_person">Scegli una persona diversa dal mittente.</string>
-    <string name="split_save_failed">Impossibile salvare. Riprova.</string>
-    <string name="split_delete_failed">Impossibile eliminare. Riprova.</string>
     <string name="split_item_not_found">Questa voce non esiste più.</string>
     <string name="split_mode_by_amount">Per importo</string>
     <string name="split_amounts_left">%1$s ancora da assegnare</string>

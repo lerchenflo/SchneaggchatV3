@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.login.data.remote
 
 import io.ktor.client.HttpClient
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.appendProfilePic
@@ -10,8 +12,6 @@ import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.NotificationTokenRe
 import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.PasswordChangeRequest
 import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.SessionResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 
@@ -29,7 +29,7 @@ class KtorAuthRemoteDataSource(
     // Without the bearer token, see authHttpClient
     private val authServer = ServerClient(authHttpClient, preferenceManager, loggingRepository)
 
-    override suspend fun login(username: String, password: String): NetworkResult<TokenPair, NetworkingError> {
+    override suspend fun login(username: String, password: String): DataResult<TokenPair, DataError> {
         return authServer.safePost<LoginRequest, TokenPair>(
             endpoint = "/auth/login",
             body = LoginRequest(username = username, password = password, deviceName = appVersion.getDeviceName(), deviceType = appVersion.getDeviceType())
@@ -45,7 +45,7 @@ class KtorAuthRemoteDataSource(
         phoneNumber: String?,
         language: String?,
         fileName: String
-    ): NetworkResult<Unit, NetworkingError> {
+    ): DataResult<Unit, DataError> {
         return authServer.safePostMultipart(
             endpoint = "/auth/register",
             parts = {
@@ -64,7 +64,7 @@ class KtorAuthRemoteDataSource(
         )
     }
 
-    override suspend fun sendEmailVerify(): NetworkResult<Unit, NetworkingError> {
+    override suspend fun sendEmailVerify(): DataResult<Unit, DataError> {
         return server.safePost<String, Unit>(
             endpoint = "/users/verificationemail",
             body = ""
@@ -75,7 +75,7 @@ class KtorAuthRemoteDataSource(
         refreshToken: String?,
         notificationToken: String?,
         isAndroid: Boolean,
-    ): NetworkResult<Unit, NetworkingError> {
+    ): DataResult<Unit, DataError> {
         return authServer.safePost<LogoutRequest, Unit>(
             endpoint = "/auth/logout",
             body = LogoutRequest(
@@ -86,7 +86,7 @@ class KtorAuthRemoteDataSource(
         )
     }
 
-    override suspend fun logoutAllDevices(refreshToken: String?): NetworkResult<Unit, NetworkingError> {
+    override suspend fun logoutAllDevices(refreshToken: String?): DataResult<Unit, DataError> {
         return server.safePost<LogoutRequest, Unit>(
             endpoint = "/auth/logout",
             body = LogoutRequest(
@@ -96,15 +96,15 @@ class KtorAuthRemoteDataSource(
         )
     }
 
-    override suspend fun getSessions(): NetworkResult<List<SessionResponse>, NetworkingError> {
+    override suspend fun getSessions(): DataResult<List<SessionResponse>, DataError> {
         return server.safeGet(endpoint = "/sessions")
     }
 
-    override suspend fun endSession(sessionId: String): NetworkResult<Unit, NetworkingError> {
+    override suspend fun endSession(sessionId: String): DataResult<Unit, DataError> {
         return server.safeDelete(endpoint = "/sessions/$sessionId")
     }
 
-    override suspend fun setNotificationToken(token: String, isAndroid: Boolean) : NetworkResult<Any, NetworkingError> {
+    override suspend fun setNotificationToken(token: String, isAndroid: Boolean) : DataResult<Any, DataError> {
         return server.safePost(
             endpoint = "/users/setnotificationtoken",
             body = NotificationTokenRequest(
@@ -114,7 +114,7 @@ class KtorAuthRemoteDataSource(
         )
     }
 
-    override suspend fun changePassword(oldPassword: String, newPassword: String) : NetworkResult<Any, NetworkingError> {
+    override suspend fun changePassword(oldPassword: String, newPassword: String) : DataResult<Any, DataError> {
         return server.safePost(
             endpoint = "/users/changepassword",
             body = PasswordChangeRequest(

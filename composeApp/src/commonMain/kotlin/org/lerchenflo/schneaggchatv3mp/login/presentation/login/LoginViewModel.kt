@@ -16,6 +16,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.onError
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -25,6 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.login.presentation.toLoginErrorEvent
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.CheckStatus
@@ -111,9 +116,6 @@ class LoginViewModel(
 
 
 
-    var errorMessage by mutableStateOf<String?>(null)
-        private set
-
     // Update username state
     fun updateUsername(newValue: String) {
         username = newValue
@@ -197,9 +199,9 @@ class LoginViewModel(
             viewModelScope.launch {
                 try {
 
-                    // Use the sharedViewModel's login function with a callback
-                    authRepository.login(username, password) { success ->
-                        if (success) {
+                    authRepository.login(username, password)
+                        .onError { errorChannel.sendErrorSuspend(it.toLoginErrorEvent()) }
+                        .onSuccess {
                             println("Login erfolgreich, triggering data sync")
                             // UNDISPATCHED: the sync is started before the navigation below can clear
                             // this ViewModel; it then runs in the app-wide scope (plan R2).
@@ -210,11 +212,10 @@ class LoginViewModel(
                                 navigator.navigate(Route.EmailVerifiedCheck, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                             }
                         }
-                    }
 
                 } catch (e: Exception) {
                     ensureActive()
-                    errorMessage = "Connection error: ${e.message}"
+                    errorChannel.sendError(DataError.Unknown(debugInfo = e.message))
                 } finally {
                     isLoading = false
                 }
@@ -229,8 +230,6 @@ class LoginViewModel(
     }
 
     private fun clearError() {
-        errorMessage = null
-
         loginButtonDisabled = !(username.isNotBlank() && password.isNotBlank())
     }
 }

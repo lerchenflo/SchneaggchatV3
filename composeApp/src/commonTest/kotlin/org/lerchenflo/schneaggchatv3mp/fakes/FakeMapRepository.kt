@@ -2,6 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.fakes
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
@@ -33,10 +35,13 @@ class FakeMapRepository : MapRepository {
         lat: Double,
         lon: Double,
         locationData: List<LocationData>,
-    ) = upsertedEntryIds.record(entryId)
+    ): EmptyDataResult<DataError> {
+        upsertedEntryIds.record(entryId)
+        return writeResult.toFakeResult()
+    }
 
-    override suspend fun deleteMapEntry(entryId: String): Boolean {
+    override suspend fun deleteMapEntry(entryId: String): EmptyDataResult<DataError> {
         deletedEntryIds.record(entryId)
-        return writeResult
+        return writeResult.toFakeResult()
     }
 }

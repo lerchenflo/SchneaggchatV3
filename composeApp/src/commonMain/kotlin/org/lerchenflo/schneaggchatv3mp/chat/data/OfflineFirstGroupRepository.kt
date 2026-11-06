@@ -5,8 +5,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.map
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
@@ -14,10 +18,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNetworkGroupMemberAction
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.GroupRemoteDataSource
@@ -33,7 +35,6 @@ class OfflineFirstGroupRepository(
     private val groupRemoteDataSource: GroupRemoteDataSource,
     private val pictureManager: PictureManager,
     private val loggingRepository: Logger,
-    private val errorChannel: ErrorChannel,
 ) : GroupRepository {
 
     // ─── Reads ────────────────────────────────────────────────────────────────
@@ -64,29 +65,15 @@ class OfflineFirstGroupRepository(
         description: String,
         memberIds: List<String>,
         profilePic: ByteArray
-    ) : String? {
-        val response = groupRemoteDataSource.createGroup(
+    ): DataResult<String, DataError> =
+        groupRemoteDataSource.createGroup(
             name = name,
             description = description,
             memberIds = memberIds,
             profilePicBytes = profilePic
         ).trackConnectivity()
-
-        return when (response){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = response.error))
-                null
-            }
-            is NetworkResult.Success<GroupResponse> -> {
-
-                val groupResponse = response.data
-
-                groupLocalDataSource.upsertGroup(groupResponse.toGroup())
-
-                response.data.id
-            }
-        }
-    }
+            .onSuccess { groupLocalDataSource.upsertGroup(it.toGroup()) }
+            .map { it.id }
 
 
     // ─── Group sync ───────────────────────────────────────────────────────────
@@ -122,11 +109,11 @@ class OfflineFirstGroupRepository(
             var deletedGroupIds: List<String> = emptyList()
 
             when (groupSyncResponse) {
-                is NetworkResult.Error<*> -> {
+                is DataResult.Error<*> -> {
                     loggingRepository.logWarning("groupid sync error: ${groupSyncResponse.error}")
                 }
 
-                is NetworkResult.Success<GroupSyncResponse> -> {
+                is DataResult.Success<GroupSyncResponse> -> {
                     //println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
 
                     groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
@@ -159,8 +146,8 @@ class OfflineFirstGroupRepository(
         groupIds.forEach { groupId ->
             val savefilename = groupId + GROUPPROFILEPICTURE_FILE_NAME
             when (val picture = groupRemoteDataSource.getProfilePicForGroupId(groupId).trackConnectivity()) {
-                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for groupid $groupId")}
-                is NetworkResult.Success<ByteArray> -> {
+                is DataResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for groupid $groupId")}
+                is DataResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
                     groupLocalDataSource.updateGroupProfilePicUrl(groupId, filepath)
@@ -188,95 +175,59 @@ class OfflineFirstGroupRepository(
 
     // ─── Group changes ────────────────────────────────────────────────────────
 
-    override suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray) : Boolean {
-        when (val success = groupRemoteDataSource.changeGroupProfilePic(newPic, groupId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+    override suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray): EmptyDataResult<DataError> =
+        groupRemoteDataSource.changeGroupProfilePic(newPic, groupId).trackConnectivity()
+            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+            .onSuccess {
                 syncGroups()
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 
-    override suspend fun changeGroupDescription(groupId: String, newDescription: String) : Boolean {
-        when (val success = groupRemoteDataSource.changeGroupDescription(newDescription, groupId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+    override suspend fun changeGroupDescription(groupId: String, newDescription: String): EmptyDataResult<DataError> =
+        groupRemoteDataSource.changeGroupDescription(newDescription, groupId).trackConnectivity()
+            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+            .onSuccess {
                 syncGroups()
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 
-    override suspend fun changeGroupName(groupId: String, newName: String) : Boolean {
-        when (val success = groupRemoteDataSource.changeGroupName(newName, groupId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+    override suspend fun changeGroupName(groupId: String, newName: String): EmptyDataResult<DataError> =
+        groupRemoteDataSource.changeGroupName(newName, groupId).trackConnectivity()
+            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+            .onSuccess {
                 syncGroups()
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 
-    override suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String) : Boolean {
-        when (val success = groupRemoteDataSource.changeGroupMembers(
+    override suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): EmptyDataResult<DataError> =
+        groupRemoteDataSource.changeGroupMembers(
             action = action.toNetworkGroupMemberAction(),
             memberId = memberId,
             groupId = groupId
-        ).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+        ).trackConnectivity()
+            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+            .onSuccess {
                 syncGroups()
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 
     /** Pass null for [expiresAt] to clear the expiry (group never auto-expires). */
-    override suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?) : Boolean {
-        when (val success = groupRemoteDataSource.changeGroupExpiry(groupId, expiresAt).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
-                // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+    override suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): EmptyDataResult<DataError> =
+        groupRemoteDataSource.changeGroupExpiry(groupId, expiresAt).trackConnectivity()
+            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
+            .onSuccess {
                 syncGroups()
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 
     /**
      * The local delete is only an optimistic fast path (it also purges the group's messages);
      * the server's GroupChange push and the next group sync converge on the same result.
      */
-    override suspend fun deleteGroup(groupId: String): Boolean {
-        when (val success = groupRemoteDataSource.deleteGroup(groupId).trackConnectivity()){
-            is NetworkResult.Error<*> -> {
-                errorChannel.sendErrorSuspend(ErrorEvent(error = success.error))
-                return false
-            }
-            is NetworkResult.Success<*> -> {
+    override suspend fun deleteGroup(groupId: String): EmptyDataResult<DataError> =
+        groupRemoteDataSource.deleteGroup(groupId).trackConnectivity()
+            .onSuccess {
                 groupLocalDataSource.deleteGroup(groupId)
-                return true
             }
-        }
-    }
+            .asEmptyDataResult()
 }

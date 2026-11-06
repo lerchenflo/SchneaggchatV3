@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
@@ -22,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class GroupExtensionViewModel(
+    private val errorChannel: ErrorChannel,
     private val groupExtensionRepository: GroupExtensionRepository,
     private val groupRepository: GroupRepository,
     private val navigator: Navigator,
@@ -70,7 +74,7 @@ class GroupExtensionViewModel(
                 _state.update { it.copy(dialog = null, renameError = null) }
                 if (action.title == _state.value.extension?.title) return
                 viewModelScope.launch {
-                    groupExtensionRepository.renameExtension(extensionId, action.title)
+                    groupExtensionRepository.renameExtension(extensionId, action.title).reportErrorTo(errorChannel)
                 }
             }
 
@@ -80,7 +84,7 @@ class GroupExtensionViewModel(
             GroupExtensionAction.OnDeleteConfirm -> {
                 _state.update { it.copy(dialog = null) }
                 viewModelScope.launch {
-                    if (groupExtensionRepository.deleteExtension(extensionId)) {
+                    if (groupExtensionRepository.deleteExtension(extensionId).reportErrorTo(errorChannel).isSuccess) {
                         navigator.navigateBack()
                     }
                 }

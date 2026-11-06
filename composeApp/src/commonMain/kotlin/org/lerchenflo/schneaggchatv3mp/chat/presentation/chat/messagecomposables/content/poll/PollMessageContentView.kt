@@ -96,7 +96,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToDuration
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.poll
@@ -108,7 +107,6 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_answer_label
 import schneaggchatv3mp.composeapp.generated.resources.poll_answer_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.poll_answer_summary
 import schneaggchatv3mp.composeapp.generated.resources.poll_answers_count
-import schneaggchatv3mp.composeapp.generated.resources.poll_cannot_vote_on_unsent
 import schneaggchatv3mp.composeapp.generated.resources.poll_closed
 import schneaggchatv3mp.composeapp.generated.resources.poll_customoption_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_deleteoptions_info
@@ -348,8 +346,6 @@ private fun PollLevelView(
         Spacer(modifier = Modifier.height(12.dp))
 
 
-        val cannot_vote_on_unsent_message_text = stringResource(Res.string.poll_cannot_vote_on_unsent)
-
         fun sendVote(optionId: String, checked: Boolean) {
             if (messageId != null) {
                 onAction(
@@ -360,7 +356,7 @@ private fun PollLevelView(
                     )
                 )
             } else {
-                SnackbarManager.showMessage(cannot_vote_on_unsent_message_text)
+                onAction(MessageAction.PollMessageNotSent)
             }
         }
 
@@ -506,7 +502,7 @@ private fun PollLevelView(
                                 )
                             )
                         } else {
-                            SnackbarManager.showMessage(cannot_vote_on_unsent_message_text)
+                            onAction(MessageAction.PollMessageNotSent)
                         }
                         showDialog = false
                     }

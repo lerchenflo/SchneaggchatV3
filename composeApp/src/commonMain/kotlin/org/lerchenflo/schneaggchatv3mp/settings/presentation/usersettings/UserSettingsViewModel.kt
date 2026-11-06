@@ -13,7 +13,12 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
+import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
@@ -23,6 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_username_must_not_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
@@ -35,6 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 class UserSettingsViewModel(
+    private val errorChannel: ErrorChannel,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
@@ -58,7 +65,7 @@ class UserSettingsViewModel(
 
             val bytearray = pictureManager.downscaleImage(bytearrayfullsize)
 
-            val success = userRepository.changeProfilePic(bytearray)
+            val success = userRepository.changeProfilePic(bytearray).reportErrorTo(errorChannel).isSuccess
 
             if (success) {
                 SnackbarManager.showMessage(getString(Res.string.please_restart_app)) //Des image caching vo coil isch so guat dassas sich ned abtöta loht. ma künnt profilbild mit datum speichra aber denn wirds ned überschrieba und unendlich speicherverbrauch
@@ -74,11 +81,9 @@ class UserSettingsViewModel(
 
         lastEmailVerificationTime = Clock.System.now()
         applicationScope.launchOnMain {
-            authRepository.sendEmailVerify()
-        }
-
-        viewModelScope.launch {
-            SnackbarManager.showMessage(getString(Res.string.verification_email_sent))
+            authRepository.sendEmailVerify().reportErrorTo(errorChannel).onSuccess {
+                SnackbarManager.showMessage(getString(Res.string.verification_email_sent))
+            }
         }
     }
 
@@ -89,13 +94,13 @@ class UserSettingsViewModel(
 
         if(newUsername.isEmpty()){ // check if username is not empty
             viewModelScope.launch {
-                SnackbarManager.showMessage(getString(Res.string.error_username_must_not_be_empty))
+                errorChannel.sendError(UiText.StringResourceText(Res.string.error_username_must_not_be_empty))
             }
             return
         }
 
         applicationScope.launchOnMain {
-            userRepository.changeUsername(newUsername)
+            userRepository.changeUsername(newUsername).reportErrorTo(errorChannel)
         }
     }
 
@@ -103,7 +108,7 @@ class UserSettingsViewModel(
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
         applicationScope.launchOnMain {
-            userRepository.changeUserDetails(newEmail = newEmail, userId = userId)
+            userRepository.changeUserDetails(newEmail = newEmail, userId = userId).reportErrorTo(errorChannel)
             dataSyncCoordinator.dataSync(reason = "emailChanged")
         }
     }
@@ -112,7 +117,7 @@ class UserSettingsViewModel(
         applicationScope.launchOnMain {
             val userId = SessionCache.requireLoggedIn()?.userId ?: return@launchOnMain
 
-            userRepository.changeUserDetails(newStatus = newStatus, userId = userId)
+            userRepository.changeUserDetails(newStatus = newStatus, userId = userId).reportErrorTo(errorChannel)
             dataSyncCoordinator.dataSync(reason = "statusChanged")
         }
     }
@@ -121,7 +126,7 @@ class UserSettingsViewModel(
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
         applicationScope.launchOnMain {
-            userRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId)
+            userRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId).reportErrorTo(errorChannel)
             dataSyncCoordinator.dataSync(reason = "birthDateChanged")
         }
     }
@@ -130,7 +135,7 @@ class UserSettingsViewModel(
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
         applicationScope.launchOnMain {
-            userRepository.changeUserDetails(newPhoneNumber = newPhoneNumber, userId = userId)
+            userRepository.changeUserDetails(newPhoneNumber = newPhoneNumber, userId = userId).reportErrorTo(errorChannel)
             dataSyncCoordinator.dataSync(reason = "phoneNumberChanged")
         }
     }

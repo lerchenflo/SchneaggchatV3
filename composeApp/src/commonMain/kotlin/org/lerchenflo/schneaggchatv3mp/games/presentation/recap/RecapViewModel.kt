@@ -6,11 +6,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.app.domain.onError
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.app.errorCodeToUiText
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToUiText
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onSuccess
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.games.domain.EmojiCountUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.GroupActivityUi

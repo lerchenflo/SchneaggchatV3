@@ -11,11 +11,15 @@ import assertk.assertions.isSameInstanceAs
 import assertk.assertions.prop
 import assertk.assertions.single
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAudioManager
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeErrorChannel
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeMessageRepository
@@ -48,6 +52,7 @@ class ChatViewModelTest {
     private val mainDispatcher = MainDispatcherRule()
     private val viewModels = TestViewModelStore()
 
+    private val errorChannel = FakeErrorChannel()
     private val messageRepository = FakeMessageRepository()
     private val userRepository = FakeUserRepository()
     private val settingsRepository = FakeSettingsRepository()
@@ -73,6 +78,8 @@ class ChatViewModelTest {
 
     private fun createViewModel() = viewModels.add(
         ChatViewModel(
+            errorChannel = errorChannel,
+            applicationScope = ApplicationScope(),
             messageRepository = messageRepository,
             userRepository = userRepository,
             groupRepository = FakeGroupRepository(),
@@ -91,6 +98,29 @@ class ChatViewModelTest {
         onAction(ChatAction.OnSendContentChange(TextContent(TextFieldValue(text))))
 
     private val emptyInput = TextContent(TextFieldValue(""))
+
+    @Test
+    fun `a rejected send shows its error`() = runViewModelTest(viewModels) {
+        messageRepository.sendResult = DataResult.Error(DataError.BadRequest())
+        val viewModel = createViewModel()
+
+        viewModel.type("Hello")
+        viewModel.onAction(ChatAction.OnSendClick)
+
+        assertThat(errorChannel.sent.awaitCount(1).map { it.error }).containsExactly(DataError.BadRequest())
+    }
+
+    @Test
+    fun `a transient send error shows no popup because the queue retries it`() = runViewModelTest(viewModels) {
+        messageRepository.sendResult = DataResult.Error(DataError.NoInternetConnection)
+        val viewModel = createViewModel()
+
+        viewModel.type("Hello")
+        viewModel.onAction(ChatAction.OnSendClick)
+
+        messageRepository.sendCalls.awaitCount(1)
+        assertThat(errorChannel.sent.calls).isEmpty()
+    }
 
     @Test
     fun `send passes the typed text to the repository and clears the input`() = runViewModelTest(viewModels) {

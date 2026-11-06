@@ -2,10 +2,10 @@
 
 package org.lerchenflo.schneaggchatv3mp.datasource.network.auth
 
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 
 /**
  * Outcome of one refresh attempt. Callers react very differently to each: `Retryable` and
@@ -22,7 +22,7 @@ sealed interface RefreshOutcome {
      * The refresh token may still be good; try again after [retryAfter]. Offline, timeout, 5xx,
      * 429, storage write failure.
      */
-    data class Retryable(val error: NetworkingError, val retryAfter: Duration) : RefreshOutcome
+    data class Retryable(val error: DataError, val retryAfter: Duration) : RefreshOutcome
 
     /**
      * Permanently failing, but not proof the session is dead: 400, 403, 404, serialization
@@ -30,7 +30,7 @@ sealed interface RefreshOutcome {
      * `AuthSessionManager.Config.brokenRetry` and surfaced to the user after three in a row;
      * never clears credentials.
      */
-    data class Broken(val error: NetworkingError) : RefreshOutcome
+    data class Broken(val error: DataError) : RefreshOutcome
 
     /** The session is dead. Storage and the in-memory mirror have been cleared. */
     data class Invalidated(val reason: InvalidationReason) : RefreshOutcome
@@ -85,7 +85,7 @@ sealed interface AuthSessionState {
     data class Active(val userId: String) : AuthSessionState
     data object Refreshing : AuthSessionState
     /** The last refresh failed; the session is kept and retried at [nextAttemptAt]. */
-    data class Degraded(val error: NetworkingError, val nextAttemptAt: Instant) : AuthSessionState
+    data class Degraded(val error: DataError, val nextAttemptAt: Instant) : AuthSessionState
     data class Invalidated(val reason: InvalidationReason) : AuthSessionState
 }
 

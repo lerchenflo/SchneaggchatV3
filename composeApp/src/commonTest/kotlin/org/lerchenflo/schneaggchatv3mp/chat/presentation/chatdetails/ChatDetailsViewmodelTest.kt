@@ -4,6 +4,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.containsExactly
+import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isEmpty
 import assertk.assertions.isFalse
@@ -20,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeErrorChannel
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeEventRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository
@@ -48,6 +50,8 @@ private const val FRIEND_ID = "anna"
 /** Group edits (name, description, members, expiry) and friend actions of the chat details screen. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChatDetailsViewmodelTest {
+
+    private val errorChannel = FakeErrorChannel()
 
     private val mainDispatcher = MainDispatcherRule()
     private val viewModels = TestViewModelStore()
@@ -82,6 +86,7 @@ class ChatDetailsViewmodelTest {
 
     private fun createViewModel(chatId: String, isGroup: Boolean) = viewModels.add(
         ChatDetailsViewmodel(
+            errorChannel = errorChannel,
             groupRepository = groupRepository,
             navigator = navigator,
             userRepository = userRepository,
@@ -204,6 +209,7 @@ class ChatDetailsViewmodelTest {
             expectNoEvents()
         }
         assertThat(userRepository.friendsRemoved.calls).containsExactly(FRIEND_ID)
+        assertThat(errorChannel.sent.calls).hasSize(1)
     }
 
     @Test

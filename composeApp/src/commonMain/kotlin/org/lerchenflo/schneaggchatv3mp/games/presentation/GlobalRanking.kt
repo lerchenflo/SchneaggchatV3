@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GlobalRankingEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
@@ -75,8 +75,8 @@ fun GlobalRankingDialog(
     LaunchedEffect(selectedPeriod, reloadCount) {
         state = GlobalRankingUiState(isLoading = true)
         state = when (val result = repository.getGlobalRanking(selectedPeriod)) {
-            is NetworkResult.Success -> GlobalRankingUiState(entries = result.data)
-            is NetworkResult.Error -> GlobalRankingUiState(hasError = true)
+            is DataResult.Success -> GlobalRankingUiState(entries = result.data)
+            is DataResult.Error -> GlobalRankingUiState(hasError = true)
         }
     }
 

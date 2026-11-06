@@ -2,13 +2,13 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 
 /**
  * Users and friends: reads come from the local database, writes go to the server first.
- * Errors of the write calls are sent to the [ErrorChannel] (except [sendWake], which returns them).
+ * Write calls return their error, the caller maps it to UI.
  */
 interface UserRepository {
 
@@ -45,29 +45,23 @@ interface UserRepository {
 
     // ─── Friends ──────────────────────────────────────────────────────────────
 
-    /** Users the own user can send a friend request to. Empty on error. */
-    suspend fun getAvailableUsers(searchTerm: String): List<AvailableUser>
+    /** Users the own user can send a friend request to. */
+    suspend fun getAvailableUsers(searchTerm: String): DataResult<List<AvailableUser>, DataError>
 
-    /** Sends a friend request to [friendId], or accepts theirs. @return true on success */
-    suspend fun sendFriendRequest(friendId: String): Boolean
+    /** Sends a friend request to [friendId], or accepts theirs. */
+    suspend fun sendFriendRequest(friendId: String): EmptyDataResult<DataError>
 
-    /** Denies a friend request from [friendId], or cancels an outgoing one. @return true on success */
-    suspend fun denyFriendRequest(friendId: String): Boolean
-
-    /** @return true on success */
-    suspend fun removeFriend(friendId: String): Boolean
+    /** Denies a friend request from [friendId], or cancels an outgoing one. */
+    suspend fun denyFriendRequest(friendId: String): EmptyDataResult<DataError>
+    suspend fun removeFriend(friendId: String): EmptyDataResult<DataError>
 
     // ─── Profile ──────────────────────────────────────────────────────────────
-
-    /** @return true on success */
-    suspend fun changeUsername(newUsername: String): Boolean
-
-    /** @return true on success */
-    suspend fun changeProfilePic(newPic: ByteArray): Boolean
+    suspend fun changeUsername(newUsername: String): EmptyDataResult<DataError>
+    suspend fun changeProfilePic(newPic: ByteArray): EmptyDataResult<DataError>
 
     /**
      * Changes profile details. For the own [userId] the own fields (status, email, ...), for a
-     * friend the per-friend fields (description, nickname). @return true on success
+     * friend the per-friend fields (description, nickname).
      */
     suspend fun changeUserDetails(
         userId: String,
@@ -77,38 +71,37 @@ interface UserRepository {
         newBirthDate: String? = null,
         newNickName: String? = null,
         newPhoneNumber: String? = null,
-    ): Boolean
+    ): EmptyDataResult<DataError>
 
     // ─── Location sharing ─────────────────────────────────────────────────────
 
-    /** Per-friend toggle: what we share with this specific friend. @return true on success */
+    /** Per-friend toggle: what we share with this specific friend. */
     suspend fun setLocationSharing(
         friendId: String,
         share: Boolean,
         shareSpeedHeading: Boolean = false,
         snailTrail: Boolean = false,
-    ): Boolean
+    ): EmptyDataResult<DataError>
 
-    /** Disables location sharing towards every friend. @return true if every call succeeded */
-    suspend fun disableLocationSharingForAllFriends(): Boolean
+    /** Disables location sharing towards every friend. Stops at the first failed call. */
+    suspend fun disableLocationSharingForAllFriends(): EmptyDataResult<DataError>
 
     // ─── Wake ─────────────────────────────────────────────────────────────────
 
-    /** Per-friend toggle: may this friend wake us. @return true on success */
-    suspend fun setWakePermission(friendId: String, allowWake: Boolean): Boolean
+    /** Per-friend toggle: may this friend wake us. */
+    suspend fun setWakePermission(friendId: String, allowWake: Boolean): EmptyDataResult<DataError>
 
-    /** Master switch: while off nobody can wake us. @return true on success */
-    suspend fun setWakeGlobal(enabled: Boolean): Boolean
+    /** Master switch: while off nobody can wake us. */
+    suspend fun setWakeGlobal(enabled: Boolean): EmptyDataResult<DataError>
 
     /**
      * Asks the server to wake a friend or a group. A successful result can still report that
-     * nobody was reachable (see [WakeResult.outcome]). Errors are returned, not sent to the
-     * [ErrorChannel], because the caller needs to tell "not friends" (403) apart from a plain
-     * network failure.
+     * nobody was reachable (see [WakeResult.outcome]). The caller needs to tell "not friends"
+     * (403) apart from a plain network failure.
      */
     suspend fun sendWake(
         targetId: String,
         isGroup: Boolean,
         reason: String,
-    ): NetworkResult<WakeResult, NetworkingError>
+    ): DataResult<WakeResult, DataError>
 }

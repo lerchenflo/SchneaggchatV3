@@ -1,13 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.games.data
 
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.map
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.BatchScoreEntryRequest
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoresBatchRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.EmptyResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.asEmptyDataResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.map
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
@@ -26,7 +26,7 @@ class GameHighscoreRepository(
         game: GameId,
         difficulty: GameDifficulty,
         period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
-    ): NetworkResult<List<HighscoreEntry>, NetworkingError> {
+    ): DataResult<List<HighscoreEntry>, DataError> {
         return gameRemoteDataSource.getGameHighscores(game.name, difficulty.name, period.name).trackConnectivity().map { response ->
             response.entries.map { it.toHighscoreEntry() }
         }
@@ -35,7 +35,7 @@ class GameHighscoreRepository(
     /** Cross-game leaderboard over all games and difficulties. */
     suspend fun getGlobalRanking(
         period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
-    ): NetworkResult<List<GlobalRankingEntry>, NetworkingError> {
+    ): DataResult<List<GlobalRankingEntry>, DataError> {
         return gameRemoteDataSource.getGlobalRanking(period.name).trackConnectivity().map { response ->
             response.entries.map { it.toGlobalRankingEntry() }
         }
@@ -46,9 +46,9 @@ class GameHighscoreRepository(
         difficulty: GameDifficulty,
         score: Long,
         timeMillis: Long,
-    ): EmptyResult<NetworkingError> {
+    ): EmptyDataResult<DataError> {
         // In-dev games have no real leaderboard yet - don't pollute it with test scores.
-        if (game.indev) return NetworkResult.Success(Unit)
+        if (game.indev) return DataResult.Success(Unit)
 
         return gameRemoteDataSource.submitGameScore(
             SubmitGameScoreRequest(
@@ -71,8 +71,8 @@ class GameHighscoreRepository(
         friendId: String,
         score: Long,
         timeMillis: Long,
-    ): EmptyResult<NetworkingError> {
-        if (game.indev) return NetworkResult.Success(Unit)
+    ): EmptyDataResult<DataError> {
+        if (game.indev) return DataResult.Success(Unit)
 
         return gameRemoteDataSource.submitGameScoresBatch(
             SubmitGameScoresBatchRequest(
@@ -91,8 +91,8 @@ class GameHighscoreRepository(
         game: GameId,
         difficulty: GameDifficulty,
         scores: Map<String, Long>,
-    ): EmptyResult<NetworkingError> {
-        if (game.indev || scores.isEmpty()) return NetworkResult.Success(Unit)
+    ): EmptyDataResult<DataError> {
+        if (game.indev || scores.isEmpty()) return DataResult.Success(Unit)
 
         return gameRemoteDataSource.submitGameScoresBatch(
             SubmitGameScoresBatchRequest(
