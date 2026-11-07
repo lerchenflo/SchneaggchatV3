@@ -18,6 +18,8 @@ enum NotificationStringKey: String {
     case friendBirthdayTitle
     case friendBirthdayBody
     case newEventTitle
+    case mapSightingPoliceTitle
+    case mapSightingRadarTitle
 }
 
 enum NotificationStrings {
@@ -62,6 +64,8 @@ enum NotificationStrings {
         .friendBirthdayTitle: "%1$@ has birthday today! 🎂",
         .friendBirthdayBody: "Don't forget to congratulate them!",
         .newEventTitle: "%1$@ created a new event",
+        .mapSightingPoliceTitle: "Police seen",
+        .mapSightingRadarTitle: "Mobile radar seen",
     ]
 
     private static let germanStrings: [NotificationStringKey: String] = [
@@ -82,6 +86,8 @@ enum NotificationStrings {
         .friendBirthdayTitle: "%1$@ hat heute Geburtstag! 🎂",
         .friendBirthdayBody: "Vergiss nicht zu gratulieren!",
         .newEventTitle: "%1$@ hat ein neues Event erstellt",
+        .mapSightingPoliceTitle: "Polizei gesichtet",
+        .mapSightingRadarTitle: "Mobiles Radar gesichtet",
     ]
 
     private static let austrianGermanStrings: [NotificationStringKey: String] = [
@@ -122,5 +128,7 @@ enum NotificationStrings {
         .friendBirthdayTitle: "%1$@ oggi compie gli anni! 🎂",
         .friendBirthdayBody: "Non dimenticare di fargli gli auguri!",
         .newEventTitle: "%1$@ ha creato un nuovo evento",
+        .mapSightingPoliceTitle: "Polizia avvistata",
+        .mapSightingRadarTitle: "Autovelox mobile avvistato",
     ]
 }

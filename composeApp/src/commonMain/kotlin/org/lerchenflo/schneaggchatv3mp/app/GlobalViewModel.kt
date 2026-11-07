@@ -237,7 +237,7 @@ class GlobalViewModel(
             }
         }
 
-        // Handles a notification tap requesting a chat be opened. AppLifecycleManager holds the
+        // Handles a notification tap requesting a chat or map entry be opened. AppLifecycleManager holds the
         // request as a StateFlow (not a one-shot event) so a tap that arrives before this
         // collector exists - e.g. a cold app start - is not silently dropped, and only acted on
         // once the user is logged in AND the auth-gated startup navigation is done (otherwise
@@ -273,6 +273,15 @@ class GlobalViewModel(
                     data.chatId?.let { chatId ->
                         navigator.navigate(Route.ChatSelector)
                         navigator.navigate(Route.Chat(chatId = chatId, isGroup = data.isGroup))
+                    }
+
+                    data.mapEntryId?.let { entryId ->
+                        navigator.navigate(
+                            Route.Schneaggmap(
+                                initialEntryId = entryId,
+                                openRequestId = Clock.System.now().toEpochMilliseconds()
+                            )
+                        )
                     }
                 }
         }

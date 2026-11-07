@@ -30,6 +30,7 @@ class FakeSettingsRepository : SettingsRepository {
     val mergeMapLocations = MutableStateFlow(false)
     val mergeMapUsers = MutableStateFlow(false)
     val sortMapUsersByPinned = MutableStateFlow(true)
+    val mapSightingPush = MutableStateFlow(false)
     val mapStyle = MutableStateFlow(MapStyleSetting.entries.first())
     val mapStyleUrl = MutableStateFlow("")
     val quickReactions = MutableStateFlow(DEFAULT_QUICK_REACTIONS)
@@ -95,6 +96,11 @@ class FakeSettingsRepository : SettingsRepository {
     override fun getSortMapUsersByPinnedFlow(): Flow<Boolean> = sortMapUsersByPinned
     override suspend fun setSortMapUsersByPinned(value: Boolean) {
         sortMapUsersByPinned.value = value
+    }
+
+    override fun getMapSightingPushFlow(): Flow<Boolean> = mapSightingPush
+    override suspend fun setMapSightingPush(value: Boolean) {
+        mapSightingPush.value = value
     }
 
     override fun getMapStyleSettingFlow(): Flow<MapStyleSetting> = mapStyle

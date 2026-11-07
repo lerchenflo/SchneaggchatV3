@@ -50,8 +50,11 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.metersPerDpAtTar
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.safeAdd
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
+import org.maplibre.compose.expressions.dsl.condition
 import org.maplibre.compose.expressions.dsl.const
+import org.maplibre.compose.expressions.dsl.feature
 import org.maplibre.compose.expressions.dsl.image
+import org.maplibre.compose.expressions.dsl.switch
 import org.maplibre.compose.expressions.value.LineCap
 import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.interaction.ClickResult
@@ -87,6 +90,9 @@ private const val USER_CLUSTER_RADIUS_DP = 40.0
 //Place (POI) markers are half the size of the 40 dp profile picture in user markers, so friends
 //stand out over the places.
 private val PLACE_MARKER_SIZE = 28.dp
+//Wide enough to hold the corners of a square marker icon, about the size of a merged marker
+private val RECENTLY_SEEN_DISC_SIZE = 40.dp
+private const val RECENTLY_SEEN_PROPERTY = "recentlySeen"
 
 //Per-type icon size inside a merged multi-type place marker, half of mergeLocationTypeIcons' default.
 private val MERGED_PLACE_ICON_SIZE = 15.dp
@@ -208,6 +214,8 @@ fun SchneaggmapLayers(
     //Merged multi-type location marker background - much more transparent than the user cluster
     //one above, since it's just a backdrop for a couple of small icons, not a "table".
     val mergedLocationBackgroundColor = pillColor.copy(alpha = 0.35f)
+    //Same backdrop for recently seen police and radars, in the green of the default themes
+    val recentlySeenBackgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
     val clusterCountBackgroundColor = MaterialTheme.colorScheme.primary
     val clusterCountTextColor = MaterialTheme.colorScheme.onPrimary
     val beerIcon = imageResource(Res.drawable.icon_beer)
@@ -394,10 +402,14 @@ fun SchneaggmapLayers(
 
         entries.forEach { type ->
 
-            //Skip if not enabled on map
-            if (!enabledTypeKeysMap.contains(type)) return@forEach
+            val entriesOfType = entriesByType[type].orEmpty()
 
-            val entriesForType = entriesByType[type].orEmpty()
+            //A type that is not enabled on the map still shows its active sightings
+            val entriesForType = when {
+                enabledTypeKeysMap.contains(type) -> entriesOfType
+                state.showActiveSightings -> entriesOfType.filter { type in state.activeSightings[it.id].orEmpty() }
+                else -> emptyList()
+            }
             if (entriesForType.isEmpty()) return@forEach
 
 
@@ -409,6 +421,20 @@ fun SchneaggmapLayers(
                 //place types were enabled at once
                 val markerIcon = remember(iconBitmap, density) {
                     scaleMarkerIcon(iconBitmap, density, PLACE_MARKER_SIZE)
+                }
+
+                //Only built when a marker needs it, a second bitmap for every enabled type is wasted work
+                val iconImage = if (entriesForType.any { type in state.activeSightings[it.id].orEmpty() }) {
+                    val recentlySeenIcon = remember(markerIcon, recentlySeenBackgroundColor, density) {
+                        addMarkerBackground(markerIcon, recentlySeenBackgroundColor, density, RECENTLY_SEEN_DISC_SIZE)
+                    }
+                    //A cluster feature has no such property and keeps the plain icon
+                    switch(
+                        condition(feature.has(RECENTLY_SEEN_PROPERTY), image(recentlySeenIcon)),
+                        fallback = image(markerIcon),
+                    )
+                } else {
+                    image(markerIcon)
                 }
 
                 val mapLocationSource = rememberGeoJsonSource(
@@ -425,6 +451,9 @@ fun SchneaggmapLayers(
                                     ),
                                     properties = buildJsonObject {
                                         put("type", JsonPrimitive(type.name))
+                                        if (type in state.activeSightings[entry.id].orEmpty()) {
+                                            put(RECENTLY_SEEN_PROPERTY, JsonPrimitive(true))
+                                        }
                                     },
                                     id = JsonPrimitive(entry.id)
                                 )
@@ -453,7 +482,7 @@ fun SchneaggmapLayers(
                             ClickResult.Consume
                         } else ClickResult.Pass
                     },
-                    iconImage = image(markerIcon),
+                    iconImage = iconImage,
                     iconAllowOverlap = const(!state.useClustering)
                 )
             }
@@ -464,18 +493,20 @@ fun SchneaggmapLayers(
         //icon per type on the same coordinate. Not clustered - these are rare compared to
         //single-type entries, so native per-type clustering above is left untouched.
         val entryMergedIcons: Map<String, MarkerIcon> = remember(
-            multiTypeEntries, typeIconBitmaps, mergedLocationBackgroundColor, density
+            multiTypeEntries, typeIconBitmaps, mergedLocationBackgroundColor,
+            recentlySeenBackgroundColor, state.activeSightings, density
         ) {
             multiTypeEntries.associate { entry ->
-                val icons = entry.locationData
+                val shownTypes = entry.locationData
                     .map { it.locationtype }
                     .distinct()
                     .filter { it in enabledTypeKeysMap }
                     .sortedBy { it.ordinal }
-                    .mapNotNull { typeIconBitmaps[it] }
+                val icons = shownTypes.mapNotNull { typeIconBitmaps[it] }
+                val recentlySeen = shownTypes.any { it in state.activeSightings[entry.id].orEmpty() }
                 val bitmap = mergeLocationTypeIcons(
                     icons = icons,
-                    backgroundColor = mergedLocationBackgroundColor,
+                    backgroundColor = if (recentlySeen) recentlySeenBackgroundColor else mergedLocationBackgroundColor,
                     density = density,
                     iconSize = MERGED_PLACE_ICON_SIZE,
                 )

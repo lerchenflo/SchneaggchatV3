@@ -5,18 +5,21 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
@@ -37,10 +40,12 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.activeSightingTypes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
 
 
 class SchneaggmapViewModel(
@@ -59,7 +64,8 @@ class SchneaggmapViewModel(
 
     val pickLocationMode = currentlyEditedEvent != null
 
-    private val _state = MutableStateFlow(SchneaggmapState(pickLocationMode = pickLocationMode))
+    //Picking a coordinate hides the filter chips, so nothing could turn the sightings off again
+    private val _state = MutableStateFlow(SchneaggmapState(pickLocationMode = pickLocationMode, showActiveSightings = !pickLocationMode))
 
     // Driven off authState (not a one-shot read) so the event filter picks up the id once autologin finishes
     private val ownUserIdFlow = SessionCache.authState.map {
@@ -126,7 +132,7 @@ class SchneaggmapViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = SchneaggmapState(pickLocationMode = pickLocationMode),
+        initialValue = SchneaggmapState(pickLocationMode = pickLocationMode, showActiveSightings = !pickLocationMode),
     )
 
 
@@ -171,6 +177,9 @@ class SchneaggmapViewModel(
                     isFilterDropdownVisible = !it.isFilterDropdownVisible,
                     selectedEntry = null,
                 )
+            }
+            SchneaggmapAction.ToggleShowActiveSightings -> _state.update {
+                it.copy(showActiveSightings = !it.showActiveSightings)
             }
             SchneaggmapAction.ToggleAllPlaces -> {
                 val allPlaceTypes = LocationGroup.entries.flatMapTo(mutableSetOf()) { it.types }
@@ -492,6 +501,24 @@ class SchneaggmapViewModel(
 
         viewModelScope.launch {
             dataSyncCoordinator.dataSync(reason = "mapInit")
+        }
+
+        // Checked every minute too: a sighting runs out while the map stays open
+        viewModelScope.launch {
+            val everyMinute = flow {
+                while (true) {
+                    emit(Unit)
+                    delay(1.minutes)
+                }
+            }
+            combine(mapRepository.getAllMapEntriesFlow(), everyMinute) { entries, _ ->
+                val now = Clock.System.now()
+                val timeZone = TimeZone.currentSystemDefault()
+                entries.associate { it.id to it.activeSightingTypes(now, timeZone) }
+                    .filterValues { it.isNotEmpty() }
+            }
+                .distinctUntilChanged()
+                .collect { active -> _state.update { it.copy(activeSightings = active) } }
         }
 
         viewModelScope.launch {

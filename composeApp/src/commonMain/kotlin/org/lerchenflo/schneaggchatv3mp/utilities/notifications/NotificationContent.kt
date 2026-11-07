@@ -8,6 +8,8 @@ enum class NotificationKind {
     REACTION,
     /** Friend requests, events, birthdays */
     SOCIAL,
+    /** Police or a mobile radar was seen */
+    MAP_SIGHTING,
     /** Everything else, e.g. messages from the server */
     GENERAL,
 }
@@ -33,6 +35,9 @@ data class NotificationContent(
 
     /** User whose profile picture is shown on a non-conversation notification (reactor, requester, event creator, ...). */
     val avatarUserId: String? = null,
+
+    /** Map entry this notification is about - tapping the notification opens it on the map. */
+    val mapEntryId: String? = null,
 
     val kind: NotificationKind = NotificationKind.GENERAL,
 )

@@ -2,6 +2,9 @@ package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 
+/** What a map sighting push reports. The names are wire names and must match the server. */
+enum class MapSightingType { POLICE, RADAR }
+
 sealed interface DecodedNotification {
     data class Message(
         val msgId: String,
@@ -63,6 +66,13 @@ sealed interface DecodedNotification {
         val creatorId: String,
         val creatorName: String,
     ) : DecodedNotification
+
+    /** Police or a mobile radar was seen. Never says who reported it. */
+    data class MapSighting(
+        val entryId: String,
+        val entryName: String,
+        val sightingType: MapSightingType,
+    ) : DecodedNotification
 }
 
 object PayloadDecoder {
@@ -111,6 +121,11 @@ object PayloadDecoder {
                 eventTitle = data["eventTitle"] ?: "",
                 creatorId = data["creatorId"] ?: "",
                 creatorName = data["creatorName"] ?: "",
+            )
+            "map_sighting" -> DecodedNotification.MapSighting(
+                entryId = data["entryId"] ?: return null,
+                entryName = data["entryName"] ?: "",
+                sightingType = MapSightingType.entries.firstOrNull { it.name == data["sightingType"] } ?: return null,
             )
             else -> null
         }

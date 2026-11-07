@@ -10,6 +10,7 @@ fun PersonalUserSettings.toSyncedSettings(): SyncedSettings = SyncedSettings(
     mergeMapLocations = mergeMapLocations,
     mergeMapUsers = mergeMapUsers,
     sortMapUsersByPinned = sortMapUsersByPinned,
+    mapSightingPush = mapSightingPush,
     mapStyle = mapStyle,
     pinnedChats = pinnedChats,
     quickReactions = quickReactions,

@@ -300,6 +300,8 @@
     <string name="merge_map_users_info">Group nearby friends into one marker when zoomed out</string>
     <string name="sort_map_users_by_pinned">Show pinned friends first</string>
     <string name="sort_map_users_by_pinned_info">Pinned friends come first in the friends bar on the map</string>
+    <string name="map_sighting_push">Police and radar alerts</string>
+    <string name="map_sighting_push_info">Get a notification when police or a mobile radar is seen</string>
     <string name="schneaggmap_map_style">Map style</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Bright</string>
@@ -329,6 +331,7 @@
     <string name="notification_channel_reactions">Reactions</string>
     <string name="notification_channel_social">Friends &amp; events</string>
     <string name="notification_channel_general">General</string>
+    <string name="notification_channel_map_sightings">Police &amp; radar</string>
     <string name="new_messages">New messages</string>
     <string name="new_message_noti_single_title">New chat from %1$s</string>
     <string name="new_message_noti_group_title">New chat from %1$s in %2$s</string>
@@ -348,6 +351,8 @@
     <string name="friend_birthday_noti_body">Don't forget to congratulate them!</string>
 
     <string name="new_event_noti_title">%1$s created a new event</string>
+    <string name="map_sighting_noti_police">Police seen</string>
+    <string name="map_sighting_noti_radar">Mobile radar seen</string>
     <string name="events_screen_title">events</string>
     <string name="events_empty">No events yet. Create one yourself!</string>
     <string name="events_view_list">List</string>
@@ -1076,6 +1081,7 @@
     <string name="schneaggmap_filter_snail_trails">Snail trails</string>
     <string name="schneaggmap_chip_places">Places · %1$d/%2$d</string>
     <string name="schneaggmap_chip_events">Events</string>
+    <string name="schneaggmap_chip_active">Active</string>
     <string name="schneaggmap_chip_state_on">%1$s, on</string>
     <string name="schneaggmap_chip_state_off">%1$s, off</string>
     <string name="location_add_type">Add a new type</string>
@@ -1235,6 +1241,7 @@
     <string name="location_radar_speed_limit">Speed Limit</string>
     <string name="location_radar_mobile">Mobile</string>
     <string name="location_radar_red_light">Red Light Camera</string>
+    <string name="location_radar_last_seen">Last Seen</string>
 
     <!-- Police -->
     <string name="location_police_last_seen">Last Seen</string>

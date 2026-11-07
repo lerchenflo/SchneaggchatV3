@@ -127,18 +127,24 @@ sealed class LocationData {
         val radarSpeedLimit: AttributeValue,
         val radarMobile: AttributeValue?,
         val radarRedLight: AttributeValue,
+        val radarLastSeen: AttributeValue? = null,
     ) : LocationData() {
         override val locationtype = RADAR
 
         val radarSpeedLimitValue get() = radarSpeedLimit.asInt
         val radarMobileValue     get() = radarMobile?.asBool
         val radarRedLightValue   get() = radarRedLight.asBool
+        val radarLastSeenValue   get() = radarLastSeen?.asLong
 
-        override fun schema() = listOf(
-            AttributeDefinition.IntDef(key = AttributeKey.RADAR_SPEED_LIMIT, required = true, min = 0),
-            AttributeDefinition.BoolDef(key = AttributeKey.RADAR_MOBILE,    required = false),
-            AttributeDefinition.BoolDef(key = AttributeKey.RADAR_RED_LIGHT,  required = true),
-        )
+        //Only a mobile radar has a last seen, so the field comes and goes with the mobile switch
+        override fun schema(): List<AttributeDefinition> = buildList {
+            add(AttributeDefinition.IntDef(key = AttributeKey.RADAR_SPEED_LIMIT, required = true, min = 0))
+            add(AttributeDefinition.BoolDef(key = AttributeKey.RADAR_MOBILE,    required = false))
+            if (radarMobileValue == true) {
+                add(AttributeDefinition.DateTimeDef(key = AttributeKey.RADAR_LAST_SEEN, required = false, showNow = true))
+            }
+            add(AttributeDefinition.BoolDef(key = AttributeKey.RADAR_RED_LIGHT,  required = true))
+        }
     }
 
     @Serializable
@@ -648,6 +654,7 @@ fun AttributeKey.labelRes(): StringResource = when (this) {
     AttributeKey.RADAR_SPEED_LIMIT -> Res.string.location_radar_speed_limit
     AttributeKey.RADAR_MOBILE      -> Res.string.location_radar_mobile
     AttributeKey.RADAR_RED_LIGHT   -> Res.string.location_radar_red_light
+    AttributeKey.RADAR_LAST_SEEN   -> Res.string.location_radar_last_seen
 
     // Police
     AttributeKey.POLICE_LAST_SEEN -> Res.string.location_police_last_seen

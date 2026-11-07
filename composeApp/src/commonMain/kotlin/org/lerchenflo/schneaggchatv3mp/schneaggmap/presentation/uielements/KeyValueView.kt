@@ -473,11 +473,12 @@ private fun DateTimeInput(
         if (showNow) {
             Spacer(Modifier.width(8.dp))
 
-            OutlinedButton(
-                onClick = { onValueChange(LongValue(Clock.System.now().toEpochMilliseconds())) }
-            ) {
-                Text(stringResource(Res.string.schneaggmap_datetime_now))
-            }
+            NormalButton(
+                text = stringResource(Res.string.schneaggmap_datetime_now),
+                onClick = { onValueChange(LongValue(Clock.System.now().toEpochMilliseconds())) },
+                primary = false,
+                showOutline = true,
+            )
         }
     }
 
@@ -591,7 +592,8 @@ fun KeyValueReadOnlyView(
                 NormalButton(
                     text = stringResource(Res.string.schneaggmap_datetime_now),
                     onClick = { onValueChange(LongValue(Clock.System.now().toEpochMilliseconds())) },
-                    primary = false
+                    primary = false,
+                    showOutline = true,
                 )
             }
         }

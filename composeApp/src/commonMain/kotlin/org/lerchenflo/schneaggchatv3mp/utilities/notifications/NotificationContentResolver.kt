@@ -11,6 +11,8 @@ import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.friend_birthday_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.friend_birthday_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.image
+import schneaggchatv3mp.composeapp.generated.resources.map_sighting_noti_police
+import schneaggchatv3mp.composeapp.generated.resources.map_sighting_noti_radar
 import schneaggchatv3mp.composeapp.generated.resources.message
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
@@ -39,6 +41,7 @@ suspend fun resolveLocalizedContent(
     //foreground notification, so there is nothing for the Notifier to show.
     is DecodedNotification.Wake          -> null
     is DecodedNotification.Event         -> resolveEvent(decoded)
+    is DecodedNotification.MapSighting   -> resolveMapSighting(decoded)
 }
 
 private suspend fun resolveMessage(
@@ -196,6 +199,25 @@ private suspend fun resolveEvent(
     )
 }
 
+private suspend fun resolveMapSighting(
+    decoded: DecodedNotification.MapSighting,
+): NotificationContent = NotificationContent(
+    id = mapSightingNotificationId(decoded.entryId),
+    title = getString(
+        when (decoded.sightingType) {
+            MapSightingType.POLICE -> Res.string.map_sighting_noti_police
+            MapSightingType.RADAR -> Res.string.map_sighting_noti_radar
+        }
+    ),
+    body = decoded.entryName,
+    mapEntryId = decoded.entryId,
+    kind = NotificationKind.MAP_SIGHTING,
+)
+
+//One notification per entry: a new sighting replaces the older one of the same place
+private fun mapSightingNotificationId(entryId: String): Int =
+    "map_sighting:$entryId".hashCode().absoluteValue
+
 /**
  * Last-resort content for when [resolveLocalizedContent] failed or timed out: built from the raw
  * push fields only, no database lookups. Never throws. Null for wakes - the alarm service owns those.
@@ -245,6 +267,13 @@ suspend fun resolveFallbackContent(decoded: DecodedNotification): NotificationCo
             title = decoded.creatorName.ifBlank { NOTIFICATION_FALLBACK_TITLE },
             body = decoded.eventTitle.ifBlank { fallbackBody },
             kind = NotificationKind.SOCIAL,
+        )
+        is DecodedNotification.MapSighting -> NotificationContent(
+            id = mapSightingNotificationId(decoded.entryId),
+            title = decoded.entryName.ifBlank { NOTIFICATION_FALLBACK_TITLE },
+            body = fallbackBody,
+            mapEntryId = decoded.entryId,
+            kind = NotificationKind.MAP_SIGHTING,
         )
     }
 }

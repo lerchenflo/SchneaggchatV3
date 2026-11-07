@@ -153,6 +153,10 @@ class NotificationService: UNNotificationServiceExtension {
                 NotificationStrings.get(.newEventTitle, language: language, creatorName),
                 eventTitle
             )
+
+        case let .mapSighting(entryName, sightingType):
+            let titleKey: NotificationStringKey = sightingType == .POLICE ? .mapSightingPoliceTitle : .mapSightingRadarTitle
+            return (NotificationStrings.get(titleKey, language: language), entryName)
         }
     }
 }

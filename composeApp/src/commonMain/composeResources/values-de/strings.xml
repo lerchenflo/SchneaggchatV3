@@ -300,6 +300,8 @@
     <string name="merge_map_users_info">Fasst nah beieinander liegende Freunde zu einem Marker zusammen, wenn herausgezoomt ist</string>
     <string name="sort_map_users_by_pinned">Angepinnte Freunde zuerst anzeigen</string>
     <string name="sort_map_users_by_pinned_info">Angepinnte Freunde stehen in der Freundesleiste auf der Karte vorne</string>
+    <string name="map_sighting_push">Polizei- und Radar-Warnungen</string>
+    <string name="map_sighting_push_info">Benachrichtigung erhalten, wenn Polizei oder ein mobiles Radar gesichtet wird</string>
     <string name="schneaggmap_map_style">Mapdesign</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Hell</string>
@@ -329,6 +331,7 @@
     <string name="notification_channel_reactions">Reaktionen</string>
     <string name="notification_channel_social">Freunde &amp; Events</string>
     <string name="notification_channel_general">Allgemein</string>
+    <string name="notification_channel_map_sightings">Polizei &amp; Radar</string>
     <string name="new_messages">Neue Nachrichten</string>
     <string name="new_message_noti_single_title">Neuer Chat von %1$s</string>
     <string name="new_message_noti_group_title">Neuer Chat von %1$s in %2$s</string>
@@ -348,6 +351,8 @@
     <string name="friend_birthday_noti_body">Vergiss nicht zu gratulieren!</string>
 
     <string name="new_event_noti_title">%1$s hat ein neues Event erstellt</string>
+    <string name="map_sighting_noti_police">Polizei gesichtet</string>
+    <string name="map_sighting_noti_radar">Mobiles Radar gesichtet</string>
     <string name="events_screen_title">Events</string>
     <string name="events_empty">Noch keine Events. Erstelle selbst eines!</string>
     <string name="events_view_list">Liste</string>
@@ -1076,6 +1081,7 @@
     <string name="schneaggmap_filter_snail_trails">Schleimspuren</string>
     <string name="schneaggmap_chip_places">Orte · %1$d/%2$d</string>
     <string name="schneaggmap_chip_events">Events</string>
+    <string name="schneaggmap_chip_active">Aktiv</string>
     <string name="schneaggmap_chip_state_on">%1$s, an</string>
     <string name="schneaggmap_chip_state_off">%1$s, aus</string>
     <string name="location_add_type">Neuen Typ hinzufügen</string>
@@ -1235,6 +1241,7 @@
     <string name="location_radar_speed_limit">Geschwindigkeitsbegrenzung</string>
     <string name="location_radar_mobile">Mobil</string>
     <string name="location_radar_red_light">Ampelblitzer</string>
+    <string name="location_radar_last_seen">Zuletzt gesehen</string>
 
     <!-- Police -->
     <string name="location_police_last_seen">Zuletzt gesehen</string>

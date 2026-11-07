@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.LocalPolice
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material3.ButtonDefaults
@@ -49,6 +50,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import org.lerchenflo.schneaggchatv3mp.sharedUi.horizontalScrollWithMouseWheel
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.location_type_user
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_chip_active
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_chip_events
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_chip_places
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_chip_state_off
@@ -77,6 +79,13 @@ fun MapFilterChipsRow(
             .horizontalScrollWithMouseWheel()
             .padding(horizontal = 16.dp)
     ) {
+        MapFilterChip(
+            label = stringResource(Res.string.schneaggmap_chip_active),
+            icon = Icons.Outlined.LocalPolice,
+            selected = state.showActiveSightings,
+            onClick = { onAction(SchneaggmapAction.ToggleShowActiveSightings) },
+        )
+
         MapFilterChip(
             label = stringResource(Res.string.schneaggmap_chip_events),
             icon = Icons.Outlined.Event,

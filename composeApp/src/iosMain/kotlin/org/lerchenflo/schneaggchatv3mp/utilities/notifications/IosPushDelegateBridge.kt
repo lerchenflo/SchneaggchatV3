@@ -66,11 +66,13 @@ class IosPushDelegateBridge {
     fun onNotificationTap(data: Map<String, String>) {
         // Extract chat info from the push payload for deep-navigation, reusing the same
         // decoder + chat-target logic the Android FCM service uses.
-        val decoded = PayloadDecoder.decode(data) as? DecodedNotification.Message
+        val decoded = PayloadDecoder.decode(data)
+        val message = decoded as? DecodedNotification.Message
 
         AppLifecycleManager.notifyNotificationOpened(
-            chatId = decoded?.chatTargetId,
-            isGroup = decoded?.groupMessage ?: false
+            chatId = message?.chatTargetId,
+            isGroup = message?.groupMessage ?: false,
+            mapEntryId = (decoded as? DecodedNotification.MapSighting)?.entryId,
         )
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {

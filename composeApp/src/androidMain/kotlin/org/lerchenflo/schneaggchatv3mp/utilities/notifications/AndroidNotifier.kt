@@ -42,6 +42,7 @@ import java.io.File
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.mark_as_read
 import schneaggchatv3mp.composeapp.generated.resources.notification_channel_general
+import schneaggchatv3mp.composeapp.generated.resources.notification_channel_map_sightings
 import schneaggchatv3mp.composeapp.generated.resources.notification_channel_messages
 import schneaggchatv3mp.composeapp.generated.resources.notification_channel_reactions
 import schneaggchatv3mp.composeapp.generated.resources.notification_channel_social
@@ -51,15 +52,19 @@ import schneaggchatv3mp.composeapp.generated.resources.you_sender
 import kotlin.coroutines.resume
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 
 //One channel per NotificationKind, so users can tune each kind in the system settings. The
 //messages channel keeps its old id, so existing settings for it stay.
 private const val CHANNEL_MESSAGES = "schneaggchat_messages"
 private const val CHANNEL_REACTIONS = "schneaggchat_reactions"
 private const val CHANNEL_SOCIAL = "schneaggchat_social"
+private const val CHANNEL_MAP_SIGHTINGS = "schneaggchat_map_sightings"
 private const val CHANNEL_GENERAL = "schneaggchat_general"
 
 const val EXTRA_FROM_NOTIFICATION = "from_notification"
+const val EXTRA_MAP_ENTRY_ID = "map_entry_id"
 
 //How many past messages are kept per chat in the MessagingStyle history shown on the notification
 // - bounded so a chat that's been unread for a while doesn't build
@@ -107,6 +112,7 @@ private val NotificationKind.channelId: String
         NotificationKind.MESSAGE -> CHANNEL_MESSAGES
         NotificationKind.REACTION -> CHANNEL_REACTIONS
         NotificationKind.SOCIAL -> CHANNEL_SOCIAL
+        NotificationKind.MAP_SIGHTING -> CHANNEL_MAP_SIGHTINGS
         NotificationKind.GENERAL -> CHANNEL_GENERAL
     }
 
@@ -115,7 +121,7 @@ private val NotificationKind.category: String?
     get() = when (this) {
         NotificationKind.MESSAGE -> NotificationCompat.CATEGORY_MESSAGE
         NotificationKind.REACTION, NotificationKind.SOCIAL -> NotificationCompat.CATEGORY_SOCIAL
-        NotificationKind.GENERAL -> null
+        NotificationKind.MAP_SIGHTING, NotificationKind.GENERAL -> null
     }
 
 class AndroidNotifier(private val context: Context, private val permissionManager: PermissionManager) : Notifier {
@@ -200,7 +206,7 @@ class AndroidNotifier(private val context: Context, private val permissionManage
                 showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat, content.senderId, content.kind)
             }
         } else {
-            showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat, content.avatarUserId, content.kind)
+            showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat, content.avatarUserId, content.kind, content.mapEntryId)
         }
     }
 
@@ -216,9 +222,10 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         groupChat: Boolean,
         avatarUserId: String?,
         kind: NotificationKind,
+        mapEntryId: String? = null,
     ) {
         try {
-            showPlainNotification(id, title, body, chatId, groupChat, avatarUserId, kind)
+            showPlainNotification(id, title, body, chatId, groupChat, avatarUserId, kind, mapEntryId)
         } catch (e: Throwable) {
             logError("Plain notification failed, showing bare fallback: ${e.describe()}")
             try {
@@ -249,11 +256,12 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         groupChat: Boolean,
         avatarUserId: String?,
         kind: NotificationKind,
+        mapEntryId: String?,
     ) {
         val pendingIntent = PendingIntent.getActivity(
             context,
             id,
-            launchIntent(chatId = chatId, groupChat = groupChat),
+            launchIntent(chatId = chatId, groupChat = groupChat, mapEntryId = mapEntryId),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -672,7 +680,7 @@ class AndroidNotifier(private val context: Context, private val permissionManage
             .build()
     }
 
-    private fun launchIntent(chatId: String?, groupChat: Boolean): Intent {
+    private fun launchIntent(chatId: String?, groupChat: Boolean, mapEntryId: String? = null): Intent {
         //NEW_TASK to launch from a service context, CLEAR_TOP|SINGLE_TOP (with MainActivity's
         //launchMode="singleTop") to resume an already-running app via onNewIntent instead of
         //tearing it down and restarting it (CLEAR_TASK did that on every tap).
@@ -681,12 +689,14 @@ class AndroidNotifier(private val context: Context, private val permissionManage
             flags = intentFlags
             putExtra(EXTRA_FROM_NOTIFICATION, true)
             chatId?.let { putExtra(EXTRA_CHAT_ID, it) }
+            mapEntryId?.let { putExtra(EXTRA_MAP_ENTRY_ID, it) }
             putExtra(EXTRA_GROUP_CHAT, groupChat)
         } ?: Intent().apply {
             setClassName(context, "org.lerchenflo.androidApp.MainActivity")
             flags = intentFlags
             putExtra(EXTRA_FROM_NOTIFICATION, true)
             chatId?.let { putExtra(EXTRA_CHAT_ID, it) }
+            mapEntryId?.let { putExtra(EXTRA_MAP_ENTRY_ID, it) }
             putExtra(EXTRA_GROUP_CHAT, groupChat)
         }
     }
@@ -790,12 +800,12 @@ class AndroidNotifier(private val context: Context, private val permissionManage
 
         val side = minOf(decoded.width, decoded.height)
         val square = Bitmap.createBitmap(decoded, (decoded.width - side) / 2, (decoded.height - side) / 2, side, side)
-        val scaled = Bitmap.createScaledBitmap(square, sizePx, sizePx, true)
+        val scaled = square.scale(sizePx, sizePx)
         if (square !== scaled && square !== decoded) square.recycle()
         if (decoded !== scaled) decoded.recycle()
 
         //Round like every profile picture in the app - the large icon and some launchers show it as is
-        val round = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val round = createBitmap(sizePx, sizePx)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             shader = BitmapShader(scaled, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         }
@@ -873,6 +883,7 @@ class AndroidNotifier(private val context: Context, private val permissionManage
             NotificationChannel(CHANNEL_MESSAGES, name(Res.string.notification_channel_messages, "Messages"), NotificationManager.IMPORTANCE_HIGH),
             NotificationChannel(CHANNEL_REACTIONS, name(Res.string.notification_channel_reactions, "Reactions"), NotificationManager.IMPORTANCE_HIGH),
             NotificationChannel(CHANNEL_SOCIAL, name(Res.string.notification_channel_social, "Friends & events"), NotificationManager.IMPORTANCE_HIGH),
+            NotificationChannel(CHANNEL_MAP_SIGHTINGS, name(Res.string.notification_channel_map_sightings, "Police & radar"), NotificationManager.IMPORTANCE_HIGH),
             NotificationChannel(CHANNEL_GENERAL, name(Res.string.notification_channel_general, "General"), NotificationManager.IMPORTANCE_HIGH),
         )
         context.getSystemService(NotificationManager::class.java).createNotificationChannels(channels)

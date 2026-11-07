@@ -7,6 +7,7 @@ fun LocationData.getValueByKey(key: AttributeKey): AttributeValue? = when (this)
         AttributeKey.RADAR_SPEED_LIMIT -> radarSpeedLimit
         AttributeKey.RADAR_MOBILE      -> radarMobile
         AttributeKey.RADAR_RED_LIGHT   -> radarRedLight
+        AttributeKey.RADAR_LAST_SEEN   -> radarLastSeen
         else                           -> null
     }
 
@@ -156,8 +157,10 @@ fun LocationData.withValueForKey(key: AttributeKey, value: AttributeValue?): Loc
     // Traffic & Hazards
     is LocationData.Radar -> when (key) {
         AttributeKey.RADAR_SPEED_LIMIT -> value?.let { copy(radarSpeedLimit = it) } ?: this
-        AttributeKey.RADAR_MOBILE      -> copy(radarMobile = value)
+        //Turning the switch off clears last seen: a fixed radar has none, and turning it on again must not bring an old sighting back
+        AttributeKey.RADAR_MOBILE      -> copy(radarMobile = value, radarLastSeen = radarLastSeen.takeIf { value?.asBool == true })
         AttributeKey.RADAR_RED_LIGHT   -> value?.let { copy(radarRedLight = it) } ?: this
+        AttributeKey.RADAR_LAST_SEEN   -> copy(radarLastSeen = value)
         else                           -> this
     }
 

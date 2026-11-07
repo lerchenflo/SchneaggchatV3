@@ -135,8 +135,8 @@ fun MapEntryInfoCard(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
             dismissOnBackPress = true,
-            dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false
+            dismissOnClickOutside = true,
+            usePlatformDefaultWidth = true
         )
     ) {
         Column(
@@ -271,7 +271,8 @@ fun MapEntryInfoCard(
                                 currentEntry.coordinates.long,
                                 currentEntry.name
                             )
-                        }
+                        },
+                        primary = false
                     )
                 }
             }

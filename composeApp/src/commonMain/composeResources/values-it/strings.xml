@@ -299,6 +299,8 @@
     <string name="merge_map_users_info">Raggruppa gli amici vicini in un unico marcatore quando si riduce lo zoom</string>
     <string name="sort_map_users_by_pinned">Mostra prima gli amici fissati</string>
     <string name="sort_map_users_by_pinned_info">Gli amici fissati appaiono per primi nella barra degli amici sulla mappa</string>
+    <string name="map_sighting_push">Avvisi polizia e autovelox</string>
+    <string name="map_sighting_push_info">Ricevi una notifica quando vengono avvistati polizia o un autovelox mobile</string>
     <string name="schneaggmap_map_style">Stile mappa</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Bright</string>
@@ -328,6 +330,7 @@
     <string name="notification_channel_reactions">Reazioni</string>
     <string name="notification_channel_social">Amici ed eventi</string>
     <string name="notification_channel_general">Generale</string>
+    <string name="notification_channel_map_sightings">Polizia e autovelox</string>
     <string name="new_messages">Nuovi messaggi</string>
     <string name="new_message_noti_single_title">Nuova chat da %1$s</string>
     <string name="new_message_noti_group_title">Nuova chat da %1$s in %2$s</string>
@@ -347,6 +350,8 @@
     <string name="friend_birthday_noti_body">Non dimenticare di fargli gli auguri!</string>
 
     <string name="new_event_noti_title">%1$s ha creato un nuovo evento</string>
+    <string name="map_sighting_noti_police">Polizia avvistata</string>
+    <string name="map_sighting_noti_radar">Autovelox mobile avvistato</string>
     <string name="events_screen_title">eventi</string>
     <string name="events_empty">Nessun evento ancora. Creane uno tu stesso!</string>
     <string name="events_view_list">Lista</string>
@@ -1070,6 +1075,7 @@
     <string name="schneaggmap_filter_snail_trails">Scie</string>
     <string name="schneaggmap_chip_places">Luoghi · %1$d/%2$d</string>
     <string name="schneaggmap_chip_events">Eventi</string>
+    <string name="schneaggmap_chip_active">Attivi</string>
     <string name="schneaggmap_chip_state_on">%1$s, attivo</string>
     <string name="schneaggmap_chip_state_off">%1$s, disattivo</string>
     <string name="location_add_type">Aggiungi un nuovo tipo</string>
@@ -1229,6 +1235,7 @@
     <string name="location_radar_speed_limit">Limite di velocità</string>
     <string name="location_radar_mobile">Mobile</string>
     <string name="location_radar_red_light">Semaforo con telecamera</string>
+    <string name="location_radar_last_seen">Ultimo avvistamento</string>
 
     <!-- Police -->
     <string name="location_police_last_seen">Ultimo avvistamento</string>

@@ -289,6 +289,33 @@ fun mergeClusterAvatarsIcon(
 }
 
 /**
+ * Draws [icon] on a [backgroundColor] disc of [discSize], the look of [mergeLocationTypeIcons] for
+ * one icon. The icon keeps its size and sits in the middle.
+ */
+fun addMarkerBackground(icon: ImageBitmap, backgroundColor: Color, density: Density, discSize: Dp): ImageBitmap {
+    val discSizePx = with(density) { discSize.toPx() }.roundToInt().coerceAtLeast(1)
+
+    val result = ImageBitmap(
+        width = discSizePx,
+        height = discSizePx,
+        config = ImageBitmapConfig.Argb8888,
+        hasAlpha = true,
+    )
+
+    CanvasDrawScope().draw(
+        density = density,
+        layoutDirection = LayoutDirection.Ltr,
+        canvas = Canvas(result),
+        size = Size(discSizePx.toFloat(), discSizePx.toFloat()),
+    ) {
+        drawCircle(color = backgroundColor, radius = size.minDimension / 2f, center = center)
+        drawCenteredImage(icon, center, icon.width.toFloat())
+    }
+
+    return result
+}
+
+/**
  * Composites [icons] into a ring around a translucent [backgroundColor] disc - a single marker
  * for a map entry that matches 2+ location types, so it renders as one combined icon instead of
  * one full-size icon per type stacked on the same coordinate. [iconSize] is the diameter of each

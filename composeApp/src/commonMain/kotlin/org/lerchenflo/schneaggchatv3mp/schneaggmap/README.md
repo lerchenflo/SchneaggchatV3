@@ -30,7 +30,7 @@ Property name, `AttributeKey` constant, JSON key and Mongo field name are always
 | `LongDef(min, max)` | `LongValue` | Number field (plain long - **no longer a date picker**) | Range |
 | `BoolDef` | `BoolValue` | Switch | Type |
 | `EnumDef(options)` | `StringValue` holding the enum **constant name** (never the ordinal) | Dropdown with translated labels; unknown names are shown raw | Value must be one of `options` |
-| `DateTimeDef(showNow)` | `LongValue` (epoch millis) | Date + time picker, plus a clear button when optional and set. Only with `showNow` (police last seen, not upcoming dates like the next tournament): a Now button, which on the read-only card saves at once | Type |
+| `DateTimeDef(showNow)` | `LongValue` (epoch millis) | Date + time picker, plus a clear button when optional and set. Only with `showNow` (police and mobile radar last seen, not upcoming dates like the next tournament): a Now button, which on the read-only card saves at once | Type |
 | `PriceDef(max)` | `DoubleValue` (euros) | Decimal field, `€` suffix, max 2 decimals, `.` or `,` | Not negative, max |
 | `DistanceDef(unit, max)` | `DoubleValue` in `unit` (`METERS`, `KILOMETERS`) | Decimal field with unit suffix | Not negative, max |
 | `RatingDef(min, max)` | `IntValue` | Slider, value saved on release | Within `min..max` |
@@ -77,6 +77,7 @@ Stored-data changes are marked **(migrated)** - existing Mongo data is converted
 | Mountain street | `mountainStreetHeightLimit` | `DoubleDef` | `DistanceDef(METERS)` |
 | Wifi | `wifiPassword` | `StringDef` | `SecretDef` |
 | Police | `policeLastSeen` | `LongDef` | `DateTimeDef` |
+| Radar | `radarLastSeen` **(new)** | - | `DateTimeDef`, only in `schema()` while `radarMobile` is on; turning the switch off clears it |
 | Horse riding | `horseRidingNextTournament` | `LongDef` | `DateTimeDef` |
 | Sightseeing / Party | `sightseeingEntryFee`, `partyEntryFee` | `DoubleDef` | `PriceDef` |
 | Food kebab / pizza / burger / beer / ice | `food*Price` | `DoubleDef` | `PriceDef` |

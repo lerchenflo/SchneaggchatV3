@@ -156,6 +156,17 @@ class DataStoreSettingsRepository(
         }
     }
 
+    override fun getMapSightingPushFlow(): Flow<Boolean> {
+        return preferencemanager.getMapSightingPushFlow()
+    }
+
+    override suspend fun setMapSightingPush(value: Boolean) {
+        outliveCaller {
+            preferencemanager.saveMapSightingPush(value)
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(mapSightingPush = value)).trackConnectivity()
+        }
+    }
+
     override fun getMapStyleSettingFlow(): Flow<MapStyleSetting> {
         return preferencemanager.getMapStyleSettingFlow()
     }

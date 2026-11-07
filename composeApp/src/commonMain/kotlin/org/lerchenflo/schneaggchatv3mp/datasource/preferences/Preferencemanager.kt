@@ -125,6 +125,7 @@ class Preferencemanager(
         val DEMO_MODE = booleanPreferencesKey("demo_mode")
         val MERGE_MAP_USERS = booleanPreferencesKey("merge_map_users")
         val SORT_MAP_USERS_BY_PINNED = booleanPreferencesKey("sort_map_users_by_pinned")
+        val MAP_SIGHTING_PUSH = booleanPreferencesKey("map_sighting_push")
         val MAP_STYLE = intPreferencesKey("map_style")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
         val QUICK_REACTIONS = stringPreferencesKey("quick_reactions")
@@ -255,6 +256,15 @@ class Preferencemanager(
 
     fun getSortMapUsersByPinnedFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.SORT_MAP_USERS_BY_PINNED] ?: true //Default to true
+    }
+
+    // Push when police or a mobile radar is seen
+    suspend fun saveMapSightingPush(value: Boolean) {
+        prefs.edit { it[PrefsKeys.MAP_SIGHTING_PUSH] = value }
+    }
+
+    fun getMapSightingPushFlow(): Flow<Boolean> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.MAP_SIGHTING_PUSH] ?: false //Opt-in, same default as the server
     }
 
     // Map style
@@ -433,6 +443,7 @@ class Preferencemanager(
             it[PrefsKeys.MERGE_MAP_USERS] = settings.mergeMapUsers
             // Null from a server that doesn't store this field yet - keep the local value
             settings.sortMapUsersByPinned?.let { value -> it[PrefsKeys.SORT_MAP_USERS_BY_PINNED] = value }
+            settings.mapSightingPush?.let { value -> it[PrefsKeys.MAP_SIGHTING_PUSH] = value }
             it[PrefsKeys.MAP_STYLE] = mapStyle.ordinal
             it[PrefsKeys.PINNED_CHATS] = json.encodeToString(settings.pinnedChats)
             // A null from the server means "never customised" - drop the key entirely so the

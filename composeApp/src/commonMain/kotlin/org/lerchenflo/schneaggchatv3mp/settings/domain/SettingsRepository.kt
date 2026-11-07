@@ -45,6 +45,9 @@ interface SettingsRepository {
     fun getSortMapUsersByPinnedFlow(): Flow<Boolean>
     suspend fun setSortMapUsersByPinned(value: Boolean)
 
+    fun getMapSightingPushFlow(): Flow<Boolean>
+    suspend fun setMapSightingPush(value: Boolean)
+
     fun getMapStyleSettingFlow(): Flow<MapStyleSetting>
     fun getMapStyleUrlFlow(): Flow<String>
     suspend fun setMapStyleSetting(style: MapStyleSetting)

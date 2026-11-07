@@ -24,6 +24,11 @@ data class SchneaggmapState(
     val isFilterDropdownVisible: Boolean = false,
     val expandedFilterGroups: Set<LocationGroup> = emptySet(),
 
+    // Police and mobile radars with a fresh sighting show even while their type is not enabled.
+    // Entry id to the types with an active sighting, only entries that have one
+    val showActiveSightings: Boolean = true,
+    val activeSightings: Map<String, Set<LocationType>> = emptyMap(),
+
     val selectedEntry: MapEntry? = null,
     val selectedUser: User? = null,
     val ownUser: User? = null,

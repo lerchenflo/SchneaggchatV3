@@ -11,7 +11,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
  */
 enum class AttributeKey {
     // Radar
-    RADAR_SPEED_LIMIT, RADAR_MOBILE, RADAR_RED_LIGHT,
+    RADAR_SPEED_LIMIT, RADAR_MOBILE, RADAR_RED_LIGHT, RADAR_LAST_SEEN,
 
     // Police
     POLICE_LAST_SEEN,

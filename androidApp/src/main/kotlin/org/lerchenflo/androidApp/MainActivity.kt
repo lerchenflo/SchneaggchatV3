@@ -26,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_CHAT_ID
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_FROM_NOTIFICATION
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_MAP_ENTRY_ID
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_GROUP_CHAT
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.chatShortcutId
 
@@ -113,7 +114,8 @@ class MainActivity : ComponentActivity() {
         if (intent?.getBooleanExtra(EXTRA_FROM_NOTIFICATION, false) == true) {
             val chatId = intent.getStringExtra(EXTRA_CHAT_ID)
             val isGroup = intent.getBooleanExtra(EXTRA_GROUP_CHAT, false)
-            AppLifecycleManager.notifyNotificationOpened(chatId = chatId, isGroup = isGroup)
+            val mapEntryId = intent.getStringExtra(EXTRA_MAP_ENTRY_ID)
+            AppLifecycleManager.notifyNotificationOpened(chatId = chatId, isGroup = isGroup, mapEntryId = mapEntryId)
 
             // Clear the marker so an activity recreation (rotation, process restore) that
             // replays this same Intent does not re-trigger the chat navigation.

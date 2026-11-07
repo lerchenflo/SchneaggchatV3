@@ -21,6 +21,8 @@ data class PersonalUserSettings(
     // Null while the server doesn't store this field yet (see SchneaggchatV3server/Todo.md),
     // so a sync can't reset the local value to a default
     val sortMapUsersByPinned: Boolean? = null,
+    // Same as sortMapUsersByPinned. The server skips the police and radar push when this is off
+    val mapSightingPush: Boolean? = null,
     val mapStyle: String = "LIBERTY",
 
     val pinnedChats: List<PinnedChat> = emptyList(),
@@ -54,6 +56,7 @@ data class UserSettingsRequest(
     val mergeMapLocations: Boolean? = null,
     val mergeMapUsers: Boolean? = null,
     val sortMapUsersByPinned: Boolean? = null,
+    val mapSightingPush: Boolean? = null,
     val mapStyle: String? = null,
     val pinnedChats: List<PinnedChat>? = null,
     val quickReactions: List<String>? = null,

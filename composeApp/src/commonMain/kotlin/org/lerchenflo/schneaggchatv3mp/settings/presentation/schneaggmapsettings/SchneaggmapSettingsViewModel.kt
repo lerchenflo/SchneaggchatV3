@@ -46,6 +46,9 @@ class SchneaggmapSettingsViewModel(
     var sortMapUsersByPinned by mutableStateOf(true)
         private set
 
+    var mapSightingPush by mutableStateOf(false)
+        private set
+
     var mapStyle by mutableStateOf(MapStyleSetting.LIBERTY)
         private set
 
@@ -85,6 +88,16 @@ class SchneaggmapSettingsViewModel(
                 }
                 .collect { value ->
                     sortMapUsersByPinned = value
+                }
+        }
+
+        viewModelScope.launch { // Push when police or a mobile radar is seen
+            settingsRepository.getMapSightingPushFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting map sighting push preference: ${exception.message}")
+                }
+                .collect { value ->
+                    mapSightingPush = value
                 }
         }
 
@@ -136,6 +149,12 @@ class SchneaggmapSettingsViewModel(
     fun updateSortMapUsersByPinned(newValue: Boolean) {
         viewModelScope.launch {
             settingsRepository.setSortMapUsersByPinned(newValue)
+        }
+    }
+
+    fun updateMapSightingPush(newValue: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setMapSightingPush(newValue)
         }
     }
 

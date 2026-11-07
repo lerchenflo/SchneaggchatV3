@@ -14,6 +14,7 @@ sealed interface SchneaggmapAction {
 
     data object ToggleShowUsers: SchneaggmapAction
     data object ToggleShowEvents: SchneaggmapAction
+    data object ToggleShowActiveSightings: SchneaggmapAction
     data class OnEventPinClick(val eventId: String) : SchneaggmapAction
     data class ToggleMainType(val key: LocationType) : SchneaggmapAction
     data class ToggleGroup(val group: LocationGroup) : SchneaggmapAction

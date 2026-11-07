@@ -6,6 +6,13 @@ enum DecodedNotification {
     case system(title: String, message: String)
     case birthday(birthdayUserName: String, ownBirthday: Bool)
     case event(eventTitle: String, creatorName: String)
+    case mapSighting(entryName: String, sightingType: MapSightingType)
+}
+
+/// Raw values are wire names and must match the server.
+enum MapSightingType: String {
+    case POLICE
+    case RADAR
 }
 
 enum MessageType: String {
@@ -53,6 +60,12 @@ enum NotificationPayloadDecoder {
             return .event(
                 eventTitle: payload["eventTitle"] ?? "",
                 creatorName: payload["creatorName"] ?? ""
+            )
+        case "map_sighting":
+            guard let sightingType = MapSightingType(rawValue: payload["sightingType"] ?? "") else { return nil }
+            return .mapSighting(
+                entryName: payload["entryName"] ?? "",
+                sightingType: sightingType
             )
         default:
             return nil
