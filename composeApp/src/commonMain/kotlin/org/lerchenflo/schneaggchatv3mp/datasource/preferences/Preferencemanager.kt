@@ -114,7 +114,7 @@ class Preferencemanager(
 
     // ========== NON-SECURE STORAGE (DataStore - Preferences) ==========
 
-    private object PrefsKeys {
+    internal object PrefsKeys {
         val MD_FORMAT = booleanPreferencesKey("md_format")
         val HIGHLIGHT_TODAYS_MESSAGE_TIMESTAMP = booleanPreferencesKey("highlight_todays_message_timestamp")
         val THEME = intPreferencesKey("theme")
