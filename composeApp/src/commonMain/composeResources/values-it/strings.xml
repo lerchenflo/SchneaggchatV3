@@ -1465,6 +1465,8 @@
 
     <string name="new_version_available">Nuova versione disponibile: %1$s</string>
     <string name="download_from_github">Scarica la nuova versione da GitHub</string>
+    <string name="beta_version_available">Beta disponibile: %1$s</string>
+    <string name="beta_version_optional">Versione di prova facoltativa. Puoi restare sulla versione attuale.</string>
     <string name="download">Scarica</string>
 
     <!-- Settings Group Headers -->

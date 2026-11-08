@@ -7,6 +7,7 @@ import eu.anifantakis.lib.ksafe.KSafe
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.core.qualifier.named
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.desktopAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
@@ -14,6 +15,9 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.SOCKET_PING_INTERVAL_M
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createAuthenticatedHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
+import org.lerchenflo.schneaggchatv3mp.desktopupdate.data.GitHubUpdateRepository
+import org.lerchenflo.schneaggchatv3mp.desktopupdate.domain.DesktopUpdateRepository
+import org.lerchenflo.schneaggchatv3mp.desktopupdate.presentation.DesktopUpdateViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.DesktopAppVersion
@@ -63,6 +67,11 @@ val desktopDataStoreModule = module {
 
 val desktopKSafeModule = module {
     single<KSafe> { KSafe() }
+}
+
+val desktopUpdateModule = module {
+    single<DesktopUpdateRepository> { GitHubUpdateRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get()) }
+    viewModelOf(::DesktopUpdateViewModel)
 }
 
 val desktopVersionModule = module {

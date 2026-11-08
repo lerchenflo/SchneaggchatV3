@@ -1,4 +1,12 @@
-package org.lerchenflo.schneaggchatv3mp.utilities
+package org.lerchenflo.schneaggchatv3mp.desktopupdate.domain
+
+private val BETA_TAG_REGEX = Regex("beta(\\d*)", RegexOption.IGNORE_CASE)
+
+/** Build number of a beta: "beta" is 1, "beta2" is 2. Null for anything that is no beta. */
+private fun betaNumber(versionTag: String?): Int? =
+    versionTag?.let(BETA_TAG_REGEX::find)?.let { it.groupValues[1].toIntOrNull() ?: 1 }
+
+fun isBetaVersion(version: String): Boolean = betaNumber(version) != null
 
 fun isNewVersionHigher(currentVersion: String, newVersion: String): Boolean {
     // 1. Validate parameters using Regex
@@ -34,16 +42,8 @@ fun isNewVersionHigher(currentVersion: String, newVersion: String): Boolean {
         if (nPart < cPart) return false
     }
 
-    /*
-    // 6. Handle pre-release tags (beta, alpha, rc, etc.)
-    if (preCurrent == null && preNew != null) return false
-    if (preCurrent != null && preNew == null) return true
-
-    if (preCurrent != null && preNew != null) {
-        return preNew > preCurrent
-    }
-
-     */
-
-    return false
+    // 6. Same numbers: the final version beats its betas, a later beta beats an earlier one
+    val betaCurrent = betaNumber(preCurrent) ?: return false
+    val betaNew = betaNumber(preNew) ?: return true
+    return betaNew > betaCurrent
 }

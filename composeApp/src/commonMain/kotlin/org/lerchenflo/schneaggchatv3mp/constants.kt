@@ -22,8 +22,6 @@ var URL_INSTAGRAM = "https://www.instagram.com/schneaggchat?utm_source=ig_web_bu
 
 val GITHUB_URL = "https://raw.githubusercontent.com/lerchenflo/SchneaggchatV3"
 
-val GITHUB_LATEST_RELEASE_API_URL = "https://api.github.com/repos/lerchenflo/SchneaggchatV3/releases/latest"
-val GITHUB_LATEST_RELEASE_URL = "https://github.com/lerchenflo/SchneaggchatV3/releases/latest"
 
 val PLAYSTORE_TESTER_URI = "https://play.google.com/apps/testing/org.lerchenflo.schneaggchatv3mp"
 val APPSTORE_TESTER_URI = "https://testflight.apple.com/join/XkUjnst6"

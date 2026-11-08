@@ -61,7 +61,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.utilities.isNewVersionHigher
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
@@ -106,9 +105,6 @@ class ChatSelectorViewModel(
     private val _contributePopupShown = MutableStateFlow(false)
     val contributePopupShown: StateFlow<Boolean> = _contributePopupShown.asStateFlow()
 
-    /** Desktop only: tag of a newer GitHub release, null if up to date. */
-    private val _newVersionAvailable = MutableStateFlow<String?>(null)
-    val newVersionAvailable: StateFlow<String?> = _newVersionAvailable.asStateFlow()
 
     /** Newest announcement from the server, loaded once at start. */
     private val _latestAnnouncement = MutableStateFlow<Announcement?>(null)
@@ -188,11 +184,6 @@ class ChatSelectorViewModel(
             loadAnnouncement()
         }
 
-        if (appVersion.isDesktop()) {
-            viewModelScope.launch {
-                _newVersionAvailable.value = checkNewGitHubRelease()
-            }
-        }
 
     }
 
@@ -384,33 +375,6 @@ class ChatSelectorViewModel(
     fun onContributeDismiss() {
         _contributePopupShown.value = false
     }
-
-    fun onNewVersionDismiss() {
-        _newVersionAvailable.value = null
-    }
-
-    private suspend fun checkNewGitHubRelease(): String?{
-        // get the github release name
-        val tagName = appInfoRepository.getLatestGitHubVersionAsString() ?: "v0.0.0"
-        println("github tag name: ${tagName}")
-
-        // get the current app name
-        val appversion = appInfoRepository.getVersionName()
-        println("app version: ${appversion}")
-
-        // check if the GitHub version is newer than your version
-        try {
-            if(isNewVersionHigher(appversion, tagName))
-                return tagName
-        } catch (e: IllegalArgumentException) {
-            // Handle the bad data safely without crashing the app
-            println("Error checking version: ${e.message}")
-            return null
-        }
-        return null
-    }
-
-
 
     //The unfiltered chat list. Started eagerly so the query is already running while the screen is
     //still being composed, and kept subscribed for the ViewModel's lifetime so coming back from a

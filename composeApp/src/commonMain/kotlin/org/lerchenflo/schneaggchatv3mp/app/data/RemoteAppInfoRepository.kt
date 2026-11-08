@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.app.data
 
-import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_API_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
 import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
@@ -9,7 +8,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogParser
 import org.lerchenflo.schneaggchatv3mp.app.data.remote.AppInfoRemoteDataSource
-import org.lerchenflo.schneaggchatv3mp.app.data.remote.getTagName
 
 /** [AppInfoRepository] reading the installed version from [AppVersion] and everything else live via [AppInfoRemoteDataSource]. */
 class RemoteAppInfoRepository(
@@ -37,23 +35,10 @@ class RemoteAppInfoRepository(
                 null
             }
             is DataResult.Success<*> -> {
-                val changelog = ChangelogParser.getParsedChangelog(networkResult.data.toString(), version)
+                // A desktop beta (3.0.19_beta) shares the README section of its final version
+                val readmeVersion = version.substringBefore('_').substringBefore('-')
+                val changelog = ChangelogParser.getParsedChangelog(networkResult.data.toString(), readmeVersion)
                 changelog
-            }
-        }
-    }
-
-    /**
-     * Fetches the tag name of the current GitHub release
-     */
-    override suspend fun getLatestGitHubVersionAsString(): String? {
-        return when (val networkResult = appInfoRemoteDataSource.getGitHubVersionJson(GITHUB_LATEST_RELEASE_API_URL)) {
-            is DataResult.Error<*> -> {
-                println("get release json network error: ${networkResult.error.message}")
-                null
-            }
-            is DataResult.Success<*> -> {
-                getTagName(networkResult.data.toString())
             }
         }
     }

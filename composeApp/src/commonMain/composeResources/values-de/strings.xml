@@ -1471,6 +1471,8 @@
 
     <string name="new_version_available">Neue Version verfügbar: %1$s</string>
     <string name="download_from_github">Lade die neue Version von GitHub herunter</string>
+    <string name="beta_version_available">Beta verfügbar: %1$s</string>
+    <string name="beta_version_optional">Optionale Testversion. Du kannst bei deiner aktuellen Version bleiben.</string>
     <string name="download">Herunterladen</string>
 
     <!-- Settings Group Headers -->

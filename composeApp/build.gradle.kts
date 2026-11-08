@@ -342,6 +342,13 @@ configurations.matching { it.isCanBeResolved && !it.name.startsWith("composeHotR
 //Add version info to desktop builds
 val desktopVersion = "3.0.19"
 
+//A beta build reports its tag, e.g. 3.0.19_beta, so the update check can offer the final 3.0.19.
+//packageVersion stays numeric: installers do not accept a suffix.
+val desktopReportedVersion = providers.environmentVariable("GITHUB_REF_NAME").orNull
+    ?.removePrefix("v")
+    ?.takeIf { it.contains("beta", ignoreCase = true) }
+    ?: desktopVersion
+
 compose.desktop {
     application {
         mainClass = "org.lerchenflo.schneaggchatv3mp.MainKt"
@@ -406,7 +413,7 @@ tasks.withType<Jar> {
     manifest {
         attributes(
             "Implementation-Title" to "Schneaggchat",
-            "Implementation-Version" to desktopVersion,
+            "Implementation-Version" to desktopReportedVersion,
             "Implementation-Vendor" to "lerchenflo"
         )
     }

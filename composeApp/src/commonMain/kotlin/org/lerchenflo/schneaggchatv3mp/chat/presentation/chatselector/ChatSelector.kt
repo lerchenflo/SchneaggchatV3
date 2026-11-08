@@ -83,8 +83,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_URL
 import org.lerchenflo.schneaggchatv3mp.getDonationsUrl
+import org.lerchenflo.schneaggchatv3mp.desktopupdate.presentation.desktopUpdateBannerItem
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import io.github.lerchenflo.taptarget.LocalTapTargetController
 import io.github.lerchenflo.taptarget.tapTarget
@@ -105,11 +105,8 @@ import schneaggchatv3mp.composeapp.generated.resources.recap_button
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.app_name
 import schneaggchatv3mp.composeapp.generated.resources.chat_add_on_24px
-import schneaggchatv3mp.composeapp.generated.resources.download
-import schneaggchatv3mp.composeapp.generated.resources.download_from_github
 import schneaggchatv3mp.composeapp.generated.resources.filter
 import schneaggchatv3mp.composeapp.generated.resources.more_info
-import schneaggchatv3mp.composeapp.generated.resources.new_version_available
 import schneaggchatv3mp.composeapp.generated.resources.no_friends_found_search
 import schneaggchatv3mp.composeapp.generated.resources.notification_banner_description
 import schneaggchatv3mp.composeapp.generated.resources.notification_banner_enable
@@ -145,7 +142,6 @@ fun Chatauswahlscreen(
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     val changelogPopup by viewModel.changelogPopup.collectAsStateWithLifecycle()
     val contributePopupShown by viewModel.contributePopupShown.collectAsStateWithLifecycle()
-    val newVersionAvailable by viewModel.newVersionAvailable.collectAsStateWithLifecycle()
     val announcement by viewModel.announcement.collectAsStateWithLifecycle()
 
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
@@ -709,21 +705,7 @@ fun Chatauswahlscreen(
                         }
                     }
 
-                    if(newVersionAvailable != null){
-                        item {
-                            ChatSelectorDismissableInfo(
-                                title = stringResource(Res.string.new_version_available, newVersionAvailable?:"error"),
-                                description = stringResource(Res.string.download_from_github),
-                                onClick = {
-                                    uriHandler.openUri(GITHUB_LATEST_RELEASE_URL)
-                                },
-                                onDismiss = {
-                                    viewModel.onNewVersionDismiss()
-                                },
-                                activateText = stringResource(Res.string.download),
-                            )
-                        }
-                    }
+                    desktopUpdateBannerItem()
 
 
                     //Chats and messages are only split into labelled sections while a search

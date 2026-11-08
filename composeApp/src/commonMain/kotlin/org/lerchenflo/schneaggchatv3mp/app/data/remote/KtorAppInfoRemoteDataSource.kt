@@ -29,8 +29,4 @@ class KtorAppInfoRemoteDataSource(
     override suspend fun getChangeLog(githubUrl: String) : DataResult<String, DataError> {
         return safeAuthGet(url = githubUrl)
     }
-
-    override suspend fun getGitHubVersionJson(url: String) : DataResult<String, DataError> {
-        return safeAuthGet(url = url)
-    }
 }

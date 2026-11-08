@@ -7,7 +7,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 class FakeAppInfoRepository(
     var installedVersion: String = "1.0.0",
     var changelog: ChangelogEntry? = null,
-    var latestGitHubVersion: String? = null,
     var serverReachable: Boolean = true,
 ) : AppInfoRepository {
 
@@ -25,6 +24,4 @@ class FakeAppInfoRepository(
         changelogRequests.record(version)
         return changelog
     }
-
-    override suspend fun getLatestGitHubVersionAsString(): String? = latestGitHubVersion
 }
