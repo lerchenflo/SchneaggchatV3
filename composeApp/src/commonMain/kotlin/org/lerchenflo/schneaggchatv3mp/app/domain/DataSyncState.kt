@@ -19,6 +19,7 @@ enum class DataSyncJobType {
     MAP,
     EVENTS,
     GROUP_EXTENSIONS,
+    FEEDBACK,
 
     MEDIA;
 }
@@ -36,6 +37,6 @@ data class DataSyncState(
         DataSyncJobState(type = USERS), DataSyncJobState(type = GROUPS),
         DataSyncJobState(type = MESSAGES), DataSyncJobState(type = MAP),
         DataSyncJobState(type = EVENTS), DataSyncJobState(type = DataSyncJobType.GROUP_EXTENSIONS),
-        DataSyncJobState(type = DataSyncJobType.MEDIA)
+        DataSyncJobState(type = DataSyncJobType.FEEDBACK), DataSyncJobState(type = DataSyncJobType.MEDIA)
     )
 )

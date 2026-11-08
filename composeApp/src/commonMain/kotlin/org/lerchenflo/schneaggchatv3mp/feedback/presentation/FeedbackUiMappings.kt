@@ -8,8 +8,10 @@ import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTag
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.feedback_sort_discussed
 import schneaggchatv3mp.composeapp.generated.resources.feedback_sort_new
 import schneaggchatv3mp.composeapp.generated.resources.feedback_sort_top
+import schneaggchatv3mp.composeapp.generated.resources.feedback_sort_updated
 import schneaggchatv3mp.composeapp.generated.resources.feedback_status_confirmed
 import schneaggchatv3mp.composeapp.generated.resources.feedback_status_fixed
 import schneaggchatv3mp.composeapp.generated.resources.feedback_status_implemented
@@ -18,6 +20,8 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_status_planned
 import schneaggchatv3mp.composeapp.generated.resources.feedback_status_requested
 import schneaggchatv3mp.composeapp.generated.resources.feedback_tab_bugs
 import schneaggchatv3mp.composeapp.generated.resources.feedback_tab_features
+import schneaggchatv3mp.composeapp.generated.resources.feedback_tab_implemented
+import schneaggchatv3mp.composeapp.generated.resources.feedback_tab_requests
 import schneaggchatv3mp.composeapp.generated.resources.feedback_tag_chat
 import schneaggchatv3mp.composeapp.generated.resources.feedback_tag_events
 import schneaggchatv3mp.composeapp.generated.resources.feedback_tag_games
@@ -34,9 +38,17 @@ fun FeedbackType.labelRes(): StringResource = when (this) {
     FeedbackType.BUG -> Res.string.feedback_tab_bugs
 }
 
+fun FeedbackTab.labelRes(): StringResource = when (this) {
+    FeedbackTab.REQUESTS -> Res.string.feedback_tab_requests
+    FeedbackTab.BUGS -> Res.string.feedback_tab_bugs
+    FeedbackTab.IMPLEMENTED -> Res.string.feedback_tab_implemented
+}
+
 fun FeedbackSort.labelRes(): StringResource = when (this) {
     FeedbackSort.TOP -> Res.string.feedback_sort_top
     FeedbackSort.NEW -> Res.string.feedback_sort_new
+    FeedbackSort.UPDATED -> Res.string.feedback_sort_updated
+    FeedbackSort.DISCUSSED -> Res.string.feedback_sort_discussed
 }
 
 fun FeedbackStatus.labelRes(): StringResource = when (this) {

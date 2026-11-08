@@ -23,6 +23,7 @@
     <string name="mapsync">map entrys</string>
     <string name="eventssync">events</string>
     <string name="groupextensionssync">group extensions</string>
+    <string name="feedbacksync">feedback</string>
     <string name="mediasync">media</string>
 
     <string name="status_infotext">This status is available to all your friends. Currently, it is not set.</string>
@@ -1750,6 +1751,7 @@
     <string name="feedback_vote_didnt_know">Didn't know</string>
     <string name="feedback_vote_me_too">I have this too</string>
     <string name="feedback_vote_cant_repro">Can't reproduce</string>
+    <string name="feedback_vote_not_needed">Don't need it, but fine</string>
     <string name="feedback_new_badge">New</string>
     <string name="feedback_dev_comment">Developer</string>
     <string name="feedback_empty">Nothing here yet.</string>
@@ -1779,6 +1781,14 @@
     <string name="feedback_delete_comment_confirm">Delete this comment?</string>
     <string name="feedback_change_status">Change status</string>
     <string name="feedback_details_load_error">Couldn't load the details.</string>
+    <string name="feedback_tab_requests">Requests</string>
+    <string name="feedback_tab_implemented">Features ✓</string>
+    <string name="feedback_updated_badge">Updated</string>
+    <string name="feedback_sort_updated">Recently updated</string>
+    <string name="feedback_sort_discussed">Most discussed</string>
+    <string name="feedback_filter_status">Status</string>
+    <string name="feedback_filter_all_statuses">All statuses</string>
+    <string name="feedback_premium">Premium</string>
     <string name="logged_in_devices">Logged-in devices</string>
     <string name="logged_in_devices_description">See where your account is logged in and log out devices</string>
     <string name="logged_in_devices_this_device">This device</string>

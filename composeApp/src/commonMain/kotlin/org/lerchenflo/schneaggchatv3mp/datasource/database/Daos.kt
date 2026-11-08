@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.GroupWit
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.EventEntity
+import org.lerchenflo.schneaggchatv3mp.feedback.data.local.entity.FeedbackEntryEntity
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.local.entity.GroupExtensionEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.MapEntryEntity
@@ -541,6 +542,9 @@ interface AllDatabaseDao {
     @Query("DELETE FROM group_extensions")
     suspend fun clearGroupExtensions()
 
+    @Query("DELETE FROM feedback_entries")
+    suspend fun clearFeedbackEntries()
+
 
     @Transaction
     suspend fun clearAll() {
@@ -554,6 +558,7 @@ interface AllDatabaseDao {
         clearMapEntries()
         clearEvents()
         clearGroupExtensions()
+        clearFeedbackEntries()
     }
 }
 
@@ -571,6 +576,22 @@ interface MapEntryDao {
 
     @Query("DELETE FROM map_entries WHERE id = :id")
     suspend fun delete(id: String)
+}
+
+@Dao
+interface FeedbackEntryDao {
+
+    @Upsert
+    suspend fun upsertAll(entries: List<FeedbackEntryEntity>)
+
+    @Query("SELECT id, updatedAt FROM feedback_entries")
+    suspend fun getFeedbackEntryIdsWithChangeDates(): List<IdChangeDate>
+
+    @Query("SELECT * FROM feedback_entries")
+    fun getAllFlow(): Flow<List<FeedbackEntryEntity>>
+
+    @Query("DELETE FROM feedback_entries WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }
 
 @Dao

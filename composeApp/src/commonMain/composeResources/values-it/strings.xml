@@ -23,6 +23,7 @@
     <string name="mapsync">voci mappa</string>
     <string name="eventssync">eventi</string>
     <string name="groupextensionssync">estensioni dei gruppi</string>
+    <string name="feedbacksync">feedback</string>
     <string name="mediasync">media</string>
 
     <string name="status_infotext">Questo stato è visibile a tutti i tuoi amici. Al momento non è impostato.</string>
@@ -1744,6 +1745,7 @@
     <string name="feedback_vote_didnt_know">Non lo sapevo</string>
     <string name="feedback_vote_me_too">Ce l'ho anch'io</string>
     <string name="feedback_vote_cant_repro">Non riproducibile</string>
+    <string name="feedback_vote_not_needed">Non mi serve, ma va bene</string>
     <string name="feedback_new_badge">Nuovo</string>
     <string name="feedback_dev_comment">Sviluppatore</string>
     <string name="feedback_empty">Ancora niente qui.</string>
@@ -1773,6 +1775,14 @@
     <string name="feedback_delete_comment_confirm">Eliminare questo commento?</string>
     <string name="feedback_change_status">Cambia stato</string>
     <string name="feedback_details_load_error">Impossibile caricare i dettagli.</string>
+    <string name="feedback_tab_requests">Richieste</string>
+    <string name="feedback_tab_implemented">Funzionalità ✓</string>
+    <string name="feedback_updated_badge">Aggiornato</string>
+    <string name="feedback_sort_updated">Aggiornati di recente</string>
+    <string name="feedback_sort_discussed">Più discussi</string>
+    <string name="feedback_filter_status">Stato</string>
+    <string name="feedback_filter_all_statuses">Tutti gli stati</string>
+    <string name="feedback_premium">Premium</string>
     <string name="logged_in_devices">Dispositivi connessi</string>
     <string name="logged_in_devices_description">Vedi dove è connesso il tuo account e disconnetti i dispositivi</string>
     <string name="logged_in_devices_this_device">Questo dispositivo</string>

@@ -52,6 +52,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.applySearchAndFilter
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
@@ -88,6 +89,7 @@ class ChatSelectorViewModel(
     private val permissionManager: PermissionManager,
     private val settingsRepository: SettingsRepository,
     private val announcementRepository: AnnouncementRepository,
+    private val feedbackRepository: FeedbackRepository,
     private val notifier: Notifier,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ): ViewModel() {
@@ -133,6 +135,10 @@ class ChatSelectorViewModel(
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** New and updated feedback entries since the board was last opened, for the badge on its icon. */
+    val feedbackBadgeCount: StateFlow<Int> = feedbackRepository.getUnseenCountFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
     /** Progress of the full sync, for the sync icon and its detail popup. */
     val dataSyncState: StateFlow<DataSyncState> = dataSyncCoordinator.dataSyncState

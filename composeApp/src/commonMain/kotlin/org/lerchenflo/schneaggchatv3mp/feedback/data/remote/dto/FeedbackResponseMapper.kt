@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackComment
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryDetail
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackList
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTag
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
@@ -69,6 +68,7 @@ fun NetworkFeedbackVote.toFeedbackVote(): FeedbackVote = when (this) {
     NetworkFeedbackVote.UP -> FeedbackVote.UP
     NetworkFeedbackVote.DOWN -> FeedbackVote.DOWN
     NetworkFeedbackVote.DIDNT_KNOW -> FeedbackVote.DIDNT_KNOW
+    NetworkFeedbackVote.NOT_NEEDED -> FeedbackVote.NOT_NEEDED
     NetworkFeedbackVote.NONE -> FeedbackVote.NONE
 }
 
@@ -76,6 +76,7 @@ fun FeedbackVote.toNetworkFeedbackVote(): NetworkFeedbackVote = when (this) {
     FeedbackVote.UP -> NetworkFeedbackVote.UP
     FeedbackVote.DOWN -> NetworkFeedbackVote.DOWN
     FeedbackVote.DIDNT_KNOW -> NetworkFeedbackVote.DIDNT_KNOW
+    FeedbackVote.NOT_NEEDED -> NetworkFeedbackVote.NOT_NEEDED
     FeedbackVote.NONE -> NetworkFeedbackVote.NONE
 }
 
@@ -85,25 +86,24 @@ fun FeedbackEntryResponse.toFeedbackEntry(): FeedbackEntry = FeedbackEntry(
     id = id,
     type = type.toFeedbackType(),
     title = title,
-    descriptionPreview = descriptionPreview,
+    description = description,
     tags = tags.map { it.toFeedbackTag() },
     status = status.toFeedbackStatus(),
     upvotes = upvotes,
     downvotes = downvotes,
     didntKnowCount = didntKnowCount,
-    myVote = myVote.toFeedbackVote(),
+    notNeededCount = notNeededCount,
+    myVote = if (isNotNeeded) FeedbackVote.NOT_NEEDED else myVote.toFeedbackVote(),
     commentCount = commentCount,
     latestDevComment = latestDevComment,
     creatorName = creatorName,
     isOwn = isOwn,
     canDelete = canDelete,
     isSeeded = isSeeded,
+    isPremium = isPremium,
     createdAt = createdAt,
-)
-
-fun FeedbackListResponse.toFeedbackList(): FeedbackList = FeedbackList(
-    viewerIsAdmin = viewerIsAdmin,
-    entries = entries.map { it.toFeedbackEntry() },
+    updatedAt = updatedAt,
+    activityAt = activityAt,
 )
 
 fun FeedbackCommentResponse.toFeedbackComment(): FeedbackComment = FeedbackComment(

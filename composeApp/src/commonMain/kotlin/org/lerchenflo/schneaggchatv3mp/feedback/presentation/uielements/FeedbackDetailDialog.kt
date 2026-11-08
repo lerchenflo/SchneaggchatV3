@@ -70,7 +70,7 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_send_comment
 import schneaggchatv3mp.composeapp.generated.resources.feedback_unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.feedback_where_to_find
 
-private const val DATE_FORMAT = "dd.MM.yyyy"
+internal const val DATE_FORMAT = "dd.MM.yyyy"
 
 /**
  * Full view of one entry with all comments. A plain Dialog rather than a ModalBottomSheet, for the
@@ -133,7 +133,7 @@ fun FeedbackDetailDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            text = detail?.description ?: entry.descriptionPreview,
+                            text = detail?.description ?: entry.description,
                             style = MaterialTheme.typography.bodyLarge,
                         )
                         detail?.location?.let { location ->
@@ -144,7 +144,7 @@ fun FeedbackDetailDialog(
                                 color = MaterialTheme.colorScheme.primary,
                             )
                         }
-                        FeedbackTagRow(entry.tags)
+                        FeedbackTagRow(entry.tags, isPremium = entry.isPremium)
                         FeedbackVoteRow(
                             entry = entry,
                             onVoteClick = { onAction(FeedbackAction.OnVoteClick(entry.id, it)) }
@@ -393,8 +393,9 @@ private fun ConfirmDeleteDialog(
     )
 }
 
+/** Creator shown on the board: the team for seeded entries, a placeholder for deleted users. */
 @Composable
-private fun authorName(entry: FeedbackEntry): String = when {
+internal fun authorName(entry: FeedbackEntry): String = when {
     entry.isSeeded -> stringResource(Res.string.feedback_seeded_author)
     else -> entry.creatorName ?: stringResource(Res.string.feedback_unknown_user)
 }

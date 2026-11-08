@@ -10,11 +10,11 @@ import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentR
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCreateRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEntryDetailResponse
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEntryResponse
-import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackListResponse
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackStatusRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.NetworkFeedbackType
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 
 /** [FeedbackRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */
 class KtorFeedbackRemoteDataSource(
@@ -25,8 +25,8 @@ class KtorFeedbackRemoteDataSource(
 
     private val server = ServerClient(httpClient, preferenceManager, loggingRepository)
 
-    override suspend fun getFeedbackList(type: NetworkFeedbackType): DataResult<FeedbackListResponse, DataError> {
-        return server.safeGet(endpoint = "/feedback/list?type=${type.name}")
+    override suspend fun feedbackSync(entries: List<IdTimeStamp>, page: Int): DataResult<FeedbackSyncResponse, DataError> {
+        return server.safePost(endpoint = "/feedback/sync?page=$page&page_size=400", body = entries)
     }
 
     override suspend fun getFeedbackDetails(entryId: String): DataResult<FeedbackEntryDetailResponse, DataError> {

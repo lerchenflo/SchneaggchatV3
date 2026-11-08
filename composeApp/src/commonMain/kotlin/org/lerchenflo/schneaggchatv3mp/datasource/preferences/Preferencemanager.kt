@@ -135,6 +135,9 @@ class Preferencemanager(
         val LAST_DISMISSED_ANNOUNCEMENT_ID = longPreferencesKey("last_dismissed_announcement_id")
         val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
         val EVENTS_VIEW_MODE = stringPreferencesKey("events_view_mode")
+        val FEEDBACK_LAST_SYNC_SERVER_TIME = longPreferencesKey("feedback_last_sync_server_time")
+        val FEEDBACK_LAST_SEEN = longPreferencesKey("feedback_last_seen")
+        val FEEDBACK_VIEWER_IS_ADMIN = booleanPreferencesKey("feedback_viewer_is_admin")
     }
 
     // Markdown Format
@@ -320,6 +323,33 @@ class Preferencemanager(
 
     suspend fun saveLastDismissedAnnouncementId(id: Long) {
         prefs.edit { it[PrefsKeys.LAST_DISMISSED_ANNOUNCEMENT_ID] = id }
+    }
+
+    // Feedback board sync (local only, per device). All times are server times, never the device clock.
+
+    /** Saves the result of a successful feedback sync: its server time and the viewer's admin flag. */
+    suspend fun saveFeedbackSyncResult(serverTime: Long, viewerIsAdmin: Boolean) {
+        prefs.edit {
+            it[PrefsKeys.FEEDBACK_LAST_SYNC_SERVER_TIME] = serverTime
+            it[PrefsKeys.FEEDBACK_VIEWER_IS_ADMIN] = viewerIsAdmin
+        }
+    }
+
+    /** Server time of the last successful feedback sync, null before the first one. */
+    suspend fun getFeedbackLastSyncServerTime(): Long? =
+        prefs.data.first()[PrefsKeys.FEEDBACK_LAST_SYNC_SERVER_TIME]
+
+    fun getFeedbackViewerIsAdminFlow(): Flow<Boolean> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.FEEDBACK_VIEWER_IS_ADMIN] ?: false
+    }
+
+    /** Server time the feedback board was last opened at, 0 if never. */
+    fun getFeedbackLastSeenFlow(): Flow<Long> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.FEEDBACK_LAST_SEEN] ?: 0L
+    }
+
+    suspend fun saveFeedbackLastSeen(serverTime: Long) {
+        prefs.edit { it[PrefsKeys.FEEDBACK_LAST_SEEN] = serverTime }
     }
 
     // Onboarding Seen

@@ -24,11 +24,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobStatus
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.EVENTS
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.FEEDBACK
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.GROUPS
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.MAP
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.MESSAGES
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.USERS
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
 
 /**
@@ -46,6 +48,7 @@ class DefaultDataSyncCoordinator(
     private val mapRepository: MapRepository,
     private val eventRepository: EventRepository,
     private val groupExtensionRepository: GroupExtensionRepository,
+    private val feedbackRepository: FeedbackRepository,
     private val loggingRepository: Logger,
     private val externalScope: CoroutineScope,
 ) : DataSyncCoordinator {
@@ -256,8 +259,33 @@ class DefaultDataSyncCoordinator(
                             }
                         }
 
+                        val feedbackJob = async {
+                            try {
+                                updateSyncJob(
+                                    type = FEEDBACK,
+                                    status = DataSyncJobStatus.RUNNING,
+                                    error = null
+                                )
+                                // Errors are logged inside, like the map sync
+                                feedbackRepository.syncFeedback()
+                                updateSyncJob(
+                                    type = FEEDBACK,
+                                    status = DataSyncJobStatus.SUCCESS,
+                                    error = null
+                                )
+                            } catch (e: Exception) {
+                                ensureActive()
+                                updateSyncJob(
+                                    type = FEEDBACK,
+                                    status = DataSyncJobStatus.FAILED,
+                                    error = e.message
+                                )
+                                loggingRepository.logWarning("Feedback sync failed: ${e.message}")
+                            }
+                        }
+
                         // Wait for all to complete (errors are already handled)
-                        awaitAll(userJob, messageJob, groupJob, mapJob, eventJob, groupExtensionJob)
+                        awaitAll(userJob, messageJob, groupJob, mapJob, eventJob, groupExtensionJob, feedbackJob)
 
                         // The message job runs in parallel and may have re-inserted rows just
                         // after groupIdSync's inline purge ran, so repeat it once everything

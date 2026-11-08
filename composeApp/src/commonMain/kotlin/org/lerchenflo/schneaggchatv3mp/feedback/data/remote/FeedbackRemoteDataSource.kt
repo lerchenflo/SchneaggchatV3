@@ -7,15 +7,16 @@ import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentR
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCreateRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEntryDetailResponse
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEntryResponse
-import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackListResponse
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackStatusRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackVoteRequest
-import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.NetworkFeedbackType
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 
 /** Server calls for the feedback board. */
 interface FeedbackRemoteDataSource {
 
-    suspend fun getFeedbackList(type: NetworkFeedbackType): DataResult<FeedbackListResponse, DataError>
+    /** One page of the delta sync: [entries] are all stored entries with their `updatedAt`. */
+    suspend fun feedbackSync(entries: List<IdTimeStamp>, page: Int): DataResult<FeedbackSyncResponse, DataError>
 
     suspend fun getFeedbackDetails(entryId: String): DataResult<FeedbackEntryDetailResponse, DataError>
 

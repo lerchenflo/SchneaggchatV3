@@ -64,6 +64,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
@@ -136,6 +138,7 @@ fun Chatauswahlscreen(
     val messageSearchResults by viewModel.messageSearchResults.collectAsStateWithLifecycle()
 
     val pendingFriendCount by viewModel.pendingFriendCount.collectAsStateWithLifecycle()
+    val feedbackBadgeCount by viewModel.feedbackBadgeCount.collectAsStateWithLifecycle()
 
     val chatFilter by viewModel.filter.collectAsStateWithLifecycle()
 
@@ -394,18 +397,34 @@ fun Chatauswahlscreen(
                 Box(
                     modifier = Modifier
                         .padding(2.dp)
-                        .size(touchSize)
-                        .clip(CircleShape)
-                        .clickable { viewModel.onFeedbackClick() }
-                        .tapTarget("chatselector_feedback_button"),
+                        .size(touchSize),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ThumbsUpDown,
-                        contentDescription = stringResource(Res.string.feedback_title),
-                        modifier = Modifier.size(iconSize),
-                        tint = MaterialTheme.colorScheme.onSurface
+                    // Circle clip on its own layer: on the parent it would cut off the badge
+                    val feedbackLabel = stringResource(Res.string.feedback_title)
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(CircleShape)
+                            .clickable { viewModel.onFeedbackClick() }
+                            .semantics { contentDescription = feedbackLabel }
+                            .tapTarget("chatselector_feedback_button")
                     )
+                    // New / updated entries since the board was last opened
+                    BadgedBox(
+                        badge = {
+                            if (feedbackBadgeCount > 0) {
+                                Badge { Text(text = feedbackBadgeCount.toString()) }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ThumbsUpDown,
+                            contentDescription = null,
+                            modifier = Modifier.size(iconSize),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
 
                 //settings

@@ -13,15 +13,16 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageReaderEntit
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.SnailTrailPointEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.EventEntity
+import org.lerchenflo.schneaggchatv3mp.feedback.data.local.entity.FeedbackEntryEntity
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.local.entity.GroupExtensionEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.MapEntryEntity
 
 
 @Database(
-    entities = [UserEntity::class, MessageEntity::class, MessageReaderEntity::class, GroupEntity::class, GroupMemberEntity::class, LogEntry::class, PlayerEntity::class, MapEntryEntity::class, SnailTrailPointEntity::class, EventEntity::class, GroupExtensionEntity::class],
+    entities = [UserEntity::class, MessageEntity::class, MessageReaderEntity::class, GroupEntity::class, GroupMemberEntity::class, LogEntry::class, PlayerEntity::class, MapEntryEntity::class, SnailTrailPointEntity::class, EventEntity::class, GroupExtensionEntity::class, FeedbackEntryEntity::class],
     exportSchema = true,
-    version = 88
+    version = 90
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -46,6 +47,8 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun snailTrailDao(): SnailTrailDao
 
     abstract fun groupExtensionDao(): GroupExtensionDao
+
+    abstract fun feedbackEntryDao(): FeedbackEntryDao
 
     abstract fun allDatabaseDao(): AllDatabaseDao
 

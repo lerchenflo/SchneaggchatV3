@@ -8,13 +8,38 @@ import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.NewFeedbackEntry
 
-enum class FeedbackSort { TOP, NEW }
+/** The three lists of the board. Features are split into open requests and implemented ones. */
+enum class FeedbackTab(
+    /** The entry type a new entry created from this tab gets. */
+    val createType: FeedbackType,
+    /** Statuses the status filter offers on this tab. Empty: the tab shows only one status. */
+    val filterStatuses: List<FeedbackStatus>,
+) {
+    REQUESTS(FeedbackType.FEATURE, listOf(FeedbackStatus.REQUESTED, FeedbackStatus.PLANNED)),
+    BUGS(FeedbackType.BUG, FeedbackStatus.forType(FeedbackType.BUG)),
+    IMPLEMENTED(FeedbackType.FEATURE, emptyList());
+
+    fun contains(entry: FeedbackEntry): Boolean = when (this) {
+        REQUESTS -> entry.type == FeedbackType.FEATURE && entry.status != FeedbackStatus.IMPLEMENTED
+        BUGS -> entry.type == FeedbackType.BUG
+        IMPLEMENTED -> entry.type == FeedbackType.FEATURE && entry.status == FeedbackStatus.IMPLEMENTED
+    }
+
+    companion object {
+        /** The tab a new or changed entry shows up in. */
+        fun of(entry: FeedbackEntry): FeedbackTab = entries.first { it.contains(entry) }
+    }
+}
+
+enum class FeedbackSort { TOP, NEW, UPDATED, DISCUSSED }
 
 data class FeedbackState(
-    val selectedType: FeedbackType = FeedbackType.FEATURE,
-    val features: List<FeedbackEntry> = emptyList(),
-    val bugs: List<FeedbackEntry> = emptyList(),
+    val selectedTab: FeedbackTab = FeedbackTab.REQUESTS,
+    /** Every stored entry, features and bugs. */
+    val entries: List<FeedbackEntry> = emptyList(),
+    /** Only true while nothing is stored yet and the first sync runs. */
     val isLoading: Boolean = true,
+    /** The sync failed and nothing is stored to show instead. */
     val loadFailed: Boolean = false,
     val viewerIsAdmin: Boolean = false,
 
@@ -25,8 +50,16 @@ data class FeedbackState(
 
     /** Sorted + filtered list of the selected tab, recomputed whenever an input changes. */
     val visibleEntries: List<FeedbackEntry> = emptyList(),
-    /** Reference time for the "new" highlight, taken when the list was loaded. */
+    /** Unfiltered number of entries per tab, for the tab labels. */
+    val tabCounts: Map<FeedbackTab, Int> = emptyMap(),
+    /** Reference time for the two day pin of new own entries, taken when the board opened. */
     val nowMillis: Long = 0L,
+    /**
+     * Server time the board was last opened at before this visit. The New / Updated labels compare
+     * against it, so they stay for the whole visit although opening the board cleared the badge.
+     * Null until it is read.
+     */
+    val lastSeenBeforeVisit: Long? = null,
 
     val detail: FeedbackDetailState? = null,
     val isCreateDialogOpen: Boolean = false,
@@ -34,7 +67,7 @@ data class FeedbackState(
 )
 
 data class FeedbackDetailState(
-    /** List entry, shown right away while the full details are still loading. */
+    /** Stored entry, shown right away while the full details are still loading. */
     val entry: FeedbackEntry,
     val detail: FeedbackEntryDetail? = null,
     val isLoading: Boolean = true,
@@ -46,7 +79,7 @@ data class FeedbackDetailState(
 sealed interface FeedbackAction {
     data object OnBackClick : FeedbackAction
     data object OnRetryClick : FeedbackAction
-    data class OnTypeSelected(val type: FeedbackType) : FeedbackAction
+    data class OnTabSelected(val tab: FeedbackTab) : FeedbackAction
     data class OnSortSelected(val sort: FeedbackSort) : FeedbackAction
     data class OnStatusFilterSelected(val status: FeedbackStatus?) : FeedbackAction
     data class OnTagFilterSelected(val tag: FeedbackTag?) : FeedbackAction

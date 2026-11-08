@@ -113,7 +113,9 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackViewModel
-import org.lerchenflo.schneaggchatv3mp.feedback.data.RemoteFeedbackRepository
+import org.lerchenflo.schneaggchatv3mp.feedback.data.OfflineFirstFeedbackRepository
+import org.lerchenflo.schneaggchatv3mp.feedback.data.local.FeedbackLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.feedback.data.local.RoomFeedbackDataSource
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.MapLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.OfflineFirstMapRepository
@@ -265,7 +267,8 @@ val sharedmodule = module{
     singleOf(::OfflineFirstMapRepository) bind MapRepository::class
     singleOf(::OfflineFirstEventRepository) bind EventRepository::class
     singleOf(::RemoteAppInfoRepository) bind AppInfoRepository::class
-    singleOf(::RemoteFeedbackRepository) bind FeedbackRepository::class
+    singleOf(::RoomFeedbackDataSource) bind FeedbackLocalDataSource::class
+    singleOf(::OfflineFirstFeedbackRepository) bind FeedbackRepository::class
     singleOf(::RemoteAnnouncementRepository) bind AnnouncementRepository::class
     singleOf(::RemoteAuthRepository) bind AuthRepository::class
     single<SessionTerminator> {
@@ -292,6 +295,7 @@ val sharedmodule = module{
             mapRepository = get(),
             eventRepository = get(),
             groupExtensionRepository = get(),
+            feedbackRepository = get(),
             loggingRepository = get(),
             externalScope = get<ApplicationScope>(),
         )
@@ -351,6 +355,7 @@ val sharedmodule = module{
             permissionManager = get(),
             settingsRepository = get(),
             announcementRepository = get(),
+            feedbackRepository = get(),
             notifier = get(),
         )
     }

@@ -22,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobStatus.SUCCESS
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeEventRepository
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeFeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
@@ -72,6 +73,7 @@ class DefaultDataSyncCoordinatorTest {
         mapRepository = mapRepository,
         eventRepository = eventRepository,
         groupExtensionRepository = FakeGroupExtensionRepository(),
+        feedbackRepository = FakeFeedbackRepository(),
         loggingRepository = logger,
         externalScope = backgroundScope,
     )

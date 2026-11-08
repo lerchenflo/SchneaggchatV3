@@ -16,11 +16,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -56,6 +58,7 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_field_descriptio
 import schneaggchatv3mp.composeapp.generated.resources.feedback_field_location
 import schneaggchatv3mp.composeapp.generated.resources.feedback_field_tags
 import schneaggchatv3mp.composeapp.generated.resources.feedback_field_title
+import schneaggchatv3mp.composeapp.generated.resources.feedback_premium
 import schneaggchatv3mp.composeapp.generated.resources.feedback_submit
 import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
@@ -83,6 +86,7 @@ fun FeedbackCreateDialog(
     var description by rememberSaveable { mutableStateOf("") }
     var location by rememberSaveable { mutableStateOf("") }
     var selectedTags by rememberSaveable { mutableStateOf(listOf<FeedbackTag>()) }
+    var isPremium by rememberSaveable { mutableStateOf(false) }
 
     val isValid = title.trim().length >= TITLE_MIN_LENGTH &&
         description.isNotBlank() &&
@@ -160,6 +164,21 @@ fun FeedbackCreateDialog(
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
+                // Features only, and not one of the 1-3 tags (a separate flag on the server)
+                if (type == FeedbackType.FEATURE) {
+                    FilterChip(
+                        selected = isPremium,
+                        onClick = { isPremium = !isPremium },
+                        label = { Text(stringResource(Res.string.feedback_premium)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                modifier = Modifier.size(FilterChipDefaults.IconSize),
+                            )
+                        },
+                    )
+                }
                 FeedbackTag.entries.forEach { tag ->
                     val selected = tag in selectedTags
                     FilterChip(
@@ -199,6 +218,7 @@ fun FeedbackCreateDialog(
                                 description = description,
                                 tags = selectedTags,
                                 location = location.takeIf { type == FeedbackType.FEATURE },
+                                isPremium = isPremium && type == FeedbackType.FEATURE,
                             )
                         )
                     }

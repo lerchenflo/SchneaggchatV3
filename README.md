@@ -41,6 +41,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Quick Reactions: Custom Doppeltip Reaktion
 - Chat: Code-Blöcke mit Highlighting
 - Sprachnachrichten: Auf Desktop verfügbar
+- Feedback-Board: Offline nutzbar, neue Tabs, Badge bei Neuigkeiten, Premium-Wünsche
 
 #### Bugfixes
 - Benachrichtigungen: Alles mögliche repariert, Allgemeine Nachricht verbessert

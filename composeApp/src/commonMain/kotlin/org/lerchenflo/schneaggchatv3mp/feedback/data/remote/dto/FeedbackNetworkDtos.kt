@@ -15,33 +15,50 @@ enum class NetworkFeedbackStatus { REQUESTED, PLANNED, IMPLEMENTED, OPEN, CONFIR
 enum class NetworkFeedbackTag { CHAT, GROUPS, EVENTS, MAP, GAMES, SETTINGS, UI, NOTIFICATIONS, PERFORMANCE, OTHER }
 
 @Serializable
-enum class NetworkFeedbackVote { UP, DOWN, DIDNT_KNOW, NONE }
+enum class NetworkFeedbackVote { UP, DOWN, DIDNT_KNOW, NOT_NEEDED, NONE }
 
 @Serializable
 data class FeedbackEntryResponse(
     val id: String,
     val type: NetworkFeedbackType,
     val title: String,
-    val descriptionPreview: String,
+    val description: String,
     val tags: List<NetworkFeedbackTag>,
     val status: NetworkFeedbackStatus,
     val upvotes: Int,
     val downvotes: Int,
     val didntKnowCount: Int,
+    /** Missing on servers before the neutral "don't need it" vote: then 0. */
+    val notNeededCount: Int = 0,
+    /**
+     * Never NOT_NEEDED: released clients can't decode it, so the server sends NONE plus
+     * [isNotNeeded] = true instead.
+     */
     val myVote: NetworkFeedbackVote,
+    val isNotNeeded: Boolean = false,
     val commentCount: Int,
     val latestDevComment: String? = null,
     val creatorName: String? = null,
     val isOwn: Boolean,
     val canDelete: Boolean,
     val isSeeded: Boolean,
+    /** Missing on servers before the premium mark: then false. */
+    val isPremium: Boolean = false,
     val createdAt: Long,
+    /** Sync cursor, sent back as the IdTimeStamp timestamp on /feedback/sync. */
+    val updatedAt: Long,
+    val activityAt: Long,
 )
 
 @Serializable
-data class FeedbackListResponse(
+data class FeedbackSyncResponse(
     val viewerIsAdmin: Boolean,
-    val entries: List<FeedbackEntryResponse>,
+    val updatedEntries: List<FeedbackEntryResponse>,
+    /** Ids the client sent that are deleted or gone. Only filled on page 0. */
+    val deletedEntries: List<String>,
+    val moreEntries: Boolean,
+    /** Server clock (epoch millis), read before the entries. Stored as the "last seen" time. */
+    val serverTime: Long,
 )
 
 @Serializable
@@ -76,6 +93,7 @@ data class FeedbackCreateRequest(
     val location: String?,
     val appVersion: String?,
     val platform: String?,
+    val premium: Boolean,
 )
 
 @Serializable
