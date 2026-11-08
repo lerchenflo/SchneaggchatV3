@@ -135,6 +135,10 @@ class FeedbackViewModel(
 
     private fun openDetail(entry: FeedbackEntry) {
         _state.update { it.copy(detail = FeedbackDetailState(entry = entry)) }
+        // Opening clears the "new comments" pill also offline; the details set the exact count again
+        if (entry.isOwn) {
+            applicationScope.launchOnMain { feedbackRepository.markCommentsSeen(entry.id, entry.commentCount) }
+        }
         loadDetail(entry.id, showErrors = true)
     }
 

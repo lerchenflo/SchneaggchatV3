@@ -61,7 +61,17 @@ class OfflineFirstFeedbackRepository(
     private val syncMutex = Mutex()
 
     override fun getEntriesFlow(): Flow<List<FeedbackEntry>> =
-        feedbackLocalDataSource.getAllFeedbackEntriesFlow()
+        combine(
+            feedbackLocalDataSource.getAllFeedbackEntriesFlow(),
+            feedbackLocalDataSource.getSeenCommentCountsFlow(),
+        ) { entries, seenCounts ->
+            entries.map { entry ->
+                // No seen count yet: nothing is new (the baseline is written with the entry)
+                val seen = seenCounts[entry.id] ?: entry.commentCount
+                if (!entry.isOwn || entry.commentCount <= seen) entry
+                else entry.copy(newCommentCount = entry.commentCount - seen)
+            }
+        }
 
     override fun getViewerIsAdminFlow(): Flow<Boolean> =
         preferencemanager.getFeedbackViewerIsAdminFlow()
@@ -126,10 +136,17 @@ class OfflineFirstFeedbackRepository(
     // ─── Board CRUD ───────────────────────────────────────────────────────────
     // No socket broadcast for feedback: every write stores the server's answer itself.
 
+    override suspend fun markCommentsSeen(entryId: String, commentCount: Int) =
+        feedbackLocalDataSource.setSeenCommentCount(entryId, commentCount)
+
     override suspend fun getDetails(entryId: String): DataResult<FeedbackEntryDetail, DataError> =
         feedbackRemoteDataSource.getFeedbackDetails(entryId)
             .map { it.toFeedbackEntryDetail() }
-            .onSuccess { feedbackLocalDataSource.upsertFeedbackEntries(listOf(it.entry)) }
+            .onSuccess {
+                feedbackLocalDataSource.upsertFeedbackEntries(listOf(it.entry))
+                // The details show every comment, so all of them are seen now
+                if (it.entry.isOwn) feedbackLocalDataSource.setSeenCommentCount(it.entry.id, it.entry.commentCount)
+            }
 
     override suspend fun create(entry: NewFeedbackEntry): DataResult<FeedbackEntry, DataError> {
         val isBug = entry.type == FeedbackType.BUG
@@ -169,6 +186,7 @@ class OfflineFirstFeedbackRepository(
                 platform = platformName.takeIf { isBug },
             )
         ).map { it.toFeedbackComment() }
+            .onSuccess { feedbackLocalDataSource.incrementSeenCommentCount(entryId) }
 
     override suspend fun deleteEntry(entryId: String): EmptyDataResult<DataError> =
         feedbackRemoteDataSource.deleteFeedback(entryId)

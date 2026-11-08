@@ -1850,6 +1850,10 @@
     <string name="group_extension_delete">Delete extension</string>
     <string name="group_extension_delete_confirm">Delete “%1$s” with all its entries for everyone in this group? This cannot be undone.</string>
     <string name="group_extension_more_options">More options</string>
+    <plurals name="feedback_new_comments">
+        <item quantity="one">%1$d new comment</item>
+        <item quantity="other">%1$d new comments</item>
+    </plurals>
     <plurals name="group_extension_item_count">
         <item quantity="one">%1$d entry</item>
         <item quantity="other">%1$d entries</item>

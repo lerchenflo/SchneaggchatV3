@@ -38,6 +38,8 @@ class FakeFeedbackRepository : FeedbackRepository {
         unseenCount.value = 0
     }
 
+    override suspend fun markCommentsSeen(entryId: String, commentCount: Int) = Unit
+
     override suspend fun getDetails(entryId: String): DataResult<FeedbackEntryDetail, DataError> =
         DataResult.Error(DataError.Unknown())
 

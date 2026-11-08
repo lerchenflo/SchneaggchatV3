@@ -1850,6 +1850,10 @@
     <string name="group_extension_delete">Erweiterung löschen</string>
     <string name="group_extension_delete_confirm">„%1$s“ mit allen Einträgen für alle in dieser Gruppe löschen? Das kann nicht rückgängig gemacht werden.</string>
     <string name="group_extension_more_options">Weitere Optionen</string>
+    <plurals name="feedback_new_comments">
+        <item quantity="one">%1$d neuer Kommentar</item>
+        <item quantity="other">%1$d neue Kommentare</item>
+    </plurals>
     <plurals name="group_extension_item_count">
         <item quantity="one">%1$d Eintrag</item>
         <item quantity="other">%1$d Einträge</item>

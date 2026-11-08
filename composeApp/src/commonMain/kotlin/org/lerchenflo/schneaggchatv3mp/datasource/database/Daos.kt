@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.GroupWit
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.EventEntity
+import org.lerchenflo.schneaggchatv3mp.feedback.data.local.entity.FeedbackCommentSeenEntity
 import org.lerchenflo.schneaggchatv3mp.feedback.data.local.entity.FeedbackEntryEntity
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.local.entity.GroupExtensionEntity
@@ -545,6 +546,9 @@ interface AllDatabaseDao {
     @Query("DELETE FROM feedback_entries")
     suspend fun clearFeedbackEntries()
 
+    @Query("DELETE FROM feedback_comments_seen")
+    suspend fun clearFeedbackCommentsSeen()
+
 
     @Transaction
     suspend fun clearAll() {
@@ -559,6 +563,7 @@ interface AllDatabaseDao {
         clearEvents()
         clearGroupExtensions()
         clearFeedbackEntries()
+        clearFeedbackCommentsSeen()
     }
 }
 
@@ -592,6 +597,24 @@ interface FeedbackEntryDao {
 
     @Query("DELETE FROM feedback_entries WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
+
+    // ─── Seen comment counts (own entries) ─────────────────────────────────────
+
+    @Query("SELECT * FROM feedback_comments_seen")
+    fun getSeenCommentCountsFlow(): Flow<List<FeedbackCommentSeenEntity>>
+
+    /** Baseline for entries stored the first time; keeps rows that exist already. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertSeenCommentCountsIfMissing(rows: List<FeedbackCommentSeenEntity>)
+
+    @Upsert
+    suspend fun upsertSeenCommentCount(row: FeedbackCommentSeenEntity)
+
+    @Query("UPDATE feedback_comments_seen SET seenCommentCount = seenCommentCount + 1 WHERE entryId = :entryId")
+    suspend fun incrementSeenCommentCount(entryId: String)
+
+    @Query("DELETE FROM feedback_comments_seen WHERE entryId IN (:ids)")
+    suspend fun deleteSeenCommentCounts(ids: List<String>)
 }
 
 @Dao

@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
@@ -61,6 +62,7 @@ import org.lerchenflo.schneaggchatv3mp.feedback.presentation.labelRes
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.feedback_dev_comment
 import schneaggchatv3mp.composeapp.generated.resources.feedback_new_badge
+import schneaggchatv3mp.composeapp.generated.resources.feedback_new_comments
 import schneaggchatv3mp.composeapp.generated.resources.feedback_vote_cant_repro
 import schneaggchatv3mp.composeapp.generated.resources.feedback_vote_didnt_know
 import schneaggchatv3mp.composeapp.generated.resources.feedback_vote_down
@@ -127,6 +129,13 @@ fun FeedbackRow(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             FeedbackStatusPill(entry.status)
+            if (entry.newCommentCount > 0) {
+                FeedbackPill(
+                    text = pluralStringResource(Res.plurals.feedback_new_comments, entry.newCommentCount, entry.newCommentCount),
+                    container = MaterialTheme.colorScheme.secondaryContainer,
+                    content = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+            }
             if (entry.isPremium) {
                 Icon(
                     imageVector = Icons.Filled.AutoAwesome,
@@ -454,7 +463,7 @@ private fun FeedbackRowPreview() {
     SchneaggchatTheme {
         Column {
             FeedbackRow(
-                entry = previewFeedbackEntry,
+                entry = previewFeedbackEntry.copy(isOwn = true, newCommentCount = 2),
                 mark = FeedbackMark.UPDATED,
                 onClick = {},
                 onVoteClick = {},

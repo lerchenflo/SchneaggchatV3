@@ -1844,6 +1844,10 @@
     <string name="group_extension_delete">Elimina estensione</string>
     <string name="group_extension_delete_confirm">Eliminare «%1$s» con tutte le voci per tutti in questo gruppo? L\'operazione non può essere annullata.</string>
     <string name="group_extension_more_options">Altre opzioni</string>
+    <plurals name="feedback_new_comments">
+        <item quantity="one">%1$d nuovo commento</item>
+        <item quantity="other">%1$d nuovi commenti</item>
+    </plurals>
     <plurals name="group_extension_item_count">
         <item quantity="one">%1$d voce</item>
         <item quantity="other">%1$d voci</item>

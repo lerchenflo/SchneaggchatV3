@@ -58,6 +58,11 @@ data class FeedbackEntry(
      * someone other than the creator. Votes don't move it.
      */
     val activityAt: Long,
+    /**
+     * Comments on an own entry since the user last opened it on this device. Filled by the
+     * repository from a local "seen" count, never sent by the server. Always 0 for others' entries.
+     */
+    val newCommentCount: Int = 0,
 ) {
     /** Up and downvotes cancel out, "didn't know" is neutral. */
     val score: Int get() = upvotes - downvotes

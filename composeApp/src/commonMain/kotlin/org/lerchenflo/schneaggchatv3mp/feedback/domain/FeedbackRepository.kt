@@ -12,7 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
  */
 interface FeedbackRepository {
 
-    /** All stored entries, features and bugs together. */
+    /** All stored entries, features and bugs together, with [FeedbackEntry.newCommentCount] filled. */
     fun getEntriesFlow(): Flow<List<FeedbackEntry>>
 
     /** Admin flag from the last sync, false until the first sync is done. */
@@ -30,7 +30,10 @@ interface FeedbackRepository {
     /** Marks everything stored as seen: saves the server time of the last successful sync. */
     suspend fun markAllSeen()
 
-    /** Also stores the fresh entry that comes with the details. */
+    /** The user opened [entryId]: its [commentCount] comments count as seen on this device. */
+    suspend fun markCommentsSeen(entryId: String, commentCount: Int)
+
+    /** Also stores the fresh entry that comes with the details, and marks its comments as seen. */
     suspend fun getDetails(entryId: String): DataResult<FeedbackEntryDetail, DataError>
 
     suspend fun create(entry: NewFeedbackEntry): DataResult<FeedbackEntry, DataError>
