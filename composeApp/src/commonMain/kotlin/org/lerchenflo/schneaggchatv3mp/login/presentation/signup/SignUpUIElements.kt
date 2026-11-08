@@ -2,7 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
-import androidx.compose.foundation.BorderStroke
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateWheelPicker
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,16 +19,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.darkokoa.datetimewheelpicker.WheelDatePicker
-import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
-import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.utilities.germanNumericDateFormatter
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.create_account
@@ -74,21 +70,21 @@ fun BirthdatePickerPopup(
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
 
-    val endOfCurrentYear = remember(today) {
-        LocalDate(year = today.year, month = 12, day = 31)
+    // Avoid .minus(DateTimeUnit.YEAR), which is unstable on iOS: subtract the years by hand,
+    // clamping Feb 29 to Feb 28 in non-leap years
+    fun yearsBefore(years: Int): LocalDate {
+        val targetYear = today.year - years
+        val targetDay = if (today.month == Month.FEBRUARY &&
+            today.day == 29 &&
+            !LocalDate.isLeapYear(targetYear)
+        ) 28 else today.day
+        return LocalDate(targetYear, today.month, targetDay)
     }
 
-    // Compute default safely: avoid .minus(DateTimeUnit.YEAR) which is unstable on iOS
-    // Manually subtract 18 years, clamping Feb 29 → Feb 28 on non-leap years
+    // Oldest birthday that can be picked: 80 years back
+    val earliestDate = remember(today) { yearsBefore(80) }
     val safeDefaultDate = remember(defaultDate, today) {
-        defaultDate ?: run {
-            val targetYear = today.year - 18
-            val targetDay = if (today.month == Month.FEBRUARY &&
-                today.day == 29 &&
-                !LocalDate.isLeapYear(targetYear)
-            ) 28 else today.day
-            LocalDate(targetYear, today.month, targetDay)
-        }
+        (defaultDate ?: yearsBefore(18)).coerceIn(earliestDate, today)
     }
 
     var selectedDate by remember { mutableStateOf(safeDefaultDate) }
@@ -99,8 +95,9 @@ fun BirthdatePickerPopup(
             TextButton(onClick = {
                 // Clamp to valid range before confirming — guards against picker edge cases on iOS
                 val clamped = when {
-                    selectedDate < LocalDate(1900, 1, 1) -> LocalDate(1900, 1, 1)
-                    selectedDate > endOfCurrentYear -> endOfCurrentYear
+                    selectedDate < earliestDate -> earliestDate
+                    // A birthday can't be in the future
+                    selectedDate > today -> today
                     else -> selectedDate
                 }
                 onDateSelected(clamped)
@@ -114,25 +111,11 @@ fun BirthdatePickerPopup(
             }
         },
         text = {
-            WheelDatePicker(
-                modifier = Modifier.fillMaxWidth(),
+            DateWheelPicker(
                 startDate = selectedDate,
-                minDate = LocalDate(1900, 1, 1),
-                maxDate = endOfCurrentYear,
-                dateFormatter = germanNumericDateFormatter(),
-                rows = WheelRows.Count(5),
-                textColor = MaterialTheme.colorScheme.onSurface,
-                selectorProperties = WheelPickerDefaults.selectorProperties(
-                    enabled = true,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                ),
-                onSnappedDate = { snappedDate: LocalDate ->
-                    // Guard against the picker delivering out-of-range dates on iOS
-                    if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= endOfCurrentYear) {
-                        selectedDate = snappedDate
-                    }
-                }
+                onDateChange = { selectedDate = it },
+                minDate = earliestDate,
+                maxDate = today,
             )
         }
     )

@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar
 
+import org.lerchenflo.schneaggchatv3mp.utilities.weekdayShortResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -80,7 +81,7 @@ fun EventsUpcomingView(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    DateChip(day.toFormattedString(), highlighted = day == today)
+                    DateChip("${stringResource(weekdayShortResource(day.dayOfWeek))}, ${day.toFormattedString()}", highlighted = day == today)
                 }
             }
             items(

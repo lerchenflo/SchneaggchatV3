@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -7,7 +8,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -66,10 +66,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
-import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
-import dev.darkokoa.datetimewheelpicker.core.WheelRows
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.number
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -577,19 +573,10 @@ fun PollDialog(
                                     }
                                 },
                                 text = {
-                                    WheelDateTimePicker(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        rows = WheelRows.Count(3),
+                                    DateTimeWheelPicker(
+                                        startDateTime = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) },
+                                        onDateTimeChange = { expiresAt = it },
                                         minDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-                                        textColor = MaterialTheme.colorScheme.onSurface,
-                                        selectorProperties = WheelPickerDefaults.selectorProperties(
-                                            enabled = true,
-                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                                        ),
-                                        onSnappedDateTime = {
-                                            expiresAt = it
-                                        }
                                     )
                                 }
                             )

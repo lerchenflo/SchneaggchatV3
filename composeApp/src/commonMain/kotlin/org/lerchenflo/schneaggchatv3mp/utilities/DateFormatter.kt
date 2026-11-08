@@ -378,3 +378,12 @@ fun ageOnDate(birthYear: Int?, date: LocalDate): Int? {
     val age = date.year - birthYear
     return age.takeIf { it in 1..130 }
 }
+
+/** "Sat, 14.11.2026 18:00": the short weekday name in front of [millisToString], in the device's time zone. */
+@Composable
+fun millisToStringWithWeekday(millis: Long, format: String = "dd.MM.yyyy HH:mm"): String {
+    val dayOfWeek = Instant.fromEpochMilliseconds(millis)
+        .toLocalDateTime(TimeZone.currentSystemDefault())
+        .dayOfWeek
+    return stringResource(weekdayShortResource(dayOfWeek)) + ", " + millisToString(millis, format)
+}

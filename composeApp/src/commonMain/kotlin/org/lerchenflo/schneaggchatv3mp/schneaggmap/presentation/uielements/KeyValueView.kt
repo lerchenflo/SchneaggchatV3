@@ -2,7 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
-import androidx.compose.foundation.BorderStroke
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateWheelPicker
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,9 +53,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.darkokoa.datetimewheelpicker.WheelDatePicker
-import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
-import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -78,7 +75,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.koin.compose.koinInject
 import org.koin.mp.KoinPlatform
 import kotlin.math.roundToInt
-import org.lerchenflo.schneaggchatv3mp.utilities.germanNumericDateFormatter
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import org.lerchenflo.schneaggchatv3mp.utilities.toFixed
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -516,24 +512,11 @@ private fun DateTimeInput(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    WheelDatePicker(
-                        modifier = Modifier.fillMaxWidth(),
+                    DateWheelPicker(
                         startDate = dialogDate,
+                        onDateChange = { dialogDate = it },
                         minDate = LocalDate(1900, 1, 1),
                         maxDate = maxPickableDate,
-                        dateFormatter = germanNumericDateFormatter(),
-                        rows = WheelRows.Count(5),
-                        textColor = MaterialTheme.colorScheme.onSurface,
-                        selectorProperties = WheelPickerDefaults.selectorProperties(
-                            enabled = true,
-                            color  = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                        ),
-                        onSnappedDate = { snappedDate ->
-                            if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= maxPickableDate) {
-                                dialogDate = snappedDate
-                            }
-                        }
                     )
 
                     HorizontalDivider()

@@ -1,8 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToStringWithWeekday
 import schneaggchatv3mp.composeapp.generated.resources.event_show_on_map
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.StaticMapPreview
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,10 +56,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
-import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
-import dev.darkokoa.datetimewheelpicker.core.WheelRows
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -390,7 +387,7 @@ fun EventEditPopup(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = millisToString(currentEvent.startDate, "dd.MM.yyyy HH:mm"),
+                    text = millisToStringWithWeekday(currentEvent.startDate),
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -436,7 +433,7 @@ fun EventEditPopup(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = millisToString(currentEvent.closeDate!!, "dd.MM.yyyy HH:mm"),
+                        text = millisToStringWithWeekday(currentEvent.closeDate!!),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -730,20 +727,10 @@ fun EventEditPopup(
                 }
             },
             text = {
-                WheelDateTimePicker(
-                    modifier = Modifier.fillMaxWidth(),
-                    rows = WheelRows.Count(3),
+                DateTimeWheelPicker(
                     startDateTime = tempStartDateTime,
+                    onDateTimeChange = { tempStartDateTime = it },
                     minDateTime = (Clock.System.now() + 5.minutes).toLocalDateTime(TimeZone.currentSystemDefault()),
-                    textColor = MaterialTheme.colorScheme.onSurface,
-                    selectorProperties = WheelPickerDefaults.selectorProperties(
-                        enabled = true,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                    ),
-                    onSnappedDateTime = { snapped: LocalDateTime ->
-                        tempStartDateTime = snapped
-                    }
                 )
             }
         )
@@ -775,21 +762,11 @@ fun EventEditPopup(
                 }
             },
             text = {
-                WheelDateTimePicker(
-                    modifier = Modifier.fillMaxWidth(),
-                    rows = WheelRows.Count(3),
+                DateTimeWheelPicker(
                     startDateTime = tempEndDateTime,
+                    onDateTimeChange = { tempEndDateTime = it },
                     minDateTime = Instant.fromEpochMilliseconds(currentEvent.startDate)
                         .toLocalDateTime(TimeZone.currentSystemDefault()),
-                    textColor = MaterialTheme.colorScheme.onSurface,
-                    selectorProperties = WheelPickerDefaults.selectorProperties(
-                        enabled = true,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                    ),
-                    onSnappedDateTime = { snapped: LocalDateTime ->
-                        tempEndDateTime = snapped
-                    }
                 )
             }
         )

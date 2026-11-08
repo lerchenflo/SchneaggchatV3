@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements
 
-import androidx.compose.foundation.BorderStroke
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,9 +44,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
-import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
-import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -390,19 +387,11 @@ private fun ExpiryPickerDialog(
             }
         },
         text = {
-            WheelDateTimePicker(
-                modifier = Modifier.fillMaxWidth(),
+            DateTimeWheelPicker(
                 startDateTime = selected,
+                onDateTimeChange = { selected = it },
                 minDateTime = minDateTime,
                 maxDateTime = maxDateTime,
-                rows = WheelRows.Count(3),
-                textColor = MaterialTheme.colorScheme.onSurface,
-                selectorProperties = WheelPickerDefaults.selectorProperties(
-                    enabled = true,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                ),
-                onSnappedDateTime = { selected = it },
             )
         }
     )

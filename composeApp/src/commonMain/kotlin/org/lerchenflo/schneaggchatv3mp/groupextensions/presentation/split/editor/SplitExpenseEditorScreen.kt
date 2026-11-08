@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor
 
-import androidx.compose.foundation.BorderStroke
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateWheelPicker
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -73,9 +73,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.darkokoa.datetimewheelpicker.WheelDatePicker
-import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
-import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -87,7 +84,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.utilities.germanNumericDateFormatter
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.delete
@@ -701,18 +697,9 @@ private fun SplitDatePickerDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.split_date_label)) },
         text = {
-            WheelDatePicker(
-                modifier = Modifier.fillMaxWidth(),
+            DateWheelPicker(
                 startDate = initialDate,
-                dateFormatter = germanNumericDateFormatter(),
-                rows = WheelRows.Count(5),
-                textColor = MaterialTheme.colorScheme.onSurface,
-                selectorProperties = WheelPickerDefaults.selectorProperties(
-                    enabled = true,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                ),
-                onSnappedDate = { pickedDate = it }
+                onDateChange = { pickedDate = it },
             )
         },
         confirmButton = {

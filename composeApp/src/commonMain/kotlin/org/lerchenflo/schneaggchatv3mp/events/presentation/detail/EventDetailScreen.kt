@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.detail
 
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToStringWithWeekday
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.text.withStyle
@@ -293,13 +294,13 @@ private fun EventDateRow(
             Spacer(modifier = Modifier.width(8.dp))
             Column {
                 Text(
-                    text = stringResource(Res.string.event_starts_label) + " " + millisToString(event.startDate, DATE_FORMAT),
+                    text = stringResource(Res.string.event_starts_label) + " " + millisToStringWithWeekday(event.startDate, DATE_FORMAT),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 event.closeDate?.let { closeDate ->
                     Text(
-                        text = stringResource(Res.string.event_closes_with_date, millisToString(closeDate, DATE_FORMAT)),
+                        text = stringResource(Res.string.event_closes_with_date, millisToStringWithWeekday(closeDate, DATE_FORMAT)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )

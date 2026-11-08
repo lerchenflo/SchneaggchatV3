@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
 import schneaggchatv3mp.composeapp.generated.resources.shared_messages
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -34,10 +35,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.AlertDialog
-import androidx.compose.foundation.BorderStroke
-import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
-import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -57,7 +54,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.darkokoa.datetimewheelpicker.core.WheelRows
 import io.github.ismoy.imagepickerkmp.config.CropConfig
 import io.github.ismoy.imagepickerkmp.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.picker.ImagePickerKMPConfig
@@ -1010,20 +1006,10 @@ private fun GroupExpiryPickerDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
-                WheelDateTimePicker(
-                    modifier = Modifier.fillMaxWidth(),
-                    rows = WheelRows.Count(3),
+                DateTimeWheelPicker(
                     startDateTime = pickedDateTime,
+                    onDateTimeChange = { pickedDateTime = it },
                     minDateTime = earliest.toLocalDateTime(timeZone),
-                    textColor = MaterialTheme.colorScheme.onSurface,
-                    selectorProperties = WheelPickerDefaults.selectorProperties(
-                        enabled = true,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                    ),
-                    onSnappedDateTime = { snapped: LocalDateTime ->
-                        pickedDateTime = snapped
-                    }
                 )
             }
         }

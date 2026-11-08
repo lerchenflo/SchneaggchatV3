@@ -108,7 +108,7 @@ class OfflineFirstFeedbackRepository(
             }
         }
 
-        serverTime?.let { preferencemanager.saveFeedbackSyncResult(serverTime = it, viewerIsAdmin = viewerIsAdmin) }
+        serverTime.let { preferencemanager.saveFeedbackSyncResult(serverTime = it, viewerIsAdmin = viewerIsAdmin) }
         DataResult.Success(Unit)
     }
 
