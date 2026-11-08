@@ -1,5 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 
+import schneaggchatv3mp.composeapp.generated.resources.system_event_cancelled
+import schneaggchatv3mp.composeapp.generated.resources.system_event_location_changed
+import schneaggchatv3mp.composeapp.generated.resources.system_event_start_changed
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
@@ -43,6 +47,11 @@ fun systemEventText(event: SystemEventMessage): String {
         SystemEventType.GROUP_DESCRIPTION_CHANGED -> stringResource(Res.string.system_group_description_changed, event.actorName)
         SystemEventType.GROUP_PICTURE_CHANGED -> stringResource(Res.string.system_group_picture_changed, event.actorName)
         SystemEventType.EVENT_CHANGED -> stringResource(Res.string.system_event_changed, event.actorName)
+        SystemEventType.EVENT_START_CHANGED -> event.timestamp?.let { start ->
+            stringResource(Res.string.system_event_start_changed, event.actorName, millisToString(start, "dd.MM.yyyy HH:mm"))
+        } ?: stringResource(Res.string.system_event_changed, event.actorName)
+        SystemEventType.EVENT_LOCATION_CHANGED -> stringResource(Res.string.system_event_location_changed, event.actorName)
+        SystemEventType.EVENT_CANCELLED -> stringResource(Res.string.system_event_cancelled, event.actorName)
         SystemEventType.FRIENDSHIP_ACCEPTED -> stringResource(Res.string.system_friendship_accepted)
         SystemEventType.WAKE_SENT -> if (event.text.isNullOrBlank()) {
             stringResource(Res.string.system_wake_sent, event.actorName)

@@ -65,6 +65,7 @@ private const val CHANNEL_GENERAL = "schneaggchat_general"
 
 const val EXTRA_FROM_NOTIFICATION = "from_notification"
 const val EXTRA_MAP_ENTRY_ID = "map_entry_id"
+const val EXTRA_EVENT_ID = "event_id"
 
 //How many past messages are kept per chat in the MessagingStyle history shown on the notification
 // - bounded so a chat that's been unread for a while doesn't build
@@ -206,7 +207,7 @@ class AndroidNotifier(private val context: Context, private val permissionManage
                 showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat, content.senderId, content.kind)
             }
         } else {
-            showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat, content.avatarUserId, content.kind, content.mapEntryId)
+            showPlainNotificationSafely(content.id, content.title, content.body, content.chatId, content.groupChat, content.avatarUserId, content.kind, content.mapEntryId, content.eventId)
         }
     }
 
@@ -223,9 +224,10 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         avatarUserId: String?,
         kind: NotificationKind,
         mapEntryId: String? = null,
+        eventId: String? = null,
     ) {
         try {
-            showPlainNotification(id, title, body, chatId, groupChat, avatarUserId, kind, mapEntryId)
+            showPlainNotification(id, title, body, chatId, groupChat, avatarUserId, kind, mapEntryId, eventId)
         } catch (e: Throwable) {
             logError("Plain notification failed, showing bare fallback: ${e.describe()}")
             try {
@@ -257,11 +259,12 @@ class AndroidNotifier(private val context: Context, private val permissionManage
         avatarUserId: String?,
         kind: NotificationKind,
         mapEntryId: String?,
+        eventId: String?,
     ) {
         val pendingIntent = PendingIntent.getActivity(
             context,
             id,
-            launchIntent(chatId = chatId, groupChat = groupChat, mapEntryId = mapEntryId),
+            launchIntent(chatId = chatId, groupChat = groupChat, mapEntryId = mapEntryId, eventId = eventId),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -680,7 +683,7 @@ class AndroidNotifier(private val context: Context, private val permissionManage
             .build()
     }
 
-    private fun launchIntent(chatId: String?, groupChat: Boolean, mapEntryId: String? = null): Intent {
+    private fun launchIntent(chatId: String?, groupChat: Boolean, mapEntryId: String? = null, eventId: String? = null): Intent {
         //NEW_TASK to launch from a service context, CLEAR_TOP|SINGLE_TOP (with MainActivity's
         //launchMode="singleTop") to resume an already-running app via onNewIntent instead of
         //tearing it down and restarting it (CLEAR_TASK did that on every tap).
@@ -690,6 +693,7 @@ class AndroidNotifier(private val context: Context, private val permissionManage
             putExtra(EXTRA_FROM_NOTIFICATION, true)
             chatId?.let { putExtra(EXTRA_CHAT_ID, it) }
             mapEntryId?.let { putExtra(EXTRA_MAP_ENTRY_ID, it) }
+            eventId?.let { putExtra(EXTRA_EVENT_ID, it) }
             putExtra(EXTRA_GROUP_CHAT, groupChat)
         } ?: Intent().apply {
             setClassName(context, "org.lerchenflo.androidApp.MainActivity")
@@ -697,6 +701,7 @@ class AndroidNotifier(private val context: Context, private val permissionManage
             putExtra(EXTRA_FROM_NOTIFICATION, true)
             chatId?.let { putExtra(EXTRA_CHAT_ID, it) }
             mapEntryId?.let { putExtra(EXTRA_MAP_ENTRY_ID, it) }
+            eventId?.let { putExtra(EXTRA_EVENT_ID, it) }
             putExtra(EXTRA_GROUP_CHAT, groupChat)
         }
     }

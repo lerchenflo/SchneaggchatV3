@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements
 
+import schneaggchatv3mp.composeapp.generated.resources.event_show_on_map
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.StaticMapPreview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -123,6 +125,7 @@ fun EventEditPopup(
     onDelete: (deleteGroup: Boolean, deleteEvent: Boolean) -> Unit = { _, _ -> },
     isMobile: Boolean = true,
     isSaving: Boolean = false,
+    mapStyleUrl: String? = null,
     modifier: Modifier = Modifier
 ) {
 
@@ -352,6 +355,19 @@ fun EventEditPopup(
                 }
             }
 
+            // Tap opens the location picker with the unsaved edits, like the button above
+            currentEvent.location?.let { location ->
+                if (mapStyleUrl != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    StaticMapPreview(
+                        location = location,
+                        styleUrl = mapStyleUrl,
+                        onClick = { if (isMobile) onPickLocation(currentEvent) },
+                        contentDescription = stringResource(Res.string.event_show_on_map),
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             // Start date
@@ -425,6 +441,13 @@ fun EventEditPopup(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            EventReminderSection(
+                reminderMinutes = currentEvent.reminderMinutes,
+                onChange = { currentEvent = currentEvent.copy(reminderMinutes = it) },
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 

@@ -39,5 +39,8 @@ data class NotificationContent(
     /** Map entry this notification is about - tapping the notification opens it on the map. */
     val mapEntryId: String? = null,
 
+    /** Event this notification is about - tapping the notification opens it. */
+    val eventId: String? = null,
+
     val kind: NotificationKind = NotificationKind.GENERAL,
 )

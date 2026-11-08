@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
+import kotlinx.serialization.json.Json
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventUpdateChange
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 
 /** What a map sighting push reports. The names are wire names and must match the server. */
@@ -67,6 +69,23 @@ sealed interface DecodedNotification {
         val creatorName: String,
     ) : DecodedNotification
 
+    /** Reminder before an event the user is going to; [leadMinutes] is the configured lead time. */
+    data class EventReminder(
+        val eventId: String,
+        val eventTitle: String,
+        val startDate: Long,
+        val leadMinutes: Int,
+    ) : DecodedNotification
+
+    /** An event's start or location changed, or it was cancelled. [startDate] is the new start. */
+    data class EventUpdate(
+        val eventId: String,
+        val eventTitle: String,
+        val changes: Set<EventUpdateChange>,
+        val startDate: Long,
+        val actorName: String,
+    ) : DecodedNotification
+
     /** Police or a mobile radar was seen. Never says who reported it. */
     data class MapSighting(
         val entryId: String,
@@ -121,6 +140,23 @@ object PayloadDecoder {
                 eventTitle = data["eventTitle"] ?: "",
                 creatorId = data["creatorId"] ?: "",
                 creatorName = data["creatorName"] ?: "",
+            )
+            "event_reminder" -> DecodedNotification.EventReminder(
+                eventId = data["eventId"] ?: return null,
+                eventTitle = data["eventTitle"] ?: "",
+                startDate = data["startDate"]?.toLongOrNull() ?: 0L,
+                leadMinutes = data["leadMinutes"]?.toIntOrNull() ?: 0,
+            )
+            // `changes` arrives as a JSON array string, e.g. ["START","LOCATION"]
+            "event_update" -> DecodedNotification.EventUpdate(
+                eventId = data["eventId"] ?: return null,
+                eventTitle = data["eventTitle"] ?: "",
+                // Unreadable changes still show the alert, with the generic "updated the event" text
+                changes = EventUpdateChange.parse(
+                    runCatching { Json.decodeFromString<List<String>>(data["changes"] ?: "") }.getOrDefault(emptyList())
+                ),
+                startDate = data["startDate"]?.toLongOrNull() ?: 0L,
+                actorName = data["actorName"] ?: "",
             )
             "map_sighting" -> DecodedNotification.MapSighting(
                 entryId = data["entryId"] ?: return null,

@@ -73,6 +73,12 @@ class IosPushDelegateBridge {
             chatId = message?.chatTargetId,
             isGroup = message?.groupMessage ?: false,
             mapEntryId = (decoded as? DecodedNotification.MapSighting)?.entryId,
+            eventId = when (decoded) {
+                is DecodedNotification.Event -> decoded.eventId
+                is DecodedNotification.EventReminder -> decoded.eventId
+                is DecodedNotification.EventUpdate -> decoded.eventId
+                else -> null
+            },
         )
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {

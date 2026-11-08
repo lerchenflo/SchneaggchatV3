@@ -386,7 +386,6 @@
     <string name="event_created_by">Erstellt vo %1$s</string>
     <string name="event_join">Beitreata</string>
     <string name="event_add_to_calendar">Zum Kalender hinzufüga</string>
-    <string name="event_invite_header">%1$s möcht %2$s am %3$s</string>
     <string name="event_invited_users">Iglada</string>
     <string name="event_invite_friends">Freunde ilada</string>
     <string name="event_location_label">Ort</string>
@@ -1555,7 +1554,6 @@ Mealds, egal wie klenn.</string>
     <string name="event_participation_seen">Gseaha</string>
     <string name="event_participation_dismissed">Kua Interesse</string>
     <string name="event_participation_count">%1$s (%2$d)</string>
-    <string name="event_participation_at">%1$s, %2$s</string>
 
     <!-- Shared content (images and links of a chat) -->
     <string name="shared_content_title">Toalte Inhalte</string>

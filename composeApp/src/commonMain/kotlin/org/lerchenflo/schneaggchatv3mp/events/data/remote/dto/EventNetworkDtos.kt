@@ -47,4 +47,6 @@ data class EventRequest(
     val maxUsers: Int? = null,
     val groupDeleteDelay: GroupDeleteDelay,
     val createGroup: Boolean = true,
+    /** Lead times in minutes before the start; null keeps the stored ones, empty clears them. */
+    val reminderMinutes: List<Int>? = null,
 )

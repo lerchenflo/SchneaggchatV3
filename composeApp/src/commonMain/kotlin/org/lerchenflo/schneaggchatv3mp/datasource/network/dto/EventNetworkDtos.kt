@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.dto
 
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventUserName
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipation
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
@@ -19,6 +20,8 @@ data class EventResponse(
     val startDate: Long,
     val closeDate: Long?,
     val invitedUsers: List<String>,
+    val invitedUserNames: List<EventUserName> = emptyList(),
+    val reminderMinutes: List<Int> = emptyList(),
     val participations: List<EventParticipation> = emptyList(), //default keeps decoding working against a server without the feature
     val visibility: EventVisibility,
     val maxUsers: Int? = null,

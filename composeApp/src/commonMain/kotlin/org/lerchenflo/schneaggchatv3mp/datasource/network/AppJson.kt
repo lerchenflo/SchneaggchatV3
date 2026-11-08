@@ -37,6 +37,8 @@ object AppJson {
                 subclass(SocketConnectionMessage.MessageChange::class)
                 subclass(SocketConnectionMessage.UserChange::class)
                 subclass(SocketConnectionMessage.EventChange::class)
+                subclass(SocketConnectionMessage.EventReminder::class)
+                subclass(SocketConnectionMessage.EventUpdateAlert::class)
                 subclass(SocketConnectionMessage.FriendRequest::class)
                 subclass(SocketConnectionMessage.MapChange::class)
                 subclass(SocketConnectionMessage.GroupExtensionChange::class)

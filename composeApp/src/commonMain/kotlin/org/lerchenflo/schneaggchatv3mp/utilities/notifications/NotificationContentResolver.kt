@@ -42,6 +42,14 @@ suspend fun resolveLocalizedContent(
     is DecodedNotification.Wake          -> null
     is DecodedNotification.Event         -> resolveEvent(decoded)
     is DecodedNotification.MapSighting   -> resolveMapSighting(decoded)
+    is DecodedNotification.EventReminder -> eventReminderNotificationContent(decoded.eventId, decoded.eventTitle, decoded.leadMinutes, decoded.startDate)
+    is DecodedNotification.EventUpdate   -> eventUpdateNotificationContent(
+        eventId = decoded.eventId,
+        eventTitle = decoded.eventTitle,
+        changes = decoded.changes,
+        startDate = decoded.startDate,
+        actorName = decoded.actorName,
+    )
 }
 
 private suspend fun resolveMessage(
@@ -191,10 +199,11 @@ private suspend fun resolveEvent(
 ): NotificationContent {
     val title = getString(Res.string.new_event_noti_title, decoded.creatorName)
     return NotificationContent(
-        id = NotificationManager.NotiIdType.EVENT.baseId,
+        id = eventNotificationId(decoded.eventId),
         title = title,
         body = decoded.eventTitle,
         avatarUserId = decoded.creatorId.ifBlank { null },
+        eventId = decoded.eventId,
         kind = NotificationKind.SOCIAL,
     )
 }
@@ -215,6 +224,13 @@ private suspend fun resolveMapSighting(
 )
 
 //One notification per entry: a new sighting replaces the older one of the same place
+/**
+ * One notification per event, so a second event doesn't replace the first. Every notification of
+ * the same event (new, changed, reminder) shares it, so the newest replaces the older one.
+ */
+fun eventNotificationId(eventId: String): Int =
+    "event:$eventId".hashCode().absoluteValue
+
 private fun mapSightingNotificationId(entryId: String): Int =
     "map_sighting:$entryId".hashCode().absoluteValue
 
@@ -263,9 +279,24 @@ suspend fun resolveFallbackContent(decoded: DecodedNotification): NotificationCo
         )
         is DecodedNotification.Wake -> null
         is DecodedNotification.Event -> NotificationContent(
-            id = NotificationManager.NotiIdType.EVENT.baseId,
+            id = eventNotificationId(decoded.eventId),
             title = decoded.creatorName.ifBlank { NOTIFICATION_FALLBACK_TITLE },
             body = decoded.eventTitle.ifBlank { fallbackBody },
+            eventId = decoded.eventId,
+            kind = NotificationKind.SOCIAL,
+        )
+        is DecodedNotification.EventReminder -> NotificationContent(
+            id = eventNotificationId(decoded.eventId),
+            title = decoded.eventTitle.ifBlank { NOTIFICATION_FALLBACK_TITLE },
+            body = fallbackBody,
+            eventId = decoded.eventId,
+            kind = NotificationKind.SOCIAL,
+        )
+        is DecodedNotification.EventUpdate -> NotificationContent(
+            id = eventNotificationId(decoded.eventId),
+            title = decoded.eventTitle.ifBlank { NOTIFICATION_FALLBACK_TITLE },
+            body = fallbackBody,
+            eventId = decoded.eventId,
             kind = NotificationKind.SOCIAL,
         )
         is DecodedNotification.MapSighting -> NotificationContent(

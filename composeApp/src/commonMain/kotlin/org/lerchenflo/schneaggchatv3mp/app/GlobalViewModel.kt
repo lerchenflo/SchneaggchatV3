@@ -283,6 +283,12 @@ class GlobalViewModel(
                             )
                         )
                     }
+
+                    // Events tab first, like the chat tab for chats, then the event on top
+                    data.eventId?.let { eventId ->
+                        navigator.navigate(Route.Events())
+                        navigator.navigate(Route.EventDetail(eventId = eventId))
+                    }
                 }
         }
 

@@ -157,6 +157,59 @@ class NotificationService: UNNotificationServiceExtension {
         case let .mapSighting(entryName, sightingType):
             let titleKey: NotificationStringKey = sightingType == .POLICE ? .mapSightingPoliceTitle : .mapSightingRadarTitle
             return (NotificationStrings.get(titleKey, language: language), entryName)
+
+        case let .eventReminder(eventTitle, startDate, leadMinutes):
+            // Without a lead time the start is named instead, so the reminder is never empty
+            let body: String
+            if leadMinutes > 0 {
+                body = NotificationStrings.get(.eventReminderBody, language: language, EventTexts.leadTime(leadMinutes, language: language))
+            } else if startDate > 0 {
+                body = NotificationStrings.get(.eventReminderBodyAt, language: language, EventTexts.date(startDate))
+            } else {
+                body = NotificationStrings.get(.youHaveNewMessages, language: language)
+            }
+            return (NotificationStrings.get(.eventReminderTitle, language: language, eventTitle), body)
+
+        case let .eventUpdate(eventTitle, changes, startDate, actorName):
+            let start = EventTexts.date(startDate)
+            let body: String
+            if changes.contains("CANCELLED") {
+                body = NotificationStrings.get(.eventCancelledBody, language: language, actorName)
+            } else if changes.contains("START") && changes.contains("LOCATION") {
+                body = NotificationStrings.get(.eventStartAndLocationBody, language: language, actorName, start)
+            } else if changes.contains("START") {
+                body = NotificationStrings.get(.eventStartBody, language: language, actorName, start)
+            } else if changes.contains("LOCATION") {
+                body = NotificationStrings.get(.eventLocationBody, language: language, actorName)
+            } else {
+                // Unknown or unreadable changes still show the alert
+                body = NotificationStrings.get(.eventChangedBody, language: language, actorName)
+            }
+            return (eventTitle.isEmpty ? "Schneaggchat" : eventTitle, body)
         }
+    }
+}
+
+/// Texts shared by the event reminder and change alert.
+private enum EventTexts {
+    /// "1 day 2 h 30 min"; zero parts are left out.
+    static func leadTime(_ totalMinutes: Int, language: String?) -> String {
+        let days = totalMinutes / (24 * 60)
+        let hours = (totalMinutes % (24 * 60)) / 60
+        let minutes = totalMinutes % 60
+        var parts: [String] = []
+        if days > 0 {
+            parts.append(NotificationStrings.get(days == 1 ? .leadDay : .leadDays, language: language, days))
+        }
+        if hours > 0 { parts.append(NotificationStrings.get(.leadHours, language: language, hours)) }
+        if minutes > 0 || parts.isEmpty { parts.append(NotificationStrings.get(.leadMinutes, language: language, minutes)) }
+        return parts.joined(separator: " ")
+    }
+
+    /// Epoch milliseconds in the device's time zone, like the app's `dd.MM.yyyy HH:mm`.
+    static func date(_ epochMillis: Int64) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM.yyyy HH:mm"
+        return formatter.string(from: Date(timeIntervalSince1970: TimeInterval(epochMillis) / 1000))
     }
 }

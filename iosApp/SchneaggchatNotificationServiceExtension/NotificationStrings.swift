@@ -20,6 +20,18 @@ enum NotificationStringKey: String {
     case newEventTitle
     case mapSightingPoliceTitle
     case mapSightingRadarTitle
+    case eventReminderTitle
+    case eventReminderBody
+    case eventReminderBodyAt
+    case leadDay
+    case leadDays
+    case leadHours
+    case leadMinutes
+    case eventCancelledBody
+    case eventStartAndLocationBody
+    case eventStartBody
+    case eventLocationBody
+    case eventChangedBody
 }
 
 enum NotificationStrings {
@@ -66,6 +78,18 @@ enum NotificationStrings {
         .newEventTitle: "%1$@ created a new event",
         .mapSightingPoliceTitle: "Police seen",
         .mapSightingRadarTitle: "Mobile radar seen",
+        .eventReminderTitle: "Reminder: %1$@",
+        .eventReminderBody: "Starts in %1$@",
+        .eventReminderBodyAt: "Starts at %1$@",
+        .leadDay: "%1$ld day",
+        .leadDays: "%1$ld days",
+        .leadHours: "%1$ld h",
+        .leadMinutes: "%1$ld min",
+        .eventCancelledBody: "%1$@ cancelled the event",
+        .eventStartAndLocationBody: "%1$@ moved the start to %2$@ and changed the location",
+        .eventStartBody: "%1$@ moved the start to %2$@",
+        .eventLocationBody: "%1$@ changed the location",
+        .eventChangedBody: "%1$@ updated the event",
     ]
 
     private static let germanStrings: [NotificationStringKey: String] = [
@@ -88,6 +112,18 @@ enum NotificationStrings {
         .newEventTitle: "%1$@ hat ein neues Event erstellt",
         .mapSightingPoliceTitle: "Polizei gesichtet",
         .mapSightingRadarTitle: "Mobiles Radar gesichtet",
+        .eventReminderTitle: "Erinnerung: %1$@",
+        .eventReminderBody: "Beginnt in %1$@",
+        .eventReminderBodyAt: "Beginnt am %1$@",
+        .leadDay: "%1$ld Tag",
+        .leadDays: "%1$ld Tage",
+        .leadHours: "%1$ld Std.",
+        .leadMinutes: "%1$ld Min.",
+        .eventCancelledBody: "%1$@ hat das Event abgesagt",
+        .eventStartAndLocationBody: "%1$@ hat den Start auf %2$@ verschoben und den Ort geändert",
+        .eventStartBody: "%1$@ hat den Start auf %2$@ verschoben",
+        .eventLocationBody: "%1$@ hat den Ort geändert",
+        .eventChangedBody: "%1$@ hat das Event aktualisiert",
     ]
 
     private static let austrianGermanStrings: [NotificationStringKey: String] = [
@@ -130,5 +166,17 @@ enum NotificationStrings {
         .newEventTitle: "%1$@ ha creato un nuovo evento",
         .mapSightingPoliceTitle: "Polizia avvistata",
         .mapSightingRadarTitle: "Autovelox mobile avvistato",
+        .eventReminderTitle: "Promemoria: %1$@",
+        .eventReminderBody: "Inizia tra %1$@",
+        .eventReminderBodyAt: "Inizia il %1$@",
+        .leadDay: "%1$ld giorno",
+        .leadDays: "%1$ld giorni",
+        .leadHours: "%1$ld h",
+        .leadMinutes: "%1$ld min",
+        .eventCancelledBody: "%1$@ ha annullato l'evento",
+        .eventStartAndLocationBody: "%1$@ ha spostato l'inizio a %2$@ e cambiato il luogo",
+        .eventStartBody: "%1$@ ha spostato l'inizio a %2$@",
+        .eventLocationBody: "%1$@ ha cambiato il luogo",
+        .eventChangedBody: "%1$@ ha aggiornato l'evento",
     ]
 }

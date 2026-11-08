@@ -57,7 +57,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.CoordinateView
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapCreateChoiceDialog
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapAttributionBar
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.MapAttributionBar
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapFilterChipsRow
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapLocateButton
@@ -113,9 +113,10 @@ private val FOLLOW_ANIMATION_DURATION = 500.milliseconds
 @Composable
 fun SchneaggmapScreenRoot(
     initialEntryId: String? = null,
-    currentlyEditedEvent: Event? = null
+    currentlyEditedEvent: Event? = null,
+    focusLocation: LatLong? = null,
 ) {
-    val viewModel = koinViewModel<SchneaggmapViewModel> { parametersOf(initialEntryId, currentlyEditedEvent) }
+    val viewModel = koinViewModel<SchneaggmapViewModel> { parametersOf(initialEntryId, currentlyEditedEvent, focusLocation) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     SchneaggmapScreen(

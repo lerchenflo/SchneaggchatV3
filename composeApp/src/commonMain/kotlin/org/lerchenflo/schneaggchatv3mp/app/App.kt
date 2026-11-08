@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.app
 
+import org.lerchenflo.schneaggchatv3mp.events.presentation.detail.EventDetailScreenRoot
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -692,7 +693,8 @@ fun App() {
                                 entry<Route.Schneaggmap> { route ->
                                     SchneaggmapScreenRoot(
                                         initialEntryId = route.initialEntryId,
-                                        currentlyEditedEvent = route.currentlyEditedEvent
+                                        currentlyEditedEvent = route.currentlyEditedEvent,
+                                        focusLocation = route.focusLocation,
                                     )
                                 }
 
@@ -789,6 +791,10 @@ fun App() {
 
                                 entry<Route.Feedback> {
                                     FeedbackScreenRoot()
+                                }
+
+                                entry<Route.EventDetail> {
+                                    EventDetailScreenRoot(eventId = it.eventId)
                                 }
 
                                 entry<Route.Events> {

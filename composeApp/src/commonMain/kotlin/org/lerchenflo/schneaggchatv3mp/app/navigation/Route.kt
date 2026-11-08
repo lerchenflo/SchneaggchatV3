@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.app.navigation
 
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
@@ -65,7 +66,9 @@ sealed interface Route : NavKey {
     data class Schneaggmap(
         val initialEntryId: String? = null,
         val currentlyEditedEvent: Event? = null,
-        val openRequestId: Long = 0L
+        val openRequestId: Long = 0L,
+        /** Camera target when the map opens, e.g. an event's location. */
+        val focusLocation: LatLong? = null,
     ): Route
 
     @Serializable
@@ -74,6 +77,10 @@ sealed interface Route : NavKey {
     // EVENTS
     @Serializable
     data class Events(val selectedEventId: String? = null, val selectedEvent: Event? = null): Route
+
+    /** Full screen details of one event, for guests and its creator. */
+    @Serializable
+    data class EventDetail(val eventId: String): Route
 
 
 

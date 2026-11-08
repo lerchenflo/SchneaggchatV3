@@ -391,7 +391,6 @@
     <string name="event_created_by">Creato da %1$s</string>
     <string name="event_join">Partecipa</string>
     <string name="event_add_to_calendar">Aggiungi al calendario</string>
-    <string name="event_invite_header">%1$s vuole %2$s al %3$s</string>
     <string name="event_invited_users">Invitati</string>
     <string name="event_invite_friends">Invita amici</string>
     <string name="event_location_label">Posizione</string>
@@ -1543,6 +1542,9 @@
     <string name="system_group_description_changed">%1$s ha cambiato la descrizione del gruppo</string>
     <string name="system_group_picture_changed">%1$s ha cambiato la foto del gruppo</string>
     <string name="system_event_changed">%1$s ha aggiornato l'evento</string>
+    <string name="system_event_start_changed">%1$s ha spostato l'inizio a %2$s</string>
+    <string name="system_event_location_changed">%1$s ha cambiato il luogo</string>
+    <string name="system_event_cancelled">%1$s ha annullato l'evento</string>
     <string name="system_friendship_accepted">Ora siete amici</string>
     <string name="system_wake_sent">%1$s ti ha svegliato</string>
     <string name="system_wake_sent_reason">%1$s ti ha svegliato: %2$s</string>
@@ -1559,7 +1561,25 @@
     <string name="event_participation_seen">Visto</string>
     <string name="event_participation_dismissed">Non interessato</string>
     <string name="event_participation_count">%1$s (%2$d)</string>
-    <string name="event_participation_at">%1$s, %2$s</string>
+    <string name="event_not_available">Questo evento non è disponibile</string>
+    <string name="event_show_on_map">Mostra sulla mappa</string>
+    <string name="event_lead_hours">%1$d h</string>
+    <string name="event_lead_minutes">%1$d min</string>
+    <string name="event_reminder_before">%1$s prima</string>
+    <string name="event_reminders_label">Promemoria</string>
+    <string name="event_reminders_none">Nessun promemoria</string>
+    <string name="event_reminder_add">Aggiungi promemoria</string>
+    <string name="event_reminder_remove">Rimuovi promemoria</string>
+    <string name="event_reminder_custom">Personalizzato</string>
+    <string name="event_reminder_days">Giorni</string>
+    <string name="event_reminder_hours">Ore</string>
+    <string name="event_reminder_minutes">Minuti</string>
+    <string name="event_reminder_noti_title">Promemoria: %1$s</string>
+    <string name="event_reminder_noti_body">Inizia tra %1$s</string>
+    <string name="event_reminder_noti_body_at">Inizia il %1$s</string>
+    <string name="event_update_start_and_location">%1$s ha spostato l'inizio a %2$s e cambiato il luogo</string>
+    <string name="event_participation_no_answer">Nessuna risposta</string>
+    <string name="event_participation_show_all">Mostra tutti (%1$d)</string>
 
     <!-- Shared content (images and links of a chat) -->
     <string name="shared_content_title">Contenuti condivisi</string>
@@ -1962,4 +1982,8 @@
     <string name="tictactoe_cell_description">Riga %1$d, colonna %2$d</string>
     <string name="desktop_tray_open">Apri Schneaggchat</string>
     <string name="desktop_tray_quit">Esci</string>
+    <plurals name="event_lead_days">
+        <item quantity="one">%1$d giorno</item>
+        <item quantity="other">%1$d giorni</item>
+    </plurals>
 </resources>

@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,7 +60,8 @@ class SchneaggmapViewModel(
     private val eventRepository: EventRepository,
 
     private val initialEntryId: String?,
-    private val currentlyEditedEvent: Event?
+    private val currentlyEditedEvent: Event?,
+    private val focusLocation: LatLong? = null,
 ) : ViewModel() {
 
     val pickLocationMode = currentlyEditedEvent != null
@@ -420,7 +422,7 @@ class SchneaggmapViewModel(
 
             is SchneaggmapAction.OnEventPinClick -> {
                 viewModelScope.launch {
-                    navigator.navigate(Route.Events(selectedEventId = action.eventId))
+                    navigator.navigate(Route.EventDetail(eventId = action.eventId))
                 }
             }
 
@@ -479,6 +481,11 @@ class SchneaggmapViewModel(
     }
 
     init {
+        // Opened on a location (e.g. an event's map preview): fly there once
+        if (focusLocation != null) {
+            _state.update { it.copy(focusEntryTarget = focusLocation, isFilterDropdownVisible = false) }
+        }
+
         // Opened with a specific entry (deep link): once the entry shows up in the database,
         // show its popup and hand the screen a one-shot camera target to fly to.
         if (initialEntryId != null) {

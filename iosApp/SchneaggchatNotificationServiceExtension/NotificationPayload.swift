@@ -7,6 +7,9 @@ enum DecodedNotification {
     case birthday(birthdayUserName: String, ownBirthday: Bool)
     case event(eventTitle: String, creatorName: String)
     case mapSighting(entryName: String, sightingType: MapSightingType)
+    case eventReminder(eventTitle: String, startDate: Int64, leadMinutes: Int)
+    /// `changes`: START, LOCATION, CANCELLED (unknown names are ignored by the text builder)
+    case eventUpdate(eventTitle: String, changes: [String], startDate: Int64, actorName: String)
 }
 
 /// Raw values are wire names and must match the server.
@@ -66,6 +69,22 @@ enum NotificationPayloadDecoder {
             return .mapSighting(
                 entryName: payload["entryName"] ?? "",
                 sightingType: sightingType
+            )
+        case "event_reminder":
+            return .eventReminder(
+                eventTitle: payload["eventTitle"] ?? "",
+                startDate: Int64(payload["startDate"] ?? "") ?? 0,
+                leadMinutes: Int(payload["leadMinutes"] ?? "") ?? 0
+            )
+        case "event_update":
+            // `changes` arrives as a JSON array string, e.g. ["START","LOCATION"]
+            let rawChanges = payload["changes"] ?? ""
+            let changes = (try? JSONSerialization.jsonObject(with: Data(rawChanges.utf8))) as? [String] ?? []
+            return .eventUpdate(
+                eventTitle: payload["eventTitle"] ?? "",
+                changes: changes,
+                startDate: Int64(payload["startDate"] ?? "") ?? 0,
+                actorName: payload["actorName"] ?? ""
             )
         default:
             return nil

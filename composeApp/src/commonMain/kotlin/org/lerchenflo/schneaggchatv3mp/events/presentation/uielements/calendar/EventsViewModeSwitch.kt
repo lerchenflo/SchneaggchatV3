@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.BadgedBox
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Badge
@@ -27,7 +27,7 @@ import schneaggchatv3mp.composeapp.generated.resources.events_view_upcoming
 fun EventsViewModeSwitch(
     selected: EventsViewMode,
     onSelect: (EventsViewMode) -> Unit,
-    hasUnseenEvents: Boolean,
+    unseenEventCount: Int,
     modifier: Modifier = Modifier
 ) {
     val options = EventsViewMode.entries
@@ -39,14 +39,18 @@ fun EventsViewModeSwitch(
                 onClick = { onSelect(mode) },
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size)
             ) {
-                Box {
+                // Count badge at the label's top end, like the nav bar badges
+                BadgedBox(
+                    badge = {
+                        if (mode == EventsViewMode.LIST && unseenEventCount > 0) {
+                            Badge { Text(if (unseenEventCount > 99) "99+" else unseenEventCount.toString()) }
+                        }
+                    }
+                ) {
                     Text(
                         text = stringResource(mode.labelRes()),
                         maxLines = 1
                     )
-                    if (mode == EventsViewMode.LIST && hasUnseenEvents) {
-                        Badge()
-                    }
                 }
             }
         }

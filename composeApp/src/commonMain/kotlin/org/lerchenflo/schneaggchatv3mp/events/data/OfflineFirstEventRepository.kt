@@ -83,6 +83,7 @@ class OfflineFirstEventRepository(
         visibility: EventVisibility,
         maxUsers: Int?,
         groupDeleteDelay: GroupDeleteDelay,
+        reminderMinutes: List<Int>,
         profilePic: ByteArray?,
     ): EmptyDataResult<DataError> =
         eventRemoteDataSource.upsertEvent(
@@ -99,6 +100,7 @@ class OfflineFirstEventRepository(
                 maxUsers = maxUsers,
                 groupDeleteDelay = groupDeleteDelay,
                 createGroup = createGroup,
+                reminderMinutes = reminderMinutes,
             ),
             profilePic = profilePic,
         ).trackConnectivity()

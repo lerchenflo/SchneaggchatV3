@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventReminders
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineStart
@@ -135,7 +136,7 @@ class EventsViewModel(
                     else -> live
                 }
             },
-            hasUnseenEvents = ownUserId != null && currentState.events.any {
+            unseenEventCount = if (ownUserId == null) 0 else currentState.events.count {
                 it.isUnseenBy(ownUserId) && !it.hasEnded(Clock.System.now().toEpochMilliseconds())
             }
         )
@@ -147,38 +148,9 @@ class EventsViewModel(
 
     fun onAction(action: EventsAction) {
         when (action) {
+            // Guests and the creator both get the detail screen; it marks the event seen
             is EventsAction.OnEventClick -> {
-                val clickedEvent = state.value.events.firstOrNull { it.id == action.eventId }
-                viewModelScope.launch {
-                    _state.update {
-                        it.copy(
-                            selectedEvent = clickedEvent
-                        )
-                    }
-                }
-                // Opening the event is what marks it seen. Fire-and-forget without a popup: the server
-                // ignores a repeated SEEN, so a failed call just retries the next time the sheet opens.
-                val ownId = state.value.ownUserId
-                if (clickedEvent != null && ownId != null && clickedEvent.isUnseenBy(ownId)) {
-                    viewModelScope.launch {
-                        eventRepository.setEventParticipation(clickedEvent.id, EventParticipationStatus.SEEN)
-                    }
-                }
-            }
-
-            is EventsAction.OnAcceptEvent -> {
-                viewModelScope.launch {
-                    // Sheet stays open so the user sees themselves appear in the going list
-                    setParticipation(action.eventId, EventParticipationStatus.ACCEPTED)
-                }
-            }
-
-            is EventsAction.OnDismissEvent -> {
-                viewModelScope.launch {
-                    if (setParticipation(action.eventId, EventParticipationStatus.DISMISSED)) {
-                        _state.update { it.copy(selectedEvent = null) }
-                    }
-                }
+                viewModelScope.launch { navigator.navigate(Route.EventDetail(eventId = action.eventId)) }
             }
 
             EventsAction.OnCreateNewEventButtonClick -> {
@@ -205,7 +177,7 @@ class EventsViewModel(
             is EventsAction.OnSaveEvent -> {
                 val event = action.event
                 viewModelScope.launch {
-                    // Guard set before the first suspend call, same as OnJoinEvent: a second tap on
+                    // Guard set before the first suspend call: a second tap on
                     // Save while the upload is in flight would create the event twice.
                     if (_state.value.isSavingEvent) return@launch
                     _state.update { it.copy(isSavingEvent = true) }
@@ -227,6 +199,7 @@ class EventsViewModel(
                             visibility = event.visibility,
                             maxUsers = event.maxUsers,
                             groupDeleteDelay = event.groupDeleteDelay,
+                            reminderMinutes = EventReminders.upcoming(event.reminderMinutes, event.startDate, Clock.System.now().toEpochMilliseconds()),
                             profilePic = profilePic,
                         ).reportErrorTo(errorChannel).isSuccess
 
@@ -269,39 +242,6 @@ class EventsViewModel(
                         ),
                         navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true)
                     )
-                }
-            }
-
-            is EventsAction.OnJoinEvent -> {
-                viewModelScope.launch {
-                    // Guard set synchronously, before any suspend call, so a second
-                    // near-simultaneous tap can't slip through while this coroutine is
-                    // still suspended inside joinEvent() below.
-                    if (_state.value.isJoiningEvent) return@launch
-                    _state.update { it.copy(isJoiningEvent = true) }
-
-                    try {
-                        eventRepository.joinEvent(
-                            action.eventId
-                        ).reportErrorTo(errorChannel).onSuccess { groupId ->
-                            // UNDISPATCHED: the sync is started before the navigation below can clear
-                            // this ViewModel; it then runs in the app-wide scope (plan R2).
-                            viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
-                                dataSyncCoordinator.dataSync("Started after joining event to get messages")
-                            }
-                            _state.update { it.copy(selectedEvent = null) }
-                            navigator.navigate(Route.Chat(chatId = groupId, isGroup = true))
-                        }
-                    } finally {
-                        _state.update { it.copy(isJoiningEvent = false) }
-                    }
-                }
-            }
-
-            is EventsAction.OnOpenGroupChat -> {
-                viewModelScope.launch {
-                    _state.update { it.copy(selectedEvent = null) }
-                    navigator.navigate(Route.Chat(chatId = action.groupId, isGroup = true))
                 }
             }
 

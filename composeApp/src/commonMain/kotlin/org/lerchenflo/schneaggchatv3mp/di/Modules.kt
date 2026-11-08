@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.di
 
+import org.lerchenflo.schneaggchatv3mp.events.presentation.detail.EventDetailViewModel
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -460,7 +462,7 @@ val sharedmodule = module{
         )
     }
 
-    viewModel { (initialEntryId: String?, currentlyEditedEvent: Event?) ->
+    viewModel { (initialEntryId: String?, currentlyEditedEvent: Event?, focusLocation: LatLong?) ->
         SchneaggmapViewModel(
             errorChannel = get(),
             navigator = get(),
@@ -471,7 +473,8 @@ val sharedmodule = module{
             userRepository = get(),
             eventRepository = get(),
             initialEntryId = initialEntryId,
-            currentlyEditedEvent = currentlyEditedEvent
+            currentlyEditedEvent = currentlyEditedEvent,
+            focusLocation = focusLocation,
         )
     }
 
@@ -482,6 +485,20 @@ val sharedmodule = module{
             navigator = get(),
             userRepository = get(),
             locationService = get()
+        )
+    }
+
+    viewModel { (eventId: String) ->
+        EventDetailViewModel(
+            eventId = eventId,
+            eventRepository = get(),
+            userRepository = get(),
+            groupRepository = get(),
+            settingsRepository = get(),
+            dataSyncCoordinator = get(),
+            shareUtils = get(),
+            navigator = get(),
+            errorChannel = get(),
         )
     }
 

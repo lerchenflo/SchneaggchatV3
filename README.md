@@ -23,32 +23,28 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 ##### Highlights
 - Gruppenerweiterungen
+- Events update
 
 #### Features
 - Ankündigungen
 - Gruppenerweiterungen
-- Bearbeitete Nachrichten Anzeige
-- Chatdetails überarbeitet
-- Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit
 - Gruppen: Admins können Gruppe löschen
-- Schneagg Rodeo verbessert
-- Schneaggmap: UI verbessert, Standort-Alter anzeigen
-- Schneaggmap: Angepinnte Freunde zuerst anzeigen (Einstellung)
-- Umfragen: Einfachere Einstellungen
-- Umfragen: Nach dem Senden bearbeiten
-- Karte: Polizei und mobile Radare melden, Push-Benachrichtigung und Aktiv-Filter
-- Neues Spiel: C Coding, Tic Tac Toe
-- Quick Reactions: Custom Doppeltip Reaktion
-- Chat: Code-Blöcke mit Highlighting
-- Sprachnachrichten: Auf Desktop verfügbar
+- Chat: Bearbeitet-Anzeige, Code-Blöcke mit Highlighting, Chatdetails überarbeitet
+- Umfragen: Einfachere Einstellungen, nach dem Senden bearbeiten
+- Events: Detailseite mit Teilnehmern und Karte, Erinnerungen, Änderungsmeldungen
+- Schneaggmap: UI verbessert, Standort-Alter, angepinnte Freunde zuerst (Einstellung), Polizei und mobile Radare melden mit Push (Einstellung) und Aktiv-Filter
 - Feedback-Board: Offline nutzbar, neue Tabs, Badge bei Neuigkeiten, Premium-Wünsche
+- Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit
+- Spiele: C Coding, Tic Tac Toe, Schneagg Rodeo verbessert
+- Quick Reactions: Custom Doppeltipp-Reaktion
+- Sprachnachrichten: Auf Desktop verfügbar
 
 #### Bugfixes
-- Benachrichtigungen: Alles mögliche repariert, Allgemeine Nachricht verbessert
-- Chat: Lange Chats laden fix, Nachrichten senden fix, Markdown-Darstellung lesbar
+- Benachrichtigungen: Alles mögliche repariert, allgemeine Nachricht verbessert, Events korrigiert
+- Chat: Lange Chats laden, Nachrichten senden, Markdown lesbar
+- Sprachnachrichten: Slider-Farben und Aufnahme-Anzeige
+- Spiele: Scroll in der Auswahl
 - Übersetzungen verbessert
-- Spiele: Scroll fix in Auswahl
-- Sprachnachrichten: Slider-Farben und Aufnahme-Anzeige verbessert
 
 ### 3.0.18
 

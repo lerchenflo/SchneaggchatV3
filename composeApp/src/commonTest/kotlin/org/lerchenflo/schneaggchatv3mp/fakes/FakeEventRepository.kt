@@ -61,6 +61,7 @@ class FakeEventRepository : EventRepository {
         visibility: EventVisibility,
         maxUsers: Int?,
         groupDeleteDelay: GroupDeleteDelay,
+        reminderMinutes: List<Int>,
         profilePic: ByteArray?,
     ): EmptyDataResult<DataError> {
         upsertedEventIds.record(eventId)

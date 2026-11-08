@@ -5,6 +5,13 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
+/** A user's name as the server sent it with an event; [userName] is empty for a deleted or unknown user. */
+@Serializable
+data class EventUserName(
+    val userId: String,
+    val userName: String,
+)
+
 @Serializable
 data class Event(
     val id: String,
@@ -21,6 +28,10 @@ data class Event(
     val closeDate: Long?,
 
     val invitedUsers: List<String>,
+    /** Server name snapshots of [invitedUsers], same order. Empty against an older server. */
+    val invitedUserNames: List<EventUserName> = emptyList(),
+    /** Reminder lead times in minutes before [startDate], longest first. Empty = no reminders. */
+    val reminderMinutes: List<Int> = emptyList(),
 
     /** One entry per user at most - see [EventParticipation]. */
     val participations: List<EventParticipation> = emptyList(),
@@ -70,6 +81,7 @@ fun newEvent(creatorId: String, location: LatLong? = null): Event {
         invitedUsers = emptyList(),
         visibility = EventVisibility.INVITED_FRIENDS_ONLY,
         groupDeleteDelay = GroupDeleteDelay.ONE_DAY,
+        reminderMinutes = EventReminders.DEFAULT,
         createdAt = now,
         updatedAt = now,
         creatorName = "",

@@ -34,6 +34,7 @@ interface EventRepository {
         visibility: EventVisibility,
         maxUsers: Int?,
         groupDeleteDelay: GroupDeleteDelay,
+        reminderMinutes: List<Int>,
         profilePic: ByteArray? = null,
     ): EmptyDataResult<DataError>
 

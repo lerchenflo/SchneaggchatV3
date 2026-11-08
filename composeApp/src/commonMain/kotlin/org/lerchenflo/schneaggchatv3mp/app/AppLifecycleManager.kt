@@ -64,6 +64,7 @@ object AppLifecycleManager {
         val chatId: String? = null,
         val isGroup: Boolean = false,
         val mapEntryId: String? = null,
+        val eventId: String? = null,
     )
 
     // A StateFlow (not a SharedFlow) on purpose: notification taps can arrive before any
@@ -77,8 +78,9 @@ object AppLifecycleManager {
         chatId: String? = null,
         isGroup: Boolean = false,
         mapEntryId: String? = null,
+        eventId: String? = null,
     ) {
-        _pendingNotificationOpen.value = NotificationOpenData(chatId = chatId, isGroup = isGroup, mapEntryId = mapEntryId)
+        _pendingNotificationOpen.value = NotificationOpenData(chatId = chatId, isGroup = isGroup, mapEntryId = mapEntryId, eventId = eventId)
     }
 
     /** Atomically reads and clears the pending request so it is only acted on once. */

@@ -353,7 +353,7 @@ class ChatDetailsViewmodel(
 
     fun navigateToConnectedEvent(eventId: String) {
         viewModelScope.launch {
-            navigator.navigate(Route.Events(selectedEventId = eventId))
+            navigator.navigate(Route.EventDetail(eventId = eventId))
         }
     }
 

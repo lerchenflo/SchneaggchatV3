@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.datetime.LocalDate
@@ -26,7 +27,6 @@ data class EventsState(
     // wherever they show up as a creator or a participant.
     val usersById: Map<String, User> = emptyMap(),
     val groups: List<Group> = emptyList(),
-    val isJoiningEvent: Boolean = false,
     val isSavingEvent: Boolean = false,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
     val isMobile: Boolean = true,
@@ -34,7 +34,8 @@ data class EventsState(
     val calendarAnchorDate: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
     val selectedCalendarDay: LocalDate? = null,
     val birthdaysByMonthDay: Map<Int, List<CalendarBirthday>> = emptyMap(),
-    val hasUnseenEvents: Boolean = false,
+    /** Upcoming events the user has not opened yet, for the badge on the list tab. */
+    val unseenEventCount: Int = 0,
 )
 
 /**
@@ -55,15 +56,6 @@ sealed interface EventsAction {
     data object OnEventPopupDismiss: EventsAction
 
     data class OnSaveEvent(val event: Event, val typeIcon: ImageBitmap?, val createGroup: Boolean): EventsAction
-
-    data class OnJoinEvent(val eventId: String): EventsAction
-
-    /** Accepts an event that has no group to join - a group event is accepted by joining it. */
-    data class OnAcceptEvent(val eventId: String): EventsAction
-
-    data class OnDismissEvent(val eventId: String): EventsAction
-
-    data class OnOpenGroupChat(val groupId: String): EventsAction
 
     data class OnPickLocationClick(val currentEventState: Event): EventsAction
 

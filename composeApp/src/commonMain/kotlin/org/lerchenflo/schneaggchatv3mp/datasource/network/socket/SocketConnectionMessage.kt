@@ -1,5 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.socket
 
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventFallbackNotificationContent
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventUpdateNotificationContent
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventReminderNotificationContent
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventUpdateChange
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
@@ -40,6 +44,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiIdType
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NOTIFICATION_FALLBACK_TITLE
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationContent
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventNotificationId
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationKind
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.ensureProfilePictureForNotification
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.reactionNotificationContent
@@ -106,6 +111,27 @@ sealed interface SocketConnectionMessage {
         val event: EventResponse,
         val newEntry: Boolean,
         val deleted: Boolean,
+    ) : SocketConnectionMessage
+
+    /** A reminder before an event the user is going to. The event data itself comes with [EventChange]. */
+    @Serializable
+    @SerialName("eventreminder")
+    data class EventReminder(
+        val eventId: String = "",
+        val eventTitle: String = "",
+        val startDate: Long = 0L,
+        val leadMinutes: Int = 0,
+    ) : SocketConnectionMessage
+
+    /** What to tell the user about a changed or cancelled event. The event data itself comes with [EventChange]. */
+    @Serializable
+    @SerialName("eventupdatealert")
+    data class EventUpdateAlert(
+        val eventId: String = "",
+        val eventTitle: String = "",
+        val changes: List<String> = emptyList(),
+        val startDate: Long = 0L,
+        val actorName: String = "",
     ) : SocketConnectionMessage
 
     /**
@@ -519,17 +545,55 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 } else {
                     eventLocalDataSource.upsertEvent(socketMessage.event.toEvent())
 
-                    if (socketMessage.newEntry) {
+                    // The creator's own devices get the new event too, but no "X created an event" notification
+                    if (socketMessage.newEntry && socketMessage.event.creatorId != ownId) {
                         ensureProfilePictureForNotification(socketMessage.event.creatorId)
-                        NotificationManager.showNotification(
-                            titletext = getString(Res.string.new_event_noti_title, socketMessage.event.creatorName),
-                            bodytext = socketMessage.event.title,
-                            notiId = NotiId.Integ(NotiIdType.EVENT.baseId),
-                            avatarUserId = socketMessage.event.creatorId,
-                            kind = NotificationKind.SOCIAL,
-                        )
+                        val content = try {
+                            NotificationContent(
+                                id = eventNotificationId(socketMessage.event.id),
+                                title = getString(Res.string.new_event_noti_title, socketMessage.event.creatorName),
+                                body = socketMessage.event.title,
+                                avatarUserId = socketMessage.event.creatorId,
+                                eventId = socketMessage.event.id,
+                                kind = NotificationKind.SOCIAL,
+                            )
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            eventFallbackNotificationContent(socketMessage.event.id, socketMessage.event.title)
+                        }
+                        NotificationManager.showNotification(content)
                     }
                 }
+            }
+
+            // Building the text can fail (resources); the plain fallback still tells the user
+            is SocketConnectionMessage.EventReminder -> {
+                val content = try {
+                    eventReminderNotificationContent(socketMessage.eventId, socketMessage.eventTitle, socketMessage.leadMinutes, socketMessage.startDate)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    eventFallbackNotificationContent(socketMessage.eventId, socketMessage.eventTitle)
+                }
+                NotificationManager.showNotification(content)
+            }
+
+            is SocketConnectionMessage.EventUpdateAlert -> {
+                val content = try {
+                    eventUpdateNotificationContent(
+                        eventId = socketMessage.eventId,
+                        eventTitle = socketMessage.eventTitle,
+                        changes = EventUpdateChange.parse(socketMessage.changes),
+                        startDate = socketMessage.startDate,
+                        actorName = socketMessage.actorName,
+                    )
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    eventFallbackNotificationContent(socketMessage.eventId, socketMessage.eventTitle)
+                }
+                NotificationManager.showNotification(content)
             }
 
             //A friend's location changed (live push) - position only, trail is untouched here

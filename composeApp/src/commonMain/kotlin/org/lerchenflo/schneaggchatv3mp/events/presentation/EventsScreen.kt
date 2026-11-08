@@ -36,7 +36,6 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventEditPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
-import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventJoinPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsCalendarDayDetailSheet
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsDayView
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsMonthView
@@ -102,7 +101,7 @@ fun EventsScreen(
             EventsViewModeSwitch(
                 selected = state.viewMode,
                 onSelect = { onAction(EventsAction.OnViewModeChange(it)) },
-                hasUnseenEvents = state.hasUnseenEvents,
+                unseenEventCount = state.unseenEventCount,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
@@ -228,9 +227,8 @@ fun EventsScreen(
             )
         }
 
-        // ownId is null until autologin finishes. Rendering then would pick the popup by comparing
-        // against null and open the read-only join sheet for the user's own event, so wait for the
-        // id instead of guessing - state carries it as soon as it arrives.
+        // Only the creator's edit popup lives here; everyone else opens Route.EventDetail. ownId is
+        // null until autologin finishes, so wait for it instead of comparing against null.
         state.selectedEvent?.takeIf { ownId != null }?.let { selectedEvent ->
             if (selectedEvent.creatorId == ownId) {
                 EventEditPopup(
@@ -244,23 +242,7 @@ fun EventsScreen(
                     onDelete = { deleteGroup, deleteEvent -> onAction(EventsAction.OnDeleteEvent(event = selectedEvent, deleteGroup = deleteGroup, deleteEvent = deleteEvent)) },
                     isMobile = state.isMobile,
                     isSaving = state.isSavingEvent,
-                )
-            } else {
-                val isJoined = selectedEvent.groupId != null &&
-                    state.groups.firstOrNull { it.id == selectedEvent.groupId }
-                        ?.members?.any { it.userId == ownId } == true
-
-                EventJoinPopup(
-                    event = selectedEvent,
-                    onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
-                    onJoin = { onAction(EventsAction.OnJoinEvent(it)) },
-                    onOpenGroupChat = { onAction(EventsAction.OnOpenGroupChat(it)) },
-                    onAccept = { onAction(EventsAction.OnAcceptEvent(it)) },
-                    onDismissEvent = { onAction(EventsAction.OnDismissEvent(it)) },
-                    ownStatus = ownId?.let { selectedEvent.statusOf(it) },
-                    isJoined = isJoined,
-                    isJoining = state.isJoiningEvent,
-                    usersById = state.usersById
+                    mapStyleUrl = state.mapStyleUrl,
                 )
             }
         }

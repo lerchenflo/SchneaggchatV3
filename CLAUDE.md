@@ -68,6 +68,15 @@ Feature data layer: data/ (repositories), data/local/ (local data sources + enti
 - **All new code must be in English** — variable names, function names, comments, string keys. Do not rename existing German code unless you are actively modifying that file.
 - **Always use the version catalog** (`gradle/libs.versions.toml`) for all dependencies. No hardcoded versions in build files.
 
+## Wiring checklists
+
+Steps that are easy to miss and do not fail the compile. Whenever a missed step is found (in a review, a bug or a crash), add it here.
+
+- **New route**: `Route` subtype in `app/navigation/Route.kt`; `subclass(...)` in the `NavKey` polymorphic module in `app/navigation/NavigationState.kt` (otherwise saving the back stack crashes); `entry<Route.X>` in `app/App.kt`; decide whether it hides the nav bar (`hiddenNavBarRoutes` in `NavigationState.kt`); ViewModel in `di/Modules.kt`.
+- **New socket message**: `SocketConnectionMessage` subtype with `@SerialName`; `subclass(...)` in `datasource/network/AppJson.kt` (otherwise it is silently dropped); branch in `handleSocketConnectionMessage`; defaults on its fields so a missing field doesn't drop it.
+- **New push type (`_class`)**: `DecodedNotification` + `PayloadDecoder.decode`; both `resolveLocalizedContent` and `resolveFallbackContent`; never return null content for something the user must see (Android shows nothing then); iOS extension `NotificationPayload.swift` (`type`), `NotificationService.swift` and `NotificationStrings.swift` (en/de/it); tap target in `IosPushDelegateBridge.onNotificationTap` and the Android launch intent extras (`AndroidNotifier.launchIntent`, `MainActivity`).
+- **New stored field**: Room entity, both entity mappers, DTO mapper, a `TypeConverter` for new types, and a `Database.kt` version bump.
+
 ## Architecture Skills
 
 Follow the architecture skills installed in `~/.claude/skills/`. These define the patterns for this project:
@@ -98,6 +107,7 @@ When a task matches a skill, read and follow it.
 - Do not create documentation files (README, ARCHITECTURE, etc.) unless explicitly asked.
 - Do not refactor or restructure code you were not asked to touch.
 - Do not add tests unless explicitly asked.
+- **Server repo**: change code only in this repo, never in the server repo `SchneaggchatV3server` (usually `~/Desktop/SchneaggchatV3server`); reading it is fine. When a client change the user approved needs a server change: if a `SchneaggchatV3server` session is live (`ListAgents`), send it with `SendMessage`; otherwise add it to `SchneaggchatV3server/Todo.md`, the only server file agents may write to. Describe the functionality and the exact field names the client sends or reads, not the server's structure; the server agent designs its side and replies with the contract it built. See "Client and server projects" in the global `~/.claude/CLAUDE.md`.
 - **Todo list — no thought gets lost**: Whenever you notice something worth doing that is outside the current task (bugs, tech debt, stale comments, deferred refactors, open questions, follow-ups from a plan), add it to `plans/Todo.md` with its source and file:line. Do not fix it unasked; the user reviews the list.
 - Run the readme-changelog-updater agent after every fix (Add even small fixes, the user will remove them again if unnecessary.)
 - Before implementing new functions, utils, repositories, or mappers, run the code-reuse-scout agent with the planned function list (name + one-line intent per item) so it can research existing code to reuse or extend first. It reports a REUSE/EXTEND/NEW verdict per item and maintains `.claude/code-index.md`; it never edits source code itself.
