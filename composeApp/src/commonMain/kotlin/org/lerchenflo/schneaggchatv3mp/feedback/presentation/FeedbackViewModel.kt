@@ -66,7 +66,15 @@ class FeedbackViewModel(
 
             // Status sets differ between the tabs, so a status filter can't carry over
             is FeedbackAction.OnTabSelected -> updateBoard {
-                it.copy(selectedTab = action.tab, statusFilter = null)
+                it.copy(
+                    selectedTab = action.tab,
+                    // Opening the Games tab starts on the implemented games
+                    gamesSection = if (action.tab != it.selectedTab) FeedbackSection.IMPLEMENTED else it.gamesSection,
+                    statusFilter = null,
+                )
+            }
+            is FeedbackAction.OnGamesSectionSelected -> updateBoard {
+                it.copy(gamesSection = action.section, statusFilter = null)
             }
             is FeedbackAction.OnSortSelected -> updateBoard { it.copy(sort = action.sort) }
             is FeedbackAction.OnStatusFilterSelected -> updateBoard { it.copy(statusFilter = action.status) }
@@ -225,8 +233,10 @@ class FeedbackViewModel(
                 .onSuccess { created ->
                     updateBoard { state ->
                         state.copy(
-                            // Jump to the tab the entry landed in, so the user sees it pinned on top
+                            // Jump to the tab (and on Games the chip) the entry landed in, so the
+                            // user sees it pinned on top
                             selectedTab = FeedbackTab.of(created),
+                            gamesSection = FeedbackSection.of(created),
                             statusFilter = null,
                             nowMillis = Clock.System.now().toEpochMilliseconds(),
                             isCreating = false,
@@ -260,15 +270,21 @@ class FeedbackViewModel(
 }
 
 private fun FeedbackState.withVisibleEntries(): FeedbackState {
+    // The Games tab hides the tag filter (every entry there is tagged GAMES), so it is ignored
+    // there and applies again on the other tabs
+    val activeTagFilter = tagFilter.takeIf { selectedTab != FeedbackTab.GAMES }
     val filtered = entries.filter { entry ->
         selectedTab.contains(entry) &&
+            section.contains(entry) &&
             (statusFilter == null || entry.status == statusFilter) &&
-            (tagFilter == null || tagFilter in entry.tags) &&
+            (activeTagFilter == null || activeTagFilter in entry.tags) &&
             (!onlyMine || entry.isOwn || entry.myVote != FeedbackVote.NONE)
     }
+    val gamesEntries = entries.filter { it.isGamesEntry }
     return copy(
         visibleEntries = filtered.sortedForBoard(sort, nowMillis),
         tabCounts = FeedbackTab.entries.associateWith { tab -> entries.count { tab.contains(it) } },
+        gamesSectionCounts = FeedbackSection.entries.associateWith { s -> gamesEntries.count { s.contains(it) } },
     )
 }
 

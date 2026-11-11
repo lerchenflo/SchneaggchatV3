@@ -38,10 +38,18 @@ fun FeedbackType.labelRes(): StringResource = when (this) {
     FeedbackType.BUG -> Res.string.feedback_tab_bugs
 }
 
+fun FeedbackSection.labelRes(): StringResource = when (this) {
+    FeedbackSection.REQUESTS -> Res.string.feedback_tab_requests
+    FeedbackSection.BUGS -> Res.string.feedback_tab_bugs
+    FeedbackSection.IMPLEMENTED -> Res.string.feedback_tab_implemented
+}
+
 fun FeedbackTab.labelRes(): StringResource = when (this) {
     FeedbackTab.REQUESTS -> Res.string.feedback_tab_requests
     FeedbackTab.BUGS -> Res.string.feedback_tab_bugs
     FeedbackTab.IMPLEMENTED -> Res.string.feedback_tab_implemented
+    // Same word as the tag that decides the tab
+    FeedbackTab.GAMES -> Res.string.feedback_tag_games
 }
 
 fun FeedbackSort.labelRes(): StringResource = when (this) {

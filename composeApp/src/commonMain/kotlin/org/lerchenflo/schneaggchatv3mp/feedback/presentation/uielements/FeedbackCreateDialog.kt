@@ -80,12 +80,13 @@ fun FeedbackCreateDialog(
     isSubmitting: Boolean,
     onSubmit: (NewFeedbackEntry) -> Unit,
     onDismiss: () -> Unit,
+    initialTags: List<FeedbackTag> = emptyList(),
 ) {
     var type by rememberSaveable { mutableStateOf(initialType) }
     var title by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
     var location by rememberSaveable { mutableStateOf("") }
-    var selectedTags by rememberSaveable { mutableStateOf(listOf<FeedbackTag>()) }
+    var selectedTags by rememberSaveable { mutableStateOf(initialTags) }
     var isPremium by rememberSaveable { mutableStateOf(false) }
 
     val isValid = title.trim().length >= TITLE_MIN_LENGTH &&

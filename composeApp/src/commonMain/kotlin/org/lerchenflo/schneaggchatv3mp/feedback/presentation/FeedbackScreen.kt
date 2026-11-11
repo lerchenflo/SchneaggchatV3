@@ -97,10 +97,14 @@ fun FeedbackScreen(
                 label = { stringResource(it.labelRes()) },
                 count = { tab -> if (state.isLoading) null else state.tabCounts[tab] ?: 0 },
                 onSelect = { onAction(FeedbackAction.OnTabSelected(it)) },
-                // Three labels with counts: the check icon would not fit on a phone
+                // Four labels with counts: the check icon would not fit on a phone
                 showLeadingIcon = false,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
+
+            if (state.selectedTab == FeedbackTab.GAMES) {
+                GamesSectionChips(state = state, onAction = onAction)
+            }
 
             FilterBar(state = state, onAction = onAction)
 
@@ -161,10 +165,12 @@ fun FeedbackScreen(
 
     if (state.isCreateDialogOpen) {
         FeedbackCreateDialog(
-            initialType = state.selectedTab.createType,
+            initialType = state.section.createType,
             isSubmitting = state.isCreating,
             onSubmit = { onAction(FeedbackAction.OnCreateSubmit(it)) },
             onDismiss = { onAction(FeedbackAction.OnCreateDismiss) },
+            // From the Games tab the new entry should land there again
+            initialTags = if (state.selectedTab == FeedbackTab.GAMES) listOf(FeedbackTag.GAMES) else emptyList(),
         )
     }
 }
@@ -177,7 +183,37 @@ private fun FeedbackEntry.boardMark(state: FeedbackState): FeedbackMark? =
     state.lastSeenBeforeVisit?.let { markSince(it) }
         ?: FeedbackMark.NEW.takeIf { state.sort == FeedbackSort.TOP && isPinned(state.nowMillis) }
 
-/** GitHub-like row of dropdown filters: sort, status (not on Implemented), tag, and "mine". */
+/** Order of the chips on the Games tab. */
+private val GAMES_SECTIONS = listOf(FeedbackSection.IMPLEMENTED, FeedbackSection.REQUESTS, FeedbackSection.BUGS)
+
+/** Single-choice chips of the Games tab: implemented games, game wishes or game bugs. */
+@Composable
+private fun GamesSectionChips(
+    state: FeedbackState,
+    onAction: (FeedbackAction) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        GAMES_SECTIONS.forEach { section ->
+            val label = stringResource(section.labelRes())
+            val count = state.gamesSectionCounts[section]
+            FilterChip(
+                selected = section == state.gamesSection,
+                onClick = { onAction(FeedbackAction.OnGamesSectionSelected(section)) },
+                label = { Text(if (state.isLoading || count == null) label else "$label ($count)") },
+            )
+        }
+    }
+}
+
+/**
+ * GitHub-like row of dropdown filters: sort, status (not on Implemented), tag (not on Games, where
+ * every entry is tagged GAMES), and "mine".
+ */
 @Composable
 private fun FilterBar(
     state: FeedbackState,
@@ -201,9 +237,9 @@ private fun FilterBar(
             onSelect = { it?.let { sort -> onAction(FeedbackAction.OnSortSelected(sort)) } },
         )
 
-        if (state.selectedTab.filterStatuses.isNotEmpty()) {
+        if (state.section.filterStatuses.isNotEmpty()) {
             DropdownFilterChip(
-                options = state.selectedTab.filterStatuses,
+                options = state.section.filterStatuses,
                 selected = state.statusFilter,
                 isActive = state.statusFilter != null,
                 chipLabel = { it?.let { status -> stringResource(status.labelRes()) } ?: stringResource(Res.string.feedback_filter_status) },
@@ -213,15 +249,17 @@ private fun FilterBar(
             )
         }
 
-        DropdownFilterChip(
-            options = FeedbackTag.entries,
-            selected = state.tagFilter,
-            isActive = state.tagFilter != null,
-            chipLabel = { it?.let { tag -> stringResource(tag.labelRes()) } ?: stringResource(Res.string.feedback_filter_tag) },
-            optionLabel = { stringResource(it.labelRes()) },
-            allLabel = stringResource(Res.string.feedback_filter_all_tags),
-            onSelect = { onAction(FeedbackAction.OnTagFilterSelected(it)) },
-        )
+        if (state.selectedTab != FeedbackTab.GAMES) {
+            DropdownFilterChip(
+                options = FeedbackTag.entries,
+                selected = state.tagFilter,
+                isActive = state.tagFilter != null,
+                chipLabel = { it?.let { tag -> stringResource(tag.labelRes()) } ?: stringResource(Res.string.feedback_filter_tag) },
+                optionLabel = { stringResource(it.labelRes()) },
+                allLabel = stringResource(Res.string.feedback_filter_all_tags),
+                onSelect = { onAction(FeedbackAction.OnTagFilterSelected(it)) },
+            )
+        }
 
         FilterChip(
             selected = state.onlyMine,
