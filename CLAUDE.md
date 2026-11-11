@@ -65,6 +65,7 @@ Feature data layer: data/ (repositories), data/local/ (local data sources + enti
 
 ## Code Conventions
 
+- **Most important for every change: structure and readability over extended functionality.** If a change uses bad structure, everything else about it is useless. Put code in the layer and package it belongs to (domain logic in `domain/`, not in UI files), keep functions small and named for what they do, and follow the architecture skills. If a feature can only be added with bad structure, fix the structure first or ask the user. *(user, 2026-11-11)*
 - **All new code must be in English** — variable names, function names, comments, string keys. Do not rename existing German code unless you are actively modifying that file.
 - **Always use the version catalog** (`gradle/libs.versions.toml`) for all dependencies. No hardcoded versions in build files.
 

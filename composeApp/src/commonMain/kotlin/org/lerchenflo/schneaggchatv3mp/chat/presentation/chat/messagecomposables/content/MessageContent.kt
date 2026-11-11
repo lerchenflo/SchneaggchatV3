@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -65,7 +66,12 @@ fun MessageContent(
                 Text(
                     text = senderName,
                     color = if (senderColor == 0) Color.Red else Color(senderColor.toLong() and 0xFFFFFFFFL),
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    modifier = Modifier
+                        // No ripple: for friends the tap does nothing, only non-friends get a popup
+                        .clickable(interactionSource = null, indication = null) {
+                            onAction(MessageAction.OnSenderClick(message.senderId, senderName))
+                        }
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 )
             }
             //Contentrow

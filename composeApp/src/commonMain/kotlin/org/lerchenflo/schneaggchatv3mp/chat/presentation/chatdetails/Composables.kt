@@ -53,7 +53,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.FriendRequestAlert
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.UnknownUserDialog
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
@@ -72,6 +73,8 @@ import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
 import schneaggchatv3mp.composeapp.generated.resources.remove_from_group
+import schneaggchatv3mp.composeapp.generated.resources.member_friend_request_received
+import schneaggchatv3mp.composeapp.generated.resources.member_friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.send_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.user_description
 import schneaggchatv3mp.composeapp.generated.resources.yes
@@ -132,6 +135,8 @@ fun GroupMembersView(
             var showFriendRequestAlert by remember { mutableStateOf(false) }
             val me = groupMember.userId == ownId
             val userName = user?.displayName ?: groupMember.memberName
+            // Null for friends and blocked users: no friend request entry for them
+            val friendRequestState = if (me) null else FriendRequestState.of(user, ownId)
 
             // Box so the options menu opens at this row instead of below the list
             Box {
@@ -157,6 +162,7 @@ fun GroupMembersView(
                     iAmAdmin = iAmAdmin,
                     groupMember = groupMember,
                     user = user,
+                    friendRequestState = friendRequestState,
                     onDismissRequest = { userOptionPopupExpanded = false },
                     onOpenChat = {
                         if(user != null) navigateToChat(user.id, false)
@@ -195,16 +201,18 @@ fun GroupMembersView(
                 )
             }
 
-            if(showFriendRequestAlert){
-                FriendRequestAlert(
-                    onDismiss = {
-                        showFriendRequestAlert = false
-                    },
-                    onConfirm = {
+            if(showFriendRequestAlert && friendRequestState != null){
+                UnknownUserDialog(
+                    name = userName,
+                    profilePictureFilePath = user?.profilePictureUrl ?: "",
+                    state = friendRequestState,
+                    onSendRequest = {
                         showFriendRequestAlert = false
                         sendFriendRequest(groupMember.userId)
                     },
-                    friendName = userName
+                    onDismiss = {
+                        showFriendRequestAlert = false
+                    },
                 )
             }
         }
@@ -322,6 +330,8 @@ fun UserOptionPopup(
     iAmAdmin: Boolean,
     groupMember: GroupMember,
     user: User?,
+    /** Non-null: the menu offers the unknown-user popup (send, accept, or see the open request). */
+    friendRequestState: FriendRequestState?,
     onDismissRequest: () -> Unit,
     onOpenChat: () -> Unit,
     onAdminStatusChange: () -> Unit,
@@ -353,10 +363,19 @@ fun UserOptionPopup(
                         )
                     }
                 )
-            }else if (user == null){
-                // send Friend request if user is not already friend -> friend would be in database
+            }else if (friendRequestState != null){
                 DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.send_friend_request)) },
+                    text = {
+                        Text(
+                            stringResource(
+                                when (friendRequestState) {
+                                    FriendRequestState.NONE -> Res.string.send_friend_request
+                                    FriendRequestState.SENT -> Res.string.member_friend_request_sent
+                                    FriendRequestState.RECEIVED -> Res.string.member_friend_request_received
+                                }
+                            )
+                        )
+                    },
                     onClick = {
                         onSendFriendRequest()
                         onDismissRequest()

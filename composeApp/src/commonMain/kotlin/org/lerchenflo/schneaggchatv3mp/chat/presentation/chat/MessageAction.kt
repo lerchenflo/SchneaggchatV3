@@ -33,4 +33,7 @@ sealed interface MessageAction {
     ) : MessageAction
 
     data class ToggleReaction(val messageId: String, val reaction: String) : MessageAction
+
+    /** Tap on a sender name in a group chat; opens the unknown-user popup for non-friends. */
+    data class OnSenderClick(val senderId: String, val senderName: String) : MessageAction
 }

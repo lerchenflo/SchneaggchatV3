@@ -279,7 +279,10 @@
     <string name="friend_request_block">Block</string>
 
     <string name="send_friend_request">Send friend request</string>
-    <string name="send_friend_request_description">Do you want to add %1$s as a friend?</string>
+    <string name="unknown_user_request_sent">You already sent a friend request</string>
+    <string name="unknown_user_request_received">Wants to be your friend</string>
+    <string name="member_friend_request_sent">Friend request sent</string>
+    <string name="member_friend_request_received">Accept friend request</string>
     <string name="friend_request_sent">✔ Friend request sent</string>
 
     <string name="server_not_reachable">Could not establish a connection to the server</string>

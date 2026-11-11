@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi.buttons
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
+import org.lerchenflo.schneaggchatv3mp.chat.domain.friendRequestState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -312,7 +314,7 @@ fun UserButton(
                             .size(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (chat.requesterId == ownId) {
+                        if (chat.friendRequestState(ownId) == FriendRequestState.SENT) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.CallMade,
                                 contentDescription = "outgoing friend request",

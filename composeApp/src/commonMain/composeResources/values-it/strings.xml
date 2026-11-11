@@ -278,7 +278,10 @@
     <string name="friend_request_block">Blocca</string>
 
     <string name="send_friend_request">Invia richiesta di amicizia</string>
-    <string name="send_friend_request_description">Vuoi aggiungere %1$s come amico?</string>
+    <string name="unknown_user_request_sent">Hai già inviato una richiesta di amicizia</string>
+    <string name="unknown_user_request_received">Vuole essere tuo amico</string>
+    <string name="member_friend_request_sent">Richiesta di amicizia inviata</string>
+    <string name="member_friend_request_received">Accetta richiesta di amicizia</string>
     <string name="friend_request_sent">✔ Richiesta di amicizia inviata</string>
 
     <string name="server_not_reachable">Impossibile stabilire una connessione al server</string>

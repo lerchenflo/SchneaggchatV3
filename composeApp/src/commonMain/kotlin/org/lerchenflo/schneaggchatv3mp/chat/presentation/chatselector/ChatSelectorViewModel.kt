@@ -2,6 +2,8 @@
 
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
+import org.lerchenflo.schneaggchatv3mp.chat.domain.friendRequestState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterNone
 import androidx.compose.material.icons.filled.Groups
@@ -172,11 +174,7 @@ class ChatSelectorViewModel(
         viewModelScope.launch {
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
             chatListRepository.getPendingFriends("").collectLatest { list ->
-                val size = list.filter {
-                    it.requesterId != ownId
-                }.size
-
-                _pendingFriendCount.value = size
+                _pendingFriendCount.value = list.count { it.friendRequestState(ownId) == FriendRequestState.RECEIVED }
             }
         }
 

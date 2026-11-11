@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.friendRequestState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -54,6 +55,8 @@ import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.UnknownUserDialog
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -72,7 +75,6 @@ import schneaggchatv3mp.composeapp.generated.resources.pending_friend_requests
 import schneaggchatv3mp.composeapp.generated.resources.search_results
 import schneaggchatv3mp.composeapp.generated.resources.search_user
 import schneaggchatv3mp.composeapp.generated.resources.send_friend_request
-import schneaggchatv3mp.composeapp.generated.resources.send_friend_request_description
 
 @OptIn(InternalResourceApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -240,15 +242,20 @@ fun NewChat(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if(showFriendRequestAlert){
-                        FriendRequestAlert(
-                            onDismiss = {
-                                showFriendRequestAlert = false
-                            },
-                            onConfirm = {
+                        // The search only returns users without any friendship, so there is
+                        // nothing stored for them: no picture, and sending is the only action
+                        UnknownUserDialog(
+                            name = user.username,
+                            profilePictureFilePath = "",
+                            state = FriendRequestState.NONE,
+                            commonFriendCount = user.commonFriendCount,
+                            onSendRequest = {
                                 showFriendRequestAlert = false
                                 viewModel.addFriend(user.id)
                             },
-                            friendName = user.username
+                            onDismiss = {
+                                showFriendRequestAlert = false
+                            },
                         )
                     }
                 }
@@ -272,7 +279,7 @@ fun NewChat(
 
             //You are no friends with this person, but he sent you a friend request, you can accept it
             //selectedChat.requesterId!! != SessionCache.getOwnIdValue()
-            val incomingRequest = selectedChat.requesterId!! != ownId
+            val incomingRequest = selectedChat.friendRequestState(ownId) == FriendRequestState.RECEIVED
 
 
             //You sent the friend request to this user, and it is still pending, you can cancel it
@@ -501,36 +508,4 @@ fun UserResultCard(
             }
         }
     }
-}
-
-@Composable
-fun FriendRequestAlert(
-    friendName:String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-){
-    AlertDialog(
-        onDismissRequest = { onDismiss() },
-        title = {
-            Text(text = stringResource(Res.string.send_friend_request))
-        },
-        text = {
-            Text(text = stringResource(Res.string.send_friend_request_description, friendName))
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onConfirm
-            ) {
-                Text(stringResource(Res.string.add))
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss
-            ) {
-                Text(stringResource(Res.string.cancel))
-            }
-        }
-    )
-
 }

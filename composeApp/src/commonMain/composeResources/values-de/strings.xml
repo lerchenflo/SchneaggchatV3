@@ -279,7 +279,10 @@
     <string name="friend_request_block">Blockieren</string>
 
     <string name="send_friend_request">Freundschaftsanfrage senden</string>
-    <string name="send_friend_request_description">Willst du %1$s eine Freundschaftsanfrage senden?</string>
+    <string name="unknown_user_request_sent">Du hast bereits eine Freundschaftsanfrage gesendet</string>
+    <string name="unknown_user_request_received">Möchte mit dir befreundet sein</string>
+    <string name="member_friend_request_sent">Freundschaftsanfrage gesendet</string>
+    <string name="member_friend_request_received">Freundschaftsanfrage annehmen</string>
     <string name="friend_request_sent">✔ Freunschaftsanfrage gesendet</string>
 
     <string name="server_not_reachable">Verbindung zum Server konnte nicht hergestellt werden.</string>

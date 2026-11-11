@@ -278,7 +278,6 @@
     <string name="friend_request_block">Blocka</string>
 
     <string name="send_friend_request">Freundschaftsanfrog senda</string>
-    <string name="send_friend_request_description">Willsch du %1$s a Freundschaftsanfrog senda?</string>
     <string name="friend_request_sent">✔ Freundschaftsanfrog gsendet</string>
 
     <string name="server_not_reachable">D Verbindung zum Server funktioniert ned.</string>
