@@ -38,11 +38,16 @@ class NotificationSettingsViewModel(
     var wakeEnabledGlobal by mutableStateOf(false)
         private set
 
+    /** Android 14+: whether a wake may open the alarm screen on a locked phone. */
+    var fullScreenIntentPermissionState by mutableStateOf(PermissionState.GRANTED)
+        private set
+
     var friends by mutableStateOf<List<User>>(emptyList())
         private set
 
     init {
         checkNotificationPermission()
+        checkFullScreenIntentPermission()
 
         viewModelScope.launch { // Global wake status
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
@@ -74,6 +79,18 @@ class NotificationSettingsViewModel(
         viewModelScope.launch {
             notificationPermissionState = permissionManager.checkNotificationPermission()
         }
+    }
+
+    /** Also called on resume: the permission can only be changed in the system settings. */
+    fun checkFullScreenIntentPermission() {
+        viewModelScope.launch {
+            fullScreenIntentPermissionState = permissionManager.checkFullScreenIntentPermission()
+        }
+    }
+
+    /** Opens the system settings page; the check on resume picks up the new state. */
+    fun requestFullScreenIntentPermission() {
+        viewModelScope.launch { permissionManager.requestFullScreenIntentPermission() }
     }
 
     fun requestNotificationPermission() {

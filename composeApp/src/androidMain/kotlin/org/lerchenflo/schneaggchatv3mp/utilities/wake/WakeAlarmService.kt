@@ -257,6 +257,9 @@ class WakeAlarmService : Service() {
             // API 34). Without it this silently degrades to a heads-up notification and the
             // alarm still sounds - we just lose the lock screen takeover.
             .setFullScreenIntent(fullScreenIntent, true)
+            // With the phone unlocked Android shows only a heads-up; a tap on it opens the same
+            // alarm screen a locked phone gets
+            .setContentIntent(fullScreenIntent)
             .apply {
                 //Only add the action once we have a localized label for it.
                 strings?.let { addAction(NotificationConfig.markAsReadIconResId, it.stopLabel, stopIntent) }

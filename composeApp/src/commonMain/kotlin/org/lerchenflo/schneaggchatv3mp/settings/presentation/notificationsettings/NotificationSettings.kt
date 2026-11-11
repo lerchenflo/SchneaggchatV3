@@ -48,6 +48,9 @@ import schneaggchatv3mp.composeapp.generated.resources.notifications
 import schneaggchatv3mp.composeapp.generated.resources.notifications_disabled
 import schneaggchatv3mp.composeapp.generated.resources.notifications_enabled
 import schneaggchatv3mp.composeapp.generated.resources.open_settings
+import schneaggchatv3mp.composeapp.generated.resources.wake_fullscreen_allow
+import schneaggchatv3mp.composeapp.generated.resources.wake_fullscreen_missing
+import schneaggchatv3mp.composeapp.generated.resources.wake_fullscreen_missing_info
 import schneaggchatv3mp.composeapp.generated.resources.wake_settings
 import schneaggchatv3mp.composeapp.generated.resources.wake_settings_info
 import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
@@ -65,6 +68,7 @@ fun NotificationSettings(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.checkNotificationPermission()
+                viewModel.checkFullScreenIntentPermission()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -148,6 +152,22 @@ fun NotificationSettings(
                     onClick = { showWakeSettingsDialog = true },
                     modifier = Modifier.tapTarget("settings_notifications_wake")
                 )
+
+                // The permission is only asked when wake is turned on; this row catches users who
+                // declined then, or turned wake on before the prompt existed
+                if (viewModel.wakeEnabledGlobal && viewModel.fullScreenIntentPermissionState != PermissionState.GRANTED) {
+                    SettingsOption(
+                        icon = Icons.Rounded.Warning,
+                        text = stringResource(Res.string.wake_fullscreen_missing),
+                        subtext = stringResource(Res.string.wake_fullscreen_missing_info),
+                        onClick = { viewModel.requestFullScreenIntentPermission() },
+                        rightSideIcon = {
+                            TextButton(onClick = { viewModel.requestFullScreenIntentPermission() }) {
+                                Text(text = stringResource(Res.string.wake_fullscreen_allow))
+                            }
+                        },
+                    )
+                }
 
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
             }

@@ -1326,6 +1326,9 @@
     <!-- Wake -->
     <string name="wake_settings">Sveglie</string>
     <string name="wake_settings_info">Scegli chi può svegliarti</string>
+    <string name="wake_fullscreen_missing">Sveglia a schermo intero non consentita</string>
+    <string name="wake_fullscreen_missing_info">Senza questo permesso, una sveglia non può aprire la schermata della sveglia sul telefono bloccato</string>
+    <string name="wake_fullscreen_allow">Consenti</string>
     <string name="wake_allow_global">Consenti di essere svegliato</string>
     <string name="wake_allow_global_info">Permette agli amici scelti di far suonare un allarme sul tuo telefono</string>
     <string name="wake_allow_friends_title">Autorizzati a svegliarmi</string>

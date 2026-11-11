@@ -1332,6 +1332,9 @@
     <!-- Wake -->
     <string name="wake_settings">Wake-ups</string>
     <string name="wake_settings_info">Choose who is allowed to wake you</string>
+    <string name="wake_fullscreen_missing">Full-screen alarm not allowed</string>
+    <string name="wake_fullscreen_missing_info">Without it, a wake can't open the alarm screen on a locked phone</string>
+    <string name="wake_fullscreen_allow">Allow</string>
     <string name="wake_allow_global">Allow being woken</string>
     <string name="wake_allow_global_info">Lets chosen friends play an alarm on your phone</string>
     <string name="wake_allow_friends_title">Allowed to wake me</string>

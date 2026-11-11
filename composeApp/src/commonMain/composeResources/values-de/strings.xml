@@ -1332,6 +1332,9 @@
     <!-- Wake -->
     <string name="wake_settings">Wecker</string>
     <string name="wake_settings_info">Auswählen wer dich wecken darf</string>
+    <string name="wake_fullscreen_missing">Vollbild-Wecker nicht erlaubt</string>
+    <string name="wake_fullscreen_missing_info">Ohne diese Berechtigung kann ein Wecken auf dem gesperrten Handy nicht den Weckbildschirm öffnen</string>
+    <string name="wake_fullscreen_allow">Erlauben</string>
     <string name="wake_allow_global">Aufwecken erlauben</string>
     <string name="wake_allow_global_info">Lass Freunde einen Alarm auf deinem Handy abspielen</string>
     <string name="wake_allow_friends_title">Dürfen mich wecken</string>
