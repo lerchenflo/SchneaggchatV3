@@ -5,16 +5,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatformTools
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
@@ -36,39 +32,27 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import kotlin.time.Clock
 
 /**
- * Default [ComboAnnotationSource]s, self-contained: names are looked up through the injected
- * repositories and clicks navigate via the [Navigator] singleton, so callers of [ComboText] /
- * [ComboInputField] don't need to provide anything.
+ * Default [ComboAnnotationSource]s, self-contained: names come from [ComboAnnotationNames] and
+ * clicks navigate via the [Navigator] singleton, so callers of [ComboText] / [ComboInputField]
+ * don't need to provide anything.
  *
- * Extend this list when adding new annotation types (e.g. user mentions).
+ * Extend this list when adding new annotation types.
  */
 @Composable
 fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     // getOrNull keeps @Previews (no Koin context) working — they just render raw text
     val koin = KoinPlatformTools.defaultContext().getOrNull() ?: return emptyList()
-    // Shared UI used inside many screens, so it reads the repository interfaces itself instead of
-    // getting the names from every host ViewModel (plan Phase 7)
-    val mapRepository = remember(koin) { koin.get<MapRepository>() }
-    val userRepository = remember(koin) { koin.get<UserRepository>() }
-    val eventRepository = remember(koin) { koin.get<EventRepository>() }
+    // Shared UI used inside many screens, so it reads the app-wide names itself instead of
+    // getting them from every host ViewModel (plan Phase 7)
+    val annotationNames = remember(koin) { koin.get<ComboAnnotationNames>() }
 
     val navigator = remember(koin) { koin.get<Navigator>() }
     val scope = rememberCoroutineScope()
 
-    val locationNames by remember(mapRepository) {
-        mapRepository.getAllMapEntriesFlow()
-            .map { entries -> entries.associate { it.id to it.name } }
-    }.collectAsState(initial = emptyMap())
-
-    val userNames by remember(userRepository) {
-        userRepository.getAllUsersFlow()
-            .map { entries -> entries.associate { it.id to it.name } }
-    }.collectAsState(initial = emptyMap())
-
-    val eventNames by remember(eventRepository) {
-        eventRepository.getAllEventsFlow()
-            .map { entries -> entries.associate { it.id to it.title } }
-    }.collectAsState(initial = emptyMap())
+    // Collected once for the app (see ComboAnnotationNames), each text only subscribes
+    val locationNames by annotationNames.locationNames.collectAsState()
+    val userNames by annotationNames.userNames.collectAsState()
+    val eventNames by annotationNames.eventNames.collectAsState()
 
     val unknownUser = stringResource(Res.string.unknown_user)
     val unknownLocation = stringResource(Res.string.unknown_location)

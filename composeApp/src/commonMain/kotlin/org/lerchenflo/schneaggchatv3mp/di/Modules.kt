@@ -10,6 +10,7 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboAnnotationNames
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultActionChannel
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultDataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.app.data.DefaultErrorChannel
@@ -334,6 +335,9 @@ val sharedmodule = module{
 
     //App-wide coroutine scope for work that must survive screen/ViewModel lifecycles
     singleOf(::ApplicationScope)
+
+    //Names of the inline text annotations, collected once for the whole app
+    singleOf(::ComboAnnotationNames)
 
     //View model
     singleOf(::GlobalViewModel)
