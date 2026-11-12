@@ -97,12 +97,13 @@ fun ExtensionListSection(
                 onClick = { showAddMenu = true }
             )
 
-            // A group can hold several extensions of the same type, so every type is always offered
+            // A group can hold several extensions of the same type, so every available type is
+            // always offered
             DropdownMenu(
                 expanded = showAddMenu,
                 onDismissRequest = { showAddMenu = false }
             ) {
-                GroupExtensionType.entries.forEach { type ->
+                GroupExtensionType.entries.filter { it.isAvailable }.forEach { type ->
                     DropdownMenuItem(
                         text = { Text(type.toUiText().asString()) },
                         leadingIcon = {

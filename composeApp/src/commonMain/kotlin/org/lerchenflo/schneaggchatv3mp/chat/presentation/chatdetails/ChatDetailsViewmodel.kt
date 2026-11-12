@@ -429,15 +429,17 @@ class ChatDetailsViewmodel(
         }
     }
 
-    /** Extensions of this group, only groups own extensions for now. */
+    /** Extensions of this group, only groups own extensions for now. Unfinished types stay hidden. */
     val groupExtensions: StateFlow<List<GroupExtension>> = (
         if (isGroup) groupExtensionRepository.getExtensionsForOwnerFlow(chatId)
         else flowOf(emptyList())
-    ).stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
     )
+        .map { extensions -> extensions.filter { it.type.isAvailable } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     fun onExtensionAction(action: ExtensionListAction) {
         when (action) {
