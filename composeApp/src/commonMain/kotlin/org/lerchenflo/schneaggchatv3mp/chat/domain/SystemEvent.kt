@@ -28,6 +28,9 @@ enum class SystemEventType {
     EVENT_START_CHANGED,    // the event's start moved, new start in [SystemEventMessage.timestamp]
     EVENT_LOCATION_CHANGED, // the event's location was set, changed or removed
     EVENT_CANCELLED,        // the event was deleted while its group chat stays
+    GROUP_EXTENSION_CREATED, // text = title
+    GROUP_EXTENSION_RENAMED, // text = new title, previousText = old title
+    GROUP_EXTENSION_DELETED, // text = title
     FRIENDSHIP_ACCEPTED,
     WAKE_SENT,
     UNKNOWN,
@@ -50,7 +53,7 @@ data class SystemEventMessage(
     val actorId: String,
     val actorName: String,
     val targets: List<SystemEventParticipant> = emptyList(),
-    val text: String? = null,          // new group name, wake reason
-    val previousText: String? = null,  // old group name (GROUP_NAME_CHANGED only)
+    val text: String? = null,          // new group name, wake reason, extension title
+    val previousText: String? = null,  // old group name or extension title (the *_RENAMED / _CHANGED types)
     val timestamp: Long? = null,       // new event start in epoch ms (EVENT_START_CHANGED only)
 )

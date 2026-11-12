@@ -1,6 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 
 import schneaggchatv3mp.composeapp.generated.resources.system_event_cancelled
+import schneaggchatv3mp.composeapp.generated.resources.system_group_extension_created
+import schneaggchatv3mp.composeapp.generated.resources.system_group_extension_deleted
+import schneaggchatv3mp.composeapp.generated.resources.system_group_extension_renamed
 import schneaggchatv3mp.composeapp.generated.resources.system_event_location_changed
 import schneaggchatv3mp.composeapp.generated.resources.system_event_start_changed
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
@@ -52,6 +55,9 @@ fun systemEventText(event: SystemEventMessage): String {
         } ?: stringResource(Res.string.system_event_changed, event.actorName)
         SystemEventType.EVENT_LOCATION_CHANGED -> stringResource(Res.string.system_event_location_changed, event.actorName)
         SystemEventType.EVENT_CANCELLED -> stringResource(Res.string.system_event_cancelled, event.actorName)
+        SystemEventType.GROUP_EXTENSION_CREATED -> stringResource(Res.string.system_group_extension_created, event.actorName, event.text.orEmpty())
+        SystemEventType.GROUP_EXTENSION_RENAMED -> stringResource(Res.string.system_group_extension_renamed, event.actorName, event.previousText.orEmpty(), event.text.orEmpty())
+        SystemEventType.GROUP_EXTENSION_DELETED -> stringResource(Res.string.system_group_extension_deleted, event.actorName, event.text.orEmpty())
         SystemEventType.FRIENDSHIP_ACCEPTED -> stringResource(Res.string.system_friendship_accepted)
         SystemEventType.WAKE_SENT -> if (event.text.isNullOrBlank()) {
             stringResource(Res.string.system_wake_sent, event.actorName)

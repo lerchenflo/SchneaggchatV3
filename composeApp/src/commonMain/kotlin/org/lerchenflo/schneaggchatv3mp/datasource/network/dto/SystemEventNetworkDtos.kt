@@ -10,6 +10,7 @@ data class SystemEventResponse(
     val targets: List<SystemEventParticipantResponse> = emptyList(),
     val text: String? = null,
     val previousText: String? = null,
+    val timestamp: Long? = null,
 )
 
 @Serializable

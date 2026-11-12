@@ -17,6 +17,7 @@ fun SystemEventResponse.toSystemEventMessage(): SystemEventMessage {
         targets = this.targets.map { it.toSystemEventParticipant() },
         text = this.text,
         previousText = this.previousText,
+        timestamp = this.timestamp,
     )
 }
 
