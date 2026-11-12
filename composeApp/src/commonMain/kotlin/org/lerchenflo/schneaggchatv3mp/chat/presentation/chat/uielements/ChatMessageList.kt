@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -96,10 +97,7 @@ fun ChatMessageList(
 
                 val dividerIndex = displayItems.indexOfFirst { it is MessageDisplayItem.NewMessagesDivider }
                 if (dividerIndex != -1) {
-                    listState.scrollToItem(dividerIndex)
-                    // Nudge the divider up from the very bottom edge towards the center of the screen.
-                    val viewportHeight = listState.layoutInfo.viewportSize.height
-                    listState.scrollToItem(dividerIndex, scrollOffset = -viewportHeight / 2)
+                    listState.scrollToItemCentered(dividerIndex)
                 } else {
                     listState.animateScrollToItem(0)
                 }
@@ -138,17 +136,20 @@ fun ChatMessageList(
         }
     }
 
-    // Id of the message that should briefly glow after jumping to it via a reply preview
+    // Id of the message that pulses after jumping to it (reply preview, message search)
     var highlightedMessageId by remember { mutableStateOf<String?>(null) }
 
     // Runs in the composable's scope, not in an effect: the effect below restarts whenever
-    // displayItems changes, which would cancel the glow before it is cleared again.
+    // displayItems changes, which would cancel the pulse before it is cleared again.
     fun jumpAndGlow(targetIndex: Int, messageId: String, animate: Boolean) {
         scope.launch {
-            if (animate) listState.animateScrollToItem(targetIndex) else listState.scrollToItem(targetIndex)
-            highlightedMessageId = messageId
-            delay(1500.milliseconds)
-            highlightedMessageId = null
+            listState.scrollToItemCentered(targetIndex, animate)
+            repeat(HIGHLIGHT_PULSES) { pulse ->
+                if (pulse > 0) delay(HIGHLIGHT_GAP)
+                highlightedMessageId = messageId
+                delay(HIGHLIGHT_ON)
+                highlightedMessageId = null
+            }
         }
     }
 
@@ -310,4 +311,23 @@ fun ChatMessageList(
             }
         }
     }
+}
+
+/** Jump highlight: the target pulses this often, on for [HIGHLIGHT_ON] with [HIGHLIGHT_GAP] between. */
+private const val HIGHLIGHT_PULSES = 2
+private val HIGHLIGHT_ON = 500.milliseconds
+private val HIGHLIGHT_GAP = 350.milliseconds
+
+/**
+ * Scrolls so the item at [index] sits in the middle of the viewport; an item taller than the
+ * viewport shows its start (top) instead. Assumes reverseLayout: offset 0 puts the item's bottom
+ * on the bottom edge, a negative offset lifts it up, a positive one pushes it below.
+ */
+private suspend fun LazyListState.scrollToItemCentered(index: Int, animate: Boolean = false) {
+    // The item's height is only known once it is laid out
+    if (animate) animateScrollToItem(index) else scrollToItem(index)
+    val itemHeight = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }?.size ?: return
+    val viewportHeight = layoutInfo.viewportSize.height
+    val offset = if (itemHeight <= viewportHeight) -(viewportHeight - itemHeight) / 2 else itemHeight - viewportHeight
+    if (animate) animateScrollToItem(index, offset) else scrollToItem(index, offset)
 }
