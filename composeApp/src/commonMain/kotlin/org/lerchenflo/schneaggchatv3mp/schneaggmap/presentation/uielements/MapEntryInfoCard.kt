@@ -136,7 +136,9 @@ fun MapEntryInfoCard(
         properties = DialogProperties(
             dismissOnBackPress = true,
             dismissOnClickOutside = true,
-            usePlatformDefaultWidth = true
+            // The platform width leaves the attribute rows too narrow on a phone; the card sets its
+            // own width below (16 dp margin, at most 560 dp)
+            usePlatformDefaultWidth = false
         )
     ) {
         Column(

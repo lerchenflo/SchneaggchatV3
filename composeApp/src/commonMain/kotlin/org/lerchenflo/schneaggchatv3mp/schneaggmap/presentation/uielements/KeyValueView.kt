@@ -4,6 +4,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
 import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateWheelPicker
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,6 +53,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -103,313 +106,336 @@ fun KeyValueView(
     onValueChange: (AttributeValue?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // The date button and its Now button don't fit next to the label on a phone, so the label goes above them
-    if (definition is AttributeDefinition.DateTimeDef) {
-        Column(
-            modifier = modifier
-                .padding(horizontal = 8.dp)
-        ) {
-            Text(
-                text = stringResource(definition.key.labelRes()) + if (definition.required) " *" else "",
+    val label = stringResource(definition.key.labelRes()) + if (definition.required) " *" else ""
+
+    BoxWithConstraints(modifier = modifier.padding(horizontal = 8.dp)) {
+        val inputWidth = definition.inputWidth()
+        // A bigger font needs more room for the label
+        val minLabelWidth = MIN_LABEL_WIDTH * LocalDensity.current.fontScale
+        if (inputWidth != null && maxWidth >= minLabelWidth + LABEL_INPUT_GAP + inputWidth) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = label, modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(LABEL_INPUT_GAP))
+                AttributeInput(value, definition, onValueChange, Modifier.width(inputWidth))
+            }
+        } else {
+            // Too narrow for both in one row: the label goes above, the input takes the full width
+            Column {
+                Text(text = label)
+                Spacer(modifier = Modifier.height(4.dp))
+                AttributeInput(value, definition, onValueChange, Modifier.fillMaxWidth())
+            }
+        }
+    }
+}
+
+/** Shortest a label next to its input may get, at font scale 1. */
+private val MIN_LABEL_WIDTH = 96.dp
+private val LABEL_INPUT_GAP = 8.dp
+
+/** Width of the input next to its label. Null: always on its own line below the label. */
+private fun AttributeDefinition.inputWidth(): Dp? = when (this) {
+    is AttributeDefinition.BoolDef,
+    is AttributeDefinition.DoubleDef,
+    is AttributeDefinition.IntDef,
+    is AttributeDefinition.StringDef,
+    is AttributeDefinition.LongDef,
+    is AttributeDefinition.PriceDef,
+    is AttributeDefinition.DistanceDef -> 120.dp
+    is AttributeDefinition.EnumDef -> 160.dp
+    is AttributeDefinition.RatingDef -> 200.dp
+    is AttributeDefinition.SecretDef -> 220.dp
+    // The date button and its Now button don't fit next to a label on a phone
+    is AttributeDefinition.DateTimeDef -> null
+}
+
+/** The input of one attribute; [modifier] sets its width. */
+@Composable
+private fun AttributeInput(
+    value: AttributeValue?,
+    definition: AttributeDefinition,
+    onValueChange: (AttributeValue?) -> Unit,
+    modifier: Modifier,
+) {
+    when (definition) {
+        is AttributeDefinition.BoolDef -> {
+            Switch(
+                checked = (value as? BoolValue)?.value ?: false,
+                onCheckedChange = {
+                    onValueChange(BoolValue(it))
+                },
+                modifier = modifier
+
+            )
+        }
+
+        is AttributeDefinition.DoubleDef -> {
+            var rawText by remember(value) {
+                mutableStateOf(((value as? DoubleValue)?.value ?: "").toString())
+            }
+
+            val error = rawText.toDoubleOrNull().let { parsed ->
+                when {
+                    rawText.isBlank() && definition.required -> stringResource(Res.string.schneaggmap_attribute_required)
+                    parsed == null && rawText.isNotBlank()   -> stringResource(Res.string.schneaggmap_attribute_invalid_number)
+                    parsed != null && definition.min != null && parsed < definition.min -> stringResource(Res.string.schneaggmap_attribute_min, "${definition.min}")
+                    parsed != null && definition.max != null && parsed > definition.max -> stringResource(Res.string.schneaggmap_attribute_max, "${definition.max}")
+                    else -> null
+                }
+            }
+
+            TextField(
+                value = rawText,
+                onValueChange = { input ->
+                    rawText = input
+                    input.toDoubleOrNull()?.let { parsed ->
+                        val clamped = when {
+                            definition.min != null && parsed < definition.min -> definition.min
+                            definition.max != null && parsed > definition.max -> definition.max
+                            else -> parsed
+                        }
+                        onValueChange(DoubleValue(clamped))
+                    }
+                },
+                isError = error != null,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = modifier
+            )
+        }
+
+        is AttributeDefinition.IntDef -> {
+            var rawText by remember(value) {
+                mutableStateOf(((value as? IntValue)?.value ?: "").toString())
+            }
+
+            val error = rawText.toIntOrNull().let { parsed ->
+                when {
+                    rawText.isBlank() && definition.required              -> stringResource(Res.string.schneaggmap_attribute_required)
+                    parsed == null && rawText.isNotBlank()                -> stringResource(Res.string.schneaggmap_attribute_invalid_number)
+                    parsed != null && definition.min != null && parsed < definition.min -> stringResource(Res.string.schneaggmap_attribute_min, "${definition.min}")
+                    parsed != null && definition.max != null && parsed > definition.max -> stringResource(Res.string.schneaggmap_attribute_max, "${definition.max}")
+                    else -> null
+                }
+            }
+
+            TextField(
+                value = rawText,
+                onValueChange = { input ->
+                    rawText = input
+                    input.toIntOrNull()?.let { parsed ->
+                        val clamped = when {
+                            definition.min != null && parsed < definition.min -> definition.min
+                            definition.max != null && parsed > definition.max -> definition.max
+                            else -> parsed
+                        }
+                        onValueChange(IntValue(clamped))
+                    }
+                },
+                isError = error != null,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = modifier
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+        }
 
+        is AttributeDefinition.StringDef -> {
+            var rawText by remember(value) {
+                mutableStateOf((value as? StringValue)?.value ?: "")
+            }
+
+            val error = when {
+                rawText.isBlank() && definition.required                                    -> stringResource(Res.string.schneaggmap_attribute_required)
+                definition.maxLength != null && rawText.length > definition.maxLength -> stringResource(Res.string.schneaggmap_attribute_max_chars, "${definition.maxLength}")
+                else -> null
+            }
+
+            TextField(
+                value = rawText,
+                onValueChange = { input ->
+                    val clamped = if (definition.maxLength != null) input.take(definition.maxLength) else input
+                    rawText = clamped
+                    onValueChange(StringValue(clamped))
+                },
+                isError = error != null,
+                supportingText = error?.let { { Text(it) } },
+                singleLine = true,
+                modifier = modifier
+            )
+        }
+
+        is AttributeDefinition.LongDef -> {
+            var rawText by remember(value) {
+                mutableStateOf(((value as? LongValue)?.value ?: "").toString())
+            }
+
+            val error = rawText.toLongOrNull().let { parsed ->
+                when {
+                    rawText.isBlank() && definition.required              -> stringResource(Res.string.schneaggmap_attribute_required)
+                    parsed == null && rawText.isNotBlank()                -> stringResource(Res.string.schneaggmap_attribute_invalid_number)
+                    parsed != null && definition.min != null && parsed < definition.min -> stringResource(Res.string.schneaggmap_attribute_min, "${definition.min}")
+                    parsed != null && definition.max != null && parsed > definition.max -> stringResource(Res.string.schneaggmap_attribute_max, "${definition.max}")
+                    else -> null
+                }
+            }
+
+            TextField(
+                value = rawText,
+                onValueChange = { input ->
+                    rawText = input
+                    input.toLongOrNull()?.let { parsed ->
+                        val clamped = when {
+                            definition.min != null && parsed < definition.min -> definition.min
+                            definition.max != null && parsed > definition.max -> definition.max
+                            else -> parsed
+                        }
+                        onValueChange(LongValue(clamped))
+                    }
+                },
+                isError = error != null,
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = modifier
+            )
+        }
+
+        is AttributeDefinition.EnumDef -> {
+            var expanded by remember { mutableStateOf(false) }
+            val storedName = (value as? StringValue)?.value
+            val selectedOption = definition.options.firstOrNull { it.name == storedName }
+
+            Box(modifier = modifier) {
+                OutlinedButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        // Unknown stored names (e.g. an option added in a newer app version) are shown raw
+                        text = selectedOption?.let { stringResource(it.labelRes) } ?: storedName.orEmpty(),
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    definition.options.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(stringResource(option.labelRes)) },
+                            onClick = {
+                                onValueChange(StringValue(option.name))
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        is AttributeDefinition.PriceDef -> {
+            DecimalInputField(
+                value = (value as? DoubleValue)?.value,
+                required = definition.required,
+                max = definition.max,
+                suffix = "€",
+                maxDecimals = 2,
+                onValueChange = { onValueChange(DoubleValue(it)) },
+                modifier = modifier,
+            )
+        }
+
+        is AttributeDefinition.DistanceDef -> {
+            DecimalInputField(
+                value = (value as? DoubleValue)?.value,
+                required = definition.required,
+                max = definition.max,
+                suffix = definition.unit.symbol,
+                maxDecimals = null,
+                onValueChange = { onValueChange(DoubleValue(it)) },
+                modifier = modifier,
+            )
+        }
+
+        is AttributeDefinition.RatingDef -> {
+            val storedRating = (value as? IntValue)?.value
+            var sliderValue by remember(storedRating) {
+                mutableStateOf((storedRating ?: definition.min).coerceIn(definition.min, definition.max).toFloat())
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = modifier
+            ) {
+                Slider(
+                    value = sliderValue,
+                    onValueChange = { sliderValue = it },
+                    onValueChangeFinished = { onValueChange(IntValue(sliderValue.roundToInt())) },
+                    valueRange = definition.min.toFloat()..definition.max.toFloat(),
+                    steps = (definition.max - definition.min - 1).coerceAtLeast(0),
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = sliderValue.roundToInt().toString(),
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
+
+        is AttributeDefinition.SecretDef -> {
+            var rawText by remember(value) {
+                mutableStateOf((value as? StringValue)?.value ?: "")
+            }
+            var secretVisible by remember { mutableStateOf(false) }
+
+            TextField(
+                value = rawText,
+                onValueChange = { input ->
+                    val clamped = if (definition.maxLength != null) input.take(definition.maxLength) else input
+                    rawText = clamped
+                    onValueChange(StringValue(clamped))
+                },
+                isError = rawText.isBlank() && definition.required,
+                singleLine = true,
+                visualTransformation = if (secretVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    Row {
+                        IconButton(onClick = { secretVisible = !secretVisible }) {
+                            Icon(
+                                imageVector = if (secretVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = null
+                            )
+                        }
+                        IconButton(
+                            onClick = {
+                                // ShareUtils directly - copyToClipboard() would echo the secret in a snackbar
+                                KoinPlatform.getKoin().get<ShareUtils>().copyToClipboard(rawText)
+                            },
+                            enabled = rawText.isNotEmpty()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                },
+                modifier = modifier
+            )
+        }
+
+        is AttributeDefinition.DateTimeDef -> {
             DateTimeInput(
                 millis = (value as? LongValue)?.value,
                 clearable = !definition.required,
                 showNow = definition.showNow,
                 onValueChange = onValueChange
             )
-        }
-        return
-    }
-
-    Row(
-        modifier = modifier
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-
-
-        Text(
-            text = stringResource(definition.key.labelRes()) + if (definition.required) " *" else "",
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        when (definition) {
-            is AttributeDefinition.BoolDef -> {
-                Switch(
-                    checked = (value as? BoolValue)?.value ?: false,
-                    onCheckedChange = {
-                        onValueChange(BoolValue(it))
-                    },
-                    modifier = Modifier.width(120.dp)
-
-                )
-            }
-
-            is AttributeDefinition.DoubleDef -> {
-                var rawText by remember(value) {
-                    mutableStateOf(((value as? DoubleValue)?.value ?: "").toString())
-                }
-
-                val error = rawText.toDoubleOrNull().let { parsed ->
-                    when {
-                        rawText.isBlank() && definition.required -> stringResource(Res.string.schneaggmap_attribute_required)
-                        parsed == null && rawText.isNotBlank()   -> stringResource(Res.string.schneaggmap_attribute_invalid_number)
-                        parsed != null && definition.min != null && parsed < definition.min -> stringResource(Res.string.schneaggmap_attribute_min, "${definition.min}")
-                        parsed != null && definition.max != null && parsed > definition.max -> stringResource(Res.string.schneaggmap_attribute_max, "${definition.max}")
-                        else -> null
-                    }
-                }
-
-                TextField(
-                    value = rawText,
-                    onValueChange = { input ->
-                        rawText = input
-                        input.toDoubleOrNull()?.let { parsed ->
-                            val clamped = when {
-                                definition.min != null && parsed < definition.min -> definition.min
-                                definition.max != null && parsed > definition.max -> definition.max
-                                else -> parsed
-                            }
-                            onValueChange(DoubleValue(clamped))
-                        }
-                    },
-                    isError = error != null,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.width(120.dp)
-                )
-            }
-
-            is AttributeDefinition.IntDef -> {
-                var rawText by remember(value) {
-                    mutableStateOf(((value as? IntValue)?.value ?: "").toString())
-                }
-
-                val error = rawText.toIntOrNull().let { parsed ->
-                    when {
-                        rawText.isBlank() && definition.required              -> stringResource(Res.string.schneaggmap_attribute_required)
-                        parsed == null && rawText.isNotBlank()                -> stringResource(Res.string.schneaggmap_attribute_invalid_number)
-                        parsed != null && definition.min != null && parsed < definition.min -> stringResource(Res.string.schneaggmap_attribute_min, "${definition.min}")
-                        parsed != null && definition.max != null && parsed > definition.max -> stringResource(Res.string.schneaggmap_attribute_max, "${definition.max}")
-                        else -> null
-                    }
-                }
-
-                TextField(
-                    value = rawText,
-                    onValueChange = { input ->
-                        rawText = input
-                        input.toIntOrNull()?.let { parsed ->
-                            val clamped = when {
-                                definition.min != null && parsed < definition.min -> definition.min
-                                definition.max != null && parsed > definition.max -> definition.max
-                                else -> parsed
-                            }
-                            onValueChange(IntValue(clamped))
-                        }
-                    },
-                    isError = error != null,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.width(120.dp)
-                )
-
-            }
-
-            is AttributeDefinition.StringDef -> {
-                var rawText by remember(value) {
-                    mutableStateOf((value as? StringValue)?.value ?: "")
-                }
-
-                val error = when {
-                    rawText.isBlank() && definition.required                                    -> stringResource(Res.string.schneaggmap_attribute_required)
-                    definition.maxLength != null && rawText.length > definition.maxLength -> stringResource(Res.string.schneaggmap_attribute_max_chars, "${definition.maxLength}")
-                    else -> null
-                }
-
-                TextField(
-                    value = rawText,
-                    onValueChange = { input ->
-                        val clamped = if (definition.maxLength != null) input.take(definition.maxLength) else input
-                        rawText = clamped
-                        onValueChange(StringValue(clamped))
-                    },
-                    isError = error != null,
-                    supportingText = error?.let { { Text(it) } },
-                    singleLine = true,
-                    modifier = Modifier.width(120.dp)
-                )
-            }
-
-            is AttributeDefinition.LongDef -> {
-                var rawText by remember(value) {
-                    mutableStateOf(((value as? LongValue)?.value ?: "").toString())
-                }
-
-                val error = rawText.toLongOrNull().let { parsed ->
-                    when {
-                        rawText.isBlank() && definition.required              -> stringResource(Res.string.schneaggmap_attribute_required)
-                        parsed == null && rawText.isNotBlank()                -> stringResource(Res.string.schneaggmap_attribute_invalid_number)
-                        parsed != null && definition.min != null && parsed < definition.min -> stringResource(Res.string.schneaggmap_attribute_min, "${definition.min}")
-                        parsed != null && definition.max != null && parsed > definition.max -> stringResource(Res.string.schneaggmap_attribute_max, "${definition.max}")
-                        else -> null
-                    }
-                }
-
-                TextField(
-                    value = rawText,
-                    onValueChange = { input ->
-                        rawText = input
-                        input.toLongOrNull()?.let { parsed ->
-                            val clamped = when {
-                                definition.min != null && parsed < definition.min -> definition.min
-                                definition.max != null && parsed > definition.max -> definition.max
-                                else -> parsed
-                            }
-                            onValueChange(LongValue(clamped))
-                        }
-                    },
-                    isError = error != null,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.width(120.dp)
-                )
-            }
-
-            is AttributeDefinition.EnumDef -> {
-                var expanded by remember { mutableStateOf(false) }
-                val storedName = (value as? StringValue)?.value
-                val selectedOption = definition.options.firstOrNull { it.name == storedName }
-
-                Box {
-                    OutlinedButton(
-                        onClick = { expanded = true },
-                        modifier = Modifier.width(160.dp)
-                    ) {
-                        Text(
-                            // Unknown stored names (e.g. an option added in a newer app version) are shown raw
-                            text = selectedOption?.let { stringResource(it.labelRes) } ?: storedName.orEmpty(),
-                            maxLines = 1,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = null
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        definition.options.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(stringResource(option.labelRes)) },
-                                onClick = {
-                                    onValueChange(StringValue(option.name))
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            is AttributeDefinition.PriceDef -> {
-                DecimalInputField(
-                    value = (value as? DoubleValue)?.value,
-                    required = definition.required,
-                    max = definition.max,
-                    suffix = "€",
-                    maxDecimals = 2,
-                    onValueChange = { onValueChange(DoubleValue(it)) },
-                )
-            }
-
-            is AttributeDefinition.DistanceDef -> {
-                DecimalInputField(
-                    value = (value as? DoubleValue)?.value,
-                    required = definition.required,
-                    max = definition.max,
-                    suffix = definition.unit.symbol,
-                    maxDecimals = null,
-                    onValueChange = { onValueChange(DoubleValue(it)) },
-                )
-            }
-
-            is AttributeDefinition.RatingDef -> {
-                val storedRating = (value as? IntValue)?.value
-                var sliderValue by remember(storedRating) {
-                    mutableStateOf((storedRating ?: definition.min).coerceIn(definition.min, definition.max).toFloat())
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.width(200.dp)
-                ) {
-                    Slider(
-                        value = sliderValue,
-                        onValueChange = { sliderValue = it },
-                        onValueChangeFinished = { onValueChange(IntValue(sliderValue.roundToInt())) },
-                        valueRange = definition.min.toFloat()..definition.max.toFloat(),
-                        steps = (definition.max - definition.min - 1).coerceAtLeast(0),
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = sliderValue.roundToInt().toString(),
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-            }
-
-            is AttributeDefinition.SecretDef -> {
-                var rawText by remember(value) {
-                    mutableStateOf((value as? StringValue)?.value ?: "")
-                }
-                var secretVisible by remember { mutableStateOf(false) }
-
-                TextField(
-                    value = rawText,
-                    onValueChange = { input ->
-                        val clamped = if (definition.maxLength != null) input.take(definition.maxLength) else input
-                        rawText = clamped
-                        onValueChange(StringValue(clamped))
-                    },
-                    isError = rawText.isBlank() && definition.required,
-                    singleLine = true,
-                    visualTransformation = if (secretVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        Row {
-                            IconButton(onClick = { secretVisible = !secretVisible }) {
-                                Icon(
-                                    imageVector = if (secretVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = null
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    // ShareUtils directly - copyToClipboard() would echo the secret in a snackbar
-                                    KoinPlatform.getKoin().get<ShareUtils>().copyToClipboard(rawText)
-                                },
-                                enabled = rawText.isNotEmpty()
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.ContentCopy,
-                                    contentDescription = null
-                                )
-                            }
-                        }
-                    },
-                    modifier = Modifier.width(220.dp)
-                )
-            }
-
-            // Drawn above, the label sits on its own line there
-            is AttributeDefinition.DateTimeDef -> Unit
         }
     }
 }
@@ -715,6 +741,7 @@ private fun DecimalInputField(
     suffix: String,
     maxDecimals: Int?,
     onValueChange: (Double) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var rawText by remember { mutableStateOf(value?.toString() ?: "") }
 
@@ -749,7 +776,7 @@ private fun DecimalInputField(
         singleLine = true,
         suffix = { Text(suffix) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        modifier = Modifier.width(120.dp)
+        modifier = modifier
     )
 }
 
