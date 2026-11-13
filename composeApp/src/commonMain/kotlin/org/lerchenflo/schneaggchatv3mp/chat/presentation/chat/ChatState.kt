@@ -9,7 +9,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NewPoll
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
-import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
 
 @Stable
 data class ChatState(
@@ -26,16 +25,6 @@ data class ChatState(
     val markdownEnabled: Boolean = false,
     val quickReactions: List<String> = DEFAULT_QUICK_REACTIONS,
     val maxVoiceMsgTime: Long = 0L,
-    /** Popup for a tapped group sender the own user is not friends with. */
-    val unknownUserPopup: UnknownUserPopup? = null,
-)
-
-data class UnknownUserPopup(
-    val userId: String,
-    val name: String,
-    /** Locally stored picture; the popup shows a placeholder when there is none. */
-    val profilePictureFilePath: String,
-    val state: FriendRequestState,
 )
 
 sealed interface ChatAction {
@@ -55,9 +44,6 @@ sealed interface ChatAction {
     data object OnStartRecording : ChatAction
     data object OnStopRecording : ChatAction
     data object OnDiscardRecording : ChatAction
-
-    data object OnUnknownUserSendRequest : ChatAction
-    data object OnUnknownUserDismiss : ChatAction
 
     // Message-level actions (reply/react/edit/delete/copy/details/poll/audio playback/...),
     // unchanged - see MessageAction. Wrapped so composables only need one onAction callback.

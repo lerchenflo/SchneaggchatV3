@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi.text
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,6 +47,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     // Shared UI used inside many screens, so it reads the app-wide names itself instead of
     // getting them from every host ViewModel (plan Phase 7)
     val annotationNames = remember(koin) { koin.get<ComboAnnotationNames>() }
+    val userRepository = remember(koin) { koin.get<UserRepository>() }
 
     val navigator = remember(koin) { koin.get<Navigator>() }
     val scope = rememberCoroutineScope()
@@ -119,11 +122,20 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                 type = ComboAnnotationTypes.USER,
                 names = userNames,
                 unresolvedName = unknownUser,
-                onClick = { entryId ->
-                    if (entryId != SessionCache.requireLoggedIn()?.userId) { //Dont allow to open own chat
-                        scope.launch { navigator.navigate(Route.Chat(entryId, false)) }
+                // A friend opens the chat; anyone else (also a user not stored here) gets the
+                // unknown-user popup, which looks up what it can and offers a friend request
+                onClick = { userId ->
+                    if (userId != SessionCache.requireLoggedIn()?.userId) { // never the own chat
+                        scope.launch {
+                            val user = userRepository.getUserById(userId)
+                            navigator.navigate(
+                                if (user?.friendshipStatus == FriendshipStatus.ACCEPTED) Route.Chat(userId, false)
+                                else Route.UnknownUser(userId = userId, name = user?.displayName)
+                            )
+                        }
                     }
-                }
+                },
+                clickableWhenUnresolved = true,
             ),
             ComboAnnotationSource(
                 type = ComboAnnotationTypes.EVENT,

@@ -54,7 +54,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
-import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.UnknownUserDialog
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
@@ -121,7 +120,8 @@ fun GroupMembersView(
     navigateToChat:(chatId: String, isGroup: Boolean)-> Unit,
     changeAdminStatus:(groupMember: GroupMember)-> Unit,
     removeMember: (memberId: String)-> Unit,
-    sendFriendRequest:(id: String) -> Unit,
+    /** Opens the unknown-user popup for a member who is not a friend. */
+    openUnknownUser: (userId: String, name: String) -> Unit,
 ) {
     val iAmAdmin = members.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
 
@@ -132,7 +132,6 @@ fun GroupMembersView(
             var profilePictureDialogShown by remember { mutableStateOf(false) }
             var userOptionPopupExpanded by remember { mutableStateOf(false) }
             var showRemoveMemberConfirmation by remember { mutableStateOf(false) }
-            var showFriendRequestAlert by remember { mutableStateOf(false) }
             val me = groupMember.userId == ownId
             val userName = user?.displayName ?: groupMember.memberName
             // Null for friends and blocked users: no friend request entry for them
@@ -174,7 +173,7 @@ fun GroupMembersView(
                         showRemoveMemberConfirmation = true  // Show confirmation instead of directly removing
                     },
                     onSendFriendRequest = {
-                        showFriendRequestAlert = true
+                        openUnknownUser(groupMember.userId, userName)
                     }
                 )
             }
@@ -198,21 +197,6 @@ fun GroupMembersView(
                     onDismiss = {
                         showRemoveMemberConfirmation = false
                     }
-                )
-            }
-
-            if(showFriendRequestAlert && friendRequestState != null){
-                UnknownUserDialog(
-                    name = userName,
-                    profilePictureFilePath = user?.profilePictureUrl ?: "",
-                    state = friendRequestState,
-                    onSendRequest = {
-                        showFriendRequestAlert = false
-                        sendFriendRequest(groupMember.userId)
-                    },
-                    onDismiss = {
-                        showFriendRequestAlert = false
-                    },
                 )
             }
         }

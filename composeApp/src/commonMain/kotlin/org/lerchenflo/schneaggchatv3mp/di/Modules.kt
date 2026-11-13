@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.di
 
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.unknownuser.UnknownUserViewModel
 import org.lerchenflo.schneaggchatv3mp.events.presentation.detail.EventDetailViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.koin.core.module.dsl.singleOf
@@ -416,6 +417,18 @@ val sharedmodule = module{
             applicationScope = get(),
             chatId = chatId,
             isGroup = isGroup
+        )
+    }
+
+    // Explicit lambda because the runtime route can't be resolved by viewModelOf
+    viewModel { (route: Route.UnknownUser) ->
+        UnknownUserViewModel(
+            route = route,
+            userRepository = get(),
+            pictureManager = get(),
+            navigator = get(),
+            errorChannel = get(),
+            applicationScope = get(),
         )
     }
 

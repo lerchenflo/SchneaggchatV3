@@ -20,7 +20,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatInp
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatMessageList
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatTopBar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
-import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.UnknownUserDialog
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 
 @Composable
@@ -114,15 +113,5 @@ fun ChatScreen(
                 onAction = onAction,
             )
         }
-    }
-
-    state.unknownUserPopup?.let { popup ->
-        UnknownUserDialog(
-            name = popup.name,
-            profilePictureFilePath = popup.profilePictureFilePath,
-            state = popup.state,
-            onSendRequest = { onAction(ChatAction.OnUnknownUserSendRequest) },
-            onDismiss = { onAction(ChatAction.OnUnknownUserDismiss) },
-        )
     }
 }

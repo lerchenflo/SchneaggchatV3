@@ -45,9 +45,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportLastingErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
-import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MarkReadGuard
@@ -76,7 +74,6 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import kotlin.time.TimeSource
 import schneaggchatv3mp.composeapp.generated.resources.poll_cannot_vote_on_unsent
-import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 class ChatViewModel(
@@ -155,9 +152,6 @@ class ChatViewModel(
             ChatAction.OnStartRecording -> startRecording()
             ChatAction.OnStopRecording -> stopRecording()
             ChatAction.OnDiscardRecording -> discardRecording()
-
-            ChatAction.OnUnknownUserSendRequest -> sendFriendRequestToUnknownUser()
-            ChatAction.OnUnknownUserDismiss -> _state.update { it.copy(unknownUserPopup = null) }
 
             is ChatAction.OnMessageAction -> onMessageAction(action.action)
 
@@ -490,32 +484,15 @@ class ChatViewModel(
         }
     }
 
-    /** Friends and blocked users get no popup; the tap on their name does nothing. */
+    /**
+     * Opens the unknown-user popup for a group sender who is not a friend. A tap on a friend's or a
+     * blocked user's name does nothing (user, 2026-11-11).
+     */
     private fun openUnknownUserPopup(userId: String, name: String, ownId: String) {
         if (userId == ownId) return
         viewModelScope.launch {
-            val requestState = FriendRequestState.of(userRepository.getUserById(userId), ownId) ?: return@launch
-            _state.update {
-                it.copy(
-                    unknownUserPopup = UnknownUserPopup(
-                        userId = userId,
-                        name = name,
-                        profilePictureFilePath = pictureManager.getProfilePicFilePath(userId, false),
-                        state = requestState,
-                    )
-                )
-            }
-        }
-    }
-
-    /** Sending and accepting are the same call: a request to someone who sent one accepts it. */
-    private fun sendFriendRequestToUnknownUser() {
-        val popup = state.value.unknownUserPopup ?: return
-        _state.update { it.copy(unknownUserPopup = null) }
-        applicationScope.launchOnMain {
-            userRepository.sendFriendRequest(popup.userId).reportErrorTo(errorChannel).onSuccess {
-                SnackbarManager.showMessage(getString(Res.string.friend_request_sent))
-            }
+            if (FriendRequestState.of(userRepository.getUserById(userId), ownId) == null) return@launch
+            navigator.navigate(Route.UnknownUser(userId = userId, name = name))
         }
     }
 

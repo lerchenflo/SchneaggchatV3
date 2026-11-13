@@ -44,7 +44,9 @@ data class ComboAnnotationSource(
     val names: Map<String, String>,
     /** Shown in place of the raw text when an id is unknown (deleted or not yet synced). */
     val unresolvedName: String,
-    val onClick: (id: String) -> Unit = {}
+    val onClick: (id: String) -> Unit = {},
+    /** Whether an unknown id is still clickable (users: the popup can show an unknown user). */
+    val clickableWhenUnresolved: Boolean = false,
 )
 
 /** A resolved (or placeholder) annotation match inside a raw text. */
@@ -55,7 +57,10 @@ internal data class ComboAnnotationMatch(
     val source: ComboAnnotationSource,
     /** false when [name] is the source's placeholder because the id is unknown. */
     val resolved: Boolean
-)
+) {
+    /** A dead target must not look or behave like a working link, unless the source can handle it. */
+    val isClickable: Boolean get() = resolved || source.clickableWhenUnresolved
+}
 
 /**
  * Finds all annotations of all [sources] in [text], ordered by position.

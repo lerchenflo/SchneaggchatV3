@@ -48,8 +48,12 @@ class NavigationState(
     val isOnAuthFlow: Boolean
         get() = currentRoute::class in authFlowRoutes
 
+    // A popup route (see dialogRoutes) is drawn over the screen below, so the nav bar follows that screen
+    private val currentScreenRoute: NavKey
+        get() = backStacks[topLevelRoute]?.lastOrNull { it::class !in dialogRoutes } ?: topLevelRoute
+
     val showNavBar: Boolean
-        get() = currentRoute::class !in hiddenNavBarRoutes
+        get() = currentScreenRoute::class !in hiddenNavBarRoutes
 
     val enableSwipeNavigation: Boolean
         get() {
@@ -207,6 +211,11 @@ private val eventRoutes: Set<KClass<out NavKey>> = setOf(
     Route.EventDetail::class
 )
 
+/** Routes shown as a dialog over the screen below (DialogSceneStrategy metadata in App.kt). */
+private val dialogRoutes: Set<KClass<out NavKey>> = setOf(
+    Route.UnknownUser::class
+)
+
 private val hiddenNavBarRoutes: Set<KClass<out NavKey>> = authFlowRoutes + gameRoutes + chatRoutes + mapRoutes + eventRoutes
 
 val backStackConfiguration = SavedStateConfiguration {
@@ -217,6 +226,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.ChatSelector::class, Route.ChatSelector.serializer())
             subclass(Route.Chat::class, Route.Chat.serializer())
             subclass(Route.NewChat::class, Route.NewChat.serializer())
+            subclass(Route.UnknownUser::class, Route.UnknownUser.serializer())
             subclass(Route.MessageChatSelector::class, Route.MessageChatSelector.serializer())
             subclass(Route.GroupCreator::class, Route.GroupCreator.serializer())
             subclass(Route.SignUp::class, Route.SignUp.serializer())

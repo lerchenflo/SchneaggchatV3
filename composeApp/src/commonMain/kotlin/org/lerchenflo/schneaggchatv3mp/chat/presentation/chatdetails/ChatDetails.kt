@@ -603,7 +603,7 @@ fun ChatDetails(
                         navigateToChat = chatdetailsViewmodel::navigateToChat,
                         changeAdminStatus = chatdetailsViewmodel::changeAdminStatus,
                         removeMember = chatdetailsViewmodel::removeMember,
-                        sendFriendRequest = chatdetailsViewmodel::sendFriendRequest,
+                        openUnknownUser = chatdetailsViewmodel::openUnknownUser,
                         ownId = ownId
                     )
 

@@ -62,7 +62,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.extractLinks
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
 import schneaggchatv3mp.composeapp.generated.resources.wake_no_devices
 import schneaggchatv3mp.composeapp.generated.resources.wake_not_allowed_group
@@ -578,11 +577,9 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun sendFriendRequest(id: String){
-        applicationScope.launchOnMain { //The repository is main-safe
-            userRepository.sendFriendRequest(id).reportErrorTo(errorChannel).onSuccess {
-                SnackbarManager.showMessage(getString(Res.string.friend_request_sent))
-            }
+    fun openUnknownUser(userId: String, name: String) {
+        viewModelScope.launch {
+            navigator.navigate(Route.UnknownUser(userId = userId, name = name))
         }
     }
 

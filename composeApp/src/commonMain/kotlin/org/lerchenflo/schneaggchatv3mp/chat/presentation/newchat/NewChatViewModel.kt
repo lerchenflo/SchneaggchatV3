@@ -9,6 +9,10 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -19,7 +23,6 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.getOrNull
-import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportLastingErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
@@ -38,7 +41,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
-import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.invitation_text
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -67,7 +69,16 @@ class NewChatViewModel (
     }
 
     private val _availableChats = MutableStateFlow<List<AvailableUser>>(emptyList())
-    val availableChats: StateFlow<List<AvailableUser>> = _availableChats.asStateFlow()
+
+    /**
+     * Search results without the users stored locally: sending a request stores the user (the
+     * repository syncs users afterwards), so they leave the list right away.
+     */
+    val availableChats: StateFlow<List<AvailableUser>> = combine(
+        _availableChats,
+        userRepository.getAllUsersFlow().map { users -> users.map { it.id }.toSet() }.distinctUntilChanged(),
+    ) { found, storedIds -> found.filterNot { it.id in storedIds } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
 
     private val _pendingFriends = MutableStateFlow<List<ChatListItem>>(emptyList())
@@ -114,12 +125,10 @@ class NewChatViewModel (
         }
     }
 
-    fun addFriend(friendId: String) {
-        applicationScope.launchOnMain { //The repository is main-safe
-            userRepository.sendFriendRequest(friendId).reportErrorTo(errorChannel).onSuccess {
-                SnackbarManager.showMessage(getString(Res.string.friend_request_sent))
-                loadAvailableUsers(searchterm.value)
-            }
+    /** Opens the unknown-user popup, which sends the request. */
+    fun onSearchResultClick(user: AvailableUser) {
+        viewModelScope.launch {
+            navigator.navigate(Route.UnknownUser(userId = user.id, name = user.username, commonFriendCount = user.commonFriendCount))
         }
     }
 

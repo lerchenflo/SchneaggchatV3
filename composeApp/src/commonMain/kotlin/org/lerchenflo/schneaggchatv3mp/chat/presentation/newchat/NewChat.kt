@@ -56,7 +56,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
-import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.UnknownUserDialog
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -230,34 +229,12 @@ fun NewChat(
                     key = { "search_${it.id}" }
                 ) { user ->
 
-                    var showFriendRequestAlert by remember { mutableStateOf(false) }
-
                     UserResultCard(
                         username = user.username,
                         commonFriendCount = user.commonFriendCount,
-                        onClick = {
-                            showFriendRequestAlert = true
-                        }
+                        onClick = { viewModel.onSearchResultClick(user) }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-
-                    if(showFriendRequestAlert){
-                        // The search only returns users without any friendship, so there is
-                        // nothing stored for them: no picture, and sending is the only action
-                        UnknownUserDialog(
-                            name = user.username,
-                            profilePictureFilePath = "",
-                            state = FriendRequestState.NONE,
-                            commonFriendCount = user.commonFriendCount,
-                            onSendRequest = {
-                                showFriendRequestAlert = false
-                                viewModel.addFriend(user.id)
-                            },
-                            onDismiss = {
-                                showFriendRequestAlert = false
-                            },
-                        )
-                    }
                 }
             }
 

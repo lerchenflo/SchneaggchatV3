@@ -40,8 +40,9 @@ import dev.snipme.highlights.model.SyntaxThemes
  * inline annotations (`@<key>/<id>`, see [ComboAnnotationType]) into clickable names.
  *
  * Annotations whose id is not resolvable through [annotationSources] are still converted to
- * the source's placeholder name (e.g. "unknown user"), but rendered as plain, non-clickable
- * text - the raw `@<key>/<id>` never reaches the reader.
+ * the source's placeholder name (e.g. "unknown user") and rendered as plain, non-clickable text,
+ * unless the source can handle unknown ids ([ComboAnnotationSource.clickableWhenUnresolved]) -
+ * the raw `@<key>/<id>` never reaches the reader.
  */
 @Composable
 fun ComboText(
@@ -66,11 +67,11 @@ fun ComboText(
                     val display = match.source.type.displayName(match.name)
                         .replace("[", "\\[")
                         .replace("]", "\\]")
-                    if (match.resolved) {
+                    if (match.isClickable) {
                         append("[").append(display).append("](")
                         append(match.source.type.linkScheme).append(match.id).append(")")
                     } else {
-                        // No link at all - a dead target must not look or behave like a working mention
+                        // No link at all - a dead target must not look or behave like a working mention (see isClickable)
                         append(display)
                     }
                     last = match.range.last + 1
@@ -150,7 +151,7 @@ fun ComboText(
                 findComboAnnotations(text, annotationSources).forEach { match ->
                     append(text.substring(last, match.range.first))
                     val display = match.source.type.displayName(match.name)
-                    if (match.resolved) {
+                    if (match.isClickable) {
                         withLink(
                             LinkAnnotation.Clickable(
                                 tag = match.source.type.linkScheme + match.id,
@@ -166,7 +167,7 @@ fun ComboText(
                             append(display)
                         }
                     } else {
-                        // No link at all - a dead target must not look or behave like a working mention
+                        // No link at all - a dead target must not look or behave like a working mention (see isClickable)
                         append(display)
                     }
                     last = match.range.last + 1

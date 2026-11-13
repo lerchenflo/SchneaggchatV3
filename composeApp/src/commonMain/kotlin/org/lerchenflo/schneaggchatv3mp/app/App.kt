@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.app
 
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.unknownuser.UnknownUserPopupRoot
+import androidx.compose.ui.window.DialogProperties
+import androidx.navigation3.scene.DialogSceneStrategy
 import org.lerchenflo.schneaggchatv3mp.events.presentation.detail.EventDetailScreenRoot
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -686,6 +689,13 @@ fun App() {
                                     NewChat()
                                 }
 
+                                // Popup over the current screen, see DialogSceneStrategy below
+                                entry<Route.UnknownUser>(
+                                    metadata = DialogSceneStrategy.dialog(DialogProperties(usePlatformDefaultWidth = false))
+                                ) { route ->
+                                    UnknownUserPopupRoot(route = route)
+                                }
+
                                 entry<Route.GroupCreator> {
                                     GroupCreatorScreenRoot()
                                 }
@@ -955,6 +965,8 @@ fun App() {
                                 NavDisplay(
                                     entries = entries,
                                     onBack = { scope.launch { navigator.navigateBack() } },
+                                    // Routes marked as dialog (e.g. UnknownUser) are drawn as a popup over the screen below
+                                    sceneStrategies = listOf(DialogSceneStrategy()),
                                     // HorizontalPager centers pages vertically by default; without an explicit
                                     // fillMaxSize, screens shorter than the viewport wrap-size and get centered,
                                     // showing a top gap instead of just filling down to the bottom nav bar.

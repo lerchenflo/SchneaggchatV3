@@ -18,6 +18,14 @@ sealed interface Route : NavKey {
     data class Chat(val chatId: String, val isGroup: Boolean, val highlightMessageId: String? = null): Route
     @Serializable
     data object NewChat: Route
+
+    /**
+     * Popup over the current screen for a user the own user is not friends with: send or accept a
+     * friend request. [name] and [commonFriendCount] are what the caller already knows (e.g. the
+     * group member name), used as long as the user is not stored locally.
+     */
+    @Serializable
+    data class UnknownUser(val userId: String, val name: String? = null, val commonFriendCount: Int? = null): Route
     @Serializable
     data object GroupCreator: Route
     @Serializable
