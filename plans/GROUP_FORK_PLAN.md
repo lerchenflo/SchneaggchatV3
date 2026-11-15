@@ -1,6 +1,6 @@
 # Group Fork Plan
 
-Companion docs: `CHAT_BASED_MIGRATION_PLAN.md`, `E2E_ENCRYPTION_PLAN_V2.md`, `GROUP_EXTENSIONS_PLAN.md` (same folder). Both repos: client `SchneaggchatV3` (KMP) and server `SchneaggchatV3server` (Spring Boot + Mongo).
+Companion docs: `E2E_ROADMAP_PLAN.md` (stage 2 = chat-based migration, stage 3 = encryption; server side in `SchneaggchatV3server/docs/E2E_ROADMAP_SERVER_PLAN.md`), `GROUP_EXTENSIONS_PLAN.md` (same folder). Both repos: client `SchneaggchatV3` (KMP) and server `SchneaggchatV3server` (Spring Boot + Mongo).
 
 Paths: server = `SchneaggchatV3server/src/main/kotlin/com/lerchenflo/schneaggchatv3server/` (`S/`), client = `composeApp/src/commonMain/kotlin/org/lerchenflo/schneaggchatv3mp/` (`C/`). Line numbers verified 2026-10-26.
 
@@ -47,7 +47,7 @@ Rough effort for v1 without history: server ~4 files, client ~12 files plus stri
 - `S/group/model/GroupResponse.kt`: response sent over `/groups/sync` and the `GroupChange` socket message.
 - `GroupService.createGroup` (`S/group/GroupService.kt:55`): at least 3 members (:61, skipped for event groups), creator must be friends with every member (:72-78), saves the picture through `ImageManager.saveProfilePic` (`S/util/ImageManager.kt:34`), generates unique member colors, sets `joinedAtVersion` to the current `SyncCollection.MESSAGES` counter (:115), notifies all members (`notifyGroupUpdate`) and posts `SystemEventType.GROUP_CREATED` (:144).
 - `GroupController` (`S/group/GroupController.kt`): `/groups/create` (multipart), `/groups/sync`, `/groups/profilepic/{id}`, `setprofilepic`, `setdescription`, `setGroupName`, `setexpiry` (admin only), `changemembers`, `DELETE /groups/delete` (admin only, added 2026-10-26, see §4.3). Before that endpoint a group was only deleted when the last member left (`performUserAction`, :360), its expiry passed (`deleteExpiredGroups`), or the event creator deleted it through `DELETE /events/delete?deletegroup=true`. All paths go through `GroupService.deleteGroup`, which soft-deletes, removes members, deletes the picture, notifies, and detaches or deletes a connected event.
-- `GroupLookupService.isUserInGroup` (`S/group/GroupLookupService.kt:84`) does not check `group.deleted` (already noted as F-item in `CHAT_BASED_MIGRATION_PLAN.md` §3.1).
+- `GroupLookupService.isUserInGroup` (`S/group/GroupLookupService.kt:84`) does not check `group.deleted` (flaw F15 in `SchneaggchatV3server/docs/E2E_ROADMAP_SERVER_PLAN.md` section 1.5).
 - Server JSON ignores unknown properties (`S/util/JsonMapper.kt:9`).
 
 ### 2.2 Client
@@ -63,8 +63,8 @@ Rough effort for v1 without history: server ~4 files, client ~12 files plus stri
 
 ### 2.3 Planned changes that touch this feature
 
-- `CHAT_BASED_MIGRATION_PLAN.md` folds `groups` into a `chats` collection, adds `historyVisibility` (`FULL | SINCE_JOIN`), `membershipState = LEFT` (left chats stay readable, D8 there), a per-chat backfill endpoint, and moves `/groups/**` to `/chats/**`. Planned order: repository migration, its Todo follow-ups, chat migration, then E2E.
-- `E2E_ENCRYPTION_PLAN_V2.md`: once shipped, the server cannot read message content, so it cannot copy or rewrite messages for a fork.
+- `E2E_ROADMAP_PLAN.md` stage 2 (chat-based migration) folds `groups` into a `chats` collection, adds `historyVisibility` (`FULL | SINCE_JOIN`), `membershipState = LEFT` (left chats stay readable, D8 there), a per-chat backfill endpoint, and moves `/groups/**` to `/chats/**`. Planned order: repository migration, its Todo follow-ups, chat migration, then E2E.
+- `E2E_ROADMAP_PLAN.md` stage 3 (encryption): once shipped, the server cannot read message content, so it cannot copy or rewrite messages for a fork.
 - `GROUP_EXTENSIONS_PLAN.md`: extensions owned by a group (`ownerType` + `ownerId`). A fork could copy them (D10).
 
 ---
@@ -210,7 +210,7 @@ Notes:
 
 ### 7.1 Chat-based migration
 
-- If the fork ships **before** the chat migration: the new `Group` fields must be added to the migration's field mapping (`CHAT_BASED_MIGRATION_PLAN.md` §5.2 step 1) and to `ChatEntity` / `ChatResponse`, and `/groups/fork` + `/groups/delete` move to `/chats/{id}/fork` and `/chats/{id}/delete`.
+- If the fork ships **before** the chat migration: the new `Group` fields must be added to the migration's field mapping (`SchneaggchatV3server/docs/E2E_ROADMAP_SERVER_PLAN.md` section 1.4 step 1) and to `ChatEntity` / `ChatResponse`, and `/groups/fork` + `/groups/delete` move to `/chats/{id}/fork` and `/chats/{id}/delete`.
 - If it ships **after**: implement directly on `chats` (GROUP type only; a DIRECT chat cannot be forked). Fork fields live on the chat document. The fork gets `historyVisibility` per D13 (`SINCE_JOIN` fits option A/D).
 - Recommendation (D14): ship after the chat migration, because the migration rewrites every group file this plan touches. If the feature is wanted sooner, the v1 scope is small enough to port.
 

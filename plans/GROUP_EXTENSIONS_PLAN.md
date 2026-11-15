@@ -1,6 +1,6 @@
 # Group Extensions Plan
 
-Companion docs: `E2E_ENCRYPTION_PLAN_V2.md`, `OFFLINE_FIRST_ANALYSIS.md` (same folder). Both repos: client `SchneaggchatV3` (KMP) and server `SchneaggchatV3server` (Spring Boot + Mongo).
+Companion docs: `E2E_ROADMAP_PLAN.md` (same folder). Both repos: client `SchneaggchatV3` (KMP) and server `SchneaggchatV3server` (Spring Boot + Mongo).
 
 **Goal**: a group can own any number of "extensions" (shared text, split/tricount, quotes, route planner, ...) that are created from the group details screen, synced to every member, updated live over the socket, and stored in Room. Adding a new extension type must never require a new endpoint, a new sync job, a new socket message, or a new Room table.
 
@@ -79,7 +79,7 @@ The discriminator names and property names must be identical on both sides becau
 ### 1.3 Client sync plumbing
 
 - `DataSyncCoordinator.dataSync()` (`app/data/DefaultDataSyncCoordinator.kt`, was `AppRepository.dataSync()`) runs one `async` job per `DataSyncJobType` (`USERS, GROUPS, MESSAGES, MAP, EVENTS, MEDIA`) and reports progress through `DataSyncState`.
-- Each feature has a thin Room-only local data source (`MapLocalDataSource`, `EventLocalDataSource`) exposing `getXChangeIds()`, `upsertX()`, `deleteX()`, `getAllXFlow()`; the network calls live in a remote data source per feature (interface + Ktor implementation in `<feature>/data/remote/`, e.g. `MapRemoteDataSource` / `KtorMapRemoteDataSource`), orchestration in an offline-first repository behind an interface in the feature's `domain/` (`OfflineFirstMapRepository`, `OfflineFirstEventRepository`; `AppRepository` is gone, see `REPOSITORY_INTERFACE_MIGRATION_PLAN.md`).
+- Each feature has a thin Room-only local data source (`MapLocalDataSource`, `EventLocalDataSource`) exposing `getXChangeIds()`, `upsertX()`, `deleteX()`, `getAllXFlow()`; the network calls live in a remote data source per feature (interface + Ktor implementation in `<feature>/data/remote/`, e.g. `MapRemoteDataSource` / `KtorMapRemoteDataSource`), orchestration in an offline-first repository behind an interface in the feature's `domain/` (`OfflineFirstMapRepository`, `OfflineFirstEventRepository`; `AppRepository` is gone since the repository interface migration of 2026-10-14).
 - Socket handling is one `when` in `SocketConnectionMessage.kt:172-468`; `MapChange`/`EventChange` just upsert/delete the local row.
 - Group removal purge: `RoomGroupDataSource.deleteGroup` (`chat/data/local/RoomGroupDataSource.kt:47`) deletes messages + readers for the group, and `dataSync` repeats the purge after all jobs finished (`DefaultDataSyncCoordinator.kt:237`, via `MessageRepository.deleteMessagesForGroups`) because the message job runs in parallel.
 - Room DB is at version 82 with `fallbackToDestructiveMigration(dropAllTables = true)`; a schema change is a version bump + full re-sync.
@@ -448,7 +448,7 @@ New keys still to add in `values/strings.xml` + `values-de` + `values-it` (never
 
 ### 5.2 Offline behaviour
 
-Same as map/events today: writes are network-first and fail visibly through `ErrorChannel`; reads are Room-flow driven and fully offline. The batch item endpoint is intentionally shaped so a later outbox (see `OFFLINE_FIRST_ANALYSIS.md` §outbox) can drain queued item upserts in one call. Client-generated item ids (like `clientMessageId`) are the prerequisite for that and are out of scope for v1.
+Same as map/events today: writes are network-first and fail visibly through `ErrorChannel`; reads are Room-flow driven and fully offline. The batch item endpoint is intentionally shaped so a later outbox (the outbox idea is kept in `plans/Todo.md`, "Open offline-first ideas") can drain queued item upserts in one call. Client-generated item ids (like `clientMessageId`) are the prerequisite for that and are out of scope for v1.
 
 ### 5.3 Derived data stays derived
 
