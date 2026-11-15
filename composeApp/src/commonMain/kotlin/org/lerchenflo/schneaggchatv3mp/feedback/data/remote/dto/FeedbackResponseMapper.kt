@@ -99,11 +99,13 @@ fun FeedbackEntryResponse.toFeedbackEntry(): FeedbackEntry = FeedbackEntry(
     creatorId = creatorId,
     isOwn = isOwn,
     canDelete = canDelete,
+    canEdit = canEdit,
     isSeeded = isSeeded,
     isPremium = isPremium,
     createdAt = createdAt,
     updatedAt = updatedAt,
     activityAt = activityAt,
+    editedAt = editedAt,
 )
 
 fun FeedbackCommentResponse.toFeedbackComment(): FeedbackComment = FeedbackComment(
@@ -112,9 +114,11 @@ fun FeedbackCommentResponse.toFeedbackComment(): FeedbackComment = FeedbackComme
     text = text,
     isDevComment = isDevComment,
     canDelete = canDelete,
+    canEdit = canEdit,
     appVersion = appVersion,
     platform = platform,
     createdAt = createdAt,
+    editedAt = editedAt,
 )
 
 fun FeedbackEntryDetailResponse.toFeedbackEntryDetail(): FeedbackEntryDetail = FeedbackEntryDetail(

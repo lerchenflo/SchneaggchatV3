@@ -42,6 +42,8 @@ data class FeedbackEntryResponse(
     val creatorId: String? = null,
     val isOwn: Boolean,
     val canDelete: Boolean,
+    /** Viewer is the creator or an admin and the entry is not seeded. Missing on older servers: then false. */
+    val canEdit: Boolean = false,
     val isSeeded: Boolean,
     /** Missing on servers before the premium mark: then false. */
     val isPremium: Boolean = false,
@@ -49,6 +51,8 @@ data class FeedbackEntryResponse(
     /** Sync cursor, sent back as the IdTimeStamp timestamp on /feedback/sync. */
     val updatedAt: Long,
     val activityAt: Long,
+    /** Epoch millis of the last edit, null when never edited. */
+    val editedAt: Long? = null,
 )
 
 @Serializable
@@ -69,9 +73,13 @@ data class FeedbackCommentResponse(
     val text: String,
     val isDevComment: Boolean,
     val canDelete: Boolean,
+    /** Viewer is the author. Missing on older servers: then false. */
+    val canEdit: Boolean = false,
     val appVersion: String? = null,
     val platform: String? = null,
     val createdAt: Long,
+    /** Epoch millis of the last edit, null when never edited. */
+    val editedAt: Long? = null,
 )
 
 @Serializable
@@ -96,6 +104,17 @@ data class FeedbackCreateRequest(
     val premium: Boolean,
 )
 
+/** Body of /feedback/edit. [location] is FEATURE only: null for a bug. */
+@Serializable
+data class FeedbackEditRequest(
+    val entryId: String,
+    val type: NetworkFeedbackType,
+    val title: String,
+    val description: String,
+    val tags: List<NetworkFeedbackTag>,
+    val location: String?,
+)
+
 @Serializable
 data class FeedbackVoteRequest(
     val entryId: String,
@@ -108,6 +127,13 @@ data class FeedbackCommentRequest(
     val text: String,
     val appVersion: String?,
     val platform: String?,
+)
+
+/** Body of /feedback/editcomment. */
+@Serializable
+data class FeedbackCommentEditRequest(
+    val commentId: String,
+    val text: String,
 )
 
 @Serializable

@@ -7,7 +7,9 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentResponse
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentEditRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCreateRequest
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEditRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEntryDetailResponse
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEntryResponse
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackStatusRequest
@@ -37,12 +39,20 @@ class KtorFeedbackRemoteDataSource(
         return server.safePost(endpoint = "/feedback/create", body = request)
     }
 
+    override suspend fun editFeedback(request: FeedbackEditRequest): DataResult<FeedbackEntryResponse, DataError> {
+        return server.safePost(endpoint = "/feedback/edit", body = request)
+    }
+
     override suspend fun voteFeedback(request: FeedbackVoteRequest): DataResult<FeedbackEntryResponse, DataError> {
         return server.safePost(endpoint = "/feedback/vote", body = request)
     }
 
     override suspend fun commentFeedback(request: FeedbackCommentRequest): DataResult<FeedbackCommentResponse, DataError> {
         return server.safePost(endpoint = "/feedback/comment", body = request)
+    }
+
+    override suspend fun editFeedbackComment(request: FeedbackCommentEditRequest): DataResult<FeedbackCommentResponse, DataError> {
+        return server.safePost(endpoint = "/feedback/editcomment", body = request)
     }
 
     override suspend fun deleteFeedback(entryId: String): DataResult<Unit, DataError> {

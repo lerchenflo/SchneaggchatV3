@@ -38,6 +38,12 @@ interface FeedbackRepository {
 
     suspend fun create(entry: NewFeedbackEntry): DataResult<FeedbackEntry, DataError>
 
+    /**
+     * Saves [changes] to [entryId] (creator or admin) and stores the server's answer. An edit that
+     * changes nothing comes back unchanged, without an edit time.
+     */
+    suspend fun edit(entryId: String, changes: FeedbackEntryChanges): DataResult<FeedbackEntry, DataError>
+
     /** Stores the vote locally at once and replaces it with the server's answer, or undoes it on an error. */
     suspend fun vote(entry: FeedbackEntry, vote: FeedbackVote): DataResult<FeedbackEntry, DataError>
 
@@ -47,6 +53,9 @@ interface FeedbackRepository {
     suspend fun deleteEntry(entryId: String): EmptyDataResult<DataError>
 
     suspend fun deleteComment(commentId: String): EmptyDataResult<DataError>
+
+    /** New [text] for an own comment. */
+    suspend fun editComment(commentId: String, text: String): DataResult<FeedbackComment, DataError>
 
     suspend fun setStatus(entryId: String, status: FeedbackStatus): DataResult<FeedbackEntry, DataError>
 }

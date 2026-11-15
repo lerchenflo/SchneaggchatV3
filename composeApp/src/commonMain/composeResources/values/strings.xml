@@ -1823,6 +1823,12 @@
     <string name="feedback_filter_status">Status</string>
     <string name="feedback_filter_all_statuses">All statuses</string>
     <string name="feedback_premium">Premium</string>
+    <string name="feedback_edit_entry">Edit entry</string>
+    <string name="feedback_save">Save</string>
+    <string name="feedback_edited">Edited</string>
+    <string name="feedback_edit_comment">Edit comment</string>
+    <string name="feedback_type_change_to_bug">Changing it to a bug resets the status to “Open”. “Didn't know” and “Don't need it” votes are removed, and a premium mark is lost for good.</string>
+    <string name="feedback_type_change_to_feature">Changing it to a feature resets the status to “Requested”.</string>
     <string name="logged_in_devices">Logged-in devices</string>
     <string name="logged_in_devices_description">See where your account is logged in and log out devices</string>
     <string name="logged_in_devices_this_device">This device</string>

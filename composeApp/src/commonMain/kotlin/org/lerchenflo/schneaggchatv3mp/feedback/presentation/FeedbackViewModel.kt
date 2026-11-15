@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryChanges
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
@@ -112,6 +113,19 @@ class FeedbackViewModel(
             is FeedbackAction.OnDeleteEntry -> deleteEntry(action.entryId)
             is FeedbackAction.OnStatusChange -> changeStatus(action.entryId, action.status)
 
+            // The form needs the loaded details: the location is only in there
+            FeedbackAction.OnEditEntryClick -> _state.update { state ->
+                val detail = state.detail
+                if (detail == null || !detail.entry.canEdit || detail.detail == null) state
+                else state.copy(detail = detail.copy(isEditDialogOpen = true))
+            }
+            FeedbackAction.OnEditEntryDismiss -> _state.update {
+                it.copy(detail = it.detail?.copy(isEditDialogOpen = false))
+            }
+            is FeedbackAction.OnEditEntrySubmit -> editEntry(action.changes)
+            is FeedbackAction.OnEditCommentClick -> startCommentEdit(action.commentId)
+            FeedbackAction.OnCancelCommentEdit -> _state.update { it.copy(detail = it.detail?.withCommentEditEnded()) }
+
             FeedbackAction.OnCreateClick -> _state.update { it.copy(isCreateDialogOpen = true) }
             FeedbackAction.OnCreateDismiss -> _state.update { it.copy(isCreateDialogOpen = false) }
             is FeedbackAction.OnCreateSubmit -> create(action.entry)
@@ -185,6 +199,10 @@ class FeedbackViewModel(
         val detailState = _state.value.detail ?: return
         val text = detailState.commentDraft.trim()
         if (text.isEmpty() || detailState.isSendingComment) return
+        detailState.editingCommentId?.let { commentId ->
+            saveCommentEdit(commentId, text)
+            return
+        }
 
         val entryId = detailState.entry.id
         updateDetail(entryId) { it.copy(isSendingComment = true) }
@@ -208,13 +226,91 @@ class FeedbackViewModel(
         }
     }
 
+    private fun startCommentEdit(commentId: String) {
+        _state.update { state ->
+            val detailState = state.detail ?: return@update state
+            val comment = detailState.detail?.comments?.firstOrNull { it.id == commentId && it.canEdit }
+                ?: return@update state
+            state.copy(
+                detail = detailState.copy(
+                    editingCommentId = comment.id,
+                    // A second edit keeps the draft that was put aside by the first one
+                    draftBeforeCommentEdit = if (detailState.editingCommentId == null) detailState.commentDraft else detailState.draftBeforeCommentEdit,
+                    commentDraft = comment.text,
+                )
+            )
+        }
+    }
+
+    private fun saveCommentEdit(commentId: String, text: String) {
+        val detailState = _state.value.detail ?: return
+        val entryId = detailState.entry.id
+        // The same text again changes nothing on the server either
+        if (detailState.detail?.comments?.firstOrNull { it.id == commentId }?.text?.trim() == text) {
+            updateDetail(entryId) { it.withCommentEditEnded() }
+            return
+        }
+
+        updateDetail(entryId) { it.copy(isSendingComment = true) }
+        applicationScope.launchOnMain {
+            feedbackRepository.editComment(commentId, text)
+                .onSuccess { edited ->
+                    updateDetail(entryId) { detailState ->
+                        detailState.withCommentEditEnded().copy(
+                            isSendingComment = false,
+                            detail = detailState.detail?.let { detail ->
+                                detail.copy(comments = detail.comments.map { if (it.id == edited.id) edited else it })
+                            },
+                        )
+                    }
+                    // A dev comment edit changes the entry's latest dev comment
+                    loadDetail(entryId, showErrors = false)
+                }
+                .onError {
+                    updateDetail(entryId) { it.copy(isSendingComment = false) }
+                    errorChannel.sendError(it)
+                }
+        }
+    }
+
+    private fun editEntry(changes: FeedbackEntryChanges) {
+        val detailState = _state.value.detail ?: return
+        if (detailState.isSavingEdit) return
+
+        val entryId = detailState.entry.id
+        updateDetail(entryId) { it.copy(isSavingEdit = true) }
+        applicationScope.launchOnMain {
+            feedbackRepository.edit(entryId, changes)
+                .onSuccess { edited ->
+                    updateDetail(entryId) { detailState ->
+                        detailState.copy(
+                            entry = edited,
+                            // The answer has no location: the server stored the one that was sent
+                            detail = detailState.detail?.copy(
+                                entry = edited,
+                                description = edited.description,
+                                location = changes.storedLocation,
+                            ),
+                            isEditDialogOpen = false,
+                            isSavingEdit = false,
+                        )
+                    }
+                }
+                .onError {
+                    updateDetail(entryId) { it.copy(isSavingEdit = false) }
+                    errorChannel.sendError(it)
+                }
+        }
+    }
+
     private fun deleteComment(commentId: String) {
         val entryId = _state.value.detail?.entry?.id ?: return
         applicationScope.launchOnMain {
             feedbackRepository.deleteComment(commentId)
                 .onSuccess {
                     updateDetail(entryId) { detailState ->
-                        detailState.copy(
+                        val editEnded = if (detailState.editingCommentId == commentId) detailState.withCommentEditEnded() else detailState
+                        editEnded.copy(
                             detail = detailState.detail?.let { detail ->
                                 detail.copy(comments = detail.comments.filterNot { it.id == commentId })
                             }
@@ -286,6 +382,11 @@ class FeedbackViewModel(
         _state.update { block(it).withVisibleEntries() }
     }
 }
+
+/** Leaves the comment edit and brings back the new-comment draft that was put aside for it. */
+private fun FeedbackDetailState.withCommentEditEnded(): FeedbackDetailState =
+    if (editingCommentId == null) this
+    else copy(editingCommentId = null, commentDraft = draftBeforeCommentEdit, draftBeforeCommentEdit = "")
 
 private fun FeedbackState.withVisibleEntries(): FeedbackState {
     // The Games tab hides the tag filter (every entry there is tagged GAMES), so it is ignored

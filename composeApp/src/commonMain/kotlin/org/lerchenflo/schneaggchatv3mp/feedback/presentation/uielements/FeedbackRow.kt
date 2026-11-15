@@ -500,9 +500,11 @@ internal val previewFeedbackEntry = FeedbackEntry(
     creatorId = "anna",
     isOwn = false,
     canDelete = false,
+    canEdit = false,
     isSeeded = false,
     isPremium = false,
     createdAt = 0L,
     updatedAt = 0L,
     activityAt = 0L,
+    editedAt = null,
 )

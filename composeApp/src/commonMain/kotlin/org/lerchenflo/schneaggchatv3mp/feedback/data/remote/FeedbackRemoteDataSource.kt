@@ -4,7 +4,9 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentResponse
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentEditRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCreateRequest
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEditRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEntryDetailResponse
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEntryResponse
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackStatusRequest
@@ -22,9 +24,13 @@ interface FeedbackRemoteDataSource {
 
     suspend fun createFeedback(request: FeedbackCreateRequest): DataResult<FeedbackEntryResponse, DataError>
 
+    suspend fun editFeedback(request: FeedbackEditRequest): DataResult<FeedbackEntryResponse, DataError>
+
     suspend fun voteFeedback(request: FeedbackVoteRequest): DataResult<FeedbackEntryResponse, DataError>
 
     suspend fun commentFeedback(request: FeedbackCommentRequest): DataResult<FeedbackCommentResponse, DataError>
+
+    suspend fun editFeedbackComment(request: FeedbackCommentEditRequest): DataResult<FeedbackCommentResponse, DataError>
 
     suspend fun deleteFeedback(entryId: String): DataResult<Unit, DataError>
 

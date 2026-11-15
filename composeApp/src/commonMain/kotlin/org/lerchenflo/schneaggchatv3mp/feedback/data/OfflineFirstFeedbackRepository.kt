@@ -20,7 +20,9 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.feedback.data.local.FeedbackLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.FeedbackRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentRequest
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentEditRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCreateRequest
+import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackEditRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackStatusRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackVoteRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toFeedbackComment
@@ -32,6 +34,7 @@ import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toNetworkFeedbac
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.toNetworkFeedbackVote
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackComment
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryChanges
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryDetail
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
@@ -166,6 +169,19 @@ class OfflineFirstFeedbackRepository(
             .onSuccess { feedbackLocalDataSource.upsertFeedbackEntries(listOf(it)) }
     }
 
+    override suspend fun edit(entryId: String, changes: FeedbackEntryChanges): DataResult<FeedbackEntry, DataError> =
+        feedbackRemoteDataSource.editFeedback(
+            FeedbackEditRequest(
+                entryId = entryId,
+                type = changes.type.toNetworkFeedbackType(),
+                title = changes.title.trim(),
+                description = changes.description.trim(),
+                tags = changes.tags.map { it.toNetworkFeedbackTag() },
+                location = changes.storedLocation,
+            )
+        ).map { it.toFeedbackEntry() }
+            .onSuccess { feedbackLocalDataSource.upsertFeedbackEntries(listOf(it)) }
+
     override suspend fun vote(entry: FeedbackEntry, vote: FeedbackVote): DataResult<FeedbackEntry, DataError> {
         // Optimistic: the buttons react at once. The guess keeps the old updatedAt, so a sync
         // before the answer arrives still fetches the real counts.
@@ -194,6 +210,10 @@ class OfflineFirstFeedbackRepository(
 
     override suspend fun deleteComment(commentId: String): EmptyDataResult<DataError> =
         feedbackRemoteDataSource.deleteFeedbackComment(commentId)
+
+    override suspend fun editComment(commentId: String, text: String): DataResult<FeedbackComment, DataError> =
+        feedbackRemoteDataSource.editFeedbackComment(FeedbackCommentEditRequest(commentId = commentId, text = text.trim()))
+            .map { it.toFeedbackComment() }
 
     override suspend fun setStatus(entryId: String, status: FeedbackStatus): DataResult<FeedbackEntry, DataError> =
         feedbackRemoteDataSource.setFeedbackStatus(FeedbackStatusRequest(entryId = entryId, status = status.toNetworkFeedbackStatus()))

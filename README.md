@@ -34,7 +34,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Events: Detailseite mit Teilnehmern und Karte, Erinnerungen, Änderungsmeldungen, Wochentage in der Upcoming-Ansicht
 - Datumsauswahl: Wochentag wird angezeigt
 - Schneaggmap: UI verbessert, Standort-Alter, angepinnte Freunde zuerst (Einstellung), Polizei und mobile Radare melden mit Push (Einstellung) und Aktiv-Filter
-- Feedback-Board: Offline nutzbar, neue Tabs, Badge bei Neuigkeiten, Premium-Wünsche
+- Feedback-Board: Offline nutzbar, neue Tabs, Badge bei Neuigkeiten, Premium-Wünsche, Einträge und eigene Kommentare bearbeiten
 - Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit, Profilbild-Sichtbarkeit wählbar
 - Spiele: C Coding, Tic Tac Toe, Schneagg Rodeo verbessert
 - Quick Reactions: Custom Doppeltipp-Reaktion

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -65,6 +66,9 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_delete_comment_c
 import schneaggchatv3mp.composeapp.generated.resources.feedback_delete_entry
 import schneaggchatv3mp.composeapp.generated.resources.feedback_delete_entry_confirm
 import schneaggchatv3mp.composeapp.generated.resources.feedback_details_load_error
+import schneaggchatv3mp.composeapp.generated.resources.feedback_edit_comment
+import schneaggchatv3mp.composeapp.generated.resources.feedback_edit_entry
+import schneaggchatv3mp.composeapp.generated.resources.feedback_edited
 import schneaggchatv3mp.composeapp.generated.resources.feedback_no_comments
 import schneaggchatv3mp.composeapp.generated.resources.feedback_retry
 import schneaggchatv3mp.composeapp.generated.resources.feedback_seeded_author
@@ -87,6 +91,7 @@ fun FeedbackDetailDialog(
 ) {
     val entry = detailState.entry
     val detail = detailState.detail
+    val editedLabel = stringResource(Res.string.feedback_edited)
 
     // Deletes always go through a confirmation; null = no confirmation open
     var confirmDeleteEntry by remember { mutableStateOf(false) }
@@ -114,6 +119,10 @@ fun FeedbackDetailDialog(
                         entry = entry,
                         viewerIsAdmin = viewerIsAdmin,
                         onStatusChange = { onAction(FeedbackAction.OnStatusChange(entry.id, it)) },
+                        // The form needs the loaded details (the location is only in there)
+                        onEditClick = if (entry.canEdit && detail != null) {
+                            { onAction(FeedbackAction.OnEditEntryClick) }
+                        } else null,
                         onDeleteClick = { confirmDeleteEntry = true },
                         onClose = { onAction(FeedbackAction.OnDetailDismiss) },
                     )
@@ -131,6 +140,7 @@ fun FeedbackDetailDialog(
                                 authorName(entry, userNames),
                                 millisToString(entry.createdAt, DATE_FORMAT),
                                 deviceInfo(detail?.platform, detail?.appVersion),
+                                editedLabel.takeIf { entry.editedAt != null },
                             ).joinToString(" · "),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -191,7 +201,9 @@ fun FeedbackDetailDialog(
                         CommentItem(
                             comment = comment,
                             authorName = userNames[comment.authorId].text(),
+                            editedLabel = editedLabel,
                             showDeviceInfo = entry.type == FeedbackType.BUG,
+                            onEditClick = { onAction(FeedbackAction.OnEditCommentClick(comment.id)) },
                             onDeleteClick = { confirmDeleteCommentId = comment.id },
                         )
                     }
@@ -202,8 +214,10 @@ fun FeedbackDetailDialog(
                 text = detailState.commentDraft,
                 isSending = detailState.isSendingComment,
                 enabled = detail != null,
+                isEditing = detailState.editingCommentId != null,
                 onTextChange = { onAction(FeedbackAction.OnCommentDraftChange(it)) },
                 onSend = { onAction(FeedbackAction.OnSendCommentClick) },
+                onCancelEdit = { onAction(FeedbackAction.OnCancelCommentEdit) },
             )
         }
     }
@@ -236,6 +250,8 @@ private fun DetailHeader(
     entry: FeedbackEntry,
     viewerIsAdmin: Boolean,
     onStatusChange: (FeedbackStatus) -> Unit,
+    /** Null hides the edit button. */
+    onEditClick: (() -> Unit)?,
     onDeleteClick: () -> Unit,
     onClose: () -> Unit,
 ) {
@@ -274,6 +290,14 @@ private fun DetailHeader(
 
         Box(Modifier.weight(1f))
 
+        if (onEditClick != null) {
+            IconButton(onClick = onEditClick) {
+                Icon(
+                    imageVector = Icons.Outlined.Edit,
+                    contentDescription = stringResource(Res.string.feedback_edit_entry),
+                )
+            }
+        }
         if (entry.canDelete) {
             IconButton(onClick = onDeleteClick) {
                 Icon(
@@ -293,13 +317,16 @@ private fun DetailHeader(
 private fun CommentItem(
     comment: FeedbackComment,
     authorName: String,
+    editedLabel: String,
     showDeviceInfo: Boolean,
+    onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
     val meta = listOfNotNull(
         authorName,
         millisToString(comment.createdAt, DATE_FORMAT),
         if (showDeviceInfo) deviceInfo(comment.platform, comment.appVersion) else null,
+        editedLabel.takeIf { comment.editedAt != null },
     ).joinToString(" · ")
 
     val footer: @Composable () -> Unit = {
@@ -310,6 +337,15 @@ private fun CommentItem(
                 color = if (comment.isDevComment) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
             )
+            if (comment.canEdit) {
+                IconButton(onClick = onEditClick, modifier = Modifier.size(28.dp)) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = stringResource(Res.string.feedback_edit_comment),
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
             if (comment.canDelete) {
                 IconButton(onClick = onDeleteClick, modifier = Modifier.size(28.dp)) {
                     Icon(
@@ -345,15 +381,62 @@ private fun CommentInput(
     text: String,
     isSending: Boolean,
     enabled: Boolean,
+    /** The text is an own comment being edited: sending saves it, the bar above can cancel. */
+    isEditing: Boolean,
+    onTextChange: (String) -> Unit,
+    onSend: () -> Unit,
+    onCancelEdit: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        if (isEditing) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.Edit,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = stringResource(Res.string.feedback_edit_comment),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                )
+                IconButton(onClick = onCancelEdit, enabled = !isSending, modifier = Modifier.size(32.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(Res.string.cancel),
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
+        }
+        CommentInputRow(
+            text = text,
+            isSending = isSending,
+            enabled = enabled,
+            onTextChange = onTextChange,
+            onSend = onSend,
+        )
+    }
+}
+
+@Composable
+private fun CommentInputRow(
+    text: String,
+    isSending: Boolean,
+    enabled: Boolean,
     onTextChange: (String) -> Unit,
     onSend: () -> Unit,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
             value = text,

@@ -48,6 +48,8 @@ data class FeedbackEntry(
     val creatorId: String?,
     val isOwn: Boolean,
     val canDelete: Boolean,
+    /** The viewer is the creator or an admin and the entry is not seeded. */
+    val canEdit: Boolean,
     val isSeeded: Boolean,
     /** Feature the creator marked as premium (or a seeded special feature); shown with an animated outline. */
     val isPremium: Boolean,
@@ -59,6 +61,8 @@ data class FeedbackEntry(
      * someone other than the creator. Votes don't move it.
      */
     val activityAt: Long,
+    /** Server time of the last edit, null when never edited. An edit doesn't move [activityAt]. */
+    val editedAt: Long?,
     /**
      * Comments on an own entry since the user last opened it on this device. Filled by the
      * repository from a local "seen" count, never sent by the server. Always 0 for others' entries.
@@ -111,9 +115,13 @@ data class FeedbackComment(
     val text: String,
     val isDevComment: Boolean,
     val canDelete: Boolean,
+    /** The viewer wrote it. */
+    val canEdit: Boolean,
     val appVersion: String?,
     val platform: String?,
     val createdAt: Long,
+    /** Server time of the last edit, null when never edited. */
+    val editedAt: Long?,
 )
 
 data class FeedbackEntryDetail(
@@ -134,3 +142,43 @@ data class NewFeedbackEntry(
     /** Features only, ignored for bugs. */
     val isPremium: Boolean = false,
 )
+
+/**
+ * The editable fields of an existing entry. Premium is not editable. Changing [type] resets the
+ * status on the server, see [FeedbackEntry.typeChangeEffect].
+ */
+data class FeedbackEntryChanges(
+    val type: FeedbackType,
+    val title: String,
+    val description: String,
+    val tags: List<FeedbackTag>,
+    val location: String?,
+) {
+    /** The location as the server stores it: trimmed, blank as null, and always null for a bug. */
+    val storedLocation: String?
+        get() = location?.trim()?.takeIf { type == FeedbackType.FEATURE && it.isNotEmpty() }
+
+    /** False when saving would store the same entry again (texts compared trimmed, tags as a set). */
+    fun differsFrom(other: FeedbackEntryChanges): Boolean =
+        type != other.type ||
+            title.trim() != other.title.trim() ||
+            description.trim() != other.description.trim() ||
+            tags.toSet() != other.tags.toSet() ||
+            storedLocation != other.storedLocation
+}
+
+/** What the server resets when an entry changes its type, so the edit form can warn first. */
+enum class FeedbackTypeChangeEffect {
+    /** Status starts over as OPEN; "didn't know" and "don't need it" votes and premium are dropped. */
+    TO_BUG,
+
+    /** Status starts over as REQUESTED. A bug has no votes or premium that could be lost. */
+    TO_FEATURE,
+}
+
+/** Null when [newType] is the entry's current type. */
+fun FeedbackEntry.typeChangeEffect(newType: FeedbackType): FeedbackTypeChangeEffect? = when {
+    newType == type -> null
+    newType == FeedbackType.BUG -> FeedbackTypeChangeEffect.TO_BUG
+    else -> FeedbackTypeChangeEffect.TO_FEATURE
+}

@@ -1817,6 +1817,12 @@
     <string name="feedback_filter_status">Stato</string>
     <string name="feedback_filter_all_statuses">Tutti gli stati</string>
     <string name="feedback_premium">Premium</string>
+    <string name="feedback_edit_entry">Modifica voce</string>
+    <string name="feedback_save">Salva</string>
+    <string name="feedback_edited">Modificato</string>
+    <string name="feedback_edit_comment">Modifica commento</string>
+    <string name="feedback_type_change_to_bug">Come bug lo stato riparte da «Aperto». I voti «Non lo sapevo» e «Non mi serve» vengono rimossi e il segno premium va perso per sempre.</string>
+    <string name="feedback_type_change_to_feature">Come richiesta lo stato riparte da «Richiesta».</string>
     <string name="logged_in_devices">Dispositivi connessi</string>
     <string name="logged_in_devices_description">Vedi dove è connesso il tuo account e disconnetti i dispositivi</string>
     <string name="logged_in_devices_this_device">Questo dispositivo</string>

@@ -25,11 +25,13 @@ fun FeedbackEntry.toEntity(): FeedbackEntryEntity = FeedbackEntryEntity(
     creatorId = creatorId,
     isOwn = isOwn,
     canDelete = canDelete,
+    canEdit = canEdit,
     isSeeded = isSeeded,
     isPremium = isPremium,
     createdAt = createdAt,
     updatedAt = updatedAt,
     activityAt = activityAt,
+    editedAt = editedAt,
 )
 
 /** Null for a row with an unknown type or status, e.g. written by a newer app version. */
@@ -53,10 +55,12 @@ fun FeedbackEntryEntity.toFeedbackEntry(): FeedbackEntry? {
         creatorId = creatorId,
         isOwn = isOwn,
         canDelete = canDelete,
+        canEdit = canEdit,
         isSeeded = isSeeded,
         isPremium = isPremium,
         createdAt = createdAt,
         updatedAt = updatedAt,
         activityAt = activityAt,
+        editedAt = editedAt,
     )
 }

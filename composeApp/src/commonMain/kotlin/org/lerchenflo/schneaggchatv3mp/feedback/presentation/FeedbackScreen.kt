@@ -51,6 +51,7 @@ import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackRow
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackCreateDialog
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackDetailDialog
+import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackEditDialog
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.previewFeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -163,6 +164,16 @@ fun FeedbackScreen(
             userNames = state.userNames,
             onAction = onAction,
         )
+        // On top of the detail dialog; opens only once the details are loaded
+        val loadedDetail = detail.detail
+        if (detail.isEditDialogOpen && loadedDetail != null) {
+            FeedbackEditDialog(
+                detail = loadedDetail,
+                isSubmitting = detail.isSavingEdit,
+                onSubmit = { onAction(FeedbackAction.OnEditEntrySubmit(it)) },
+                onDismiss = { onAction(FeedbackAction.OnEditEntryDismiss) },
+            )
+        }
     }
 
     if (state.isCreateDialogOpen) {

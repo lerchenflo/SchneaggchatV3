@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryChanges
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryDetail
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTag
@@ -108,7 +109,15 @@ data class FeedbackDetailState(
     val isLoading: Boolean = true,
     val loadFailed: Boolean = false,
     val commentDraft: String = "",
+    /** Sending a new comment or saving a comment edit. */
     val isSendingComment: Boolean = false,
+    /** Own comment whose text is in the input for editing; null while writing a new comment. */
+    val editingCommentId: String? = null,
+    /** Draft of a new comment, put aside while a comment is edited and restored afterwards. */
+    val draftBeforeCommentEdit: String = "",
+    /** The edit form of the entry is open. Only possible once [detail] is loaded (it holds the location). */
+    val isEditDialogOpen: Boolean = false,
+    val isSavingEdit: Boolean = false,
 )
 
 sealed interface FeedbackAction {
@@ -132,6 +141,13 @@ sealed interface FeedbackAction {
     data class OnDeleteComment(val commentId: String) : FeedbackAction
     data class OnDeleteEntry(val entryId: String) : FeedbackAction
     data class OnStatusChange(val entryId: String, val status: FeedbackStatus) : FeedbackAction
+
+    data object OnEditEntryClick : FeedbackAction
+    data object OnEditEntryDismiss : FeedbackAction
+    data class OnEditEntrySubmit(val changes: FeedbackEntryChanges) : FeedbackAction
+    /** Puts the own comment's text into the comment input; sending saves the edit. */
+    data class OnEditCommentClick(val commentId: String) : FeedbackAction
+    data object OnCancelCommentEdit : FeedbackAction
 
     data object OnCreateClick : FeedbackAction
     data object OnCreateDismiss : FeedbackAction

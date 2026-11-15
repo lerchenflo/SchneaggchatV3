@@ -7,6 +7,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackComment
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryChanges
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryDetail
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
@@ -46,6 +47,9 @@ class FakeFeedbackRepository : FeedbackRepository {
     override suspend fun create(entry: NewFeedbackEntry): DataResult<FeedbackEntry, DataError> =
         DataResult.Error(DataError.Unknown())
 
+    override suspend fun edit(entryId: String, changes: FeedbackEntryChanges): DataResult<FeedbackEntry, DataError> =
+        DataResult.Error(DataError.Unknown())
+
     override suspend fun vote(entry: FeedbackEntry, vote: FeedbackVote): DataResult<FeedbackEntry, DataError> =
         DataResult.Error(DataError.Unknown())
 
@@ -55,6 +59,9 @@ class FakeFeedbackRepository : FeedbackRepository {
     override suspend fun deleteEntry(entryId: String): EmptyDataResult<DataError> = DataResult.Error(DataError.Unknown())
 
     override suspend fun deleteComment(commentId: String): EmptyDataResult<DataError> = DataResult.Error(DataError.Unknown())
+
+    override suspend fun editComment(commentId: String, text: String): DataResult<FeedbackComment, DataError> =
+        DataResult.Error(DataError.Unknown())
 
     override suspend fun setStatus(entryId: String, status: FeedbackStatus): DataResult<FeedbackEntry, DataError> =
         DataResult.Error(DataError.Unknown())

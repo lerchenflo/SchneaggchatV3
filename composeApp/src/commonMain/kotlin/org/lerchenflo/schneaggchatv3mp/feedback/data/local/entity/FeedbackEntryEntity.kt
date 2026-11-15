@@ -25,9 +25,11 @@ data class FeedbackEntryEntity(
     val creatorId: String?,
     val isOwn: Boolean,
     val canDelete: Boolean,
+    val canEdit: Boolean,
     val isSeeded: Boolean,
     val isPremium: Boolean,
     val createdAt: Long,
     val updatedAt: Long,
     val activityAt: Long,
+    val editedAt: Long?,
 )

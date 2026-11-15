@@ -1823,6 +1823,12 @@
     <string name="feedback_filter_status">Status</string>
     <string name="feedback_filter_all_statuses">Alle Status</string>
     <string name="feedback_premium">Premium</string>
+    <string name="feedback_edit_entry">Eintrag bearbeiten</string>
+    <string name="feedback_save">Speichern</string>
+    <string name="feedback_edited">Bearbeitet</string>
+    <string name="feedback_edit_comment">Kommentar bearbeiten</string>
+    <string name="feedback_type_change_to_bug">Als Fehler startet der Status wieder bei „Offen“. Stimmen für „Wusste ich nicht“ und „Brauche ich nicht“ werden entfernt, und eine Premium-Markierung geht dauerhaft verloren.</string>
+    <string name="feedback_type_change_to_feature">Als Wunsch startet der Status wieder bei „Gewünscht“.</string>
     <string name="logged_in_devices">Angemeldete Geräte</string>
     <string name="logged_in_devices_description">Sieh, wo dein Konto angemeldet ist, und melde Geräte ab</string>
     <string name="logged_in_devices_this_device">Dieses Gerät</string>
