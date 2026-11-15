@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAudioManager
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeErrorChannel
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeMessageRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeMessageRepository.SendCall
@@ -82,6 +83,7 @@ class ChatViewModelTest {
             applicationScope = ApplicationScope(),
             messageRepository = messageRepository,
             userRepository = userRepository,
+            userIdentityRepository = FakeUserIdentityRepository(),
             groupRepository = FakeGroupRepository(),
             settingsRepository = settingsRepository,
             navigator = Navigator(),

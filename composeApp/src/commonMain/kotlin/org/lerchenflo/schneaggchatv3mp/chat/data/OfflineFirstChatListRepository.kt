@@ -2,8 +2,10 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -14,6 +16,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.applySearchAndFilter
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
@@ -43,6 +47,7 @@ class OfflineFirstChatListRepository(
     private val userLocalDataSource: UserLocalDataSource,
     private val groupLocalDataSource: GroupLocalDataSource,
     private val messageLocalDataSource: MessageLocalDataSource,
+    private val userIdentityRepository: UserIdentityRepository,
     private val settingsRepository: SettingsRepository,
     private val settingsRemoteDataSource: SettingsRemoteDataSource,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -76,6 +81,7 @@ class OfflineFirstChatListRepository(
     override fun getChatListFlow(userId: String): Flow<List<ChatListItem>> {
         val aggregatesFlow = messageLocalDataSource.getChatAggregatesFlow(userId)
         val lastMessagesFlow = messageLocalDataSource.getLastMessagePerChatFlow(userId)
+            .withNames { messages -> messages.flatMapTo(mutableSetOf()) { it.previewUserIds() } }
         val usersFlow = userLocalDataSource.getAllUsersFlow()
         val groupsFlow = groupLocalDataSource.getAllGroupswithMembersFlow()
         val pinnedFlow = settingsRepository.getPinnedChatsFlow()
@@ -86,9 +92,8 @@ class OfflineFirstChatListRepository(
             usersFlow,
             groupsFlow,
             pinnedFlow
-        ) { aggregates, lastMessages, users, groups, pinnedList ->
+        ) { aggregates, (lastMessages, previewNames), users, groups, pinnedList ->
 
-            val userIdMap = users.associateBy { it.id }
             val pinnedMap = pinnedList.associate { it.chatId to it.pinTimePoint }
             val aggregateMap = aggregates.associateBy { it.chatId to it.isGroup }
             val lastMessageMap = lastMessages.associateBy { it.chatKey(userId) }
@@ -99,16 +104,13 @@ class OfflineFirstChatListRepository(
                 .filter { it.friendshipStatus == FriendshipStatus.ACCEPTED }
                 .map { user ->
                     val aggregate = aggregateMap[user.id to false]
-                    val last = lastMessageMap[user.id to false]?.let { message ->
-                        message.copy(
-                            senderAsString = userIdMap[message.senderId]?.name ?: message.senderAsString
-                        )
-                    }
+                    val last = lastMessageMap[user.id to false]
 
                     user.toChatListItem(
                         unreadCount = aggregate?.unreadCount ?: 0,
                         unsentCount = aggregate?.unsentCount ?: 0,
                         lastMessage = last,
+                        lastMessageNames = last?.previewNames(previewNames).orEmpty(),
                         pinned = pinnedMap[user.id] ?: 0L
                     )
                 }
@@ -118,17 +120,13 @@ class OfflineFirstChatListRepository(
                 .asSequence()
                 .map { group ->
                     val aggregate = aggregateMap[group.id to true]
-                    val last = lastMessageMap[group.id to true]?.let { message ->
-                        message.copy(
-                            // Blank when the sender isn't known locally; the UI shows its own fallback
-                            senderAsString = userIdMap[message.senderId]?.name ?: ""
-                        )
-                    }
+                    val last = lastMessageMap[group.id to true]
 
                     group.toChatListItem(
                         unreadCount = aggregate?.unreadCount ?: 0,
                         unsentCount = aggregate?.unsentCount ?: 0,
                         lastMessage = last,
+                        lastMessageNames = last?.previewNames(previewNames).orEmpty(),
                         pinned = pinnedMap[group.id] ?: 0L
                     )
                 }
@@ -169,18 +167,23 @@ class OfflineFirstChatListRepository(
         if (loweredSearch.length < MESSAGE_SEARCH_MIN_TERM_LENGTH) return flowOf(emptyList())
 
         val messagesFlow = messageLocalDataSource.getAllMessages()
+            .map { messages ->
+                messages.asSequence()
+                    .filter { it.matchesSearchTerm(loweredSearch) }
+                    .sortedByDescending { it.getSendDateAsLong() }
+                    .take(MESSAGE_SEARCH_RESULT_LIMIT)
+                    .toList()
+            }
+            .withNames { messages -> messages.mapTo(mutableSetOf()) { it.senderId } }
         val usersFlow = userLocalDataSource.getAllUsersFlow()
         val groupsFlow = groupLocalDataSource.getAllGroupswithMembersFlow()
 
-        return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
+        return combine(messagesFlow, usersFlow, groupsFlow) { (messages, senderNames), users, groups ->
             val userIdMap = users.associateBy { it.id }
             val groupIdMap = groups.associateBy { it.id }
 
             messages
                 .asSequence()
-                .filter { it.matchesSearchTerm(loweredSearch) }
-                .sortedByDescending { it.getSendDateAsLong() }
-                .take(MESSAGE_SEARCH_RESULT_LIMIT)
                 .mapNotNull { message ->
                     val messageId = message.id ?: return@mapNotNull null
 
@@ -207,8 +210,7 @@ class OfflineFirstChatListRepository(
                         isGroup = message.isGroupMessage(),
                         chatName = chatName,
                         chatProfilePictureUrl = chatPicture,
-                        senderName = userIdMap[message.senderId]?.name
-                            ?: message.senderAsString,
+                        senderName = senderNames[message.senderId] ?: UserIdentityName.Unknown,
                         preview = message.searchPreview(),
                         sendDate = message.getSendDateAsLong(),
                     )
@@ -216,6 +218,21 @@ class OfflineFirstChatListRepository(
                 .toList()
         }.flowOn(defaultDispatcher)
     }
+
+    /**
+     * Pairs every emission with the names of the user ids [userIdsOf] picks from it. Subscribes to
+     * the names again only when that set of ids changes.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun <T> Flow<T>.withNames(userIdsOf: (T) -> Set<String>): Flow<Pair<T, Map<String, UserIdentityName>>> =
+        flatMapLatest { value ->
+            userIdentityRepository.observeUsers(userIdsOf(value))
+                .map { users -> value to users.mapValues { (_, identity) -> identity.name } }
+        }
+
+    /** The names of [Message.previewUserIds], taken from [names]. */
+    private fun Message.previewNames(names: Map<String, UserIdentityName>): Map<String, UserIdentityName> =
+        previewUserIds().associateWith { names[it] ?: UserIdentityName.Unknown }
 
     /** True when any searchable text of this message contains the already lowercased [term]. */
     private fun Message.matchesSearchTerm(term: String): Boolean {

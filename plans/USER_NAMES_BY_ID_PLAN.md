@@ -4,7 +4,7 @@ Written 2026-11-15. Both repos: client `SchneaggchatV3` (KMP), server `Schneaggc
 
 Paths: `C/` = `composeApp/src/commonMain/kotlin/org/lerchenflo/schneaggchatv3mp/`.
 
-**Status:** all open questions answered (2026-11-15). Waiting for the user to approve this plan. Nothing sent to the server yet, nothing built.
+**Status:** approved 2026-11-15. Contract agreed with the server session (section 3a). Server built and committed on `beta` (`ff49760`). Client steps 1-6 built 2026-11-15, not committed (user review); JVM, Android and iOS compile clean. Open: device tests (section 7), follow-ups in `plans/Todo.md` ("User names by id: follow-ups").
 
 ---
 
@@ -50,6 +50,15 @@ Accepted consequence of N4 / N8 / N9: a co-member's new name or newly hidden pic
    - Please check the server for more.
 3. Push payloads (FCM / APNs) keep their names (N1).
 4. Breaking changes are fine (N2); both sides ship in the same release.
+
+## 3a. Agreed contract (server session, 2026-11-15)
+
+- `POST /users/lookup`, body `{"userIds": [...]}`, 1 to 100 ids (duplicates ignored). Reply `{"users": [{"id", "username", "profilePicUpdatedAt"}], "deletedUserIds": [...]}`; every id is in exactly one list. `deletedUserIds` also holds ids that never existed. `username` is the plain name, never a nickname. Errors 400, 401, 429; no 403/404.
+- Removed: system event `actorName`, `targets[].userName` (targets are `[{userId}]`); `members[].memberName`; event `invitedUserNames`, `creatorName`, `participations[].userName`; socket `friendrequest` `requestingUserName`; socket `eventupdatealert` `actorName`; feedback entry `creatorName`; feedback comment `authorName`; announcement `creatorName`; map entry `updatedByName`.
+- Added: socket `eventupdatealert` `actorId`; feedback entry `creatorId` (nullable, null for seeded entries); announcement `creatorId` (nullable, admin list only).
+- Unchanged: leaderboard and recap names, quote `saidByName`, every push payload.
+- Server behaviour: a username change no longer bumps groups or sends `groupchange`; lookups send no socket message.
+- Client: notifications wait at most 3 s for a name lookup, then use the stored name even if outdated (or "Unknown user"); name and picture load in parallel.
 
 ---
 

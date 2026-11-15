@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 
@@ -22,7 +23,7 @@ private const val STOP_TIMEOUT_MILLIS = 5_000L
  */
 class ComboAnnotationNames(
     mapRepository: MapRepository,
-    userRepository: UserRepository,
+    userIdentityRepository: UserIdentityRepository,
     eventRepository: EventRepository,
     applicationScope: ApplicationScope,
 ) {
@@ -30,10 +31,10 @@ class ComboAnnotationNames(
         .map { entries -> entries.associate { it.id to it.name } }
         .shareNames(applicationScope)
 
-    /** The nickname where one is set, like everywhere else in the chat. */
-    val userNames: StateFlow<Map<String, String>> = userRepository.getAllUsersFlow()
-        .map { users -> users.associate { it.id to it.displayName } }
-        .shareNames(applicationScope)
+    /** Every user this device knows, through the one name path (own nickname first). */
+    val userNames: StateFlow<Map<String, UserIdentityName>> = userIdentityRepository.observeKnownNames()
+        .distinctUntilChanged()
+        .stateIn(applicationScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), emptyMap())
 
     val eventNames: StateFlow<Map<String, String>> = eventRepository.getAllEventsFlow()
         .map { events -> events.associate { it.id to it.title } }

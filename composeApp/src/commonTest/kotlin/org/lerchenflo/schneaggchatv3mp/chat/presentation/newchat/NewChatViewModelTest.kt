@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
+import org.lerchenflo.schneaggchatv3mp.testutil.awaitMatching
 import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.contains
@@ -106,7 +107,8 @@ class NewChatViewModelTest {
         advanceUntilIdle()
 
         assertThat(userRepository.availableUserSearches.calls).containsExactly("be")
-        assertThat(viewModel.availableChats.value.map { it.id }).containsExactly("bernd", "ben")
+        // Shared only while collected (stateIn WhileSubscribed), so wait for it instead of reading .value
+        assertThat(viewModel.availableChats.awaitMatching { it.isNotEmpty() }.map { it.id }).containsExactly("bernd", "ben")
     }
 
     @Test
@@ -165,16 +167,22 @@ class NewChatViewModelTest {
     }
 
     @Test
-    fun `adding a friend sends the request and reloads the search`() = runViewModelTest(viewModels) {
+    fun `tapping a search result opens the unknown-user popup with the known details`() = runViewModelTest(viewModels) {
         val viewModel = createViewModel()
-        viewModel.updateSearchterm("be")
-        advanceUntilIdle()
+        val ben = AvailableUser(id = "ben", username = "Ben", commonFriendCount = 1)
 
-        viewModel.addFriend("ben")
+        navigator.navigationActions.test {
+            viewModel.onSearchResultClick(ben)
 
-        // Runs in the app-wide scope, not in viewModelScope
-        assertThat(userRepository.friendRequestsSent.awaitCount(1)).containsExactly("ben")
-        assertThat(userRepository.availableUserSearches.awaitCount(2)).containsExactly("be", "be")
+            // The popup sends the friend request itself
+            assertThat(awaitItem()).isEqualTo(
+                NavigationAction.Navigate(
+                    Route.UnknownUser(userId = "ben", name = "Ben", commonFriendCount = 1),
+                    Navigator.NavigationOptions(),
+                )
+            )
+        }
+        assertThat(userRepository.friendRequestsSent.calls).isEmpty()
     }
 
     @Test

@@ -42,6 +42,11 @@ data class PollMessage(
         return voteOptions.sumOf { it.voters.size }
     }
 
+    /** Ids of every named voter, sub-polls included (anonymous votes have none). */
+    fun voterIds(): Set<String> = voteOptions.flatMapTo(mutableSetOf()) { option ->
+        option.voters.mapNotNull { it.userId } + option.subPoll?.voterIds().orEmpty()
+    }
+
     /**
      * Get number of unique users who voted (useful when maxAnswers > 1)
      */

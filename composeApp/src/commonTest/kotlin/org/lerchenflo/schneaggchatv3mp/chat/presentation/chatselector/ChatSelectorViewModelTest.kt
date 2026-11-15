@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.containsExactly
@@ -151,7 +153,7 @@ class ChatSelectorViewModelTest {
             isGroup = false,
             chatName = "Anna",
             chatProfilePictureUrl = "",
-            senderName = "Anna",
+            senderName = UserIdentityName.Known("Anna"),
             preview = "see you at the lake",
             sendDate = 1L,
         )
@@ -169,7 +171,7 @@ class ChatSelectorViewModelTest {
     fun `selecting a message search result clears the search and opens the chat at that message`() = runViewModelTest(viewModels) {
         val viewModel = createViewModel()
         viewModel.updateSearchterm("lake")
-        val result = MessageSearchResult("m1", "hiking", true, "Hiking", "", "Ben", "lake", 1L)
+        val result = MessageSearchResult("m1", "hiking", true, "Hiking", "", UserIdentityName.Known("Ben"), "lake", 1L)
 
         navigator.navigationActions.test {
             viewModel.onMessageSearchResultSelected(result)
@@ -198,9 +200,9 @@ class ChatSelectorViewModelTest {
     @Test
     fun `pending friend badge counts only requests from others`() = runViewModelTest(viewModels) {
         chatListRepository.pendingFriends.value = listOf(
-            testChatListItem("carla", requesterId = "carla"),
-            testChatListItem("dani", requesterId = "dani"),
-            testChatListItem("emil", requesterId = OWN_ID), // our own outgoing request
+            testChatListItem("carla", friendshipStatus = FriendshipStatus.PENDING, requesterId = "carla"),
+            testChatListItem("dani", friendshipStatus = FriendshipStatus.PENDING, requesterId = "dani"),
+            testChatListItem("emil", friendshipStatus = FriendshipStatus.PENDING, requesterId = OWN_ID), // our own outgoing request
         )
 
         val viewModel = createViewModel()

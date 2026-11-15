@@ -18,7 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionItemData.SplitExpense
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.SplitShare
@@ -64,7 +64,7 @@ class SplitExpenseEditorViewModel(
     private val errorChannel: ErrorChannel,
     private val groupExtensionRepository: GroupExtensionRepository,
     private val groupRepository: GroupRepository,
-    private val userRepository: UserRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     private val navigator: Navigator,
 
     private val route: Route.SplitExpenseEditor,
@@ -110,8 +110,7 @@ class SplitExpenseEditorViewModel(
             ?: emptyList()
         val members = resolveSplitMembers(
             userIds = groupMembers.map { it.userId } + referencedIds,
-            groupMembers = groupMembers,
-            userRepository = userRepository,
+            userIdentityRepository = userIdentityRepository,
             ownId = ownId,
         )
 

@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.unknownuser
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,9 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
@@ -32,19 +32,34 @@ import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 class UnknownUserViewModel(
     private val route: Route.UnknownUser,
     private val userRepository: UserRepository,
-    private val pictureManager: PictureManager,
+    private val userIdentityRepository: UserIdentityRepository,
     private val navigator: Navigator,
     private val errorChannel: ErrorChannel,
     private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        UnknownUserState(name = route.name, commonFriendCount = route.commonFriendCount)
+        UnknownUserState(
+            // The caller's name (e.g. from the search) shows until the one path knows the user
+            name = route.name?.let { UserIdentityName.Known(it) } ?: UserIdentityName.Unknown,
+            commonFriendCount = route.commonFriendCount,
+        )
     )
     val state = _state.asStateFlow()
 
     init {
         viewModelScope.launch { load() }
+        // Name and picture through the one path; a user this device does not know is looked up
+        viewModelScope.launch {
+            userIdentityRepository.observeUser(route.userId).collect { identity ->
+                _state.update {
+                    it.copy(
+                        name = identity.name.takeIf { name -> name != UserIdentityName.Unknown } ?: it.name,
+                        profilePictureFilePath = identity.profilePictureUrl,
+                    )
+                }
+            }
+        }
     }
 
     fun onAction(action: UnknownUserAction) {
@@ -64,17 +79,7 @@ class UnknownUserViewModel(
         val user = userRepository.getUserById(route.userId)
         val requestState = FriendRequestState.of(user, ownId)
         when {
-            requestState != null -> {
-                _state.update {
-                    it.copy(
-                        // The stored name (nickname) is the newest one; the caller's name is the fallback
-                        name = user?.displayName ?: it.name,
-                        profilePictureFilePath = storedPictureFilePath(user),
-                        requestState = requestState,
-                    )
-                }
-                if (user == null) loadUnstoredPicture()
-            }
+            requestState != null -> _state.update { it.copy(requestState = requestState) }
 
             user?.friendshipStatus == FriendshipStatus.ACCEPTED -> navigator.navigate(
                 Route.Chat(chatId = route.userId, isGroup = false),
@@ -83,19 +88,6 @@ class UnknownUserViewModel(
 
             // Blocked: nothing to offer
             else -> navigator.navigateBack()
-        }
-    }
-
-    // Empty when the user's privacy setting hides the picture: the placeholder shows
-    private fun storedPictureFilePath(user: User?): String {
-        if (user == null || user.profilePicUpdatedAt == null) return ""
-        return pictureManager.getProfilePicFilePath(route.userId, false)
-    }
-
-    // A user who is not stored here: ask the server, it refuses when their setting hides the picture
-    private suspend fun loadUnstoredPicture() {
-        userRepository.getProfilePictureBytes(route.userId).onSuccess { picture ->
-            _state.update { it.copy(profilePicture = picture) }
         }
     }
 

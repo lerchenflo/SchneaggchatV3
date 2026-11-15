@@ -2,6 +2,9 @@
 
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import androidx.compose.runtime.getValue
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
@@ -77,7 +80,9 @@ import schneaggchatv3mp.composeapp.generated.resources.wake_failed
 
 data class GroupMemberWithUser(
     val groupMember: GroupMember,
-    val user: User?
+    // Null when the member is not in the users table (not a friend or request)
+    val user: User?,
+    val identity: UserIdentity,
 )
 
 /**
@@ -123,6 +128,7 @@ class ChatDetailsViewmodel(
     private val groupRepository: GroupRepository,
     private val navigator: Navigator,
     private val userRepository: UserRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     private val pictureManager: PictureManager,
     private val eventRepository: EventRepository,
     private val messageRepository: MessageRepository,
@@ -300,15 +306,18 @@ class ChatDetailsViewmodel(
      * - For groups: group with resolved members
      * - For users: user with common groups
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     val chatDetails: StateFlow<ChatDetailsState> = if (isGroup) {
-        groupRepository.getGroupByIdFlow(chatId).map { group ->
+        groupRepository.getGroupByIdFlow(chatId).flatMapLatest { group ->
             if (group == null) {
-                ChatDetailsState.Loading
+                flowOf(ChatDetailsState.Loading)
             } else {
-                ChatDetailsState.GroupDetails(
-                    group = group,
-                    members = getGroupMembersWithUsers(chatId)
-                )
+                userIdentityRepository.observeUsers(group.members.map { it.userId }).map { identities ->
+                    ChatDetailsState.GroupDetails(
+                        group = group,
+                        members = getGroupMembersWithUsers(chatId, identities)
+                    )
+                }
             }
         }
     } else {
@@ -415,16 +424,17 @@ class ChatDetailsViewmodel(
         }
     }
 
-    private suspend fun getGroupMembersWithUsers(groupId: String): List<GroupMemberWithUser> {
+    private suspend fun getGroupMembersWithUsers(
+        groupId: String,
+        identities: Map<String, UserIdentity>,
+    ): List<GroupMemberWithUser> {
         val members = groupRepository.getGroupMembers(groupId)
         return members.map { member ->
-            val user = userRepository.getUserById(member.userId)
-            if (user != null) {
-                GroupMemberWithUser(member, user)
-            } else {
-                // todo was tuat ma mit lüt in ana gruppe wo ned in da userdatenbank sind?
-                GroupMemberWithUser(member, null)
-            }
+            GroupMemberWithUser(
+                groupMember = member,
+                user = userRepository.getUserById(member.userId),
+                identity = identities[member.userId] ?: UserIdentity(member.userId, UserIdentityName.Unknown),
+            )
         }
     }
 

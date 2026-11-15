@@ -15,7 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionItemData.SplitExpense
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
@@ -37,7 +37,7 @@ import kotlin.math.absoluteValue
 class SplitViewModel(
     private val groupExtensionRepository: GroupExtensionRepository,
     private val groupRepository: GroupRepository,
-    private val userRepository: UserRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     private val navigator: Navigator,
 
     private val extensionId: String,
@@ -97,8 +97,7 @@ class SplitViewModel(
         // Former members still show up as long as an expense refers to them
         val members = resolveSplitMembers(
             userIds = source.groupMembers.map { it.userId } + expenses.flatMap { listOf(it.paidBy) + it.participants },
-            groupMembers = source.groupMembers,
-            userRepository = userRepository,
+            userIdentityRepository = userIdentityRepository,
             ownId = ownId,
         )
         val nameOf = members.associate { it.userId to it.name }

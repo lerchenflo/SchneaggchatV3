@@ -32,6 +32,11 @@ interface UserLocalDataSource {
 
     fun getUserFlow(id: String): Flow<User?>
 
+    /** The stored users among [ids]; ids without a row are left out. */
+    suspend fun getUsersByIds(ids: List<String>): List<User>
+
+    fun getUsersByIdsFlow(ids: List<String>): Flow<List<User>>
+
     suspend fun updateUserProfilePicUrl(userId: String, newUrl: String)
 
     /** Applies a single friend's live location push (`FriendLocationChange`) to the local DB.

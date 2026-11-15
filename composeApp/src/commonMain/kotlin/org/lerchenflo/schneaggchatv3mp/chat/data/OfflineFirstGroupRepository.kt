@@ -17,6 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNetworkGroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -33,6 +34,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toGroup
 class OfflineFirstGroupRepository(
     private val groupLocalDataSource: GroupLocalDataSource,
     private val groupRemoteDataSource: GroupRemoteDataSource,
+    private val userIdentityRepository: UserIdentityRepository,
     private val pictureManager: PictureManager,
     private val loggingRepository: Logger,
 ) : GroupRepository {
@@ -138,8 +140,19 @@ class OfflineFirstGroupRepository(
                 getProfilePicturesForGroupIds(profilepicsToGet)
             }
 
+            prefetchAllMembers()
+
             return deletedGroupIds
         }
+    }
+
+    /**
+     * Looks up the names of all group members who are not in the users table, so group views
+     * show them offline too. Members looked up within the last day are skipped by the lookup.
+     */
+    private suspend fun prefetchAllMembers() {
+        val memberIds = groupLocalDataSource.getAllGroups().flatMap { group -> group.members.map { it.userId } }
+        userIdentityRepository.prefetch(memberIds)
     }
 
     override suspend fun getProfilePicturesForGroupIds(groupIds: List<String>){

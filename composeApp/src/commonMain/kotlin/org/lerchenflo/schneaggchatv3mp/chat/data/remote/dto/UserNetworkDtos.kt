@@ -6,6 +6,32 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserResponse
 @Serializable
 data class UserSyncResponse(val updatedUsers: List<UserResponse>, val deletedUsers: List<String>)
 
+/** Body of `POST /users/lookup`: 1 to [USER_LOOKUP_MAX_IDS] ids. */
+@Serializable
+data class UserLookupRequest(val userIds: List<String>)
+
+/** Most ids one `/users/lookup` call takes (server contract). */
+const val USER_LOOKUP_MAX_IDS = 100
+
+/**
+ * Reply of `POST /users/lookup`. Every requested id is in exactly one list; [deletedUserIds] also
+ * holds ids that never existed (the server can't tell them apart).
+ */
+@Serializable
+data class UserLookupResponse(
+    val users: List<LookedUpUserResponse> = emptyList(),
+    val deletedUserIds: List<String> = emptyList(),
+)
+
+/** One existing user of a [UserLookupResponse]: the plain username, never a nickname. */
+@Serializable
+data class LookedUpUserResponse(
+    val id: String,
+    val username: String,
+    // Null: the user's privacy setting hides their picture from the requester
+    val profilePicUpdatedAt: Long? = null,
+)
+
 @Serializable
 data class NewFriendsUserResponse(
     val id: String,

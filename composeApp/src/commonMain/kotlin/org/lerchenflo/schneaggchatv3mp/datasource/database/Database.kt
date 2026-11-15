@@ -8,6 +8,7 @@ import androidx.room.TypeConverters
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.GroupEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.GroupMemberEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.LookedUpUserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageReaderEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.SnailTrailPointEntity
@@ -21,9 +22,9 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.MapEntryEnt
 
 
 @Database(
-    entities = [UserEntity::class, MessageEntity::class, MessageReaderEntity::class, GroupEntity::class, GroupMemberEntity::class, LogEntry::class, PlayerEntity::class, MapEntryEntity::class, SnailTrailPointEntity::class, EventEntity::class, GroupExtensionEntity::class, FeedbackEntryEntity::class, FeedbackCommentSeenEntity::class],
+    entities = [UserEntity::class, MessageEntity::class, MessageReaderEntity::class, GroupEntity::class, GroupMemberEntity::class, LogEntry::class, PlayerEntity::class, MapEntryEntity::class, SnailTrailPointEntity::class, EventEntity::class, GroupExtensionEntity::class, FeedbackEntryEntity::class, FeedbackCommentSeenEntity::class, LookedUpUserEntity::class],
     exportSchema = true,
-    version = 94
+    version = 95
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -50,6 +51,8 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun groupExtensionDao(): GroupExtensionDao
 
     abstract fun feedbackEntryDao(): FeedbackEntryDao
+
+    abstract fun lookedUpUserDao(): LookedUpUserDao
 
     abstract fun allDatabaseDao(): AllDatabaseDao
 

@@ -75,6 +75,22 @@ data class Message(
 
     fun isGroupMessage(): Boolean = groupMessage
 
+    /** The user ids a one-line preview of this message names: the people of a system message, else the sender. */
+    fun previewUserIds(): List<String> = systemEvent?.userIds() ?: listOf(senderId)
+
+    /**
+     * Every user id this message shows a name or picture for: the sender (not for a system
+     * message, whose sender is often a group), readers, reactions, poll voters, and the people a
+     * system message names.
+     */
+    fun shownUserIds(): Set<String> = buildSet {
+        if (msgType != MessageType.SYSTEM) add(senderId)
+        readers.forEach { add(it.readerId) }
+        reactions.forEach { add(it.userId) }
+        poll?.let { addAll(it.voterIds()) }
+        systemEvent?.let { addAll(it.userIds()) }
+    }
+
     /**
      * Was this message sent into this chat?
      * @param chatID id of the chat (group id or user id)

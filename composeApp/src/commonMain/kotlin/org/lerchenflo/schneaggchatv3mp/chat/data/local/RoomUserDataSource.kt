@@ -69,6 +69,14 @@ class RoomUserDataSource(
         return database.userDao().getUserbyIdFlow(id).map { it?.toUser() }
     }
 
+    override suspend fun getUsersByIds(ids: List<String>): List<User> {
+        return database.userDao().getUsersByIds(ids).map { it.toUser() }
+    }
+
+    override fun getUsersByIdsFlow(ids: List<String>): Flow<List<User>> {
+        return database.userDao().getUsersByIdsFlow(ids).map { users -> users.map { it.toUser() } }
+    }
+
 
     override suspend fun updateUserProfilePicUrl(userId: String, newUrl: String) {
         val dbUser = database.userDao().getUserbyId(userId)

@@ -1,11 +1,15 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.detail
 
+import org.lerchenflo.schneaggchatv3mp.events.domain.shownUserIds
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -19,9 +23,8 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
@@ -33,7 +36,7 @@ import kotlin.time.Clock
 class EventDetailViewModel(
     private val eventId: String,
     private val eventRepository: EventRepository,
-    userRepository: UserRepository,
+    userIdentityRepository: UserIdentityRepository,
     groupRepository: GroupRepository,
     settingsRepository: SettingsRepository,
     private val dataSyncCoordinator: DataSyncCoordinator,
@@ -50,10 +53,17 @@ class EventDetailViewModel(
 
     private val eventFlow = eventRepository.getAllEventsFlow().map { events -> events.firstOrNull { it.id == eventId } }
 
+    // Everyone the event names; opening the event looks up the ones this device does not know yet
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val shownUsersFlow = eventFlow
+        .map { event -> event?.shownUserIds().orEmpty() }
+        .distinctUntilChanged()
+        .flatMapLatest { userIds -> userIdentityRepository.observeUsers(userIds) }
+
     val state = combine(
         _state,
         eventFlow,
-        userRepository.getAllUsersFlow(),
+        shownUsersFlow,
         groupRepository.getAllGroupsFlow(),
         settingsRepository.getMapStyleUrlFlow(),
     ) { current, event, users, groups, mapStyleUrl ->
@@ -61,9 +71,7 @@ class EventDetailViewModel(
             event = event,
             isLoading = false,
             mapStyleUrl = mapStyleUrl,
-            usersById = users
-                .filter { it.friendshipStatus == FriendshipStatus.ACCEPTED || it.id == current.ownUserId }
-                .associateBy { it.id },
+            usersById = users,
             // Group membership - not the participation status - decides Open chat: a user can
             // accept a group event without joining its chat, and a legacy member has no entry.
             isJoined = event?.groupId != null && groups.firstOrNull { it.id == event.groupId }

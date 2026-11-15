@@ -2,6 +2,9 @@
 
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
+import kotlinx.coroutines.flow.distinctUntilChanged
+import org.lerchenflo.schneaggchatv3mp.events.domain.shownUserIds
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventReminders
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -61,6 +64,7 @@ class EventsViewModel(
     private val appVersion: AppVersion,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val userRepository: UserRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     private val groupRepository: GroupRepository,
     private val settingsRepository: SettingsRepository,
     private val pictureManager: PictureManager,
@@ -81,6 +85,21 @@ class EventsViewModel(
     private val ownUserIdFlow = SessionCache.authState.map {
         (it as? SessionCache.AuthState.LoggedIn)?.userId
     }
+
+    /**
+     * Names and pictures of everyone the events name, plus the friends (invitable in the edit
+     * popup) and the own user. Subscribes again only when that set of ids changes.
+     */
+    private val shownUsersFlow = combine(
+        eventRepository.getAllEventsFlow(),
+        userRepository.getAllUsersFlow(),
+        ownUserIdFlow,
+    ) { events, users, ownId ->
+        val friendIds = users.filter { it.friendshipStatus == FriendshipStatus.ACCEPTED }.map { it.id }
+        events.flatMapTo(mutableSetOf()) { it.shownUserIds() } + friendIds + listOfNotNull(ownId)
+    }
+        .distinctUntilChanged()
+        .flatMapLatest { userIds -> userIdentityRepository.observeUsers(userIds) }
 
     private val _state = MutableStateFlow(EventsState(isMobile = appVersion.isMobile(), selectedEvent = initialEntry))
     val state = combine(
@@ -114,9 +133,10 @@ class EventsViewModel(
         )
     }.combine(ownUserFlow) { currentState, ownUser ->
         currentState.copy(
-            usersById = ownUser?.let { currentState.friendsById + (it.id to it) } ?: currentState.friendsById,
             birthdaysByMonthDay = buildBirthdaysByMonthDay(currentState.friendsById.values, ownUser)
         )
+    }.combine(shownUsersFlow) { currentState, users ->
+        currentState.copy(usersById = users)
     }.combine(settingsRepository.getEventsViewModeFlow()) { currentState, viewMode ->
         // Persisted view mode is the single source of truth - OnViewModeChange only writes the
         // preference, so the switch survives app restarts and never flickers back to a default.

@@ -2,6 +2,8 @@
 
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -49,6 +51,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SchneaggmapViewModel(
     private val errorChannel: ErrorChannel,
     private val navigator: Navigator,
@@ -57,6 +60,7 @@ class SchneaggmapViewModel(
     private val settingsRepository: SettingsRepository,
     private val locationService: LocationService,
     private val userRepository: UserRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     private val eventRepository: EventRepository,
 
     private val initialEntryId: String?,
@@ -481,6 +485,17 @@ class SchneaggmapViewModel(
     }
 
     init {
+        // The editor of the open entry, looked up when this device does not know them
+        viewModelScope.launch {
+            _state
+                .map { it.selectedEntry?.updatedBy?.takeIf { editorId -> editorId.isNotBlank() } }
+                .distinctUntilChanged()
+                .flatMapLatest { editorId ->
+                    if (editorId == null) flowOf(null) else userIdentityRepository.observeUser(editorId).map { it.name }
+                }
+                .collect { editorName -> _state.update { it.copy(selectedEntryEditorName = editorName) } }
+        }
+
         // Opened on a location (e.g. an event's map preview): fly there once
         if (focusLocation != null) {
             _state.update { it.copy(focusEntryTarget = focusLocation, isFilterDropdownVisible = false) }

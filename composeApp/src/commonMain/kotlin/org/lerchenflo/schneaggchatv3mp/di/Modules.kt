@@ -30,6 +30,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.UserResponseWriter
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomGroupDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomMessageDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomUserDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomLookedUpUserDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.LookedUpUserLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstUserIdentityRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
@@ -243,6 +247,17 @@ val sharedmodule = module{
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
     singleOf(::UserResponseWriter)
     singleOf(::OfflineFirstUserRepository) bind UserRepository::class
+    singleOf(::RoomLookedUpUserDataSource) bind LookedUpUserLocalDataSource::class
+    single<UserIdentityRepository> {
+        OfflineFirstUserIdentityRepository(
+            userLocalDataSource = get(),
+            lookedUpUserLocalDataSource = get(),
+            userRemoteDataSource = get(),
+            pictureManager = get(),
+            externalScope = get<ApplicationScope>(),
+            logger = get(),
+        )
+    }
     singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
     // Explicit lambda so the dispatcher keeps its default (Dispatchers.IO); tests pass their own (plan R4).
     // Sends and mark-read run in the app-wide scope, so they outlive the screen that started them (plan R2).
@@ -263,6 +278,7 @@ val sharedmodule = module{
             userLocalDataSource = get(),
             groupLocalDataSource = get(),
             messageLocalDataSource = get(),
+            userIdentityRepository = get(),
             settingsRepository = get(),
             settingsRemoteDataSource = get(),
         )
@@ -302,6 +318,7 @@ val sharedmodule = module{
             eventRepository = get(),
             groupExtensionRepository = get(),
             feedbackRepository = get(),
+            userIdentityRepository = get(),
             loggingRepository = get(),
             externalScope = get<ApplicationScope>(),
         )
@@ -392,6 +409,7 @@ val sharedmodule = module{
             applicationScope = get(),
             messageRepository = get(),
             userRepository = get(),
+            userIdentityRepository = get(),
             groupRepository = get(),
             settingsRepository = get(),
             navigator = get(),
@@ -412,6 +430,7 @@ val sharedmodule = module{
             groupRepository = get(),
             navigator = get(),
             userRepository = get(),
+            userIdentityRepository = get(),
             pictureManager = get(),
             eventRepository = get(),
             messageRepository = get(),
@@ -427,7 +446,7 @@ val sharedmodule = module{
         UnknownUserViewModel(
             route = route,
             userRepository = get(),
-            pictureManager = get(),
+            userIdentityRepository = get(),
             navigator = get(),
             errorChannel = get(),
             applicationScope = get(),
@@ -450,7 +469,7 @@ val sharedmodule = module{
         SplitViewModel(
             groupExtensionRepository = get(),
             groupRepository = get(),
-            userRepository = get(),
+            userIdentityRepository = get(),
             navigator = get(),
             extensionId = extensionId
         )
@@ -462,7 +481,7 @@ val sharedmodule = module{
             errorChannel = get(),
             groupExtensionRepository = get(),
             groupRepository = get(),
-            userRepository = get(),
+            userIdentityRepository = get(),
             navigator = get(),
             route = route
         )
@@ -472,7 +491,7 @@ val sharedmodule = module{
     viewModel { (chatId: String, isGroup: Boolean, initialTab: SharedContentTab) ->
         SharedContentViewModel(
             messageRepository = get(),
-            userRepository = get(),
+            userIdentityRepository = get(),
             navigator = get(),
             pictureManager = get(),
             chatId = chatId,
@@ -490,6 +509,7 @@ val sharedmodule = module{
             settingsRepository = get(),
             locationService = get(),
             userRepository = get(),
+            userIdentityRepository = get(),
             eventRepository = get(),
             initialEntryId = initialEntryId,
             currentlyEditedEvent = currentlyEditedEvent,
@@ -511,7 +531,7 @@ val sharedmodule = module{
         EventDetailViewModel(
             eventId = eventId,
             eventRepository = get(),
-            userRepository = get(),
+            userIdentityRepository = get(),
             groupRepository = get(),
             settingsRepository = get(),
             dataSyncCoordinator = get(),
@@ -529,6 +549,7 @@ val sharedmodule = module{
             dataSyncCoordinator = get(),
             eventRepository = get(),
             userRepository = get(),
+            userIdentityRepository = get(),
             groupRepository = get(),
             settingsRepository = get(),
             pictureManager = get(),

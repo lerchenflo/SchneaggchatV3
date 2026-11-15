@@ -4,6 +4,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NewFriendsUserResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserLookupResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.WakeResponse
 
@@ -13,6 +14,9 @@ interface UserRemoteDataSource {
     suspend fun getProfilePicForUserId(userId: String) : DataResult<ByteArray, DataError>
 
     suspend fun userIdSync(userIds: List<IdTimeStamp>) : DataResult<UserSyncResponse, DataError>
+
+    /** Names and picture visibility of 1 to 100 user ids, also of non-friends; deleted ids are listed apart. */
+    suspend fun lookUpUsers(userIds: List<String>) : DataResult<UserLookupResponse, DataError>
 
     suspend fun getAvailableUsers(searchterm: String) : DataResult<List<NewFriendsUserResponse>, DataError>
 

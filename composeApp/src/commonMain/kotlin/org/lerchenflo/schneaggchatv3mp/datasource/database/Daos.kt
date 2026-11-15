@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.ChatAggregate
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.GroupEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.GroupMemberEntity
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.LookedUpUserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.MessageReaderEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.SnailTrailPointEntity
@@ -52,6 +53,47 @@ interface UserDao {
     @Query("SELECT id, updatedAt FROM users")
     suspend fun getUserIdsWithChangeDates(): List<IdChangeDate>
 
+    @Query("SELECT * FROM users WHERE id IN (:userids)")
+    suspend fun getUsersByIds(userids: List<String>): List<UserEntity>
+
+    @Query("SELECT * FROM users WHERE id IN (:userids)")
+    fun getUsersByIdsFlow(userids: List<String>): Flow<List<UserEntity>>
+
+}
+
+@Dao
+interface LookedUpUserDao {
+
+    @Upsert
+    suspend fun upsertAll(users: List<LookedUpUserEntity>)
+
+    @Query("SELECT * FROM looked_up_users WHERE id IN (:ids)")
+    suspend fun getByIds(ids: List<String>): List<LookedUpUserEntity>
+
+    @Query("SELECT * FROM looked_up_users WHERE id IN (:ids)")
+    fun getByIdsAsFlow(ids: List<String>): Flow<List<LookedUpUserEntity>>
+
+    @Query("SELECT * FROM looked_up_users")
+    fun getAllAsFlow(): Flow<List<LookedUpUserEntity>>
+
+    @Query("SELECT * FROM looked_up_users WHERE fetchedAt < :fetchedBefore")
+    suspend fun getFetchedBefore(fetchedBefore: Long): List<LookedUpUserEntity>
+
+    /**
+     * Stores a loaded picture file, but only while the row still names the picture version it was
+     * loaded for (a lookup may have changed or hidden it meanwhile). @return the number of updated rows
+     */
+    @Query("UPDATE looked_up_users SET profilePictureUrl = :url WHERE id = :id AND profilePicUpdatedAt = :pictureUpdatedAt")
+    suspend fun updateProfilePictureUrl(id: String, url: String, pictureUpdatedAt: Long): Int
+
+    @Query("UPDATE looked_up_users SET profilePictureUrl = '' WHERE id IN (:ids)")
+    suspend fun clearProfilePictureUrls(ids: List<String>)
+
+    @Query("SELECT * FROM looked_up_users WHERE profilePictureUrl != ''")
+    suspend fun getWithProfilePicture(): List<LookedUpUserEntity>
+
+    @Query("DELETE FROM looked_up_users WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }
 
 @Dao
@@ -549,6 +591,9 @@ interface AllDatabaseDao {
     @Query("DELETE FROM feedback_comments_seen")
     suspend fun clearFeedbackCommentsSeen()
 
+    @Query("DELETE FROM looked_up_users")
+    suspend fun clearLookedUpUsers()
+
 
     @Transaction
     suspend fun clearAll() {
@@ -564,6 +609,7 @@ interface AllDatabaseDao {
         clearGroupExtensions()
         clearFeedbackEntries()
         clearFeedbackCommentsSeen()
+        clearLookedUpUsers()
     }
 }
 

@@ -1,5 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.socket
 
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.coroutineScope
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.userIdentityNameText
+import kotlinx.coroutines.flow.first
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventFallbackNotificationContent
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventUpdateNotificationContent
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventReminderNotificationContent
@@ -10,6 +14,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserResponseWriter
@@ -82,7 +87,6 @@ sealed interface SocketConnectionMessage {
     @SerialName("friendrequest")
     data class FriendRequest(
         val requestingUser: String,
-        val requestingUserName: String,
         val accepted: Boolean
     ) : SocketConnectionMessage
 
@@ -128,7 +132,7 @@ sealed interface SocketConnectionMessage {
         val eventTitle: String = "",
         val changes: List<String> = emptyList(),
         val startDate: Long = 0L,
-        val actorName: String = "",
+        val actorId: String = "",
     ) : SocketConnectionMessage
 
     /**
@@ -269,13 +273,9 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     // A failure here must not skip the ack below: the server would then push the
                     // message, and the push path drops it as already stored - nothing would show.
                     try {
-                        // resolve sender name (falling back to the sender's per-group nickname) and,
-                        // for group messages, the group name shown alongside it
-                        val senderUser = userLocalDataSource.getUserById(message.senderId)
+                        // resolve sender name and, for group messages, the group name shown alongside it
                         val group = if (message.groupMessage) groupLocalDataSource.getGroupById(message.receiverId) else null
-                        message.senderAsString = senderUser?.displayName
-                            ?: group?.members?.find { it.userId == message.senderId }?.memberName
-                            ?: ""
+                        message.senderAsString = notificationNameOf(message.senderId)
 
                         // Group messages live under the receiver (the group), single messages under the
                         // sender - the same id ChatScreen registers with OpenChatTracker (and that
@@ -339,8 +339,6 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                         msgId = socketMessage.message.messageId,
                         before = existing,
                         after = message,
-                        userLocalDataSource = userLocalDataSource,
-                        groupLocalDataSource = groupLocalDataSource,
                     )
                 }
             }
@@ -365,6 +363,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     val existing = groupLocalDataSource.getGroupById(socketMessage.group.id)
 
                     groupLocalDataSource.upsertGroup(socketMessage.group.toGroup(existing))
+                    KoinPlatform.getKoin().get<UserIdentityRepository>()
+                        .prefetch(socketMessage.group.members.map { it.userid })
 
                     //Update profile picture if group is new or the profile pic got updated
                     if (existing == null || existing.profilePicUpdatedAt < socketMessage.group.profilePicUpdatedAt) {
@@ -376,13 +376,13 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
             //Friend request was sent
             is SocketConnectionMessage.FriendRequest -> {
                 //Notify before the sync: it can be slow or fail, and the notification must not wait for it
-                ensureProfilePictureForNotification(socketMessage.requestingUser)
+                val requesterName = loadNotificationSender(socketMessage.requestingUser)
                 if (socketMessage.accepted) {
                     NotificationManager.showNotification(
                         titletext = getString(Res.string.new_friend_accepted_noti),
                         bodytext = getString(
                             Res.string.new_friend_accepted_noti_body,
-                            socketMessage.requestingUserName
+                            requesterName
                         ),
                         notiId = NotiId.Integ(NotiIdType.FRIEND_REQUEST.baseId),
                         avatarUserId = socketMessage.requestingUser,
@@ -390,8 +390,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     )
                 } else {
                     NotificationManager.showNotification(
-                        titletext = getString(Res.string.new_friend_request_noti, socketMessage.requestingUserName),
-                        bodytext = getString(Res.string.new_friend_request_noti_body, socketMessage.requestingUserName),
+                        titletext = getString(Res.string.new_friend_request_noti, requesterName),
+                        bodytext = getString(Res.string.new_friend_request_noti_body, requesterName),
                         notiId = NotiId.Integ(NotiIdType.FRIEND_REQUEST.baseId),
                         avatarUserId = socketMessage.requestingUser,
                         kind = NotificationKind.SOCIAL,
@@ -424,11 +424,11 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
                     // The creator's own devices get the new event too, but no "X created an event" notification
                     if (socketMessage.newEntry && socketMessage.event.creatorId != ownId) {
-                        ensureProfilePictureForNotification(socketMessage.event.creatorId)
                         val content = try {
+                            val creatorName = loadNotificationSender(socketMessage.event.creatorId)
                             NotificationContent(
                                 id = eventNotificationId(socketMessage.event.id),
-                                title = getString(Res.string.new_event_noti_title, socketMessage.event.creatorName),
+                                title = getString(Res.string.new_event_noti_title, creatorName),
                                 body = socketMessage.event.title,
                                 avatarUserId = socketMessage.event.creatorId,
                                 eventId = socketMessage.event.id,
@@ -463,7 +463,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                         eventTitle = socketMessage.eventTitle,
                         changes = EventUpdateChange.parse(socketMessage.changes),
                         startDate = socketMessage.startDate,
-                        actorName = socketMessage.actorName,
+                        actorName = notificationNameOf(socketMessage.actorId),
                     )
                 } catch (e: CancellationException) {
                     throw e
@@ -525,8 +525,6 @@ private suspend fun notifyNewReactions(
     msgId: String,
     before: Message,
     after: Message,
-    userLocalDataSource: UserLocalDataSource,
-    groupLocalDataSource: GroupLocalDataSource,
 ) {
     if (after.senderId != ownId) return
 
@@ -534,13 +532,9 @@ private suspend fun notifyNewReactions(
     val added = after.reactions.filter { it.userId != ownId && (it.userId to it.content) !in previous }
     if (added.isEmpty()) return
 
-    val group = if (after.groupMessage) groupLocalDataSource.getGroupById(after.receiverId) else null
-
     added.forEach { reaction ->
         try {
-            val reactorName = userLocalDataSource.getUserById(reaction.userId)?.displayName
-                ?: group?.members?.find { it.userId == reaction.userId }?.memberName
-                ?: ""
+            val reactorName = notificationNameOf(reaction.userId)
             val content = reactionNotificationContent(
                 msgId = msgId,
                 reactorId = reaction.userId,
@@ -602,4 +596,27 @@ private suspend fun logSocketError(message: String, e: Throwable) {
     runCatching {
         KoinPlatform.getKoin().get<Logger>().logError("[Socket] $message: ${e::class.simpleName}: ${e.message}")
     }
+}
+
+// A notification waits at most this long for a name lookup; after that an outdated stored name
+// (or "Unknown user") shows, and the lookup finishes in the background
+private val NOTIFICATION_NAME_TIMEOUT = 3.seconds
+
+/**
+ * The shown name of [userId] for a notification: the own nickname for them, else their name. A user
+ * this device does not know (or only knows from more than a day ago) is looked up first, for at
+ * most [NOTIFICATION_NAME_TIMEOUT].
+ */
+private suspend fun notificationNameOf(userId: String): String =
+    userIdentityNameText()(
+        KoinPlatform.getKoin().get<UserIdentityRepository>().getUser(userId, maxWait = NOTIFICATION_NAME_TIMEOUT).name
+    )
+
+/**
+ * Name and profile picture of the user a notification is about, loaded at the same time so the
+ * notification waits for one timeout (3 s), not for both one after another. Returns the name.
+ */
+private suspend fun loadNotificationSender(userId: String): String = coroutineScope {
+    launch { ensureProfilePictureForNotification(userId) }
+    notificationNameOf(userId)
 }

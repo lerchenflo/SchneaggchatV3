@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobStatus
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.EVENTS
@@ -49,6 +50,7 @@ class DefaultDataSyncCoordinator(
     private val eventRepository: EventRepository,
     private val groupExtensionRepository: GroupExtensionRepository,
     private val feedbackRepository: FeedbackRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     private val loggingRepository: Logger,
     private val externalScope: CoroutineScope,
 ) : DataSyncCoordinator {
@@ -342,5 +344,8 @@ class DefaultDataSyncCoordinator(
 
         // Check image and audio messages (MessageRepository), in parallel with the parts above
         launch { messageRepository.fetchMissingMessageMedia() }
+
+        // Drop looked-up users (and pictures) not fetched for five days, forget lost picture files
+        launch { userIdentityRepository.cleanUp() }
     }
 }

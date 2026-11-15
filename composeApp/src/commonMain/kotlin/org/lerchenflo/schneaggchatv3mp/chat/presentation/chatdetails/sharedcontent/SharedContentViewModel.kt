@@ -17,7 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -31,7 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.extractLinks
 @OptIn(ExperimentalCoroutinesApi::class)
 class SharedContentViewModel(
     private val messageRepository: MessageRepository,
-    private val userRepository: UserRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     private val navigator: Navigator,
     private val pictureManager: PictureManager,
 
@@ -47,21 +48,21 @@ class SharedContentViewModel(
     )
     val state = _state.asStateFlow()
 
-    // Only the id -> displayName projection, not the full User list: getAllUsersFlow() emits on ANY
-    // row change in `users` - including the presence writes that arrive constantly over the socket
-    // and have nothing to do with this chat. Narrowing it first means only a real name change
-    // rebuilds the lists.
-    private val senderNamesFlow: Flow<Map<String, String>> = userRepository.getAllUsersFlow()
-        .map { users -> users.associate { it.id to it.displayName } }
-        .distinctUntilChanged()
+    /** Names of the users [messages] show (senders, system event people), kept up to date. */
+    private fun namesOf(messages: List<Message>): Flow<Map<String, UserIdentityName>> =
+        userIdentityRepository.observeUsers(messages.flatMapTo(mutableSetOf()) { it.previewUserIds() + it.senderId })
+            .map { users -> users.mapValues { (_, user) -> user.name } }
 
     init {
         viewModelScope.launch {
             combine(
                 messageRepository.getImageMessagesForChatFlow(chatId, isGroup),
                 messageRepository.getLinkCandidateMessagesForChatFlow(chatId, isGroup),
-                senderNamesFlow
-            ) { imageMessages, linkCandidates, senderNames ->
+            ) { imageMessages, linkCandidates -> imageMessages to linkCandidates }
+                .flatMapLatest { (imageMessages, linkCandidates) ->
+                    namesOf(imageMessages + linkCandidates).map { names -> Triple(imageMessages, linkCandidates, names) }
+                }
+                .map { (imageMessages, linkCandidates, senderNames) ->
                 val images = imageMessages
                     .filter { !it.pictureUrl.isNullOrEmpty() }
                     .map { message ->
@@ -105,12 +106,10 @@ class SharedContentViewModel(
                 .distinctUntilChanged()
                 .flatMapLatest { type ->
                     _state.update { it.copy(isLoadingMessages = true) }
-                    combine(
-                        messageRepository.getMessagesOfTypeForChatFlow(chatId, isGroup, type),
-                        senderNamesFlow
-                    ) { messages, senderNames ->
-                        messages.map { message -> message.toSharedMessageItem(senderNames) }
-                    }
+                    messageRepository.getMessagesOfTypeForChatFlow(chatId, isGroup, type)
+                        .flatMapLatest { messages ->
+                            namesOf(messages).map { names -> messages.map { message -> message.toSharedMessageItem(names) } }
+                        }
                 }
                 .flowOn(Dispatchers.Default)
                 .collectLatest { messages ->
@@ -119,7 +118,7 @@ class SharedContentViewModel(
         }
     }
 
-    private fun Message.toSharedMessageItem(senderNames: Map<String, String>): SharedMessageItem {
+    private fun Message.toSharedMessageItem(senderNames: Map<String, UserIdentityName>): SharedMessageItem {
         val poll = poll
         return SharedMessageItem(
             messageId = id,
@@ -128,6 +127,7 @@ class SharedContentViewModel(
             text = poll?.title ?: content,
             pictureUrl = pictureUrl,
             systemEvent = systemEvent,
+            systemEventNames = systemEvent?.userIds()?.associateWith { senderNames[it] ?: UserIdentityName.Unknown }.orEmpty(),
             senderName = senderName(senderNames),
             sendDate = getSendDateAsLong(),
             poll = poll?.let {
@@ -140,9 +140,8 @@ class SharedContentViewModel(
         )
     }
 
-    /** Resolved display name of the sender, falling back to whatever the message itself carries. */
-    private fun Message.senderName(senderNames: Map<String, String>): String =
-        senderNames[senderId] ?: senderAsString
+    private fun Message.senderName(senderNames: Map<String, UserIdentityName>): UserIdentityName =
+        senderNames[senderId] ?: UserIdentityName.Unknown
 
     fun onAction(action: SharedContentAction) {
         when (action) {

@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto
 
+import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.LookedUpUserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.AvailableUser
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
@@ -31,6 +32,41 @@ fun NewFriendsUserResponse.toAvailableUser(): AvailableUser = AvailableUser(
     username = username,
     commonFriendCount = commonFriendCount,
     profilePicUpdatedAt = profilePicUpdatedAt,
+)
+
+// ─── User lookup ─────────────────────────────────────────────────────────────
+
+/**
+ * The looked-up rows of this reply, one per requested id. A row keeps the picture file of its
+ * [existing] row only while the picture version is the same; a changed or hidden picture is loaded
+ * again on the next show.
+ */
+fun UserLookupResponse.toLookedUpUserEntities(
+    existing: Map<String, LookedUpUserEntity>,
+    fetchedAt: Long,
+): List<LookedUpUserEntity> =
+    users.map { it.toLookedUpUserEntity(existing[it.id], fetchedAt) } +
+        deletedUserIds.map { deletedLookedUpUserEntity(it, fetchedAt) }
+
+private fun LookedUpUserResponse.toLookedUpUserEntity(existing: LookedUpUserEntity?, fetchedAt: Long): LookedUpUserEntity {
+    val samePicture = profilePicUpdatedAt != null && existing?.profilePicUpdatedAt == profilePicUpdatedAt
+    return LookedUpUserEntity(
+        id = id,
+        name = username,
+        profilePicUpdatedAt = profilePicUpdatedAt,
+        deleted = false,
+        fetchedAt = fetchedAt,
+        profilePictureUrl = if (samePicture) existing.profilePictureUrl else "",
+    )
+}
+
+private fun deletedLookedUpUserEntity(id: String, fetchedAt: Long): LookedUpUserEntity = LookedUpUserEntity(
+    id = id,
+    name = "",
+    profilePicUpdatedAt = null,
+    deleted = true,
+    fetchedAt = fetchedAt,
+    profilePictureUrl = "",
 )
 
 // ─── Wake ────────────────────────────────────────────────────────────────────

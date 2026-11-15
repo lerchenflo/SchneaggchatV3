@@ -1,11 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.userIdentityNameText
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import kotlinx.coroutines.flow.first
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.split_member_me
-import schneaggchatv3mp.composeapp.generated.resources.split_unknown_member
 
 /** A person in a split: a current group member, or someone an older expense still refers to. */
 data class SplitMemberUi(
@@ -16,22 +16,21 @@ data class SplitMemberUi(
 )
 
 /**
- * Resolves [userIds] to display names - user name, else the group nickname, else "former member" -
- * and marks the own user. Sorted with the own user first, then by name.
+ * Resolves [userIds] to display names through [userIdentityRepository] (names known right now; an
+ * id not looked up yet shows as "Unknown user") and marks the own user. Sorted with the own user
+ * first, then by name.
  */
 suspend fun resolveSplitMembers(
     userIds: List<String>,
-    groupMembers: List<GroupMember>,
-    userRepository: UserRepository,
+    userIdentityRepository: UserIdentityRepository,
     ownId: String?,
 ): List<SplitMemberUi> {
-    val memberById = groupMembers.associateBy { it.userId }
+    val users = userIdentityRepository.observeUsers(userIds.distinct()).first()
+    val nameText = userIdentityNameText()
 
     return userIds.distinct().map { userId ->
-        val user = userRepository.getUserById(userId)
-        val name = user?.displayName?.takeIf { it.isNotBlank() }
-            ?: memberById[userId]?.memberName?.takeIf { it.isNotBlank() }
-            ?: getString(Res.string.split_unknown_member)
+        val user = users[userId]
+        val name = nameText(user?.name)
         val isMe = userId == ownId
 
         SplitMemberUi(

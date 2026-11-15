@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.Dispatchers
@@ -46,13 +48,13 @@ class ChatLoadingBenchmark {
             try {
                 seed(db, size)
                 val dao = db.messageDao()
-                val names = members.associateWith { it.replaceFirstChar(Char::uppercase) }
-                val groupMembers = members.mapIndexed { i, id -> GroupMember(groupId = groupId, userId = id, joinDate = "0", admin = false, color = i, memberName = names.getValue(id)) }
+                val users = members.associateWith { UserIdentity(it, UserIdentityName.Known(it.replaceFirstChar(Char::uppercase))) }
+                val groupMembers = members.mapIndexed { i, id -> GroupMember(groupId = groupId, userId = id, joinDate = "0", admin = false, color = i) }
 
                 // OLD: same SQL the flow ran before (no LIMIT), map all, remap all.
                 suspend fun oldPath(): List<MessageDisplayItem> {
                     val messages = dao.getMessagesByUserId(groupId, true).map { it.toMessage() }
-                    return MessageDisplayMapper { "" }.map(messages, emptyMap(), names, groupMembers, null, "")
+                    return MessageDisplayMapper().map(messages, emptyMap(), users, groupMembers, null) { it.toString() }
                 }
 
                 // NEW: window of 100 + out-of-window reply targets, like ChatViewModel.
@@ -62,7 +64,7 @@ class ChatLoadingBenchmark {
                     val missing = messages.mapNotNull { it.answerId }.filter { it !in loadedIds }.distinct()
                     val older = if (missing.isEmpty()) emptyMap() else
                         dao.getMessageEntitiesByIds(missing).mapNotNull { d -> d.id?.let { it to d.toMessage() } }.toMap()
-                    return MessageDisplayMapper { "" }.map(messages, older, names, groupMembers, null, "")
+                    return MessageDisplayMapper().map(messages, older, users, groupMembers, null) { it.toString() }
                 }
 
                 // NEW, once on open only: size the first window so all unread fit.

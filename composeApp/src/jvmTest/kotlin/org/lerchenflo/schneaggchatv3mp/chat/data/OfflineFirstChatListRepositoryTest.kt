@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserIdentityRepository
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.containsExactlyInAnyOrder
@@ -59,6 +62,7 @@ class OfflineFirstChatListRepositoryTest {
     private lateinit var groupDataSource: RoomGroupDataSource
     private lateinit var messageDataSource: RoomMessageDataSource
     private val settingsRepository = FakeSettingsRepository()
+    private val userIdentityRepository = FakeUserIdentityRepository()
 
     /** Bodies of every `POST /users/settings`; any other request is recorded in [unexpectedRequests]. */
     private val settingsPushes = CopyOnWriteArrayList<UserSettingsRequest>()
@@ -104,6 +108,7 @@ class OfflineFirstChatListRepositoryTest {
             userLocalDataSource = userDataSource,
             groupLocalDataSource = groupDataSource,
             messageLocalDataSource = messageDataSource,
+            userIdentityRepository = userIdentityRepository,
             settingsRepository = settingsRepository,
             settingsRemoteDataSource = createTestSettingsRemoteDataSource(httpClient, FakeLogger()),
             defaultDispatcher = StandardTestDispatcher(testScheduler),
@@ -158,6 +163,8 @@ class OfflineFirstChatListRepositoryTest {
             testMessage("g3", senderId = "ben", receiverId = "hiking", sendDate = 3_500L, group = true, readByMe = true),
         )
 
+        userIdentityRepository.identities.value = mapOf("ben" to UserIdentity("ben", UserIdentityName.Known("Ben")))
+
         val chats = repository.getChatListFlow(OWN_ID).first()
 
         val anna = chats.chat("anna")
@@ -171,7 +178,8 @@ class OfflineFirstChatListRepositoryTest {
         assertThat(hiking.unreadMessageCount).isEqualTo(1)
         assertThat(hiking.unsentMessageCount).isEqualTo(0)
         assertThat(hiking.lastMessage?.id).isEqualTo("g3")
-        assertThat(hiking.lastMessage?.senderAsString).isEqualTo("Ben")
+        // The preview names its sender through the one name path
+        assertThat(hiking.lastMessageNames).isEqualTo(mapOf("ben" to UserIdentityName.Known("Ben")))
 
         val ben = chats.chat("ben")
         assertThat(ben.lastMessage).isNull()

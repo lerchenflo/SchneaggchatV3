@@ -28,6 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository.MemberCall
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeMessageRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakePictureManager
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserRepository.DetailsCall
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserRepository.WakeCall
@@ -90,6 +91,7 @@ class ChatDetailsViewmodelTest {
             groupRepository = groupRepository,
             navigator = navigator,
             userRepository = userRepository,
+            userIdentityRepository = FakeUserIdentityRepository(),
             pictureManager = FakePictureManager(),
             eventRepository = FakeEventRepository(),
             messageRepository = FakeMessageRepository(),
@@ -228,13 +230,18 @@ class ChatDetailsViewmodelTest {
     }
 
     @Test
-    fun `sending a friend request from a group member reaches the repository`() = runViewModelTest(viewModels) {
+    fun `a group member who is not a friend opens the unknown-user popup`() = runViewModelTest(viewModels) {
         val viewModel = createViewModel(GROUP_ID, isGroup = true)
 
-        viewModel.sendFriendRequest("left-user")
+        navigator.navigationActions.test {
+            viewModel.openUnknownUser("left-user", "Lena")
 
-        // Runs in the app-wide scope, not in viewModelScope
-        assertThat(userRepository.friendRequestsSent.awaitCount(1)).containsExactly("left-user")
+            // The popup sends the friend request itself
+            assertThat(awaitItem()).isEqualTo(
+                NavigationAction.Navigate(Route.UnknownUser(userId = "left-user", name = "Lena"), Navigator.NavigationOptions())
+            )
+        }
+        assertThat(userRepository.friendRequestsSent.calls).isEmpty()
     }
 
     @Test

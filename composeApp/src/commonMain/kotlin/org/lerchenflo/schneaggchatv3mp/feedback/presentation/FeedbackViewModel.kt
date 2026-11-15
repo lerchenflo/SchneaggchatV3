@@ -1,5 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,8 +37,10 @@ import kotlin.time.Clock
  * screen badge; the New / Updated labels stay for this visit. The full details of an entry
  * (comments, location) are fetched live only when it is opened.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class FeedbackViewModel(
     private val feedbackRepository: FeedbackRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     private val navigator: Navigator,
     private val applicationScope: ApplicationScope,
     private val errorChannel: ErrorChannel,
@@ -45,6 +52,17 @@ class FeedbackViewModel(
     init {
         viewModelScope.launch {
             feedbackRepository.getEntriesFlow().collect { entries -> onEntriesChanged(entries) }
+        }
+        // Names of the creators and of the open entry's comment authors; subscribes again only
+        // when that set of ids changes
+        viewModelScope.launch {
+            _state
+                .map { state -> state.shownUserIds() }
+                .distinctUntilChanged()
+                .flatMapLatest { userIds -> userIdentityRepository.observeUsers(userIds) }
+                .collect { users ->
+                    _state.update { it.copy(userNames = users.mapValues { (_, user) -> user.name }) }
+                }
         }
         viewModelScope.launch {
             feedbackRepository.getViewerIsAdminFlow().collect { isAdmin ->
@@ -304,3 +322,8 @@ internal fun List<FeedbackEntry>.sortedForBoard(sort: FeedbackSort, nowMillis: L
                 rest.sortedWith(compareByDescending<FeedbackEntry> { it.score }.thenByDescending { it.createdAt })
         }
     }
+
+/** Every user id the board shows a name for: the entry creators and the open entry's comment authors. */
+private fun FeedbackState.shownUserIds(): Set<String> =
+    entries.mapNotNullTo(mutableSetOf()) { it.creatorId } +
+        detail?.detail?.comments.orEmpty().map { it.authorId }

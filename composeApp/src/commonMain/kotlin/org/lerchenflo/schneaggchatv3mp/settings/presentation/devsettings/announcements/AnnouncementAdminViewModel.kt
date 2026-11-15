@@ -1,5 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -27,13 +32,28 @@ import kotlin.time.Clock
  * Lists, creates, edits and deletes announcements. Shown to everyone with developer settings;
  * the server answers NotFound to non-admins, which shows as "only admins".
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class AnnouncementAdminViewModel(
     private val announcementRepository: AnnouncementRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     private val applicationScope: ApplicationScope,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AnnouncementAdminState())
     val state: StateFlow<AnnouncementAdminState> = _state.asStateFlow()
+
+    init {
+        // Names of the creators of the listed announcements
+        viewModelScope.launch {
+            _state
+                .map { state -> state.announcements.mapNotNullTo(mutableSetOf()) { it.creatorId } }
+                .distinctUntilChanged()
+                .flatMapLatest { creatorIds -> userIdentityRepository.observeUsers(creatorIds) }
+                .collect { users ->
+                    _state.update { it.copy(creatorNames = users.mapValues { (_, user) -> user.name }) }
+                }
+        }
+    }
 
     private var loadJob: Job? = null
 

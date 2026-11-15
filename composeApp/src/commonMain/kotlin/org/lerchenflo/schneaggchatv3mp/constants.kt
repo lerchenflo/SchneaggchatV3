@@ -30,14 +30,18 @@ var USERPROFILEPICTURE_FILE_NAME = ".upb"
 
 var GROUPPROFILEPICTURE_FILE_NAME = ".gpb"
 
+// Pictures of looked-up users (not in the users table); own ending so deleting a user row never
+// deletes the looked-up copy and the other way round
+val LOOKEDUPUSERPICTURE_FILE_NAME = ".lpb"
+
 
 var PICTURE_FILE_NAME = "_bild.drawable"
 
 var VOICEMSG_FILE_NAME = "_voicemsg.m4a"
 
-/** File endings of every picture the app stores: user and group profile pictures, image messages. */
+/** File endings of every picture the app stores: user, looked-up user and group profile pictures, image messages. */
 val STORED_PICTURE_FILE_ENDINGS: List<String>
-    get() = listOf(USERPROFILEPICTURE_FILE_NAME, GROUPPROFILEPICTURE_FILE_NAME, PICTURE_FILE_NAME)
+    get() = listOf(USERPROFILEPICTURE_FILE_NAME, LOOKEDUPUSERPICTURE_FILE_NAME, GROUPPROFILEPICTURE_FILE_NAME, PICTURE_FILE_NAME)
 
 val MIN_GROUPNAME_LENGTH = 3
 val MAX_GROUPNAME_LENGTH = 25

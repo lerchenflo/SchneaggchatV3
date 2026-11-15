@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.userIdentityNameText
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,6 +28,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -74,13 +77,15 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import kotlin.time.TimeSource
 import schneaggchatv3mp.composeapp.generated.resources.poll_cannot_vote_on_unsent
-import schneaggchatv3mp.composeapp.generated.resources.unknown_user
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 
 class ChatViewModel(
     private val errorChannel: ErrorChannel,
     private val applicationScope: ApplicationScope,
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     private val groupRepository: GroupRepository,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
@@ -755,18 +760,22 @@ class ChatViewModel(
                 }
                 messages to olderReplyTargets
             }
+            // Read by the display items and by the shown users below, but queried once
+            .shareIn(viewModelScope, SharingStarted.WhileSubscribed(), replay = 1)
 
-    private val messageDisplayMapper = MessageDisplayMapper(
-        getProfilePicFilePath = { userId -> pictureManager.getProfilePicFilePath(userId, false) }
-    )
+    private val messageDisplayMapper = MessageDisplayMapper()
 
-    // Only the id -> displayName projection, not the full User list: getAllUsersFlow() emits on
-    // ANY row change in `users` - including presence/lastSeen writes, which arrive constantly
-    // over the socket and have nothing to do with this chat. distinctUntilChanged() on the
-    // narrowed projection means only an actual display-name change reprocesses the message list.
-    private val senderNamesFlow: Flow<Map<String, String>> = userRepository.getAllUsersFlow()
-        .map { users -> users.associate { it.id to it.displayName } }
+    /**
+     * Name and picture of every user the loaded messages name. Subscribes again only when that set
+     * of ids changes, not on every new message; the repository emits only on a real change.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val shownUsersFlow: Flow<Map<String, UserIdentity>> = windowedMessagesFlow
+        .map { (messages, olderReplyTargets) ->
+            (messages + olderReplyTargets.values).flatMapTo(mutableSetOf()) { it.shownUserIds() }
+        }
         .distinctUntilChanged()
+        .flatMapLatest { userIds -> userIdentityRepository.observeUsers(userIds) }
 
     /**
      * Transform message flow to display items with pre-resolved sender names.
@@ -774,13 +783,20 @@ class ChatViewModel(
     private val messageDisplayItemsFlow: Flow<List<MessageDisplayItem>> =
         combine(
             windowedMessagesFlow,
-            senderNamesFlow,
+            shownUsersFlow,
             flow {
                 emit(if (isGroup) groupRepository.getGroupMembers(chatId) else emptyList())
             }
-        ) { (messages, olderReplyTargets), senderNames, groupMembers ->
+        ) { (messages, olderReplyTargets), users, groupMembers ->
             captureNewMessagesBoundary(messages)
-            messageDisplayMapper.map(messages, olderReplyTargets, senderNames, groupMembers, newMessagesBoundaryId.value, getString(Res.string.unknown_user))
+            messageDisplayMapper.map(
+                messages = messages,
+                olderReplyTargets = olderReplyTargets,
+                users = users,
+                groupMembers = groupMembers,
+                newMessagesBoundaryId = newMessagesBoundaryId.value,
+                nameText = userIdentityNameText(),
+            )
         }
             .distinctUntilChanged()
             .flowOn(Dispatchers.Default)

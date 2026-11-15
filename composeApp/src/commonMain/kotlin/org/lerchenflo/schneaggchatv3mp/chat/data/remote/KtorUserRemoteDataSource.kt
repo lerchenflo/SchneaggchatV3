@@ -9,6 +9,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.appendProfilePic
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.LocationShareRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NewFriendsUserResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserLookupRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserLookupResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.WakeGlobalRequest
@@ -36,6 +38,13 @@ class KtorUserRemoteDataSource(
         return server.safePost(
             endpoint = "/users/sync",
             body = userIds
+        )
+    }
+
+    override suspend fun lookUpUsers(userIds: List<String>) : DataResult<UserLookupResponse, DataError> {
+        return server.safePost(
+            endpoint = "/users/lookup",
+            body = UserLookupRequest(userIds)
         )
     }
 

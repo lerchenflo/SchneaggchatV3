@@ -11,49 +11,44 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ReaderUi
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 private const val TIME_TO_MINIMIZE = 30_000L //Time between messages to remove name and space between messages (in ms)
 
 /**
- * Turns the raw message/sender-name/group-member lists into the list the chat's LazyColumn
- * renders.
- *
- * Kept as a class (not a plain function) so [picturePathFor] can cache a reader's profile-picture
- * path across emissions - it's a pure function of the user id, so recomputing it on every single
- * emission (as the old ChatViewModel.processMessages did) was wasted work.
+ * Turns the raw message/user/group-member lists into the list the chat's LazyColumn renders.
  *
  * Never mutates Message or MessageReader - both are safe to treat as immutable as long as
  * nothing on this path writes to them. That, together with @Immutable on MessageDisplayItem, is
- * what lets Compose skip recomposing a row whose resolved content didn't change; no separate
- * instance-reuse cache is needed here for that - structural equality already gets it.
+ * what lets Compose skip recomposing a row whose resolved content didn't change.
  */
-class MessageDisplayMapper(
-    private val getProfilePicFilePath: (userId: String) -> String,
-) {
-    private val profilePicturePathCache = mutableMapOf<String, String>()
-
-    private fun picturePathFor(userId: String): String =
-        profilePicturePathCache.getOrPut(userId) { getProfilePicFilePath(userId) }
+class MessageDisplayMapper {
 
     /**
      * [olderReplyTargets] holds the replied-to messages that are not in [messages] (older than the
      * loaded window), keyed by id, so a reply's preview survives the window cut.
+     *
+     * [users] holds the name and picture of every user id the messages name (senders, readers,
+     * reactions, system message actors and targets).
      */
     fun map(
         messages: List<Message>,
         olderReplyTargets: Map<String, Message>,
-        senderNames: Map<String, String>,
+        users: Map<String, UserIdentity>,
         groupMembers: List<GroupMember>,
         newMessagesBoundaryId: String?,
-        /** Shown for a sender that is neither a known user nor a group member. */
-        unknownSenderName: String,
+        /** Shown text of a resolved name (see `userIdentityNameText`). */
+        nameText: (UserIdentityName?) -> String,
     ): List<MessageDisplayItem> {
         val groupMap = groupMembers.associateBy { it.userId }
         val messagesById = messages.associateBy { it.id }
 
-        fun resolveName(userId: String) = senderNames[userId] ?: groupMap[userId]?.memberName ?: unknownSenderName
+        fun resolveName(userId: String) = nameText(users[userId]?.name)
+
+        fun picturePathFor(userId: String) = users[userId]?.profilePictureUrl.orEmpty()
 
         fun senderInfoFor(userId: String) = SenderInfo(
             name = resolveName(userId),
@@ -92,7 +87,8 @@ class MessageDisplayMapper(
                     displayItems.add(
                         MessageDisplayItem.SystemMessage(
                             id = "sys_${message.localPK}",
-                            event = event
+                            event = event,
+                            names = event.userIds().associateWith { users[it]?.name ?: UserIdentityName.Unknown },
                         )
                     )
                 }
@@ -118,9 +114,9 @@ class MessageDisplayMapper(
 
             val replyMessage = message.answerId?.let { messagesById[it] ?: olderReplyTargets[it] }
 
-            val resolvedReaders = message.readers.associate { reader ->
-                reader.readerId to resolveName(reader.readerId)
-            }
+            // Readers and poll voters, for the poll's voter list
+            val resolvedReaders = (message.readers.map { it.readerId } + message.poll?.voterIds().orEmpty())
+                .associateWith { resolveName(it) }
 
             val resolvedReaderList = message.readers.map { reader ->
                 ReaderUi(
