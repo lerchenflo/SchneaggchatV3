@@ -20,5 +20,4 @@ data class MapEntryEntity(
 
     val updatedBy: String,
     val updatedAt: Long,
-    val updatedByName: String = "",
 )

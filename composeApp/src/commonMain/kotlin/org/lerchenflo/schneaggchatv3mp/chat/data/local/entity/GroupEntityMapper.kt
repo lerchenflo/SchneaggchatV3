@@ -44,7 +44,6 @@ fun GroupMemberEntity.toGroupMember(): GroupMember = GroupMember(
     joinDate = joinDate,
     admin = admin,
     color = color,
-    memberName = memberName
 )
 
 /** Convert domain GroupMember -> persistence GroupMemberEntity */
@@ -55,5 +54,4 @@ fun GroupMember.toEntity(): GroupMemberEntity = GroupMemberEntity(
     joinDate = joinDate,
     admin = admin,
     color = color,
-    memberName = memberName
 )

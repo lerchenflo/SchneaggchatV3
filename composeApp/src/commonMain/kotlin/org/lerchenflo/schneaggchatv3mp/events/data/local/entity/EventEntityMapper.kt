@@ -13,7 +13,6 @@ fun Event.toEntity(): EventEntity = EventEntity(
     startDate = startDate,
     closeDate = closeDate,
     invitedUsers = invitedUsers,
-    invitedUserNames = invitedUserNames,
     reminderMinutes = reminderMinutes,
     participations = participations,
     visibility = visibility,
@@ -21,8 +20,7 @@ fun Event.toEntity(): EventEntity = EventEntity(
     groupDeleteDelay = groupDeleteDelay,
     createdAt = createdAt,
     updatedAt = updatedAt,
-    updatedBy = updatedBy,
-    creatorName = creatorName
+    updatedBy = updatedBy
 )
 
 fun EventEntity.toEvent(): Event = Event(
@@ -36,7 +34,6 @@ fun EventEntity.toEvent(): Event = Event(
     startDate = startDate,
     closeDate = closeDate,
     invitedUsers = invitedUsers,
-    invitedUserNames = invitedUserNames,
     reminderMinutes = reminderMinutes,
     participations = participations,
     visibility = visibility,
@@ -44,6 +41,5 @@ fun EventEntity.toEvent(): Event = Event(
     groupDeleteDelay = groupDeleteDelay,
     createdAt = createdAt,
     updatedAt = updatedAt,
-    updatedBy = updatedBy,
-    creatorName = creatorName
+    updatedBy = updatedBy
 )

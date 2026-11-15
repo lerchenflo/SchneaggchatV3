@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.ImageBitmap
@@ -25,7 +26,7 @@ data class EventsState(
     // The friends plus the logged-in user, for looking up an avatar or a name to display. The own
     // user has to be in here or their own picture and name fall back to the generic placeholder
     // wherever they show up as a creator or a participant.
-    val usersById: Map<String, User> = emptyMap(),
+    val usersById: Map<String, UserIdentity> = emptyMap(),
     val groups: List<Group> = emptyList(),
     val isSavingEvent: Boolean = false,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,

@@ -30,8 +30,8 @@ data class Announcement(
     val expiresAt: Long,
     val createdAt: Long,
     val updatedAt: Long,
-    /** Set only in the admin list. */
-    val creatorName: String? = null,
+    /** Id of the admin who wrote it. Set only in the admin list. */
+    val creatorId: String? = null,
 ) {
     /**
      * Text for [language], falling back when it has no translation: Vori to German, Italian to

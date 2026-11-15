@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi.buttons
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
 import org.lerchenflo.schneaggchatv3mp.chat.domain.friendRequestState
 import androidx.compose.foundation.clickable
@@ -259,15 +260,13 @@ fun UserButton(
                     // no "Name: " prefix - unlike every other msgType, whose sender is meaningful.
                     ComboText(
                         text = if (lastMessage.msgType == MessageType.SYSTEM) {
-                            lastMessage.systemEvent?.let { systemEventText(it) } ?: ""
+                            lastMessage.systemEvent?.let { systemEventText(it, chat.lastMessageNames) } ?: ""
                         } else {
                             (
                                     if (lastMessage.myMessage) {
                                         stringResource(Res.string.you_sender) + ": "
-                                    } else if (lastMessage.isGroupMessage()) {
-                                        lastMessage.senderAsString.ifBlank { stringResource(Res.string.unknown_user) } + ": "
                                     } else {
-                                        lastMessage.senderAsString + ": "
+                                        chat.lastMessageNames[lastMessage.senderId].text() + ": "
                                     }
                                     ) +
                                     when (lastMessage.msgType) {

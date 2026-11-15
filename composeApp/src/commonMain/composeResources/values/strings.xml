@@ -12,6 +12,7 @@
     <string name="search_section_messages">Messages (%1$d)</string>
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
+    <string name="deleted_user">deleted user</string>
     <string name="unknown_location">unknown location</string>
     <string name="unknown_event">unknown event</string>
     <string name="unknown_game">unknown game</string>
@@ -1805,7 +1806,6 @@
     <string name="feedback_bug_device_info_hint">Your app version and platform are attached automatically.</string>
     <string name="feedback_where_to_find">Where to find it: %1$s</string>
     <string name="feedback_seeded_author">Schneaggchat team</string>
-    <string name="feedback_unknown_user">Deleted user</string>
     <string name="feedback_comments">Comments</string>
     <string name="feedback_no_comments">No comments yet.</string>
     <string name="feedback_comment_hint">Add more info or a comment…</string>
@@ -1908,7 +1908,6 @@
     <string name="split_owes">%1$s owes %2$s</string>
     <string name="split_mark_as_paid">Mark as paid</string>
     <string name="split_member_me">%1$s (you)</string>
-    <string name="split_unknown_member">Former member</string>
     <string name="split_decimal_separator">.</string>
     <string name="split_new_expense">New expense</string>
     <string name="split_edit_expense">Edit expense</string>

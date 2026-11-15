@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.CalendarBirthday
 import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
@@ -33,7 +33,7 @@ fun EventsCalendarDayDetailSheet(
     date: LocalDate,
     events: List<Event>,
     birthdays: List<CalendarBirthday>,
-    usersById: Map<String, User>,
+    usersById: Map<String, UserIdentity>,
     ownId: String?,
     onDismiss: () -> Unit,
     onEventClick: (String) -> Unit,

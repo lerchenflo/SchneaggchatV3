@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.events.data.local.entity
 
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventUserName
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -25,7 +24,6 @@ data class EventEntity(
     val startDate: Long,
     val closeDate: Long?,
     val invitedUsers: List<String>,
-    val invitedUserNames: List<EventUserName> = emptyList(),
     val reminderMinutes: List<Int> = emptyList(),
     val participations: List<EventParticipation>,
     val visibility: EventVisibility,
@@ -33,7 +31,6 @@ data class EventEntity(
     val groupDeleteDelay: GroupDeleteDelay,
     val createdAt: Long,
     val updatedAt: Long,
-    val updatedBy: String,
-    val creatorName: String
+    val updatedBy: String
 
 )

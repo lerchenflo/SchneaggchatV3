@@ -30,7 +30,6 @@ import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
 import schneaggchatv3mp.composeapp.generated.resources.unknown_event
 import schneaggchatv3mp.composeapp.generated.resources.unknown_game
 import schneaggchatv3mp.composeapp.generated.resources.unknown_location
-import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import kotlin.time.Clock
 
 /**
@@ -57,7 +56,8 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     val userNames by annotationNames.userNames.collectAsState()
     val eventNames by annotationNames.eventNames.collectAsState()
 
-    val unknownUser = stringResource(Res.string.unknown_user)
+    val userNameText = rememberUserIdentityNameText()
+    val unknownUser = userNameText(null)
     val unknownLocation = stringResource(Res.string.unknown_location)
     val unknownEvent = stringResource(Res.string.unknown_event)
     val unknownGame = stringResource(Res.string.unknown_game)
@@ -100,7 +100,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
 
     return remember(
         locationNames, userNames, gameNames, eventNames,
-        unknownUser, unknownLocation, unknownEvent, unknownGame
+        userNameText, unknownLocation, unknownEvent, unknownGame
     ) {
         listOf(
             ComboAnnotationSource(
@@ -120,7 +120,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
             ),
             ComboAnnotationSource(
                 type = ComboAnnotationTypes.USER,
-                names = userNames,
+                names = userNames.mapValues { (_, name) -> userNameText(name) },
                 unresolvedName = unknownUser,
                 // A friend opens the chat; anyone else (also a user not stored here) gets the
                 // unknown-user popup, which looks up what it can and offers a friend request

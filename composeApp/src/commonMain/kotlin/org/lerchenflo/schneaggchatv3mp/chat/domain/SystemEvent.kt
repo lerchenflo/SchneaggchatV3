@@ -39,21 +39,22 @@ enum class SystemEventType {
 @Serializable
 data class SystemEventParticipant(
     val userId: String,
-    val userName: String,
 )
 
 /**
  * Structured payload embedded on a [MessageType.SYSTEM] [Message]. The server does not render a
- * sentence - it hands the client [eventType] plus ids and name snapshots, and the client builds
- * the localized string from its own resources (see `systemEventText()`).
+ * sentence - it hands the client [eventType] plus user ids, and the client builds the localized
+ * string from its own resources and the names it resolves for the ids (see `systemEventText()`).
  */
 @Serializable
 data class SystemEventMessage(
     val eventType: SystemEventType,
     val actorId: String,
-    val actorName: String,
     val targets: List<SystemEventParticipant> = emptyList(),
     val text: String? = null,          // new group name, wake reason, extension title
     val previousText: String? = null,  // old group name or extension title (the *_RENAMED / _CHANGED types)
     val timestamp: Long? = null,       // new event start in epoch ms (EVENT_START_CHANGED only)
-)
+) {
+    /** Every user id the sentence names: the actor and the targets. */
+    fun userIds(): List<String> = listOf(actorId) + targets.map { it.userId }
+}

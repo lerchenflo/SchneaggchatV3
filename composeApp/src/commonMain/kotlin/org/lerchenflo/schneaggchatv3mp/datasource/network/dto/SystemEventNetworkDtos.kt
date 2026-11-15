@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 data class SystemEventResponse(
     val eventType: String,
     val actorId: String,
-    val actorName: String,
     val targets: List<SystemEventParticipantResponse> = emptyList(),
     val text: String? = null,
     val previousText: String? = null,
@@ -16,5 +15,4 @@ data class SystemEventResponse(
 @Serializable
 data class SystemEventParticipantResponse(
     val userId: String,
-    val userName: String,
 )

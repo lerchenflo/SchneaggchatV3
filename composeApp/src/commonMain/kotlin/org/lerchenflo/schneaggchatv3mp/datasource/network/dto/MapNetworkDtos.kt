@@ -19,7 +19,4 @@ data class MapEntryResponse(
 
     val updatedBy: String,
     val updatedAt: Long,
-
-    //Resolved server side. Defaulted so entries from an older server still deserialize
-    val updatedByName: String = "",
 )

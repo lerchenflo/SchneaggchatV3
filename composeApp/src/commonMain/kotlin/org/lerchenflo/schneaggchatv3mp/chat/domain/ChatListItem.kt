@@ -19,6 +19,8 @@ data class ChatListItem(
     val unreadMessageCount: Int = 0,
     val unsentMessageCount: Int = 0,
     val lastMessage: Message? = null,
+    // Names of the users the last message preview names (see Message.previewUserIds)
+    val lastMessageNames: Map<String, UserIdentityName> = emptyMap(),
     val pinned: Long = 0L,
 
     val birthDate: String? = null, //YYYY-MM-dd
@@ -38,6 +40,7 @@ fun User.toChatListItem(
     unreadCount: Int = 0,
     unsentCount: Int = 0,
     lastMessage: Message? = null,
+    lastMessageNames: Map<String, UserIdentityName> = emptyMap(),
     pinned: Long = 0L,
     isOnline: Boolean = false,
 ): ChatListItem = ChatListItem(
@@ -53,6 +56,7 @@ fun User.toChatListItem(
     unreadMessageCount = unreadCount,
     unsentMessageCount = unsentCount,
     lastMessage = lastMessage,
+    lastMessageNames = lastMessageNames,
     pinned = pinned,
     birthDate = this.birthDate,
     phoneNumber = this.phoneNumber,
@@ -64,6 +68,7 @@ fun Group.toChatListItem(
     unreadCount: Int = 0,
     unsentCount: Int = 0,
     lastMessage: Message? = null,
+    lastMessageNames: Map<String, UserIdentityName> = emptyMap(),
     pinned: Long = 0L,
 ): ChatListItem = ChatListItem(
     id = this.id,
@@ -74,5 +79,6 @@ fun Group.toChatListItem(
     unreadMessageCount = unreadCount,
     unsentMessageCount = unsentCount,
     lastMessage = lastMessage,
+    lastMessageNames = lastMessageNames,
     pinned = pinned,
 )

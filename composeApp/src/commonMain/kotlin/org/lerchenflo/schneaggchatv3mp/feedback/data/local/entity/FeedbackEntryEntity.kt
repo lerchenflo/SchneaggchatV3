@@ -22,7 +22,7 @@ data class FeedbackEntryEntity(
     val myVote: String,
     val commentCount: Int,
     val latestDevComment: String?,
-    val creatorName: String?,
+    val creatorId: String?,
     val isOwn: Boolean,
     val canDelete: Boolean,
     val isSeeded: Boolean,

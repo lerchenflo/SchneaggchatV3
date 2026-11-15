@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.database
 
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventUserName
 import androidx.room.TypeConverter
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
@@ -83,16 +82,6 @@ class RoomTypeConverters {
 
     @TypeConverter
     fun toIntList(value: String): List<Int> = value.split(",").mapNotNull { it.trim().toIntOrNull() }
-
-    @TypeConverter
-    fun fromEventUserNameList(names: List<EventUserName>): String =
-        json.encodeToString(kotlinx.serialization.builtins.ListSerializer(EventUserName.serializer()), names)
-
-    @TypeConverter
-    fun toEventUserNameList(namesString: String): List<EventUserName> =
-        runCatching {
-            json.decodeFromString(kotlinx.serialization.builtins.ListSerializer(EventUserName.serializer()), namesString)
-        }.getOrDefault(emptyList())
 
     @TypeConverter
     fun locationDataToString(data: LocationData): String =

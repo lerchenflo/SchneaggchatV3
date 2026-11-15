@@ -16,7 +16,6 @@ fun EventResponse.toEvent(): Event = Event(
     startDate = startDate,
     closeDate = closeDate,
     invitedUsers = invitedUsers,
-    invitedUserNames = invitedUserNames,
     reminderMinutes = reminderMinutes,
     participations = participations,
     visibility = visibility,
@@ -24,6 +23,5 @@ fun EventResponse.toEvent(): Event = Event(
     groupDeleteDelay = groupDeleteDelay,
     createdAt = createdAt,
     updatedAt = updatedAt,
-    updatedBy = updatedBy,
-    creatorName = creatorName
+    updatedBy = updatedBy
 )

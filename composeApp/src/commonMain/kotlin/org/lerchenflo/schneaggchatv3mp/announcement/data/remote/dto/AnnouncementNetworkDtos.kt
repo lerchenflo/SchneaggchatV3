@@ -20,7 +20,7 @@ data class AnnouncementResponse(
     val createdAt: Long,
     val updatedAt: Long,
     // Only filled in the admin list
-    val creatorName: String? = null,
+    val creatorId: String? = null,
 )
 
 /** "Nothing to show" is a normal reply with a null, not an empty body. */

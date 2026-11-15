@@ -17,7 +17,7 @@ fun AnnouncementResponse.toAnnouncement(): Announcement = Announcement(
     expiresAt = expiresAt,
     createdAt = createdAt,
     updatedAt = updatedAt,
-    creatorName = creatorName,
+    creatorId = creatorId,
 )
 
 /** Trims every text and drops a translation without a title. */

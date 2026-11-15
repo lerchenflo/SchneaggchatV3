@@ -484,6 +484,7 @@ fun SchneaggmapScreen(
             state.selectedEntry?.let { entry ->
                 MapEntryInfoCard(
                     entry = entry,
+                    editorName = state.selectedEntryEditorName,
                     onDismiss = {
                         onAction(SchneaggmapAction.OnPopupDismiss)
                     },

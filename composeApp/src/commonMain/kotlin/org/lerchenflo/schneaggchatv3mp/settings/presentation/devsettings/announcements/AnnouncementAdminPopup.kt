@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -164,6 +165,7 @@ private fun AnnouncementList(
                 if (index > 0) HorizontalDivider()
                 AnnouncementRow(
                     announcement = announcement,
+                    creatorName = announcement.creatorId?.let { state.creatorNames[it].text() },
                     expired = announcement.isExpired(nowMillis),
                     onEdit = { onAction(AnnouncementAdminAction.EditClick(announcement)) },
                     onDelete = { onAction(AnnouncementAdminAction.DeleteClick(announcement)) },
@@ -190,6 +192,7 @@ private fun AnnouncementList(
 @Composable
 private fun AnnouncementRow(
     announcement: Announcement,
+    creatorName: String?,
     expired: Boolean,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -211,7 +214,7 @@ private fun AnnouncementRow(
                 style = MaterialTheme.typography.bodySmall,
                 color = if (expired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            announcement.creatorName?.let {
+            creatorName?.let {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,

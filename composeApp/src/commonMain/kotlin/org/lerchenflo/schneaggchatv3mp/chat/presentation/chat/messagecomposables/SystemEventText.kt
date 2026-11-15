@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.system_admin_granted
 import schneaggchatv3mp.composeapp.generated.resources.system_admin_revoked
@@ -33,36 +35,39 @@ import schneaggchatv3mp.composeapp.generated.resources.system_wake_sent_reason
  * a centered pill (see `SystemMessageItem` in SmallComposables.kt) and in the chat list as the
  * last-message preview (see `UserButton.kt`). Kept in one place so wording never drifts between
  * the two render sites.
+ *
+ * @param names the names of [SystemEventMessage.userIds]; a missing id shows as "Unknown user"
  */
 @Composable
-fun systemEventText(event: SystemEventMessage): String {
-    val targetNames = event.targets.joinToString(", ") { it.userName }
+fun systemEventText(event: SystemEventMessage, names: Map<String, UserIdentityName>): String {
+    val actorName = names[event.actorId].text()
+    val targetNames = event.targets.map { names[it.userId].text() }.joinToString(", ")
 
     return when (event.eventType) {
-        SystemEventType.GROUP_CREATED -> stringResource(Res.string.system_group_created, event.actorName)
-        SystemEventType.GROUP_MEMBER_ADDED -> stringResource(Res.string.system_member_added, event.actorName, targetNames)
-        SystemEventType.GROUP_MEMBER_JOINED_EVENT -> stringResource(Res.string.system_member_joined_event, event.actorName)
-        SystemEventType.GROUP_MEMBER_REMOVED -> stringResource(Res.string.system_member_removed, event.actorName, targetNames)
-        SystemEventType.GROUP_MEMBER_LEFT -> stringResource(Res.string.system_member_left, event.actorName)
-        SystemEventType.GROUP_ADMIN_GRANTED -> stringResource(Res.string.system_admin_granted, event.actorName, targetNames)
-        SystemEventType.GROUP_ADMIN_REVOKED -> stringResource(Res.string.system_admin_revoked, event.actorName, targetNames)
-        SystemEventType.GROUP_NAME_CHANGED -> stringResource(Res.string.system_group_name_changed, event.actorName, event.text.orEmpty())
-        SystemEventType.GROUP_DESCRIPTION_CHANGED -> stringResource(Res.string.system_group_description_changed, event.actorName)
-        SystemEventType.GROUP_PICTURE_CHANGED -> stringResource(Res.string.system_group_picture_changed, event.actorName)
-        SystemEventType.EVENT_CHANGED -> stringResource(Res.string.system_event_changed, event.actorName)
+        SystemEventType.GROUP_CREATED -> stringResource(Res.string.system_group_created, actorName)
+        SystemEventType.GROUP_MEMBER_ADDED -> stringResource(Res.string.system_member_added, actorName, targetNames)
+        SystemEventType.GROUP_MEMBER_JOINED_EVENT -> stringResource(Res.string.system_member_joined_event, actorName)
+        SystemEventType.GROUP_MEMBER_REMOVED -> stringResource(Res.string.system_member_removed, actorName, targetNames)
+        SystemEventType.GROUP_MEMBER_LEFT -> stringResource(Res.string.system_member_left, actorName)
+        SystemEventType.GROUP_ADMIN_GRANTED -> stringResource(Res.string.system_admin_granted, actorName, targetNames)
+        SystemEventType.GROUP_ADMIN_REVOKED -> stringResource(Res.string.system_admin_revoked, actorName, targetNames)
+        SystemEventType.GROUP_NAME_CHANGED -> stringResource(Res.string.system_group_name_changed, actorName, event.text.orEmpty())
+        SystemEventType.GROUP_DESCRIPTION_CHANGED -> stringResource(Res.string.system_group_description_changed, actorName)
+        SystemEventType.GROUP_PICTURE_CHANGED -> stringResource(Res.string.system_group_picture_changed, actorName)
+        SystemEventType.EVENT_CHANGED -> stringResource(Res.string.system_event_changed, actorName)
         SystemEventType.EVENT_START_CHANGED -> event.timestamp?.let { start ->
-            stringResource(Res.string.system_event_start_changed, event.actorName, millisToString(start, "dd.MM.yyyy HH:mm"))
-        } ?: stringResource(Res.string.system_event_changed, event.actorName)
-        SystemEventType.EVENT_LOCATION_CHANGED -> stringResource(Res.string.system_event_location_changed, event.actorName)
-        SystemEventType.EVENT_CANCELLED -> stringResource(Res.string.system_event_cancelled, event.actorName)
-        SystemEventType.GROUP_EXTENSION_CREATED -> stringResource(Res.string.system_group_extension_created, event.actorName, event.text.orEmpty())
-        SystemEventType.GROUP_EXTENSION_RENAMED -> stringResource(Res.string.system_group_extension_renamed, event.actorName, event.previousText.orEmpty(), event.text.orEmpty())
-        SystemEventType.GROUP_EXTENSION_DELETED -> stringResource(Res.string.system_group_extension_deleted, event.actorName, event.text.orEmpty())
+            stringResource(Res.string.system_event_start_changed, actorName, millisToString(start, "dd.MM.yyyy HH:mm"))
+        } ?: stringResource(Res.string.system_event_changed, actorName)
+        SystemEventType.EVENT_LOCATION_CHANGED -> stringResource(Res.string.system_event_location_changed, actorName)
+        SystemEventType.EVENT_CANCELLED -> stringResource(Res.string.system_event_cancelled, actorName)
+        SystemEventType.GROUP_EXTENSION_CREATED -> stringResource(Res.string.system_group_extension_created, actorName, event.text.orEmpty())
+        SystemEventType.GROUP_EXTENSION_RENAMED -> stringResource(Res.string.system_group_extension_renamed, actorName, event.previousText.orEmpty(), event.text.orEmpty())
+        SystemEventType.GROUP_EXTENSION_DELETED -> stringResource(Res.string.system_group_extension_deleted, actorName, event.text.orEmpty())
         SystemEventType.FRIENDSHIP_ACCEPTED -> stringResource(Res.string.system_friendship_accepted)
         SystemEventType.WAKE_SENT -> if (event.text.isNullOrBlank()) {
-            stringResource(Res.string.system_wake_sent, event.actorName)
+            stringResource(Res.string.system_wake_sent, actorName)
         } else {
-            stringResource(Res.string.system_wake_sent_reason, event.actorName, event.text)
+            stringResource(Res.string.system_wake_sent_reason, actorName, event.text)
         }
         SystemEventType.UNKNOWN -> stringResource(Res.string.system_unknown_event)
     }

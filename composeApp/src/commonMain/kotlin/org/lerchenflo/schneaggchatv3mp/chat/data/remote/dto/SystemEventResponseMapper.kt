@@ -13,7 +13,6 @@ fun SystemEventResponse.toSystemEventMessage(): SystemEventMessage {
         // /messages/sync, the whole page) still decodes.
         eventType = runCatching { SystemEventType.valueOf(this.eventType) }.getOrDefault(SystemEventType.UNKNOWN),
         actorId = this.actorId,
-        actorName = this.actorName,
         targets = this.targets.map { it.toSystemEventParticipant() },
         text = this.text,
         previousText = this.previousText,
@@ -24,6 +23,5 @@ fun SystemEventResponse.toSystemEventMessage(): SystemEventMessage {
 fun SystemEventParticipantResponse.toSystemEventParticipant(): SystemEventParticipant {
     return SystemEventParticipant(
         userId = this.userId,
-        userName = this.userName,
     )
 }

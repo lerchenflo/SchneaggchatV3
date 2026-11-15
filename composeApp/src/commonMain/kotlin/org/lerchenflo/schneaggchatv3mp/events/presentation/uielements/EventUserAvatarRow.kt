@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,14 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 
 /** Labelled horizontal strip of user avatars - the invited users, and each participation bucket. */
 @Composable
 fun EventUserAvatarRow(
     label: String?,
     userIds: List<String>,
-    usersById: Map<String, User>,
+    usersById: Map<String, UserIdentity>,
     modifier: Modifier = Modifier,
     avatarSize: Dp = 40.dp,
     contentDescriptionFor: @Composable (String) -> String? = { null },

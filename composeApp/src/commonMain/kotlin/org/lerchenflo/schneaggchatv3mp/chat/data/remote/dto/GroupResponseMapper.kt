@@ -37,7 +37,6 @@ fun GroupResponse.toGroup(existing: Group? = null): Group = Group(
             joinDate = groupMemberresp.joinedAt,
             admin = groupMemberresp.admin,
             color = groupMemberresp.color,
-            memberName = groupMemberresp.memberName
         )
     }
 )

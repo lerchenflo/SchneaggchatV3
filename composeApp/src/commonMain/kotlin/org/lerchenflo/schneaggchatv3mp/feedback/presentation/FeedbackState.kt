@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryDetail
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
@@ -91,6 +92,8 @@ data class FeedbackState(
     val lastSeenBeforeVisit: Long? = null,
 
     val detail: FeedbackDetailState? = null,
+    /** Names of the entry creators and the open entry's comment authors, by user id. */
+    val userNames: Map<String, UserIdentityName> = emptyMap(),
     val isCreateDialogOpen: Boolean = false,
     val isCreating: Boolean = false,
 ) {

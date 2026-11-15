@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.utilities.weekdayShortResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +20,6 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.CalendarBirthday
 import org.lerchenflo.schneaggchatv3mp.events.presentation.birthdaysOn
@@ -45,7 +45,7 @@ fun EventsUpcomingView(
     today: LocalDate,
     eventsByDate: Map<LocalDate, List<Event>>,
     birthdaysByMonthDay: Map<Int, List<CalendarBirthday>>,
-    usersById: Map<String, User>,
+    usersById: Map<String, UserIdentity>,
     ownId: String?,
     onEventClick: (String) -> Unit,
     onBirthdayClick: (String) -> Unit,

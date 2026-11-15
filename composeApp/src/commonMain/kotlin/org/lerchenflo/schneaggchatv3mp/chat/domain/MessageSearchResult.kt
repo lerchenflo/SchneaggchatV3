@@ -12,7 +12,7 @@ data class MessageSearchResult(
     val isGroup: Boolean,
     val chatName: String,
     val chatProfilePictureUrl: String,
-    val senderName: String,
+    val senderName: UserIdentityName,
     val preview: String,
     val sendDate: Long,
 )

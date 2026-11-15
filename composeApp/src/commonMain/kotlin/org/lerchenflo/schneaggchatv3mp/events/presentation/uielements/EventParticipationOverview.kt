@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements
 
-import org.lerchenflo.schneaggchatv3mp.events.domain.serverNameOf
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -29,7 +30,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
@@ -42,7 +42,6 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_participation_count
 import schneaggchatv3mp.composeapp.generated.resources.event_participation_no_answer
 import schneaggchatv3mp.composeapp.generated.resources.event_participation_show_all
-import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 /** Rows a group shows before "Show all". */
 private const val COLLAPSED_ROW_COUNT = 5
@@ -54,7 +53,7 @@ private const val COLLAPSED_ROW_COUNT = 5
 @Composable
 fun EventParticipationOverview(
     event: Event,
-    usersById: Map<String, User>,
+    usersById: Map<String, UserIdentity>,
     modifier: Modifier = Modifier
 ) {
     val groups = listOf(
@@ -72,7 +71,6 @@ fun EventParticipationOverview(
                 group = group,
                 usersById = usersById,
                 respondedAtOf = { userId -> event.participationOf(userId)?.updatedAt },
-                serverNameOf = { userId -> event.serverNameOf(userId) },
             )
         }
     }
@@ -88,9 +86,8 @@ private data class ParticipationGroup(
 @Composable
 private fun ParticipationGroupSection(
     group: ParticipationGroup,
-    usersById: Map<String, User>,
+    usersById: Map<String, UserIdentity>,
     respondedAtOf: (String) -> Long?,
-    serverNameOf: (String) -> String?,
 ) {
     var expanded by remember(group.label) { mutableStateOf(group.startExpanded) }
     var showAll by remember(group.label) { mutableStateOf(false) }
@@ -122,9 +119,7 @@ private fun ParticipationGroupSection(
             val shownIds = if (showAll) group.userIds else group.userIds.take(COLLAPSED_ROW_COUNT)
             shownIds.forEach { userId ->
                 ParticipantRow(
-                    name = usersById[userId]?.displayName
-                        ?: serverNameOf(userId)
-                        ?: stringResource(Res.string.unknown_user),
+                    name = usersById[userId]?.name.text(),
                     respondedAt = respondedAtOf(userId),
                     userId = userId,
                     usersById = usersById,
@@ -147,7 +142,7 @@ private fun ParticipantRow(
     name: String,
     respondedAt: Long?,
     userId: String,
-    usersById: Map<String, User>,
+    usersById: Map<String, UserIdentity>,
 ) {
     val respondedAtText = respondedAt?.let { millisToString(it, "dd.MM.yyyy HH:mm") }
     Row(

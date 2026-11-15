@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,7 +69,6 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_no_comments
 import schneaggchatv3mp.composeapp.generated.resources.feedback_retry
 import schneaggchatv3mp.composeapp.generated.resources.feedback_seeded_author
 import schneaggchatv3mp.composeapp.generated.resources.feedback_send_comment
-import schneaggchatv3mp.composeapp.generated.resources.feedback_unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.feedback_where_to_find
 
 internal const val DATE_FORMAT = "dd.MM.yyyy"
@@ -80,6 +81,8 @@ internal const val DATE_FORMAT = "dd.MM.yyyy"
 fun FeedbackDetailDialog(
     detailState: FeedbackDetailState,
     viewerIsAdmin: Boolean,
+    /** Names of the entry creator and the comment authors, by user id. */
+    userNames: Map<String, UserIdentityName>,
     onAction: (FeedbackAction) -> Unit,
 ) {
     val entry = detailState.entry
@@ -125,7 +128,7 @@ fun FeedbackDetailDialog(
                         )
                         Text(
                             text = listOfNotNull(
-                                authorName(entry),
+                                authorName(entry, userNames),
                                 millisToString(entry.createdAt, DATE_FORMAT),
                                 deviceInfo(detail?.platform, detail?.appVersion),
                             ).joinToString(" · "),
@@ -187,6 +190,7 @@ fun FeedbackDetailDialog(
                     detail != null -> items(detail.comments, key = { it.id }) { comment ->
                         CommentItem(
                             comment = comment,
+                            authorName = userNames[comment.authorId].text(),
                             showDeviceInfo = entry.type == FeedbackType.BUG,
                             onDeleteClick = { confirmDeleteCommentId = comment.id },
                         )
@@ -288,11 +292,12 @@ private fun DetailHeader(
 @Composable
 private fun CommentItem(
     comment: FeedbackComment,
+    authorName: String,
     showDeviceInfo: Boolean,
     onDeleteClick: () -> Unit,
 ) {
     val meta = listOfNotNull(
-        comment.authorName ?: stringResource(Res.string.feedback_unknown_user),
+        authorName,
         millisToString(comment.createdAt, DATE_FORMAT),
         if (showDeviceInfo) deviceInfo(comment.platform, comment.appVersion) else null,
     ).joinToString(" · ")
@@ -393,11 +398,11 @@ private fun ConfirmDeleteDialog(
     )
 }
 
-/** Creator shown on the board: the team for seeded entries, a placeholder for deleted users. */
+/** Creator shown on the board: the team for seeded entries, else the creator's name from [userNames]. */
 @Composable
-internal fun authorName(entry: FeedbackEntry): String = when {
+internal fun authorName(entry: FeedbackEntry, userNames: Map<String, UserIdentityName>): String = when {
     entry.isSeeded -> stringResource(Res.string.feedback_seeded_author)
-    else -> entry.creatorName ?: stringResource(Res.string.feedback_unknown_user)
+    else -> entry.creatorId?.let { userNames[it] }.text()
 }
 
 private fun deviceInfo(platform: String?, appVersion: String?): String? =

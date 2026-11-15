@@ -28,8 +28,6 @@ data class EventParticipation(
     val userId: String,
     val status: EventParticipationStatus,
     val updatedAt: Long,
-    /** Name snapshot from the server, empty for a deleted or unknown user or an older server. */
-    val userName: String = "",
 )
 
 fun Event.participationOf(userId: String): EventParticipation? =
@@ -55,15 +53,9 @@ fun Event.goingUserIds(): List<String> =
 fun Event.userIdsWithStatus(status: EventParticipationStatus): List<String> =
     participations.filter { it.status == status && it.userId != creatorId }.map { it.userId }
 
-/**
- * Name the server sent for [userId] (answer, invite or creator), null when it sent none. Only a
- * fallback: a stored friend's current name is fresher.
- */
-fun Event.serverNameOf(userId: String): String? =
-    (participationOf(userId)?.userName
-        ?: invitedUserNames.firstOrNull { it.userId == userId }?.userName
-        ?: creatorName.takeIf { userId == creatorId })
-        ?.takeIf { it.isNotBlank() }
+/** Every user the event shows a name or picture for: the creator, the invited users and everyone who answered. */
+fun Event.shownUserIds(): Set<String> =
+    (listOf(creatorId) + invitedUsers + participations.map { it.userId }).toSet()
 
 /** Invited users who have not responded at all yet - not even opened the event. Never the creator. */
 fun Event.unansweredUserIds(): List<String> =

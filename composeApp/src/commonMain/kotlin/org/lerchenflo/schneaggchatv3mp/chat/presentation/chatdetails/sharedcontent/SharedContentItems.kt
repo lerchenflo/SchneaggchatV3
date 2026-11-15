@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import androidx.compose.runtime.Immutable
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
@@ -13,7 +14,7 @@ data class SharedImageItem(
     val messageId: String?,
     val pictureUrl: String,
     val caption: String,
-    val senderName: String,
+    val senderName: UserIdentityName,
     val sendDate: Long,
 )
 
@@ -25,7 +26,7 @@ data class SharedImageItem(
 data class SharedLinkItem(
     val messageId: String?,
     val url: String,
-    val senderName: String,
+    val senderName: UserIdentityName,
     val sendDate: Long,
 )
 
@@ -42,7 +43,9 @@ data class SharedMessageItem(
     val text: String,
     val pictureUrl: String?,
     val systemEvent: SystemEventMessage?,
-    val senderName: String,
+    // Names of the people the system event names (empty for other types)
+    val systemEventNames: Map<String, UserIdentityName>,
+    val senderName: UserIdentityName,
     val sendDate: Long,
     val poll: SharedPollInfo?,
 )

@@ -26,7 +26,7 @@ sealed class MessageDisplayItem {
         val message: Message,
         val sender: SenderInfo,  // Pre-resolved name + per-member color
         val messageMinimal: MessageMinimal,
-        val resolvedReaders: Map<String, String> = emptyMap(), // readerId -> readerName, pre-resolved
+        val resolvedReaders: Map<String, String> = emptyMap(), // readerId / poll voter id -> name, pre-resolved
         val resolvedReaderList: List<ReaderUi> = emptyList(), // full per-message reader list (details dialog)
         val resolvedReactions: Map<String, String> = emptyMap(), // userId -> userName, pre-resolved
         // The message this one answers, pre-resolved so the row needs no list scan - and found
@@ -60,6 +60,7 @@ sealed class MessageDisplayItem {
     data class SystemMessage(
         override val id: String,  // e.g. "sys_${localPK}"
         val event: SystemEventMessage,
+        val names: Map<String, UserIdentityName>, // the actor and targets, pre-resolved
     ) : MessageDisplayItem()
 
     data object NewMessagesDivider : MessageDisplayItem() {

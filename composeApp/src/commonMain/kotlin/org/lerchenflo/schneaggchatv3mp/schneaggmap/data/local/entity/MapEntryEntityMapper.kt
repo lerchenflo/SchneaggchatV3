@@ -12,7 +12,6 @@ fun MapEntry.toEntity(): MapEntryEntity = MapEntryEntity(
     createdAt = createdAt,
     updatedBy = updatedBy,
     updatedAt = updatedAt,
-    updatedByName = updatedByName,
 )
 
 fun MapEntryEntity.toMapEntry(): MapEntry = MapEntry(
@@ -25,5 +24,4 @@ fun MapEntryEntity.toMapEntry(): MapEntry = MapEntry(
     createdAt = createdAt,
     updatedBy = updatedBy,
     updatedAt = updatedAt,
-    updatedByName = updatedByName,
 )

@@ -27,7 +27,5 @@ data class GroupMemberEntity(
 
     val color: Int,
 
-    val memberName: String
-
 
 )

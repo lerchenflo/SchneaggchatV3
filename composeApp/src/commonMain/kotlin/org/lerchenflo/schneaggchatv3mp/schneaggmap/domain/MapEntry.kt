@@ -14,7 +14,4 @@ data class MapEntry(
 
     val updatedBy: String,
     val updatedAt: Long,
-
-    /** Username of [updatedBy], resolved server side. Empty when the server did not send one. */
-    val updatedByName: String = "",
 )

@@ -7,5 +7,4 @@ data class GroupMember(
     val joinDate: String,
     val admin: Boolean,
     val color: Int,
-    val memberName: String
 )

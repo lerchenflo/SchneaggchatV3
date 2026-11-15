@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
@@ -30,6 +31,8 @@ data class SchneaggmapState(
     val activeSightings: Map<String, Set<LocationType>> = emptyMap(),
 
     val selectedEntry: MapEntry? = null,
+    // Name of the user who changed the selected entry last
+    val selectedEntryEditorName: UserIdentityName? = null,
     val selectedUser: User? = null,
     val ownUser: User? = null,
 

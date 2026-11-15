@@ -1,7 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.detail
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToStringWithWeekday
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -229,7 +230,7 @@ private const val CREATOR_AVATAR_ID = "creatorAvatar"
  * translation decides where the name goes, so it is put in as a marker and replaced afterwards.
  */
 @Composable
-private fun EventDetailHeaderText(event: Event, usersById: Map<String, User>) {
+private fun EventDetailHeaderText(event: Event, usersById: Map<String, UserIdentity>) {
     Text(
         text = event.title,
         style = MaterialTheme.typography.headlineSmall,
@@ -242,14 +243,15 @@ private fun EventDetailHeaderText(event: Event, usersById: Map<String, User>) {
     val template = stringResource(Res.string.event_created_by, CREATOR_NAME_MARKER)
     val nameAt = template.indexOf(CREATOR_NAME_MARKER)
     val highlight = SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+    val creatorName = usersById[event.creatorId]?.name.text()
     val text = buildAnnotatedString {
         if (nameAt < 0) {
             append(template)
         } else {
             append(template.substring(0, nameAt))
-            appendInlineContent(CREATOR_AVATAR_ID, event.creatorName)
+            appendInlineContent(CREATOR_AVATAR_ID, creatorName)
             append(" ")
-            withStyle(highlight) { append(event.creatorName) }
+            withStyle(highlight) { append(creatorName) }
             append(template.substring(nameAt + CREATOR_NAME_MARKER.length))
         }
     }

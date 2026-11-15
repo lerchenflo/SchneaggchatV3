@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -297,7 +298,7 @@ private fun SharedLinkRow(
             },
             supportingContent = {
                 Text(
-                    text = link.senderName + " · " + millisToString(
+                    text = link.senderName.text() + " · " + millisToString(
                         millis = link.sendDate,
                         format = "dd.MM.yyyy HH:mm"
                     ),
@@ -408,7 +409,7 @@ private fun SharedMessageRow(
     val poll = message.poll
 
     val headline = when (message.type) {
-        MessageType.SYSTEM -> message.systemEvent?.let { systemEventText(it) }.orEmpty()
+        MessageType.SYSTEM -> message.systemEvent?.let { systemEventText(it, message.systemEventNames) }.orEmpty()
         MessageType.AUDIO -> stringResource(Res.string.audio)
         MessageType.IMAGE -> message.text.ifBlank { stringResource(Res.string.image) }
         else -> message.text
@@ -433,7 +434,7 @@ private fun SharedMessageRow(
         supportingContent = {
             Column {
                 Text(
-                    text = (if (message.type == MessageType.SYSTEM) "" else message.senderName + " · ") + millisToString(
+                    text = (if (message.type == MessageType.SYSTEM) "" else message.senderName.text() + " · ") + millisToString(
                         millis = message.sendDate,
                         format = "dd.MM.yyyy HH:mm"
                     ),

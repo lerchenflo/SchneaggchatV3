@@ -15,5 +15,4 @@ fun MapEntryResponse.toMapEntry(): MapEntry = MapEntry(
     createdAt = createdAt,
     updatedBy = updatedBy,
     updatedAt = updatedAt,
-    updatedByName = updatedByName,
 )

@@ -38,7 +38,8 @@ data class FeedbackEntryResponse(
     val isNotNeeded: Boolean = false,
     val commentCount: Int,
     val latestDevComment: String? = null,
-    val creatorName: String? = null,
+    /** Null for seeded entries (no creator). */
+    val creatorId: String? = null,
     val isOwn: Boolean,
     val canDelete: Boolean,
     val isSeeded: Boolean,
@@ -65,7 +66,6 @@ data class FeedbackSyncResponse(
 data class FeedbackCommentResponse(
     val id: String,
     val authorId: String,
-    val authorName: String? = null,
     val text: String,
     val isDevComment: Boolean,
     val canDelete: Boolean,

@@ -23,5 +23,4 @@ data class GroupMemberResponse(
     val joinedAt: String,
     val admin: Boolean,
     val color: Int,
-    val memberName: String = ""
 )

@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
@@ -934,7 +935,7 @@ private fun MessageSearchResultRow(
             }
 
             Text(
-                text = "${result.senderName}: ${result.preview}",
+                text = "${result.senderName.text()}: ${result.preview}",
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodySmall,

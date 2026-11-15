@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -128,19 +129,19 @@ fun GroupMembersView(
     Column(
         modifier = Modifier.padding(vertical = 8.dp)
     ) {
-        members.forEach { (groupMember, user) ->
+        members.forEach { (groupMember, user, identity) ->
             var profilePictureDialogShown by remember { mutableStateOf(false) }
             var userOptionPopupExpanded by remember { mutableStateOf(false) }
             var showRemoveMemberConfirmation by remember { mutableStateOf(false) }
             val me = groupMember.userId == ownId
-            val userName = user?.displayName ?: groupMember.memberName
+            val userName = identity.name.text()
             // Null for friends and blocked users: no friend request entry for them
             val friendRequestState = if (me) null else FriendRequestState.of(user, ownId)
 
             // Box so the options menu opens at this row instead of below the list
             Box {
                 ChatButtonView(
-                    profilePictureFilePath = user?.profilePictureUrl ?: "",
+                    profilePictureFilePath = identity.profilePictureUrl,
                     name = if(me){ // if own user is displays add a hint
                         userName + stringResource(Res.string.you_with_brackets)
                     }else{

@@ -2,6 +2,8 @@
 
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -105,6 +107,8 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_type_re
 @Composable
 fun MapEntryInfoCard(
     entry: MapEntry,
+    // Who changed the entry last; null when unknown
+    editorName: UserIdentityName?,
     onDismiss: () -> Unit,
     onSave: (MapEntry) -> Unit,
     onDelete: (String) -> Unit,
@@ -202,6 +206,7 @@ fun MapEntryInfoCard(
 
                 EntryMetaView(
                     entry = currentEntry,
+                    editorName = editorName,
                     showLastChanged = !isNewEntry
                 )
             }
@@ -463,7 +468,7 @@ private fun EntryDetailView(entry: MapEntry, onQuickChange: (MapEntry) -> Unit) 
 
 /** Coordinates with a copy button, and who changed the entry last. */
 @Composable
-private fun EntryMetaView(entry: MapEntry, showLastChanged: Boolean) {
+private fun EntryMetaView(entry: MapEntry, editorName: UserIdentityName?, showLastChanged: Boolean) {
     val lat = entry.coordinates.lat.toString().take(8)
     val long = entry.coordinates.long.toString().take(8)
 
@@ -498,11 +503,10 @@ private fun EntryMetaView(entry: MapEntry, showLastChanged: Boolean) {
         }
 
         if (showLastChanged) {
-            //The editor name is resolved server side, but old cached entries may not have one yet
-            val lastChangedText = if (entry.updatedByName.isNotBlank()) {
+            val lastChangedText = if (editorName != null) {
                 stringResource(
                     Res.string.schneaggmap_entry_last_changed_by,
-                    entry.updatedByName,
+                    editorName.text(),
                     millisToTimeDateOrYesterday(entry.updatedAt)
                 )
             } else {

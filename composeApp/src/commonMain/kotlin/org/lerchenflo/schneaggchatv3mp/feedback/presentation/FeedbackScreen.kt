@@ -133,6 +133,7 @@ fun FeedbackScreen(
                                 FeedbackRow(
                                     entry = entry,
                                     mark = entry.boardMark(state),
+                                    userNames = state.userNames,
                                     onClick = { onAction(FeedbackAction.OnEntryClick(entry)) },
                                     onVoteClick = { vote -> onAction(FeedbackAction.OnVoteClick(entry.id, vote)) },
                                 )
@@ -159,6 +160,7 @@ fun FeedbackScreen(
         FeedbackDetailDialog(
             detailState = detail,
             viewerIsAdmin = state.viewerIsAdmin,
+            userNames = state.userNames,
             onAction = onAction,
         )
     }

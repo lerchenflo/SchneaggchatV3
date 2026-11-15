@@ -44,7 +44,8 @@ data class FeedbackEntry(
     val myVote: FeedbackVote,
     val commentCount: Int,
     val latestDevComment: String?,
-    val creatorName: String?,
+    /** Null for seeded entries (no creator). */
+    val creatorId: String?,
     val isOwn: Boolean,
     val canDelete: Boolean,
     val isSeeded: Boolean,
@@ -107,7 +108,6 @@ enum class FeedbackMark { NEW, UPDATED }
 data class FeedbackComment(
     val id: String,
     val authorId: String,
-    val authorName: String?,
     val text: String,
     val isDevComment: Boolean,
     val canDelete: Boolean,

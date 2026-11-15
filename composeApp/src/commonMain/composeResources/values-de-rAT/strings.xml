@@ -1757,7 +1757,6 @@ Mealds, egal wie klenn.</string>
     <string name="feedback_bug_device_info_hint">Dine App-Version und Plattform werrand automatisch aghängt.</string>
     <string name="feedback_where_to_find">Wo zum finda: %1$s</string>
     <string name="feedback_seeded_author">Schneaggchat-Team</string>
-    <string name="feedback_unknown_user">Glöschter User</string>
     <string name="feedback_comments">Kommentare</string>
     <string name="feedback_no_comments">No kua Kommentare.</string>
     <string name="feedback_comment_hint">Meh Infos oder an Kommentar dazuafüga...</string>
@@ -1840,7 +1839,6 @@ Mealds, egal wie klenn.</string>
     <string name="split_owes">%1$s schuldat %2$s</string>
     <string name="split_mark_as_paid">Als zahlt markiera</string>
     <string name="split_member_me">%1$s (du)</string>
-    <string name="split_unknown_member">Ehemaligs Mitglied</string>
     <string name="split_decimal_separator">,</string>
     <string name="split_new_expense">Neue Usgab</string>
     <string name="split_edit_expense">Usgab bearbeita</string>

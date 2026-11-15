@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToStringWithWeekday
 import schneaggchatv3mp.composeapp.generated.resources.event_show_on_map
@@ -116,7 +117,7 @@ fun EventEditPopup(
     onSave: (Event, ImageBitmap?, createGroup: Boolean) -> Unit,
     onDismiss: () -> Unit,
     friendsById: Map<String, User> = emptyMap(), // invitable users
-    usersById: Map<String, User> = emptyMap(),   // avatar/name lookup, includes the own user
+    usersById: Map<String, UserIdentity> = emptyMap(),   // avatar/name lookup, includes the own user
     groups: List<Group> = emptyList(),
     onPickLocation: (Event) -> Unit = {},
     onDelete: (deleteGroup: Boolean, deleteEvent: Boolean) -> Unit = { _, _ -> },
@@ -899,7 +900,6 @@ private fun EventEditPopupPreview() {
                 createdAt = Clock.System.now().toEpochMilliseconds(),
                 updatedAt = Clock.System.now().toEpochMilliseconds(),
                 updatedBy = "awdawd",
-                creatorName = "Flo"
             ),
             onSave = { _, _, _ -> },
             onDismiss = { }

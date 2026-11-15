@@ -53,7 +53,6 @@ fun testGroup(
             joinDate = "0",
             admin = userId in adminIds,
             color = index,
-            memberName = userId,
         )
     },
 )

@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll
 
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import androidx.compose.foundation.border
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -134,7 +135,6 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_subpoll_clear_confir
 import schneaggchatv3mp.composeapp.generated.resources.poll_tooltip_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_user_count
 import schneaggchatv3mp.composeapp.generated.resources.poll_voter_you
-import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.unlimited
 import kotlin.time.Clock
 
@@ -725,7 +725,7 @@ private fun PollVoterOverviewEntries(
                             text = if (voter.userId == ownId) {
                                 stringResource(Res.string.poll_voter_you)
                             }else {
-                                readerMap[voter.userId] ?: stringResource(Res.string.unknown_user)
+                                readerMap[voter.userId] ?: null.text()
                             },
                             style = MaterialTheme.typography.bodySmall
                         )

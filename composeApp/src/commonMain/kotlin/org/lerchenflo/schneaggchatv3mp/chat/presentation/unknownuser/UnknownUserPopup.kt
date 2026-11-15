@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.unknownuser
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,7 +42,6 @@ import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.common_friends
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_accept
 import schneaggchatv3mp.composeapp.generated.resources.send_friend_request
-import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user_request_received
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user_request_sent
 
@@ -85,28 +86,18 @@ fun UnknownUserPopup(
             ) {
                 // Most users here have no picture: keep the whole placeholder figure inside the ring
                 val placeholder = rememberInsetProfilePicturePlaceholder(insetFraction = PLACEHOLDER_INSET)
-                val unstoredPicture = state.profilePicture
-                if (unstoredPicture != null) {
-                    ProfilePictureView(
-                        picture = unstoredPicture,
-                        contentDescription = null,
-                        placeholder = placeholder,
-                        modifier = Modifier.size(104.dp),
-                    )
-                } else {
-                    ProfilePictureView(
-                        filepath = state.profilePictureFilePath,
-                        contentDescription = null,
-                        placeholder = placeholder,
-                        modifier = Modifier.size(104.dp),
-                    )
-                }
+                ProfilePictureView(
+                    filepath = state.profilePictureFilePath,
+                    contentDescription = null,
+                    placeholder = placeholder,
+                    modifier = Modifier.size(104.dp),
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = state.name ?: stringResource(Res.string.unknown_user),
+                text = state.name.text(),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
@@ -197,7 +188,7 @@ private fun UnknownUserPopupPreview() {
     SchneaggchatTheme {
         UnknownUserPopup(
             state = UnknownUserState(
-                name = "Max Muster",
+                name = UserIdentityName.Known("Max Muster"),
                 commonFriendCount = 3,
                 requestState = FriendRequestState.NONE,
             ),

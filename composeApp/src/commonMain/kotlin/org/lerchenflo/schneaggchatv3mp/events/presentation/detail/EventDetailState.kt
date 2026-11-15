@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.detail
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
@@ -12,7 +12,7 @@ data class EventDetailState(
     val isLoading: Boolean = true,
     val ownUserId: String? = null,
     /** Friends and the own user, for names and pictures. */
-    val usersById: Map<String, User> = emptyMap(),
+    val usersById: Map<String, UserIdentity> = emptyMap(),
     /** Member of the event's group chat. */
     val isJoined: Boolean = false,
     val mapStyleUrl: String? = null,

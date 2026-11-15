@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.Announcement
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementDraft
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementLimits
@@ -83,6 +84,8 @@ data class AnnouncementForm(
 data class AnnouncementAdminState(
     val isOpen: Boolean = false,
     val announcements: List<Announcement> = emptyList(),
+    /** Names of the announcement creators, by user id. */
+    val creatorNames: Map<String, UserIdentityName> = emptyMap(),
     val isLoading: Boolean = false,
     /** Shown instead of the list; null while the list is shown. */
     val form: AnnouncementForm? = null,

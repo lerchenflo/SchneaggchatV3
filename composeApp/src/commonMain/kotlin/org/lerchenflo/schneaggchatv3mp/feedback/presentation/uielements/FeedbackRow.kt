@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements
 
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import androidx.compose.foundation.background
 import schneaggchatv3mp.composeapp.generated.resources.feedback_updated_badge
 import schneaggchatv3mp.composeapp.generated.resources.feedback_premium
@@ -79,6 +80,8 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_vote_up
 fun FeedbackRow(
     entry: FeedbackEntry,
     mark: FeedbackMark?,
+    /** Names of the entry creators, by user id. */
+    userNames: Map<String, UserIdentityName>,
     onClick: () -> Unit,
     onVoteClick: (FeedbackVote) -> Unit,
     modifier: Modifier = Modifier,
@@ -161,7 +164,7 @@ fun FeedbackRow(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = "${authorName(entry)} · ${millisToString(entry.createdAt, DATE_FORMAT)}",
+                text = "${authorName(entry, userNames)} · ${millisToString(entry.createdAt, DATE_FORMAT)}",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -465,12 +468,14 @@ private fun FeedbackRowPreview() {
             FeedbackRow(
                 entry = previewFeedbackEntry.copy(isOwn = true, newCommentCount = 2),
                 mark = FeedbackMark.UPDATED,
+                userNames = emptyMap(),
                 onClick = {},
                 onVoteClick = {},
             )
             FeedbackRow(
                 entry = previewFeedbackEntry.copy(id = "2", isPremium = true, latestDevComment = null),
                 mark = FeedbackMark.NEW,
+                userNames = emptyMap(),
                 onClick = {},
                 onVoteClick = {},
             )
@@ -492,7 +497,7 @@ internal val previewFeedbackEntry = FeedbackEntry(
     myVote = FeedbackVote.UP,
     commentCount = 4,
     latestDevComment = "Good idea, coming with the next map update.",
-    creatorName = "anna",
+    creatorId = "anna",
     isOwn = false,
     canDelete = false,
     isSeeded = false,

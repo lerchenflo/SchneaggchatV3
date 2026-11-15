@@ -258,7 +258,7 @@ fun ChatMessageList(
                     is MessageDisplayItem.SystemMessage -> {
                         // Deliberately not wrapped in MessageViewWithActions/MessageOptionPopup -
                         // no reply/react/edit/delete/copy/long-press for a system event line.
-                        SystemMessageItem(systemEventText(item.event))
+                        SystemMessageItem(systemEventText(item.event, item.names))
                     }
                 }
             }
