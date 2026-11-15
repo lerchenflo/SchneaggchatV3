@@ -12,6 +12,7 @@
     <string name="search_section_messages">Nochrichta (%1$d)</string>
     <string name="no_status">kuan Status</string>
     <string name="unknown_user">kennsch ned</string>
+    <string name="deleted_user">glöschta Nutzer</string>
     <string name="unknown_location">unbekannter Ort</string>
     <string name="unknown_event">unbekanntes Event</string>
     <string name="unknown_game">unbekanntes Spiel</string>
@@ -23,6 +24,7 @@
     <string name="mapsync">Map</string>
     <string name="eventssync">Events</string>
     <string name="groupextensionssync">Gruppen-Erweiterunga</string>
+    <string name="feedbacksync">Feedback</string>
     <string name="mediasync">Media</string>
 
     <string name="status_infotext">Din Status dean alle dine Freunde leasa künnand. Aktuell ischa leer.</string>
@@ -278,6 +280,10 @@
     <string name="friend_request_block">Blocka</string>
 
     <string name="send_friend_request">Freundschaftsanfrog senda</string>
+    <string name="unknown_user_request_sent">Du hosch scho a Freundschaftsanfrog gsendet</string>
+    <string name="unknown_user_request_received">Will mit dir befreundet si</string>
+    <string name="member_friend_request_sent">Freundschaftsanfrog gsendet</string>
+    <string name="member_friend_request_received">Freundschaftsanfrog ania</string>
     <string name="friend_request_sent">✔ Freundschaftsanfrog gsendet</string>
 
     <string name="server_not_reachable">D Verbindung zum Server funktioniert ned.</string>
@@ -299,6 +305,8 @@
     <string name="merge_map_users_info">Freunde glich wie Orte beim Zoomen zemmergen wenn ma ussezoomt</string>
     <string name="sort_map_users_by_pinned">Apinnte Freunde zersch azoaga</string>
     <string name="sort_map_users_by_pinned_info">Apinnte Freunde sind in da Freundesleiste uf da Karta vorna</string>
+    <string name="map_sighting_push">Polizei- und Radarwarnunga</string>
+    <string name="map_sighting_push_info">Benachrichtigung kriaga, wenn Polizei oda a mobils Radar gseaha wird</string>
     <string name="schneaggmap_map_style">Mapdesign</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Hell</string>
@@ -307,6 +315,11 @@
     <string name="map_style_fiord">Fiord</string>
     <string name="share_location_global">Min Standort teila</string>
     <string name="share_location_global_info">Usgwählta Freunde din Standort uf da Map zoaga</string>
+    <string name="profile_pic_visibility">Wer mi Profilbild seaha kann</string>
+    <string name="profile_pic_visibility_info">Freunde seahand's immer, und o alle, deana du a Freundschaftsanfrog schicksch.</string>
+    <string name="profile_pic_visibility_public">Alle</string>
+    <string name="profile_pic_visibility_friends_and_groups">Freunde und Gruppenmitglieder</string>
+    <string name="profile_pic_visibility_friends">Nur Freunde</string>
     <string name="share_location_friends_title">Teilen mit</string>
     <string name="advanced_location_sharing">Mehr Daten teila</string>
     <string name="advanced_location_sharing_info">No mehr Daten mit Freunden teila (Erweiterte Optiona)</string>
@@ -328,6 +341,7 @@
     <string name="notification_channel_reactions">Reaktiona</string>
     <string name="notification_channel_social">Freunde &amp; Events</string>
     <string name="notification_channel_general">Allgemein</string>
+    <string name="notification_channel_map_sightings">Polizei &amp; Radar</string>
     <string name="new_messages">Neue Nochrichta</string>
     <string name="new_message_noti_single_title">Neuer Chat vo %1$s</string>
     <string name="new_message_noti_group_title">Neuer Chat vo %1$s in %2$s</string>
@@ -347,6 +361,8 @@
     <string name="friend_birthday_noti_body">Vergiss ned zum gratuliera!</string>
 
     <string name="new_event_noti_title">%1$s hot a neus Event erstellt</string>
+    <string name="map_sighting_noti_police">Polizei gseaha</string>
+    <string name="map_sighting_noti_radar">Mobiles Radar gseaha</string>
     <string name="events_screen_title">Events</string>
     <string name="events_empty">No kua Events. Erstell seal uans!</string>
     <string name="events_view_list">Liste</string>
@@ -1073,6 +1089,7 @@ Mealds, egal wie klenn.</string>
     <string name="schneaggmap_filter_snail_trails">Schleimspura</string>
     <string name="schneaggmap_chip_places">Orte · %1$d/%2$d</string>
     <string name="schneaggmap_chip_events">Events</string>
+    <string name="schneaggmap_chip_active">Aktiv</string>
     <string name="schneaggmap_chip_state_on">%1$s, a</string>
     <string name="schneaggmap_chip_state_off">%1$s, us</string>
     <string name="location_add_type">Neua Typ erstella</string>
@@ -1232,6 +1249,7 @@ Mealds, egal wie klenn.</string>
     <string name="location_radar_speed_limit">Geschwindigkeitsbegrenzung</string>
     <string name="location_radar_mobile">Mobil</string>
     <string name="location_radar_red_light">Ampelblitzer</string>
+    <string name="location_radar_last_seen">S letzte mol gseaha</string>
 
     <!-- Police -->
     <string name="location_police_last_seen">Zletzt gseaha</string>
@@ -1322,6 +1340,9 @@ Mealds, egal wie klenn.</string>
     <!-- Wake -->
     <string name="wake_settings">Weckerfeature</string>
     <string name="wake_settings_info">Üswähla wer di wecka darf</string>
+    <string name="wake_fullscreen_missing">Vollbild-Wecker ned erlaubt</string>
+    <string name="wake_fullscreen_missing_info">Ohne dia Berechtigung kann an Wecka ufam gsperrta Handy da Weckbildschirm ned öffna</string>
+    <string name="wake_fullscreen_allow">Erlauba</string>
     <string name="wake_allow_global">Ufwecka erlauba</string>
     <string name="wake_allow_global_info">Lass dine Freunde di wecka wenn du schlofsch</string>
     <string name="wake_allow_friends_title">Dürfand mi wecka</string>
@@ -1461,6 +1482,8 @@ Mealds, egal wie klenn.</string>
 
     <string name="new_version_available">Neue Version verfügbar: %1$s</string>
     <string name="download_from_github">Lad da die neue Version vo GitHub aba</string>
+    <string name="beta_version_available">Beta verfügbar: %1$s</string>
+    <string name="beta_version_optional">Optionale Testversion. Du kannsch bei dina aktuella Version blieba.</string>
     <string name="download">Abalada</string>
 
     <!-- Settings Group Headers -->
@@ -1536,6 +1559,12 @@ Mealds, egal wie klenn.</string>
     <string name="system_group_description_changed">%1$s hot d Gruppenbeschreibung gändert</string>
     <string name="system_group_picture_changed">%1$s hot s Gruppenbild gändert</string>
     <string name="system_event_changed">%1$s hot s Event aktualisiert</string>
+    <string name="system_event_start_changed">%1$s hot da Start uf %2$s verschoba</string>
+    <string name="system_event_location_changed">%1$s hot da Ort gändert</string>
+    <string name="system_event_cancelled">%1$s hot s Event abgseit</string>
+    <string name="system_group_extension_created">%1$s hot d Erweiterung %2$s erstellt</string>
+    <string name="system_group_extension_renamed">%1$s hot d Erweiterung %2$s in %3$s umgnennt</string>
+    <string name="system_group_extension_deleted">%1$s hot d Erweiterung %2$s glöscht</string>
     <string name="system_friendship_accepted">Ihr sind jetzt Freunde</string>
     <string name="system_wake_sent">%1$s hot di gweckt</string>
     <string name="system_wake_sent_reason">%1$s hot di gweckt: %2$s</string>
@@ -1548,10 +1577,32 @@ Mealds, egal wie klenn.</string>
     <string name="event_not_interested">Kua Interesse</string>
     <string name="event_you_are_going">Du bisch dabei</string>
     <string name="event_going_count">%1$d dabei</string>
+    <string name="event_going_count_of_max">%1$d / %2$d dabei</string>
+    <string name="event_full">Event voll</string>
     <string name="event_participation_accepted">Dabei</string>
     <string name="event_participation_seen">Gseaha</string>
     <string name="event_participation_dismissed">Kua Interesse</string>
     <string name="event_participation_count">%1$s (%2$d)</string>
+    <string name="event_not_available">Des Event isch ned verfügbar</string>
+    <string name="event_show_on_map">Uf da Karta azoaga</string>
+    <string name="chat_details_show_on_map">Uf da Karta azoaga</string>
+    <string name="event_lead_hours">%1$d Std.</string>
+    <string name="event_lead_minutes">%1$d Min.</string>
+    <string name="event_reminder_before">%1$s vorher</string>
+    <string name="event_reminders_label">Erinnerunga</string>
+    <string name="event_reminders_none">Kua Erinnerunga</string>
+    <string name="event_reminder_add">Erinnerung dazuatua</string>
+    <string name="event_reminder_remove">Erinnerung entferna</string>
+    <string name="event_reminder_custom">Eigene Zit</string>
+    <string name="event_reminder_days">Täg</string>
+    <string name="event_reminder_hours">Stunda</string>
+    <string name="event_reminder_minutes">Minuta</string>
+    <string name="event_reminder_noti_title">Erinnerung: %1$s</string>
+    <string name="event_reminder_noti_body">Startet in %1$s</string>
+    <string name="event_reminder_noti_body_at">Startet am %1$s</string>
+    <string name="event_update_start_and_location">%1$s hot da Start uf %2$s verschoba und da Ort gändert</string>
+    <string name="event_participation_no_answer">No kua Antwort</string>
+    <string name="event_participation_show_all">Alle azoaga (%1$d)</string>
 
     <!-- Shared content (images and links of a chat) -->
     <string name="shared_content_title">Toalte Inhalte</string>
@@ -1737,6 +1788,7 @@ Mealds, egal wie klenn.</string>
     <string name="feedback_vote_didnt_know">Kenni ned</string>
     <string name="feedback_vote_me_too">Hobi o</string>
     <string name="feedback_vote_cant_repro">Ned reproduzierbar</string>
+    <string name="feedback_vote_not_needed">Bruchi ned, aber passt</string>
     <string name="feedback_new_badge">Neu</string>
     <string name="feedback_dev_comment">Entwickler</string>
     <string name="feedback_empty">Do isch no nix.</string>
@@ -1765,6 +1817,20 @@ Mealds, egal wie klenn.</string>
     <string name="feedback_delete_comment_confirm">Dean Kommentar löscha?</string>
     <string name="feedback_change_status">Status ändra</string>
     <string name="feedback_details_load_error">Details hond ned glada werra künna.</string>
+    <string name="feedback_tab_requests">Wünsch</string>
+    <string name="feedback_tab_implemented">Features ✓</string>
+    <string name="feedback_updated_badge">Aktualisiert</string>
+    <string name="feedback_sort_updated">Aktualisiert</string>
+    <string name="feedback_sort_discussed">Am meista diskutiert</string>
+    <string name="feedback_filter_status">Status</string>
+    <string name="feedback_filter_all_statuses">Alle Status</string>
+    <string name="feedback_premium">Premium</string>
+    <string name="feedback_edit_entry">Itrag bearbeita</string>
+    <string name="feedback_save">Speichra</string>
+    <string name="feedback_edited">Bearbeitet</string>
+    <string name="feedback_edit_comment">Kommentar bearbeita</string>
+    <string name="feedback_type_change_to_bug">Als Bug startet da Status nomml bei „Offa“. Stimma für „Kenni ned“ und „Bruchi ned“ werrand entfernt, und a Premium-Markierung goht für immer verlora.</string>
+    <string name="feedback_type_change_to_feature">Als Wunsch startet da Status nomml bei „Gwünscht“.</string>
     <string name="logged_in_devices">Igloggte Geräte</string>
     <string name="logged_in_devices_description">Luag, wo din Account igloggt isch, und logg Geräte us</string>
     <string name="logged_in_devices_this_device">Des Gerät</string>
