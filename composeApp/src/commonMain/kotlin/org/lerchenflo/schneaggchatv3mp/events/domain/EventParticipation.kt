@@ -47,6 +47,17 @@ fun Event.goingUserIds(): List<String> =
         .distinct()
 
 /**
+ * True when [Event.maxUsers] is reached and [userId] is not going yet, so joining would fail. Same
+ * count as the server: for an event with a group it counts the group members, which joining and
+ * accepting keep in step with the going users.
+ */
+fun Event.isFullFor(userId: String?): Boolean {
+    val max = maxUsers ?: return false
+    val going = goingUserIds()
+    return userId !in going && going.size >= max
+}
+
+/**
  * The creator counts as going whatever their stored entry says - see [goingUserIds] - so the other
  * buckets never list them, or they would show up twice.
  */

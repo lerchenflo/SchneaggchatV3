@@ -407,7 +407,6 @@
     <string name="event_pick_location_title">Scegli una posizione</string>
     <string name="event_pick_location_hint">Sposta la mappa per posizionare il pin</string>
     <string name="event_use_this_location">Usa questa posizione</string>
-    <string name="event_location_mobile_only">Disponibile solo su mobile</string>
     <string name="map_create_choice_title">Cosa vuoi creare qui?</string>
     <string name="map_create_choice_entry">Voce mappa</string>
     <string name="map_create_choice_event">Evento</string>
@@ -1572,6 +1571,8 @@
     <string name="event_not_interested">Non mi interessa</string>
     <string name="event_you_are_going">Parteciperai</string>
     <string name="event_going_count">%1$d partecipanti</string>
+    <string name="event_going_count_of_max">%1$d / %2$d partecipanti</string>
+    <string name="event_full">Evento al completo</string>
     <string name="event_participation_accepted">Partecipa</string>
     <string name="event_participation_seen">Visto</string>
     <string name="event_participation_dismissed">Non interessato</string>

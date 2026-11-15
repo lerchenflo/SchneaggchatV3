@@ -88,7 +88,6 @@ import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
 import schneaggchatv3mp.composeapp.generated.resources.event_invite_friends
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
 import schneaggchatv3mp.composeapp.generated.resources.event_location_label
-import schneaggchatv3mp.composeapp.generated.resources.event_location_mobile_only
 import schneaggchatv3mp.composeapp.generated.resources.event_max_users_hint
 import schneaggchatv3mp.composeapp.generated.resources.event_max_users_info
 import schneaggchatv3mp.composeapp.generated.resources.event_max_users_label
@@ -121,7 +120,6 @@ fun EventEditPopup(
     groups: List<Group> = emptyList(),
     onPickLocation: (Event) -> Unit = {},
     onDelete: (deleteGroup: Boolean, deleteEvent: Boolean) -> Unit = { _, _ -> },
-    isMobile: Boolean = true,
     isSaving: Boolean = false,
     mapStyleUrl: String? = null,
     modifier: Modifier = Modifier
@@ -324,7 +322,6 @@ fun EventEditPopup(
                 onClick = {
                     onPickLocation(currentEvent)
                 },
-                enabled = isMobile,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
@@ -336,7 +333,6 @@ fun EventEditPopup(
                 val location = currentEvent.location
                 Text(
                     text = when {
-                        !isMobile -> stringResource(Res.string.event_location_mobile_only)
                         location != null -> stringResource(Res.string.latlong, location.lat.toString().take(8), location.long.toString().take(8))
                         else -> stringResource(Res.string.event_no_location_selected)
                     },
@@ -360,7 +356,7 @@ fun EventEditPopup(
                     StaticMapPreview(
                         location = location,
                         styleUrl = mapStyleUrl,
-                        onClick = { if (isMobile) onPickLocation(currentEvent) },
+                        onClick = { onPickLocation(currentEvent) },
                         contentDescription = stringResource(Res.string.event_show_on_map),
                     )
                 }

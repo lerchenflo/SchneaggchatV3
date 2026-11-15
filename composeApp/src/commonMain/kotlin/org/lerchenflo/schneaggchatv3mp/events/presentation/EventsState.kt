@@ -30,7 +30,6 @@ data class EventsState(
     val groups: List<Group> = emptyList(),
     val isSavingEvent: Boolean = false,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
-    val isMobile: Boolean = true,
     val viewMode: EventsViewMode = EventsViewMode.UPCOMING,
     val calendarAnchorDate: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
     val selectedCalendarDay: LocalDate? = null,

@@ -32,6 +32,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
@@ -56,6 +57,8 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
+import org.lerchenflo.schneaggchatv3mp.events.domain.isFullFor
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventParticipationOverview
@@ -71,6 +74,8 @@ import schneaggchatv3mp.composeapp.generated.resources.event_add_to_calendar
 import schneaggchatv3mp.composeapp.generated.resources.event_closes_with_date
 import schneaggchatv3mp.composeapp.generated.resources.event_created_by
 import schneaggchatv3mp.composeapp.generated.resources.event_join
+import schneaggchatv3mp.composeapp.generated.resources.event_full
+import schneaggchatv3mp.composeapp.generated.resources.event_going_count_of_max
 import schneaggchatv3mp.composeapp.generated.resources.event_no_group
 import schneaggchatv3mp.composeapp.generated.resources.event_not_available
 import schneaggchatv3mp.composeapp.generated.resources.event_not_interested
@@ -188,6 +193,13 @@ private fun EventDetailContent(
     EventInfoRow(icon = event.type.icon(), text = stringResource(event.type.labelRes()))
     Spacer(modifier = Modifier.height(8.dp))
     EventInfoRow(icon = event.visibility.icon(), text = stringResource(event.visibility.labelRes()))
+    event.maxUsers?.let { maxUsers ->
+        Spacer(modifier = Modifier.height(8.dp))
+        EventInfoRow(
+            icon = Icons.Default.Group,
+            text = stringResource(Res.string.event_going_count_of_max, event.goingUserIds().size, maxUsers),
+        )
+    }
 
     if (event.description.isNotBlank()) {
         Spacer(modifier = Modifier.height(16.dp))
@@ -356,6 +368,8 @@ private fun EventDetailActionBar(
 ) {
     val isGoing = state.ownStatus == EventParticipationStatus.ACCEPTED
     val groupId = event.groupId
+    // The server refuses the join of a full event, so the button says so instead
+    val isFull = event.isFullFor(state.ownUserId)
     // A member of the event group is going by definition - the way out is leaving that group.
     // The creator can't leave their own event either.
     val showNotInterested = !state.isCreator && !state.isJoined && state.ownStatus != EventParticipationStatus.DISMISSED
@@ -370,8 +384,9 @@ private fun EventDetailActionBar(
         }
         groupId != null -> { modifier ->
             NormalButton(
-                text = stringResource(Res.string.event_join),
+                text = stringResource(if (isFull) Res.string.event_full else Res.string.event_join),
                 onClick = { onAction(EventDetailAction.OnJoinClick) },
+                disabled = isFull,
                 primary = true,
                 isLoading = state.isJoining,
                 modifier = modifier,
@@ -380,8 +395,9 @@ private fun EventDetailActionBar(
         // No group to join, so accepting is the only way to say you are coming
         !isGoing -> { modifier ->
             NormalButton(
-                text = stringResource(Res.string.event_accept),
+                text = stringResource(if (isFull) Res.string.event_full else Res.string.event_accept),
                 onClick = { onAction(EventDetailAction.OnAcceptClick) },
+                disabled = isFull,
                 primary = true,
                 modifier = modifier,
             )

@@ -408,7 +408,6 @@
     <string name="event_pick_location_title">Pick a location</string>
     <string name="event_pick_location_hint">Move the map to position the pin</string>
     <string name="event_use_this_location">Use this location</string>
-    <string name="event_location_mobile_only">Only available on mobile</string>
     <string name="map_create_choice_title">What do you want to create here?</string>
     <string name="map_create_choice_entry">Map entry</string>
     <string name="map_create_choice_event">Event</string>
@@ -1578,6 +1577,8 @@
     <string name="event_not_interested">Not interested</string>
     <string name="event_you_are_going">You're going</string>
     <string name="event_going_count">%1$d going</string>
+    <string name="event_going_count_of_max">%1$d / %2$d going</string>
+    <string name="event_full">Event full</string>
     <string name="event_participation_accepted">Going</string>
     <string name="event_participation_seen">Seen</string>
     <string name="event_participation_dismissed">Not interested</string>

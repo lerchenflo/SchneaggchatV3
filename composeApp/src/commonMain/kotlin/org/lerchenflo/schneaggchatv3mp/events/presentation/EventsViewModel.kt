@@ -34,7 +34,6 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
@@ -61,7 +60,6 @@ class EventsViewModel(
     private val errorChannel: ErrorChannel,
     private val navigator: Navigator,
     private val eventRepository: EventRepository,
-    private val appVersion: AppVersion,
     private val dataSyncCoordinator: DataSyncCoordinator,
     private val userRepository: UserRepository,
     private val userIdentityRepository: UserIdentityRepository,
@@ -101,7 +99,7 @@ class EventsViewModel(
         .distinctUntilChanged()
         .flatMapLatest { userIds -> userIdentityRepository.observeUsers(userIds) }
 
-    private val _state = MutableStateFlow(EventsState(isMobile = appVersion.isMobile(), selectedEvent = initialEntry))
+    private val _state = MutableStateFlow(EventsState(selectedEvent = initialEntry))
     val state = combine(
         _state,
         eventRepository.getAllEventsFlow(),
@@ -163,7 +161,7 @@ class EventsViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EventsState(isMobile = appVersion.isMobile(), selectedEvent = initialEntry),
+        initialValue = EventsState(selectedEvent = initialEntry),
     )
 
     fun onAction(action: EventsAction) {

@@ -545,7 +545,6 @@ val sharedmodule = module{
         EventsViewModel(
             errorChannel = get(),
             navigator = get(),
-            appVersion = get(),
             dataSyncCoordinator = get(),
             eventRepository = get(),
             userRepository = get(),

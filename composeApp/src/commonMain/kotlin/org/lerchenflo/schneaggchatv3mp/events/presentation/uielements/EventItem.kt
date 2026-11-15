@@ -43,6 +43,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_ended
 import schneaggchatv3mp.composeapp.generated.resources.event_going_count
+import schneaggchatv3mp.composeapp.generated.resources.event_going_count_of_max
 import schneaggchatv3mp.composeapp.generated.resources.event_new_badge
 import schneaggchatv3mp.composeapp.generated.resources.event_started
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_in
@@ -177,10 +178,16 @@ fun EventItem(
                         maxLines = 1,
                         softWrap = false
                     )
-                    if (goingCount > 0) {
+                    val maxUsers = event.maxUsers
+                    // With a cap the count always shows, so a full event is visible before opening it
+                    if (goingCount > 0 || maxUsers != null) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = stringResource(Res.string.event_going_count, goingCount),
+                            text = if (maxUsers != null) {
+                                stringResource(Res.string.event_going_count_of_max, goingCount, maxUsers)
+                            } else {
+                                stringResource(Res.string.event_going_count, goingCount)
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = secondaryTextColor,
                             maxLines = 1,

@@ -392,7 +392,6 @@
     <string name="event_pick_location_title">Ort uswähla</string>
     <string name="event_pick_location_hint">Karta verschiaba zum da Ort festlega</string>
     <string name="event_use_this_location">Dean Ort verwenda</string>
-    <string name="event_location_mobile_only">Nur ufam Handy verfügbar</string>
     <string name="map_create_choice_title">Was magsch du do erstella?</string>
     <string name="map_create_choice_entry">Ort</string>
     <string name="map_create_choice_event">Event</string>

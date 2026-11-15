@@ -408,7 +408,6 @@
     <string name="event_pick_location_title">Ort auswählen</string>
     <string name="event_pick_location_hint">Karte verschieben, um die Position festzulegen</string>
     <string name="event_use_this_location">Diesen Ort verwenden</string>
-    <string name="event_location_mobile_only">Nur auf dem Handy verfügbar</string>
     <string name="map_create_choice_title">Was möchtest du hier erstellen?</string>
     <string name="map_create_choice_entry">Karteneintrag</string>
     <string name="map_create_choice_event">Event</string>
@@ -1578,6 +1577,8 @@
     <string name="event_not_interested">Kein Interesse</string>
     <string name="event_you_are_going">Du bist dabei</string>
     <string name="event_going_count">%1$d dabei</string>
+    <string name="event_going_count_of_max">%1$d / %2$d dabei</string>
+    <string name="event_full">Event voll</string>
     <string name="event_participation_accepted">Dabei</string>
     <string name="event_participation_seen">Gesehen</string>
     <string name="event_participation_dismissed">Kein Interesse</string>

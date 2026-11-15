@@ -240,7 +240,6 @@ fun EventsScreen(
                     groups = state.groups,
                     onPickLocation = { onAction(EventsAction.OnPickLocationClick(it)) },
                     onDelete = { deleteGroup, deleteEvent -> onAction(EventsAction.OnDeleteEvent(event = selectedEvent, deleteGroup = deleteGroup, deleteEvent = deleteEvent)) },
-                    isMobile = state.isMobile,
                     isSaving = state.isSavingEvent,
                     mapStyleUrl = state.mapStyleUrl,
                 )
