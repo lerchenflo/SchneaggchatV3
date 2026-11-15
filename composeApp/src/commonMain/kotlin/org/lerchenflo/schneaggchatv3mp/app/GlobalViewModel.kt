@@ -232,6 +232,8 @@ class GlobalViewModel(
                 // window is minimized; the manager reconnects it on its own if it drops.
                 if (!appVersion.isDesktop()) {
                     socketConnectionManager.close()
+                    println("Socket connection closed on mobile")
+
                 }
                 stopLocationTracking()
             }

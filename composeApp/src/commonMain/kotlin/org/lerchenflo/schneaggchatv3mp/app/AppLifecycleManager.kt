@@ -138,11 +138,13 @@ fun AppLifecycleTracker() {
                     lifecycleState = Lifecycle.State.RESUMED
                     AppLifecycleManager.updateAppForegroundState(true)
                     AppLifecycleManager.notifyAppResumed()
+                    println("App Resumed")
                 }
 
                 Lifecycle.Event.ON_PAUSE -> {
                     lifecycleState = Lifecycle.State.CREATED
                     AppLifecycleManager.updateAppForegroundState(false)
+                    println("App paused")
                 }
 
                 Lifecycle.Event.ON_STOP -> {
