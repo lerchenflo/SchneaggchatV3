@@ -5,8 +5,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
 data class UnknownUserState(
     /** Null when nobody knows the name yet: the popup shows "Unknown user". */
     val name: String? = null,
-    /** Locally stored picture; the popup shows a placeholder when there is none. */
+    /** Locally stored picture of a stored user; the popup shows a placeholder when there is none. */
     val profilePictureFilePath: String = "",
+    /** Picture of a user who is not stored here, loaded from the server and only kept while shown. */
+    val profilePicture: ByteArray? = null,
     /** Only known when opened from the user search. */
     val commonFriendCount: Int? = null,
     /** Null while the user is being loaded; the popup shows nothing until then. */

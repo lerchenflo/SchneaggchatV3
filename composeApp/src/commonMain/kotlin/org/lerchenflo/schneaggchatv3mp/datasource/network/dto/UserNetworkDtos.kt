@@ -19,7 +19,9 @@ sealed interface UserResponse {
     val username: String
     val updatedAt: Long
 
-    val profilePicUpdatedAt: Long
+    // Null: the own user may not see this user's profile picture (the owner's privacy setting).
+    // Never null on the own user.
+    val profilePicUpdatedAt: Long?
 
 
 
@@ -30,7 +32,7 @@ sealed interface UserResponse {
         override val id: String,
         override val username: String,
         override val updatedAt: Long,
-        override val profilePicUpdatedAt: Long,
+        override val profilePicUpdatedAt: Long?,
 
         //Custom to simpleuserresponse:
         val friendShipStatus: NetworkFriendshipStatus?,
@@ -46,7 +48,7 @@ sealed interface UserResponse {
         override val username: String,
 
         override val updatedAt: Long,
-        override val profilePicUpdatedAt: Long,
+        override val profilePicUpdatedAt: Long?,
 
 
         val requesterId: String?, //Who requested the friendship

@@ -314,6 +314,11 @@
     <string name="map_style_fiord">Fiord</string>
     <string name="share_location_global">Meinen Standort teilen</string>
     <string name="share_location_global_info">AusgewähltenFreunden deinen Standort auf der Karte zeigen</string>
+    <string name="profile_pic_visibility">Wer mein Profilbild sehen kann</string>
+    <string name="profile_pic_visibility_info">Freunde sehen es immer, ebenso alle, denen du eine Freundschaftsanfrage schickst.</string>
+    <string name="profile_pic_visibility_public">Alle</string>
+    <string name="profile_pic_visibility_friends_and_groups">Freunde und Gruppenmitglieder</string>
+    <string name="profile_pic_visibility_friends">Nur Freunde</string>
     <string name="share_location_friends_title">Teilen mit</string>
     <string name="advanced_location_sharing">Erweitertes Standortteilen</string>
     <string name="advanced_location_sharing_info">Weitere Optionale Daten mit Freunden teilen (Erweiterte Optionen)</string>

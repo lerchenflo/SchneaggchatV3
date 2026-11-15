@@ -41,6 +41,9 @@ data class PersonalUserSettings(
     // Number of the newest announcement dismissed on any device - dismissing one also covers
     // every older announcement. 0 means none dismissed yet.
     val lastDismissedAnnouncementId: Long = 0L,
+
+    // Who may see the own profile picture: PUBLIC, FRIENDS_AND_GROUPS or FRIENDS
+    val profilePicVisibility: String = "FRIENDS_AND_GROUPS",
 )
 
 /**
@@ -67,4 +70,5 @@ data class UserSettingsRequest(
     val lastContributePopupShown: Long? = null,
     // The server keeps the higher of its stored and this value
     val lastDismissedAnnouncementId: Long? = null,
+    val profilePicVisibility: String? = null,
 )

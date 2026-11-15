@@ -83,13 +83,24 @@ fun UnknownUserPopup(
                 shape = CircleShape,
                 border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary),
             ) {
-                ProfilePictureView(
-                    filepath = state.profilePictureFilePath,
-                    contentDescription = null,
-                    // Most users here have no stored picture: keep the whole placeholder figure inside the ring
-                    placeholder = rememberInsetProfilePicturePlaceholder(insetFraction = PLACEHOLDER_INSET),
-                    modifier = Modifier.size(104.dp),
-                )
+                // Most users here have no picture: keep the whole placeholder figure inside the ring
+                val placeholder = rememberInsetProfilePicturePlaceholder(insetFraction = PLACEHOLDER_INSET)
+                val unstoredPicture = state.profilePicture
+                if (unstoredPicture != null) {
+                    ProfilePictureView(
+                        picture = unstoredPicture,
+                        contentDescription = null,
+                        placeholder = placeholder,
+                        modifier = Modifier.size(104.dp),
+                    )
+                } else {
+                    ProfilePictureView(
+                        filepath = state.profilePictureFilePath,
+                        contentDescription = null,
+                        placeholder = placeholder,
+                        modifier = Modifier.size(104.dp),
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

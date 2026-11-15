@@ -26,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstGroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstMessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstUserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserResponseWriter
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomGroupDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomMessageDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomUserDataSource
@@ -240,6 +241,7 @@ val sharedmodule = module{
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
     singleOf(::OfflineFirstGroupRepository) bind GroupRepository::class
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
+    singleOf(::UserResponseWriter)
     singleOf(::OfflineFirstUserRepository) bind UserRepository::class
     singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
     // Explicit lambda so the dispatcher keeps its default (Dispatchers.IO); tests pass their own (plan R4).

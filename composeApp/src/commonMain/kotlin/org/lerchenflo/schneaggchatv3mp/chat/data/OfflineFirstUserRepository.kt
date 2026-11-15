@@ -16,9 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
-import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.AvailableUser
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
@@ -26,27 +24,23 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeResult
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toAvailableUser
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toWakeResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.UserRemoteDataSource
 
 /**
  * [UserRepository] on top of the local [UserLocalDataSource] and the server via [UserRemoteDataSource].
- * [syncUsers] writes the user rows through [AppDatabase.userDao] directly (moved verbatim from
- * AppRepository.userIdSync) and hands the own user's synced settings to [SettingsRepository].
+ * [syncUsers] stores the user rows through [UserResponseWriter], the same writer the socket
+ * `UserChange` uses.
  */
 class OfflineFirstUserRepository(
-    private val database: AppDatabase,
     private val userLocalDataSource: UserLocalDataSource,
+    private val userResponseWriter: UserResponseWriter,
     private val userRemoteDataSource: UserRemoteDataSource,
     private val pictureManager: PictureManager,
-    private val settingsRepository: SettingsRepository,
     private val loggingRepository: Logger,
 ) : UserRepository {
 
@@ -112,131 +106,15 @@ class OfflineFirstUserRepository(
                     loggingRepository.logWarning("userid sync error: ${userSyncResponse.error}")
                 }
                 is DataResult.Success<UserSyncResponse> -> {
-                    //println("Userid sync response: ${userSyncResponse.data.toString()}")
-
-                    val updatedUsers = userSyncResponse.data.updatedUsers
-                    val deletedUsers = userSyncResponse.data.deletedUsers
-
-                    updatedUsers.forEach { newUser ->
-                        when (newUser) {
-                            is UserResponse.FriendUserResponse -> {
-                                val existing = database.userDao().getUserbyId(newUser.id)
-                                database.userDao().upsert(UserEntity(
-                                    id = newUser.id,
-                                    updatedAt = newUser.updatedAt,
-                                    name = newUser.username,
-                                    nickName = newUser.nickName,
-                                    description = newUser.userDescription,
-                                    status = newUser.userStatus,
-                                    birthDate = newUser.birthDate,
-                                    phoneNumber = newUser.phoneNumber,
-                                    frienshipStatus = NetworkFriendshipStatus.ACCEPTED,
-                                    requesterId = newUser.requesterId,
-
-                                    // Preserve existing values:
-                                    locationLat = existing?.locationLat,
-                                    locationLong = existing?.locationLong,
-                                    locationDate = existing?.locationDate,
-                                    locationSpeed = existing?.locationSpeed,
-                                    locationHeading = existing?.locationHeading,
-                                    locationAltitude = existing?.locationAltitude,
-                                    locationBattery = existing?.locationBattery,
-                                    locationDistance24h = existing?.locationDistance24h,
-                                    locationShared = newUser.shareLocation,
-                                    shareSpeedHeading = newUser.shareSpeedHeading,
-                                    snailTrail = newUser.shareSnailTrail,
-                                    //On a friend's row this means "this friend may wake me"
-                                    wakeupEnabled = newUser.allowWake,
-                                    notisMuted = existing?.notisMuted ?: false,
-                                    lastSeen = newUser.lastSeen,
-                                    email = null,
-                                    emailVerifiedAt = null,
-                                    createdAt = null,
-                                    //Local file path, the server never sends it. Clearing it here would
-                                    //blank the picture on every unrelated user change (e.g. lastSeen)
-                                    profilePictureUrl = existing?.profilePictureUrl ?: "",
-                                    profilePicUpdatedAt = newUser.profilePicUpdatedAt,
-                                ))
-                                if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
-                                    profilePicsToGet += newUser.id
-                                }
-                            }
-                            is UserResponse.SelfUserResponse -> {
-                                val existing = database.userDao().getUserbyId(newUser.id)
-                                database.userDao().upsert(UserEntity(
-                                    id = newUser.id,
-                                    updatedAt = newUser.updatedAt,
-                                    name = newUser.username,
-                                    description = newUser.userDescription,
-                                    status = newUser.userStatus,
-                                    birthDate = newUser.birthDate,
-                                    phoneNumber = newUser.phoneNumber,
-
-                                    // Preserve existing values:
-                                    locationLat = existing?.locationLat,
-                                    locationLong = existing?.locationLong,
-                                    locationDate = existing?.locationDate,
-                                    locationSpeed = existing?.locationSpeed,
-                                    locationHeading = existing?.locationHeading,
-                                    locationAltitude = existing?.locationAltitude,
-                                    locationBattery = existing?.locationBattery,
-                                    locationDistance24h = existing?.locationDistance24h,
-                                    locationShared = newUser.locationShared,
-                                    //On my own row this is the master wake switch
-                                    wakeupEnabled = newUser.allowWakeGlobal,
-                                    frienshipStatus = null,
-                                    requesterId = null,
-                                    notisMuted = false,
-                                    email = newUser.email,
-                                    emailVerifiedAt = newUser.emailVerifiedAt,
-                                    createdAt = newUser.createdAt,
-                                    profilePictureUrl = existing?.profilePictureUrl ?: "",
-                                    profilePicUpdatedAt = newUser.profilePicUpdatedAt,
-                                    ))
-                                if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
-                                    profilePicsToGet += newUser.id
-                                }
-
-                                settingsRepository.applyServerSettings(newUser.settings.toSyncedSettings())
-                            }
-                            is UserResponse.SimpleUserResponse -> {
-                                val existing = database.userDao().getUserbyId(newUser.id)
-                                database.userDao().upsert(UserEntity(
-                                    id = newUser.id,
-                                    updatedAt = newUser.updatedAt,
-                                    name = newUser.username,
-                                    description = null,
-                                    status = null,
-
-                                    locationLat = null,
-                                    locationLong = null,
-                                    locationDate = null,
-                                    locationShared = false,
-                                    wakeupEnabled = false,
-                                    frienshipStatus = newUser.friendShipStatus,
-                                    requesterId = newUser.requesterId,
-                                    notisMuted = false,
-                                    birthDate = null,
-                                    phoneNumber = null,
-                                    email = null,
-                                    emailVerifiedAt = null,
-                                    createdAt = null,
-                                    profilePictureUrl = existing?.profilePictureUrl ?: "",
-                                    profilePicUpdatedAt = newUser.profilePicUpdatedAt
-                                    ))
-
-                                if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
-                                    profilePicsToGet += newUser.id
-                                }
-
-                            }
+                    userSyncResponse.data.updatedUsers.forEach { newUser ->
+                        if (userResponseWriter.write(newUser)) {
+                            profilePicsToGet += newUser.id
                         }
-
                     }
 
                     //Delete all non existing users
-                    deletedUsers.forEach { userId ->
-                        database.userDao().delete(userId)
+                    userSyncResponse.data.deletedUsers.forEach { userId ->
+                        userResponseWriter.delete(userId)
                     }
                 }
             }
@@ -272,14 +150,19 @@ class OfflineFirstUserRepository(
     override suspend fun fetchMissingProfilePictures() {
         // Check user profile pics
         val users = userLocalDataSource.getAllUsers()
+        // A hidden picture (null timestamp) is never asked for: the server would only refuse it
         val missingPpUserIds = users.filter { user ->
-            !pictureManager.checkImageExists(user.profilePictureUrl)
+            user.profilePicUpdatedAt != null && !pictureManager.checkImageExists(user.profilePictureUrl)
         }.map { it.id }
 
         if (missingPpUserIds.isNotEmpty()) {
             getProfilePicturesForUserIds(missingPpUserIds)
         }
     }
+
+
+    override suspend fun getProfilePictureBytes(userId: String): DataResult<ByteArray, DataError> =
+        userRemoteDataSource.getProfilePicForUserId(userId).trackConnectivity()
 
 
     // ─── Friends / profile ────────────────────────────────────────────────────

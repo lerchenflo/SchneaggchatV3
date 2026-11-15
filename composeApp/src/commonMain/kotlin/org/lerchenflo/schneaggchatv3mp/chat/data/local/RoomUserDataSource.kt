@@ -61,6 +61,10 @@ class RoomUserDataSource(
         return database.userDao().getUserbyId(id)?.toUser()
     }
 
+    override suspend fun getUserEntityById(id: String): UserEntity? {
+        return database.userDao().getUserbyId(id)
+    }
+
     override fun getUserFlow(id: String): Flow<User?> {
         return database.userDao().getUserbyIdFlow(id).map { it?.toUser() }
     }

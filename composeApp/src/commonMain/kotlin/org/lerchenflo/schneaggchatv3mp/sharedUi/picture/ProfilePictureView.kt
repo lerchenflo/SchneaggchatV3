@@ -64,9 +64,35 @@ fun ProfilePictureView(
     contentDescription: String? = "Profile picture",
     placeholder: Painter = rememberProfilePicturePlaceholder()
 ) {
+    ProfilePictureImage(model = filepath, modifier = modifier, contentDescription = contentDescription, placeholder = placeholder)
+}
 
+/**
+ * Same as the file path variant, for a picture held in memory only (strangers' pictures are never
+ * saved on the device). A null [picture] shows the placeholder.
+ */
+@Composable
+fun ProfilePictureView(
+    picture: ByteArray?,
+    modifier: Modifier = Modifier
+        .size(40.dp)
+        .padding(end = 8.dp)
+        .clip(CircleShape),
+    contentDescription: String? = "Profile picture",
+    placeholder: Painter = rememberProfilePicturePlaceholder()
+) {
+    ProfilePictureImage(model = picture, modifier = modifier, contentDescription = contentDescription, placeholder = placeholder)
+}
+
+@Composable
+private fun ProfilePictureImage(
+    model: Any?,
+    modifier: Modifier,
+    contentDescription: String?,
+    placeholder: Painter,
+) {
     AsyncImage(
-        model = filepath,
+        model = model,
         contentDescription = contentDescription,
         placeholder = placeholder,
         error = placeholder,

@@ -6,7 +6,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
  * The per-user app settings the server syncs across every device of this account, as applied by
  * [org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository.applyServerSettings].
  * Domain copy of the network DTO `PersonalUserSettings`, field for field:
- * theme/language/mapStyle stay the enum's name as a string, a null [quickReactions] means
+ * theme/language/mapStyle/profilePicVisibility stay the enum's name as a string, a null [quickReactions] means
  * "never customised", a null [sortMapUsersByPinned] or [mapSightingPush] means "the server doesn't
  * store it yet",
  * [lastContributePopupShown] 0 means "never seeded" and [lastDismissedAnnouncementId] 0 means
@@ -27,4 +27,5 @@ data class SyncedSettings(
     val developerSettings: Boolean,
     val lastContributePopupShown: Long,
     val lastDismissedAnnouncementId: Long,
+    val profilePicVisibility: String,
 )

@@ -314,6 +314,11 @@
     <string name="map_style_fiord">Fiord</string>
     <string name="share_location_global">Share my location</string>
     <string name="share_location_global_info">Allow friends you share with to see your location</string>
+    <string name="profile_pic_visibility">Who can see my profile picture</string>
+    <string name="profile_pic_visibility_info">Friends always see it, and so does anyone you send a friend request to.</string>
+    <string name="profile_pic_visibility_public">Everyone</string>
+    <string name="profile_pic_visibility_friends_and_groups">Friends and group members</string>
+    <string name="profile_pic_visibility_friends">Friends only</string>
     <string name="share_location_friends_title">Share with</string>
     <string name="advanced_location_sharing">Advanced location sharing</string>
     <string name="advanced_location_sharing_info">Also send your speed and heading, and reveal advanced options per friend</string>

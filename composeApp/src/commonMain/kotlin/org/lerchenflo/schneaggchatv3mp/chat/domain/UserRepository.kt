@@ -40,8 +40,14 @@ interface UserRepository {
     /** Downloads the profile pictures of [userIds] and stores their local paths. */
     suspend fun getProfilePicturesForUserIds(userIds: List<String>)
 
-    /** Downloads every stored user's profile picture whose file is missing locally. */
+    /** Downloads every stored user's profile picture whose file is missing locally, skipping hidden ones. */
     suspend fun fetchMissingProfilePictures()
+
+    /**
+     * Loads a user's profile picture without saving it, for strangers' pictures that are only
+     * kept while shown. An error when the owner's privacy setting hides it or it is missing.
+     */
+    suspend fun getProfilePictureBytes(userId: String): DataResult<ByteArray, DataError>
 
     // ─── Friends ──────────────────────────────────────────────────────────────
 

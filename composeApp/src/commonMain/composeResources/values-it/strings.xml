@@ -313,6 +313,11 @@
     <string name="map_style_fiord">Fiord</string>
     <string name="share_location_global">Condividi la mia posizione</string>
     <string name="share_location_global_info">Consenti agli amici con cui condividi di vedere la tua posizione</string>
+    <string name="profile_pic_visibility">Chi può vedere la mia foto profilo</string>
+    <string name="profile_pic_visibility_info">Gli amici la vedono sempre, così come chiunque riceva una tua richiesta di amicizia.</string>
+    <string name="profile_pic_visibility_public">Tutti</string>
+    <string name="profile_pic_visibility_friends_and_groups">Amici e membri dei gruppi</string>
+    <string name="profile_pic_visibility_friends">Solo amici</string>
     <string name="share_location_friends_title">Condividi con</string>
     <string name="advanced_location_sharing">Condivisione posizione avanzata</string>
     <string name="advanced_location_sharing_info">Invia anche la tua velocità e direzione, e mostra opzioni avanzate per ogni amico</string>

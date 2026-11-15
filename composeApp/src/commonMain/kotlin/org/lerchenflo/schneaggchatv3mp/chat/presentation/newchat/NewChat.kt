@@ -43,6 +43,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.runtime.LaunchedEffect
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -84,6 +86,7 @@ fun NewChat(
     val viewModel = koinViewModel<NewChatViewModel>()
     val searchterm by viewModel.searchterm.collectAsStateWithLifecycle()
     val newChats by viewModel.availableChats.collectAsStateWithLifecycle()
+    val searchResultPictures by viewModel.searchResultPictures.collectAsStateWithLifecycle()
 
     val pendingFriends by viewModel.pendingFriends.collectAsStateWithLifecycle()
     val pendingFriendPopup by viewModel.pendingFriendPopup.collectAsStateWithLifecycle()
@@ -228,10 +231,12 @@ fun NewChat(
                     items = newChats,
                     key = { "search_${it.id}" }
                 ) { user ->
+                    LaunchedEffect(user.id) { viewModel.onSearchResultShown(user) }
 
                     UserResultCard(
                         username = user.username,
                         commonFriendCount = user.commonFriendCount,
+                        picture = searchResultPictures[user.id],
                         onClick = { viewModel.onSearchResultClick(user) }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -409,6 +414,7 @@ fun ActionCard(
 fun UserResultCard(
     username: String,
     commonFriendCount: Int,
+    picture: ByteArray?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -428,20 +434,28 @@ fun UserResultCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // User Avatar Placeholder
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-
-                Text(
-                    text = username.take(1).uppercase(),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+            // The picture where its owner allows it, the first letter otherwise
+            if (picture != null) {
+                ProfilePictureView(
+                    picture = picture,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
                 )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+
+                    Text(
+                        text = username.take(1).uppercase(),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(12.dp))

@@ -105,6 +105,10 @@ class FakeUserRepository : UserRepository {
         onFetchMissingProfilePictures()
     }
 
+    // No picture in tests: the caller shows the placeholder
+    override suspend fun getProfilePictureBytes(userId: String): DataResult<ByteArray, DataError> =
+        DataResult.Error(DataError.NotFound())
+
     // ─── Friends ──────────────────────────────────────────────────────────────
 
     override suspend fun getAvailableUsers(searchTerm: String): DataResult<List<AvailableUser>, DataError> {

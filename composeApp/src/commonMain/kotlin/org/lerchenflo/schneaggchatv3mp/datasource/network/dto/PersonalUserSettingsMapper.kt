@@ -17,4 +17,5 @@ fun PersonalUserSettings.toSyncedSettings(): SyncedSettings = SyncedSettings(
     developerSettings = developerSettings,
     lastContributePopupShown = lastContributePopupShown,
     lastDismissedAnnouncementId = lastDismissedAnnouncementId,
+    profilePicVisibility = profilePicVisibility,
 )

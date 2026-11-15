@@ -11,6 +11,11 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Draft
 import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ProfilePicVisibility
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
@@ -227,6 +232,19 @@ class DataStoreSettingsRepository(
             settingsRemoteDataSource.updateSettings(UserSettingsRequest(lastDismissedAnnouncementId = id)).trackConnectivity()
         }
     }
+
+    // ─── Profile picture visibility (server first) ─────────────────────────────
+
+    override fun getProfilePicVisibilityFlow(): Flow<ProfilePicVisibility> {
+        return preferencemanager.getProfilePicVisibilityFlow()
+    }
+
+    override suspend fun setProfilePicVisibility(visibility: ProfilePicVisibility): EmptyDataResult<DataError> =
+        externalScope.async {
+            settingsRemoteDataSource.updateSettings(UserSettingsRequest(profilePicVisibility = visibility.name)).trackConnectivity()
+                .onSuccess { preferencemanager.saveProfilePicVisibility(visibility) }
+                .asEmptyDataResult()
+        }.await()
 
     // ─── Pinned chats ──────────────────────────────────────────────────────────
     // Local only: ChatListRepository.setPinnedChat pushes the resulting list to the server.

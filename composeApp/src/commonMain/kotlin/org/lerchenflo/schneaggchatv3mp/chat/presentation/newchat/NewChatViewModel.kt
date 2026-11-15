@@ -18,11 +18,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.getOrNull
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportLastingErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
@@ -122,6 +124,23 @@ class NewChatViewModel (
             // Handle error
             loggingRepository.logWarning("NewChat loadAvailableUsers failed: ${e.message}")
             _availableChats.value = emptyList()
+        }
+    }
+
+    // Search results' pictures, held in memory only while this screen lives: strangers' pictures
+    // are never saved on the device
+    private val _searchResultPictures = MutableStateFlow<Map<String, ByteArray>>(emptyMap())
+    val searchResultPictures: StateFlow<Map<String, ByteArray>> = _searchResultPictures.asStateFlow()
+    private val requestedPictureIds = mutableSetOf<String>()
+
+    /** Loads a search result's picture once it is on screen, if its owner lets the own user see it. */
+    fun onSearchResultShown(user: AvailableUser) {
+        if (user.profilePicUpdatedAt == null || !requestedPictureIds.add(user.id)) return
+        viewModelScope.launch {
+            // No popup on failure: the placeholder stays, nothing the user could act on
+            userRepository.getProfilePictureBytes(user.id).onSuccess { picture ->
+                _searchResultPictures.update { it + (user.id to picture) }
+            }
         }
     }
 

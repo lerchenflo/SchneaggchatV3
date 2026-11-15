@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.settings.domain
 
 import kotlinx.coroutines.flow.Flow
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 
 /**
@@ -65,6 +67,12 @@ interface SettingsRepository {
     // announcement shows once more.
     fun getLastDismissedAnnouncementIdFlow(): Flow<Long>
     suspend fun setLastDismissedAnnouncementId(id: Long)
+
+    // ─── Profile picture visibility (synced, server first) ─────────────────────
+    // Unlike the other set* functions: the server applies it first, and the local value only
+    // changes on success, so the screen never shows a privacy level that is not active yet.
+    fun getProfilePicVisibilityFlow(): Flow<ProfilePicVisibility>
+    suspend fun setProfilePicVisibility(visibility: ProfilePicVisibility): EmptyDataResult<DataError>
 
     // ─── Pinned chats (synced) ─────────────────────────────────────────────────
     // Local reads and writes only, newest pin first. ChatListRepository.setPinnedChat writes

@@ -9,4 +9,6 @@ data class AvailableUser(
     val id: String,
     val username: String,
     val commonFriendCount: Int,
+    // Null: the user's privacy setting hides their picture from the own user
+    val profilePicUpdatedAt: Long? = null,
 )

@@ -13,7 +13,8 @@ data class UserEntity(
     var id: String = "",
 
     var updatedAt: Long,
-    val profilePicUpdatedAt: Long,
+    // Null: the server hides this user's picture from the own user (their privacy setting)
+    val profilePicUpdatedAt: Long?,
 
     var name: String = "",
     var nickName: String? = null,

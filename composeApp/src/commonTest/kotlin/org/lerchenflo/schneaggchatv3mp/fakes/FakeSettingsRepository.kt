@@ -10,6 +10,10 @@ import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ProfilePicVisibility
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
@@ -36,6 +40,7 @@ class FakeSettingsRepository : SettingsRepository {
     val quickReactions = MutableStateFlow(DEFAULT_QUICK_REACTIONS)
     val lastContributePopupShown = MutableStateFlow(0L)
     val lastDismissedAnnouncementId = MutableStateFlow(0L)
+    val profilePicVisibility = MutableStateFlow(ProfilePicVisibility.DEFAULT)
     val pinnedChats = MutableStateFlow<List<PinnedChat>>(emptyList())
     val demoMode = MutableStateFlow(false)
     val onboardingSeen = MutableStateFlow(true)
@@ -126,6 +131,12 @@ class FakeSettingsRepository : SettingsRepository {
     override fun getLastDismissedAnnouncementIdFlow(): Flow<Long> = lastDismissedAnnouncementId
     override suspend fun setLastDismissedAnnouncementId(id: Long) {
         lastDismissedAnnouncementId.value = id
+    }
+
+    override fun getProfilePicVisibilityFlow(): Flow<ProfilePicVisibility> = profilePicVisibility
+    override suspend fun setProfilePicVisibility(visibility: ProfilePicVisibility): EmptyDataResult<DataError> {
+        profilePicVisibility.value = visibility
+        return DataResult.Success(Unit)
     }
 
     // ─── Pinned chats ─────────────────────────────────────────────────────────

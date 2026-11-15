@@ -38,7 +38,10 @@ suspend fun ensureProfilePictureForNotification(userId: String?) {
     val koin = KoinPlatform.getKoin()
     try {
         val pictureManager = koin.get<PictureManager>()
-        val storedPath = koin.get<UserLocalDataSource>().getUserById(userId)?.profilePictureUrl
+        val storedUser = koin.get<UserLocalDataSource>().getUserById(userId)
+        // The server hides this user's picture from us (their privacy setting): asking would be refused
+        if (storedUser != null && storedUser.profilePicUpdatedAt == null) return
+        val storedPath = storedUser?.profilePictureUrl
         val hasPicture = listOfNotNull(storedPath?.ifBlank { null }, pictureManager.getProfilePicFilePath(userId, gruppe = false))
             .any { pictureManager.checkImageExists(it) }
         if (hasPicture) return

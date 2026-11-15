@@ -35,7 +35,8 @@ data class User(
 
     val createdAt: Long?,
 
-    val profilePicUpdatedAt: Long,
+    // Null: this user's privacy setting hides their picture from the own user
+    val profilePicUpdatedAt: Long?,
 ) {
     fun isEmailVerified() : Boolean {
         return emailVerifiedAt != null

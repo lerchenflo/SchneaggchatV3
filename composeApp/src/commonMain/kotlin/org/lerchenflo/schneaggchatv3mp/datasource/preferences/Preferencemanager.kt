@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.DEFAULT_QUICK_REACTIONS
 import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ProfilePicVisibility
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
@@ -133,6 +134,7 @@ class Preferencemanager(
         val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
         val LAST_CONTRIBUTE_POPUP_SHOWN = longPreferencesKey("last_contribute_popup_shown")
         val LAST_DISMISSED_ANNOUNCEMENT_ID = longPreferencesKey("last_dismissed_announcement_id")
+        val PROFILE_PIC_VISIBILITY = stringPreferencesKey("profile_pic_visibility")
         val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
         val EVENTS_VIEW_MODE = stringPreferencesKey("events_view_mode")
         val FEEDBACK_LAST_SYNC_SERVER_TIME = longPreferencesKey("feedback_last_sync_server_time")
@@ -281,6 +283,15 @@ class Preferencemanager(
     }
 
     fun getMapStyleUrlFlow(): Flow<String> = getMapStyleSettingFlow().map { it.tileUrl }
+
+    // Profile picture visibility. Stored by enum name; only written once the server applied it
+    suspend fun saveProfilePicVisibility(visibility: ProfilePicVisibility) {
+        prefs.edit { it[PrefsKeys.PROFILE_PIC_VISIBILITY] = visibility.name }
+    }
+
+    fun getProfilePicVisibilityFlow(): Flow<ProfilePicVisibility> = prefs.data.map { prefs ->
+        ProfilePicVisibility.fromName(prefs[PrefsKeys.PROFILE_PIC_VISIBILITY])
+    }
 
     // Events tab: last selected list/day/upcoming/month view. Stored by enum name (not ordinal) so
     // reordering or inserting a view mode later can't silently remap a saved choice.
@@ -488,6 +499,7 @@ class Preferencemanager(
             it[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN] = settings.lastContributePopupShown
             // A dismissal made offline is undone here - the announcement simply shows once more
             it[PrefsKeys.LAST_DISMISSED_ANNOUNCEMENT_ID] = settings.lastDismissedAnnouncementId
+            it[PrefsKeys.PROFILE_PIC_VISIBILITY] = ProfilePicVisibility.fromName(settings.profilePicVisibility).name
         }
     }
 

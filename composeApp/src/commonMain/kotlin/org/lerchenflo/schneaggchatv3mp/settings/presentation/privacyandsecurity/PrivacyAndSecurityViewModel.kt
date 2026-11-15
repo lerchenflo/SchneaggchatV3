@@ -23,6 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ProfilePicVisibility
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.FriendShareDraft
@@ -62,6 +63,9 @@ class PrivacyAndSecurityViewModel(
     var isChangingPassword by mutableStateOf(false)
         private set
 
+    var profilePicVisibility by mutableStateOf(ProfilePicVisibility.DEFAULT)
+        private set
+
     init {
         viewModelScope.launch { // Global location sharing status
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
@@ -73,6 +77,12 @@ class PrivacyAndSecurityViewModel(
                 .collect { value ->
                     shareLocationGlobal = value?.locationShared ?: false
                 }
+        }
+
+        viewModelScope.launch {
+            settingsRepository.getProfilePicVisibilityFlow().collect { value ->
+                profilePicVisibility = value
+            }
         }
 
         viewModelScope.launch { // Friends for per-friend location sharing
@@ -103,6 +113,14 @@ class PrivacyAndSecurityViewModel(
             } finally {
                 isChangingPassword = false
             }
+        }
+    }
+
+    /** Saves on the server first; on failure the error popup shows and the old value stays. */
+    fun saveProfilePicVisibility(visibility: ProfilePicVisibility) {
+        if (visibility == profilePicVisibility) return
+        applicationScope.launchOnMain {
+            settingsRepository.setProfilePicVisibility(visibility).reportErrorTo(errorChannel)
         }
     }
 

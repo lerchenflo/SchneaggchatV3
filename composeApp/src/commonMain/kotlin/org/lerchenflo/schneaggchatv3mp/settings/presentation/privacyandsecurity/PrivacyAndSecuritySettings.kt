@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Key
@@ -76,6 +77,7 @@ import schneaggchatv3mp.composeapp.generated.resources.privacy_group_location
 import schneaggchatv3mp.composeapp.generated.resources.privacy_group_security
 import schneaggchatv3mp.composeapp.generated.resources.privacy_policy
 import schneaggchatv3mp.composeapp.generated.resources.privacy_policy_info
+import schneaggchatv3mp.composeapp.generated.resources.profile_pic_visibility
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
 import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
@@ -97,6 +99,7 @@ fun PrivacyAndSecuritySettings(
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
     var showLogoutAllDialog by rememberSaveable { mutableStateOf(false) }
     var locationSharingDialogShown by remember { mutableStateOf(false) }
+    var profilePicVisibilityDialogShown by remember { mutableStateOf(false) }
 
     Column {
         ActivityTitle(
@@ -181,6 +184,16 @@ fun PrivacyAndSecuritySettings(
                         )
                     }
                 }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Who can see the own profile picture
+            SettingsOption(
+                icon = Icons.Default.AccountCircle,
+                text = stringResource(Res.string.profile_pic_visibility),
+                subtext = stringResource(viewModel.profilePicVisibility.labelResource()),
+                onClick = { profilePicVisibilityDialogShown = true }
             )
 
             // Group 3: Data & Legal
@@ -327,6 +340,17 @@ fun PrivacyAndSecuritySettings(
             onDismiss = {
                 showLogoutAllDialog = false
             }
+        )
+    }
+
+    if (profilePicVisibilityDialogShown) {
+        ProfilePicVisibilityDialog(
+            current = viewModel.profilePicVisibility,
+            onConfirm = { visibility ->
+                profilePicVisibilityDialogShown = false
+                viewModel.saveProfilePicVisibility(visibility)
+            },
+            onDismiss = { profilePicVisibilityDialogShown = false }
         )
     }
 

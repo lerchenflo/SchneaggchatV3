@@ -27,6 +27,9 @@ interface UserLocalDataSource {
 
     suspend fun getUserById(id: String): User?
 
+    /** The stored row as it is, for merging server data with the fields only this device knows. */
+    suspend fun getUserEntityById(id: String): UserEntity?
+
     fun getUserFlow(id: String): Flow<User?>
 
     suspend fun updateUserProfilePicUrl(userId: String, newUrl: String)

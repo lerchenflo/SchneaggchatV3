@@ -12,10 +12,10 @@ import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserResponseWriter
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
@@ -23,7 +23,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.isNewerThan
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
@@ -34,7 +33,6 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.dto.toGroupEx
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.toEvent
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toMapEntry
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.events.data.local.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.MapLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
@@ -58,7 +56,6 @@ import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
 import kotlin.math.absoluteValue
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toGroup
 
@@ -227,7 +224,6 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
     val mapLocalDataSource = KoinPlatform.getKoin().get<MapLocalDataSource>()
     val groupExtensionLocalDataSource = KoinPlatform.getKoin().get<GroupExtensionLocalDataSource>()
     val eventLocalDataSource = KoinPlatform.getKoin().get<EventLocalDataSource>()
-    val settingsRepository = KoinPlatform.getKoin().get<SettingsRepository>()
     val userRepository = KoinPlatform.getKoin().get<UserRepository>()
     val groupRepository = KoinPlatform.getKoin().get<GroupRepository>()
     val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
@@ -352,130 +348,11 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
             is SocketConnectionMessage.UserChange -> {
                 println("Recieved socket connection update: Userchange")
 
+                val userResponseWriter = KoinPlatform.getKoin().get<UserResponseWriter>()
                 if (socketMessage.deleted) {
-                    userLocalDataSource.deleteUser(socketMessage.user.id)
-                } else {
-                    when (val newUser = socketMessage.user) {
-                        is UserResponse.SimpleUserResponse -> {
-                            val existing = userLocalDataSource.getUserById(newUser.id)
-                            userLocalDataSource.upsertUser(UserEntity(
-                                id = newUser.id,
-                                updatedAt = newUser.updatedAt,
-                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
-                                name = newUser.username,
-                                description = null,
-                                status = null,
-
-                                locationLat = null,
-                                locationLong = null,
-                                locationDate = null,
-                                locationShared = false,
-                                wakeupEnabled = false,
-                                frienshipStatus = newUser.friendShipStatus,
-                                requesterId = newUser.requesterId,
-                                notisMuted = false,
-                                birthDate = null,
-                                phoneNumber = null,
-                                email = null,
-                                emailVerifiedAt = null,
-                                createdAt = null,
-                                //Local file path, the server never sends it - keep what we already have
-                                profilePictureUrl = existing?.profilePictureUrl ?: ""
-                            ))
-
-                            //Update profile picture if user is new or the profile pic got updated
-                            if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
-                                userRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
-                            }
-
-
-                        }
-
-                        is UserResponse.FriendUserResponse -> {
-                            val existing = userLocalDataSource.getUserById(newUser.id)
-                            userLocalDataSource.upsertUser(UserEntity(
-                                id = newUser.id,
-                                updatedAt = newUser.updatedAt,
-                                name = newUser.username,
-                                nickName = newUser.nickName,
-                                description = newUser.userDescription,
-                                status = newUser.userStatus,
-                                birthDate = newUser.birthDate,
-                                phoneNumber = newUser.phoneNumber,
-                                frienshipStatus = NetworkFriendshipStatus.ACCEPTED,
-                                requesterId = newUser.requesterId,
-                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
-
-                                // Preserve existing values:
-                                locationLat = existing?.location?.lat,
-                                locationLong = existing?.location?.long,
-                                locationDate = existing?.location?.date,
-                                locationSpeed = existing?.location?.speed,
-                                locationHeading = existing?.location?.heading,
-                                locationAltitude = existing?.location?.altitude,
-                                locationBattery = existing?.location?.batteryLevel,
-                                locationDistance24h = existing?.location?.distanceTraveled24h,
-                                locationShared = newUser.shareLocation,
-                                shareSpeedHeading = newUser.shareSpeedHeading,
-                                snailTrail = newUser.shareSnailTrail,
-                                //On a friend's row this means "this friend may wake me"
-                                wakeupEnabled = newUser.allowWake,
-                                notisMuted = existing?.notisMuted ?: false,
-                                lastSeen = newUser.lastSeen,
-                                email = null,
-                                emailVerifiedAt = null,
-                                createdAt = null,
-                                profilePictureUrl = existing?.profilePictureUrl ?: ""
-                            ))
-                            //Update profile picture if user is new or the profile pic got updated
-                            if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
-                                userRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
-                            }
-                        }
-                        is UserResponse.SelfUserResponse -> {
-                            val existing = userLocalDataSource.getUserById(newUser.id)
-                            userLocalDataSource.upsertUser(UserEntity(
-                                id = newUser.id,
-                                updatedAt = newUser.updatedAt,
-                                name = newUser.username,
-                                description = newUser.userDescription,
-                                status = newUser.userStatus,
-                                birthDate = newUser.birthDate,
-                                phoneNumber = newUser.phoneNumber,
-                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
-
-                                // Preserve existing values:
-                                locationLat = existing?.location?.lat,
-                                locationLong = existing?.location?.long,
-                                locationDate = existing?.location?.date,
-                                locationSpeed = existing?.location?.speed,
-                                locationHeading = existing?.location?.heading,
-                                locationAltitude = existing?.location?.altitude,
-                                locationBattery = existing?.location?.batteryLevel,
-                                locationDistance24h = existing?.location?.distanceTraveled24h,
-                                locationShared = newUser.locationShared,
-                                //On my own row this is the master wake switch
-                                wakeupEnabled = newUser.allowWakeGlobal,
-                                frienshipStatus = null,
-                                requesterId = null,
-                                notisMuted = false,
-                                email = newUser.email,
-                                emailVerifiedAt = newUser.emailVerifiedAt,
-                                createdAt = newUser.createdAt,
-                                profilePictureUrl = existing?.profilePictureUrl ?: ""
-
-                            ))
-
-                            //Update profile picture if user is new or the profile pic got updated
-                            if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
-                                userRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
-                            }
-
-                            settingsRepository.applyServerSettings(newUser.settings.toSyncedSettings())
-                        }
-                    }
-
-
+                    userResponseWriter.delete(socketMessage.user.id)
+                } else if (userResponseWriter.write(socketMessage.user)) {
+                    userRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
                 }
             }
 

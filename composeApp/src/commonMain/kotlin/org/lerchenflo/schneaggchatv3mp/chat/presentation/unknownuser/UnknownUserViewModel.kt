@@ -17,6 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -63,13 +64,16 @@ class UnknownUserViewModel(
         val user = userRepository.getUserById(route.userId)
         val requestState = FriendRequestState.of(user, ownId)
         when {
-            requestState != null -> _state.update {
-                it.copy(
-                    // The stored name (nickname) is the newest one; the caller's name is the fallback
-                    name = user?.displayName ?: it.name,
-                    profilePictureFilePath = pictureManager.getProfilePicFilePath(route.userId, false),
-                    requestState = requestState,
-                )
+            requestState != null -> {
+                _state.update {
+                    it.copy(
+                        // The stored name (nickname) is the newest one; the caller's name is the fallback
+                        name = user?.displayName ?: it.name,
+                        profilePictureFilePath = storedPictureFilePath(user),
+                        requestState = requestState,
+                    )
+                }
+                if (user == null) loadUnstoredPicture()
             }
 
             user?.friendshipStatus == FriendshipStatus.ACCEPTED -> navigator.navigate(
@@ -79,6 +83,19 @@ class UnknownUserViewModel(
 
             // Blocked: nothing to offer
             else -> navigator.navigateBack()
+        }
+    }
+
+    // Empty when the user's privacy setting hides the picture: the placeholder shows
+    private fun storedPictureFilePath(user: User?): String {
+        if (user == null || user.profilePicUpdatedAt == null) return ""
+        return pictureManager.getProfilePicFilePath(route.userId, false)
+    }
+
+    // A user who is not stored here: ask the server, it refuses when their setting hides the picture
+    private suspend fun loadUnstoredPicture() {
+        userRepository.getProfilePictureBytes(route.userId).onSuccess { picture ->
+            _state.update { it.copy(profilePicture = picture) }
         }
     }
 
