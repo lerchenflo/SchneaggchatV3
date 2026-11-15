@@ -164,7 +164,7 @@ class EventDetailViewModel(
                 viewModelScope.launch {
                     navigator.navigate(
                         Route.Schneaggmap(
-                            focusLocation = location,
+                            focusArea = listOf(location),
                             openRequestId = Clock.System.now().toEpochMilliseconds()
                         )
                     )

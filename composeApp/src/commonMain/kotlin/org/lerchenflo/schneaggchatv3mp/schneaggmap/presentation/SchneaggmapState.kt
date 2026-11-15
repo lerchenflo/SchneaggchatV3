@@ -39,6 +39,9 @@ data class SchneaggmapState(
     // One-shot camera target for opening the map with a specific entry (deep link);
     // cleared again via OnFocusEntryHandled once the camera has moved there.
     val focusEntryTarget: LatLong? = null,
+    // One-shot set of positions to fit into view when the map opens (a group's map preview);
+    // cleared via OnFocusEntryHandled too.
+    val focusAreaTarget: List<LatLong>? = null,
 
     val locationPermissionGranted: Boolean = false,
     val ownLocationShared: Boolean = false,

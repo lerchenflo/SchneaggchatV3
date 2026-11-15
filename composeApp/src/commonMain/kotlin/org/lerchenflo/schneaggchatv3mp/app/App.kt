@@ -704,7 +704,8 @@ fun App() {
                                     SchneaggmapScreenRoot(
                                         initialEntryId = route.initialEntryId,
                                         currentlyEditedEvent = route.currentlyEditedEvent,
-                                        focusLocation = route.focusLocation,
+                                        focusArea = route.focusArea,
+                                        focusUserId = route.focusUserId,
                                     )
                                 }
 

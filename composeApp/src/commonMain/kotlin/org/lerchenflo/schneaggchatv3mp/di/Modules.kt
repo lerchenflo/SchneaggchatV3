@@ -435,6 +435,7 @@ val sharedmodule = module{
             eventRepository = get(),
             messageRepository = get(),
             groupExtensionRepository = get(),
+            settingsRepository = get(),
             applicationScope = get(),
             chatId = chatId,
             isGroup = isGroup
@@ -500,7 +501,7 @@ val sharedmodule = module{
         )
     }
 
-    viewModel { (initialEntryId: String?, currentlyEditedEvent: Event?, focusLocation: LatLong?) ->
+    viewModel { (initialEntryId: String?, currentlyEditedEvent: Event?, focusArea: List<LatLong>, focusUserId: String?) ->
         SchneaggmapViewModel(
             errorChannel = get(),
             navigator = get(),
@@ -513,7 +514,8 @@ val sharedmodule = module{
             eventRepository = get(),
             initialEntryId = initialEntryId,
             currentlyEditedEvent = currentlyEditedEvent,
-            focusLocation = focusLocation,
+            focusArea = focusArea,
+            focusUserId = focusUserId,
         )
     }
 

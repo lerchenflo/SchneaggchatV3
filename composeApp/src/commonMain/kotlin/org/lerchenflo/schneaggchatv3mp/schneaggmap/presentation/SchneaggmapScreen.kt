@@ -58,6 +58,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.Coord
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapCreateChoiceDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.MapAttributionBar
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.fitCameraTo
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapFilterChipsRow
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapLocateButton
@@ -114,9 +115,10 @@ private val FOLLOW_ANIMATION_DURATION = 500.milliseconds
 fun SchneaggmapScreenRoot(
     initialEntryId: String? = null,
     currentlyEditedEvent: Event? = null,
-    focusLocation: LatLong? = null,
+    focusArea: List<LatLong> = emptyList(),
+    focusUserId: String? = null,
 ) {
-    val viewModel = koinViewModel<SchneaggmapViewModel> { parametersOf(initialEntryId, currentlyEditedEvent, focusLocation) }
+    val viewModel = koinViewModel<SchneaggmapViewModel> { parametersOf(initialEntryId, currentlyEditedEvent, focusArea, focusUserId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     SchneaggmapScreen(
@@ -203,6 +205,15 @@ fun SchneaggmapScreen(
                     zoom = ENTRY_FOCUS_ZOOM
                 )
             )
+            onAction(SchneaggmapAction.OnFocusEntryHandled)
+        }
+    }
+
+    //Opened on several positions (a group's map preview): fit them all into view once
+    LaunchedEffect(state.focusAreaTarget) {
+        state.focusAreaTarget?.let { target ->
+            hasAutoCentered = true
+            mapState.fitCameraTo(target, animate = true)
             onAction(SchneaggmapAction.OnFocusEntryHandled)
         }
     }

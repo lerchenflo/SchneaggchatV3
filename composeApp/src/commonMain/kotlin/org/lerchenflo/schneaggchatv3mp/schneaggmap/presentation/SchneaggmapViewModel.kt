@@ -65,7 +65,8 @@ class SchneaggmapViewModel(
 
     private val initialEntryId: String?,
     private val currentlyEditedEvent: Event?,
-    private val focusLocation: LatLong? = null,
+    private val focusArea: List<LatLong> = emptyList(),
+    private val focusUserId: String? = null,
 ) : ViewModel() {
 
     val pickLocationMode = currentlyEditedEvent != null
@@ -316,7 +317,7 @@ class SchneaggmapViewModel(
             }
 
             SchneaggmapAction.OnFocusEntryHandled -> {
-                _state.update { it.copy(focusEntryTarget = null) }
+                _state.update { it.copy(focusEntryTarget = null, focusAreaTarget = null) }
             }
 
             is SchneaggmapAction.OnEntryPopupSave -> {
@@ -496,9 +497,26 @@ class SchneaggmapViewModel(
                 .collect { editorName -> _state.update { it.copy(selectedEntryEditorName = editorName) } }
         }
 
-        // Opened on a location (e.g. an event's map preview): fly there once
-        if (focusLocation != null) {
-            _state.update { it.copy(focusEntryTarget = focusLocation, isFilterDropdownVisible = false) }
+        // Opened on positions (a map preview): one is centered, several are fitted into view
+        when {
+            focusArea.size == 1 -> _state.update { it.copy(focusEntryTarget = focusArea.first(), isFilterDropdownVisible = false) }
+            focusArea.size > 1 -> _state.update { it.copy(focusAreaTarget = focusArea, isFilterDropdownVisible = false) }
+        }
+
+        // Opened on a user (a chat's map preview): open their card and fly to them once they show
+        // up with a valid location
+        if (focusUserId != null) {
+            viewModelScope.launch {
+                val user = _state.mapNotNull { state -> state.usersWithLocation.firstOrNull { it.id == focusUserId } }.first()
+                val location = user.location ?: return@launch
+                _state.update {
+                    it.copy(
+                        selectedUser = user,
+                        focusEntryTarget = LatLong(lat = location.lat, long = location.long),
+                        isFilterDropdownVisible = false,
+                    )
+                }
+            }
         }
 
         // Opened with a specific entry (deep link): once the entry shows up in the database,

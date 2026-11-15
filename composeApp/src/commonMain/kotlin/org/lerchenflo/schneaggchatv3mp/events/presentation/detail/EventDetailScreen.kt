@@ -66,6 +66,8 @@ import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventUserA
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.StaticMapPreview
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.EventMarkerLayer
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.toPosition
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.edit
@@ -216,12 +218,20 @@ private fun EventDetailContent(
     if (location != null && mapStyleUrl != null) {
         Spacer(modifier = Modifier.height(16.dp))
         StaticMapPreview(
-            location = location,
+            focus = listOf(location),
             styleUrl = mapStyleUrl,
             onClick = { onAction(EventDetailAction.OnShowOnMapClick) },
             contentDescription = stringResource(Res.string.event_show_on_map),
             height = 180.dp,
-        )
+        ) {
+            // Same pin as on the Schneaggmap: joined when the own answer is "going"
+            EventMarkerLayer(
+                eventId = event.id,
+                position = location.toPosition(),
+                icon = event.type.icon(),
+                isJoined = state.ownStatus == EventParticipationStatus.ACCEPTED,
+            )
+        }
     }
 
     Spacer(modifier = Modifier.height(16.dp))

@@ -75,8 +75,13 @@ sealed interface Route : NavKey {
         val initialEntryId: String? = null,
         val currentlyEditedEvent: Event? = null,
         val openRequestId: Long = 0L,
-        /** Camera target when the map opens, e.g. an event's location. */
-        val focusLocation: LatLong? = null,
+        /**
+         * Camera target when the map opens: one position is centered (an event's location), several
+         * are fitted into view (a group's members and event).
+         */
+        val focusArea: List<LatLong> = emptyList(),
+        /** User whose info card opens when the map opens, once they show up with a location. */
+        val focusUserId: String? = null,
     ): Route
 
     @Serializable

@@ -84,7 +84,7 @@ The event items here and below (change push, system messages, names, map preview
 
 **After that:**
 
-- [ ] **M** **Map preview in the chat details of users and groups** (important, user 2026-11-15, do next). **Interview done (user, 2026-11-15):**
+- [x] **M** (Built 2026-11-15, device test open: `C/chat/presentation/chatdetails/ChatMapPreview.kt`, `ChatDetailsViewmodel.mapPreview`; one marker per kind for every map in `C/sharedUi/map/` (`UserMarkerLayer` + `rememberUserMarkers`, `EventMarkerLayer`, `StaticMapPreview` with several pins, `fitCameraTo`), used by the Schneaggmap, the event previews and the chat details; `Route.Schneaggmap` has `focusArea` (replaces `focusLocation`) and `focusUserId`.) **Map preview in the chat details of users and groups** (important, user 2026-11-15, do next). **Interview done (user, 2026-11-15):**
   - User chat: the friend's picture marker at the last shared location, like on the Schneaggmap; no snail trail, no own position. Only while the location is valid (shared with the own user, younger than 24 h, `User.isLocationValid()`); otherwise no preview at all.
   - Group chat: pins of the members who share a valid location with the own user, plus the location of the group's event (event groups); hidden when there is nothing to show.
   - Tap: opens the Schneaggmap focused on that user with their info card open; for a group, zoomed so all shown members and the event fit. `Route.Schneaggmap` has only `focusLocation` today (`C/app/navigation/Route.kt:79`), so it needs a user focus.
@@ -153,6 +153,7 @@ The event items here and below (change push, system messages, names, map preview
 
 ## P3: code quality and architecture
 
+- [ ] **S** `MapIcon` and `Modifier.absoluteOffsetWithAnchor` (`C/schneaggmap/presentation/uielements/HelperFunctions.kt`) are never called. Delete them, or move them to `C/sharedUi/map/` if a Compose overlay on a map is needed again. *(chat details map preview 2026-11-15)*
 - [ ] **S** **User names by id: follow-ups** (2026-11-15, from the client build):
   - An @mention of a user this device has never looked up shows "Unknown user" until the user is looked up elsewhere (group sync, popup on tap). `ComboAnnotationNames` only reads known names (`C/sharedUi/text/ComboAnnotationNames.kt`); a lookup for unresolved mention ids would need a hook in `ComboText`.
   - New chat search results still load strangers' pictures in memory (`C/chat/presentation/newchat/NewChatViewModel.kt`, `onSearchResultShown`), not through the looked-up users table. Fine per D8 of the picture plan; decide whether search should use the one path too.

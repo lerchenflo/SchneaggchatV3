@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
+package org.lerchenflo.schneaggchatv3mp.sharedUi.map
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key

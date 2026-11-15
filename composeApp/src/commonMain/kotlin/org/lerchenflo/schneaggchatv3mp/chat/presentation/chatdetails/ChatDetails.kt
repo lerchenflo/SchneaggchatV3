@@ -165,6 +165,7 @@ fun ChatDetails(
     val sharedLinkCount by chatdetailsViewmodel.sharedLinkCount.collectAsStateWithLifecycle()
     val messageCount by chatdetailsViewmodel.messageCount.collectAsStateWithLifecycle()
     val groupExtensions by chatdetailsViewmodel.groupExtensions.collectAsStateWithLifecycle()
+    val mapPreview by chatdetailsViewmodel.mapPreview.collectAsStateWithLifecycle()
 
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
@@ -319,6 +320,16 @@ fun ChatDetails(
 
                     HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 }
+            }
+
+            // Where the friend is, or the group's members and event (only while someone shares a location)
+            mapPreview?.let { preview ->
+                ChatMapPreview(
+                    preview = preview,
+                    onClick = { chatdetailsViewmodel.onMapPreviewClick() },
+                )
+
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
             }
 
             // Birthdate

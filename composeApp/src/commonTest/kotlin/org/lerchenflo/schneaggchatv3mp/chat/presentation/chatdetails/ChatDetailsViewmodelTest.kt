@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeSettingsRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeErrorChannel
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeEventRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupExtensionRepository
@@ -96,6 +97,7 @@ class ChatDetailsViewmodelTest {
             eventRepository = FakeEventRepository(),
             messageRepository = FakeMessageRepository(),
             groupExtensionRepository = FakeGroupExtensionRepository(),
+            settingsRepository = FakeSettingsRepository(),
             applicationScope = ApplicationScope(),
             chatId = chatId,
             isGroup = isGroup,

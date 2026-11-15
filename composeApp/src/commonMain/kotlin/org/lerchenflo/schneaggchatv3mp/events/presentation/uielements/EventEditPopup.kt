@@ -5,6 +5,8 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToStringWithWeekday
 import schneaggchatv3mp.composeapp.generated.resources.event_show_on_map
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.StaticMapPreview
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.EventMarkerLayer
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.toPosition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -354,11 +356,19 @@ fun EventEditPopup(
                 if (mapStyleUrl != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     StaticMapPreview(
-                        location = location,
+                        focus = listOf(location),
                         styleUrl = mapStyleUrl,
                         onClick = { onPickLocation(currentEvent) },
                         contentDescription = stringResource(Res.string.event_show_on_map),
-                    )
+                    ) {
+                        // Same pin as on the Schneaggmap; only the creator edits, and they are going
+                        EventMarkerLayer(
+                            eventId = currentEvent.id,
+                            position = location.toPosition(),
+                            icon = currentEvent.type.icon(),
+                            isJoined = true,
+                        )
+                    }
                 }
             }
 

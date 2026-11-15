@@ -56,6 +56,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeOutcome
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import kotlin.time.Clock
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.ExtensionListAction
@@ -133,6 +137,7 @@ class ChatDetailsViewmodel(
     private val eventRepository: EventRepository,
     private val messageRepository: MessageRepository,
     private val groupExtensionRepository: GroupExtensionRepository,
+    private val settingsRepository: SettingsRepository,
     private val applicationScope: ApplicationScope,
 
     val chatId: String,
@@ -358,6 +363,56 @@ class ChatDetailsViewmodel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = null
         )
+
+    /**
+     * The map preview: friends who share a valid location (the user, or the group's members) and
+     * the group's event when it has a location. Null hides the preview.
+     */
+    val mapPreview: StateFlow<ChatMapPreviewState?> = combine(
+        chatDetails,
+        connectedEvent,
+        userRepository.onlineFriendIdsFlow,
+        settingsRepository.getMapStyleUrlFlow(),
+    ) { details, event, onlineUserIds, styleUrl ->
+        val ownId = SessionCache.requireLoggedIn()?.userId
+        val users = when (details) {
+            is ChatDetailsState.UserDetails -> listOf(details.user)
+            is ChatDetailsState.GroupDetails -> details.members.mapNotNull { it.user }
+            ChatDetailsState.Loading -> emptyList()
+        }.filter { it.id != ownId && it.isLocationValid() }
+        val eventWithLocation = event?.takeIf { it.location != null }
+
+        if (users.isEmpty() && eventWithLocation == null) {
+            null
+        } else {
+            ChatMapPreviewState(
+                users = users,
+                onlineUserIds = onlineUserIds,
+                event = eventWithLocation,
+                isEventJoined = ownId != null && eventWithLocation?.statusOf(ownId) == EventParticipationStatus.ACCEPTED,
+                styleUrl = styleUrl,
+            )
+        }
+    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
+    /** Opens the Schneaggmap on the user, or for a group with every shown pin in view. */
+    fun onMapPreviewClick() {
+        val preview = mapPreview.value ?: return
+        viewModelScope.launch {
+            navigator.navigate(
+                Route.Schneaggmap(
+                    focusArea = if (isGroup) preview.focus else emptyList(),
+                    focusUserId = chatId.takeUnless { isGroup },
+                    openRequestId = Clock.System.now().toEpochMilliseconds(),
+                )
+            )
+        }
+    }
 
     fun navigateToConnectedEvent(eventId: String) {
         viewModelScope.launch {

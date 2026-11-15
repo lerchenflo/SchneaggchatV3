@@ -29,6 +29,7 @@ sealed interface SchneaggmapAction {
     data class OnOpenCompassClick(val user: User) : SchneaggmapAction
 
     data object OnPopupDismiss: SchneaggmapAction
+    /** The camera moved to the one-shot focus target (entry, user or area). */
     data object OnFocusEntryHandled: SchneaggmapAction
     // keepPopupOpen: quick changes on the read-only card (a date's Now button) leave the popup open
     data class OnEntryPopupSave(val entry: MapEntry, val keepPopupOpen: Boolean = false): SchneaggmapAction

@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
-import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
@@ -26,15 +25,10 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import kotlinx.io.buffered
-import kotlinx.io.files.Path
-import kotlinx.io.files.SystemFileSystem
-import kotlinx.io.readByteArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
@@ -47,9 +41,17 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapActio
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.approximateDistanceMeters
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.metersPerDpAtTarget
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.safeAdd
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.EventMarkerLayer
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.MarkerIcon
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.UserMarkerLayer
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.addMarkerBackground
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.rememberUserMarkers
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.mergeClusterAvatarsIcon
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.mergeLocationTypeIcons
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.rememberUserMarkerStyle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.safeAdd
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.scaleMarkerIcon
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import org.maplibre.compose.expressions.dsl.condition
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.feature
@@ -79,7 +81,6 @@ import org.maplibre.spatialk.units.extensions.inMeters
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_beer
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
-import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import kotlin.math.roundToInt
 import kotlin.time.Clock
 
@@ -96,10 +97,6 @@ private const val RECENTLY_SEEN_PROPERTY = "recentlySeen"
 
 //Per-type icon size inside a merged multi-type place marker, half of mergeLocationTypeIcons' default.
 private val MERGED_PLACE_ICON_SIZE = 15.dp
-
-private data class MarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
-
-private data class UserMarkerData(val username: String, val statusText: String, val isOnline: Boolean, val speed: Double?, val heading: Double?)
 
 //Distinct, stable color per user for snail trails - picked by hashing the user id into a
 //small curated palette so colors stay visually distinguishable from each other.
@@ -177,8 +174,6 @@ fun SchneaggmapLayers(
     onAction: (SchneaggmapAction) -> Unit,
 ) {
 
-    val directionHeadingColor = MaterialTheme.colorScheme.surface
-
     val ownId = SessionCache.requireLoggedIn()?.userId
 
     //Decoded type icons, scaled into the per-type markers and composited into a merged marker for
@@ -188,23 +183,11 @@ fun SchneaggmapLayers(
         imageResource(type.drawableRes())
     }
 
-    //Resolve user profile pictures off the composition (file read + bitmap decode), keyed by
-    //path so a changed profile picture re-resolves but unrelated state changes don't. Each
-    //bitmap has the user's last-online status baked in underneath the picture, so the size
-    //varies per user (the status pill width depends on the text) and is tracked alongside it.
-    var userIcons by remember { mutableStateOf<Map<String, MarkerIcon>>(emptyMap()) }
-
-    //Raw, undecorated profile pictures (no status pill) kept alongside userIcons so merged
-    //cluster icons can composite them without re-reading the file from disk.
-    var rawAvatarBitmaps by remember { mutableStateOf<Map<String, ImageBitmap>>(emptyMap()) }
-
     val scope = rememberCoroutineScope()
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
-    val pillColor = MaterialTheme.colorScheme.surface
-    val onlineColor = MaterialTheme.colorScheme.primary
-    val offlineColor = MaterialTheme.colorScheme.onSurface
-    val onlineLabel = stringResource(Res.string.schneaggmap_user_online)
+    val markerStyle = rememberUserMarkerStyle()
+    val pillColor = markerStyle.pillColor
 
     //Hock (group hangout) cluster marker ingredients: a translucent version of the marker pill
     //background as the "table", a beer for the center/decorations, and a generic person icon for
@@ -248,45 +231,13 @@ fun SchneaggmapLayers(
 
     //Live presence: a friend counts as "online" if the server currently has them connected,
     //otherwise we show their last-seen time instead.
-    val userMarkerData = allUsersWithLocation.associate { user ->
-        val isOwnUser = user.id == ownId
-        val isOnline = isOwnUser || user.id in state.onlineFriendIds
-        val statusText = if (isOnline) onlineLabel else user.lastSeen?.let { millisToTimeDateOrYesterday(it) } ?: "-"
-        val username = user.displayName
-        user.id to UserMarkerData(username = username, statusText = statusText, isOnline = isOnline, speed = user.location?.speed, heading = user.location?.heading)
+    val userMarkers = rememberUserMarkers(allUsersWithLocation) { user ->
+        user.id == ownId || user.id in state.onlineFriendIds
     }
-
-    val userPicturePaths = allUsersWithLocation.map { it.profilePictureUrl }
-    LaunchedEffect(userPicturePaths, userMarkerData, pillColor, onlineColor, offlineColor) {
-        val rawBitmaps = mutableMapOf<String, ImageBitmap>()
-        userIcons = allUsersWithLocation.mapNotNull { user ->
-            if (user.profilePictureUrl.isBlank()) return@mapNotNull null
-            val markerData = userMarkerData[user.id] ?: return@mapNotNull null
-            runCatching {
-                val bytes = SystemFileSystem.source(Path(user.profilePictureUrl)).buffered().readByteArray()
-                val profilePicture = bytes.decodeToImageBitmap()
-                rawBitmaps[user.id] = profilePicture
-                val mergedBitmap = mergeProfilePictureWithStatusText(
-                    profilePicture = profilePicture,
-                    username = markerData.username,
-                    statusText = markerData.statusText,
-                    backgroundColor = pillColor,
-                    nameColor = offlineColor,
-                    statusColor = if (markerData.isOnline) onlineColor else offlineColor,
-                    textMeasurer = textMeasurer,
-                    density = density,
-                    heading = markerData.heading,
-                    speed = markerData.speed,
-                    headingIndicatorColor = directionHeadingColor
-                )
-                val markerSize = with(density) {
-                    DpSize(mergedBitmap.width.toDp(), mergedBitmap.height.toDp())
-                }
-                user.id to MarkerIcon(bitmap = mergedBitmap, size = markerSize)
-            }.getOrNull()
-        }.toMap()
-        rawAvatarBitmaps = rawBitmaps
-    }
+    val userIcons = userMarkers.mapValues { it.value.marker }
+    //Raw, undecorated profile pictures (no status pill) so merged cluster icons can composite
+    //them without re-reading the file from disk.
+    val rawAvatarBitmaps = userMarkers.mapValues { it.value.picture }
 
     //Merge nearby friends into a single marker once they're closer together on screen than
     //USER_CLUSTER_RADIUS_DP - converted to meters via the camera's current scale, then quantized
@@ -642,48 +593,17 @@ fun SchneaggmapLayers(
             if (cluster.users.size == 1) {
                 val user = cluster.users.first()
                 if (user.id != ownId) {
-                    key(user.id) {
-                        safeAdd(layerId = "user-${user.id}") {
-                            val mapLocationSource = rememberGeoJsonSource(
-                                data = GeoJsonData.Features(
-                                    FeatureCollection(
-                                        features = listOf(Feature(
-                                            geometry = Point(
-                                                coordinates = Position(
-                                                    longitude = user.location!!.long,
-                                                    latitude = user.location.lat,
-                                                )
-                                            ),
-                                            properties = buildJsonObject {
-                                                put("type", JsonPrimitive(user.name))
-                                            },
-                                            id = JsonPrimitive(user.id)
-                                        ))
-                                    )
-                                )
-                            )
-
-                            val markerIcon = userIcons[user.id]
-                            val profilePicturePainter = markerIcon?.let { BitmapPainter(it.bitmap) }
-                                ?: painterResource(Res.drawable.icon_nutzer)
-                            val markerSize = markerIcon?.size ?: DpSize(33.dp, 33.dp)
-
-                            //Note: rotate this marker using user.location?.heading once we have a directional
-                            // marker design - heading is already stored/synced per friend but unused for rendering.
-                            SymbolLayer(
-                                id = "user-${user.id}",
-                                source = mapLocationSource,
-                                onClick = { clickedItems ->
-                                    if (clickedItems.isNotEmpty()) {
-                                        onAction(SchneaggmapAction.OnUserClick(clickedItems.first().id!!.content))
-                                        ClickResult.Consume
-                                    } else ClickResult.Pass
-                                },
-                                iconImage = image(profilePicturePainter, size = markerSize),
-                                iconAllowOverlap = const(true)
-                            )
-                        }
-                    }
+                    UserMarkerLayer(
+                        userId = user.id,
+                        position = Position(longitude = user.location!!.long, latitude = user.location.lat),
+                        marker = userIcons[user.id],
+                        onClick = { clickedItems ->
+                            if (clickedItems.isNotEmpty()) {
+                                onAction(SchneaggmapAction.OnUserClick(clickedItems.first().id!!.content))
+                                ClickResult.Consume
+                            } else ClickResult.Pass
+                        },
+                    )
                 }
             } else {
                 val clusterId = clusterKey(cluster)
@@ -733,62 +653,20 @@ fun SchneaggmapLayers(
     //Each pin uses the same icon as the event's type (see EventType.icon()).
     //Joined events are drawn in the primary color, all others in the error color.
     if (state.eventsWithLocation.isNotEmpty() && state.showEvents) {
-        val eventPinBorderColor = MaterialTheme.colorScheme.surface
-        val colorScheme = MaterialTheme.colorScheme
-
         state.eventsWithLocation.forEach { event ->
             val location = event.location ?: return@forEach
-            val isJoined = event.id in state.joinedEventIds
-            val eventPinTint = if (isJoined) colorScheme.onPrimary else colorScheme.onError
-            //Filled circle behind each event icon so the pins stand out from the base map
-            val eventPinBackgroundColor = if (isJoined) colorScheme.primary else colorScheme.error
-
-            safeAdd(layerId = "event-${event.id}") {
-                val eventSource = rememberGeoJsonSource(
-                    data = GeoJsonData.Features(
-                        FeatureCollection(features = listOf(Feature(
-                            geometry = Point(
-                                coordinates = Position(
-                                    longitude = location.long,
-                                    latitude = location.lat,
-                                )
-                            ),
-                            properties = buildJsonObject {
-                                put("type", JsonPrimitive("event"))
-                            },
-                            id = JsonPrimitive(event.id)
-                        )))
-                    )
-                )
-
-                val eventPinPainter = rememberVectorPainter(event.type.icon())
-
-                val onEventPinClick: FeaturesClickHandler = { clickedItems ->
+            EventMarkerLayer(
+                eventId = event.id,
+                position = Position(longitude = location.long, latitude = location.lat),
+                icon = event.type.icon(),
+                isJoined = event.id in state.joinedEventIds,
+                onClick = { clickedItems ->
                     if (clickedItems.isNotEmpty()) {
                         onAction(SchneaggmapAction.OnEventPinClick(clickedItems.first().id!!.content))
                         ClickResult.Consume
                     } else ClickResult.Pass
-                }
-
-                //Declared before the icon layer so it is drawn underneath it
-                CircleLayer(
-                    id = "event-background-${event.id}",
-                    source = eventSource,
-                    onClick = onEventPinClick,
-                    color = const(eventPinBackgroundColor),
-                    radius = const(16.dp),
-                    strokeColor = const(eventPinBorderColor),
-                    strokeWidth = const(2.dp)
-                )
-
-                SymbolLayer(
-                    id = "event-${event.id}",
-                    source = eventSource,
-                    onClick = onEventPinClick,
-                    iconImage = image(eventPinPainter, size = DpSize(22.dp, 22.dp), colorFilter = ColorFilter.tint(eventPinTint)),
-                    iconAllowOverlap = const(true)
-                )
-            }
+                },
+            )
         }
     }
 
