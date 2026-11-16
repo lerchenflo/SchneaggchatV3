@@ -502,6 +502,7 @@ internal val previewFeedbackEntry = FeedbackEntry(
     canDelete = false,
     canEdit = false,
     isSeeded = false,
+    seedKey = null,
     isPremium = false,
     createdAt = 0L,
     updatedAt = 0L,

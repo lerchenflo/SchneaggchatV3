@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Leaderboard
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Button
@@ -44,6 +45,7 @@ import schneaggchatv3mp.composeapp.generated.resources.featurequiz_result_good
 import schneaggchatv3mp.composeapp.generated.resources.featurequiz_result_great
 import schneaggchatv3mp.composeapp.generated.resources.featurequiz_result_low
 import schneaggchatv3mp.composeapp.generated.resources.featurequiz_round_over
+import schneaggchatv3mp.composeapp.generated.resources.show_highscores
 
 private const val RING_ANIMATION_MILLIS = 900
 
@@ -54,6 +56,7 @@ fun FeatureQuizRoundOver(
     questionCount: Int,
     elapsedMillis: Long,
     onPlayAgainClick: () -> Unit,
+    onHighscoresClick: () -> Unit,
     onDoneClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -119,6 +122,15 @@ fun FeatureQuizRoundOver(
             Icon(imageVector = Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.size(8.dp))
             Text(stringResource(Res.string.featurequiz_play_again))
+        }
+        OutlinedButton(
+            onClick = onHighscoresClick,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Icon(imageVector = Icons.Filled.Leaderboard, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.size(8.dp))
+            Text(stringResource(Res.string.show_highscores))
         }
         OutlinedButton(
             onClick = onDoneClick,

@@ -66,9 +66,9 @@ object FeatureQuizRounds {
         questions: List<FeatureQuizQuestion>,
         random: Random = Random,
     ): List<FeatureQuizCard> {
-        val seededByTitle = entries.filter { it.isSeeded }.associateBy { it.title }
+        val seededByKey = entries.filter { it.seedKey != null }.associateBy { it.seedKey }
         val questionCards = questions.shuffled(random)
-            .mapNotNull { question -> seededByTitle[question.seedTitle]?.let { question.toCard(it, random) } }
+            .mapNotNull { question -> seededByKey[question.seedKey]?.let { question.toCard(it, random) } }
             .distinctBy { it.entry.id }
             .take(QUESTIONS_PER_ROUND)
         val wishCards = entries.filter { it.isOpenWish() && it.myVote == FeedbackVote.NONE }

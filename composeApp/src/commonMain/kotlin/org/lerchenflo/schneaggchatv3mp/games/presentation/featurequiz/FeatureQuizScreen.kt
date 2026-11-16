@@ -31,6 +31,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -41,7 +44,10 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.featurequiz.FeatureQuizAnswerResult
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresDialog
 import org.lerchenflo.schneaggchatv3mp.games.domain.featurequiz.FeatureQuizCard
 import org.lerchenflo.schneaggchatv3mp.games.domain.featurequiz.FeatureQuizOption
 import org.lerchenflo.schneaggchatv3mp.games.presentation.featurequiz.uielements.FeatureQuizHeader
@@ -81,6 +87,8 @@ fun FeatureQuizScreen(
     onAction: (FeatureQuizAction) -> Unit,
     voteRow: FeedbackVoteRowSlot,
 ) {
+    var showHighscores by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxSize()) {
         ActivityTitle(
             title = stringResource(Res.string.featurequiz_title),
@@ -123,12 +131,21 @@ fun FeatureQuizScreen(
                     questionCount = shown.questionCount,
                     elapsedMillis = shown.elapsedMillis,
                     onPlayAgainClick = { onAction(FeatureQuizAction.OnPlayAgainClick) },
+                    onHighscoresClick = { showHighscores = true },
                     onDoneClick = { onAction(FeatureQuizAction.OnBackClick) },
                 )
 
                 else -> CardContent(state = shown, card = card, onAction = onAction, voteRow = voteRow)
             }
         }
+    }
+
+    if (showHighscores) {
+        HighscoresDialog(
+            game = GameId.FEATURE_QUIZ,
+            initialDifficulty = GameDifficulty.MEDIUM,
+            onDismiss = { showHighscores = false },
+        )
     }
 }
 

@@ -101,6 +101,7 @@ fun FeedbackEntryResponse.toFeedbackEntry(): FeedbackEntry = FeedbackEntry(
     canDelete = canDelete,
     canEdit = canEdit,
     isSeeded = isSeeded,
+    seedKey = seedKey,
     isPremium = isPremium,
     createdAt = createdAt,
     updatedAt = updatedAt,

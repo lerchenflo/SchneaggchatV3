@@ -161,13 +161,13 @@ class GameSelectorViewModel : ViewModel() {
             inDev = GameId.ODDONEOUT.indev,
             gameId = GameId.ODDONEOUT
         ),
-        // No leaderboard yet: the prototype only shows the score
         GameScreenElement(
             title = Res.string.featurequiz_title,
             description = Res.string.featurequiz_description,
             icon = Icons.Default.Psychology,
             route = Route.FeatureQuiz,
-            inDev = false,
+            inDev = GameId.FEATURE_QUIZ.indev,
+            gameId = GameId.FEATURE_QUIZ,
         ),
 
 

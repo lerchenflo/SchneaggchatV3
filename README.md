@@ -27,7 +27,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Ankündigungen
-- Gruppenerweiterungen (Schneaggakassa)
+- Gruppenerweiterungen (Schneaggakassa), weitere demnächst
 - Gruppen: Admins können Gruppe löschen, Event-Symbol am Bild
 - Chat: Bearbeitet-Anzeige, Code-Blöcke mit Highlighting, Chatdetails überarbeitet
 - Umfragen: Einfachere Einstellungen, nach dem Senden bearbeiten
@@ -36,9 +36,10 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Schneaggmap: UI verbessert, Standort-Alter, angepinnte Freunde zuerst (Einstellung), Polizei und mobile Radare melden mit Push (Einstellung) und Aktiv-Filter
 - Feedback-Board: Offline nutzbar, neue Tabs, Badge bei Neuigkeiten, Premium-Wünsche, Einträge und eigene Kommentare bearbeiten
 - Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit, Profilbild-Sichtbarkeit wählbar
-- Spiele: C Coding, Tic Tac Toe, Schneagg Rodeo verbessert
+- Spiele: C Coding, Tic Tac Toe, Schneagg Rodeo verbessert, Feature-Quiz neu, Zufallsspiel-Knopf
 - Quick Reactions: Custom Doppeltipp-Reaktion
 - Sprachnachrichten: Auf Desktop verfügbar
+- Onboarding: Tour erweitert
 
 #### Bugfixes
 - Benachrichtigungen: Alles mögliche repariert, allgemeine Nachricht verbessert, Events korrigiert

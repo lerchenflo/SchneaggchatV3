@@ -27,6 +27,7 @@ data class FeedbackEntryEntity(
     val canDelete: Boolean,
     val canEdit: Boolean,
     val isSeeded: Boolean,
+    val seedKey: String?,
     val isPremium: Boolean,
     val createdAt: Long,
     val updatedAt: Long,

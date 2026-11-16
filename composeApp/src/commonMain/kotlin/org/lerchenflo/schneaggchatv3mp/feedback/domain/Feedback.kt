@@ -51,6 +51,8 @@ data class FeedbackEntry(
     /** The viewer is the creator or an admin and the entry is not seeded. */
     val canEdit: Boolean,
     val isSeeded: Boolean,
+    /** Stable key of a seeded entry (from the server's seed file), null for entries users created. */
+    val seedKey: String?,
     /** Feature the creator marked as premium (or a seeded special feature); shown with an animated outline. */
     val isPremium: Boolean,
     val createdAt: Long,

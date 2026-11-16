@@ -19,6 +19,9 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.featurequiz.FeatureQuizAnswerResult
 import org.lerchenflo.schneaggchatv3mp.games.domain.featurequiz.FeatureQuizOption
 import org.lerchenflo.schneaggchatv3mp.games.domain.featurequiz.FeatureQuizQuestions
@@ -28,11 +31,12 @@ import kotlin.time.TimeSource
 
 /**
  * Feature quiz: questions about the app's features plus open wishes from the feedback board. After
- * every card the player votes on its board entry with the board's own votes. Prototype: the score
- * is only shown, not uploaded.
+ * every card the player votes on its board entry with the board's own votes. At the end of a round
+ * the correct answers go on the leaderboard, the answering time breaks ties.
  */
 class FeatureQuizViewModel(
     private val feedbackRepository: FeedbackRepository,
+    private val gameHighscoreRepository: GameHighscoreRepository,
     private val navigator: Navigator,
     private val applicationScope: ApplicationScope,
     private val errorChannel: ErrorChannel,
@@ -105,7 +109,22 @@ class FeatureQuizViewModel(
                 isFinished = nextIndex >= it.cards.size,
             )
         }
-        showCard()
+        if (_state.value.isFinished) submitScore() else showCard()
+    }
+
+    /** A round of wishes only asked nothing, so it doesn't count. */
+    private fun submitScore() {
+        val finished = _state.value
+        if (finished.questionCount == 0) return
+        // Runs on after the screen closes, like the votes
+        applicationScope.launchOnMain {
+            gameHighscoreRepository.submitScore(
+                game = GameId.FEATURE_QUIZ,
+                difficulty = GameDifficulty.MEDIUM,
+                score = finished.points.toLong(),
+                timeMillis = finished.elapsedMillis,
+            )
+        }
     }
 
     /** Starts the timer for a question; on a wish the player only votes, so it stays paused. */
