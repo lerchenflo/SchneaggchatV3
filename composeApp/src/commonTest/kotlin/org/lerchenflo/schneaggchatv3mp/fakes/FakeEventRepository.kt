@@ -25,7 +25,7 @@ class FakeEventRepository : EventRepository {
 
     val events = MutableStateFlow<List<Event>>(emptyList())
 
-    /** The connected event per group id, served by [getEventFlowForGroup]. */
+    /** The connected event per group id, served by [getEventFlowForGroup] and [getEventGroupIdsFlow]. */
     val eventsByGroupId = MutableStateFlow<Map<String, Event>>(emptyMap())
 
     var writeResult: Boolean = true
@@ -42,6 +42,8 @@ class FakeEventRepository : EventRepository {
     override fun getAllEventsFlow(): Flow<List<Event>> = events
 
     override fun getEventFlowForGroup(groupId: String): Flow<Event?> = eventsByGroupId.map { it[groupId] }
+
+    override fun getEventGroupIdsFlow(): Flow<Set<String>> = eventsByGroupId.map { it.keys }
 
     override suspend fun syncEvents() {
         syncCalls.record(Unit)

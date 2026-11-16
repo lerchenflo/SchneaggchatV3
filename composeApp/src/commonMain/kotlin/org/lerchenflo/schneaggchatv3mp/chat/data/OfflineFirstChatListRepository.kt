@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.applySearchAndFilter
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
@@ -50,6 +51,7 @@ class OfflineFirstChatListRepository(
     private val userIdentityRepository: UserIdentityRepository,
     private val settingsRepository: SettingsRepository,
     private val settingsRemoteDataSource: SettingsRemoteDataSource,
+    private val eventRepository: EventRepository,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ChatListRepository {
 
@@ -84,6 +86,7 @@ class OfflineFirstChatListRepository(
             .withNames { messages -> messages.flatMapTo(mutableSetOf()) { it.previewUserIds() } }
         val usersFlow = userLocalDataSource.getAllUsersFlow()
         val groupsFlow = groupLocalDataSource.getAllGroupswithMembersFlow()
+            .combine(eventRepository.getEventGroupIdsFlow()) { groups, eventGroupIds -> groups to eventGroupIds }
         val pinnedFlow = settingsRepository.getPinnedChatsFlow()
 
         return combine(
@@ -92,7 +95,7 @@ class OfflineFirstChatListRepository(
             usersFlow,
             groupsFlow,
             pinnedFlow
-        ) { aggregates, (lastMessages, previewNames), users, groups, pinnedList ->
+        ) { aggregates, (lastMessages, previewNames), users, (groups, eventGroupIds), pinnedList ->
 
             val pinnedMap = pinnedList.associate { it.chatId to it.pinTimePoint }
             val aggregateMap = aggregates.associateBy { it.chatId to it.isGroup }
@@ -127,7 +130,8 @@ class OfflineFirstChatListRepository(
                         unsentCount = aggregate?.unsentCount ?: 0,
                         lastMessage = last,
                         lastMessageNames = last?.previewNames(previewNames).orEmpty(),
-                        pinned = pinnedMap[group.id] ?: 0L
+                        pinned = pinnedMap[group.id] ?: 0L,
+                        hasEvent = group.id in eventGroupIds,
                     )
                 }
                 .toList()

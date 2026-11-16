@@ -17,6 +17,9 @@ interface EventRepository {
     /** The event connected to the group [groupId], null if the group has none. */
     fun getEventFlowForGroup(groupId: String): Flow<Event?>
 
+    /** Ids of all groups that are connected to an event, for marking them in chat lists. */
+    fun getEventGroupIdsFlow(): Flow<Set<String>>
+
     /** Pulls changed and deleted events from the server into the local database. */
     suspend fun syncEvents()
 

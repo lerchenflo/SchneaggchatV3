@@ -67,6 +67,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.EVENT_TITLE_MAX_LENGTH
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventTitleError
+import org.lerchenflo.schneaggchatv3mp.events.domain.validateEventTitle
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
@@ -82,6 +85,7 @@ import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.delete_event
 import schneaggchatv3mp.composeapp.generated.resources.error_event_max_users_invalid
 import schneaggchatv3mp.composeapp.generated.resources.error_event_title_must_not_be_empty
+import schneaggchatv3mp.composeapp.generated.resources.error_event_title_too_long
 import schneaggchatv3mp.composeapp.generated.resources.event_create_group_info
 import schneaggchatv3mp.composeapp.generated.resources.event_create_group_label
 import schneaggchatv3mp.composeapp.generated.resources.event_description_label
@@ -103,9 +107,6 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
-//Keep in sync with the server-side limit in ValidationUtils.validateEventTitle (schneaggchatv3server)
-private const val EVENT_TITLE_MAX_LENGTH = 200
-
 //Keep in sync with the server-side limit in ValidationUtils.validateEventMaxUsers (schneaggchatv3server)
 private const val EVENT_MAX_USERS_LIMIT = 1000
 
@@ -120,6 +121,7 @@ fun EventEditPopup(
     friendsById: Map<String, User> = emptyMap(), // invitable users
     usersById: Map<String, UserIdentity> = emptyMap(),   // avatar/name lookup, includes the own user
     groups: List<Group> = emptyList(),
+    eventGroupIds: Set<String> = emptySet(), // groups connected to an event, marked in the invite list
     onPickLocation: (Event) -> Unit = {},
     onDelete: (deleteGroup: Boolean, deleteEvent: Boolean) -> Unit = { _, _ -> },
     isSaving: Boolean = false,
@@ -164,7 +166,7 @@ fun EventEditPopup(
     var inviteSearchTerm by remember { mutableStateOf("") }
     var showDeleteWarning by remember { mutableStateOf(false) }
 
-    var titleError by remember { mutableStateOf(false) }
+    var titleError by remember { mutableStateOf<EventTitleError?>(null) }
     var maxUsersError by remember { mutableStateOf(false) }
 
     // Separate toggle + raw text state so the field can hold an in-progress or invalid entry
@@ -172,10 +174,11 @@ fun EventEditPopup(
     var limitParticipants by remember(draftKey) { mutableStateOf(event.maxUsers != null) }
     var maxUsersText by remember(draftKey) { mutableStateOf(event.maxUsers?.toString() ?: "") }
 
+    // A too long title shows right away - an older event can already carry one. Empty is only
+    // flagged by a save attempt, and every flagged error follows the title from then on.
     LaunchedEffect(currentEvent.title) {
-        if (titleError && currentEvent.title.isNotBlank()) {
-            titleError = false
-        }
+        val error = validateEventTitle(currentEvent.title)
+        titleError = error.takeIf { it == EventTitleError.TOO_LONG || titleError != null }
     }
 
     LaunchedEffect(maxUsersText, limitParticipants) {
@@ -281,17 +284,24 @@ fun EventEditPopup(
             OutlinedTextField(
                 value = currentEvent.title,
                 onValueChange = {
-                    if (it.length <= EVENT_TITLE_MAX_LENGTH) {
+                    // Shortening is always allowed, so a title over the limit can be cut down
+                    if (it.length <= EVENT_TITLE_MAX_LENGTH || it.length < currentEvent.title.length) {
                         currentEvent = currentEvent.copy(title = it)
                     }
                 },
                 label = {
                     Text(text = stringResource(Res.string.event_title_label))
                 },
-                isError = titleError,
-                supportingText = if (titleError) {
-                    { Text(text = stringResource(Res.string.error_event_title_must_not_be_empty)) }
-                } else null,
+                isError = titleError != null,
+                supportingText = {
+                    Text(
+                        text = when (titleError) {
+                            EventTitleError.EMPTY -> stringResource(Res.string.error_event_title_must_not_be_empty)
+                            EventTitleError.TOO_LONG -> stringResource(Res.string.error_event_title_too_long, EVENT_TITLE_MAX_LENGTH)
+                            null -> "${currentEvent.title.length}/$EVENT_TITLE_MAX_LENGTH"
+                        }
+                    )
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -679,10 +689,10 @@ fun EventEditPopup(
                         val enteredMaxUsers = maxUsersText.toIntOrNull()
                         val maxUsersInvalid = limitParticipants && (enteredMaxUsers == null || enteredMaxUsers !in 1..EVENT_MAX_USERS_LIMIT)
 
-                        titleError = currentEvent.title.isBlank()
+                        titleError = validateEventTitle(currentEvent.title)
                         maxUsersError = maxUsersInvalid
 
-                        if (!titleError && !maxUsersInvalid) {
+                        if (titleError == null && !maxUsersInvalid) {
                             onSave(currentEvent, typeIconBitmap, createGroup)
                         }
                     },
@@ -791,8 +801,8 @@ fun EventEditPopup(
             }
         }
 
-        val availableUsers = remember(filteredGroups, friendsById, inviteSearchTerm) {
-            (filteredGroups.map { it.toChatListItem() } + friendsById.values.map { it.toChatListItem() })
+        val availableUsers = remember(filteredGroups, eventGroupIds, friendsById, inviteSearchTerm) {
+            (filteredGroups.map { it.toChatListItem(hasEvent = it.id in eventGroupIds) } + friendsById.values.map { it.toChatListItem() })
                 .filter { it.displayName.contains(inviteSearchTerm, ignoreCase = true) }
         }
         val selectedUsers = remember(currentEvent.invitedUsers, friendsById) {

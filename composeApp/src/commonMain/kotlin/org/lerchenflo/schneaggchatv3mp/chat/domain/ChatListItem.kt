@@ -32,6 +32,9 @@ data class ChatListItem(
     // persisted last-seen timestamp (epoch millis) - both null/false when unknown.
     val isOnline: Boolean = false,
     val lastSeen: Long? = null,
+
+    // Group connected to an event, marked on its picture. Always false for users.
+    val hasEvent: Boolean = false,
 ) {
     val displayName: String get() = nickName?.takeIf { it.isNotBlank() } ?: name
 }
@@ -70,6 +73,7 @@ fun Group.toChatListItem(
     lastMessage: Message? = null,
     lastMessageNames: Map<String, UserIdentityName> = emptyMap(),
     pinned: Long = 0L,
+    hasEvent: Boolean = false,
 ): ChatListItem = ChatListItem(
     id = this.id,
     isGroup = true,
@@ -81,4 +85,5 @@ fun Group.toChatListItem(
     lastMessage = lastMessage,
     lastMessageNames = lastMessageNames,
     pinned = pinned,
+    hasEvent = hasEvent,
 )

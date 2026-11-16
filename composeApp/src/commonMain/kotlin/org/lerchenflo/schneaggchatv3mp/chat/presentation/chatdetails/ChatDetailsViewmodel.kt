@@ -169,8 +169,9 @@ class ChatDetailsViewmodel(
             _searchTerm.flatMapLatest { term -> userRepository.getFriendsFlow(term) },
             groupRepository.getGroupByIdFlow(chatId),
             allGroupsWithMembers,
-            _searchTerm
-        ) { friends, group, allGroups, term ->
+            _searchTerm,
+            eventRepository.getEventGroupIdsFlow()
+        ) { friends, group, allGroups, term, eventGroupIds ->
             val currentMemberIds = group?.members?.map { it.userId }?.toSet() ?: emptySet()
 
             // Only show friends who are NOT already in the group
@@ -182,7 +183,7 @@ class ChatDetailsViewmodel(
             val availableGroups = allGroups
                 .filter { it.id != chatId }
                 .filter { it.name.contains(term, ignoreCase = true) }
-                .map { it.toChatListItem() }
+                .map { it.toChatListItem(hasEvent = it.id in eventGroupIds) }
 
             availableGroups + availableFriends
         }

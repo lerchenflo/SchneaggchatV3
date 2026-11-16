@@ -386,12 +386,14 @@
     <string name="event_ended">Terminato</string>
     <string name="event_title_label">Titolo</string>
     <string name="error_event_title_must_not_be_empty">Il titolo dell'evento non può essere vuoto</string>
+    <string name="error_event_title_too_long">Il titolo dell'evento può avere al massimo %1$d caratteri</string>
     <string name="event_description_label">Descrizione</string>
     <string name="event_starts_label">Inizio:</string>
     <string name="event_starts_with_date">Inizio: %1$s</string>
     <string name="event_has_end_time">Ha un orario di fine</string>
     <string name="event_closes_with_date">Chiusura: %1$s</string>
     <string name="event_group_delete_label">Elimina la chat di gruppo</string>
+    <string name="event_group_marker">Gruppo dell'evento</string>
     <string name="group_delete_delay_never">Mai</string>
     <string name="group_delete_delay_one_hour">1 ora dopo l'evento</string>
     <string name="group_delete_delay_one_day">1 giorno dopo l'evento</string>

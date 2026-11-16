@@ -28,6 +28,8 @@ data class EventsState(
     // wherever they show up as a creator or a participant.
     val usersById: Map<String, UserIdentity> = emptyMap(),
     val groups: List<Group> = emptyList(),
+    /** Ids of the groups connected to an event, marked in the invite list. */
+    val eventGroupIds: Set<String> = emptySet(),
     val isSavingEvent: Boolean = false,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
     val viewMode: EventsViewMode = EventsViewMode.UPCOMING,

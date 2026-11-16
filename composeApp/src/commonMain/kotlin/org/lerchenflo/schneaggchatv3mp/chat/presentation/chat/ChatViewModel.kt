@@ -61,6 +61,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
@@ -87,6 +88,7 @@ class ChatViewModel(
     private val userRepository: UserRepository,
     private val userIdentityRepository: UserIdentityRepository,
     private val groupRepository: GroupRepository,
+    private val eventRepository: EventRepository,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
     private val loggingRepository: Logger,
@@ -822,8 +824,11 @@ class ChatViewModel(
         // Chat partner (user or group) for the top bar, kept up to date from the database.
         viewModelScope.launch {
             val chatPartnerFlow = if (isGroup) {
-                groupRepository.getGroupByIdFlow(chatId).map { group ->
-                    group?.toChatListItem()
+                combine(
+                    groupRepository.getGroupByIdFlow(chatId),
+                    eventRepository.getEventFlowForGroup(chatId)
+                ) { group, event ->
+                    group?.toChatListItem(hasEvent = event != null)
                 }
             } else {
                 combine(

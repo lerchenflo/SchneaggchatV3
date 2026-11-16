@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.events.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
@@ -13,6 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.events.data.local.EventLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.groupIds
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
@@ -41,6 +44,11 @@ class OfflineFirstEventRepository(
 
     override fun getEventFlowForGroup(groupId: String): Flow<Event?> =
         eventLocalDataSource.getEventFlowForGroup(groupId)
+
+    override fun getEventGroupIdsFlow(): Flow<Set<String>> =
+        eventLocalDataSource.getAllEventsFlow()
+            .map { events -> events.groupIds() }
+            .distinctUntilChanged()
 
     // ─── Event sync ───────────────────────────────────────────────────────────
 

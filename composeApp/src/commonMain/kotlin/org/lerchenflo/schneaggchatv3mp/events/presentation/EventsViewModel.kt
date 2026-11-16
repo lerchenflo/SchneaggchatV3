@@ -43,6 +43,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.events.domain.groupIds
 import org.lerchenflo.schneaggchatv3mp.events.domain.hasEnded
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
@@ -127,6 +128,7 @@ class EventsViewModel(
             eventsByDate = groupEventsBySpannedDates(events),
             friendsById = friendsMap,
             groups = groups,
+            eventGroupIds = events.groupIds(),
             mapStyleUrl = mapStyleUrl
         )
     }.combine(ownUserFlow) { currentState, ownUser ->

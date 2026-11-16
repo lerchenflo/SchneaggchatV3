@@ -238,6 +238,7 @@ fun EventsScreen(
                     friendsById = state.friendsById,
                     usersById = state.usersById,
                     groups = state.groups,
+                    eventGroupIds = state.eventGroupIds,
                     onPickLocation = { onAction(EventsAction.OnPickLocationClick(it)) },
                     onDelete = { deleteGroup, deleteEvent -> onAction(EventsAction.OnDeleteEvent(event = selectedEvent, deleteGroup = deleteGroup, deleteEvent = deleteEvent)) },
                     isSaving = state.isSavingEvent,

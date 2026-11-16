@@ -281,6 +281,7 @@ val sharedmodule = module{
             userIdentityRepository = get(),
             settingsRepository = get(),
             settingsRemoteDataSource = get(),
+            eventRepository = get(),
         )
     }
     singleOf(::RoomLoggingRepository) bind Logger::class
@@ -411,6 +412,7 @@ val sharedmodule = module{
             userRepository = get(),
             userIdentityRepository = get(),
             groupRepository = get(),
+            eventRepository = get(),
             settingsRepository = get(),
             navigator = get(),
             loggingRepository = get(),

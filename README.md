@@ -28,10 +28,10 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Features
 - Ankündigungen
 - Gruppenerweiterungen (Schneaggakassa)
-- Gruppen: Admins können Gruppe löschen
+- Gruppen: Admins können Gruppe löschen, Event-Symbol am Bild
 - Chat: Bearbeitet-Anzeige, Code-Blöcke mit Highlighting, Chatdetails überarbeitet
 - Umfragen: Einfachere Einstellungen, nach dem Senden bearbeiten
-- Events: Detailseite mit Teilnehmern und Karte, Erinnerungen, Änderungsmeldungen, Wochentage in der Upcoming-Ansicht
+- Events: Detailseite mit Teilnehmern und Karte, Erinnerungen, Änderungsmeldungen, Wochentage in der Upcoming-Ansicht, Titel max. 25 Zeichen
 - Datumsauswahl: Wochentag wird angezeigt
 - Schneaggmap: UI verbessert, Standort-Alter, angepinnte Freunde zuerst (Einstellung), Polizei und mobile Radare melden mit Push (Einstellung) und Aktiv-Filter
 - Feedback-Board: Offline nutzbar, neue Tabs, Badge bei Neuigkeiten, Premium-Wünsche, Einträge und eigene Kommentare bearbeiten

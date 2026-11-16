@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.outlined.CallMade
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
@@ -52,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.audio
+import schneaggchatv3mp.composeapp.generated.resources.event_group_marker
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.no_status
 import schneaggchatv3mp.composeapp.generated.resources.poll
@@ -129,6 +131,14 @@ fun UserButton(
                             .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape)
                             .padding(2.dp)
                             .background(MaterialTheme.colorScheme.primary, CircleShape)
+                    )
+                }
+
+                if (chat.hasEvent) {
+                    EventGroupMarker(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 8.dp)
                     )
                 }
             }
@@ -345,4 +355,20 @@ fun UserButton(
             }
         }
     }
+}
+
+/** Calendar mark at the bottom end of a group picture: the group belongs to an event. */
+@Composable
+private fun EventGroupMarker(modifier: Modifier = Modifier) {
+    Icon(
+        imageVector = Icons.Default.Event,
+        contentDescription = stringResource(Res.string.event_group_marker),
+        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = modifier
+            .size(20.dp)
+            .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape)
+            .padding(2.dp)
+            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
+            .padding(2.dp)
+    )
 }

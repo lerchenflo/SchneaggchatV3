@@ -34,6 +34,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeEventRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeSettingsRepository
 import org.lerchenflo.schneaggchatv3mp.testutil.createInMemoryAppDatabase
@@ -111,6 +112,7 @@ class OfflineFirstChatListRepositoryTest {
             userIdentityRepository = userIdentityRepository,
             settingsRepository = settingsRepository,
             settingsRemoteDataSource = createTestSettingsRemoteDataSource(httpClient, FakeLogger()),
+            eventRepository = FakeEventRepository(),
             defaultDispatcher = StandardTestDispatcher(testScheduler),
         )
         testBody()

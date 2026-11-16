@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.events.domain
 import kotlinx.serialization.Serializable
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
 @Serializable
@@ -51,6 +52,27 @@ data class Event(
  * without this a single never-opened old event would keep the badge lit for good.
  */
 fun Event.hasEnded(nowMillis: Long): Boolean = (closeDate ?: startDate) <= nowMillis
+
+/** Ids of the groups connected to one of these events. */
+fun List<Event>.groupIds(): Set<String> = mapNotNullTo(mutableSetOf()) { it.groupId }
+
+/**
+ * Longest event title: the same as a group name, because an event's group is named after its title.
+ * Keep in sync with the server-side limit in ValidationUtils.validateEventTitle (schneaggchatv3server).
+ */
+val EVENT_TITLE_MAX_LENGTH: Int = MAX_GROUPNAME_LENGTH
+
+enum class EventTitleError {
+    EMPTY,
+    TOO_LONG,
+}
+
+/** Null when [title] can be saved. Counts the untrimmed length, as the server does. */
+fun validateEventTitle(title: String): EventTitleError? = when {
+    title.isBlank() -> EventTitleError.EMPTY
+    title.length > EVENT_TITLE_MAX_LENGTH -> EventTitleError.TOO_LONG
+    else -> null
+}
 
 /** Builds a blank [Event] with the app's default field values, ready to hand to the event edit popup. */
 fun newEvent(creatorId: String, location: LatLong? = null): Event {
