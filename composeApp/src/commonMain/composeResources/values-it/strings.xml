@@ -59,7 +59,7 @@
 
     <string name="email">Email</string>
     <string name="invalid_email">Inserisci un indirizzo email corretto</string>
-    <string name="email_provider_warning">Utilizza un provider email affidabile (Gmail, Yahoo, Outlook, iCloud, GMX). I servizi email temporanei o usa e getta sono sconsigliati per motivi di sicurezza (ad es. furto e problemi di recupero dell'account).</string>    <string name="sign_up">Non ho un account</string>
+    <string name="email_provider_warning">Questo indirizzo è stato segnalato perché non appartiene a un provider email comune. Usa un indirizzo email a cui solo tu hai accesso (ad es. Gmail, Outlook, iCloud, GMX). Chiunque possa leggere le tue email può reimpostare la tua password e prendere il controllo del tuo account, quindi gli indirizzi temporanei o usa e getta (come le email da 10 minuti) sono rischiosi.</string>    <string name="sign_up">Non ho un account</string>
     <string name="loginsubtitle">LA migliore app di chat di sempre - ora in V3 con Multiplatform per Android, IOS e Desktop!</string>
     <string name="create_account">Crea account</string>
     <string name="create_account_subtitle">Iscriviti ora</string>

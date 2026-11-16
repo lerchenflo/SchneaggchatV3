@@ -112,13 +112,23 @@ class SignUpViewModel(
                             passwordState = state.passwordState.copy(
                                 text = action.newText,
                                 errorMessage = errormessage
+                            ),
+                            // The match error depends on both fields, so a change here re-checks the retype field too
+                            passwordRetypeState = state.passwordRetypeState.copy(
+                                errorMessage = passwordMismatchError(
+                                    password = action.newText,
+                                    retype = state.passwordRetypeState.text
+                                )
                             )
                         )
                     }else {
                         state.copy(
                             passwordRetypeState = state.passwordRetypeState.copy(
                                 text = action.newText,
-                                errorMessage = if (action.newText == state.passwordState.text) null else getString(Res.string.password_needs_to_be_the_same)
+                                errorMessage = passwordMismatchError(
+                                    password = state.passwordState.text,
+                                    retype = action.newText
+                                )
                             )
                         )
                     }
@@ -270,5 +280,9 @@ class SignUpViewModel(
         }
 
     }
+
+    /** "Passwords must match" once the retype field has text and differs from the password, else null. */
+    private suspend fun passwordMismatchError(password: String, retype: String): String? =
+        if (retype.isEmpty() || retype == password) null else getString(Res.string.password_needs_to_be_the_same)
 
 }

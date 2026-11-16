@@ -60,7 +60,7 @@
 
     <string name="email">E-mail</string>
     <string name="invalid_email">Gib eine korrekte E-mail-Adresse ein</string>
-    <string name="email_provider_warning">Bitte verwende einen seriösen Email - Anbieter (Gmail, Yahoo, Outlook, iCloud, GMX). 10min Mail oder andere Kurzzeitemails sind aus Sicherheitsgründen nicht empfohlen (z.b. Account - Diebstahl und wiederherstellungsprobleme).</string>    <string name="sign_up">Ich habe noch keinen Account</string>
+    <string name="email_provider_warning">Diese Adresse wurde markiert, weil sie nicht von einem gängigen E-Mail-Anbieter stammt. Verwende eine E-Mail-Adresse, auf die nur du Zugriff hast (z. B. Gmail, Outlook, iCloud, GMX). Wer deine E-Mails lesen kann, kann dein Passwort zurücksetzen und dein Konto übernehmen. Temporäre oder Wegwerf-Adressen (wie 10-Minuten-Mail) sind deshalb riskant.</string>    <string name="sign_up">Ich habe noch keinen Account</string>
     <string name="loginsubtitle">Die beste Chattingplattform jemals - Jetzt in der V3 mit Multiplattform für Android, iOS und Desktop!</string>
     <string name="create_account">Account erstellen</string>
     <string name="create_account_subtitle">jetzt beitreten</string>

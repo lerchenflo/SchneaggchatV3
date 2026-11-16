@@ -60,7 +60,7 @@
 
     <string name="email">Email</string>
     <string name="invalid_email">Enter a correct email address</string>
-    <string name="email_provider_warning">Please use a trusted email provider (Gmail, Yahoo, Outlook, iCloud, GMX). Temporary or disposable email services are discouraged for security reasons (e.g. account hijacking and recovery issues).</string>    <string name="sign_up">I don't have an account</string>
+    <string name="email_provider_warning">This address was flagged because it is not from a common email provider. Use an email address only you can access (e.g. Gmail, Outlook, iCloud, GMX). Anyone who can read your emails can reset your password and take over your account, so temporary or disposable addresses (like 10-minute mail) are risky.</string>    <string name="sign_up">I don't have an account</string>
     <string name="loginsubtitle">THE best chatting app ever - now in V3 with Multiplatform for Android, IOS and Desktop!</string>
     <string name="create_account">Create account</string>
     <string name="create_account_subtitle">Join now</string>
