@@ -85,6 +85,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip.CoinFlipViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.featurequiz.FeatureQuizViewModel
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.fingerpicker.FingerPickerViewModel
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCalculatorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ViewModel
@@ -470,6 +471,7 @@ val sharedmodule = module{
     // Explicit lambda because the runtime extensionId can't be resolved by viewModelOf
     viewModel { (extensionId: String) ->
         SplitViewModel(
+            errorChannel = get(),
             groupExtensionRepository = get(),
             groupRepository = get(),
             userIdentityRepository = get(),
@@ -599,6 +601,7 @@ val sharedmodule = module{
     viewModelOf(::CrosswordViewmodel)
 
     viewModelOf(::WordleViewModel)
+    viewModelOf(::FeatureQuizViewModel)
 
     viewModelOf(::PlayerSelectorViewModel)
     viewModelOf(::HighscoresViewModel)

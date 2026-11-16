@@ -27,6 +27,7 @@ import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
 import kotlinx.datetime.number
 import kotlinx.datetime.plus
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -294,6 +295,20 @@ fun millisToLocalDate(millis: Long): LocalDate {
         .toLocalDateTime(TimeZone.currentSystemDefault()).date
 }
 
+/** [millis] as a [LocalDateTime] in the device's current time zone. */
+fun millisToLocalDateTime(millis: Long): LocalDateTime =
+    Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.currentSystemDefault())
+
+/** This local date and time in the device's current time zone, as epoch milliseconds. */
+fun LocalDateTime.toEpochMillis(): Long =
+    toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+
+/** The current local date and time cut to the minute, the precision of the date-time picker. */
+fun nowToTheMinute(): LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toTheMinute()
+
+/** The same date and time without seconds and nanoseconds. */
+fun LocalDateTime.toTheMinute(): LocalDateTime = LocalDateTime(date.year, date.month, date.day, hour, minute)
+
 /** Monday of the ISO week containing [date]. */
 fun startOfWeek(date: LocalDate): LocalDate {
     return date.minus(DatePeriod(days = date.dayOfWeek.isoDayNumber - 1))
@@ -302,6 +317,15 @@ fun startOfWeek(date: LocalDate): LocalDate {
 @OptIn(FormatStringsInDatetimeFormats::class)
 fun LocalDate.toFormattedString(format: String = "dd.MM.yyyy"): String {
     val formatter = LocalDate.Format { byUnicodePattern(format) }
+    return this.format(formatter)
+}
+
+/** Day and time as the app shows them, e.g. "14.11.2026 18:00". */
+const val DATE_TIME_FORMAT = "dd.MM.yyyy HH:mm"
+
+@OptIn(FormatStringsInDatetimeFormats::class)
+fun LocalDateTime.toFormattedString(format: String = DATE_TIME_FORMAT): String {
+    val formatter = LocalDateTime.Format { byUnicodePattern(format) }
     return this.format(formatter)
 }
 

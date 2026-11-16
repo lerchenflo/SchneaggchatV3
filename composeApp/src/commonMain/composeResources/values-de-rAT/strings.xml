@@ -1914,7 +1914,6 @@ Mealds, egal wie klenn.</string>
     <string name="split_paid_by_label">Bezahlt vo</string>
     <string name="split_transfer_from_label">Vo</string>
     <string name="split_transfer_to_label">An</string>
-    <string name="split_date_label">Datum</string>
     <string name="split_required_field">%1$s *</string>
     <string name="split_split_between">Ufteila uf</string>
     <string name="split_mode_equally">Glichmäßig</string>

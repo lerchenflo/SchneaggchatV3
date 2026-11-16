@@ -9,6 +9,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.Settings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_add
+import schneaggchatv3mp.composeapp.generated.resources.group_extension_coming_soon
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_item_count
 import schneaggchatv3mp.composeapp.generated.resources.group_extensions_title
 
@@ -98,12 +100,12 @@ fun ExtensionListSection(
             )
 
             // A group can hold several extensions of the same type, so every available type is
-            // always offered
+            // always offered. Unfinished types are listed as "coming soon" and can't be picked
             DropdownMenu(
                 expanded = showAddMenu,
                 onDismissRequest = { showAddMenu = false }
             ) {
-                GroupExtensionType.entries.filter { it.isAvailable }.forEach { type ->
+                GroupExtensionType.entries.forEach { type ->
                     DropdownMenuItem(
                         text = { Text(type.toUiText().asString()) },
                         leadingIcon = {
@@ -112,6 +114,15 @@ fun ExtensionListSection(
                                 contentDescription = null,
                             )
                         },
+                        trailingIcon = if (type.isAvailable) null else {
+                            {
+                                Text(
+                                    text = stringResource(Res.string.group_extension_coming_soon),
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
+                        },
+                        enabled = type.isAvailable,
                         onClick = {
                             showAddMenu = false
                             addType = type

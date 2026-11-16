@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Leaderboard
+import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.SignalCellularAlt1Bar
 import androidx.compose.material.icons.filled.SignalCellularAlt2Bar
@@ -76,6 +77,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_tab_solo
 import schneaggchatv3mp.composeapp.generated.resources.games_tab_tools
 import schneaggchatv3mp.composeapp.generated.resources.games_without_highscores
 import schneaggchatv3mp.composeapp.generated.resources.show_global_ranking
+import schneaggchatv3mp.composeapp.generated.resources.games_random_game
 import schneaggchatv3mp.composeapp.generated.resources.show_highscores
 import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 import kotlin.time.Clock
@@ -384,6 +386,19 @@ private fun GamesTabContent(
                             onSelect = { GameDifficultySelection.selected = it },
                             modifier = Modifier.weight(1f).tapTarget("games_difficulty_selector")
                         )
+
+                        // Starts any game of this tab, daily ones included
+                        IconButton(
+                            onClick = { visibleGames.randomOrNull()?.let { onGameSelection(it.route) } },
+                            modifier = Modifier.tapTarget("games_random_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Quiz,
+                                contentDescription = stringResource(Res.string.games_random_game),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
 
                         IconButton(
                             onClick = onShowGlobalRanking,

@@ -52,6 +52,18 @@ You are an expert technical writer and release-notes curator. Your sole job is t
 
 7. **Never bump the version**: If the version heading matching `androidApp/build.gradle.kts`'s `versionName` already exists in the changelog (even from a prior update), append your new entry into that existing section instead of creating a new, higher version heading above it.
 
+8. **Feature catalog follow-ups (Features only, never Bug Fixes)**: When you added or extended a `Features` entry because a feature is new or a fact about it changed (a limit, a setting's location, what it can do), two other places describe the app's features and must follow. You never change them yourself; you add a to-do item for each. Skip this step for bug fixes and for changes that alter no fact about a feature.
+
+   a. **Feedback board seed (server)**: the server seeds every implemented feature onto the feedback board from `SchneaggchatV3server/src/main/resources/seed/feedback_features.json` (the server repo sits next to this project, usually `~/Desktop/SchneaggchatV3server`). Read that file (read-only) to see whether the feature already has a seed (match by `seedKey` or `title`). Then add one item to the server's `SchneaggchatV3server/Todo.md` under the section `## Feedback seed (from the client changelog)` (create the section above `## GitHub issues` if it is missing):
+      `- [ ] Seed <new | update "<seedKey>">: <what the feature does for the user and where to find it in the app; for an update, what is outdated in the current seed text> *(client changelog <versionName>, <YYYY-MM-DD>)*`
+      Describe the feature, not how the server should store it. `Todo.md` is the only server file you may write; never edit the seed file or any other server file. Skip if an item for the same feature is already open there.
+
+   b. **Feature quiz (client)**: the quiz in `composeApp/src/commonMain/kotlin/org/lerchenflo/schneaggchatv3mp/games/domain/featurequiz/FeatureQuizQuestions.kt` asks about features; its texts are the `featurequiz_*` strings in `composeApp/src/commonMain/composeResources/values/strings.xml`. Check whether an existing question's answers or explanation became wrong through the change (e.g. a limit or a settings path changed). Then add one item to `plans/Todo.md` under `## P4: docs, plans, cosmetics, games, optional` (top of the section, effort **S**):
+      `- [ ] **S** Feature quiz: <add a question about <feature> | fix question <featurequiz_..._question key>: <what is wrong now>> *(client changelog <versionName>, <YYYY-MM-DD>)*`
+      If 8a changes a seed `title`, say in this item that the question's `seedTitle` must change with it (questions are linked to their board entry by that title). Skip if an item for the same feature is already open.
+
+   Report which to-do items you added, or why you added none.
+
 ## Formatting Rules
 
 ```markdown
@@ -91,7 +103,7 @@ You are an expert technical writer and release-notes curator. Your sole job is t
 - All text must be in German
 - Only log changes the user will notice while using the app (see the Relevance check in step 0). Internal-only refactors, cleanup, and dead-code removal get no entry, even if the calling agent frames them as a "bugfix"
 - Do not restructure or rewrite parts of the README you were not asked to touch
-- Do not add documentation sections, architecture diagrams, or anything beyond the changelog update
+- Do not add documentation sections, architecture diagrams, or anything beyond the changelog update and the to-do items of step 8
 - If you are unsure what was fixed or added, summarize based on the context provided to you — do not invent changes
 
 **Update your agent memory** as you discover version patterns, changelog formatting preferences, and where version info is stored in this project. This builds institutional knowledge across conversations.

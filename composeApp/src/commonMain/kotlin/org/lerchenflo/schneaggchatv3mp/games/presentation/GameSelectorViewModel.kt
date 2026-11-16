@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.LocalGasStation
 import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.TouchApp
@@ -58,6 +59,8 @@ import schneaggchatv3mp.composeapp.generated.resources.tools_coinflip_descriptio
 import schneaggchatv3mp.composeapp.generated.resources.tools_fingerpicker_description
 import schneaggchatv3mp.composeapp.generated.resources.tools_fuel_description
 import schneaggchatv3mp.composeapp.generated.resources.tools_fuel_title
+import schneaggchatv3mp.composeapp.generated.resources.featurequiz_description
+import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title
 
 //Shared over the whole games nav graph, owns the list of selectable games
 class GameSelectorViewModel : ViewModel() {
@@ -157,6 +160,14 @@ class GameSelectorViewModel : ViewModel() {
             route = Route.OddOneOut,
             inDev = GameId.ODDONEOUT.indev,
             gameId = GameId.ODDONEOUT
+        ),
+        // No leaderboard yet: the prototype only shows the score
+        GameScreenElement(
+            title = Res.string.featurequiz_title,
+            description = Res.string.featurequiz_description,
+            icon = Icons.Default.Psychology,
+            route = Route.FeatureQuiz,
+            inDev = false,
         ),
 
 

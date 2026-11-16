@@ -66,6 +66,9 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_filter_tag
 import schneaggchatv3mp.composeapp.generated.resources.feedback_load_error
 import schneaggchatv3mp.composeapp.generated.resources.feedback_retry
 import schneaggchatv3mp.composeapp.generated.resources.feedback_title
+import androidx.compose.material.icons.filled.Psychology
+import io.github.lerchenflo.taptarget.tapTarget
+import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title
 
 @Composable
 fun FeedbackScreenRoot() {
@@ -145,15 +148,30 @@ fun FeedbackScreen(
             }
         }
 
-        if (!state.isLoading && !state.loadFailed) {
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            // Always shown: the quiz plays from the stored board, and the tour points at it
             ExtendedFloatingActionButton(
-                onClick = { onAction(FeedbackAction.OnCreateClick) },
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text(stringResource(Res.string.feedback_create)) },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
+                onClick = { onAction(FeedbackAction.OnFeatureQuizClick) },
+                icon = { Icon(Icons.Default.Psychology, contentDescription = null) },
+                text = { Text(stringResource(Res.string.featurequiz_title)) },
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.tapTarget("feedback_feature_quiz_button")
             )
+
+            if (!state.isLoading && !state.loadFailed) {
+                ExtendedFloatingActionButton(
+                    onClick = { onAction(FeedbackAction.OnCreateClick) },
+                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    text = { Text(stringResource(Res.string.feedback_create)) },
+                )
+            }
         }
     }
 

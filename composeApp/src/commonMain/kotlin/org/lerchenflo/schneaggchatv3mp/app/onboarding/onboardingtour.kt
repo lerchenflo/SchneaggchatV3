@@ -17,16 +17,22 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_appearance_settings_l
 import schneaggchatv3mp.composeapp.generated.resources.ttt_appearance_settings_language_freeroam
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_events
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_events_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_feedback
+import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_feedback_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_games
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
 import schneaggchatv3mp.composeapp.generated.resources.ttt_events_create_button
 import schneaggchatv3mp.composeapp.generated.resources.ttt_events_create_button_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_feedback_quiz
+import schneaggchatv3mp.composeapp.generated.resources.ttt_feedback_quiz_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_difficulty
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_difficulty_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscore
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscore_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_random
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_random_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_misc_settings_go_back
@@ -316,6 +322,28 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 title = Res.string.ttt_games_global_highscore,
                 description = Res.string.ttt_games_global_highscore_description,
                 route = Route.GamesSelector
+            )
+
+            highlightStep(
+                id = "games_random_button",
+                title = Res.string.ttt_games_random,
+                description = Res.string.ttt_games_random_description,
+                route = Route.GamesSelector
+            )
+
+            //Open the feedback board from the chat selector
+            tapStep(
+                id = "chatselector_feedback_button",
+                title = Res.string.ttt_chatselector_feedback,
+                description = Res.string.ttt_chatselector_feedback_description,
+                route = Route.ChatSelector
+            )
+
+            highlightStep(
+                id = "feedback_feature_quiz_button",
+                title = Res.string.ttt_feedback_quiz,
+                description = Res.string.ttt_feedback_quiz_description,
+                route = Route.Feedback
             )
 
             infoStep(

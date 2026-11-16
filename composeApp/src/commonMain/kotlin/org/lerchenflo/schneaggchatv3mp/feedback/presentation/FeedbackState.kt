@@ -122,6 +122,7 @@ data class FeedbackDetailState(
 
 sealed interface FeedbackAction {
     data object OnBackClick : FeedbackAction
+    data object OnFeatureQuizClick : FeedbackAction
     data object OnRetryClick : FeedbackAction
     data class OnTabSelected(val tab: FeedbackTab) : FeedbackAction
     data class OnGamesSectionSelected(val section: FeedbackSection) : FeedbackAction

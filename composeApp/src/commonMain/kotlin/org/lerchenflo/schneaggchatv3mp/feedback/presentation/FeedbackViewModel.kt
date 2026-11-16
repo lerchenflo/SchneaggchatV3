@@ -20,6 +20,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryChanges
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
@@ -81,6 +82,7 @@ class FeedbackViewModel(
     fun onAction(action: FeedbackAction) {
         when (action) {
             FeedbackAction.OnBackClick -> viewModelScope.launch { navigator.navigateBack() }
+            FeedbackAction.OnFeatureQuizClick -> viewModelScope.launch { navigator.navigate(Route.FeatureQuiz) }
             FeedbackAction.OnRetryClick -> refresh()
 
             // Status sets differ between the tabs, so a status filter can't carry over

@@ -112,6 +112,8 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsRoot
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackScreenRoot
+import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackVoteRow
+import org.lerchenflo.schneaggchatv3mp.games.presentation.featurequiz.FeatureQuizScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
@@ -946,6 +948,12 @@ fun App() {
                                 entry<Route.Wordle> {
                                     WordleScreenRoot(
                                         onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.FeatureQuiz> {
+                                    FeatureQuizScreenRoot(
+                                        voteRow = { entry, onVoteClick -> FeedbackVoteRow(entry = entry, onVoteClick = onVoteClick) }
                                     )
                                 }
                             }
