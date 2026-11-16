@@ -27,7 +27,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Ankündigungen
-- Gruppenerweiterungen
+- Gruppenerweiterungen (Schneaggakassa)
 - Gruppen: Admins können Gruppe löschen
 - Chat: Bearbeitet-Anzeige, Code-Blöcke mit Highlighting, Chatdetails überarbeitet
 - Umfragen: Einfachere Einstellungen, nach dem Senden bearbeiten
