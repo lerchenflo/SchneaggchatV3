@@ -52,6 +52,7 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_field_descriptio
 import schneaggchatv3mp.composeapp.generated.resources.feedback_field_location
 import schneaggchatv3mp.composeapp.generated.resources.feedback_field_tags
 import schneaggchatv3mp.composeapp.generated.resources.feedback_field_title
+import schneaggchatv3mp.composeapp.generated.resources.feedback_language_hint
 
 // Same limits the server enforces
 private const val TITLE_MIN_LENGTH = 3
@@ -129,6 +130,13 @@ internal fun FeedbackEntryFormDialog(
                 label = { stringResource(it.labelRes()) },
                 count = { null },
                 onSelect = { type = it },
+            )
+
+            // Entries in dialect or other languages are hard to read for everyone else
+            Text(
+                text = stringResource(Res.string.feedback_language_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             OutlinedTextField(
