@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,7 +56,11 @@ fun ImageMessageContentView(
 
 
     Column(
-        modifier = Modifier.fillMaxWidth(0.67f)
+        // widthIn first, so the 67% is taken from at most 600dp: pictures stop at about 400dp on big
+        // screens and phones keep their size. The other order would not cap anything.
+        modifier = Modifier
+            .widthIn(max = 600.dp)
+            .fillMaxWidth(0.67f)
     ) {
         if (message.pictureUrl != null) {
             AsyncImage(

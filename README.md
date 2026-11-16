@@ -42,7 +42,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Bugfixes
 - Benachrichtigungen: Alles mögliche repariert, allgemeine Nachricht verbessert, Events korrigiert
-- Chat: Lange Chats laden, Nachrichten senden, Markdown lesbar
+- Chat: Lange Chats laden, Nachrichten senden, Markdown lesbar, Bilder auf großen Bildschirmen
 - Sprachnachrichten: Slider-Farben und Aufnahme-Anzeige
 - Spiele: Scroll in der Auswahl
 
