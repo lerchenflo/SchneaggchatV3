@@ -340,7 +340,7 @@ configurations.matching { it.isCanBeResolved && !it.name.startsWith("composeHotR
 
 
 //Add version info to desktop builds
-val desktopVersion = "3.0.19"
+val desktopVersion = "3.0.20"
 
 //A beta build reports its tag, e.g. 3.0.19_beta, so the update check can offer the final 3.0.19.
 //packageVersion stays numeric: installers do not accept a suffix.
