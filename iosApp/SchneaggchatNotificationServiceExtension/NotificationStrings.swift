@@ -37,24 +37,25 @@ enum NotificationStringKey: String {
 enum NotificationStrings {
 
     static func get(_ key: NotificationStringKey, language: String?, _ args: CVarArg...) -> String {
-        let bucket = bucket(for: language)
-        let template = bucket[key] ?? englishStrings[key] ?? key.rawValue
+        let template = buckets(for: language).lazy.compactMap { $0[key] }.first ?? key.rawValue
         return args.isEmpty ? template : String(format: template, arguments: args)
     }
 
-    private static func bucket(for language: String?) -> [NotificationStringKey: String] {
-        guard let raw = language?.lowercased() else { return englishStrings }
+    /// The tables to look a key up in, in order. A key missing in Austrian German falls back to
+    /// German like in the app, every language ends with English.
+    private static func buckets(for language: String?) -> [[NotificationStringKey: String]] {
+        guard let raw = language?.lowercased() else { return [englishStrings] }
         let parts = raw.replacingOccurrences(of: "_", with: "-").split(separator: "-").map(String.init)
         switch parts.first {
         case "de":
             if parts.count > 1, parts[1] == "at" || parts[1] == "rat" {
-                return austrianGermanStrings
+                return [austrianGermanStrings, germanStrings, englishStrings]
             }
-            return germanStrings
+            return [germanStrings, englishStrings]
         case "it":
-            return italianStrings
+            return [italianStrings, englishStrings]
         default:
-            return englishStrings
+            return [englishStrings]
         }
     }
 
@@ -144,6 +145,20 @@ enum NotificationStrings {
         .friendBirthdayTitle: "%1$@ hot hüt Geburtstag! 🎂",
         .friendBirthdayBody: "Vergiss ned zum gratuliera!",
         .newEventTitle: "%1$@ hot a neus Event erstellt",
+        .mapSightingPoliceTitle: "Polizei gseaha",
+        .mapSightingRadarTitle: "Mobiles Radar gseaha",
+        .eventReminderTitle: "Erinnerung: %1$@",
+        .eventReminderBody: "Startet in %1$@",
+        .eventReminderBodyAt: "Startet am %1$@",
+        .leadDay: "%1$ld Tag",
+        .leadDays: "%1$ld Täg",
+        .leadHours: "%1$ld Std.",
+        .leadMinutes: "%1$ld Min.",
+        .eventCancelledBody: "%1$@ hot s Event abgseit",
+        .eventStartAndLocationBody: "%1$@ hot da Start uf %2$@ verschoba und da Ort gändert",
+        .eventStartBody: "%1$@ hot da Start uf %2$@ verschoba",
+        .eventLocationBody: "%1$@ hot da Ort gändert",
+        .eventChangedBody: "%1$@ hot s Event aktualisiert",
     ]
 
     private static let italianStrings: [NotificationStringKey: String] = [

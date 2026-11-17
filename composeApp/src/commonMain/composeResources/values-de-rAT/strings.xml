@@ -60,6 +60,7 @@
 
     <string name="email">E-Mail</string>
     <string name="invalid_email">Du musch a richtige E-Mail agia</string>
+    <string name="email_provider_warning">Dia Adress isch markiert worra, weil se ned vo nam gängiga E-Mail-Anbieter isch. Verwend a E-Mail-Adress, uf die nur du Zugriff hosch (z. B. Gmail, Outlook, iCloud, GMX). Wer dine E-Mails leasa kann, kann din Passwort zrucksetza und din Account überneama. Temporäre oda Wegwerf-Adressa (wia 10-Minuta-Mail) sind drum riskant.</string>
     <string name="sign_up">I hob no kuan Account</string>
     <string name="loginsubtitle">Die beste App sowieso, mit lokala Sproch und loft überall</string>
     <string name="create_account">Account erstella</string>
@@ -1900,6 +1901,14 @@ Mealds, egal wie klenn.</string>
     <string name="group_extension_delete">Erweiterung löscha</string>
     <string name="group_extension_delete_confirm">"%1$s" mit allna Iträg für alle in dera Gruppe löscha? Des kann ned rückgängig gmacht werra.</string>
     <string name="group_extension_more_options">Mehr Optiona</string>
+    <plurals name="feedback_new_comments">
+        <item quantity="one">%1$d neuer Kommentar</item>
+        <item quantity="other">%1$d neue Kommentare</item>
+    </plurals>
+    <plurals name="group_extension_item_count">
+        <item quantity="one">%1$d Itrag</item>
+        <item quantity="other">%1$d Iträg</item>
+    </plurals>
     <string name="split_tab_expenses">Usgaba</string>
     <string name="split_tab_balances">Salda</string>
     <string name="split_my_total">Mine Usgaba</string>
@@ -1954,6 +1963,10 @@ Mealds, egal wie klenn.</string>
     <string name="split_icon_remove">Symbol entferna</string>
     <string name="split_detail_added_by">Dazuato vo %1$s · %2$s</string>
     <string name="split_detail_edited_by">Bearbeitet vo %1$s · %2$s</string>
+    <plurals name="split_detail_share_count">
+        <item quantity="one">%1$d Anteil</item>
+        <item quantity="other">%1$d Anteil</item>
+    </plurals>
     <string name="dev_announcements">Ankündigunga</string>
     <string name="dev_announcements_desc">Ankündigunga für alle User erstella und verwalta (nur Admins)</string>
     <string name="announcement_new">Neue Ankündigung</string>
@@ -2009,6 +2022,10 @@ Mealds, egal wie klenn.</string>
     <string name="tictactoe_cell_description">Zeile %1$d, Spalte %2$d</string>
     <string name="desktop_tray_open">Schneaggchat öffna</string>
     <string name="desktop_tray_quit">Beenda</string>
+    <plurals name="event_lead_days">
+        <item quantity="one">%1$d Tag</item>
+        <item quantity="other">%1$d Täg</item>
+    </plurals>
     <string name="featurequiz_description">Wie guat kennsch du Schneaggchat? Beantwort Froga und bewert d Features</string>
     <string name="games_random_game">Zufälliges Spiel starta</string>
     <string name="featurequiz_title">Feature-Quiz</string>
