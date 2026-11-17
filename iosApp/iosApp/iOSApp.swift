@@ -83,7 +83,7 @@ struct iOSApp: App {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                         AppUpdateChecker.checkForUpdate()
                     }
-                    UIApplication.shared.applicationIconBadgeNumber = 0
+                    UNUserNotificationCenter.current().setBadgeCount(0)
                 }
                 .onOpenURL { url in
                     if url.scheme == "schneaggchat" {
@@ -97,7 +97,7 @@ struct iOSApp: App {
                 logger.info("DEBUG onChange Log")
                 handleIncomingShare()
                 IosPushDelegateBridge().drainPendingPushMessages()
-                UIApplication.shared.applicationIconBadgeNumber = 0
+                UNUserNotificationCenter.current().setBadgeCount(0)
             }
         }
     }
@@ -109,12 +109,6 @@ struct iOSApp: App {
         guard let userDefaults = UserDefaults(suiteName: suiteName) else {
             //logger.info("DEBUG: App side - UserDefaults suite is NIL")
             return
-        }
-
-        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: suiteName) {
-            //logger.info("DEBUG: App side container URL: \(containerURL.path, privacy: .public)")
-        } else {
-            //logger.error("DEBUG: App side container URL is NIL (App Group is invalid/not provisioned correctly)")
         }
 
         userDefaults.synchronize()
@@ -138,13 +132,7 @@ struct iOSApp: App {
             for key in imageKeys {
                 let fileURL = imagesDir.appendingPathComponent(key)
                 if let data = try? Data(contentsOf: fileURL) {
-                    let kotlinArray = KotlinByteArray(size: Int32(data.count))
-                    data.withUnsafeBytes { ptr in
-                        for i in 0..<data.count {
-                            kotlinArray.set(index: Int32(i), value: ptr[i])
-                        }
-                    }
-                    imageDataList.append(kotlinArray)
+                    imageDataList.append(toKotlinByteArray(data))
                 }
                 try? FileManager.default.removeItem(at: fileURL)
             }
@@ -158,7 +146,7 @@ struct iOSApp: App {
             return
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             userDefaults.synchronize()
             if let sharedText = userDefaults.string(forKey: "sharedTextKey") {
                 //logger.info("DEBUG: App side - Found data after delay: \(sharedText, privacy: .public)")
@@ -176,13 +164,7 @@ struct iOSApp: App {
                 for key in imageKeys {
                     let fileURL = imagesDir.appendingPathComponent(key)
                     if let data = try? Data(contentsOf: fileURL) {
-                        let kotlinArray = KotlinByteArray(size: Int32(data.count))
-                        data.withUnsafeBytes { ptr in
-                            for i in 0..<data.count {
-                                kotlinArray.set(index: Int32(i), value: ptr[i])
-                            }
-                        }
-                        imageDataList.append(kotlinArray)
+                        imageDataList.append(toKotlinByteArray(data))
                     }
                     try? FileManager.default.removeItem(at: fileURL)
                 }
@@ -198,4 +180,15 @@ struct iOSApp: App {
             }
         }
     }
+}
+
+/// Copies shared image bytes into a Kotlin byte array for IncomingDataManager.
+private func toKotlinByteArray(_ data: Data) -> KotlinByteArray {
+    let kotlinArray = KotlinByteArray(size: Int32(data.count))
+    data.withUnsafeBytes { (buffer: UnsafeRawBufferPointer) in
+        for (index, byte) in buffer.enumerated() {
+            kotlinArray.set(index: Int32(index), value: Int8(bitPattern: byte))
+        }
+    }
+    return kotlinArray
 }
