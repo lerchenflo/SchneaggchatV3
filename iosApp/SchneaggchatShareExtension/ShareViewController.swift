@@ -1,6 +1,5 @@
 import UIKit
 import Social
-import MobileCoreServices
 import UniformTypeIdentifiers
 import os
 
@@ -20,8 +19,8 @@ class ShareViewController: UIViewController {
         if let item = extensionContext?.inputItems.first as? NSExtensionItem,
            let attachment = item.attachments?.first {
 
-            let typeURL = kUTTypeURL as String
-            let typeText = kUTTypePlainText as String
+            let typeURL = UTType.url.identifier
+            let typeText = UTType.plainText.identifier
             let typeImage = UTType.image.identifier
 
             if attachment.hasItemConformingToTypeIdentifier(typeURL) {

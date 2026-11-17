@@ -92,7 +92,7 @@ struct iOSApp: App {
                     }
                 }
         }
-        .onChange(of: scenePhase) { phase in
+        .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 logger.info("DEBUG onChange Log")
                 handleIncomingShare()
