@@ -6,7 +6,11 @@ xcuserdata
 !src/**/build/
 local.properties
 .idea
-.claude
+# Claude: local settings stay private, project skills and agents sync to other devices
+.claude/*
+!.claude/skills/
+!.claude/agents/
+**/__pycache__/
 .DS_Store
 captures
 .externalNativeBuild
