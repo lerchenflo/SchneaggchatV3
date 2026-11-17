@@ -24,7 +24,7 @@ Line references: items from Phase 4.5 / 5a cite `C/datasource/AppRepository.kt`,
 
 ## Next up (picked by the user, 2026-11-08)
 
-When the user says "pick next todo", take the next item from this section first, top to bottom. Items keep their effort tag; their priority section is where they came from (P2).
+When the user says "pick next todo", never start on your own: interview the user first (which item, commit first?), offering the open items of this section first, top to bottom. Items keep their effort tag; their priority section is where they came from (P2).
 
 **Next important** (user, 2026-11-16): these two are the next things to do, in this order. Both need an interview before building; the open questions are listed in each item.
 
