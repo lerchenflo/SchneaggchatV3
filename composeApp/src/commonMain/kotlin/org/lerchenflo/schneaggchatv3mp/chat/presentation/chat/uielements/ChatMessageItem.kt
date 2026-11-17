@@ -65,7 +65,7 @@ fun ChatMessageItem(
             onAction = onAction,
             doubleTapReaction = quickReactions.firstOrNull(),
             playbackProgress = playbackProgress,
-            readerMap = item.resolvedReaders,
+            voters = item.resolvedVoters,
             ownId = ownId
         )
 

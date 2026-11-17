@@ -74,7 +74,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -83,7 +82,6 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
@@ -96,7 +94,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToDuration
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.poll
@@ -137,6 +134,7 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_user_count
 import schneaggchatv3mp.composeapp.generated.resources.poll_voter_you
 import schneaggchatv3mp.composeapp.generated.resources.unlimited
 import kotlin.time.Clock
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 
 @Composable
 fun PollMessageContentView(
@@ -144,7 +142,7 @@ fun PollMessageContentView(
     message: Message,
     useMD: Boolean,
     myMessage: Boolean,
-    readerMap: Map<String, String>,
+    voters: Map<String, UserIdentity>,
     onAction: (MessageAction) -> Unit = {}
 ){
 
@@ -168,7 +166,7 @@ fun PollMessageContentView(
             ownId = ownId,
             useMD = useMD,
             myMessage = myMessage,
-            readerMap = readerMap,
+            voters = voters,
             onAction = onAction,
             depth = 0,
             parentOptionId = null,
@@ -202,7 +200,7 @@ private fun PollLevelView(
     ownId: String,
     useMD: Boolean,
     myMessage: Boolean,
-    readerMap: Map<String, String>,
+    voters: Map<String, UserIdentity>,
     onAction: (MessageAction) -> Unit,
     depth: Int,
     parentOptionId: String?,
@@ -372,6 +370,7 @@ private fun PollLevelView(
                 votePercentage = if (totalVoteCount == 0) 0f else option.voters.size.toFloat() / totalVoteCount,
                 myMessage = myMessage,
                 voterIds = option.getVoterIdsForOption(),
+                voters = voters,
                 full = poll.optionIsFull(option, ownId),
                 onOptionSelected = { checked ->
                     //Unpicking an option - or picking one that pushes out the oldest vote on a
@@ -402,7 +401,7 @@ private fun PollLevelView(
                     ownId = ownId,
                     useMD = useMD,
                     myMessage = myMessage,
-                    readerMap = readerMap,
+                    voters = voters,
                     onAction = onAction,
                     depth = depth,
                     parentLocked = !canAnswer,
@@ -534,7 +533,7 @@ private fun PollLevelView(
                     PollVoterOverviewDialog(
                         poll = poll,
                         onDismiss = { showVoterDialog = false },
-                        readerMap = readerMap,
+                        voters = voters,
                         ownId = ownId
                     )
                 }
@@ -557,7 +556,7 @@ private fun SubPollSection(
     ownId: String,
     useMD: Boolean,
     myMessage: Boolean,
-    readerMap: Map<String, String>,
+    voters: Map<String, UserIdentity>,
     onAction: (MessageAction) -> Unit,
     depth: Int,
     parentLocked: Boolean,
@@ -635,7 +634,7 @@ private fun SubPollSection(
                     ownId = ownId,
                     useMD = useMD,
                     myMessage = myMessage,
-                    readerMap = readerMap,
+                    voters = voters,
                     onAction = onAction,
                     depth = depth + 1,
                     parentOptionId = option.id,
@@ -649,11 +648,10 @@ private fun SubPollSection(
 @Composable
 fun PollVoterOverviewDialog(
     poll: PollMessage,
-    readerMap: Map<String, String>,
+    voters: Map<String, UserIdentity>,
     ownId: String,
     onDismiss: () -> Unit
 ) {
-    val pictureManager = koinInject<PictureManager>()
     val annotationSources = rememberComboAnnotationSources()
 
     AlertDialog(
@@ -672,9 +670,8 @@ fun PollVoterOverviewDialog(
             ) {
                 PollVoterOverviewEntries(
                     poll = poll,
-                    readerMap = readerMap,
+                    voters = voters,
                     ownId = ownId,
-                    pictureManager = pictureManager,
                     annotationSources = annotationSources,
                 )
             }
@@ -694,9 +691,8 @@ fun PollVoterOverviewDialog(
 @Composable
 private fun PollVoterOverviewEntries(
     poll: PollMessage,
-    readerMap: Map<String, String>,
+    voters: Map<String, UserIdentity>,
     ownId: String,
-    pictureManager: PictureManager,
     annotationSources: List<ComboAnnotationSource>,
 ) {
     poll.voteOptions.forEach { option ->
@@ -718,14 +714,14 @@ private fun PollVoterOverviewEntries(
                 ) {
                     if (voter.userId != null) {
                         ProfilePictureView(
-                            filepath = pictureManager.getProfilePicFilePath(voter.userId, false),
+                            filepath = voters[voter.userId]?.profilePictureUrl.orEmpty(),
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
                             text = if (voter.userId == ownId) {
                                 stringResource(Res.string.poll_voter_you)
                             }else {
-                                readerMap[voter.userId] ?: null.text()
+                                voters[voter.userId]?.name.text()
                             },
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -764,10 +760,9 @@ private fun PollVoterOverviewEntries(
 
                     PollVoterOverviewEntries(
                         poll = subPoll,
-                        readerMap = readerMap,
+                        voters = voters,
                         ownId = ownId,
-                        pictureManager = pictureManager,
-                        annotationSources = annotationSources,
+                            annotationSources = annotationSources,
                     )
                 }
             }
@@ -858,6 +853,7 @@ fun PollMessageOptionView(
     myMessage: Boolean,
     voterIds: List<String?>,
     onOptionSelected: (Boolean) -> Unit,
+    voters: Map<String, UserIdentity> = emptyMap(),
     full: Boolean = false,
     useMD: Boolean = false,
     showCheckbox: Boolean = true,
@@ -983,8 +979,6 @@ fun PollMessageOptionView(
 
                     Spacer(modifier = Modifier.width(4.dp))
 
-                    //No Koin in @Previews - avatars are skipped there, the anonymous "+n" count still shows
-                    val pictureManager = if (LocalInspectionMode.current) null else koinInject<PictureManager>()
 
 
                     val nonNullVoterIds = voterIds.filterNotNull()
@@ -997,9 +991,9 @@ fun PollMessageOptionView(
                     ) {
 
                         // Show profile pictures for identified voters
-                        if (pictureManager != null) nonNullVoterIds.forEach { userId ->
+                        nonNullVoterIds.forEach { userId ->
                             ProfilePictureView(
-                                filepath = pictureManager.getProfilePicFilePath(userId, false),
+                                filepath = voters[userId]?.profilePictureUrl.orEmpty(),
                                 modifier = Modifier.size(24.dp)
                             )
                         }

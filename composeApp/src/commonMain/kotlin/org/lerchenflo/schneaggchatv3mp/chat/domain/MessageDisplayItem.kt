@@ -26,7 +26,7 @@ sealed class MessageDisplayItem {
         val message: Message,
         val sender: SenderInfo,  // Pre-resolved name + per-member color
         val messageMinimal: MessageMinimal,
-        val resolvedReaders: Map<String, String> = emptyMap(), // readerId / poll voter id -> name, pre-resolved
+        val resolvedVoters: Map<String, UserIdentity> = emptyMap(), // poll voter id -> name and picture
         val resolvedReaderList: List<ReaderUi> = emptyList(), // full per-message reader list (details dialog)
         val resolvedReactions: Map<String, String> = emptyMap(), // userId -> userName, pre-resolved
         // The message this one answers, pre-resolved so the row needs no list scan - and found

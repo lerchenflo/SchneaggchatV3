@@ -24,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReactionView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.RepliedMessagePreview
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 
 
 /** Opacity of the row band behind a fully highlighted message (the bubble gets the full tint). */
@@ -38,7 +39,7 @@ fun MessageView(
     selectedChatId: String,
     sender: SenderInfo? = null,
     minimal: MessageMinimal = MessageMinimal.NONE,
-    readerMap: Map<String,String> = emptyMap(),
+    voters: Map<String, UserIdentity> = emptyMap(),
     replyMessage: Message? = null,
     replyMessageSender: SenderInfo? = null,
     replyMessageOnClick: () -> Unit = {},
@@ -117,7 +118,7 @@ fun MessageView(
                 selectedChatId = selectedChatId,
                 sender = sender,
                 minimal = minimal,
-                readerMap = readerMap,
+                voters = voters,
                 onAction = onAction,
                 playbackProgress = playbackProgress,
                 ownId = ownId

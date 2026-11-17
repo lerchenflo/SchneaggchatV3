@@ -37,6 +37,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 
 @Composable
 fun MessageViewWithActions(
@@ -46,7 +47,7 @@ fun MessageViewWithActions(
     message: Message,
     sender: SenderInfo? = null,
     minimal: MessageMinimal = MessageMinimal.NONE,
-    readerMap: Map<String, String> = emptyMap(),
+    voters: Map<String, UserIdentity> = emptyMap(),
     replyMessage: Message? = null,
     replyMessageSender: SenderInfo? = null,
     replyMessageOnClick: () -> Unit = {},
@@ -147,7 +148,7 @@ fun MessageViewWithActions(
                 selectedChatId = selectedChatId,
                 sender = sender,
                 minimal = minimal,
-                readerMap = readerMap,
+                voters = voters,
                 replyMessage = replyMessage,
                 replyMessageSender = replyMessageSender,
                 replyMessageOnClick = replyMessageOnClick,

@@ -114,9 +114,10 @@ class MessageDisplayMapper {
 
             val replyMessage = message.answerId?.let { messagesById[it] ?: olderReplyTargets[it] }
 
-            // Readers and poll voters, for the poll's voter list
-            val resolvedReaders = (message.readers.map { it.readerId } + message.poll?.voterIds().orEmpty())
-                .associateWith { resolveName(it) }
+            // Poll voters with name and picture, for the poll's voter avatars and voter list
+            val resolvedVoters = message.poll?.voterIds().orEmpty()
+                .mapNotNull { voterId -> users[voterId]?.let { voterId to it } }
+                .toMap()
 
             val resolvedReaderList = message.readers.map { reader ->
                 ReaderUi(
@@ -179,7 +180,7 @@ class MessageDisplayMapper {
                     message = message,
                     sender = sender,
                     messageMinimal = minimalState,
-                    resolvedReaders = resolvedReaders,
+                    resolvedVoters = resolvedVoters,
                     resolvedReaderList = resolvedReaderList,
                     resolvedReactions = resolvedReactions,
                     replyMessage = replyMessage,

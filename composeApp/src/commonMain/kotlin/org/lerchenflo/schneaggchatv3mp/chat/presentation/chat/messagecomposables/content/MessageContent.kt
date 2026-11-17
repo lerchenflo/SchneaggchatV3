@@ -35,6 +35,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_edited
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 
 @Composable
 fun MessageContent(
@@ -46,7 +47,7 @@ fun MessageContent(
     selectedChatId: String,
     sender: SenderInfo? = null,
     minimal: MessageMinimal = MessageMinimal.NONE,
-    readerMap: Map<String, String> = emptyMap(),
+    voters: Map<String, UserIdentity> = emptyMap(),
     onAction: (MessageAction) -> Unit = {},
     playbackProgress: StateFlow<PlaybackProgress>? = null,
 ){
@@ -88,7 +89,7 @@ fun MessageContent(
                         useMD = useMD,
                         myMessage = mymessage,
                         onAction = onAction,
-                        readerMap = readerMap,
+                        voters = voters,
                         ownId = ownId
                     )
 

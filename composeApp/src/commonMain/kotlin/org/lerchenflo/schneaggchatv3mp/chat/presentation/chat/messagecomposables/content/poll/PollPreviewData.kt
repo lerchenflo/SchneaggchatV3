@@ -19,6 +19,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 
 /**
  * Sample data for poll previews: a poll five levels deep (the maximum), with sub polls on several
@@ -30,7 +32,8 @@ internal object PollPreviewData {
     const val OWN_ID = "me"
     private const val CREATOR_ID = "anna"
 
-    private val readerMap = mapOf(OWN_ID to "Me", CREATOR_ID to "Anna", "ben" to "Ben", "clara" to "Clara")
+    private val voters = mapOf(OWN_ID to "Me", CREATOR_ID to "Anna", "ben" to "Ben", "clara" to "Clara")
+        .mapValues { (id, name) -> UserIdentity(userId = id, name = UserIdentityName.Known(name)) }
 
     private fun option(id: String, text: String, voterIds: List<String>, subPoll: PollMessage? = null) = PollVoteOption(
         id = id,
@@ -196,7 +199,7 @@ internal object PollPreviewData {
         readers = emptyList(),
     )
 
-    val sampleReaderMap: Map<String, String> = readerMap
+    val sampleVoters: Map<String, UserIdentity> = voters
 
     /** Draft level with sub polls switched on whenever any option carries one. */
     private fun draft(
@@ -287,7 +290,7 @@ private fun PollPreviewBubble(ownId: String) {
             message = PollPreviewData.sampleMessage(),
             useMD = false,
             myMessage = false,
-            readerMap = PollPreviewData.sampleReaderMap,
+            voters = PollPreviewData.sampleVoters,
         )
     }
 }
