@@ -5,7 +5,7 @@ import schneaggchatv3mp.composeapp.generated.resources.notification_fallback_bod
 import schneaggchatv3mp.composeapp.generated.resources.event_reminder_noti_body_at
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventUpdateChange
-import org.lerchenflo.schneaggchatv3mp.events.presentation.leadTimeTextOf
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.leadTimeTextOf
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_reminder_noti_body

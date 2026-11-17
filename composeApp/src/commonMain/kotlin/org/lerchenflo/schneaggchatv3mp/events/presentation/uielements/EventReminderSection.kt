@@ -35,7 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventReminders
-import org.lerchenflo.schneaggchatv3mp.events.presentation.leadTimeText
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.leadTimeText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel

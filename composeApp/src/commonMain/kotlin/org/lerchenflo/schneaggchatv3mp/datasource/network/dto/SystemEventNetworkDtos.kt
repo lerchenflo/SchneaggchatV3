@@ -10,6 +10,7 @@ data class SystemEventResponse(
     val text: String? = null,
     val previousText: String? = null,
     val timestamp: Long? = null,
+    val leadMinutes: Int? = null,
 )
 
 @Serializable

@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.events.presentation
+package org.lerchenflo.schneaggchatv3mp.sharedUi.text
 
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.getPluralString
