@@ -181,7 +181,8 @@ fun GroupMembersView(
 
             if (profilePictureDialogShown) {
                 ProfilePictureBigDialog(
-                    filepath =  user?.profilePictureUrl ?: "",
+                    // Same source as the row: friends and looked-up users who are no friends
+                    filepath = identity.profilePictureUrl,
                     onDismiss = {
                         profilePictureDialogShown = false
                     }
