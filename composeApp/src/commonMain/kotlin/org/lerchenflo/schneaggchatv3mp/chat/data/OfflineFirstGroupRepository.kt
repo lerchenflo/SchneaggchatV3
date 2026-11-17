@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNetworkGroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSyncResponse
@@ -37,6 +38,7 @@ class OfflineFirstGroupRepository(
     private val userIdentityRepository: UserIdentityRepository,
     private val pictureManager: PictureManager,
     private val loggingRepository: Logger,
+    private val mediaDownloadThrottle: MediaDownloadThrottle,
 ) : GroupRepository {
 
     // ─── Reads ────────────────────────────────────────────────────────────────
@@ -158,7 +160,7 @@ class OfflineFirstGroupRepository(
     override suspend fun getProfilePicturesForGroupIds(groupIds: List<String>){
         groupIds.forEach { groupId ->
             val savefilename = groupId + GROUPPROFILEPICTURE_FILE_NAME
-            when (val picture = groupRemoteDataSource.getProfilePicForGroupId(groupId).trackConnectivity()) {
+            when (val picture = mediaDownloadThrottle.download { groupRemoteDataSource.getProfilePicForGroupId(groupId) }.trackConnectivity()) {
                 is DataResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for groupid $groupId")}
                 is DataResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)

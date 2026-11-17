@@ -51,6 +51,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toNewPoll
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollVoteRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -90,6 +91,7 @@ class OfflineFirstMessageRepository(
     private val audioManager: AudioManager,
     private val loggingRepository: Logger,
     private val externalScope: CoroutineScope,
+    private val mediaDownloadThrottle: MediaDownloadThrottle,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : MessageRepository {
 
@@ -128,7 +130,7 @@ class OfflineFirstMessageRepository(
         ids.forEach { messageId ->
             val savefilename = messageId + PICTURE_FILE_NAME
 
-            when (val picture = messageRemoteDataSource.getImageForImageMessage(messageId).trackConnectivity()) {
+            when (val picture = mediaDownloadThrottle.download { messageRemoteDataSource.getImageForImageMessage(messageId) }.trackConnectivity()) {
                 is DataResult.Error<*> -> {loggingRepository.logWarning("Picture error for messageid $messageId")}
                 is DataResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
@@ -144,7 +146,7 @@ class OfflineFirstMessageRepository(
             val savefilename = messageId + VOICEMSG_FILE_NAME
             //println("Fetching Audio for messageid $messageId")
 
-            when (val audio = messageRemoteDataSource.getAudioForAudioMessage(messageId).trackConnectivity()) {
+            when (val audio = mediaDownloadThrottle.download { messageRemoteDataSource.getAudioForAudioMessage(messageId) }.trackConnectivity()) {
                 is DataResult.Error<*> -> {loggingRepository.logWarning("Audio error for messageid $messageId")}
                 is DataResult.Success<ByteArray> -> {
                     val filepath = audioManager.saveAudioToStorage(audio.data, savefilename)

@@ -62,6 +62,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AppAuthEventSink
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthClock
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthEventSink
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthLog
@@ -243,6 +244,8 @@ val sharedmodule = module{
             externalScope = get<ApplicationScope>(),
         )
     }
+    // One shared queue for all picture and voice message downloads, so they stay under the server's rate limit
+    single { MediaDownloadThrottle() }
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
     singleOf(::OfflineFirstGroupRepository) bind GroupRepository::class
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
@@ -257,6 +260,7 @@ val sharedmodule = module{
             pictureManager = get(),
             externalScope = get<ApplicationScope>(),
             logger = get(),
+            mediaDownloadThrottle = get(),
         )
     }
     singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
@@ -271,6 +275,7 @@ val sharedmodule = module{
             audioManager = get(),
             loggingRepository = get(),
             externalScope = get<ApplicationScope>(),
+            mediaDownloadThrottle = get(),
         )
     }
     // Explicit lambda so the dispatcher keeps its default (Dispatchers.Default); tests pass their own (plan R4)
