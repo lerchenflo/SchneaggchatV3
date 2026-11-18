@@ -33,14 +33,14 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getMissingPasswordRequirements
 import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
 import org.lerchenflo.schneaggchatv3mp.utilities.isPhoneNumberValid
+import org.lerchenflo.schneaggchatv3mp.utilities.toStringResource
+import org.lerchenflo.schneaggchatv3mp.utilities.validateUsername
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
 import schneaggchatv3mp.composeapp.generated.resources.invalid_phone_number
 import schneaggchatv3mp.composeapp.generated.resources.must_be_accepted
 import schneaggchatv3mp.composeapp.generated.resources.password_needs_to_be_the_same
-import schneaggchatv3mp.composeapp.generated.resources.username_too_long
-import schneaggchatv3mp.composeapp.generated.resources.username_too_short
 import schneaggchatv3mp.composeapp.generated.resources.you_need_to_select_a_profilepicture
 
 
@@ -70,11 +70,7 @@ class SignUpViewModel(
                     state = state.copy(
                         usernameState = state.usernameState.copy(
                             text = action.newText,
-                            errorMessage = when {
-                                action.newText.length <= 3 -> getString(Res.string.username_too_short)
-                                action.newText.length >= 25 -> getString(Res.string.username_too_long)
-                                else -> null
-                            }
+                            errorMessage = validateUsername(action.newText)?.let { getString(it.toStringResource()) }
                         )
                     )
                 }

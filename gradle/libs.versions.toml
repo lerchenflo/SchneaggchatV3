@@ -30,7 +30,6 @@ materialIconsExtended = "1.7.3"
 room = "2.8.5"
 
 sqlite = "2.7.1"
-datetime-wheel-picker = "1.5.0"
 
 koin-core = "4.2.2"
 koin-plugin = "1.2.3"
@@ -110,7 +109,6 @@ room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
-datetime-wheel-picker = { module = "io.github.darkokoa:datetime-wheel-picker", version.ref = "datetime-wheel-picker" }
 material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin-core" }

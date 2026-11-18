@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -36,7 +36,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DragHandle
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -84,7 +83,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
 import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
-import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.poll_create
 import schneaggchatv3mp.composeapp.generated.resources.poll_create_description
 import schneaggchatv3mp.composeapp.generated.resources.poll_create_description_placeholder
@@ -554,31 +552,14 @@ fun PollDialog(
                     if (level.depth == 0) {
                         //Popup for date picker
                         if (showExpiresAtDatePickerDialog) {
-                            AlertDialog(
-                                onDismissRequest = { showExpiresAtDatePickerDialog = false },
-                                confirmButton = {
-                                    TextButton(onClick = {
-                                        // Handle confirm action
-                                        showExpiresAtDatePickerDialog = false
-                                    }) {
-                                        Text(stringResource(Res.string.ok))
-                                    }
+                            DateTimePickerPopup(
+                                initialDateTime = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) },
+                                minDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+                                onConfirm = {
+                                    expiresAt = it
+                                    showExpiresAtDatePickerDialog = false
                                 },
-                                dismissButton = {
-                                    TextButton(onClick = {
-                                        showExpiresAtDatePickerDialog = false
-                                        expiresAt = null
-                                    }) {
-                                        Text(stringResource(Res.string.cancel))
-                                    }
-                                },
-                                text = {
-                                    DateTimeWheelPicker(
-                                        startDateTime = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) },
-                                        onDateTimeChange = { expiresAt = it },
-                                        minDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-                                    )
-                                }
+                                onDismiss = { showExpiresAtDatePickerDialog = false },
                             )
                         }
 

@@ -53,8 +53,7 @@ import io.github.ismoy.imagepickerkmp.picker.rememberImagePickerKMP
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
-import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
+import org.lerchenflo.schneaggchatv3mp.utilities.validateName
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -116,7 +115,7 @@ private fun GroupCreatorScreen(
             canContinue = { pageIndex ->
                 when (pageIndex) {
                     0 -> state.selectedUsers.size >= 2
-                    1 -> state.groupname.text.length in MIN_GROUPNAME_LENGTH..< MAX_GROUPNAME_LENGTH
+                    1 -> validateName(state.groupname.text) == null
                     2 -> state.profilepic != null
                     else -> true
                 }

@@ -90,8 +90,6 @@
     <string name="password_needs_to_be_the_same">Du musch zwoamol s gliche igia</string>
     <string name="email_exists">Es git scho an Account mit derra E-Mail</string>
     <string name="username_exists">Es git scho an Account mit deam Nama</string>
-    <string name="username_too_long">Din Nama isch z lang</string>
-    <string name="username_too_short">Din Nama isch z kurz</string>
 
     <string name="requirement_length">8 oder meh Zeicha</string>
     <string name="requirement_digit">mindestens ua Zahl</string>

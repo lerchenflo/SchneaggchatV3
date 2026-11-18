@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToStringWithWeekday
 import schneaggchatv3mp.composeapp.generated.resources.event_show_on_map
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.StaticMapPreview
@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -43,7 +42,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -712,80 +710,41 @@ fun EventEditPopup(
         )
     }
 
-    // Start Date Picker Dialog
+    // Start date picker
     if (showStartDatePicker) {
-        var tempStartDateTime by remember {
-            mutableStateOf(
-                Instant.fromEpochMilliseconds(currentEvent.startDate)
-                    .toLocalDateTime(TimeZone.currentSystemDefault())
-            )
-        }
-
-        AlertDialog(
-            onDismissRequest = { showStartDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val newStartMillis = tempStartDateTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
-                    val newCloseDate = currentEvent.closeDate?.let { close ->
-                        if (close <= newStartMillis) newStartMillis + 60 * 60 * 1000L else close
-                    }
-                    currentEvent = currentEvent.copy(
-                        startDate = newStartMillis,
-                        closeDate = newCloseDate
-                    )
-                    showStartDatePicker = false
-                }) {
-                    Text(stringResource(Res.string.ok))
+        DateTimePickerPopup(
+            initialDateTime = Instant.fromEpochMilliseconds(currentEvent.startDate)
+                .toLocalDateTime(TimeZone.currentSystemDefault()),
+            minDateTime = (Clock.System.now() + 5.minutes).toLocalDateTime(TimeZone.currentSystemDefault()),
+            onConfirm = { pickedStart ->
+                val newStartMillis = pickedStart.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                val newCloseDate = currentEvent.closeDate?.let { close ->
+                    if (close <= newStartMillis) newStartMillis + 60 * 60 * 1000L else close
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showStartDatePicker = false }) {
-                    Text(stringResource(Res.string.cancel))
-                }
-            },
-            text = {
-                DateTimeWheelPicker(
-                    startDateTime = tempStartDateTime,
-                    onDateTimeChange = { tempStartDateTime = it },
-                    minDateTime = (Clock.System.now() + 5.minutes).toLocalDateTime(TimeZone.currentSystemDefault()),
+                currentEvent = currentEvent.copy(
+                    startDate = newStartMillis,
+                    closeDate = newCloseDate
                 )
-            }
+                showStartDatePicker = false
+            },
+            onDismiss = { showStartDatePicker = false },
         )
     }
 
-    // End Date Picker Dialog
+    // End date picker
     if (showEndDatePicker && currentEvent.closeDate != null) {
-        var tempEndDateTime by remember {
-            mutableStateOf(
-                Instant.fromEpochMilliseconds(currentEvent.closeDate!!)
-                    .toLocalDateTime(TimeZone.currentSystemDefault())
-            )
-        }
-
-        AlertDialog(
-            onDismissRequest = { showEndDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val newEndMillis = tempEndDateTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
-                    currentEvent = currentEvent.copy(closeDate = newEndMillis)
-                    showEndDatePicker = false
-                }) {
-                    Text(stringResource(Res.string.ok))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEndDatePicker = false }) {
-                    Text(stringResource(Res.string.cancel))
-                }
-            },
-            text = {
-                DateTimeWheelPicker(
-                    startDateTime = tempEndDateTime,
-                    onDateTimeChange = { tempEndDateTime = it },
-                    minDateTime = Instant.fromEpochMilliseconds(currentEvent.startDate)
-                        .toLocalDateTime(TimeZone.currentSystemDefault()),
+        DateTimePickerPopup(
+            initialDateTime = Instant.fromEpochMilliseconds(currentEvent.closeDate!!)
+                .toLocalDateTime(TimeZone.currentSystemDefault()),
+            minDateTime = Instant.fromEpochMilliseconds(currentEvent.startDate)
+                .toLocalDateTime(TimeZone.currentSystemDefault()),
+            onConfirm = { pickedEnd ->
+                currentEvent = currentEvent.copy(
+                    closeDate = pickedEnd.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
                 )
-            }
+                showEndDatePicker = false
+            },
+            onDismiss = { showEndDatePicker = false },
         )
     }
 

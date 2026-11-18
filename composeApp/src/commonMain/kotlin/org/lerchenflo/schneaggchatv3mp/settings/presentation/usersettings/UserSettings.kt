@@ -53,6 +53,9 @@ import io.github.ismoy.imagepickerkmp.picker.rememberImagePickerKMP
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.utilities.NameError
+import org.lerchenflo.schneaggchatv3mp.utilities.toStringResource
+import org.lerchenflo.schneaggchatv3mp.utilities.validateUsername
 import org.jetbrains.compose.resources.vectorResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import io.github.lerchenflo.taptarget.tapTarget
@@ -374,6 +377,7 @@ fun UserSettings(
 
     if(showChangeUsernamePopup){
         val cannot_be_same_username_text = stringResource(Res.string.error_cannot_be_the_same_username)
+        val nameErrorTexts = NameError.entries.associateWith { stringResource(it.toStringResource()) }
 
         ChangeDialog(
             title = stringResource(Res.string.change_username),
@@ -387,7 +391,10 @@ fun UserSettings(
             validator = { newValue ->
                 if (newValue == (sharedSettingsViewmodel.ownUser?.name ?: "")) {
                     cannot_be_same_username_text
-                } else null
+                } else {
+                    // The server trims the new name before checking it
+                    validateUsername(newValue.trim())?.let { nameErrorTexts.getValue(it) }
+                }
             }
         )
     }

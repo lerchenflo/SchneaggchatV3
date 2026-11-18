@@ -185,7 +185,6 @@ kotlin {
 
             //DateTime
             implementation(libs.kotlinx.datetime)
-            implementation(libs.datetime.wheel.picker)
 
             //Resizeable screens
             implementation(libs.material3.adaptive)

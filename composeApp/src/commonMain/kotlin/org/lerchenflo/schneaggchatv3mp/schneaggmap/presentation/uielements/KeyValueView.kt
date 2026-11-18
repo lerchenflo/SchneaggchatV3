@@ -2,7 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateWheelPicker
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
@@ -24,11 +24,9 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,10 +34,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -81,10 +76,8 @@ import kotlin.math.roundToInt
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import org.lerchenflo.schneaggchatv3mp.utilities.toFixed
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.copy
 import schneaggchatv3mp.composeapp.generated.resources.no
-import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_invalid_number
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_max
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_attribute_max_chars
@@ -505,54 +498,15 @@ private fun DateTimeInput(
     }
 
     if (showDialog) {
-        // Dialog-local state — only committed on OK
-        var dialogDate by remember { mutableStateOf(initialDateTime.date) }
-
-        val timePickerState = rememberTimePickerState(
-            initialHour   = initialDateTime.hour,
-            initialMinute = initialDateTime.minute,
-            is24Hour      = true,
-        )
-
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val pickedMillis = LocalDateTime(date = dialogDate, time = LocalTime(timePickerState.hour, timePickerState.minute))
-                        .toInstant(TimeZone.currentSystemDefault())
-                        .toEpochMilliseconds()
-                    onValueChange(LongValue(pickedMillis))
-                    showDialog = false
-                }) {
-                    Text(stringResource(Res.string.ok))
-                }
+        DateTimePickerPopup(
+            initialDateTime = initialDateTime,
+            maxDateTime = LocalDateTime(maxPickableDate, LocalTime(23, 59)),
+            title = stringResource(Res.string.schneaggmap_datetime_picker_title),
+            onConfirm = { picked ->
+                onValueChange(LongValue(picked.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()))
+                showDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text(stringResource(Res.string.cancel))
-                }
-            },
-            title = { Text(stringResource(Res.string.schneaggmap_datetime_picker_title)) },
-            text = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    DateWheelPicker(
-                        startDate = dialogDate,
-                        onDateChange = { dialogDate = it },
-                        minDate = LocalDate(1900, 1, 1),
-                        maxDate = maxPickableDate,
-                    )
-
-                    HorizontalDivider()
-
-                    TimePicker(
-                        state = timePickerState,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                }
-            }
+            onDismiss = { showDialog = false },
         )
     }
 }

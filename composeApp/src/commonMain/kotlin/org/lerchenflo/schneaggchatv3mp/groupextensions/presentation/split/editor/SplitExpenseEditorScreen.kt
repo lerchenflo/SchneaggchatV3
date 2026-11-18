@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -52,8 +51,6 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,12 +78,10 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.SplitMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitMemberUi
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.cancel
-import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.split_amount_for
 import schneaggchatv3mp.composeapp.generated.resources.split_amount_label
@@ -645,8 +640,7 @@ private fun MemberAvatar(member: SplitMemberUi) {
 }
 
 /**
- * Same date and time wheel as the rest of the app, without limits (future entries are allowed);
- * the snapped value is only committed on confirm.
+ * Same date and time picker as the rest of the app, without limits (future entries are allowed).
  */
 @Composable
 private fun SplitDateTimePickerDialog(
@@ -654,27 +648,11 @@ private fun SplitDateTimePickerDialog(
     onConfirm: (LocalDateTime) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var pickedDateTime by remember { mutableStateOf(initialDateTime) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.split_date_label)) },
-        text = {
-            DateTimeWheelPicker(
-                startDateTime = initialDateTime,
-                onDateTimeChange = { pickedDateTime = it },
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(pickedDateTime) }) {
-                Text(stringResource(Res.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.cancel))
-            }
-        }
+    DateTimePickerPopup(
+        initialDateTime = initialDateTime,
+        title = stringResource(Res.string.split_date_label),
+        onConfirm = onConfirm,
+        onDismiss = onDismiss,
     )
 }
 

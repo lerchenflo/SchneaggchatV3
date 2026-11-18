@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements
 
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -75,7 +75,6 @@ import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.dev_announcements
 import schneaggchatv3mp.composeapp.generated.resources.edit
-import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
@@ -375,28 +374,13 @@ private fun ExpiryPickerDialog(
     val minDateTime = Instant.fromEpochMilliseconds(nowMillis).toLocalDateTime(timeZone)
     val maxDateTime = Instant.fromEpochMilliseconds(nowMillis + AnnouncementLimits.MAX_EXPIRY_DAYS.days.inWholeMilliseconds)
         .toLocalDateTime(timeZone)
-    var selected by remember { mutableStateOf(Instant.fromEpochMilliseconds(initialMillis).toLocalDateTime(timeZone)) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = { onConfirm(selected.toInstant(timeZone).toEpochMilliseconds()) }) {
-                Text(stringResource(Res.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.cancel))
-            }
-        },
-        text = {
-            DateTimeWheelPicker(
-                startDateTime = selected,
-                onDateTimeChange = { selected = it },
-                minDateTime = minDateTime,
-                maxDateTime = maxDateTime,
-            )
-        }
+    DateTimePickerPopup(
+        initialDateTime = remember { Instant.fromEpochMilliseconds(initialMillis).toLocalDateTime(timeZone) },
+        minDateTime = minDateTime,
+        maxDateTime = maxDateTime,
+        onConfirm = { onConfirm(it.toInstant(timeZone).toEpochMilliseconds()) },
+        onDismiss = onDismiss,
     )
 }
 
