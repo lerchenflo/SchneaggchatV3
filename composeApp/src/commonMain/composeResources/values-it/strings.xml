@@ -587,6 +587,9 @@
     <string name="dartcounter_done">Fatto</string>
     <string name="dartcounter_game_configuration_title">Configurazione partita</string>
     <string name="dartcounter_countdown_label">Countdown:</string>
+    <string name="dartcounter_in_mode_label">Modalità entrata:</string>
+    <string name="dartcounter_in_mode_single_in">Singolo</string>
+    <string name="dartcounter_in_mode_double_in">Doppio</string>
     <string name="dartcounter_out_mode_label">Modalità uscita:</string>
     <string name="dartcounter_out_mode_single_out">Singolo</string>
     <string name="dartcounter_out_mode_double_out">Doppio</string>
@@ -596,6 +599,7 @@
     <string name="dartcounter_stop_game_confirmation_message">Sei sicuro di voler terminare la partita attuale? Tutti i progressi andranno persi.</string>
     <string name="dartcounter_checkout_title">Checkout</string>
     <string name="dartcounter_darts_left_format">%1$d freccette rimaste</string>
+    <string name="dartcounter_double_in_hint">Colpisci un doppio per iniziare a segnare</string>
     <string name="dartcounter_checkout_alt_format">Alt.:</string>
     <string name="dartcounter_segment_double_format">D%1$d</string>
     <string name="dartcounter_segment_triple_format">T%1$d</string>

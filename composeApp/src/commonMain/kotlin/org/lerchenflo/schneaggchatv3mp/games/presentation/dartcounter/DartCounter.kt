@@ -54,6 +54,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartInMode
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartOutMode
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartSegment
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartThrow
@@ -77,6 +78,10 @@ import schneaggchatv3mp.composeapp.generated.resources.dartcounter_darts_left_fo
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_finished_suffix
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_game_configuration_title
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_highscores
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_double_in_hint
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_in_mode_double_in
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_in_mode_label
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_in_mode_single_in
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_list_separator
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_miss
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_multiplier_double
@@ -475,6 +480,7 @@ private fun GameStatusDisplay(state: DartCounterState, modifier: Modifier = Modi
                     dartsLeft = state.dartsLeft,
                     turnDarts = state.turnDarts,
                     turnTotal = state.turnTotal,
+                    needsDoubleIn = state.needsDoubleIn,
                     checkout = state.checkout,
                     alternativeCheckout = state.alternativeCheckout,
                 )
@@ -508,6 +514,7 @@ private fun CurrentTurnHeader(
     dartsLeft: Int,
     turnDarts: List<DartThrow>,
     turnTotal: Int,
+    needsDoubleIn: Boolean,
     checkout: List<DartSegment>,
     alternativeCheckout: List<DartSegment>,
 ) {
@@ -528,6 +535,16 @@ private fun CurrentTurnHeader(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                if (needsDoubleIn) {
+                    Text(
+                        text = stringResource(Res.string.dartcounter_double_in_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
             Text(
                 text = remainingScore.toString(),
@@ -717,31 +734,23 @@ private fun GameConfigDialog(state: DartCounterState, onAction: (DartCounterActi
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = stringResource(Res.string.dartcounter_out_mode_label),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
+                ModeSelector(
+                    label = stringResource(Res.string.dartcounter_in_mode_label),
+                    options = DartInMode.entries,
+                    selected = state.selectedInMode,
+                    optionText = { it.displayText() },
+                    onSelect = { onAction(DartCounterAction.OnInModeSelect(it)) },
                 )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    DartOutMode.entries.forEach { mode ->
-                        Button(
-                            onClick = { onAction(DartCounterAction.OnOutModeSelect(mode)) },
-                            modifier = Modifier.weight(1f),
-                            contentPadding = CompactButtonPadding,
-                            colors = selectableButtonColors(state.selectedOutMode == mode)
-                        ) {
-                            val modeText = when (mode) {
-                                DartOutMode.SINGLE_OUT -> stringResource(Res.string.dartcounter_out_mode_single_out)
-                                DartOutMode.DOUBLE_OUT -> stringResource(Res.string.dartcounter_out_mode_double_out)
-                            }
-                            FittingButtonText(modeText)
-                        }
-                    }
-                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                ModeSelector(
+                    label = stringResource(Res.string.dartcounter_out_mode_label),
+                    options = DartOutMode.entries,
+                    selected = state.selectedOutMode,
+                    optionText = { it.displayText() },
+                    onSelect = { onAction(DartCounterAction.OnOutModeSelect(it)) },
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -789,6 +798,52 @@ private fun GameConfigDialog(state: DartCounterState, onAction: (DartCounterActi
             }
         }
     }
+}
+
+/** A label over one equally wide toggle button per option, with [selected] highlighted. */
+@Composable
+private fun <T> ModeSelector(
+    label: String,
+    options: List<T>,
+    selected: T,
+    optionText: @Composable (T) -> String,
+    onSelect: (T) -> Unit,
+) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            options.forEach { option ->
+                Button(
+                    onClick = { onSelect(option) },
+                    modifier = Modifier.weight(1f),
+                    contentPadding = CompactButtonPadding,
+                    colors = selectableButtonColors(selected == option)
+                ) {
+                    FittingButtonText(optionText(option))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DartInMode.displayText(): String = when (this) {
+    DartInMode.SINGLE_IN -> stringResource(Res.string.dartcounter_in_mode_single_in)
+    DartInMode.DOUBLE_IN -> stringResource(Res.string.dartcounter_in_mode_double_in)
+}
+
+@Composable
+private fun DartOutMode.displayText(): String = when (this) {
+    DartOutMode.SINGLE_OUT -> stringResource(Res.string.dartcounter_out_mode_single_out)
+    DartOutMode.DOUBLE_OUT -> stringResource(Res.string.dartcounter_out_mode_double_out)
 }
 
 @Composable

@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartGame
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartInMode
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartOutMode
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.findCheckouts
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
@@ -71,6 +72,7 @@ class DartCounterViewModel(
             DartCounterAction.OnGameConfigDismiss -> _state.update { it.copy(showGameConfig = false) }
             DartCounterAction.OnConfirmStartGame -> startGame()
             is DartCounterAction.OnCountdownSelect -> _state.update { it.copy(selectedCountdown = action.countdown) }
+            is DartCounterAction.OnInModeSelect -> _state.update { it.copy(selectedInMode = action.mode) }
             is DartCounterAction.OnOutModeSelect -> _state.update { it.copy(selectedOutMode = action.mode) }
 
             DartCounterAction.OnStopGameClick -> _state.update { it.copy(showStopGameDialog = true) }
@@ -102,6 +104,7 @@ class DartCounterViewModel(
         if (names.isEmpty()) return
         highscoreUpload.reset()
         game = DartGame(
+            inMode = _state.value.selectedInMode,
             outMode = _state.value.selectedOutMode,
             countdown = _state.value.selectedCountdown,
             playerNames = names,
@@ -187,6 +190,7 @@ class DartCounterViewModel(
                 dartsLeft = dartsLeft,
                 turnDarts = running.dartsThisTurn,
                 turnTotal = running.turnTotal,
+                needsDoubleIn = !current.hasOpened && !running.gameOver,
                 checkout = checkouts.firstOrNull().orEmpty(),
                 alternativeCheckout = checkouts.getOrNull(1).orEmpty(),
                 canUndo = running.canUndo,
@@ -210,8 +214,11 @@ class DartCounterViewModel(
         val data = save.data
         if (data.players.isEmpty()) return
         val names = data.players.map { it.name }
+        val inMode = if (data.doubleIn) DartInMode.DOUBLE_IN else DartInMode.SINGLE_IN
+        val outMode = if (data.doubleOut) DartOutMode.DOUBLE_OUT else DartOutMode.SINGLE_OUT
         val restored = DartGame(
-            outMode = if (data.doubleOut) DartOutMode.DOUBLE_OUT else DartOutMode.SINGLE_OUT,
+            inMode = inMode,
+            outMode = outMode,
             countdown = data.countdown,
             playerNames = names,
         )
@@ -225,7 +232,8 @@ class DartCounterViewModel(
                 gameStarted = true,
                 playerNames = names,
                 selectedCountdown = data.countdown,
-                selectedOutMode = if (data.doubleOut) DartOutMode.DOUBLE_OUT else DartOutMode.SINGLE_OUT,
+                selectedInMode = inMode,
+                selectedOutMode = outMode,
             )
         }
         projectGame()

@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter
 
 import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartInMode
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartOutMode
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartPlayer
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartSegment
@@ -48,6 +49,8 @@ data class DartCounterState(
     val dartsLeft: Int = 0,
     val turnDarts: List<DartThrow> = emptyList(),
     val turnTotal: Int = 0,
+    /** Double in: the active player has not hit the opening double yet, so no dart scores. */
+    val needsDoubleIn: Boolean = false,
     /** Best finishing path for this turn, empty when a finish is out of reach. */
     val checkout: List<DartSegment> = emptyList(),
     val alternativeCheckout: List<DartSegment> = emptyList(),
@@ -58,6 +61,7 @@ data class DartCounterState(
     // Setup
     val playerNames: List<String> = emptyList(),
     val selectedCountdown: Int = 501,
+    val selectedInMode: DartInMode = DartInMode.SINGLE_IN,
     val selectedOutMode: DartOutMode = DartOutMode.DOUBLE_OUT,
 
     // Dialogs
@@ -89,6 +93,7 @@ sealed interface DartCounterAction {
     data object OnGameConfigDismiss : DartCounterAction
     data object OnConfirmStartGame : DartCounterAction
     data class OnCountdownSelect(val countdown: Int) : DartCounterAction
+    data class OnInModeSelect(val mode: DartInMode) : DartCounterAction
     data class OnOutModeSelect(val mode: DartOutMode) : DartCounterAction
 
     data object OnStopGameClick : DartCounterAction

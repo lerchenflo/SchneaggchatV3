@@ -25,9 +25,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Events: Erinnerungen im Gruppenchat
-- iOS: Mindestversion iOS 18.5
 - Datumsauswahl: Kalender statt Scrollrad
-- Namensregeln: Prüfung beim Tippen
+- Dartcounter: Double In
 
 #### Bugfixes
 - Profilbild: Anzeige bei Nicht-Freunden behoben
