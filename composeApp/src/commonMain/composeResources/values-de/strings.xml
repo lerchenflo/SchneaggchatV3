@@ -89,8 +89,6 @@
     <string name="password_needs_to_be_the_same">Passwörter müssen übereinstimmen</string>
     <string name="email_exists">Ein Account mit dieser Email existiert bereits</string>
     <string name="username_exists">Ein Account mit diesem Nutzernamen existiert bereits</string>
-    <string name="username_too_long">Dein Nutzername ist zu lang</string>
-    <string name="username_too_short">Dein Benutzername ist zu kurz</string>
 
     <string name="requirement_length">8 oder mehr Zeichen</string>
     <string name="requirement_digit">mindestens eine Zahl</string>
@@ -103,6 +101,7 @@
     <string name="no">nein</string>
     <string name="ok">ok</string>
     <string name="cancel">abbrechen</string>
+    <string name="picker_back">Zurück</string>
     <string name="version">Version: %1$s</string>
     <string name="build_number">Buildnr: %1$s</string>
     <string name="app_broken">App kaputt</string>
@@ -453,6 +452,9 @@
 
     <string name="name_too_long">Name zu lang</string>
     <string name="name_too_short">Name zu kurz</string>
+    <string name="name_bad_start_or_end">Muss mit einem Buchstaben oder einer Zahl beginnen und enden</string>
+    <string name="name_invalid_characters">Nur Buchstaben, Zahlen, Leerzeichen und _ - . sind erlaubt</string>
+    <string name="name_reserved">Dieser Name ist nicht erlaubt</string>
 
 
     <string name="copied_to_clipboard">In die Zwischenablage kopiert</string>

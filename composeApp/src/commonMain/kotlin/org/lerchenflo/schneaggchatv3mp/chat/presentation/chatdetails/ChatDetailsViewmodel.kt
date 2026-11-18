@@ -39,8 +39,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
-import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -55,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeOutcome
+import org.lerchenflo.schneaggchatv3mp.utilities.validateName
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import kotlin.time.Clock
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
@@ -63,7 +62,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.ExtensionListAction
-import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
+import org.lerchenflo.schneaggchatv3mp.utilities.toStringResource
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -611,9 +610,8 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun validateGroupName(name: String): ErrorMessage? {
-        return if (name.length > MAX_GROUPNAME_LENGTH) ErrorMessage.NAME_TO_LONG else if (name.length < MIN_GROUPNAME_LENGTH) ErrorMessage.NAME_TO_SHORT else null
-    }
+    fun validateGroupName(name: String): UiText? =
+        validateName(name)?.let { UiText.StringResourceText(it.toStringResource()) }
 
     fun updateGroupName(name: String){
         applicationScope.launchOnMain {
