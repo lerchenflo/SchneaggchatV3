@@ -83,7 +83,7 @@ fun main() = application {
         Tray(
             icon = if (logoBitmap != null) remember(logoBitmap) { BitmapPainter(logoBitmap) } else painterResource(Res.drawable.schneaggchat_logo_v3),
             state = trayState,
-            tooltip = "SchneaggchatV3",
+            tooltip = "Schneaggchat",
             onAction = { windowVisible = true }, // click (Windows) / double click on the icon
             menu = {
                 Item(stringResource(Res.string.desktop_tray_open), onClick = { windowVisible = true })
@@ -106,7 +106,7 @@ fun main() = application {
         onCloseRequest = { if (isTraySupported) windowVisible = false else quit() },
         state = windowState,
         visible = windowVisible,
-        title = "SchneaggchatV3 Desktop",
+        title = "Schneaggchat Desktop",
         icon = painterResource(Res.drawable.schneaggchat_logo_v3) // taskbar / window icon (tested on linux)
 
     ) {
@@ -180,7 +180,7 @@ fun main() = application(exitProcessOnExit = false) {
             }
             popupMenu.add(exitItem)
 
-            persistentTrayIcon = TrayIcon(image, "SchneaggchatV3 Desktop", popupMenu).apply {
+            persistentTrayIcon = TrayIcon(image, "Schneaggchat Desktop", popupMenu).apply {
                 isImageAutoSize = true
             }
 
@@ -216,7 +216,7 @@ fun main() = application(exitProcessOnExit = false) {
 
     Window(
         onCloseRequest = ::exitApplication,
-        title = "SchneaggchatV3 Desktop",
+        title = "Schneaggchat Desktop",
     ) {
         window.setSize(1600, 1000)
         window.minimumSize = Dimension(400, 400)

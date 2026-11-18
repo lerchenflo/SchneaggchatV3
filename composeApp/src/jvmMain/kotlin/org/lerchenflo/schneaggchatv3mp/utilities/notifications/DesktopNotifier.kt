@@ -8,7 +8,7 @@ import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-private const val APP_NAME = "SchneaggchatV3"
+private const val APP_NAME = "Schneaggchat"
 private const val ICON_RESOURCE_PATH =
     "composeResources/schneaggchatv3mp.composeapp.generated.resources/drawable/schneaggchat_logo_v3.png"
 

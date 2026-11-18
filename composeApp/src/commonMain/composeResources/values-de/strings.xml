@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><resources>
-    <string name="app_name">SchneaggchatV3</string>
+    <string name="app_name">Schneaggchat</string>
 
     
     <string name="profile_picture">Profilbild</string>
@@ -61,7 +61,7 @@
     <string name="email">E-mail</string>
     <string name="invalid_email">Gib eine korrekte E-mail-Adresse ein</string>
     <string name="email_provider_warning">Diese Adresse wurde markiert, weil sie nicht von einem gängigen E-Mail-Anbieter stammt. Verwende eine E-Mail-Adresse, auf die nur du Zugriff hast (z. B. Gmail, Outlook, iCloud, GMX). Wer deine E-Mails lesen kann, kann dein Passwort zurücksetzen und dein Konto übernehmen. Temporäre oder Wegwerf-Adressen (wie 10-Minuten-Mail) sind deshalb riskant.</string>    <string name="sign_up">Ich habe noch keinen Account</string>
-    <string name="loginsubtitle">Die beste Chattingplattform jemals - Jetzt in der V3 mit Multiplattform für Android, iOS und Desktop!</string>
+    <string name="loginsubtitle">Eine alternative Chat-App mit vielen Features – kostenlos, ohne Werbung, made in Vorarlberg.</string>
     <string name="create_account">Account erstellen</string>
     <string name="create_account_subtitle">jetzt beitreten</string>
     <string name="acc_not_exist">Account existiert nicht</string>

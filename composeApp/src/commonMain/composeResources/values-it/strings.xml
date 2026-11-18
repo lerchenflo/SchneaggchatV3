@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><resources>
-    <string name="app_name">SchneaggchatV3</string>
+    <string name="app_name">Schneaggchat</string>
 
 
     <string name="profile_picture">foto profilo</string>
@@ -60,7 +60,7 @@
     <string name="email">Email</string>
     <string name="invalid_email">Inserisci un indirizzo email corretto</string>
     <string name="email_provider_warning">Questo indirizzo è stato segnalato perché non appartiene a un provider email comune. Usa un indirizzo email a cui solo tu hai accesso (ad es. Gmail, Outlook, iCloud, GMX). Chiunque possa leggere le tue email può reimpostare la tua password e prendere il controllo del tuo account, quindi gli indirizzi temporanei o usa e getta (come le email da 10 minuti) sono rischiosi.</string>    <string name="sign_up">Non ho un account</string>
-    <string name="loginsubtitle">LA migliore app di chat di sempre - ora in V3 con Multiplatform per Android, IOS e Desktop!</string>
+    <string name="loginsubtitle">Un\'app di chat alternativa con tante funzioni – gratuita, senza pubblicità, made in Vorarlberg.</string>
     <string name="create_account">Crea account</string>
     <string name="create_account_subtitle">Iscriviti ora</string>
     <string name="acc_not_exist">L'account non esiste</string>
