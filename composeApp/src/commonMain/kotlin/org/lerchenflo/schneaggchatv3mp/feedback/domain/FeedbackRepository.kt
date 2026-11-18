@@ -21,14 +21,17 @@ interface FeedbackRepository {
     /** Pulls changed and deleted entries from the server into the local store. */
     suspend fun syncFeedback(): EmptyDataResult<DataError>
 
-    /** Number of entries with a [FeedbackMark] since the user last opened the board. */
+    /** Home screen badge: the sum of [getTabUnseenCountsFlow], so it stays until every tab with news was opened. */
     fun getUnseenCountFlow(): Flow<Int>
 
-    /** Server time the user last opened the board at, 0 if never. */
-    suspend fun getLastSeen(): Long
+    /** Per tab: entries with a [FeedbackMark] since the user last opened that tab. */
+    fun getTabUnseenCountsFlow(): Flow<Map<FeedbackTab, Int>>
 
-    /** Marks everything stored as seen: saves the server time of the last successful sync. */
-    suspend fun markAllSeen()
+    /** Server time the user last opened each tab at, 0 if never. */
+    suspend fun getTabsLastSeen(): Map<FeedbackTab, Long>
+
+    /** The user opened [tab]: everything stored in it counts as seen (server time of the last successful sync). */
+    suspend fun markTabSeen(tab: FeedbackTab)
 
     /** The user opened [entryId]: its [commentCount] comments count as seen on this device. */
     suspend fun markCommentsSeen(entryId: String, commentCount: Int)

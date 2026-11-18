@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -100,6 +102,7 @@ fun FeedbackScreen(
                 selected = state.selectedTab,
                 label = { stringResource(it.labelRes()) },
                 count = { tab -> if (state.isLoading) null else state.tabCounts[tab] ?: 0 },
+                badge = { tab -> state.tabBadges[tab]?.takeIf { it > 0 } },
                 onSelect = { onAction(FeedbackAction.OnTabSelected(it)) },
                 // Four labels with counts: the check icon would not fit on a phone
                 showLeadingIcon = false,
@@ -211,7 +214,7 @@ fun FeedbackScreen(
  * (pinned on top in the Top sort) count as new too.
  */
 private fun FeedbackEntry.boardMark(state: FeedbackState): FeedbackMark? =
-    state.lastSeenBeforeVisit?.let { markSince(it) }
+    state.tabLastSeenBeforeVisit?.let { lastSeen -> markSince(lastSeen.getValue(FeedbackTab.of(this))) }
         ?: FeedbackMark.NEW.takeIf { state.sort == FeedbackSort.TOP && isPinned(state.nowMillis) }
 
 /** Order of the chips on the Games tab. */
@@ -396,7 +399,7 @@ private fun FeedbackScreenPreview() {
                 entries = entries,
                 visibleEntries = entries,
                 isLoading = false,
-                lastSeenBeforeVisit = 0L,
+                tabLastSeenBeforeVisit = FeedbackTab.entries.associateWith { 0L },
             ),
             onAction = {}
         )

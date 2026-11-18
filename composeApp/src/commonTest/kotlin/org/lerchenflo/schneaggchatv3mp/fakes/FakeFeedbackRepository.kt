@@ -11,6 +11,7 @@ import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryChanges
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryDetail
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.NewFeedbackEntry
 
@@ -33,9 +34,12 @@ class FakeFeedbackRepository : FeedbackRepository {
 
     override fun getUnseenCountFlow(): Flow<Int> = unseenCount
 
-    override suspend fun getLastSeen(): Long = 0L
+    override fun getTabUnseenCountsFlow(): Flow<Map<FeedbackTab, Int>> =
+        MutableStateFlow(FeedbackTab.entries.associateWith { 0 })
 
-    override suspend fun markAllSeen() {
+    override suspend fun getTabsLastSeen(): Map<FeedbackTab, Long> = FeedbackTab.entries.associateWith { 0L }
+
+    override suspend fun markTabSeen(tab: FeedbackTab) {
         unseenCount.value = 0
     }
 

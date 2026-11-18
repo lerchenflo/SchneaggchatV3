@@ -3,6 +3,8 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi.buttons
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -16,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 /**
  * Full width single-choice switch between a few tabs, each label optionally followed by a count
  * ("Images (12)"). A null count leaves the label bare, e.g. while the count is still loading.
+ * [badge] puts a small number badge on a tab (e.g. new entries since it was last opened); null = none.
  */
 @Composable
 fun <T> CountSegmentedSwitch(
@@ -25,11 +28,13 @@ fun <T> CountSegmentedSwitch(
     count: (T) -> Int?,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
-    showLeadingIcon: Boolean = true
+    showLeadingIcon: Boolean = true,
+    badge: (T) -> Int? = { null }
 ) {
     SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
         options.forEachIndexed { index, option ->
             val optionCount = count(option)
+            val optionBadge = badge(option)
 
             SegmentedButton(
                 selected = option == selected,
@@ -37,10 +42,12 @@ fun <T> CountSegmentedSwitch(
                 icon = { if (showLeadingIcon) SegmentedButtonDefaults.Icon(option == selected) },
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size)
             ) {
-                Text(
-                    text = if (optionCount != null) "${label(option)} ($optionCount)" else label(option),
-                    maxLines = 1
-                )
+                BadgedBox(badge = { if (optionBadge != null) Badge { Text(optionBadge.toString()) } }) {
+                    Text(
+                        text = if (optionCount != null) "${label(option)} ($optionCount)" else label(option),
+                        maxLines = 1
+                    )
+                }
             }
         }
     }
