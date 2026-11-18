@@ -1069,7 +1069,7 @@
     <string name="contribute_bug_hint">Qualcosa si blocca, è rotto o non ti convince? Segnalalo, non importa quanto piccolo.</string>
     <string name="contribute_feature_title">Ti manca una funzione?</string>
     <string name="contribute_feature_hint">Dicci cosa vorresti vedere — molte funzioni sono nate da una richiesta di un utente o sono state copiate da altre app.</string>
-    <string name="contribute_open_form">Segnala un bug o richiedi una funzione</string>
+    <string name="contribute_open_board">Apri la bacheca dei feedback</string>
     <string name="contribute_donate_title">Sostieni con una donazione</string>
     <string name="contribute_donate_text">L'app è gratuita, senza pubblicità e non vende mai i tuoi dati. Mantenerla viva costa comunque denaro vero:</string>
     <string name="contribute_donate_mac">Un Mac: la versione iOS può essere compilata e pubblicata solo su hardware Apple.</string>

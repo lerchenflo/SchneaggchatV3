@@ -75,7 +75,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
 
 /** How long the contribute popup stays away between two appearances. */
-private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
+private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 90.days.inWholeMilliseconds // about 3 months (user, 2026-11-18)
 
 class ChatSelectorViewModel(
     private val errorChannel: ErrorChannel,

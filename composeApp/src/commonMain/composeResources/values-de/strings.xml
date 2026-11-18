@@ -1075,7 +1075,7 @@
     <string name="contribute_bug_hint">Stürzt etwas ab, ist kaputt oder fühlt sich einfach falsch an? Melde es, egal wie klein.</string>
     <string name="contribute_feature_title">Fehlt dir ein Feature?</string>
     <string name="contribute_feature_hint">Sag, was du dir wünschst — viele Features haben als Wunsch angefangen oder wurden aus anderen Apps kopiert.</string>
-    <string name="contribute_open_form">Fehler melden oder Feature vorschlagen</string>
+    <string name="contribute_open_board">Feedback-Board öffnen</string>
     <string name="contribute_donate_title">Mit Geld unterstützen</string>
     <string name="contribute_donate_text">Die App ist gratis, hat keine Werbung und verkauft deine Daten nie. Trotzdem kostet sie echtes Geld:</string>
     <string name="contribute_donate_mac">Ein Mac: Die iOS-Version kann nur auf Apple-Hardware gebaut und veröffentlicht werden.</string>

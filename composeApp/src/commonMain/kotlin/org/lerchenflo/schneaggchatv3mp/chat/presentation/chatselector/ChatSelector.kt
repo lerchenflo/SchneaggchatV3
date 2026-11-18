@@ -855,7 +855,7 @@ fun Chatauswahlscreen(
         if (contributePopupShown) {
             ContributePopup(
                 onDismiss = { viewModel.onContributeDismiss() },
-                onOpenReportForm = {
+                onOpenFeedbackBoard = {
                     viewModel.onContributeDismiss()
                     viewModel.onFeedbackClick()
                 },

@@ -1075,7 +1075,7 @@
     <string name="contribute_bug_hint">Something crashing, broken or just feeling off? Report it, no matter how small.</string>
     <string name="contribute_feature_title">Missing a feature?</string>
     <string name="contribute_feature_hint">Tell us what you would like to see — many features started as a user request or got copied from other apps.</string>
-    <string name="contribute_open_form">Report a bug or request a feature</string>
+    <string name="contribute_open_board">Open the feedback board</string>
     <string name="contribute_donate_title">Support with money</string>
     <string name="contribute_donate_text">The app is free, has no ads and never sells your data. Keeping it alive still costs real money:</string>
     <string name="contribute_donate_mac">A Mac: the iOS version can only be built and released on Apple hardware.</string>

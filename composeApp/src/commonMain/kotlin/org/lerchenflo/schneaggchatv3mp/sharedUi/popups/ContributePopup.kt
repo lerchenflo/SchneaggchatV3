@@ -53,7 +53,7 @@ import schneaggchatv3mp.composeapp.generated.resources.contribute_feature_hint
 import schneaggchatv3mp.composeapp.generated.resources.contribute_feature_title
 import schneaggchatv3mp.composeapp.generated.resources.contribute_later
 import schneaggchatv3mp.composeapp.generated.resources.contribute_message
-import schneaggchatv3mp.composeapp.generated.resources.contribute_open_form
+import schneaggchatv3mp.composeapp.generated.resources.contribute_open_board
 import schneaggchatv3mp.composeapp.generated.resources.contribute_title
 
 /**
@@ -67,7 +67,7 @@ import schneaggchatv3mp.composeapp.generated.resources.contribute_title
 @Composable
 fun ContributePopup(
     onDismiss: () -> Unit,
-    onOpenReportForm: () -> Unit,
+    onOpenFeedbackBoard: () -> Unit,
     onOpenDonationPage: () -> Unit,
 ) {
     Dialog(
@@ -93,7 +93,7 @@ fun ContributePopup(
             ) {
                 ContributePopupContent(
                     onDismiss = onDismiss,
-                    onOpenReportForm = onOpenReportForm,
+                    onOpenFeedbackBoard = onOpenFeedbackBoard,
                     onOpenDonationPage = onOpenDonationPage
                 )
             }
@@ -108,7 +108,7 @@ fun ContributePopup(
 @Composable
 private fun ContributePopupContent(
     onDismiss: () -> Unit,
-    onOpenReportForm: () -> Unit,
+    onOpenFeedbackBoard: () -> Unit,
     onOpenDonationPage: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -153,8 +153,8 @@ private fun ContributePopupContent(
             )
 
             ContributeOption(
-                title = stringResource(Res.string.contribute_open_form),
-                onClick = onOpenReportForm
+                title = stringResource(Res.string.contribute_open_board),
+                onClick = onOpenFeedbackBoard
             ) {
                 ContributeDetail(
                     icon = Icons.Default.BugReport,
@@ -308,7 +308,7 @@ private fun ContributePopupPreview() {
             ) {
                 ContributePopupContent(
                     onDismiss = {},
-                    onOpenReportForm = {},
+                    onOpenFeedbackBoard = {},
                     onOpenDonationPage = {}
                 )
             }
