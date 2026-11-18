@@ -50,21 +50,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		05FC0F842F7D21E7003032F9 /* Exceptions for "SchneaggchatShareExtension" folder in "SchneaggchatShareExtension" target */ = {
+		05FC0F842F7D21E7003032F9 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtension */;
 		};
-		A1B0000100010001000F0004 /* Exceptions for "SchneaggchatNotificationServiceExtension" folder in "SchneaggchatNotificationServiceExtension" target */ = {
+		A1B0000100010001000F0004 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = A1B0000100010001000F0005 /* SchneaggchatNotificationServiceExtension */;
 		};
-		B99700CA2DC9B8D800C7335B /* Exceptions for "iosApp" folder in "iosApp" target */ = {
+		B99700CA2DC9B8D800C7335B /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -77,7 +77,11 @@
 		05FC0F762F7D21E7003032F9 /* SchneaggchatShareExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				05FC0F842F7D21E7003032F9 /* Exceptions for "SchneaggchatShareExtension" folder in "SchneaggchatShareExtension" target */,
+				05FC0F842F7D21E7003032F9 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
 			);
 			path = SchneaggchatShareExtension;
 			sourceTree = "<group>";
@@ -85,7 +89,11 @@
 		A1B0000100010001000F0003 /* SchneaggchatNotificationServiceExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				A1B0000100010001000F0004 /* Exceptions for "SchneaggchatNotificationServiceExtension" folder in "SchneaggchatNotificationServiceExtension" target */,
+				A1B0000100010001000F0004 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
 			);
 			path = SchneaggchatNotificationServiceExtension;
 			sourceTree = "<group>";
@@ -93,13 +101,21 @@
 		B9DA97B32DC1472C00A4DA20 /* iosApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				B99700CA2DC9B8D800C7335B /* Exceptions for "iosApp" folder in "iosApp" target */,
+				B99700CA2DC9B8D800C7335B /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
 			);
 			path = iosApp;
 			sourceTree = "<group>";
 		};
 		B9DA98002DC14AA900A4DA20 /* Configuration */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
 			path = Configuration;
 			sourceTree = "<group>";
 		};

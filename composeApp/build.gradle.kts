@@ -369,11 +369,11 @@ compose.desktop {
 
                 shortcut = true
                 menuGroup = "Chat"
-                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_v3_transparent.png"))
+                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_transparent.png"))
             }
 
             windows {
-                iconFile.set(project.file("\\src\\commonMain\\composeResources\\files\\schneaggchat_logo_v3_transparent.ico"))
+                iconFile.set(project.file("\\src\\commonMain\\composeResources\\files\\schneaggchat_logo_transparent.ico"))
 
                 perUserInstall = true
 
@@ -391,7 +391,7 @@ compose.desktop {
                 // Otherwise, macOS might try to generate one from the spaced packageName and fail.
                 bundleID = "org.lerchenflo.schneaggchatv3"
 
-                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_v3.icns"))
+                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo.icns"))
 
                 infoPlist {
                     // Without a usage text macOS blocks the microphone (desktop voice messages)

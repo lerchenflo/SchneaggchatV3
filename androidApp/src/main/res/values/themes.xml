@@ -7,7 +7,7 @@
     <!-- Splash screen theme (REQUIRED parent) -->
     <style name="Theme.App.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#121212</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/schneaggchatv3_icon_foreground_light_round</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/schneaggchat_icon_round</item>
 
 
 

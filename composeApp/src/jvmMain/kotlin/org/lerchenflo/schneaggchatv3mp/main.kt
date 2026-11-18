@@ -33,13 +33,13 @@ import org.maplibre.compose.desktop.rememberAwtComposeMapPresentationHost
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.desktop_tray_open
 import schneaggchatv3mp.composeapp.generated.resources.desktop_tray_quit
-import schneaggchatv3mp.composeapp.generated.resources.schneaggchat_logo_v3
+import schneaggchatv3mp.composeapp.generated.resources.schneaggchat_logo
 import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.desktop.AppReopenedListener
 import kotlin.time.Duration.Companion.seconds
 
-private const val TRAY_LOGO_PATH = "files/schneaggchat_logo_v3_transparent.png"
+private const val TRAY_LOGO_PATH = "files/schneaggchat_logo_transparent.png"
 
 fun main() = application {
 
@@ -81,7 +81,7 @@ fun main() = application {
     if (isTraySupported && logo != null) {
         val logoBitmap = logo.getOrNull()
         Tray(
-            icon = if (logoBitmap != null) remember(logoBitmap) { BitmapPainter(logoBitmap) } else painterResource(Res.drawable.schneaggchat_logo_v3),
+            icon = if (logoBitmap != null) remember(logoBitmap) { BitmapPainter(logoBitmap) } else painterResource(Res.drawable.schneaggchat_logo),
             state = trayState,
             tooltip = "Schneaggchat",
             onAction = { windowVisible = true }, // click (Windows) / double click on the icon
@@ -107,7 +107,7 @@ fun main() = application {
         state = windowState,
         visible = windowVisible,
         title = "Schneaggchat Desktop",
-        icon = painterResource(Res.drawable.schneaggchat_logo_v3) // taskbar / window icon (tested on linux)
+        icon = painterResource(Res.drawable.schneaggchat_logo) // taskbar / window icon (tested on linux)
 
     ) {
         LaunchedEffect(Unit) {
