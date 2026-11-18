@@ -35,3 +35,5 @@ mapping.txt
 .scratch
 storeassets/demo/.last-backup-database.db*
 storeassets/preview/
+# Store images (raw shots, rendered store images, icons) stay local; rebuild them with storeassets/demo/
+storeassets/**/*.png

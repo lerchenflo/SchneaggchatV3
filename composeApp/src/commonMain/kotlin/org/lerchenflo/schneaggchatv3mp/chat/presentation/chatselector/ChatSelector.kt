@@ -233,32 +233,37 @@ fun Chatauswahlscreen(
                 val touchSize = 40.dp
                 val iconSize = 28.dp
 
-                Row(
-                    modifier = Modifier
-                        .clickable {
-                            uriHandler.openUri(serverUrl)
-                        }
-                        .weight(1f)
-                        .padding(start = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                // The box takes the free space; only the title and the globe open the website
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    Text(
-                        text = stringResource(Res.string.app_name),
-                        modifier = Modifier.weight(1f, fill = false),
-                        autoSize = TextAutoSize.StepBased(
-                            minFontSize = 10.sp,
-                            maxFontSize = 25.sp
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Icon(
-                        imageVector = Icons.Default.Language,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(
+                        modifier = Modifier
+                            .clickable {
+                                uriHandler.openUri(serverUrl)
+                            }
+                            .padding(start = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.app_name),
+                            modifier = Modifier.weight(1f, fill = false),
+                            autoSize = TextAutoSize.StepBased(
+                                minFontSize = 10.sp,
+                                maxFontSize = 25.sp
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
 

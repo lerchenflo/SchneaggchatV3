@@ -60,7 +60,12 @@ The seeding backs up the untouched database to `.last-backup-database.db` (gitig
 Logging out or syncing with the real server removes the demo data again.
 
 The store images (captions, phone frame, zoomed boxes) are rendered from these raw shots by
-`render_store_images.sh`. Its callout regions are still measured for the older 1080x2400 captures.
+`render_store_images.sh`. Its callout regions are measured for the 1280x2856 Pixel 10 Pro captures.
+The captions use Noto Sans ExtraBold; the default path is the Linux one, so on macOS pass the font
+file: `FONT=/path/to/NotoSans-ExtraBold.ttf bash storeassets/demo/render_store_images.sh`.
+
+All store PNGs (raw shots, rendered store images, icons, feature graphic) are gitignored and live only
+on the machine that made them; rerun the capture and render steps to get them on another device.
 
 ## Files
 
