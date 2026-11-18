@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.socket
 
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.coroutineScope
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.userIdentityNameText
 import kotlinx.coroutines.flow.first
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventFallbackNotificationContent
@@ -49,7 +48,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NOTIFICATION_FALL
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationContent
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventNotificationId
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationKind
-import org.lerchenflo.schneaggchatv3mp.utilities.notifications.ensureProfilePictureForNotification
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.reactionNotificationContent
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.new_event_noti_title
@@ -379,7 +377,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
             //Friend request was sent
             is SocketConnectionMessage.FriendRequest -> {
                 //Notify before the sync: it can be slow or fail, and the notification must not wait for it
-                val requesterName = loadNotificationSender(socketMessage.requestingUser)
+                val requesterName = notificationNameOf(socketMessage.requestingUser)
                 if (socketMessage.accepted) {
                     NotificationManager.showNotification(
                         titletext = getString(Res.string.new_friend_accepted_noti),
@@ -428,7 +426,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     // The creator's own devices get the new event too, but no "X created an event" notification
                     if (socketMessage.newEntry && socketMessage.event.creatorId != ownId) {
                         val content = try {
-                            val creatorName = loadNotificationSender(socketMessage.event.creatorId)
+                            val creatorName = notificationNameOf(socketMessage.event.creatorId)
                             NotificationContent(
                                 id = eventNotificationId(socketMessage.event.id),
                                 title = getString(Res.string.new_event_noti_title, creatorName),
@@ -614,12 +612,3 @@ private suspend fun notificationNameOf(userId: String): String =
     userIdentityNameText()(
         KoinPlatform.getKoin().get<UserIdentityRepository>().getUser(userId, maxWait = NOTIFICATION_NAME_TIMEOUT).name
     )
-
-/**
- * Name and profile picture of the user a notification is about, loaded at the same time so the
- * notification waits for one timeout (3 s), not for both one after another. Returns the name.
- */
-private suspend fun loadNotificationSender(userId: String): String = coroutineScope {
-    launch { ensureProfilePictureForNotification(userId) }
-    notificationNameOf(userId)
-}

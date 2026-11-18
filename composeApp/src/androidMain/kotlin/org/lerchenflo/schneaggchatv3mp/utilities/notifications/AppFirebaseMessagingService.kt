@@ -158,9 +158,6 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
             return
         }
 
-        //Picture of whoever the notification is about, downloaded first if this device doesn't have it yet
-        ensureProfilePictureForNotification(content.avatarUserId ?: content.senderId)
-
         handled.set(true)
         KoinPlatform.getKoin().get<Notifier>().showLocalNotification(content)
     }

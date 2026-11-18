@@ -735,13 +735,12 @@ class AndroidNotifier(private val context: Context, private val permissionManage
     /**
      * The user's stored profile picture as a small round bitmap, or null when there is none (no
      * picture downloaded yet, file missing) or it can't be read - the caller then uses the default
-     * icon. Looks at the path in the user's row first, then at the fixed per-user path, where a
-     * picture downloaded for a not yet synced user lands. Failures are logged; this never throws.
+     * icon. Only users stored on this device have a picture: a user without a row (not a friend, not
+     * synced yet) always gets the default icon (user, 2026-11-18). Failures are logged; this never throws.
      */
     private fun userAvatar(userId: String): Bitmap? = avatarBitmap("user:$userId") {
         listOfNotNull(
             KoinPlatform.getKoin().get<UserLocalDataSource>().getUserById(userId)?.profilePictureUrl,
-            KoinPlatform.getKoin().get<PictureManager>().getProfilePicFilePath(userId, gruppe = false),
         )
     }
 
