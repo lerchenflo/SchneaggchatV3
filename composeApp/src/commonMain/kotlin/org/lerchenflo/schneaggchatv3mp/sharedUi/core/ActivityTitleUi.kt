@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ActivityTitle(
     title: String = "ActivityTitle",
-    alternativeTitleComposable: (@Composable () -> Unit)? = null,
     onBackClick: () -> Unit = {},
     showBackButton: Boolean = true,
     modifier: Modifier = Modifier,
@@ -33,13 +32,7 @@ fun ActivityTitle(
     actions: @Composable RowScope.() -> Unit = {}
 ){
     TopAppBar(
-        title = {
-            if (alternativeTitleComposable != null) {
-                alternativeTitleComposable()
-            } else {
-                Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-        },
+        title = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         modifier = modifier.fillMaxWidth(),
         navigationIcon = {
             if (showBackButton) {
