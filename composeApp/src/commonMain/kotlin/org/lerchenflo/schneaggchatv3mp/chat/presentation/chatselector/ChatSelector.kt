@@ -155,6 +155,7 @@ fun Chatauswahlscreen(
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
     val dataSyncState by viewModel.dataSyncState.collectAsStateWithLifecycle()
+    val demoMode by viewModel.demoMode.collectAsStateWithLifecycle()
 
     val onboardingCompleted by viewModel.onboardingCompleted.collectAsStateWithLifecycle()
     
@@ -274,7 +275,7 @@ fun Chatauswahlscreen(
 
 
 
-                if (dataSyncState.isSyncing || dataSyncState.exitedWithErrors) {
+                if (!demoMode && (dataSyncState.isSyncing || dataSyncState.exitedWithErrors)) {
                     Box(
                         modifier = Modifier
                             .size(touchSize)

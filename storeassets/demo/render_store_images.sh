@@ -42,7 +42,7 @@ done
 
 # App icons (1024 App Store, 512 Play) and the 1024x500 Play feature graphic
 SCRIPTS="$(dirname "$COMPOSE")"
-"$SCRIPTS/make_icons.sh" --src "$ROOT/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/schneaggchat_logo_playstore_v3.png" \
+"$SCRIPTS/make_icons.sh" --src "$ROOT/iosApp/iosApp/Assets.xcassets/AppIcon.appiconset/schneaggchat_logo.png" \
   --bg '#FFFFFF' --out-dir "$ROOT/storeassets/icon"
 "$SCRIPTS/feature_graphic.sh" --layout phones --out "$ROOT/storeassets/play/feature-graphic/$LOCALE/phones.png" \
   --bg1 '#006E2C' --bg2 '#1ED660' --frame '#0D0D0D' --font "$FONT" --tagline 'Dein Chat. Made in Vorarlberg.' \

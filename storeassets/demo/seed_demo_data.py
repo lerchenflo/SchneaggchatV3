@@ -1,4 +1,4 @@
-"""Seed a pulled SchneaggchatV3 Room DB (schema v87) with German demo data for store screenshots.
+"""Seed a pulled SchneaggchatV3 Room DB (schema v97) with German demo data for store screenshots.
 
 Usage: python3 seed_demo_data.py database.db   (WAL-checkpointed copy; apply_demo_data.sh does all of it)
 
@@ -72,9 +72,8 @@ for gid, (name, desc, members) in groups.items():
     c.execute("insert or replace into groups values (?,?,?,?,?,?,?,null,0)",
               (gid, name, f"{FILES}/{gid}.gpb", desc, now - 120 * DAY, now, now))
     for i, uid in enumerate(members):
-        mname = c.execute("select name from users where id=?", (uid,)).fetchone()[0]
-        c.execute("insert or replace into group_members (groupId, userId, joinDate, admin, color, memberName) values (?,?,?,?,?,?)",
-                  (gid, uid, str(now - 120 * DAY), 1 if i == 0 else 0, colors[i % len(colors)] - (1 << 32), mname))
+        c.execute("insert or replace into group_members (groupId, userId, joinDate, admin, color) values (?,?,?,?,?)",
+                  (gid, uid, str(now - 120 * DAY), 1 if i == 0 else 0, colors[i % len(colors)] - (1 << 32)))
 
 # --- messages ------------------------------------------------------------
 msg_no = 0
@@ -171,14 +170,17 @@ msg(PAUL, ME, "Bist du schon zu Hause?", 7 * HOUR)
 msg(ME, PAUL, "In 10 Minuten 🚲", 6 * HOUR + 55 * MIN)
 
 # --- events --------------------------------------------------------------
-def event(eid, etype, title, desc, lat, lng, start, invited, accepted, creator, group_id=None, max_users=None):
+def event(eid, etype, title, desc, start, invited, accepted, creator, group_id=None, max_users=None):
     """`creator` is one of the fictional friends, so every card shows a different face."""
     invited = [u for u in invited if u in known and u != creator] + [ME]
-    creator_name = NEW[creator][0]
     parts = [{"userId": u, "status": "ACCEPTED", "updatedAt": now - HOUR} for u in accepted if u in known]
-    c.execute("insert or replace into events values (?,?,?,?,?,?,?,?,null,?,?,?,?,?,?,?,?,?)",
-              (eid, creator, etype, title, desc, group_id, json.dumps({"lat": lat, "long": lng}), start,
-               json.dumps(invited), json.dumps(parts), "FRIENDS_ONLY", max_users, "ONE_DAY", now - DAY, now - HOUR, creator, creator_name))
+    # Named columns: the events table changed its column order between schema versions.
+    # reminderMinutes is a comma-separated int list (RoomTypeConverters.fromIntList), empty = no reminder.
+    c.execute("""insert or replace into events (id, creatorId, type, title, description, groupId, location, startDate,
+                 closeDate, invitedUsers, reminderMinutes, participations, visibility, maxUsers, groupDeleteDelay,
+                 createdAt, updatedAt, updatedBy) values (?,?,?,?,?,?,?,?,null,?,?,?,?,?,?,?,?,?)""",
+              (eid, creator, etype, title, desc, group_id, None, start,
+               json.dumps(invited), "", json.dumps(parts), "FRIENDS_ONLY", max_users, "ONE_DAY", now - DAY, now - HOUR, creator))
 
 def at(days, hour, minute=0):
     """Local wall-clock time `days` from today - events start at round times, not 'now + x hours'."""
@@ -186,12 +188,42 @@ def at(days, hour, minute=0):
     return int(day.replace(hour=hour, minute=minute, second=0, microsecond=0).timestamp() * 1000)
 
 everyone = [JONAS, SOPHIE, MAX, MIA, PAUL, LENA, TOBIAS, ALEX, VANESSA, EMMA, NOAH]
-event("de00000000000000000e0001", "FOOD", "Grillabend am See 🔥", "Bring was zum Grillen mit, Getränke sind organisiert!",
-      47.5070, 9.7390, at(2, 18, 30), everyone, [ME, SOPHIE, MIA, PAUL, LENA, VANESSA, NOAH], SOPHIE)
-event("de00000000000000000e0002", "SPORT", "Skitour aufs Bödele ⛷️", "Treffpunkt Parkplatz Bödele, Lawinenausrüstung nicht vergessen.",
-      47.4269, 9.8158, at(3, 7, 0), [JONAS, SOPHIE, MAX, EMMA], [ME, JONAS, SOPHIE, MAX], JONAS, max_users=8)
-event("de00000000000000000e0003", "GAMING", "Spieleabend 🎲", "Catan, Uno und Pizza in der WG.",
-      47.4136, 9.7432, at(5, 19, 30), everyone, [ME, MIA, PAUL, EMMA], MIA)
+
+# The events have no location: the map opens zoomed out and event markers lie on top of the friends
+# cluster, so the scripted cluster taps would open an event instead (none of the shots shows a location).
+# (type, title, description, hour, minute, max users) - three events that fit the month the shots are taken in
+SKITOUR = ("SPORT", "Skitour aufs Bödele ⛷️", "Treffpunkt Parkplatz Bödele, Lawinenausrüstung nicht vergessen.", 7, 0, 8)
+GLUEHWEIN = ("FOOD", "Glühwein am Christkindlemarkt 🎄", "Treffpunkt beim Kornmarkt, danach noch auf ein Raclettebrot.", 18, 30, None)
+FONDUE = ("FOOD", "Fondue-Abend 🧀", "Käsefondue bei mir, bringt Brot und gute Laune mit.", 19, 0, None)
+WANDERUNG = ("OUTDOOR", "Wanderung auf die Hohe Kugel 🥾", "Gemütlich rauf, oben gibts Kässpätzle.", 9, 0, 10)
+RADTOUR = ("SPORT", "Radtour an den Bodensee 🚴", "Wir fahren gemeinsam los, Pause an der Harder Bucht.", 10, 0, 8)
+GRILLEN = ("FOOD", "Grillabend am See 🔥", "Bring was zum Grillen mit, Getränke sind organisiert!", 18, 30, None)
+BADEN = ("OUTDOOR", "Baden im Bodensee 🏊", "Treffpunkt beim Strand, Sonnencreme nicht vergessen.", 14, 0, None)
+KINO = ("MOVIE", "Kinoabend 🍿", "Wir schauen den neuen Film, Popcorn geht auf mich.", 20, 0, None)
+SPIELEABEND = ("GAMING", "Spieleabend 🎲", "Catan, Uno und Pizza.", 19, 30, None)
+
+def seasonal_events(month):
+    if month == 12:
+        return [GLUEHWEIN, SKITOUR, SPIELEABEND]
+    if month in (1, 2):
+        return [FONDUE, SKITOUR, SPIELEABEND]
+    if month in (3, 4, 5):
+        return [WANDERUNG, RADTOUR, SPIELEABEND]
+    if month in (6, 7, 8):
+        return [GRILLEN, BADEN, SPIELEABEND]
+    if month == 11:
+        return [FONDUE, KINO, SPIELEABEND]
+    return [WANDERUNG, KINO, SPIELEABEND]  # September, October
+
+# Who is invited and who comes stays the same; day 2, 3 and 5 from today
+SLOTS = [
+    dict(days=2, invited=everyone, accepted=[ME, SOPHIE, MIA, PAUL, LENA, VANESSA, NOAH], creator=SOPHIE),
+    dict(days=3, invited=[JONAS, SOPHIE, MAX, EMMA], accepted=[ME, JONAS, SOPHIE, MAX], creator=JONAS),
+    dict(days=5, invited=everyone, accepted=[ME, MIA, PAUL, EMMA], creator=MIA),
+]
+for i, ((etype, title, desc, hour, minute, max_users), slot) in enumerate(zip(seasonal_events(datetime.date.today().month), SLOTS), start=1):
+    event(f"de00000000000000000e000{i}", etype, title, desc, at(slot["days"], hour, minute), slot["invited"],
+          slot["accepted"], slot["creator"], max_users=max_users)
 
 db.commit()
 print("users", c.execute("select count(*) from users").fetchone()[0],

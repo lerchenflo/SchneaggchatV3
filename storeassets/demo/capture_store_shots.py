@@ -10,7 +10,7 @@ What it does, in order (see HOW-TO-RECREATE.md for the background):
   3. Runs apply_demo_data.sh (fictional friends, groups, poll, events) and pins vanessa's chat.
   4. Captures the 7 screens into storeassets/shots/ with a clean status bar (09:41, full battery).
   5. Optional: --web-out writes 600 px WebP copies for the website (server repo
-     src/main/resources/static/web_images/screens), --restore switches back to the test server.
+     src/main/resources/static/web_images/screens), --restore switches back to the test server and turns demo mode off.
 
 Needs: a running emulator (developed on the Pixel 10 Pro AVD, 1280x2856) with the debug build
 installed and the test account "luca" logged in; adb, sqlite3, python3 and ImageMagick 7 (magick),
@@ -34,7 +34,9 @@ DEAD_URL = "http://10.0.2.2:1"
 OWN_POSITION = ("9.7435", "47.4118", "430")  # lon, lat, altitude: luca stands in Dornbirn
 # Map (Pixel 10 Pro AVD): tap the friends cluster in the default view, tap the cluster again, then
 # double-tap to zoom one more level - that is the view with two clusters and single faces around.
-MAP_TAPS = [("tap", 540, 1265), ("tap", 630, 1335), ("double", 640, 1290)]
+# The map opens zoomed far out with all friends in one cluster: two taps on it zoom in, the double tap
+# gives the final framing (clusters plus single faces). Measured 2026-11-18 on the Pixel 10 Pro AVD.
+MAP_TAPS = [("tap", 543, 1277), ("tap", 543, 1277), ("double", 610, 1300)]
 POLL_TITLE = "Wann starten wir"
 POLL_Y = {"02-chat": 475, "05-umfrage": 980}  # where the poll title sits in each capture
 
@@ -100,17 +102,23 @@ def wait_for(text, timeout=15, **kw):
     sys.exit(f"timed out waiting for '{text}' on screen")
 
 
-def tap(x, y, wait=1.0):
+# Fixed pause after a tap; screens are awaited by their content (wait_for) wherever possible
+STEP = 0.5
+MAP_LOAD = 3.0    # first map start: a tap before the map is ready does nothing
+MAP_SETTLE = 1.5  # map camera animation and tiles
+
+
+def tap(x, y, wait=STEP):
     sh(f"input tap {x} {y}")
     pause(wait)
 
 
-def tap_text(text, wait=1.5, **kw):
+def tap_text(text, wait=STEP, **kw):
     node = wait_for(text, **kw)
     tap(node["cx"], node["cy"], wait)
 
 
-def double_tap(x, y, wait=3.0):
+def double_tap(x, y, wait=MAP_SETTLE):
     sh(f"input tap {x} {y} & sleep 0.08; input tap {x} {y}")
     pause(wait)
 
@@ -119,7 +127,7 @@ def swipe(x0, y0, x1, y1, ms):
     sh(f"input swipe {x0} {y0} {x1} {y1} {ms}")
 
 
-def back(wait=1.2):
+def back(wait=STEP):
     sh("input keyevent 4")
     pause(wait)
 
@@ -131,7 +139,7 @@ def screen_height():
 
 def nav(tab):
     """Tap a bottom navigation tab (the tab row is the bottom ~8% of the screen)."""
-    tap_text(tab, exact=True, below=int(screen_height() * 0.9), wait=2.5)
+    tap_text(tab, exact=True, below=int(screen_height() * 0.9))
 
 
 # ─── Steps ───────────────────────────────────────────────────────────────────
@@ -151,34 +159,57 @@ def dismiss_popups():
         back()
 
 
-def developer_settings():
+def open_developer_settings():
+    """One tap on the version text at the bottom of the settings opens the developer settings once they
+    are unlocked; the "Entwickler" entry is hidden in demo mode. Up to 8 taps also unlock them."""
     nav("Einstellungen")
-    tap_text("Entwickler", exact=True, wait=2)
+    for _ in range(8):
+        hits = find("Version:")
+        if hits:
+            break
+        swipe(640, 2200, 640, 700, 300)
+        pause(STEP)
+    else:
+        sys.exit("version text not found at the bottom of the settings")
+    for _ in range(8):
+        tap(hits[0]["cx"], hits[0]["cy"], 0.3)
+        if find("Demo-Modus", exact=True):
+            return
+    wait_for("Demo-Modus", exact=True)
 
+
+def set_demo_mode(on):
     tree = nodes()
     row = find("Demo-Modus", exact=True, tree=tree)[0]
     switch = min((n for n in tree if n["checkable"]), key=lambda n: abs(n["cy"] - row["cy"]))
-    if not switch["checked"]:
+    if switch["checked"] != on:
         tap(switch["cx"], switch["cy"])
 
-    tap_text("Server URL ändern", wait=1.5)
+
+def developer_settings():
+    open_developer_settings()
+    set_demo_mode(True)
+
+    tap_text("Server URL ändern")
     field = wait_for("http")
     if field["text"] != DEAD_URL:
         tap(field["cx"], field["cy"], 0.6)
         sh("input keycombination 113 29")  # Ctrl+A
         sh("input keyevent 67")            # Del
         sh(f"input text '{DEAD_URL}'")
-        pause(0.6)
+        pause(STEP)
     tap_text("Speichern", exact=True)
     back()
 
 
 def restore_server():
-    nav("Einstellungen")
-    tap_text("Entwickler", exact=True, wait=2)
-    tap_text("Server URL ändern", wait=1.5)
+    """Back to normal use: test server and demo mode off."""
+    open_developer_settings()
+    set_demo_mode(False)
+    tap_text("Server URL ändern")
     tap_text("Testserver verwenden")
-    tap_text("Speichern", exact=True)
+    if find("Speichern", exact=True):  # newer builds save and close the dialog with the button above
+        tap_text("Speichern", exact=True)
     back()
 
 
@@ -186,7 +217,7 @@ def seed_demo_data():
     env = dict(os.environ, ONLINE_OK="1", PATH=os.path.dirname(ADB) + os.pathsep + os.environ["PATH"])
     subprocess.run(["bash", os.path.join(HERE, "apply_demo_data.sh")], env=env, check=True,
                    stdout=subprocess.DEVNULL)
-    pause(4)
+    pause(1)
     wait_for("Chats", exact=True, timeout=30)
     dismiss_popups()
 
@@ -197,12 +228,12 @@ def pin_vanessa():
         if hits:
             break
         swipe(640, 2100, 640, 900, 500)
-        pause(1)
+        pause(STEP)
     else:
         sys.exit("vanessa's chat not found")
     row = hits[0]
     swipe(row["cx"] + 300, row["cy"], row["cx"] + 300, row["cy"], 900)  # long press
-    pause(1.2)
+    pause(STEP)
     if find("Chat anpinnen"):
         tap_text("Chat anpinnen")
     else:
@@ -226,7 +257,7 @@ def scroll_so(text, target_y):
         hits = find(text)
         if not hits:  # still above the visible part: reveal older content
             swipe(640, 1200, 640, 1700, 1800)
-            pause(1)
+            pause(STEP)
             continue
         node = hits[0]
         delta = node["cy"] - target_y
@@ -246,7 +277,7 @@ def drag(distance):
     start = 1500
     ms = min(max(abs(distance) * 5, 500), 1500)
     swipe(640, start, 640, start - distance, ms)
-    pause(1)
+    pause(STEP)
 
 
 def demo_status_bar(on):
@@ -260,18 +291,36 @@ def demo_status_bar(on):
         demo("network", "-e", "wifi", "show", "-e", "level", "4")
         demo("network", "-e", "mobile", "show", "-e", "datatype", "none", "-e", "level", "4")
         demo("notifications", "-e", "visible", "false")
-        pause(1)
+        pause(STEP)
     else:
         demo("exit")
 
 
 def capture(name):
-    pause(1)
+    pause(STEP)
     png = subprocess.run([ADB, "exec-out", "screencap", "-p"], capture_output=True).stdout
     path = os.path.join(SHOTS, f"{name}.png")
     with open(path, "wb") as f:
         f.write(png)
     print("captured", path)
+
+
+def tap_friend_chip(name):
+    """Tap a friend's chip in the row below the map; scrolls the row until the chip is fully visible."""
+    row_y = int(screen_height() * 0.75)
+    for _ in range(6):
+        hits = find(name, exact=True, below=row_y)
+        full = [n for n in hits if n["bounds"][0] > 20 and n["bounds"][2] < 1260 and n["bounds"][2] - n["bounds"][0] > 60]
+        if full:
+            tap(full[0]["cx"], full[0]["cy"], MAP_SETTLE)
+            return
+        if hits:  # cut off at an edge: drag it towards the middle (never start at the edge: back gesture)
+            x = min(max(hits[0]["cx"], 150), 1130)
+            swipe(x, hits[0]["cy"], x + (640 - hits[0]["cx"]), hits[0]["cy"], 600)
+        else:
+            swipe(1000, 2412, 400, 2412, 400)
+        pause(STEP)
+    sys.exit(f"chip '{name}' not found below the map")
 
 
 def take_shots():
@@ -281,7 +330,8 @@ def take_shots():
     scroll_to_top()
     capture("01-chats")
 
-    tap_text("Skitour Bödele", wait=2.5)
+    tap_text("Skitour Bödele")
+    wait_for("Tee und Kuchen")  # newest message in the group: the chat is loaded
     scroll_so(POLL_TITLE, POLL_Y["02-chat"])
     capture("02-chat")
     scroll_so(POLL_TITLE, POLL_Y["05-umfrage"])
@@ -289,29 +339,30 @@ def take_shots():
     back()
 
     nav("Events")
+    wait_for("Spieleabend")  # the one demo event of every season
     capture("04-events")
 
     # The app was just restarted by the seeding, so the map opens in its default view
     nav("Karte")
-    pause(2)
+    pause(MAP_LOAD)
     for kind, x, y in MAP_TAPS:
         if kind == "tap":
-            tap(x, y, 3)
+            tap(x, y, MAP_SETTLE)
         else:
-            double_tap(x, y, 3.5)
+            double_tap(x, y)
     capture("03-karte")
 
-    # Compass towards Mia: her chip centres the map on her, her marker opens the sheet
-    tap_text("Mia", exact=True, below=int(screen_height() * 0.75), wait=2.5)
-    tap(633, 1288, 2)
-    tap_text("Kompass", exact=True, wait=3)
+    # Compass towards Mia: her chip centres the map on her, her marker (then in the middle) opens the sheet
+    tap_friend_chip("Mia")
+    tap(640, 1290)
+    tap_text("Kompass", exact=True, wait=MAP_SETTLE)
     capture("06-kompass")
     back()  # once only: a second back on the map tab would leave the app
 
     nav("Spiele")
-    tap_text("Ein tägliches C-Programmierrätsel", wait=2.5)
+    tap_text("Ein tägliches C-Programmierrätsel", wait=1.0)
     if find("Tippe irgendwo"):
-        tap(640, int(screen_height() * 0.85), 1.5)
+        tap(640, int(screen_height() * 0.85))
     capture("07-spiel")
     back()
 

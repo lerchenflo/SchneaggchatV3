@@ -260,7 +260,6 @@
 
     <string name="steps_until_developer">in %1$s Schritt bisch du Entwickler</string>
     <string name="you_are_now_developer">Du bisch Entwickler</string>
-    <string name="you_are_already_developer">Du bisch schon Entwickler</string>
     <string name="developer_setting_info">Ufpassa mit da Entwickleroptiona. Sei da bewusst wasd machsch.</string>
 
     <string name="misc_settings">Alles andre</string>

@@ -158,6 +158,10 @@ class ChatSelectorViewModel(
     val serverUrl: StateFlow<String> = settingsRepository.getServerUrlFlow()
         .stateIn(viewModelScope, SharingStarted.Eagerly, BASE_SERVER_URL)
 
+    /** Demo mode (store screenshots) points the app at a server that never answers, so the sync indicator stays hidden. */
+    val demoMode: StateFlow<Boolean> = settingsRepository.getDemoModeFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     init {
         checkNotificationPermission()
 
