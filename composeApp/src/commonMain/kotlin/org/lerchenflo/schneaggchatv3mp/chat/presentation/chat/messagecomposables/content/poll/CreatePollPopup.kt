@@ -185,7 +185,8 @@ class PollDraft(
     var allowedCustomAnswerCount by mutableStateOf(1)
 
     var allowMultipleAnswers by mutableStateOf(false)
-    var allowedAnswerCount by mutableStateOf(1)
+    //10 is the slider position for unlimited: switching "multiple answers" on starts there
+    var allowedAnswerCount by mutableStateOf(10)
 
     var limitVotersPerEntry by mutableStateOf(false)
 
@@ -316,7 +317,8 @@ internal fun PollMessage.toDraft(): PollDraft {
         allowedCustomAnswerCount = if (poll.customAnswersEnabled) poll.maxAllowedCustomAnswers ?: 10 else 1
 
         allowMultipleAnswers = poll.showCheckboxes && poll.maxAnswers != 1
-        allowedAnswerCount = poll.maxAnswers ?: 10
+        //A single-answer poll (maxAnswers 1) also starts at unlimited when "multiple answers" is switched on
+        allowedAnswerCount = poll.maxAnswers?.takeIf { it > 1 } ?: 10
 
         limitVotersPerEntry = poll.voteOptions.any { it.maxVoters != null }
         showCheckboxes = poll.showCheckboxes
