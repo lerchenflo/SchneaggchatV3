@@ -188,7 +188,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067200000",
                 myMessage = false,
                 readByMe = true,
-                senderAsString = "Alice",
                 readers = listOf(
                     MessageReader(
                         messageId = "msg1",
@@ -227,7 +226,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067260000",
                 myMessage = false,
                 readByMe = true,
-                senderAsString = "Bob",
                 readers = listOf(
                     MessageReader(
                         messageId = "msg2",
@@ -267,7 +265,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067320000",
                 myMessage = false,
                 readByMe = true,
-                senderAsString = "Charlie",
                 readers = listOf(
                     MessageReader(
                         messageId = "msg3",
@@ -311,7 +308,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067380000",
                 myMessage = false,
                 readByMe = true,
-                senderAsString = "David",
                 readers = listOf(
                     MessageReader(
                         messageId = "msg4",
@@ -355,7 +351,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067440000",
                 myMessage = true,
                 readByMe = true,
-                senderAsString = "Me",
                 readers = emptyList(),
                 reactions = listOf(
                     Reaction(userId = "user2", content = "👍"),
@@ -389,7 +384,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067500000",
                 myMessage = false,
                 readByMe = true,
-                senderAsString = "Eve",
                 readers = listOf(
                     MessageReader(
                         messageId = "msg6",

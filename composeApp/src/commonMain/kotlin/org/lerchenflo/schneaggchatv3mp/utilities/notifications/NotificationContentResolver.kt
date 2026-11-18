@@ -78,7 +78,6 @@ private suspend fun resolveMessage(
         //(which is the recipient user, not the group) - see Message.toNotificationContent().
         receiverId = if (decoded.groupMessage) decoded.groupId else decoded.receiverId,
         groupMessage = decoded.groupMessage,
-        senderAsString = decoded.senderName,
         myMessage = false,
         readByMe = false,
         readers = emptyList(),
@@ -86,6 +85,7 @@ private suspend fun resolveMessage(
         sendDate = decoded.sendDate.takeIf { it > 0 }?.toString() ?: "",
     )
     return msg.toNotificationContent(
+        senderName = decoded.senderName,
         fallbackGroupName = decoded.groupName.ifEmpty { null }
     )
 }

@@ -55,9 +55,9 @@ object NotificationManager {
         notifier().showLocalNotification(content)
     }
 
-    fun showNotification(message: Message, fallbackGroupName: String? = null) {
+    fun showNotification(message: Message, senderName: String, fallbackGroupName: String? = null) {
         runBlocking {
-            notifier().showLocalNotification(message.toNotificationContent(fallbackGroupName))
+            notifier().showLocalNotification(message.toNotificationContent(senderName, fallbackGroupName))
         }
     }
 
