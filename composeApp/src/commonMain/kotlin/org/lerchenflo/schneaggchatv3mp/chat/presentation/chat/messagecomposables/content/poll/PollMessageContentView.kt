@@ -93,7 +93,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboAnnotationSource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
-import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboPlainText
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToDuration
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.poll
@@ -303,7 +303,7 @@ private fun PollLevelView(
                 Text(
                     text = stringResource(
                         Res.string.poll_subpoll_pick_to_answer,
-                        resolveComboAnnotationsToPlainText(lockedByOptionText, annotationSources)
+                        rememberComboPlainText(lockedByOptionText, annotationSources)
                     ),
                     style = MaterialTheme.typography.labelSmall,
                     color = contentColor.copy(alpha = 0.7f)
@@ -420,7 +420,7 @@ private fun PollLevelView(
                     Text(
                         stringResource(
                             Res.string.poll_subpoll_clear_confirm_text,
-                            resolveComboAnnotationsToPlainText(vote.subPollTitle, annotationSources)
+                            rememberComboPlainText(vote.subPollTitle, annotationSources)
                         )
                     )
                 },
@@ -592,7 +592,7 @@ private fun SubPollSection(
                 tint = accentColor
             )
             Text(
-                text = resolveComboAnnotationsToPlainText(subPoll.title, annotationSources),
+                text = rememberComboPlainText(subPoll.title, annotationSources),
                 style = MaterialTheme.typography.labelLarge,
                 color = contentColor,
                 maxLines = 1,
@@ -658,7 +658,7 @@ fun PollVoterOverviewDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = resolveComboAnnotationsToPlainText(poll.title, annotationSources),
+                text = rememberComboPlainText(poll.title, annotationSources),
                 style = MaterialTheme.typography.titleLarge
             )
         },
@@ -701,7 +701,7 @@ private fun PollVoterOverviewEntries(
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text = resolveComboAnnotationsToPlainText(option.text, annotationSources),
+                text = rememberComboPlainText(option.text, annotationSources),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -752,7 +752,7 @@ private fun PollVoterOverviewEntries(
                             tint = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = resolveComboAnnotationsToPlainText(subPoll.title, annotationSources),
+                            text = rememberComboPlainText(subPoll.title, annotationSources),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.secondary
                         )

@@ -47,6 +47,8 @@ data class ComboAnnotationSource(
     val onClick: (id: String) -> Unit = {},
     /** Whether an unknown id is still clickable (users: the popup can show an unknown user). */
     val clickableWhenUnresolved: Boolean = false,
+    /** Called once per shown text with the ids this source could not resolve, e.g. to look them up. */
+    val onUnresolved: (ids: Set<String>) -> Unit = {},
 )
 
 /** A resolved (or placeholder) annotation match inside a raw text. */
@@ -88,6 +90,16 @@ internal fun findComboAnnotations(
             )
         }
     }.sortedBy { it.range.first }
+
+/** Per source: the ids in [text] it has no name for (empty sources left out). */
+internal fun findUnresolvedAnnotationIds(
+    text: String,
+    sources: List<ComboAnnotationSource>
+): Map<ComboAnnotationSource, Set<String>> =
+    findComboAnnotations(text, sources)
+        .filter { !it.resolved }
+        .groupBy({ it.source }, { it.id })
+        .mapValues { (_, ids) -> ids.toSet() }
 
 /** Replaces all annotations (resolved or not) with their display name (plain text, e.g. for previews). */
 fun resolveComboAnnotationsToPlainText(

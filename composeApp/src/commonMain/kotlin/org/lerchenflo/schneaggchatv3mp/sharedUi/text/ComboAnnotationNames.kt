@@ -23,7 +23,7 @@ private const val STOP_TIMEOUT_MILLIS = 5_000L
  */
 class ComboAnnotationNames(
     mapRepository: MapRepository,
-    userIdentityRepository: UserIdentityRepository,
+    private val userIdentityRepository: UserIdentityRepository,
     eventRepository: EventRepository,
     applicationScope: ApplicationScope,
 ) {
@@ -35,6 +35,9 @@ class ComboAnnotationNames(
     val userNames: StateFlow<Map<String, UserIdentityName>> = userIdentityRepository.observeKnownNames()
         .distinctUntilChanged()
         .stateIn(applicationScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), emptyMap())
+
+    /** Mentioned users this device has no name for: looked up in the background, then [userNames] has them. */
+    fun lookUpUsers(userIds: Set<String>) = userIdentityRepository.prefetch(userIds)
 
     val eventNames: StateFlow<Map<String, String>> = eventRepository.getAllEventsFlow()
         .map { events -> events.associate { it.id to it.title } }

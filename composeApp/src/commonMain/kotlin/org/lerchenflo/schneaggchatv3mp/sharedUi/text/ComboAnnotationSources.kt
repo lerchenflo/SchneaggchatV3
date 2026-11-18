@@ -136,6 +136,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                     }
                 },
                 clickableWhenUnresolved = true,
+                onUnresolved = annotationNames::lookUpUsers,
             ),
             ComboAnnotationSource(
                 type = ComboAnnotationTypes.EVENT,

@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,6 +56,8 @@ fun ComboText(
     overflow: TextOverflow = TextOverflow.Clip,
     annotationSources: List<ComboAnnotationSource> = rememberComboAnnotationSources()
 ) {
+    LookUpUnresolvedAnnotations(text, annotationSources)
+
     if (useMD) {
         // Rewrite annotations to markdown links with a per-type fake scheme and intercept their clicks
         val markdownContent = remember(text, annotationSources) {
@@ -184,5 +187,28 @@ fun ComboText(
             overflow = overflow,
             modifier = modifier
         )
+    }
+}
+
+/**
+ * [text] with every annotation replaced by its name, as plain text (reply previews, poll titles):
+ * [resolveComboAnnotationsToPlainText] plus the lookup of unknown ids that [ComboText] does.
+ */
+@Composable
+fun rememberComboPlainText(text: String, annotationSources: List<ComboAnnotationSource>): String {
+    LookUpUnresolvedAnnotations(text, annotationSources)
+    return remember(text, annotationSources) { resolveComboAnnotationsToPlainText(text, annotationSources) }
+}
+
+/**
+ * Hands the ids [text] shows without a name to their source (users: a background lookup), so the
+ * placeholder ("Unknown user") is replaced once the name is known. Runs again only when the text or
+ * the names change, so a failed lookup is not repeated on every recomposition.
+ */
+@Composable
+private fun LookUpUnresolvedAnnotations(text: String, annotationSources: List<ComboAnnotationSource>) {
+    val unresolved = remember(text, annotationSources) { findUnresolvedAnnotationIds(text, annotationSources) }
+    LaunchedEffect(unresolved) {
+        unresolved.forEach { (source, ids) -> source.onUnresolved(ids) }
     }
 }

@@ -24,7 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
-import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboPlainText
 import schneaggchatv3mp.composeapp.generated.resources.you_sender
 
 /**
@@ -79,7 +79,7 @@ fun RepliedMessagePreview(
                 }
 
                 Text(
-                    text = resolveComboAnnotationsToPlainText(message.content, annotationSources),
+                    text = rememberComboPlainText(message.content, annotationSources),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
