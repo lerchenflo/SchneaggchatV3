@@ -555,7 +555,7 @@ class OfflineFirstMessageRepository(
                     is DataResult.Success<MessageResponse> -> {
                         withContext(ioDispatcher) {
 
-                            println("Messageid returned from server: ${serverrequest.data.messageId}")
+                            //println("Messageid returned from server: ${serverrequest.data.messageId}")
 
                             val existing =
                                 database.messageDao().getMessageEntityById(serverrequest.data.messageId)
