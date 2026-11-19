@@ -8,6 +8,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartTurn
 
 // 2: the turn counters were dropped, they are derived from the stored darts
 // 3: allThrows now records busted darts too, so an undo replays the leg exactly
+// doubleIn and hasOpened were added later with defaults, so version 3 saves still load
 const val DART_COUNTER_SNAPSHOT_VERSION = 3
 
 @Serializable
@@ -16,6 +17,8 @@ data class DartPlayerSnapshot(
     val score: Int,
     val totalDartsThrown: Int,
     val isFinished: Boolean,
+    // Saves from before double in only knew single in, where every player has opened
+    val hasOpened: Boolean = true,
     val userId: String? = null,
 )
 
@@ -42,6 +45,7 @@ data class DartTurnSnapshot(
  */
 @Serializable
 data class DartCounterSnapshot(
+    val doubleIn: Boolean = false,
     val doubleOut: Boolean,
     val countdown: Int,
     val players: List<DartPlayerSnapshot>,
@@ -67,6 +71,7 @@ private fun DartThrowSnapshot.toDartThrow() = DartThrow(
 )
 
 fun DartCounterSnapshotData.toSnapshot() = DartCounterSnapshot(
+    doubleIn = doubleIn,
     doubleOut = doubleOut,
     countdown = countdown,
     players = players.map {
@@ -75,6 +80,7 @@ fun DartCounterSnapshotData.toSnapshot() = DartCounterSnapshot(
             score = it.score,
             totalDartsThrown = it.totalDartsThrown,
             isFinished = it.isFinished,
+            hasOpened = it.hasOpened,
             userId = it.userId,
         )
     },
@@ -93,6 +99,7 @@ fun DartCounterSnapshotData.toSnapshot() = DartCounterSnapshot(
 )
 
 fun DartCounterSnapshot.toSnapshotData() = DartCounterSnapshotData(
+    doubleIn = doubleIn,
     doubleOut = doubleOut,
     countdown = countdown,
     players = players.map {
@@ -101,6 +108,7 @@ fun DartCounterSnapshot.toSnapshotData() = DartCounterSnapshotData(
             score = it.score,
             totalDartsThrown = it.totalDartsThrown,
             isFinished = it.isFinished,
+            hasOpened = it.hasOpened,
             userId = it.userId,
         )
     },

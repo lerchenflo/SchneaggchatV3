@@ -94,7 +94,7 @@ private const val CHAT_SHORTCUT_PREFIX = "chat_"
 //All chat notifications (messages and reactions) are bundled under one summary, like WhatsApp does
 private const val CHAT_GROUP_KEY = "schneaggchat_chats"
 
-//Id of that summary - next to the fixed ids 1-5 and 7 of NotificationManager.NotiIdType. Chat
+//Id of that summary - next to the fixed ids 2, 3 and 7 of NotificationManager.NotiIdType. Chat
 //notification ids are chat id hashes, so a collision is practically impossible.
 private const val CHAT_SUMMARY_ID = 6
 
@@ -735,13 +735,12 @@ class AndroidNotifier(private val context: Context, private val permissionManage
     /**
      * The user's stored profile picture as a small round bitmap, or null when there is none (no
      * picture downloaded yet, file missing) or it can't be read - the caller then uses the default
-     * icon. Looks at the path in the user's row first, then at the fixed per-user path, where a
-     * picture downloaded for a not yet synced user lands. Failures are logged; this never throws.
+     * icon. Only users stored on this device have a picture: a user without a row (not a friend, not
+     * synced yet) always gets the default icon (user, 2026-11-18). Failures are logged; this never throws.
      */
     private fun userAvatar(userId: String): Bitmap? = avatarBitmap("user:$userId") {
         listOfNotNull(
             KoinPlatform.getKoin().get<UserLocalDataSource>().getUserById(userId)?.profilePictureUrl,
-            KoinPlatform.getKoin().get<PictureManager>().getProfilePicFilePath(userId, gruppe = false),
         )
     }
 

@@ -185,7 +185,6 @@ kotlin {
 
             //DateTime
             implementation(libs.kotlinx.datetime)
-            implementation(libs.datetime.wheel.picker)
 
             //Resizeable screens
             implementation(libs.material3.adaptive)
@@ -340,7 +339,7 @@ configurations.matching { it.isCanBeResolved && !it.name.startsWith("composeHotR
 
 
 //Add version info to desktop builds
-val desktopVersion = "3.0.19"
+val desktopVersion = "3.0.20"
 
 //A beta build reports its tag, e.g. 3.0.19_beta, so the update check can offer the final 3.0.19.
 //packageVersion stays numeric: installers do not accept a suffix.
@@ -370,11 +369,11 @@ compose.desktop {
 
                 shortcut = true
                 menuGroup = "Chat"
-                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_v3_transparent.png"))
+                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_transparent.png"))
             }
 
             windows {
-                iconFile.set(project.file("\\src\\commonMain\\composeResources\\files\\schneaggchat_logo_v3_transparent.ico"))
+                iconFile.set(project.file("\\src\\commonMain\\composeResources\\files\\schneaggchat_logo_transparent.ico"))
 
                 perUserInstall = true
 
@@ -392,7 +391,7 @@ compose.desktop {
                 // Otherwise, macOS might try to generate one from the spaced packageName and fail.
                 bundleID = "org.lerchenflo.schneaggchatv3"
 
-                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_v3.icns"))
+                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo.icns"))
 
                 infoPlist {
                     // Without a usage text macOS blocks the microphone (desktop voice messages)

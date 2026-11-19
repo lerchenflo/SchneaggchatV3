@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryChanges
@@ -9,54 +11,6 @@ import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTag
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.NewFeedbackEntry
-
-/** Kind of entries a list shows. Features are split into open requests and implemented ones. */
-enum class FeedbackSection(
-    /** The entry type a new entry created from this section gets. */
-    val createType: FeedbackType,
-    /** Statuses the status filter offers in this section. Empty: the section has only one status. */
-    val filterStatuses: List<FeedbackStatus>,
-) {
-    REQUESTS(FeedbackType.FEATURE, listOf(FeedbackStatus.REQUESTED, FeedbackStatus.PLANNED)),
-    BUGS(FeedbackType.BUG, FeedbackStatus.forType(FeedbackType.BUG)),
-    IMPLEMENTED(FeedbackType.FEATURE, emptyList());
-
-    fun contains(entry: FeedbackEntry): Boolean = when (this) {
-        REQUESTS -> entry.type == FeedbackType.FEATURE && entry.status != FeedbackStatus.IMPLEMENTED
-        BUGS -> entry.type == FeedbackType.BUG
-        IMPLEMENTED -> entry.type == FeedbackType.FEATURE && entry.status == FeedbackStatus.IMPLEMENTED
-    }
-
-    companion object {
-        /** The section a new or changed entry shows up in. */
-        fun of(entry: FeedbackEntry): FeedbackSection = entries.first { it.contains(entry) }
-    }
-}
-
-/**
- * The four lists of the board. Entries tagged GAMES only show up in the Games tab, where chips
- * pick the section; every other tab is one fixed section without the GAMES entries.
- */
-enum class FeedbackTab(
-    /** The section this tab always shows. Null for GAMES: its chips pick the section. */
-    val section: FeedbackSection?,
-) {
-    REQUESTS(FeedbackSection.REQUESTS),
-    BUGS(FeedbackSection.BUGS),
-    IMPLEMENTED(FeedbackSection.IMPLEMENTED),
-    GAMES(null);
-
-    fun contains(entry: FeedbackEntry): Boolean =
-        if (this == GAMES) entry.isGamesEntry else !entry.isGamesEntry && section?.contains(entry) == true
-
-    companion object {
-        /** The tab a new or changed entry shows up in. */
-        fun of(entry: FeedbackEntry): FeedbackTab = entries.first { it.contains(entry) }
-    }
-}
-
-/** Games, game wishes and game bugs: the entries of the Games tab. */
-internal val FeedbackEntry.isGamesEntry: Boolean get() = FeedbackTag.GAMES in tags
 
 enum class FeedbackSort { TOP, NEW, UPDATED, DISCUSSED }
 
@@ -86,11 +40,13 @@ data class FeedbackState(
     /** Reference time for the two day pin of new own entries, taken when the board opened. */
     val nowMillis: Long = 0L,
     /**
-     * Server time the board was last opened at before this visit. The New / Updated labels compare
-     * against it, so they stay for the whole visit although opening the board cleared the badge.
-     * Null until it is read.
+     * Server time each tab was last opened at before this visit. The New / Updated labels of an entry
+     * compare against its tab's value, so they stay for the whole visit although opening the tab
+     * cleared its badge. Null until it is read.
      */
-    val lastSeenBeforeVisit: Long? = null,
+    val tabLastSeenBeforeVisit: Map<FeedbackTab, Long>? = null,
+    /** Per tab: entries new or updated since that tab was last opened; shown as a badge on the tab. */
+    val tabBadges: Map<FeedbackTab, Int> = emptyMap(),
 
     val detail: FeedbackDetailState? = null,
     /** Names of the entry creators and the open entry's comment authors, by user id. */
@@ -122,6 +78,7 @@ data class FeedbackDetailState(
 
 sealed interface FeedbackAction {
     data object OnBackClick : FeedbackAction
+    data object OnFeatureQuizClick : FeedbackAction
     data object OnRetryClick : FeedbackAction
     data class OnTabSelected(val tab: FeedbackTab) : FeedbackAction
     data class OnGamesSectionSelected(val section: FeedbackSection) : FeedbackAction

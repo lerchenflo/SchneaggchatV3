@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><resources>
-    <string name="app_name">SchneaggchatV3</string>
 
     
     <string name="profile_picture">Profilbild</string>
@@ -60,8 +59,9 @@
 
     <string name="email">E-Mail</string>
     <string name="invalid_email">Du musch a richtige E-Mail agia</string>
-    <string name="email_provider_warning">Verwend ned so a Blödsinn E-Mail sunsch wird din Account ghackt und du kannsch din Passwort num zrucksetza.</string>    <string name="sign_up">I hob no kuan Account</string>
-    <string name="loginsubtitle">Die beste App sowieso, mit lokala Sproch und loft überall</string>
+    <string name="email_provider_warning">Dia Adress isch markiert worra, weil se ned vo nam gängiga E-Mail-Anbieter isch. Verwend a E-Mail-Adress, uf die nur du Zugriff hosch (z. B. Gmail, Outlook, iCloud, GMX). Wer dine E-Mails leasa kann, kann din Passwort zrucksetza und din Account überneama. Temporäre oda Wegwerf-Adressa (wia 10-Minuta-Mail) sind drum riskant.</string>
+    <string name="sign_up">I hob no kuan Account</string>
+    <string name="loginsubtitle">A alternative Chat-App mit vielna Features – gratis, ohne Werbung, made in Vorarlberg.</string>
     <string name="create_account">Account erstella</string>
     <string name="create_account_subtitle">beitreata</string>
     <string name="acc_not_exist">Dean Account gits ned</string>
@@ -89,8 +89,6 @@
     <string name="password_needs_to_be_the_same">Du musch zwoamol s gliche igia</string>
     <string name="email_exists">Es git scho an Account mit derra E-Mail</string>
     <string name="username_exists">Es git scho an Account mit deam Nama</string>
-    <string name="username_too_long">Din Nama isch z lang</string>
-    <string name="username_too_short">Din Nama isch z kurz</string>
 
     <string name="requirement_length">8 oder meh Zeicha</string>
     <string name="requirement_digit">mindestens ua Zahl</string>
@@ -262,7 +260,6 @@
 
     <string name="steps_until_developer">in %1$s Schritt bisch du Entwickler</string>
     <string name="you_are_now_developer">Du bisch Entwickler</string>
-    <string name="you_are_already_developer">Du bisch schon Entwickler</string>
     <string name="developer_setting_info">Ufpassa mit da Entwickleroptiona. Sei da bewusst wasd machsch.</string>
 
     <string name="misc_settings">Alles andre</string>
@@ -387,12 +384,14 @@
     <string name="event_ended">Beendet</string>
     <string name="event_title_label">Titel</string>
     <string name="error_event_title_must_not_be_empty">Der Event - Titel darf ned leer si</string>
+    <string name="error_event_title_too_long">Da Event-Titel darf höchstens %1$d Zeicha ho</string>
     <string name="event_description_label">Beschreibung</string>
     <string name="event_starts_label">Beginnt:</string>
     <string name="event_starts_with_date">Beginnt: %1$s</string>
     <string name="event_has_end_time">Hot Endzit</string>
     <string name="event_closes_with_date">Endet: %1$s</string>
     <string name="event_group_delete_label">Gruppenchat löscha</string>
+    <string name="event_group_marker">Event-Gruppe</string>
     <string name="group_delete_delay_never">Nie</string>
     <string name="group_delete_delay_one_hour">1 Stund nocham Event</string>
     <string name="group_delete_delay_one_day">1 Tag nocham Event</string>
@@ -1072,7 +1071,6 @@
 Mealds, egal wie klenn.</string>
     <string name="contribute_feature_title">Fehlt dir a Feature?</string>
     <string name="contribute_feature_hint">Säg was du dir wünschas, viele Features hond als Wunsch agfanga oder sind us andra Apps kopiert worra.</string>
-    <string name="contribute_open_form">Fehler mealda oder Feature vorschlaga</string>
     <string name="contribute_donate_title">Mit Geald unterstütza</string>
     <string name="contribute_donate_text">Dia App isch gratis, hot kua Werbung und verkoft dine Daten ned. Trotzdem kostet se echtes Geald:</string>
     <string name="contribute_donate_mac">An Mac: Dia iOS-Version kann nur uf nam Mac bout und veröffentlicht werra.</string>
@@ -1375,7 +1373,6 @@ Mealds, egal wie klenn.</string>
 
 
     <string name="ttt_initscreen">Schouama üs a paar Features a!</string>
-    <string name="ttt_initscreen_description">Wie immer: Wenn sich eapas komisch afühlt / ned funktioniert, du a neues Feature willsch oda irgendwas istella magsch, kannsch des gern in da Einstellunga afroga.</string>
 
     <string name="ttt_start_chatting">Neua Chat starta</string>
     <string name="ttt_start_chatting_description">Tipp do zum neue Freunde hinzufüga</string>
@@ -1423,11 +1420,9 @@ Mealds, egal wie klenn.</string>
 
     <string name="ttt_settings_misc">Sonstige Einstellunga</string>
 
-    <string name="ttt_settings_misc_bugreport">Do kannsch du Fehler mealda und Features requesten.</string>
 
     <string name="ttt_settings_misc_app_broken">App kaputt?</string>
     <string name="ttt_settings_misc_app_broken_description">Wenn eapas ned wie erwartet funktioniert, kannsch mit deam Knopf alle dine App - Daten löscha und neu vom Server abalada.</string>
-    <string name="ttt_misc_settings_go_back">Gomma zruck zu da Einstellunga</string>
 
 
 
@@ -1464,9 +1459,12 @@ Mealds, egal wie klenn.</string>
 
     <string name="ttt_games_global_highscore">Globales Ranking</string>
     <string name="ttt_games_global_highscore_description">Do kannsch du dine Platzierung in allna Spiele gemeinsam aluaga.</string>
+    <string name="ttt_games_random">Zufälliges Spiel</string>
+    <string name="ttt_games_random_description">Woasch ned, was spiela? Tipp do für a zufälligs Spiel.</string>
+    <string name="ttt_chatselector_feedback">Feedback-Board</string>
+    <string name="ttt_chatselector_feedback_description">Wünsch dir Features, meald Fehler und stimm über d Idea vo da andra ab.</string>
+    <string name="ttt_feedback_quiz">Feature-Quiz</string>
 
-    <string name="ttt_thank_you">Danke dir!</string>
-    <string name="ttt_thank_you_description">Vielen Dank dass du die Tour abgschlossa hosch. Viel Spaß mit Schneaggchat.</string>
 
     <string name="ttt_hint_tap_highlighted">Druck uf die hervorghobene Fläche zum Wittamacha</string>
     <string name="ttt_hint_tap_anywhere">Druck irgendwo zum wittamacha</string>
@@ -1799,6 +1797,7 @@ Mealds, egal wie klenn.</string>
     <string name="feedback_create_title_bug">Bug mealda</string>
     <string name="feedback_duplicate_warning">Bitte luag zersch in da Liste, obs dean Itrag scho git. Wenn jo, stimm döt ab oder kommentier.</string>
     <string name="feedback_field_title">Titel</string>
+    <string name="feedback_language_hint">Bitte schrieb uf Hochdütsch (ned im Dialekt), dassas alle leasa künnand.</string>
     <string name="feedback_field_description">Beschreibung</string>
     <string name="feedback_field_description_bug_hint">Was isch passiert und wie kann ma s nochstella</string>
     <string name="feedback_field_location">Wo zum finda (optional)</string>
@@ -1875,6 +1874,7 @@ Mealds, egal wie klenn.</string>
     <string name="dev_settings_demo_mode_desc">Blendat d Offline- und Testserver-Leiste us, z. B. für Store-Screenshots</string>
     <string name="group_extensions_title">Chat-Erweiterunga</string>
     <string name="group_extension_add">Erweiterung dazuatua</string>
+    <string name="group_extension_coming_soon">Kut bald</string>
     <string name="group_extension_type_shared_text">Gemeinsama Texteditor</string>
     <string name="group_extension_type_split">Geald ufteila</string>
     <string name="group_extension_type_quotes">Zitate</string>
@@ -1890,6 +1890,14 @@ Mealds, egal wie klenn.</string>
     <string name="group_extension_delete">Erweiterung löscha</string>
     <string name="group_extension_delete_confirm">"%1$s" mit allna Iträg für alle in dera Gruppe löscha? Des kann ned rückgängig gmacht werra.</string>
     <string name="group_extension_more_options">Mehr Optiona</string>
+    <plurals name="feedback_new_comments">
+        <item quantity="one">%1$d neuer Kommentar</item>
+        <item quantity="other">%1$d neue Kommentare</item>
+    </plurals>
+    <plurals name="group_extension_item_count">
+        <item quantity="one">%1$d Itrag</item>
+        <item quantity="other">%1$d Iträg</item>
+    </plurals>
     <string name="split_tab_expenses">Usgaba</string>
     <string name="split_tab_balances">Salda</string>
     <string name="split_my_total">Mine Usgaba</string>
@@ -1914,7 +1922,7 @@ Mealds, egal wie klenn.</string>
     <string name="split_paid_by_label">Bezahlt vo</string>
     <string name="split_transfer_from_label">Vo</string>
     <string name="split_transfer_to_label">An</string>
-    <string name="split_date_label">Datum</string>
+    <string name="split_date_label">Datum &amp; Uhrzit</string>
     <string name="split_required_field">%1$s *</string>
     <string name="split_split_between">Ufteila uf</string>
     <string name="split_mode_equally">Glichmäßig</string>
@@ -1942,6 +1950,12 @@ Mealds, egal wie klenn.</string>
     <string name="split_icon_custom_label">Oda a beliebigs Emoji igia</string>
     <string name="split_icon_use">Emoji verwenda</string>
     <string name="split_icon_remove">Symbol entferna</string>
+    <string name="split_detail_added_by">Dazuato vo %1$s · %2$s</string>
+    <string name="split_detail_edited_by">Bearbeitet vo %1$s · %2$s</string>
+    <plurals name="split_detail_share_count">
+        <item quantity="one">%1$d Anteil</item>
+        <item quantity="other">%1$d Anteil</item>
+    </plurals>
     <string name="dev_announcements">Ankündigunga</string>
     <string name="dev_announcements_desc">Ankündigunga für alle User erstella und verwalta (nur Admins)</string>
     <string name="announcement_new">Neue Ankündigung</string>
@@ -1997,4 +2011,28 @@ Mealds, egal wie klenn.</string>
     <string name="tictactoe_cell_description">Zeile %1$d, Spalte %2$d</string>
     <string name="desktop_tray_open">Schneaggchat öffna</string>
     <string name="desktop_tray_quit">Beenda</string>
+    <plurals name="event_lead_days">
+        <item quantity="one">%1$d Tag</item>
+        <item quantity="other">%1$d Täg</item>
+    </plurals>
+    <string name="games_random_game">Zufälliges Spiel starta</string>
+    <string name="featurequiz_title">Feature-Quiz</string>
+    <string name="featurequiz_progress">%1$d / %2$d</string>
+    <string name="featurequiz_correct">Richtig!</string>
+    <string name="featurequiz_wrong">Falsch. Richtig wär: %1$s</string>
+    <string name="featurequiz_didnt_know">Des Feature gits! Richtig wär: %1$s</string>
+    <string name="featurequiz_vote_prompt">Wie findasch du des Feature?</string>
+    <string name="featurequiz_wish_title">Wunsch vom Feedback-Board</string>
+    <string name="featurequiz_wish_prompt">Gits no ned. Hättsch des gern?</string>
+    <string name="featurequiz_next">Witta</string>
+    <string name="featurequiz_round_over">Runde vorbei</string>
+    <string name="featurequiz_finish">Ergebnis azoaga</string>
+    <string name="featurequiz_done">Fertig</string>
+    <string name="featurequiz_result_great">Du kennsch Schneaggchat in- und uswendig!</string>
+    <string name="featurequiz_result_good">Ned schleacht! A paar Features sind dir no neu.</string>
+    <string name="featurequiz_result_low">In Schneaggchat gits no viel zum Entdecka!</string>
+    <string name="featurequiz_time">Zit: %1$s</string>
+    <string name="featurequiz_play_again">Nomml spiela</string>
+    <string name="featurequiz_empty">Grad kua Froga. Mach s Feedback-Board oamol mit Internet uf und versuachs denn nomml.</string>
+    <string name="app_name">Schneaggchat</string>
 </resources>

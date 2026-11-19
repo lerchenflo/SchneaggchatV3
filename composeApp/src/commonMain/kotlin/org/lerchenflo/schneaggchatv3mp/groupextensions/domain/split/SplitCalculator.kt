@@ -17,8 +17,9 @@ data class SettlementSuggestion(
 /**
  * What each participant consumed of this expense: their fixedCents plus their part of the rest
  * (amountCents minus all fixedCents), split by weight. Cents of the rest that don't divide evenly go
- * one each to the first weighted participants, so the shares always add up to the amount. With no
- * weight left only the fixed amounts count. Empty when nobody takes part.
+ * one each to the participants with the biggest cut-off fraction (largest remainder), ties by userId,
+ * so the shares always add up to the amount and every device gets the same result whatever the map
+ * order. With no weight left only the fixed amounts count. Empty when nobody takes part.
  */
 fun SplitExpense.consumedCents(): Map<String, Long> {
     if (shares.isEmpty()) return emptyMap()
@@ -31,13 +32,13 @@ fun SplitExpense.consumedCents(): Map<String, Long> {
 
     val result = shares.keys.associateWith { fixedOf.getValue(it) + rest * weightOf.getValue(it) / totalWeight }
         .toMutableMap()
-    var remainder = rest - shares.keys.sumOf { rest * weightOf.getValue(it) / totalWeight }
-    for (person in shares.keys) {
-        if (remainder <= 0L) break
-        if (weightOf.getValue(person) == 0L) continue
-        result[person] = result.getValue(person) + 1
-        remainder--
-    }
+    // Always fewer than the weighted participants, as each of them cut off less than one cent
+    val remainder = rest - shares.keys.sumOf { rest * weightOf.getValue(it) / totalWeight }
+    shares.keys
+        .filter { weightOf.getValue(it) > 0L }
+        .sortedWith(compareByDescending<String> { rest * weightOf.getValue(it) % totalWeight }.thenBy { it })
+        .take(remainder.toInt())
+        .forEach { person -> result[person] = result.getValue(person) + 1 }
     return result
 }
 

@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -36,7 +36,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DragHandle
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -84,7 +83,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
 import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
-import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.poll_create
 import schneaggchatv3mp.composeapp.generated.resources.poll_create_description
 import schneaggchatv3mp.composeapp.generated.resources.poll_create_description_placeholder
@@ -185,7 +183,8 @@ class PollDraft(
     var allowedCustomAnswerCount by mutableStateOf(1)
 
     var allowMultipleAnswers by mutableStateOf(false)
-    var allowedAnswerCount by mutableStateOf(1)
+    //10 is the slider position for unlimited: switching "multiple answers" on starts there
+    var allowedAnswerCount by mutableStateOf(10)
 
     var limitVotersPerEntry by mutableStateOf(false)
 
@@ -316,7 +315,8 @@ internal fun PollMessage.toDraft(): PollDraft {
         allowedCustomAnswerCount = if (poll.customAnswersEnabled) poll.maxAllowedCustomAnswers ?: 10 else 1
 
         allowMultipleAnswers = poll.showCheckboxes && poll.maxAnswers != 1
-        allowedAnswerCount = poll.maxAnswers ?: 10
+        //A single-answer poll (maxAnswers 1) also starts at unlimited when "multiple answers" is switched on
+        allowedAnswerCount = poll.maxAnswers?.takeIf { it > 1 } ?: 10
 
         limitVotersPerEntry = poll.voteOptions.any { it.maxVoters != null }
         showCheckboxes = poll.showCheckboxes
@@ -554,31 +554,14 @@ fun PollDialog(
                     if (level.depth == 0) {
                         //Popup for date picker
                         if (showExpiresAtDatePickerDialog) {
-                            AlertDialog(
-                                onDismissRequest = { showExpiresAtDatePickerDialog = false },
-                                confirmButton = {
-                                    TextButton(onClick = {
-                                        // Handle confirm action
-                                        showExpiresAtDatePickerDialog = false
-                                    }) {
-                                        Text(stringResource(Res.string.ok))
-                                    }
+                            DateTimePickerPopup(
+                                initialDateTime = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) },
+                                minDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+                                onConfirm = {
+                                    expiresAt = it
+                                    showExpiresAtDatePickerDialog = false
                                 },
-                                dismissButton = {
-                                    TextButton(onClick = {
-                                        showExpiresAtDatePickerDialog = false
-                                        expiresAt = null
-                                    }) {
-                                        Text(stringResource(Res.string.cancel))
-                                    }
-                                },
-                                text = {
-                                    DateTimeWheelPicker(
-                                        startDateTime = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) },
-                                        onDateTimeChange = { expiresAt = it },
-                                        minDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-                                    )
-                                }
+                                onDismiss = { showExpiresAtDatePickerDialog = false },
                             )
                         }
 

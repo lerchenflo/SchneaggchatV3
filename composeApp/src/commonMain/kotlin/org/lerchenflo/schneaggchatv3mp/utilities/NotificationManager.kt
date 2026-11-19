@@ -32,11 +32,8 @@ object NotificationManager {
     }
 
     enum class NotiIdType(val baseId: Int) {
-        ERROR(1),
         SERVERMESSAGE(2),
         FRIEND_REQUEST(3),
-        BIRTHDAY(4),
-        EVENT(5),
         GENERIC_MESSAGES(7), //6 is the Android chat summary (CHAT_SUMMARY_ID in AndroidNotifier)
     }
 
@@ -55,9 +52,9 @@ object NotificationManager {
         notifier().showLocalNotification(content)
     }
 
-    fun showNotification(message: Message, fallbackGroupName: String? = null) {
+    fun showNotification(message: Message, senderName: String, fallbackGroupName: String? = null) {
         runBlocking {
-            notifier().showLocalNotification(message.toNotificationContent(fallbackGroupName))
+            notifier().showLocalNotification(message.toNotificationContent(senderName, fallbackGroupName))
         }
     }
 

@@ -39,6 +39,17 @@ data class ChatListItem(
     val displayName: String get() = nickName?.takeIf { it.isNotBlank() } ?: name
 }
 
+/**
+ * First chat with an accepted friend whose last message is a real message, not a system line (e.g. for
+ * the tour to open and point at that message), or null.
+ */
+fun List<ChatListItem>.firstFriendChatWithMessages(): ChatListItem? =
+    firstOrNull { chat ->
+        !chat.isGroup &&
+            chat.friendshipStatus == FriendshipStatus.ACCEPTED &&
+            chat.lastMessage.let { it != null && it.msgType != MessageType.SYSTEM }
+    }
+
 fun User.toChatListItem(
     unreadCount: Int = 0,
     unsentCount: Int = 0,

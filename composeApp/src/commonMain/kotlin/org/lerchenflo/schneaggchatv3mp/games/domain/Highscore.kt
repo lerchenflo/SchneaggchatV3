@@ -35,7 +35,9 @@ enum class GameId(
     // Every won round is one win (score = 1), like UNDERCOVER
     TIC_TAC_TOE(sharedDevice = true),
     // Daily C puzzle without a difficulty: 100 / 60 / 30 points for solving on the first / second / third try
-    C_CHALLENGE(daily = true);
+    C_CHALLENGE(daily = true),
+    // Correct answers of a round, the answering time as tiebreaker; one board, no difficulty
+    FEATURE_QUIZ;
 
     override val saveKey: String get() = name.lowercase()
 }
@@ -164,6 +166,11 @@ val GameId.leaderboard: LeaderboardSpec
         )
         // One daily puzzle for everyone, so a single board; the solve time ranks equal points
         GameId.C_CHALLENGE -> LeaderboardSpec(
+            scoreKind = ScoreKind.POINTS,
+            boardAxis = BoardAxis.NONE,
+            boards = listOf(GameDifficulty.MEDIUM),
+        )
+        GameId.FEATURE_QUIZ -> LeaderboardSpec(
             scoreKind = ScoreKind.POINTS,
             boardAxis = BoardAxis.NONE,
             boards = listOf(GameDifficulty.MEDIUM),

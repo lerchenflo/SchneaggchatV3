@@ -60,6 +60,8 @@ class MiscSettingsViewModel(
     fun resetOnboardingTour() {
         viewModelScope.launch {
             settingsRepository.setOnboardingSeen(false)
+            // The full tour shows everything again, also the steps that start on their own screen
+            settingsRepository.clearSeenTourTags()
         }
     }
 

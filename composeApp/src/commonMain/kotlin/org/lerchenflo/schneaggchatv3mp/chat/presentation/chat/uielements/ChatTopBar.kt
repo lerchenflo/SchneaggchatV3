@@ -11,6 +11,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import io.github.lerchenflo.taptarget.tapTarget
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -62,7 +63,9 @@ fun ChatTopBar(
                 bottomTextOverride = presenceText,
                 onClickGes = onPartnerClick,
                 ownId = ownId,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .tapTarget("chat_partner")
             )
 
             if (!partner.isGroup && !partner.phoneNumber.isNullOrBlank()) {

@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 
 /** The logged-in user of the send-path tests. */
@@ -60,6 +61,7 @@ class SendPathFixture(testScope: TestScope, val ownUserId: String = OWN_USER_ID)
         audioManager = unusedDependency(),
         loggingRepository = logger,
         externalScope = testScope.backgroundScope,
+        mediaDownloadThrottle = MediaDownloadThrottle(),
         ioDispatcher = StandardTestDispatcher(testScope.testScheduler),
     )
 

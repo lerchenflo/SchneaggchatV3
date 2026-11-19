@@ -67,7 +67,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
-import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboPlainText
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import org.lerchenflo.schneaggchatv3mp.utilities.toOpenableUrl
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -426,7 +426,7 @@ private fun SharedMessageRow(
     ListItem(
         headlineContent = {
             Text(
-                text = resolveComboAnnotationsToPlainText(headline, annotationSources),
+                text = rememberComboPlainText(headline, annotationSources),
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )

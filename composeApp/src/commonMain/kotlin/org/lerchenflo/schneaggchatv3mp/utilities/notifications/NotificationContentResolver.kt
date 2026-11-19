@@ -78,7 +78,6 @@ private suspend fun resolveMessage(
         //(which is the recipient user, not the group) - see Message.toNotificationContent().
         receiverId = if (decoded.groupMessage) decoded.groupId else decoded.receiverId,
         groupMessage = decoded.groupMessage,
-        senderAsString = decoded.senderName,
         myMessage = false,
         readByMe = false,
         readers = emptyList(),
@@ -86,6 +85,7 @@ private suspend fun resolveMessage(
         sendDate = decoded.sendDate.takeIf { it > 0 }?.toString() ?: "",
     )
     return msg.toNotificationContent(
+        senderName = decoded.senderName,
         fallbackGroupName = decoded.groupName.ifEmpty { null }
     )
 }
@@ -186,7 +186,7 @@ private suspend fun resolveBirthday(
         body = getString(Res.string.friend_birthday_noti_body)
     }
     return NotificationContent(
-        id = NotificationManager.NotiIdType.BIRTHDAY.baseId,
+        id = birthdayNotificationId(decoded),
         title = title,
         body = body,
         avatarUserId = decoded.birthdayUserId.ifBlank { null },
@@ -235,6 +235,15 @@ private fun mapSightingNotificationId(entryId: String): Int =
     "map_sighting:$entryId".hashCode().absoluteValue
 
 /**
+ * One notification per birthday user, so two birthdays on the same day (or the own birthday and a
+ * friend's) don't replace each other. Older servers may send no user id; the name keeps them apart then.
+ */
+private fun birthdayNotificationId(decoded: DecodedNotification.Birthday): Int {
+    val birthdayUserKey = decoded.birthdayUserId.ifBlank { decoded.birthdayUserName }
+    return "birthday:$birthdayUserKey".hashCode().absoluteValue
+}
+
+/**
  * Last-resort content for when [resolveLocalizedContent] failed or timed out: built from the raw
  * push fields only, no database lookups. Never throws. Null for wakes - the alarm service owns those.
  */
@@ -272,7 +281,7 @@ suspend fun resolveFallbackContent(decoded: DecodedNotification): NotificationCo
         )
         is DecodedNotification.System -> resolveSystem(decoded)
         is DecodedNotification.Birthday -> NotificationContent(
-            id = NotificationManager.NotiIdType.BIRTHDAY.baseId,
+            id = birthdayNotificationId(decoded),
             title = decoded.birthdayUserName.ifBlank { NOTIFICATION_FALLBACK_TITLE },
             body = fallbackBody,
             kind = NotificationKind.SOCIAL,

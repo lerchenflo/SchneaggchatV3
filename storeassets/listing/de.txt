@@ -1,13 +1,13 @@
 ## Subtitle
 Chatten, planen, spielen
 ## Promotional text
-Neu: Unterumfragen, ein Feedback-Board für deine Ideen und neue Spiele wie Wordle, SchneaggaHus und Schneagg Rodeo. Schreib, plan und spiel mit deinen Leuten.
+Neu: Gruppenerweiterungen wie die Schneaggakassa, Event-Erinnerungen im Gruppenchat und ein Kalender zur Datumsauswahl. Die alternative Chat-App mit vielen Features.
 ## Keywords
 messenger,gruppen,umfrage,standort,freunde,events,treffen,vorarlberg,dialekt,wordle,rätsel,kompass
 ## Short description
-Chatten, Treffen planen, Standort teilen und spielen – mit deinen Freunden.
+Die alternative Chat-App mit vielen Features: chatten, Treffen planen, spielen.
 ## Description
-Schneaggchat ist der Chat für deine Leute – made in Vorarlberg. Schreiben, abstimmen, Treffen planen und euch unterwegs wiederfinden, alles in einer App.
+Schneaggchat ist eine alternative Chat-App mit vielen Features – für dich und deine Leute, made in Vorarlberg. Schreiben, abstimmen, Treffen planen und euch unterwegs wiederfinden, alles in einer App.
 
 • Chats und Gruppen
 Direktnachrichten und Gruppenchats mit Reaktionen (auch mit eigenem Text), Bildern, Links und Sprachnachrichten.
@@ -19,7 +19,7 @@ Abstimmen statt endlos diskutieren: Umfragen mit eigenen Antworten und Unterumfr
 Teile deinen Standort samt Verlauf – nur mit Freunden. Auf der gemeinsamen Karte markierst du Orte und entdeckst öffentliche Plätze.
 
 • Events
-Vom Chat zum Treffen: Events anlegen, zusagen und sehen, wer kommt.
+Vom Chat zum Treffen: Events anlegen, zusagen, sehen, wer kommt, und rechtzeitig im Gruppenchat erinnert werden.
 
 • Kompass
 Finde deine Leute auch im Gedränge – der Kompass zeigt dir, in welcher Richtung deine Freunde sind.

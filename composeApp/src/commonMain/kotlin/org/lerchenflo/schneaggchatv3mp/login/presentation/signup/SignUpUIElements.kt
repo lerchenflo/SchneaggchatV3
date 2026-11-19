@@ -2,18 +2,15 @@
 
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateWheelPicker
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DatePickerPopup
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -26,10 +23,8 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.create_account
 import schneaggchatv3mp.composeapp.generated.resources.create_account_subtitle
-import schneaggchatv3mp.composeapp.generated.resources.ok
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -87,37 +82,13 @@ fun BirthdatePickerPopup(
         (defaultDate ?: yearsBefore(18)).coerceIn(earliestDate, today)
     }
 
-    var selectedDate by remember { mutableStateOf(safeDefaultDate) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                // Clamp to valid range before confirming — guards against picker edge cases on iOS
-                val clamped = when {
-                    selectedDate < earliestDate -> earliestDate
-                    // A birthday can't be in the future
-                    selectedDate > today -> today
-                    else -> selectedDate
-                }
-                onDateSelected(clamped)
-            }) {
-                Text(stringResource(Res.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.cancel))
-            }
-        },
-        text = {
-            DateWheelPicker(
-                startDate = selectedDate,
-                onDateChange = { selectedDate = it },
-                minDate = earliestDate,
-                maxDate = today,
-            )
-        }
+    DatePickerPopup(
+        initialDate = safeDefaultDate,
+        minDate = earliestDate,
+        // A birthday can't be in the future
+        maxDate = today,
+        onConfirm = onDateSelected,
+        onDismiss = onDismiss,
     )
 }
 

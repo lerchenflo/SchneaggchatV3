@@ -11,7 +11,7 @@ class MainApp: Application() {
     override fun onCreate() {
         super.onCreate()
 
-        NotificationConfig.iconResId = R.drawable.schneaggchat_logo_v3_transparent
+        NotificationConfig.iconResId = R.drawable.schneaggchat_logo_transparent
 
         startKoinAndroid(this@MainApp)
 

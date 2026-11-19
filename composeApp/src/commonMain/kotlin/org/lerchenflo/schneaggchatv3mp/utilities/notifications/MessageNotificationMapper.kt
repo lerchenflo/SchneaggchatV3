@@ -12,11 +12,12 @@ import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
 import kotlin.math.absoluteValue
 
-suspend fun Message.toNotificationContent(fallbackGroupName: String? = null): NotificationContent {
+/** [senderName]: the name the notification shows for the sender (resolved by the caller, e.g. from the push). */
+suspend fun Message.toNotificationContent(senderName: String, fallbackGroupName: String? = null): NotificationContent {
     val title = if (groupMessage && fallbackGroupName != null)
-        getString(Res.string.new_message_noti_group_title, senderAsString, fallbackGroupName)
+        getString(Res.string.new_message_noti_group_title, senderName, fallbackGroupName)
     else
-        getString(Res.string.new_message_noti_single_title, senderAsString)
+        getString(Res.string.new_message_noti_single_title, senderName)
     val body = when (msgType) {
         MessageType.TEXT  -> content.ifBlank { getString(Res.string.you_have_new_messages) }
         MessageType.IMAGE -> getString(Res.string.image)
@@ -40,7 +41,7 @@ suspend fun Message.toNotificationContent(fallbackGroupName: String? = null): No
         chatId = chatId.ifBlank { null },
         groupChat = groupMessage,
         senderId = senderId.ifBlank { null },
-        senderName = senderAsString,
+        senderName = senderName,
         timestampMillis = getSendDateAsLong(),
         groupName = fallbackGroupName,
         conversation = true,

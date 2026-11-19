@@ -8,9 +8,9 @@ import java.nio.file.Files
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-private const val APP_NAME = "SchneaggchatV3"
+private const val APP_NAME = "Schneaggchat"
 private const val ICON_RESOURCE_PATH =
-    "composeResources/schneaggchatv3mp.composeapp.generated.resources/drawable/schneaggchat_logo_v3.png"
+    "composeResources/schneaggchatv3mp.composeapp.generated.resources/drawable/schneaggchat_logo.png"
 
 /** notify-send / gdbus return right after their D-Bus call; anything longer means the bus is gone. */
 private const val PROCESS_TIMEOUT_SECONDS = 2L

@@ -18,8 +18,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
-import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
@@ -31,11 +29,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.validateName
+import org.lerchenflo.schneaggchatv3mp.utilities.toStringResource
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.InputfieldState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.name_too_long
-import schneaggchatv3mp.composeapp.generated.resources.name_too_short
 
 data class GroupCreatorState(
     val searchterm: String,
@@ -55,7 +52,7 @@ data class GroupCreatorState(
 ) {
     fun valid() : Boolean {
         return (selectedUsers.size >= 2 &&
-            groupname.text.length in MIN_GROUPNAME_LENGTH..MAX_GROUPNAME_LENGTH &&
+            validateName(groupname.text) == null &&
                 profilepic != null)
     }
 
@@ -178,7 +175,7 @@ class GroupCreatorViewModel (
                     )
                 )
                 viewModelScope.launch {
-                    val errorMessage = if (newtext.length > MAX_GROUPNAME_LENGTH) getString(Res.string.name_too_long) else if (newtext.length < MIN_GROUPNAME_LENGTH) getString(Res.string.name_too_short) else null
+                    val errorMessage = validateName(newtext)?.let { getString(it.toStringResource()) }
                     // Typed on meanwhile: that newer name's own coroutine sets its error text
                     if (state.groupname.text != newtext) return@launch
                     state = state.copy(

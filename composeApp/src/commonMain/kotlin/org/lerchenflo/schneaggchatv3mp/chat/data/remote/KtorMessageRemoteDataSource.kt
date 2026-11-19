@@ -63,7 +63,7 @@ class KtorMessageRemoteDataSource(
             clientMessageId = clientMessageId,
         )
 
-        println("MessageRequest: $messageRequest")
+        //println("MessageRequest: $messageRequest")
 
         return server.safePost(
             endpoint = "/messages/send/text",

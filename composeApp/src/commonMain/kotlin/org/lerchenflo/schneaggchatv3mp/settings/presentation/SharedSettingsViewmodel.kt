@@ -36,6 +36,10 @@ class SharedSettingsViewmodel(
     var devSettingsEnabled by mutableStateOf(false)
         private set
 
+    /** Demo mode (store screenshots) hides the developer settings entry; one tap on the version text still opens them. */
+    var demoMode by mutableStateOf(false)
+        private set
+
     var ownUser by mutableStateOf<User?>(null)
         private set
 
@@ -50,6 +54,16 @@ class SharedSettingsViewmodel(
                 }
                 .collect { value ->
                     devSettingsEnabled = value
+                }
+        }
+
+        viewModelScope.launch { // Demo mode
+            settingsRepository.getDemoModeFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting Demo Mode preference: ${exception.message}")
+                }
+                .collect { value ->
+                    demoMode = value
                 }
         }
 

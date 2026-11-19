@@ -18,13 +18,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
@@ -36,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -51,12 +52,18 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.detail.SplitExpenseDetailDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_not_found
 import schneaggchatv3mp.composeapp.generated.resources.split_add_expense
 import schneaggchatv3mp.composeapp.generated.resources.split_balances_settled
+import schneaggchatv3mp.composeapp.generated.resources.split_delete_expense_title
+import schneaggchatv3mp.composeapp.generated.resources.split_delete_message
+import schneaggchatv3mp.composeapp.generated.resources.split_delete_transfer_title
 import schneaggchatv3mp.composeapp.generated.resources.split_how_to_balance
 import schneaggchatv3mp.composeapp.generated.resources.split_mark_as_paid
 import schneaggchatv3mp.composeapp.generated.resources.split_my_total
@@ -164,6 +171,53 @@ fun SplitScreen(
             }
         }
     }
+
+    val detail = state.detail
+    if (detail != null) {
+        SplitExpenseDetailDialog(
+            detail = detail,
+            onEditClick = { onAction(SplitAction.OnDetailEditClick) },
+            onDeleteClick = { onAction(SplitAction.OnDetailDeleteClick) },
+            onDismiss = { onAction(SplitAction.OnDetailDismiss) }
+        )
+
+        if (state.isDeleteDialogVisible) {
+            DeleteEntryDialog(
+                isTransfer = detail.isTransfer,
+                onConfirm = { onAction(SplitAction.OnDeleteConfirm) },
+                onDismiss = { onAction(SplitAction.OnDeleteDismiss) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun DeleteEntryDialog(
+    isTransfer: Boolean,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                stringResource(
+                    if (isTransfer) Res.string.split_delete_transfer_title else Res.string.split_delete_expense_title
+                )
+            )
+        },
+        text = { Text(stringResource(Res.string.split_delete_message)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(Res.string.delete))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.cancel))
+            }
+        }
+    )
 }
 
 // ─── Expenses tab ─────────────────────────────────────────────────────────────
@@ -213,13 +267,7 @@ private fun ExpenseRow(
     ListItem(
         modifier = Modifier.clickable(onClick = onClick),
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
-        leadingContent = {
-            when {
-                expense.isTransfer -> RoundIcon(icon = Icons.Default.SwapHoriz)
-                expense.emoji != null -> RoundEmoji(emoji = expense.emoji)
-                else -> RoundIcon(icon = Icons.AutoMirrored.Filled.ReceiptLong)
-            }
-        },
+        leadingContent = { SplitEntryIcon(isTransfer = expense.isTransfer, emoji = expense.emoji) },
         headlineContent = {
             Text(
                 text = if (expense.isTransfer) {
@@ -446,41 +494,6 @@ private fun SettlementRow(
 }
 
 // ─── Shared pieces ────────────────────────────────────────────────────────────
-
-@Composable
-private fun RoundIcon(icon: ImageVector) {
-    Box(
-        modifier = Modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.secondaryContainer),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSecondaryContainer
-        )
-    }
-}
-
-/** Same circle as [RoundIcon], showing the emoji the user picked for an expense. */
-@Composable
-private fun RoundEmoji(emoji: String) {
-    Box(
-        modifier = Modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.secondaryContainer),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = emoji,
-            style = MaterialTheme.typography.titleLarge,
-            maxLines = 1
-        )
-    }
-}
 
 @Composable
 private fun CenteredMessage(

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import eu.anifantakis.lib.ksafe.KSafe
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -136,8 +137,10 @@ class Preferencemanager(
         val LAST_DISMISSED_ANNOUNCEMENT_ID = longPreferencesKey("last_dismissed_announcement_id")
         val PROFILE_PIC_VISIBILITY = stringPreferencesKey("profile_pic_visibility")
         val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
+        val ONBOARDING_SEEN_TOUR_TAGS = stringSetPreferencesKey("onboarding_seen_tour_tags")
         val EVENTS_VIEW_MODE = stringPreferencesKey("events_view_mode")
         val FEEDBACK_LAST_SYNC_SERVER_TIME = longPreferencesKey("feedback_last_sync_server_time")
+        /** Board-wide "last seen" from before the per-tab values (2026-11-18); only read as each tab's start value. */
         val FEEDBACK_LAST_SEEN = longPreferencesKey("feedback_last_seen")
         val FEEDBACK_VIEWER_IS_ADMIN = booleanPreferencesKey("feedback_viewer_is_admin")
     }
@@ -354,13 +357,19 @@ class Preferencemanager(
         prefs[PrefsKeys.FEEDBACK_VIEWER_IS_ADMIN] ?: false
     }
 
-    /** Server time the feedback board was last opened at, 0 if never. */
-    fun getFeedbackLastSeenFlow(): Flow<Long> = prefs.data.map { prefs ->
-        prefs[PrefsKeys.FEEDBACK_LAST_SEEN] ?: 0L
+    private fun feedbackTabLastSeenKey(tab: String) = longPreferencesKey("feedback_last_seen_tab_$tab")
+
+    /**
+     * Server time each feedback board tab was last opened at, 0 if never. A tab without its own value
+     * starts from the old board-wide one, so the update does not mark old entries as new.
+     */
+    fun getFeedbackTabsLastSeenFlow(tabs: List<String>): Flow<Map<String, Long>> = prefs.data.map { prefs ->
+        val boardWide = prefs[PrefsKeys.FEEDBACK_LAST_SEEN] ?: 0L
+        tabs.associateWith { tab -> prefs[feedbackTabLastSeenKey(tab)] ?: boardWide }
     }
 
-    suspend fun saveFeedbackLastSeen(serverTime: Long) {
-        prefs.edit { it[PrefsKeys.FEEDBACK_LAST_SEEN] = serverTime }
+    suspend fun saveFeedbackTabLastSeen(tab: String, serverTime: Long) {
+        prefs.edit { it[feedbackTabLastSeenKey(tab)] = serverTime }
     }
 
     // Onboarding Seen
@@ -374,6 +383,18 @@ class Preferencemanager(
 
     fun getOnboardingSeenFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.ONBOARDING_SEEN] ?: false
+    }
+
+    fun getSeenTourTagsFlow(): Flow<Set<String>> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.ONBOARDING_SEEN_TOUR_TAGS] ?: emptySet()
+    }
+
+    suspend fun addSeenTourTags(tags: Set<String>) {
+        prefs.edit { it[PrefsKeys.ONBOARDING_SEEN_TOUR_TAGS] = it[PrefsKeys.ONBOARDING_SEEN_TOUR_TAGS].orEmpty() + tags }
+    }
+
+    suspend fun clearSeenTourTags() {
+        prefs.edit { it.remove(PrefsKeys.ONBOARDING_SEEN_TOUR_TAGS) }
     }
 
 

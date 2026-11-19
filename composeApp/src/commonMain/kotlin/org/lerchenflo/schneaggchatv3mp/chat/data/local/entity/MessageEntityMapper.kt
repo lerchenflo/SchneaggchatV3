@@ -32,7 +32,6 @@ fun MessageEntity.toMessage(readers: List<MessageReader> = emptyList()): Message
     groupMessage = this.groupMessage,
     answerId = this.answerId,
     sent = this.sent,
-    senderAsString = this.senderAsString,
     minimizeMessage = this.minimizeMessage,
     senderColor = this.senderColor,
     myMessage = this.myMessage,

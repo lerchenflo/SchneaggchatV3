@@ -61,6 +61,7 @@ Your sole responsibility is to identify hardcoded user-facing English strings in
 - All new code must be in English — this includes string resource keys.
 - Do NOT rename existing German code/keys unless you're actively modifying that file.
 - Follow the feature-based package organization when grouping keys.
+- **iOS notification texts are translated in the same change, always** (user, 2026-11-17). The iOS notification service extension has its own tables in `iosApp/SchneaggchatNotificationServiceExtension/NotificationStrings.swift` (`englishStrings`, `germanStrings`, `italianStrings`, `austrianGermanStrings`). When a push text is added or changed in `values/strings.xml`, add or change its key in `englishStrings`, `germanStrings` and `italianStrings` too (Swift placeholders: `%1$s` → `%1$@`, `%1$d` → `%1$ld`). `austrianGermanStrings` follows the `values-de-rAT` rule: never write Vori yourself; delete the key there when its English text changed, and report every key missing in it so the `vori-translator` run fills it.
 - Do NOT create new documentation files.
 - Do NOT refactor code beyond the string extraction task.
 - Do NOT attempt to build or run the project.

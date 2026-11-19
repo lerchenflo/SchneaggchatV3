@@ -96,6 +96,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ChatSelectorDismissableInfo
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
+import org.lerchenflo.schneaggchatv3mp.chat.domain.firstFriendChatWithMessages
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberProfilePicturePlaceholder
@@ -155,6 +156,7 @@ fun Chatauswahlscreen(
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
     val dataSyncState by viewModel.dataSyncState.collectAsStateWithLifecycle()
+    val demoMode by viewModel.demoMode.collectAsStateWithLifecycle()
 
     val onboardingCompleted by viewModel.onboardingCompleted.collectAsStateWithLifecycle()
     
@@ -232,32 +234,37 @@ fun Chatauswahlscreen(
                 val touchSize = 40.dp
                 val iconSize = 28.dp
 
-                Row(
-                    modifier = Modifier
-                        .clickable {
-                            uriHandler.openUri(serverUrl)
-                        }
-                        .weight(1f)
-                        .padding(start = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                // The box takes the free space; only the title and the globe open the website
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    Text(
-                        text = stringResource(Res.string.app_name),
-                        modifier = Modifier.weight(1f, fill = false),
-                        autoSize = TextAutoSize.StepBased(
-                            minFontSize = 10.sp,
-                            maxFontSize = 25.sp
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Icon(
-                        imageVector = Icons.Default.Language,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(
+                        modifier = Modifier
+                            .clickable {
+                                uriHandler.openUri(serverUrl)
+                            }
+                            .padding(start = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.app_name),
+                            modifier = Modifier.weight(1f, fill = false),
+                            autoSize = TextAutoSize.StepBased(
+                                minFontSize = 10.sp,
+                                maxFontSize = 25.sp
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
 
@@ -274,7 +281,7 @@ fun Chatauswahlscreen(
 
 
 
-                if (dataSyncState.isSyncing || dataSyncState.exitedWithErrors) {
+                if (!demoMode && (dataSyncState.isSyncing || dataSyncState.exitedWithErrors)) {
                     Box(
                         modifier = Modifier
                             .size(touchSize)
@@ -740,6 +747,9 @@ fun Chatauswahlscreen(
                         }
                     }
 
+                    // The onboarding tour opens this chat to show the chat steps
+                    val tourChat = availablegegners.firstFriendChatWithMessages()
+
                     items(
                         items = availablegegners,
                         key = { "${it.id}_${it.isGroup}" }
@@ -761,8 +771,8 @@ fun Chatauswahlscreen(
                             showPin = true,
                             highlightTodaysTimestamp = highlightTodaysTimestamp,
                             ownId = ownId,
-                            profilePicturePlaceholder = profilePicturePlaceholder
-
+                            profilePicturePlaceholder = profilePicturePlaceholder,
+                            modifier = if (gegner == tourChat) Modifier.tapTarget("chatselector_friend_chat") else Modifier
                         )
                         HorizontalDivider(
                             thickness = 0.5.dp
@@ -854,7 +864,7 @@ fun Chatauswahlscreen(
         if (contributePopupShown) {
             ContributePopup(
                 onDismiss = { viewModel.onContributeDismiss() },
-                onOpenReportForm = {
+                onOpenFeedbackBoard = {
                     viewModel.onContributeDismiss()
                     viewModel.onFeedbackClick()
                 },

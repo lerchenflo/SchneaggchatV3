@@ -8,10 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import dev.darkokoa.datetimewheelpicker.core.format.DateFormatter
-import dev.darkokoa.datetimewheelpicker.core.format.DateOrder
-import dev.darkokoa.datetimewheelpicker.core.format.MonthDisplayStyle
-import dev.darkokoa.datetimewheelpicker.core.format.dateFormatter
 import kotlinx.coroutines.delay
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -27,6 +23,7 @@ import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
 import kotlinx.datetime.number
 import kotlinx.datetime.plus
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -115,15 +112,6 @@ fun iso8601DateFormatter(
     }
 
 }
-
-/** WheelDatePicker [DateFormatter] rendering day/month/year zero-padded numerals in dd.MM.yyyy order. */
-fun germanNumericDateFormatter(): DateFormatter = dateFormatter(
-    dateOrder = DateOrder.DMY,
-    monthDisplayStyle = MonthDisplayStyle.NUMERIC,
-    formatDay = { it.toString().padStart(2, '0') },
-    formatMonth = { month, _ -> month.number.toString().padStart(2, '0') },
-    formatYear = { it.toString() }
-)
 
 @OptIn(ExperimentalTime::class)
 fun millisToDuration(
@@ -294,6 +282,20 @@ fun millisToLocalDate(millis: Long): LocalDate {
         .toLocalDateTime(TimeZone.currentSystemDefault()).date
 }
 
+/** [millis] as a [LocalDateTime] in the device's current time zone. */
+fun millisToLocalDateTime(millis: Long): LocalDateTime =
+    Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.currentSystemDefault())
+
+/** This local date and time in the device's current time zone, as epoch milliseconds. */
+fun LocalDateTime.toEpochMillis(): Long =
+    toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+
+/** The current local date and time cut to the minute, the precision of the date-time picker. */
+fun nowToTheMinute(): LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).toTheMinute()
+
+/** The same date and time without seconds and nanoseconds. */
+fun LocalDateTime.toTheMinute(): LocalDateTime = LocalDateTime(date.year, date.month, date.day, hour, minute)
+
 /** Monday of the ISO week containing [date]. */
 fun startOfWeek(date: LocalDate): LocalDate {
     return date.minus(DatePeriod(days = date.dayOfWeek.isoDayNumber - 1))
@@ -302,6 +304,15 @@ fun startOfWeek(date: LocalDate): LocalDate {
 @OptIn(FormatStringsInDatetimeFormats::class)
 fun LocalDate.toFormattedString(format: String = "dd.MM.yyyy"): String {
     val formatter = LocalDate.Format { byUnicodePattern(format) }
+    return this.format(formatter)
+}
+
+/** Day and time as the app shows them, e.g. "14.11.2026 18:00". */
+const val DATE_TIME_FORMAT = "dd.MM.yyyy HH:mm"
+
+@OptIn(FormatStringsInDatetimeFormats::class)
+fun LocalDateTime.toFormattedString(format: String = DATE_TIME_FORMAT): String {
+    val formatter = LocalDateTime.Format { byUnicodePattern(format) }
     return this.format(formatter)
 }
 

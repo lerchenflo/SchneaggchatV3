@@ -86,9 +86,6 @@ data class MessageEntity(
 
     ) {
     @Ignore
-    var senderAsString: String = ""
-
-    @Ignore
     var minimizeMessage: MessageMinimal = MessageMinimal.NONE
 
     @Ignore

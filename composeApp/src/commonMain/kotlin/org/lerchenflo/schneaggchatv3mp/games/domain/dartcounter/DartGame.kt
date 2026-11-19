@@ -1,5 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter
 
+/** Whether a player's scoring has to start with a double (the bullseye counts as one). */
+enum class DartInMode {
+    SINGLE_IN,
+    DOUBLE_IN
+}
+
 /** Whether the last dart of a leg has to be a double. */
 enum class DartOutMode {
     SINGLE_OUT,
@@ -34,6 +40,8 @@ data class DartPlayer(
     val score: Int,
     val totalDartsThrown: Int,
     val isFinished: Boolean,
+    /** False under double in until the player hits the first double; until then no dart scores. */
+    val hasOpened: Boolean,
 ) {
     /** Three-dart average over the whole leg, 0.0 before the first dart. */
     fun threeDartAverage(countdown: Int): Double =
@@ -46,6 +54,7 @@ data class DartPlayer(
  * immutable state, so the UI never touches the game internals.
  */
 class DartGame(
+    val inMode: DartInMode,
     val outMode: DartOutMode,
     val countdown: Int,
     playerNames: List<String>,
@@ -55,12 +64,15 @@ class DartGame(
         var score: Int,
         var totalDartsThrown: Int = 0,
         var isFinished: Boolean = false,
+        var hasOpened: Boolean,
     )
+
+    val doubleIn: Boolean get() = inMode == DartInMode.DOUBLE_IN
 
     val doubleOut: Boolean get() = outMode == DartOutMode.DOUBLE_OUT
 
     private val playerList: MutableList<MutablePlayer> =
-        playerNames.map { MutablePlayer(name = it, score = countdown) }.toMutableList()
+        playerNames.map { MutablePlayer(name = it, score = countdown, hasOpened = !doubleIn) }.toMutableList()
 
     var currentPlayerIndex: Int = 0
         private set
@@ -84,6 +96,7 @@ class DartGame(
                 score = it.score,
                 totalDartsThrown = it.totalDartsThrown,
                 isFinished = it.isFinished,
+                hasOpened = it.hasOpened,
             )
         }
 
@@ -93,7 +106,8 @@ class DartGame(
 
     val dartsThisTurn: List<DartThrow> get() = currentTurnDarts.toList()
 
-    val turnTotal: Int get() = currentTurnDarts.sumOf { it.actualScore }
+    /** Points scored this turn; darts thrown before a double in opened the leg add nothing. */
+    val turnTotal: Int get() = turnStartScore - playerList[currentPlayerIndex].score
 
     val dartsLeft: Int get() = 3 - currentTurnDarts.size
 
@@ -152,9 +166,17 @@ class DartGame(
         return true
     }
 
-    /** Applies [segment] to the active player, returning false when it busts. */
+    /**
+     * Applies [segment] to the active player, returning false when it busts. Under double in a dart
+     * before the first double scores nothing; the opening double itself already counts. A later
+     * bust in the same turn keeps the player opened, because the double was hit.
+     */
     private fun applyScore(segment: DartSegment): Boolean {
         val player = playerList[currentPlayerIndex]
+        if (!player.hasOpened) {
+            if (!segment.isDouble) return true
+            player.hasOpened = true
+        }
         val newScore = player.score - segment.points
 
         if (doubleOut) {
@@ -216,6 +238,7 @@ class DartGame(
             player.score = countdown
             player.isFinished = false
             player.totalDartsThrown = 0
+            player.hasOpened = !doubleIn
         }
         turnHistory.clear()
         currentTurnDarts.clear()
@@ -233,6 +256,7 @@ class DartGame(
     // ─── Persistence ──────────────────────────────────────────────────────────
 
     fun toSnapshot(userIds: List<String?>) = DartCounterSnapshotData(
+        doubleIn = doubleIn,
         doubleOut = doubleOut,
         countdown = countdown,
         players = playerList.mapIndexed { index, player ->
@@ -241,6 +265,7 @@ class DartGame(
                 score = player.score,
                 totalDartsThrown = player.totalDartsThrown,
                 isFinished = player.isFinished,
+                hasOpened = player.hasOpened,
                 userId = userIds.getOrNull(index),
             )
         },
@@ -258,6 +283,7 @@ class DartGame(
                 player.score = saved.score
                 player.totalDartsThrown = saved.totalDartsThrown
                 player.isFinished = saved.isFinished
+                player.hasOpened = saved.hasOpened
             }
         }
         currentPlayerIndex = snapshot.currentPlayerIndex.coerceIn(0, playerList.lastIndex)
@@ -279,6 +305,7 @@ class DartGame(
 
 /** Plain carrier between [DartGame] and the serialized snapshot, so the engine stays serializer-free. */
 data class DartCounterSnapshotData(
+    val doubleIn: Boolean,
     val doubleOut: Boolean,
     val countdown: Int,
     val players: List<DartPlayerSnapshotData>,
@@ -294,5 +321,6 @@ data class DartPlayerSnapshotData(
     val score: Int,
     val totalDartsThrown: Int,
     val isFinished: Boolean,
+    val hasOpened: Boolean,
     val userId: String?,
 )

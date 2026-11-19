@@ -37,6 +37,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 
 @Composable
 fun MessageViewWithActions(
@@ -46,7 +47,7 @@ fun MessageViewWithActions(
     message: Message,
     sender: SenderInfo? = null,
     minimal: MessageMinimal = MessageMinimal.NONE,
-    readerMap: Map<String, String> = emptyMap(),
+    voters: Map<String, UserIdentity> = emptyMap(),
     replyMessage: Message? = null,
     replyMessageSender: SenderInfo? = null,
     replyMessageOnClick: () -> Unit = {},
@@ -147,7 +148,7 @@ fun MessageViewWithActions(
                 selectedChatId = selectedChatId,
                 sender = sender,
                 minimal = minimal,
-                readerMap = readerMap,
+                voters = voters,
                 replyMessage = replyMessage,
                 replyMessageSender = replyMessageSender,
                 replyMessageOnClick = replyMessageOnClick,
@@ -187,7 +188,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067200000",
                 myMessage = false,
                 readByMe = true,
-                senderAsString = "Alice",
                 readers = listOf(
                     MessageReader(
                         messageId = "msg1",
@@ -226,7 +226,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067260000",
                 myMessage = false,
                 readByMe = true,
-                senderAsString = "Bob",
                 readers = listOf(
                     MessageReader(
                         messageId = "msg2",
@@ -266,7 +265,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067320000",
                 myMessage = false,
                 readByMe = true,
-                senderAsString = "Charlie",
                 readers = listOf(
                     MessageReader(
                         messageId = "msg3",
@@ -310,7 +308,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067380000",
                 myMessage = false,
                 readByMe = true,
-                senderAsString = "David",
                 readers = listOf(
                     MessageReader(
                         messageId = "msg4",
@@ -354,7 +351,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067440000",
                 myMessage = true,
                 readByMe = true,
-                senderAsString = "Me",
                 readers = emptyList(),
                 reactions = listOf(
                     Reaction(userId = "user2", content = "👍"),
@@ -388,7 +384,6 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                 sendDate = "1704067500000",
                 myMessage = false,
                 readByMe = true,
-                senderAsString = "Eve",
                 readers = listOf(
                     MessageReader(
                         messageId = "msg6",

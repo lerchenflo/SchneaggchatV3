@@ -89,6 +89,11 @@ interface SettingsRepository {
     fun getOnboardingSeenFlow(): Flow<Boolean>
     suspend fun setOnboardingSeen(value: Boolean)
 
+    /** Tags of the onboarding tour steps the user has seen; steps with other tags start on their screen. */
+    fun getSeenTourTagsFlow(): Flow<Set<String>>
+    suspend fun addSeenTourTags(tags: Set<String>)
+    suspend fun clearSeenTourTags()
+
     suspend fun getLastStartedVersion(): String
     suspend fun saveLastStartedVersion(value: String)
 

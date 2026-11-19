@@ -73,7 +73,6 @@ import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.user_settingsinfo
 import schneaggchatv3mp.composeapp.generated.resources.user_since
 import schneaggchatv3mp.composeapp.generated.resources.version
-import schneaggchatv3mp.composeapp.generated.resources.you_are_already_developer
 import schneaggchatv3mp.composeapp.generated.resources.you_are_now_developer
 
 @Composable
@@ -247,7 +246,8 @@ fun SettingsScreen(
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         }
 
-        if(sharedSettingsViewmodel.devSettingsEnabled){
+        //Hidden in demo mode (store screenshots); one tap on the version text below still opens the developer settings
+        if(sharedSettingsViewmodel.devSettingsEnabled && !sharedSettingsViewmodel.demoMode){
             SettingsOption(
                 Icons.Default.Code,
                 stringResource(Res.string.developer_settings),
@@ -287,12 +287,10 @@ fun SettingsScreen(
                             openDevSettingsCounter++
 
                             when {
-                                // Nothing left to unlock — don't count them up again
+                                // Already unlocked: one tap opens the developer settings (the only way in demo mode, where the entry is hidden)
                                 sharedSettingsViewmodel.devSettingsEnabled -> {
-                                    scope.launch {
-                                        SnackbarManager.showMessage(getString(Res.string.you_are_already_developer))
-                                    }
                                     openDevSettingsCounter = 0
+                                    navigateDevSettings()
                                 }
 
                                 // Still counting down

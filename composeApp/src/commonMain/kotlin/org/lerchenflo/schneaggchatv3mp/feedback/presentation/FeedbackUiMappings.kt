@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color

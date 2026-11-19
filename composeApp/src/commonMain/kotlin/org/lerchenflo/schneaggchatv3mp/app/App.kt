@@ -61,10 +61,13 @@ import io.github.lerchenflo.taptarget.FreeRoamLeaveBehavior
 import io.github.lerchenflo.taptarget.TapTargetHost
 import io.github.lerchenflo.taptarget.TourBackBehavior
 import io.github.lerchenflo.taptarget.TourSettings
-import io.github.lerchenflo.taptarget.TourSkipButton
+import io.github.lerchenflo.taptarget.TourSkipIconButton
+import io.github.lerchenflo.taptarget.TourSkipSectionIconButton
 import io.github.lerchenflo.taptarget.TourStrings
 import io.github.lerchenflo.taptarget.rememberTapTargetController
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.pendingTourTags
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tourHighlightColor
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
@@ -112,6 +115,8 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsRoot
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackScreenRoot
+import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackVoteRow
+import org.lerchenflo.schneaggchatv3mp.games.presentation.featurequiz.FeatureQuizScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
@@ -142,6 +147,8 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_got_it
 import schneaggchatv3mp.composeapp.generated.resources.ttt_highlighted_element
 import schneaggchatv3mp.composeapp.generated.resources.ttt_previous_step
 import schneaggchatv3mp.composeapp.generated.resources.ttt_skip
+import schneaggchatv3mp.composeapp.generated.resources.ttt_skip_section
+import schneaggchatv3mp.composeapp.generated.resources.ttt_show_section
 import schneaggchatv3mp.composeapp.generated.resources.press_back_again_to_exit
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -492,6 +499,9 @@ fun App() {
 
 
         val tour = rememberOnboardingTour(appVersion.isAndroid(), appVersion.isDesktop())
+        val onboardingSeen by settingsRepository.getOnboardingSeenFlow().collectAsStateWithLifecycle(false)
+        val seenTourTags by settingsRepository.getSeenTourTagsFlow()
+            .collectAsStateWithLifecycle<Set<String>?>(initialValue = null) // null until loaded
 
         val tourController = rememberTapTargetController(
             tour = tour,
@@ -519,13 +529,17 @@ fun App() {
                 println("Onboarding: Currentroute $activeRoute")
                 activeRoute
             },
-            onFinished = {
+            // Called after the full tour, a tagged run and a run that started on its own screen
+            onFinished = { seenTags ->
                 scope.launch {
                     settingsRepository.setOnboardingSeen(true)
+                    settingsRepository.addSeenTourTags(seenTags)
                 }
             },
+            autoStartTags = pendingTourTags(tour, onboardingSeen, seenTourTags),
             tourSettings = TourSettings(
                 iconPadding = 12.dp,
+                highlightColor = tourHighlightColor(),
                 // System back does nothing during free-roam steps, so the user cannot leave the step's screen that way
                 freeRoamBackBehavior = TourBackBehavior.Block,
                 // Leaving the step's screen any other way (back arrow, tabs) brings the user back to it
@@ -548,9 +562,15 @@ fun App() {
                 previousStep = stringResource(Res.string.ttt_previous_step),
                 highlightedTarget = stringResource(Res.string.ttt_highlighted_element),
                 gotIt = stringResource(Res.string.ttt_got_it),
+                skipSection = stringResource(Res.string.ttt_skip_section),
+                showSection = stringResource(Res.string.ttt_show_section),
             ),
             skipButton = { onSkip ->
-                TourSkipButton(text = stringResource(Res.string.ttt_skip), onSkip = onSkip)
+                TourSkipIconButton(contentDescription = stringResource(Res.string.ttt_skip), onSkip = onSkip)
+            },
+            // Small icons, so they do not cover tap areas. Jumps to the next part of the tour (e.g. from the map to the events)
+            skipSectionButton = { onSkipSection ->
+                TourSkipSectionIconButton(contentDescription = stringResource(Res.string.ttt_skip_section), onSkipSection = onSkipSection)
             },
         ) {
             Scaffold(
@@ -946,6 +966,12 @@ fun App() {
                                 entry<Route.Wordle> {
                                     WordleScreenRoot(
                                         onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.FeatureQuiz> {
+                                    FeatureQuizScreenRoot(
+                                        voteRow = { entry, onVoteClick -> FeedbackVoteRow(entry = entry, onVoteClick = onVoteClick) }
                                     )
                                 }
                             }

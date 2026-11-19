@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import io.github.lerchenflo.taptarget.tapTarget
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
@@ -206,6 +207,9 @@ fun ChatMessageList(
         }
     }
 
+    // The onboarding tour points at the newest message (long press, swipe to reply)
+    val newestMessageId = displayItems.firstOrNull { it is MessageDisplayItem.MessageItem }?.id
+
     Box(modifier = modifier) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
@@ -241,7 +245,8 @@ fun ChatMessageList(
                                     }
                                 }
                             },
-                            onAction = onAction
+                            onAction = onAction,
+                            modifier = if (item.id == newestMessageId) Modifier.tapTarget("chat_message") else Modifier
                         )
                     }
                     is MessageDisplayItem.DateDivider -> {

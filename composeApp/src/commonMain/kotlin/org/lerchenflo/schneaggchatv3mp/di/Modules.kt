@@ -62,6 +62,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AppAuthEventSink
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthClock
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthEventSink
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthLog
@@ -85,6 +86,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip.CoinFlipViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.featurequiz.FeatureQuizViewModel
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.fingerpicker.FingerPickerViewModel
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.fuelcalculator.FuelCalculatorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ViewModel
@@ -243,6 +245,8 @@ val sharedmodule = module{
             externalScope = get<ApplicationScope>(),
         )
     }
+    // One shared queue for all picture and voice message downloads, so they stay under the server's rate limit
+    single { MediaDownloadThrottle() }
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
     singleOf(::OfflineFirstGroupRepository) bind GroupRepository::class
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
@@ -257,6 +261,7 @@ val sharedmodule = module{
             pictureManager = get(),
             externalScope = get<ApplicationScope>(),
             logger = get(),
+            mediaDownloadThrottle = get(),
         )
     }
     singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
@@ -271,6 +276,7 @@ val sharedmodule = module{
             audioManager = get(),
             loggingRepository = get(),
             externalScope = get<ApplicationScope>(),
+            mediaDownloadThrottle = get(),
         )
     }
     // Explicit lambda so the dispatcher keeps its default (Dispatchers.Default); tests pass their own (plan R4)
@@ -471,6 +477,7 @@ val sharedmodule = module{
     // Explicit lambda because the runtime extensionId can't be resolved by viewModelOf
     viewModel { (extensionId: String) ->
         SplitViewModel(
+            errorChannel = get(),
             groupExtensionRepository = get(),
             groupRepository = get(),
             userIdentityRepository = get(),
@@ -613,6 +620,7 @@ val sharedmodule = module{
     viewModelOf(::CrosswordViewmodel)
 
     viewModelOf(::WordleViewModel)
+    viewModelOf(::FeatureQuizViewModel)
 
     viewModelOf(::PlayerSelectorViewModel)
     viewModelOf(::HighscoresViewModel)

@@ -231,7 +231,7 @@ class MessageNotifier(userLocalDataSource, groupLocalDataSource, codec: MessageC
 }
 ```
 
-One private function does the work for both: resolve names (payload value first, Room second), open-chat check (`awaitSeenCheck` true for push, false for socket), profile picture (`ensureProfilePictureForNotification`), build `NotificationContent` (reuse `Message.toNotificationContent` and `reactionNotificationContent`), show, and on any exception show the plain fallback. The push text comes from `codec.decodePush(decoded)`; when it is null the notification shows the generic "new message" text.
+One private function does the work for both: resolve names (payload value first, Room second), open-chat check (`awaitSeenCheck` true for push, false for socket), build `NotificationContent` (reuse `Message.toNotificationContent` and `reactionNotificationContent`), show, and on any exception show the plain fallback. The push text comes from `codec.decodePush(decoded)`; when it is null the notification shows the generic "new message" text.
 
 Steps:
 
@@ -470,7 +470,7 @@ New strings go to `values/`, `values-de/`, `values-it/` (never `values-de-rAT`).
 ### 3.6 Block F: notifications
 
 - [ ] `C/utilities/notifications/PayloadDecoder.kt`: `DecodedNotification.Message(msgId, senderName, messageType, chatId, chatType, chatName, content, senderId, reaction, sendDate, answerId)`; delete `chatTargetId` (`:30`); wake payload `chatId`, `chatName` (`:55-61`). Wiring checklist "New push type" in `CLAUDE.md` applies to the changed fields.
-- [ ] `C/chat/data/MessageNotifier.kt`, `C/utilities/notifications/MessageNotificationMapper.kt` (`:16`, `:30`), `NotificationContentResolver.kt`, `NotificationContent.kt` (`groupChat` field), `NotificationPictures.kt`: `chatId` directly; notification id = `chatId.hashCode().absoluteValue`. Skip the notification when `ChatEntity.muted` (D6).
+- [ ] `C/chat/data/MessageNotifier.kt`, `C/utilities/notifications/MessageNotificationMapper.kt` (`:16`, `:30`), `NotificationContentResolver.kt`, `NotificationContent.kt` (`groupChat` field): `chatId` directly; notification id = `chatId.hashCode().absoluteValue`. Skip the notification when `ChatEntity.muted` (D6).
 - [ ] Android: `A/utilities/notifications/AndroidNotifier.kt` (35 places), `ReplyReceiver.kt`, `MarkAsReadReceiver.kt` (drop `EXTRA_GROUP_CHAT`), `AppFirebaseMessagingService.kt`, `androidApp/src/main/kotlin/org/lerchenflo/androidApp/MainActivity.kt`. Notifications posted before the update carry old user ids: on open, if the id is no known chat try `getDirectChatIdForUser(id)`, else open the chat list. Cancel all message notifications once on the first start after the update.
 - [ ] iOS: `iosApp/SchneaggchatNotificationServiceExtension/NotificationPayload.swift`, `NotificationService.swift` (title fallback uses `groupMessage`), `NotificationStrings.swift` if texts change; `I/utilities/notifications/IosPushDelegateBridge.kt:66-80`.
 

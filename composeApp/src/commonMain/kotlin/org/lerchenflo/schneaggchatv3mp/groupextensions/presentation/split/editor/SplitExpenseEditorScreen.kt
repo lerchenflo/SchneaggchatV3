@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateWheelPicker
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,10 +29,8 @@ import androidx.compose.material.icons.filled.AddReaction
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,8 +51,6 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,30 +68,25 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.SplitMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitMemberUi
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.cancel
-import schneaggchatv3mp.composeapp.generated.resources.delete
-import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.split_amount_for
 import schneaggchatv3mp.composeapp.generated.resources.split_amount_label
 import schneaggchatv3mp.composeapp.generated.resources.split_choose_icon
 import schneaggchatv3mp.composeapp.generated.resources.split_date_label
-import schneaggchatv3mp.composeapp.generated.resources.split_delete_expense
-import schneaggchatv3mp.composeapp.generated.resources.split_delete_expense_title
-import schneaggchatv3mp.composeapp.generated.resources.split_delete_message
-import schneaggchatv3mp.composeapp.generated.resources.split_delete_transfer_title
 import schneaggchatv3mp.composeapp.generated.resources.split_edit_expense
 import schneaggchatv3mp.composeapp.generated.resources.split_edit_transfer
 import schneaggchatv3mp.composeapp.generated.resources.split_icon_custom_label
@@ -150,18 +140,7 @@ fun SplitExpenseEditorScreen(
         topBar = {
             ActivityTitle(
                 title = screenTitle,
-                onBackClick = { onAction(SplitExpenseEditorAction.OnBackClick) },
-                actions = {
-                    // Top right, far away from the save button at the bottom
-                    if (!state.isNew && state.canDelete) {
-                        IconButton(onClick = { onAction(SplitExpenseEditorAction.OnDeleteClick) }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = stringResource(Res.string.split_delete_expense)
-                            )
-                        }
-                    }
-                }
+                onBackClick = { onAction(SplitExpenseEditorAction.OnBackClick) }
             )
         },
         bottomBar = {
@@ -276,11 +255,11 @@ fun SplitExpenseEditorScreen(
 
             ClickableField(
                 label = stringResource(Res.string.split_date_label),
-                value = state.dateText,
+                value = state.dateTimeText,
                 trailingIcon = {
                     Icon(Icons.Default.CalendarToday, contentDescription = null)
                 },
-                onClick = { onAction(SplitExpenseEditorAction.OnDateClick) }
+                onClick = { onAction(SplitExpenseEditorAction.OnDateTimeClick) }
             )
 
             if (!state.isTransfer) {
@@ -347,36 +326,12 @@ fun SplitExpenseEditorScreen(
         )
     }
 
-    val date = state.date
-    if (state.isDatePickerVisible && date != null) {
-        SplitDatePickerDialog(
-            initialDate = date,
-            onConfirm = { onAction(SplitExpenseEditorAction.OnDateSelected(it)) },
-            onDismiss = { onAction(SplitExpenseEditorAction.OnDatePickerDismiss) }
-        )
-    }
-
-    if (state.isDeleteDialogVisible) {
-        AlertDialog(
-            onDismissRequest = { onAction(SplitExpenseEditorAction.OnDeleteDismiss) },
-            title = {
-                Text(
-                    stringResource(
-                        if (state.isTransfer) Res.string.split_delete_transfer_title else Res.string.split_delete_expense_title
-                    )
-                )
-            },
-            text = { Text(stringResource(Res.string.split_delete_message)) },
-            confirmButton = {
-                TextButton(onClick = { onAction(SplitExpenseEditorAction.OnDeleteConfirm) }) {
-                    Text(stringResource(Res.string.delete))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { onAction(SplitExpenseEditorAction.OnDeleteDismiss) }) {
-                    Text(stringResource(Res.string.cancel))
-                }
-            }
+    val dateTime = state.dateTime
+    if (state.isDateTimePickerVisible && dateTime != null) {
+        SplitDateTimePickerDialog(
+            initialDateTime = dateTime,
+            onConfirm = { onAction(SplitExpenseEditorAction.OnDateTimeSelected(it)) },
+            onDismiss = { onAction(SplitExpenseEditorAction.OnDateTimePickerDismiss) }
         )
     }
 }
@@ -684,34 +639,20 @@ private fun MemberAvatar(member: SplitMemberUi) {
     )
 }
 
-/** Same wheel picker as the rest of the app; the snapped date is only committed on confirm. */
+/**
+ * Same date and time picker as the rest of the app, without limits (future entries are allowed).
+ */
 @Composable
-private fun SplitDatePickerDialog(
-    initialDate: LocalDate,
-    onConfirm: (LocalDate) -> Unit,
+private fun SplitDateTimePickerDialog(
+    initialDateTime: LocalDateTime,
+    onConfirm: (LocalDateTime) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var pickedDate by remember { mutableStateOf(initialDate) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.split_date_label)) },
-        text = {
-            DateWheelPicker(
-                startDate = initialDate,
-                onDateChange = { pickedDate = it },
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(pickedDate) }) {
-                Text(stringResource(Res.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.cancel))
-            }
-        }
+    DateTimePickerPopup(
+        initialDateTime = initialDateTime,
+        title = stringResource(Res.string.split_date_label),
+        onConfirm = onConfirm,
+        onDismiss = onDismiss,
     )
 }
 
@@ -735,8 +676,8 @@ private fun SplitExpenseEditorScreenPreview() {
                 title = "Pizza Margherita",
                 amount = "48,00",
                 currencySymbol = "€",
-                date = LocalDate(2026, 10, 16),
-                dateText = "16.10.2026",
+                dateTime = LocalDateTime(2026, 10, 16, 19, 30),
+                dateTimeText = "16.10.2026 19:30",
                 members = previewMembers,
                 paidByUserId = "me",
                 paidByName = "Fabi (you)",
@@ -763,8 +704,8 @@ private fun SplitExpenseEditorScreenTransferPreview() {
                 isTransfer = true,
                 amount = "28,80",
                 currencySymbol = "€",
-                date = LocalDate(2026, 10, 16),
-                dateText = "16.10.2026",
+                dateTime = LocalDateTime(2026, 10, 16, 19, 30),
+                dateTimeText = "16.10.2026 19:30",
                 members = previewMembers,
                 paidByUserId = "anna",
                 paidByName = "Anna",

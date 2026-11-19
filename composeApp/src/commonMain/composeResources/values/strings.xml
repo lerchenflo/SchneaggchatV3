@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><resources>
-    <string name="app_name">SchneaggchatV3</string>
+    <string name="app_name">Schneaggchat</string>
 
     
     <string name="profile_picture">profile picture</string>
@@ -60,8 +60,8 @@
 
     <string name="email">Email</string>
     <string name="invalid_email">Enter a correct email address</string>
-    <string name="email_provider_warning">Please use a trusted email provider (Gmail, Yahoo, Outlook, iCloud, GMX). Temporary or disposable email services are discouraged for security reasons (e.g. account hijacking and recovery issues).</string>    <string name="sign_up">I don't have an account</string>
-    <string name="loginsubtitle">THE best chatting app ever - now in V3 with Multiplatform for Android, IOS and Desktop!</string>
+    <string name="email_provider_warning">This address was flagged because it is not from a common email provider. Use an email address only you can access (e.g. Gmail, Outlook, iCloud, GMX). Anyone who can read your emails can reset your password and take over your account, so temporary or disposable addresses (like 10-minute mail) are risky.</string>    <string name="sign_up">I don't have an account</string>
+    <string name="loginsubtitle">An alternative chat app with lots of features – free, no ads, made in Vorarlberg.</string>
     <string name="create_account">Create account</string>
     <string name="create_account_subtitle">Join now</string>
     <string name="acc_not_exist">Account does not exist</string>
@@ -89,8 +89,6 @@
     <string name="password_needs_to_be_the_same">Passwords must match</string>
     <string name="email_exists">An account with this email already exists</string>
     <string name="username_exists">An account with this username already exists</string>
-    <string name="username_too_long">Your username is too long</string>
-    <string name="username_too_short">Your username is too short</string>
 
     <string name="requirement_length">8 or more characters</string>
     <string name="requirement_digit">At least one number</string>
@@ -103,6 +101,7 @@
     <string name="no">no</string>
     <string name="ok">ok</string>
     <string name="cancel">cancel</string>
+    <string name="picker_back">Back</string>
     <string name="version">Version: %1$s</string>
     <string name="build_number">Build: %1$s</string>
     <string name="app_broken">App broken</string>
@@ -262,7 +261,6 @@
 
     <string name="steps_until_developer">in %1$s steps you are a developer</string>
     <string name="you_are_now_developer">you are now a developer</string>
-    <string name="you_are_already_developer">you are already a developer</string>
     <string name="developer_setting_info">Be careful with the developer settings. Make sure you know what you are doing.</string>
 
     <string name="misc_settings">Misc</string>
@@ -395,6 +393,10 @@
     <string name="event_closes_with_date">Closes: %1$s</string>
     <string name="event_group_delete_label">Delete group chat</string>
     <string name="event_group_marker">Event group</string>
+    <string name="chat_pinned">Pinned</string>
+    <string name="birthday_today">Birthday today</string>
+    <string name="selected">Selected</string>
+    <string name="not_selected">Not selected</string>
     <string name="group_delete_delay_never">Never</string>
     <string name="group_delete_delay_one_hour">1 hour after the event</string>
     <string name="group_delete_delay_one_day">1 day after the event</string>
@@ -453,6 +455,9 @@
 
     <string name="name_too_long">Name too long</string>
     <string name="name_too_short">Name too short</string>
+    <string name="name_bad_start_or_end">Must start and end with a letter or number</string>
+    <string name="name_invalid_characters">Only letters, numbers, spaces and _ - . are allowed</string>
+    <string name="name_reserved">This name is not allowed</string>
 
 
     <string name="copied_to_clipboard">Copied to clipboard</string>
@@ -587,6 +592,9 @@
     <string name="dartcounter_done">Done</string>
     <string name="dartcounter_game_configuration_title">Game Configuration</string>
     <string name="dartcounter_countdown_label">Countdown:</string>
+    <string name="dartcounter_in_mode_label">In Mode:</string>
+    <string name="dartcounter_in_mode_single_in">Single In</string>
+    <string name="dartcounter_in_mode_double_in">Double In</string>
     <string name="dartcounter_out_mode_label">Out Mode:</string>
     <string name="dartcounter_out_mode_single_out">Single Out</string>
     <string name="dartcounter_out_mode_double_out">Double Out</string>
@@ -596,6 +604,7 @@
     <string name="dartcounter_stop_game_confirmation_message">Are you sure you want to stop the current game? All progress will be lost.</string>
     <string name="dartcounter_checkout_title">Checkout</string>
     <string name="dartcounter_darts_left_format">%1$d darts left</string>
+    <string name="dartcounter_double_in_hint">Hit a double to start scoring</string>
     <string name="dartcounter_checkout_alt_format">Alt:</string>
     <string name="dartcounter_segment_double_format">D%1$d</string>
     <string name="dartcounter_segment_triple_format">T%1$d</string>
@@ -1074,7 +1083,7 @@
     <string name="contribute_bug_hint">Something crashing, broken or just feeling off? Report it, no matter how small.</string>
     <string name="contribute_feature_title">Missing a feature?</string>
     <string name="contribute_feature_hint">Tell us what you would like to see — many features started as a user request or got copied from other apps.</string>
-    <string name="contribute_open_form">Report a bug or request a feature</string>
+    <string name="contribute_open_board">Open the feedback board</string>
     <string name="contribute_donate_title">Support with money</string>
     <string name="contribute_donate_text">The app is free, has no ads and never sells your data. Keeping it alive still costs real money:</string>
     <string name="contribute_donate_mac">A Mac: the iOS version can only be built and released on Apple hardware.</string>
@@ -1377,7 +1386,7 @@
 
 
     <string name="ttt_initscreen">Lets explore some features!</string>
-    <string name="ttt_initscreen_description">As always, if something feels off / is not working, you want a new feature or something changed, feel free to request it in the settings.</string>
+    <string name="ttt_initscreen_description">If something feels off, does not work or you want a new feature, tell us on the feedback board. The tour shows you where it is.</string>
 
     <string name="ttt_start_chatting">Start chatting</string>
     <string name="ttt_start_chatting_description">Tap here to add friends.</string>
@@ -1396,6 +1405,7 @@
 
 
     <string name="ttt_settings">Here are the settings</string>
+    <string name="ttt_settings_again">One last look at the settings</string>
     <string name="ttt_settings_user">user settings</string>
     <string name="ttt_settings_user_description">Here you can change stuff about your account.</string>
 
@@ -1425,11 +1435,11 @@
 
     <string name="ttt_settings_misc">misc settings</string>
 
-    <string name="ttt_settings_misc_bugreport">Vote on features and report bugs here.</string>
 
     <string name="ttt_settings_misc_app_broken">App broken?</string>
     <string name="ttt_settings_misc_app_broken_description">If something is not working as intended, you can press this button. It will delete all app data and refetch from the server.</string>
-    <string name="ttt_misc_settings_go_back">Let's go back to the settings</string>
+    <string name="ttt_settings_misc_reset_tour">Restart the tour</string>
+    <string name="ttt_settings_misc_reset_tour_description">Thanks for taking the tour! You can start it again here any time. Enjoy Schneaggchat.</string>
 
 
 
@@ -1466,15 +1476,53 @@
 
     <string name="ttt_games_global_highscore">Global highscores</string>
     <string name="ttt_games_global_highscore_description">You can tap here to view your global rankings across all games.</string>
+    <string name="ttt_games_random">Random game</string>
+    <string name="ttt_games_random_description">Can't decide? Tap here to start a random game.</string>
+    <string name="ttt_chatselector_feedback">Feedback board</string>
+    <string name="ttt_chatselector_feedback_description">Wish for features, report bugs and vote on the ideas of others.</string>
+    <string name="ttt_feedback_quiz">Feature quiz</string>
+    <string name="ttt_feedback_quiz_description">The quickest way to give feedback: answer a few questions about the features and rate them. Please play it, it helps us make Schneaggchat better.</string>
+    <string name="ttt_chat_message_long_press">Long press a message</string>
+    <string name="ttt_chat_message_long_press_description">Reply, react, copy, edit or delete it and see who has read it. On a computer, right click it.</string>
+    <string name="ttt_chat_message_swipe">Swipe to reply</string>
+    <string name="ttt_chat_message_swipe_description">Swipe a message to the right to reply to it directly.</string>
+    <string name="ttt_chat_polls">Polls</string>
+    <string name="ttt_chat_polls_description">Tap here and choose Poll. Polls do more than yes or no:\n• several answers or own answers per person\n• a limit per option, e.g. 4 seats per car\n• public, private or anonymous, with an end time\n• without checkboxes it is a list, e.g. who brings what</string>
+    <string name="ttt_chat_details">Chat details</string>
+    <string name="ttt_chat_details_description">Tap the name for the chat details: shared pictures and links, the members of a group and more.</string>
+    <string name="ttt_chat_details_nickname">Nickname</string>
+    <string name="ttt_chat_details_nickname_description">Tap the name to give your friend a nickname. It shows instead of their name in your chats.</string>
+    <string name="ttt_chat_details_wake">Wake your friend</string>
+    <string name="ttt_chat_details_wake_description">Ring your friend's phone like an alarm, even when it is on silent, e.g. when they oversleep. Works if they use Android and allowed it in their settings.</string>
+    <string name="ttt_group_members">Group members</string>
+    <string name="ttt_group_members_description">Tap a member to open a chat or send a friend request, tap the picture to see it big. Admins add members, make others admins and remove members.</string>
+    <string name="ttt_group_timer">Delete timer</string>
+    <string name="ttt_group_timer_description">When the timer runs out, the group and all its messages are deleted for everyone, e.g. for a weekend trip. Only admins can set it.</string>
+    <string name="ttt_chat_details_about">What friends say</string>
+    <string name="ttt_chat_details_about_description">All friends of this person can write a short text about them here. They can read it but not change it. Tap to write something.</string>
+    <string name="ttt_feedback_requests">Requests</string>
+    <string name="ttt_feedback_requests_description">Feature wishes of all users. Vote for the ones you want, so we see what matters most.</string>
+    <string name="ttt_feedback_create">New entry</string>
+    <string name="ttt_feedback_create_description">Wish for a feature or report a bug. Others can vote on it, and you see when it is planned or done.</string>
+    <string name="ttt_chatselector_friend_chat">Open a chat</string>
+    <string name="ttt_chatselector_friend_chat_description">Tap this chat with a friend. We will show you what you can do in a chat.</string>
 
-    <string name="ttt_thank_you">Thank you!</string>
-    <string name="ttt_thank_you_description">Thank you for taking the tour! Enjoy using Schneaggchat.</string>
 
     <string name="ttt_hint_tap_highlighted">Tap the highlighted area to continue</string>
     <string name="ttt_hint_tap_anywhere">Tap anywhere to continue</string>
     <string name="ttt_previous_step">Previous step</string>
     <string name="ttt_highlighted_element">Highlighted element</string>
     <string name="ttt_got_it">Got it</string>
+    <string name="ttt_skip_section">Skip part</string>
+    <string name="ttt_show_section">Show</string>
+    <string name="ttt_controls_skip_tour">End the tour</string>
+    <string name="ttt_controls_skip_tour_description">Tap here to end the tour at any time. You can start it again in the misc settings.</string>
+    <string name="ttt_controls_skip_section">Skip a part</string>
+    <string name="ttt_controls_skip_section_description">Tap here to jump to the next part of the tour.</string>
+    <string name="ttt_games_question">Games</string>
+    <string name="ttt_games_question_description">Schneaggchat has games with daily puzzles and highscores. Want a short look?</string>
+    <string name="ttt_games_show">Show me</string>
+    <string name="ttt_games_skip">Skip</string>
 
     <string name="navbar_chats">chats</string>
     
@@ -1564,6 +1612,9 @@
     <string name="system_event_start_changed">%1$s moved the start to %2$s</string>
     <string name="system_event_location_changed">%1$s changed the location</string>
     <string name="system_event_cancelled">%1$s cancelled the event</string>
+    <string name="system_event_reminder">⏰ Reminder: starts in %1$s</string>
+    <string name="system_event_reminder_at">⏰ Reminder: starts at %1$s</string>
+    <string name="system_event_reminder_generic">⏰ Event reminder</string>
     <string name="system_group_extension_created">%1$s created the extension %2$s</string>
     <string name="system_group_extension_renamed">%1$s renamed the extension %2$s to %3$s</string>
     <string name="system_group_extension_deleted">%1$s deleted the extension %2$s</string>
@@ -1801,6 +1852,7 @@
     <string name="feedback_create_title_bug">Report a bug</string>
     <string name="feedback_duplicate_warning">Please check the list for duplicates first. If it already exists, vote or comment there instead.</string>
     <string name="feedback_field_title">Title</string>
+    <string name="feedback_language_hint">Please write in German (not in dialect), so everyone can read it.</string>
     <string name="feedback_field_description">Description</string>
     <string name="feedback_field_description_bug_hint">What happened, and how can it be reproduced?</string>
     <string name="feedback_field_location">Where to find it (optional)</string>
@@ -1879,6 +1931,7 @@
     <!-- Group extensions -->
     <string name="group_extensions_title">Chat extensions</string>
     <string name="group_extension_add">Add extension</string>
+    <string name="group_extension_coming_soon">Coming soon</string>
     <string name="group_extension_type_shared_text">Shared text editor</string>
     <string name="group_extension_type_split">Money split</string>
     <string name="group_extension_type_quotes">Quotes</string>
@@ -1931,7 +1984,7 @@
     <string name="split_paid_by_label">Paid by</string>
     <string name="split_transfer_from_label">From</string>
     <string name="split_transfer_to_label">To</string>
-    <string name="split_date_label">Date</string>
+    <string name="split_date_label">Date &amp; time</string>
     <string name="split_required_field">%1$s *</string>
     <string name="split_split_between">Split between</string>
     <string name="split_mode_equally">Equally</string>
@@ -1959,6 +2012,12 @@
     <string name="split_icon_custom_label">Or type any emoji</string>
     <string name="split_icon_use">Use emoji</string>
     <string name="split_icon_remove">Remove icon</string>
+    <string name="split_detail_added_by">Added by %1$s · %2$s</string>
+    <string name="split_detail_edited_by">Edited by %1$s · %2$s</string>
+    <plurals name="split_detail_share_count">
+        <item quantity="one">%1$d share</item>
+        <item quantity="other">%1$d shares</item>
+    </plurals>
     <string name="dev_announcements">Announcements</string>
     <string name="dev_announcements_desc">Create and manage announcements for all users (admins only)</string>
     <string name="announcement_new">New announcement</string>
@@ -2018,4 +2077,320 @@
         <item quantity="one">%1$d day</item>
         <item quantity="other">%1$d days</item>
     </plurals>
+
+    <!-- Games: feature quiz -->
+    <string name="featurequiz_description">Give feedback fast: answer questions and rate the features. It helps support Schneaggchat.</string>
+    <string name="games_random_game">Start a random game</string>
+    <string name="featurequiz_title">Feature quiz</string>
+    <string name="featurequiz_progress">%1$d / %2$d</string>
+    <string name="featurequiz_correct">Correct!</string>
+    <string name="featurequiz_wrong">Wrong. Right answer: %1$s</string>
+    <string name="featurequiz_didnt_know">This feature exists! Right answer: %1$s</string>
+    <string name="featurequiz_vote_prompt">How do you like this feature?</string>
+    <string name="featurequiz_wish_title">Wish from the feedback board</string>
+    <string name="featurequiz_wish_prompt">Not in the app yet. Would you want it?</string>
+    <string name="featurequiz_next">Next</string>
+    <string name="featurequiz_round_over">Round over</string>
+    <string name="featurequiz_finish">Show result</string>
+    <string name="featurequiz_done">Done</string>
+    <string name="featurequiz_result_great">You know Schneaggchat inside out!</string>
+    <string name="featurequiz_result_good">Not bad! A few features are still new to you.</string>
+    <string name="featurequiz_result_low">Lots left to discover in Schneaggchat!</string>
+    <string name="featurequiz_time">Time: %1$s</string>
+    <string name="featurequiz_play_again">Play again</string>
+    <string name="featurequiz_empty">No questions right now. Open the feedback board once while online, then try again.</string>
+    <string name="featurequiz_polls_subpoll_question">Who is the sub-poll of a poll option for?</string>
+    <string name="featurequiz_polls_subpoll_answer_1">Only for those who picked that option</string>
+    <string name="featurequiz_polls_subpoll_answer_2">For everyone in the chat</string>
+    <string name="featurequiz_polls_subpoll_answer_3">Only for the poll creator</string>
+    <string name="featurequiz_polls_subpoll_none">Polls have no sub-polls</string>
+    <string name="featurequiz_polls_subpoll_explanation">When you create a poll you can add a sub-poll to an option: it opens only for those who picked that option.</string>
+    <string name="featurequiz_language_question">Which languages can you use Schneaggchat in?</string>
+    <string name="featurequiz_language_answer_1">English, German, Italian and Vorarlbergerisch</string>
+    <string name="featurequiz_language_answer_2">English, German, French and Vorarlbergerisch</string>
+    <string name="featurequiz_language_answer_3">English, German, Spanish and Vorarlbergerisch</string>
+    <string name="featurequiz_language_none">There is no dialect, only standard languages</string>
+    <string name="featurequiz_language_explanation">Switch the language in Settings → Appearance → Language.</string>
+    <string name="featurequiz_wake_question">On Android: who can play an alarm sound on your phone, even when it's on silent?</string>
+    <string name="featurequiz_wake_answer_1">Only friends you have allowed</string>
+    <string name="featurequiz_wake_answer_2">All your friends</string>
+    <string name="featurequiz_wake_answer_3">Everyone in your groups</string>
+    <string name="featurequiz_wake_none">Nobody, Schneaggchat can't do that</string>
+    <string name="featurequiz_wake_explanation">Android only: in Settings → Notifications → Wake-ups you choose who may wake you.</string>
+    <string name="featurequiz_event_reminders_question">How many reminders can you set for one event?</string>
+    <string name="featurequiz_event_reminders_answer_1">Up to 5</string>
+    <string name="featurequiz_event_reminders_answer_2">Only 1</string>
+    <string name="featurequiz_event_reminders_answer_3">Up to 3</string>
+    <string name="featurequiz_event_reminders_none">Events have no reminders</string>
+    <string name="featurequiz_event_reminders_explanation">Pick the reminders when you create or edit an event, and you get a notification before it starts.</string>
+    <string name="featurequiz_event_title_question">How long can the title of an event be?</string>
+    <string name="featurequiz_event_title_answer_1">25 characters</string>
+    <string name="featurequiz_event_title_answer_2">50 characters</string>
+    <string name="featurequiz_event_title_answer_3">100 characters</string>
+    <string name="featurequiz_event_title_none">There are no events in Schneaggchat</string>
+    <string name="featurequiz_event_title_explanation">An event can get its own group chat named after its title, so the title has the same limit as group names.</string>
+    <string name="featurequiz_wordle_question">How many tries do you get in Wordle?</string>
+    <string name="featurequiz_wordle_answer_1">6</string>
+    <string name="featurequiz_wordle_answer_2">5</string>
+    <string name="featurequiz_wordle_answer_3">8</string>
+    <string name="featurequiz_wordle_none">There is no Wordle in Schneaggchat</string>
+    <string name="featurequiz_wordle_explanation">Guess the five-letter word in six tries. Fewer tries rank you higher on the leaderboard.</string>
+    <string name="featurequiz_tictactoe_question">How many players can play Tic Tac Toe on one phone?</string>
+    <string name="featurequiz_tictactoe_answer_1">Up to 4</string>
+    <string name="featurequiz_tictactoe_answer_2">Only 2</string>
+    <string name="featurequiz_tictactoe_answer_3">Up to 3</string>
+    <string name="featurequiz_tictactoe_none">There is no Tic Tac Toe in Schneaggchat</string>
+    <string name="featurequiz_tictactoe_explanation">With three or four players the board gets bigger and you need four in a row.</string>
+    <string name="featurequiz_dartcounter_question">Which games can the Dartcounter count down?</string>
+    <string name="featurequiz_dartcounter_answer_1">301 and 501</string>
+    <string name="featurequiz_dartcounter_answer_2">Only 501</string>
+    <string name="featurequiz_dartcounter_answer_3">101 and 201</string>
+    <string name="featurequiz_dartcounter_none">There is no Dartcounter in Schneaggchat</string>
+    <string name="featurequiz_dartcounter_explanation">Pick 301 or 501 before the leg starts. The three-dart average of every player goes on the leaderboard.</string>
+    <string name="featurequiz_app_broken_question">What does the ‘App broken’ button do?</string>
+    <string name="featurequiz_app_broken_answer_1">Deletes the local data and loads everything again from the server</string>
+    <string name="featurequiz_app_broken_answer_2">Sends a bug report to the developers</string>
+    <string name="featurequiz_app_broken_answer_3">Restarts the app in a safe mode</string>
+    <string name="featurequiz_app_broken_none">There is no such button</string>
+    <string name="featurequiz_app_broken_explanation">You find it in Settings → Misc. It fixes most common problems.</string>
+    <string name="featurequiz_nicknames_question">Who sees the nickname you give a friend?</string>
+    <string name="featurequiz_nicknames_answer_1">Only you</string>
+    <string name="featurequiz_nicknames_answer_2">You and that friend</string>
+    <string name="featurequiz_nicknames_answer_3">All your friends</string>
+    <string name="featurequiz_nicknames_none">You can't give friends nicknames</string>
+    <string name="featurequiz_nicknames_explanation">Open the chat with a friend and tap their name at the top to set a nickname.</string>
+    <string name="featurequiz_group_extensions_question">Which chat extension can a group add right now?</string>
+    <string name="featurequiz_group_extensions_answer_1">Splitting money</string>
+    <string name="featurequiz_group_extensions_answer_2">A shared shopping list</string>
+    <string name="featurequiz_group_extensions_answer_3">A shared music playlist</string>
+    <string name="featurequiz_group_extensions_none">Groups have no chat extensions</string>
+    <string name="featurequiz_group_extensions_explanation">Add it in the group details under chat extensions. More extensions are coming soon.</string>
+    <string name="featurequiz_reactions_question">What can you react to a message with?</string>
+    <string name="featurequiz_reactions_answer_1">An emoji or a short text</string>
+    <string name="featurequiz_reactions_answer_2">Only a thumbs up</string>
+    <string name="featurequiz_reactions_answer_3">Only one of six fixed emojis</string>
+    <string name="featurequiz_reactions_none">Messages have no reactions</string>
+    <string name="featurequiz_reactions_explanation">Long-press a message to react with any emoji or a short text. Who reacted and when is in the message details. Your quick reactions are set in Settings → Appearance → Quick reactions.</string>
+    <string name="featurequiz_quick_reactions_question">Where can you choose your own quick reactions?</string>
+    <string name="featurequiz_quick_reactions_answer_1">Settings → Appearance → Quick reactions</string>
+    <string name="featurequiz_quick_reactions_answer_2">In the details of each chat</string>
+    <string name="featurequiz_quick_reactions_answer_3">Only on the Schneaggchat website</string>
+    <string name="featurequiz_quick_reactions_none">Nowhere, quick reactions are fixed</string>
+    <string name="featurequiz_quick_reactions_explanation">Your first quick reaction is your double-tap reaction, the others show when you long-press a message.</string>
+    <string name="featurequiz_user_descriptions_question">Who writes the description in your profile?</string>
+    <string name="featurequiz_user_descriptions_answer_1">Your friends, together</string>
+    <string name="featurequiz_user_descriptions_answer_2">Only you</string>
+    <string name="featurequiz_user_descriptions_answer_3">The app writes it automatically</string>
+    <string name="featurequiz_user_descriptions_none">Profiles have no description</string>
+    <string name="featurequiz_user_descriptions_explanation">All your friends can edit it, you can only read it. You write your friends' descriptions in their chat details.</string>
+    <string name="featurequiz_birthdays_question">Where do your friends' birthdays show up?</string>
+    <string name="featurequiz_birthdays_answer_1">In the chat list, a birthday list and the event calendar</string>
+    <string name="featurequiz_birthdays_answer_2">Only in their profile</string>
+    <string name="featurequiz_birthdays_answer_3">Only in an email</string>
+    <string name="featurequiz_birthdays_none">Schneaggchat doesn't show birthdays</string>
+    <string name="featurequiz_birthdays_explanation">On the day itself you also get a notification.</string>
+    <string name="featurequiz_location_sharing_question">Who sees your live location?</string>
+    <string name="featurequiz_location_sharing_answer_1">Only the friends you pick</string>
+    <string name="featurequiz_location_sharing_answer_2">All your friends</string>
+    <string name="featurequiz_location_sharing_answer_3">Everyone on the map</string>
+    <string name="featurequiz_location_sharing_none">Nobody, you can't share your location</string>
+    <string name="featurequiz_location_sharing_explanation">Pick them in Settings → Schneaggmap. On the map a compass shows the direction and distance to your friends.</string>
+    <string name="featurequiz_map_places_question">Who can add places to the Schneaggmap?</string>
+    <string name="featurequiz_map_places_answer_1">Everyone</string>
+    <string name="featurequiz_map_places_answer_2">Only admins</string>
+    <string name="featurequiz_map_places_answer_3">Only the developers</string>
+    <string name="featurequiz_map_places_none">The map has no places</string>
+    <string name="featurequiz_map_places_explanation">Places are grouped by type and searchable. Police and mobile radars can be reported too.</string>
+    <string name="featurequiz_annotations_question">What can you mention with @ in a message?</string>
+    <string name="featurequiz_annotations_answer_1">Users, places, games and events</string>
+    <string name="featurequiz_annotations_answer_2">Only users</string>
+    <string name="featurequiz_annotations_answer_3">Only users and groups</string>
+    <string name="featurequiz_annotations_none">Nothing, there are no @ mentions</string>
+    <string name="featurequiz_annotations_explanation">Type @ in the text field. Tapping a mention opens what it links to.</string>
+    <string name="featurequiz_games_random_question">What does the button next to the global ranking in the games do?</string>
+    <string name="featurequiz_games_random_answer_1">Starts a random game</string>
+    <string name="featurequiz_games_random_answer_2">Opens the daily challenge</string>
+    <string name="featurequiz_games_random_answer_3">Opens the game settings</string>
+    <string name="featurequiz_games_random_none">There is no such button</string>
+    <string name="featurequiz_games_random_explanation">The global ranking itself ranks you across all games.</string>
+    <string name="featurequiz_rodeo_question">What do you catch with the lasso in Schneagg Rodeo?</string>
+    <string name="featurequiz_rodeo_answer_1">Snails</string>
+    <string name="featurequiz_rodeo_answer_2">Ravens</string>
+    <string name="featurequiz_rodeo_answer_3">Cows</string>
+    <string name="featurequiz_rodeo_none">There is no Schneagg Rodeo</string>
+    <string name="featurequiz_rodeo_explanation">Jump over the obstacles, catch snails with the lasso and escape the ravens.</string>
+    <string name="featurequiz_schneaggahus_question">How do you guide the Schneaggs home in Schneaggahus?</string>
+    <string name="featurequiz_schneaggahus_answer_1">By switching the points</string>
+    <string name="featurequiz_schneaggahus_answer_2">By drawing their path</string>
+    <string name="featurequiz_schneaggahus_answer_3">By tapping each Schneagg</string>
+    <string name="featurequiz_schneaggahus_none">There is no Schneaggahus</string>
+    <string name="featurequiz_schneaggahus_explanation">The game comes in waves. Once 3 Schneaggs end up in the wrong house, the game is over.</string>
+    <string name="featurequiz_c_challenge_question">How many tries do you get for the daily C challenge?</string>
+    <string name="featurequiz_c_challenge_answer_1">3</string>
+    <string name="featurequiz_c_challenge_answer_2">1</string>
+    <string name="featurequiz_c_challenge_answer_3">5</string>
+    <string name="featurequiz_c_challenge_none">There is no C challenge</string>
+    <string name="featurequiz_c_challenge_explanation">Solving it on the first try gives 100 points, on the second 60 and on the third 30.</string>
+    <string name="featurequiz_crossword_question">How often is there a new crossword?</string>
+    <string name="featurequiz_crossword_answer_1">Every day</string>
+    <string name="featurequiz_crossword_answer_2">Every week</string>
+    <string name="featurequiz_crossword_answer_3">Every month</string>
+    <string name="featurequiz_crossword_none">There is no crossword</string>
+    <string name="featurequiz_crossword_explanation">The English puzzles come from the New York Times archive, the German ones are generated new each time.</string>
+    <string name="featurequiz_game_2048_question">What happens in 2048 when two tiles with the same number touch?</string>
+    <string name="featurequiz_game_2048_answer_1">They merge into one tile</string>
+    <string name="featurequiz_game_2048_answer_2">Both disappear</string>
+    <string name="featurequiz_game_2048_answer_3">They swap places</string>
+    <string name="featurequiz_game_2048_none">There is no 2048</string>
+    <string name="featurequiz_game_2048_explanation">Swipe to move all tiles and reach the 2048 tile. The board gets smaller on a higher difficulty.</string>
+    <string name="featurequiz_tetris_question">How do you drop a Tetris piece fast?</string>
+    <string name="featurequiz_tetris_answer_1">Swipe down or hold</string>
+    <string name="featurequiz_tetris_answer_2">Double-tap</string>
+    <string name="featurequiz_tetris_answer_3">Shake the phone</string>
+    <string name="featurequiz_tetris_none">There is no Tetris</string>
+    <string name="featurequiz_tetris_explanation">Tap to rotate. Full rows give points, and the game gets faster over time.</string>
+    <string name="featurequiz_grid_rush_question">How do you clear tiles in Grid Rush?</string>
+    <string name="featurequiz_grid_rush_answer_1">Drag a line through 2 or more neighbouring tiles of the same colour</string>
+    <string name="featurequiz_grid_rush_answer_2">Tap single tiles</string>
+    <string name="featurequiz_grid_rush_answer_3">Swipe whole rows away</string>
+    <string name="featurequiz_grid_rush_none">There is no Grid Rush</string>
+    <string name="featurequiz_grid_rush_explanation">Everyone plays the same board each day. Longer chains score more points.</string>
+    <string name="featurequiz_odd_one_out_question">How many lives do you have in Odd One Out?</string>
+    <string name="featurequiz_odd_one_out_answer_1">3</string>
+    <string name="featurequiz_odd_one_out_answer_2">1</string>
+    <string name="featurequiz_odd_one_out_answer_3">5</string>
+    <string name="featurequiz_odd_one_out_none">There is no Odd One Out</string>
+    <string name="featurequiz_odd_one_out_explanation">Find the one tile that looks different. A wrong tap or running out of time costs a life.</string>
+    <string name="featurequiz_morse_question">How do you send a dash in the Morse game?</string>
+    <string name="featurequiz_morse_answer_1">With a long press</string>
+    <string name="featurequiz_morse_answer_2">With a double tap</string>
+    <string name="featurequiz_morse_answer_3">With a swipe</string>
+    <string name="featurequiz_morse_none">There is no Morse game</string>
+    <string name="featurequiz_morse_explanation">A short press is a dot, a long press a dash. Every correct letter gives points.</string>
+    <string name="featurequiz_yahtzee_question">What happens to the scores when a Yahtzee game on one phone ends?</string>
+    <string name="featurequiz_yahtzee_answer_1">Every player's result can go into the highscores</string>
+    <string name="featurequiz_yahtzee_answer_2">Only the winner's score is saved</string>
+    <string name="featurequiz_yahtzee_answer_3">Nothing is saved</string>
+    <string name="featurequiz_yahtzee_none">There is no Yahtzee</string>
+    <string name="featurequiz_yahtzee_explanation">Yahtzee is played by several people on one phone, under Games → Multiplayer.</string>
+    <string name="featurequiz_undercover_question">What do the impostors get in Undercover?</string>
+    <string name="featurequiz_undercover_answer_1">A different word than the others</string>
+    <string name="featurequiz_undercover_answer_2">The same word as everyone</string>
+    <string name="featurequiz_undercover_answer_3">Two words</string>
+    <string name="featurequiz_undercover_none">There is no Undercover</string>
+    <string name="featurequiz_undercover_explanation">They have to hide, and the others try to find them through everyone's descriptions.</string>
+    <string name="featurequiz_coin_flip_question">How do you flip the coin in Coin Flip?</string>
+    <string name="featurequiz_coin_flip_answer_1">Press the button or swipe up</string>
+    <string name="featurequiz_coin_flip_answer_2">Shake the phone</string>
+    <string name="featurequiz_coin_flip_answer_3">Double-tap the coin</string>
+    <string name="featurequiz_coin_flip_none">There is no coin flip</string>
+    <string name="featurequiz_coin_flip_explanation">Heads or tails for a quick decision. You find it in the games under Tools.</string>
+    <string name="featurequiz_finger_picker_question">How does the Finger Picker choose?</string>
+    <string name="featurequiz_finger_picker_answer_1">Everyone holds a finger on the screen, chance picks</string>
+    <string name="featurequiz_finger_picker_answer_2">The fastest tap wins</string>
+    <string name="featurequiz_finger_picker_answer_3">It spins a wheel of names</string>
+    <string name="featurequiz_finger_picker_none">There is no Finger Picker</string>
+    <string name="featurequiz_finger_picker_explanation">Handy when nobody wants to decide. You find it in the games under Tools.</string>
+    <string name="featurequiz_fuel_mix_question">What does the mixture calculator work out?</string>
+    <string name="featurequiz_fuel_mix_answer_1">The oil for a two-stroke fuel mix</string>
+    <string name="featurequiz_fuel_mix_answer_2">The fuel cost of a trip</string>
+    <string name="featurequiz_fuel_mix_answer_3">The right tyre pressure</string>
+    <string name="featurequiz_fuel_mix_none">There is no such calculator</string>
+    <string name="featurequiz_fuel_mix_explanation">You find it in the games under Tools.</string>
+    <string name="featurequiz_voice_messages_question">How do you record a voice message?</string>
+    <string name="featurequiz_voice_messages_answer_1">Hold the microphone button</string>
+    <string name="featurequiz_voice_messages_answer_2">Tap the microphone twice</string>
+    <string name="featurequiz_voice_messages_answer_3">Shake the phone</string>
+    <string name="featurequiz_voice_messages_none">Schneaggchat has no voice messages</string>
+    <string name="featurequiz_voice_messages_explanation">It works on desktop too.</string>
+    <string name="featurequiz_image_messages_question">How do you send a picture from another app to Schneaggchat?</string>
+    <string name="featurequiz_image_messages_answer_1">Share it from that app straight into a chat</string>
+    <string name="featurequiz_image_messages_answer_2">Only by taking a new photo in Schneaggchat</string>
+    <string name="featurequiz_image_messages_answer_3">Only by email</string>
+    <string name="featurequiz_image_messages_none">You can't send pictures in Schneaggchat</string>
+    <string name="featurequiz_image_messages_explanation">In a chat, the + next to the text field sends pictures too.</string>
+    <string name="featurequiz_shared_content_question">Where do you find all pictures and links ever sent in a chat?</string>
+    <string name="featurequiz_shared_content_answer_1">In the chat details</string>
+    <string name="featurequiz_shared_content_answer_2">In the settings</string>
+    <string name="featurequiz_shared_content_answer_3">On the map</string>
+    <string name="featurequiz_shared_content_none">Nowhere, Schneaggchat doesn't collect them</string>
+    <string name="featurequiz_shared_content_explanation">Tap the name at the top of the chat. A tap on a picture or link jumps to the original message.</string>
+    <string name="featurequiz_message_search_question">What does the search in the chat list find?</string>
+    <string name="featurequiz_message_search_answer_1">Messages, picture captions and polls in all chats</string>
+    <string name="featurequiz_message_search_answer_2">Only chat names</string>
+    <string name="featurequiz_message_search_answer_3">Only messages of the last week</string>
+    <string name="featurequiz_message_search_none">Schneaggchat has no search</string>
+    <string name="featurequiz_message_search_explanation">Type into the search field at the top of the chat list.</string>
+    <string name="featurequiz_drafts_question">What happens to text you haven't sent when you leave a chat?</string>
+    <string name="featurequiz_drafts_answer_1">It stays as a draft</string>
+    <string name="featurequiz_drafts_answer_2">It is sent automatically</string>
+    <string name="featurequiz_drafts_answer_3">It moves into a notes chat</string>
+    <string name="featurequiz_drafts_none">It's lost, there are no drafts</string>
+    <string name="featurequiz_drafts_explanation">Open the chat again and the text is still in the text field.</string>
+    <string name="featurequiz_groups_question">What can group admins do that other members can't?</string>
+    <string name="featurequiz_groups_answer_1">Delete the group for everyone</string>
+    <string name="featurequiz_groups_answer_2">Read deleted messages</string>
+    <string name="featurequiz_groups_answer_3">See every member's location</string>
+    <string name="featurequiz_groups_none">Groups have no admins</string>
+    <string name="featurequiz_groups_explanation">A group can also delete itself after a countdown.</string>
+    <string name="featurequiz_system_messages_question">Where do you see that someone was added to a group?</string>
+    <string name="featurequiz_system_messages_answer_1">As a system message right in the chat</string>
+    <string name="featurequiz_system_messages_answer_2">Only in a notification</string>
+    <string name="featurequiz_system_messages_answer_3">Only in the group settings</string>
+    <string name="featurequiz_system_messages_none">Nowhere, Schneaggchat doesn't show that</string>
+    <string name="featurequiz_system_messages_explanation">Name changes and new admin rights show up there too.</string>
+    <string name="featurequiz_read_receipts_question">How do you see who read your message in a group?</string>
+    <string name="featurequiz_read_receipts_answer_1">Long-press it, then Details</string>
+    <string name="featurequiz_read_receipts_answer_2">Swipe it to the left</string>
+    <string name="featurequiz_read_receipts_answer_3">Tap the group name</string>
+    <string name="featurequiz_read_receipts_none">You can't, groups have no read receipts</string>
+    <string name="featurequiz_read_receipts_explanation">The details also show who reacted and when.</string>
+    <string name="featurequiz_online_status_question">How fast does a friend's online status update?</string>
+    <string name="featurequiz_online_status_answer_1">Live, right away</string>
+    <string name="featurequiz_online_status_answer_2">Once an hour</string>
+    <string name="featurequiz_online_status_answer_3">Only after restarting the app</string>
+    <string name="featurequiz_online_status_none">There is no online status</string>
+    <string name="featurequiz_online_status_explanation">You see it in the chat list and at the top of the chat.</string>
+    <string name="featurequiz_themes_question">What does a theme change?</string>
+    <string name="featurequiz_themes_answer_1">The colours of the whole app</string>
+    <string name="featurequiz_themes_answer_2">Only the chat background</string>
+    <string name="featurequiz_themes_answer_3">Only the font</string>
+    <string name="featurequiz_themes_none">There is only one look</string>
+    <string name="featurequiz_themes_explanation">Pick it in Settings → Appearance → Theme.</string>
+    <string name="featurequiz_phone_number_question">Who sees your phone number?</string>
+    <string name="featurequiz_phone_number_answer_1">Your friends, if you add it</string>
+    <string name="featurequiz_phone_number_answer_2">Everyone who finds your username</string>
+    <string name="featurequiz_phone_number_answer_3">Nobody, it's only for logging in</string>
+    <string name="featurequiz_phone_number_none">You can't add a phone number</string>
+    <string name="featurequiz_phone_number_explanation">Add it in Settings → Account. Friends can call you straight from your profile.</string>
+    <string name="featurequiz_settings_sync_question">What happens to your app settings when you log in on a new phone?</string>
+    <string name="featurequiz_settings_sync_answer_1">They come along, they are stored on the server</string>
+    <string name="featurequiz_settings_sync_answer_2">You copy them over with a QR code</string>
+    <string name="featurequiz_settings_sync_answer_3">Only the theme comes along</string>
+    <string name="featurequiz_settings_sync_none">Nothing, everything starts at the defaults</string>
+    <string name="featurequiz_settings_sync_explanation">Your settings are the same on every device you log in on.</string>
+    <string name="featurequiz_notifications_question">What can you do right from a message notification?</string>
+    <string name="featurequiz_notifications_answer_1">Mark the chat as read or open it</string>
+    <string name="featurequiz_notifications_answer_2">Delete the message</string>
+    <string name="featurequiz_notifications_answer_3">Block the sender</string>
+    <string name="featurequiz_notifications_none">Nothing, notifications have no actions</string>
+    <string name="featurequiz_notifications_explanation">Marking as read works without opening the app.</string>
+    <string name="featurequiz_changelog_question">How do you find out what's new after an update?</string>
+    <string name="featurequiz_changelog_answer_1">A changelog shows up after the update</string>
+    <string name="featurequiz_changelog_answer_2">Only on the website</string>
+    <string name="featurequiz_changelog_answer_3">By email</string>
+    <string name="featurequiz_changelog_none">Not at all, Schneaggchat doesn't show changes</string>
+    <string name="featurequiz_changelog_explanation">It shows up once, the first time you open the new version.</string>
+    <string name="featurequiz_feature_tour_question">How can you watch the feature tour again?</string>
+    <string name="featurequiz_feature_tour_answer_1">Settings → Misc → Reset Tour</string>
+    <string name="featurequiz_feature_tour_answer_2">Reinstall the app</string>
+    <string name="featurequiz_feature_tour_answer_3">Log out and back in</string>
+    <string name="featurequiz_feature_tour_none">There is no feature tour</string>
+    <string name="featurequiz_feature_tour_explanation">The tour shows where the most important features are.</string>
+    <string name="featurequiz_feedback_board_question">What can you do on the feedback board?</string>
+    <string name="featurequiz_feedback_board_answer_1">Wish for features, report bugs and vote</string>
+    <string name="featurequiz_feedback_board_answer_2">Only report bugs</string>
+    <string name="featurequiz_feedback_board_answer_3">Chat live with the developers</string>
+    <string name="featurequiz_feedback_board_none">There is no feedback board</string>
+    <string name="featurequiz_feedback_board_explanation">It works offline too, and you see what is planned or already done.</string>
 </resources>

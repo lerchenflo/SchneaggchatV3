@@ -19,34 +19,48 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 # Changelog
 
+### 3.0.20
+
+##### Highlights
+
+#### Features
+- Events: Erinnerungen im Gruppenchat
+- Datumsauswahl: Kalender statt Scrollrad
+- Dartcounter: Double In
+- Onboarding: Neue Tour-Schritte
+
+#### Bugfixes
+- Profilbild: Anzeige bei Nicht-Freunden behoben
+- iOS: Badge und Teilen repariert
+- Anmeldung: Passwort-Abgleich aktualisiert
+- E-Mail-Warnung: Text verständlicher, weniger Fehlalarme
+
 ### 3.0.19
 
 ##### Highlights
 - Gruppenerweiterungen
-- Events update
+- Events verbessert
 
 #### Features
 - Ankündigungen
-- Gruppenerweiterungen (Schneaggakassa)
-- Gruppen: Admins können Gruppe löschen, Event-Symbol am Bild
-- Chat: Bearbeitet-Anzeige, Code-Blöcke mit Highlighting, Chatdetails überarbeitet
+- Gruppenerweiterungen (Schneaggakassa), weitere demnächst
+- Chat: Bearbeitet-Anzeige
 - Umfragen: Einfachere Einstellungen, nach dem Senden bearbeiten
-- Events: Detailseite mit Teilnehmern und Karte, Erinnerungen, Änderungsmeldungen, Wochentage in der Upcoming-Ansicht, Titel max. 25 Zeichen
+- Events: Detailseite mit Teilnehmern und Karte, Erinnerungen, Änderungsmeldungen, Wochentage in der Upcoming-Ansicht
 - Datumsauswahl: Wochentag wird angezeigt
 - Schneaggmap: UI verbessert, Standort-Alter, angepinnte Freunde zuerst (Einstellung), Polizei und mobile Radare melden mit Push (Einstellung) und Aktiv-Filter
 - Feedback-Board: Offline nutzbar, neue Tabs, Badge bei Neuigkeiten, Premium-Wünsche, Einträge und eigene Kommentare bearbeiten
 - Einstellungen: Angemeldete Geräte in Datenschutz & Sicherheit, Profilbild-Sichtbarkeit wählbar
-- Spiele: C Coding, Tic Tac Toe, Schneagg Rodeo verbessert
+- Spiele: C Coding, Tic Tac Toe, Schneagg Rodeo verbessert, Feature-Quiz neu, Zufallsspiel-Knopf
 - Quick Reactions: Custom Doppeltipp-Reaktion
 - Sprachnachrichten: Auf Desktop verfügbar
+- Onboarding: Tour erweitert
 
 #### Bugfixes
 - Benachrichtigungen: Alles mögliche repariert, allgemeine Nachricht verbessert, Events korrigiert
-- Chat: Lange Chats laden, Nachrichten senden, Markdown lesbar
+- Chat: Lange Chats laden, Nachrichten senden, Markdown lesbar, Bilder auf großen Bildschirmen
 - Sprachnachrichten: Slider-Farben und Aufnahme-Anzeige
 - Spiele: Scroll in der Auswahl
-- Geburtstag: Kein Datum in der Zukunft, höchstens 80 Jahre zurück
-- Übersetzungen verbessert
 
 ### 3.0.18
 

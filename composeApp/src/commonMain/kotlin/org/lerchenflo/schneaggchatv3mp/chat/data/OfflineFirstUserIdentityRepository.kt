@@ -30,6 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
@@ -52,6 +53,7 @@ class OfflineFirstUserIdentityRepository(
     private val pictureManager: PictureManager,
     private val externalScope: CoroutineScope,
     private val logger: Logger,
+    private val mediaDownloadThrottle: MediaDownloadThrottle,
 ) : UserIdentityRepository {
 
     private val lookupRequests = Channel<Collection<String>>(Channel.UNLIMITED)
@@ -229,7 +231,7 @@ class OfflineFirstUserIdentityRepository(
     }
 
     private suspend fun downloadPicture(userId: String, pictureUpdatedAt: Long) {
-        when (val picture = userRemoteDataSource.getProfilePicForUserId(userId).trackConnectivity()) {
+        when (val picture = mediaDownloadThrottle.download { userRemoteDataSource.getProfilePicForUserId(userId) }.trackConnectivity()) {
             is DataResult.Error -> logger.logWarning("looked-up profile picture error for userid $userId")
             is DataResult.Success -> {
                 val path = pictureManager.savePictureToStorage(picture.data, userId + LOOKEDUPUSERPICTURE_FILE_NAME)

@@ -46,7 +46,7 @@ fun ChangeStringDialog(
     oldString: String,
     maxLines: Int = 5,
     placeholder: String = "",
-    errorMessage: ErrorMessage? = null,
+    errorMessage: UiText? = null,
     /** Confirm button label. Defaults to "change" - override for dialogs that are not edits. */
     confirmText: String? = null,
     onDismiss: () -> Unit,
@@ -110,7 +110,7 @@ fun ChangeStringDialog(
                     if(errorMessage != null){
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = errorMessage.toUiText().asString(),
+                            text = errorMessage.asString(),
                             color = MaterialTheme.colorScheme.error
                         )
                     }

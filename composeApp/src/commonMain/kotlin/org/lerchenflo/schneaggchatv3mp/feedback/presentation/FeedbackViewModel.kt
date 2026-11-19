@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.isGamesEntry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -20,6 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.app.domain.sendError
 import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryChanges
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
@@ -71,9 +75,14 @@ class FeedbackViewModel(
             }
         }
         viewModelScope.launch {
-            // Read before refresh() saves the new "last seen" time
-            val lastSeen = feedbackRepository.getLastSeen()
-            _state.update { it.copy(lastSeenBeforeVisit = lastSeen) }
+            feedbackRepository.getTabUnseenCountsFlow().collect { counts ->
+                _state.update { it.copy(tabBadges = counts) }
+            }
+        }
+        viewModelScope.launch {
+            // Read before refresh() saves the new "last seen" time: the New / Updated labels stay for this visit
+            val lastSeen = feedbackRepository.getTabsLastSeen()
+            _state.update { it.copy(tabLastSeenBeforeVisit = lastSeen) }
             refresh()
         }
     }
@@ -81,16 +90,20 @@ class FeedbackViewModel(
     fun onAction(action: FeedbackAction) {
         when (action) {
             FeedbackAction.OnBackClick -> viewModelScope.launch { navigator.navigateBack() }
+            FeedbackAction.OnFeatureQuizClick -> viewModelScope.launch { navigator.navigate(Route.FeatureQuiz) }
             FeedbackAction.OnRetryClick -> refresh()
 
             // Status sets differ between the tabs, so a status filter can't carry over
-            is FeedbackAction.OnTabSelected -> updateBoard {
-                it.copy(
-                    selectedTab = action.tab,
-                    // Opening the Games tab starts on the implemented games
-                    gamesSection = if (action.tab != it.selectedTab) FeedbackSection.IMPLEMENTED else it.gamesSection,
-                    statusFilter = null,
-                )
+            is FeedbackAction.OnTabSelected -> {
+                markTabSeen(action.tab)
+                updateBoard {
+                    it.copy(
+                        selectedTab = action.tab,
+                        // Opening the Games tab starts on the implemented games
+                        gamesSection = if (action.tab != it.selectedTab) FeedbackSection.IMPLEMENTED else it.gamesSection,
+                        statusFilter = null,
+                    )
+                }
             }
             is FeedbackAction.OnGamesSectionSelected -> updateBoard {
                 it.copy(gamesSection = action.section, statusFilter = null)
@@ -133,15 +146,21 @@ class FeedbackViewModel(
     }
 
     /**
-     * Syncs, then marks everything as seen. In the app scope, so the badge is cleared also when
+     * Syncs, then marks the open tab as seen. In the app scope, so its badge is cleared also when
      * the user leaves the board before the sync is done. A failed sync still marks what is stored
-     * (the time of the last successful sync), since the user saw it.
+     * (the time of the last successful sync), since the user saw it. Other tabs keep their badge
+     * until they are opened.
      */
+    /** The user opened [tab]: its badge goes away (its New / Updated labels stay for this visit). */
+    private fun markTabSeen(tab: FeedbackTab) {
+        applicationScope.launchOnMain { feedbackRepository.markTabSeen(tab) }
+    }
+
     private fun refresh() {
         _state.update { it.copy(loadFailed = false) }
         applicationScope.launchOnMain {
             val synced = feedbackRepository.syncFeedback().isSuccess
-            feedbackRepository.markAllSeen()
+            feedbackRepository.markTabSeen(_state.value.selectedTab)
             _state.update { it.copy(isLoading = false, loadFailed = !synced && it.entries.isEmpty()) }
         }
     }

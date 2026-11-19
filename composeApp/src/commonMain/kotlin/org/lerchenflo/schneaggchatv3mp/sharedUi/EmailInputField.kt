@@ -18,9 +18,12 @@ import schneaggchatv3mp.composeapp.generated.resources.email_provider_warning
 import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 private val ALLOWED_DOMAINS = listOf(
-    "gmail.com",
-    "yahoo.com", "ymail.com",
+    "gmail.com", "googlemail.com",
+    "yahoo.com", "ymail.com", "yahoo.de", "yahoo.at", "yahoo.it",
     "outlook.com", "hotmail.com", "live.com", "msn.com",
+    "outlook.de", "outlook.at", "outlook.it",
+    "hotmail.de", "hotmail.at", "hotmail.it",
+    "live.de", "live.at", "live.it",
     "icloud.com", "me.com", "mac.com",
     "gmx.com", "gmx.net", "gmx.de", "gmx.at", "gmx.ch"
 )

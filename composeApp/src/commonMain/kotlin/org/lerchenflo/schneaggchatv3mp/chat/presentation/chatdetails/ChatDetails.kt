@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimeWheelPicker
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
 import schneaggchatv3mp.composeapp.generated.resources.shared_messages
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -34,7 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.AlertDialog
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -50,6 +49,7 @@ import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import io.github.lerchenflo.taptarget.tapTarget
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,7 +73,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
-import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
@@ -98,8 +98,6 @@ import schneaggchatv3mp.composeapp.generated.resources.delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.set_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.group_timer_picker_title
 import schneaggchatv3mp.composeapp.generated.resources.group_timer_picker_info
-import schneaggchatv3mp.composeapp.generated.resources.ok
-import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_user
 import schneaggchatv3mp.composeapp.generated.resources.enter_nickname
@@ -201,7 +199,7 @@ fun ChatDetails(
     }
 
     if (showGroupRenameDialog) {
-        var errorMessage by remember { mutableStateOf<ErrorMessage?>(null) }
+        var errorMessage by remember { mutableStateOf<UiText?>(null) }
 
         ChangeStringDialog(
             title = stringResource(Res.string.change_group_name),
@@ -238,7 +236,7 @@ fun ChatDetails(
     }
 
     if (showNicknameDialog) {
-        var errorMessage by remember { mutableStateOf<ErrorMessage?>(null) }
+        var errorMessage by remember { mutableStateOf<UiText?>(null) }
         val currentNickname = (selectedChat as? ChatDetailsState.UserDetails)?.user?.displayName ?: ""
 
         ChangeStringDialog(
@@ -300,7 +298,8 @@ fun ChatDetails(
                 onEditPictureClick = { showImagePickerDialog = true },
                 onNameClick = {
                     if (isGroup) showGroupRenameDialog = true else showNicknameDialog = true
-                }
+                },
+                nameModifier = if (isGroup) Modifier else Modifier.tapTarget("chat_details_nickname")
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -394,6 +393,7 @@ fun ChatDetails(
                     ?.replace("\\n", "\n")
                     ?: stringResource(Res.string.no_description),
                 onClick = { showDescriptionChangeDialog = true },
+                modifier = if (isGroup) Modifier else Modifier.tapTarget("chat_details_description"),
                 rightSideIcon = {
                     TooltipIconButton(
                         if (isGroup) stringResource(Res.string.description_info_group) else stringResource(
@@ -446,6 +446,7 @@ fun ChatDetails(
                         onClick = {
                             if (iAmAdmin) showExpiryPicker = true
                         },
+                        modifier = Modifier.tapTarget("chat_details_group_timer"),
                         rightSideIcon = {
                             if (iAmAdmin) {
                                 IconButton(onClick = { showDecoupleExpiryConfirmation = true }) {
@@ -464,7 +465,8 @@ fun ChatDetails(
                     SettingsOption(
                         icon = Icons.Default.Schedule,
                         text = stringResource(Res.string.set_group_timer),
-                        onClick = { showExpiryPicker = true }
+                        onClick = { showExpiryPicker = true },
+                        modifier = Modifier.tapTarget("chat_details_group_timer")
                     )
 
                     HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -574,7 +576,8 @@ fun ChatDetails(
                 (selectedChat as? ChatDetailsState.GroupDetails)?.let { groupDetails ->
                     SettingsDivider(
                         title = stringResource(Res.string.groupmembers, groupDetails.members.size),
-                        showTopDivider = false
+                        showTopDivider = false,
+                        modifier = Modifier.tapTarget("chat_details_group_members")
                     )
 
                     if (iAmAdmin) {
@@ -648,7 +651,8 @@ fun ChatDetails(
             SettingsOption(
                 icon = Icons.Default.Alarm,
                 text = stringResource(Res.string.wake_button),
-                onClick = { showWakeReasonDialog = true }
+                onClick = { showWakeReasonDialog = true },
+                modifier = if (isGroup) Modifier else Modifier.tapTarget("chat_details_wake")
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -870,6 +874,7 @@ private fun ChatDetailsHeader(
     onPictureClick: () -> Unit,
     onEditPictureClick: () -> Unit,
     onNameClick: () -> Unit,
+    nameModifier: Modifier = Modifier,
 ) {
     Column(
         modifier = Modifier
@@ -911,7 +916,7 @@ private fun ChatDetailsHeader(
         Spacer(modifier = Modifier.height(12.dp))
 
         Row(
-            modifier = Modifier
+            modifier = nameModifier
                 .clip(MaterialTheme.shapes.small)
                 .clickable { onNameClick() }
                 .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -974,7 +979,7 @@ private fun groupExpiryText(expiresAt: Long): String {
 }
 
 /**
- * Wheel picker for a group's delete timer. Seeded with the current timer, or one day from now for
+ * Date and time picker for a group's delete timer. Seeded with the current timer, or one day from now for
  * a group that has none (or whose timer already passed); the earliest pick is a few minutes ahead,
  * matching the server's "expiry must be in the future" rule so the request can't fail on that.
  */
@@ -986,43 +991,20 @@ private fun GroupExpiryPickerDialog(
 ) {
     val timeZone = TimeZone.currentSystemDefault()
     val earliest = Clock.System.now() + 5.minutes
-    var pickedDateTime by remember {
+    val initialDateTime = remember {
         val seed = initialExpiresAt
             ?.let { Instant.fromEpochMilliseconds(it) }
             ?.takeIf { it > earliest }
             ?: (Clock.System.now() + 1.days)
-        mutableStateOf(seed.toLocalDateTime(timeZone))
+        seed.toLocalDateTime(timeZone)
     }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.group_timer_picker_title)) },
-        confirmButton = {
-            TextButton(onClick = {
-                onConfirm(pickedDateTime.toInstant(timeZone).toEpochMilliseconds())
-            }) {
-                Text(stringResource(Res.string.ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.cancel))
-            }
-        },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = stringResource(Res.string.group_timer_picker_info),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-                DateTimeWheelPicker(
-                    startDateTime = pickedDateTime,
-                    onDateTimeChange = { pickedDateTime = it },
-                    minDateTime = earliest.toLocalDateTime(timeZone),
-                )
-            }
-        }
+    DateTimePickerPopup(
+        initialDateTime = initialDateTime,
+        minDateTime = earliest.toLocalDateTime(timeZone),
+        title = stringResource(Res.string.group_timer_picker_title),
+        infoText = stringResource(Res.string.group_timer_picker_info),
+        onConfirm = { onConfirm(it.toInstant(timeZone).toEpochMilliseconds()) },
+        onDismiss = onDismiss,
     )
 }

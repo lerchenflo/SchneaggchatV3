@@ -51,7 +51,6 @@ data class Message(
     var sent: Boolean = false,
     var myMessage: Boolean,
     var readByMe: Boolean,
-    var senderAsString: String = "",
     var minimizeMessage: MessageMinimal = MessageMinimal.NONE,
     var senderColor: Int = 0,
     var readers : List<MessageReader>,
@@ -124,7 +123,7 @@ data class Message(
             appendLine("Message {")
             appendLine("  id: $id")
             appendLine("  type: $msgType")
-            appendLine("  from: ${senderAsString.ifEmpty { senderId }}")
+            appendLine("  from: $senderId")
             appendLine("  to: $receiverId")
             appendLine("  content: '$contentPreview'")
             appendLine("  myMessage: $myMessage")

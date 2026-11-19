@@ -53,11 +53,17 @@ import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.audio
+import schneaggchatv3mp.composeapp.generated.resources.birthday_today
+import schneaggchatv3mp.composeapp.generated.resources.chat_pinned
 import schneaggchatv3mp.composeapp.generated.resources.event_group_marker
 import schneaggchatv3mp.composeapp.generated.resources.image
+import schneaggchatv3mp.composeapp.generated.resources.member_friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.no_status
+import schneaggchatv3mp.composeapp.generated.resources.not_selected
 import schneaggchatv3mp.composeapp.generated.resources.poll
+import schneaggchatv3mp.composeapp.generated.resources.selected
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
+import schneaggchatv3mp.composeapp.generated.resources.unknown_user_request_received
 import schneaggchatv3mp.composeapp.generated.resources.you_sender
 
 /**
@@ -172,7 +178,7 @@ fun UserButton(
                     if (chat.pinned > 0L && showPin) {
                         Icon(
                             imageVector = Icons.Default.PushPin,
-                            contentDescription = "pinned",
+                            contentDescription = stringResource(Res.string.chat_pinned),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
                                 .size(18.dp)
@@ -183,7 +189,7 @@ fun UserButton(
                     if (isBirthdayToday(chat.birthDate)) {
                         Icon(
                             imageVector = Icons.Default.Cake,
-                            contentDescription = "birthdate today",
+                            contentDescription = stringResource(Res.string.birthday_today),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
@@ -233,11 +239,11 @@ fun UserButton(
                 // an hocka daneabad zum azoaga dass ma dean usgwählt hot
                 if (selected == true){
                     Icon(imageVector = Icons.Default.CheckBox,
-                        contentDescription = "selected",
+                        contentDescription = stringResource(Res.string.selected),
                         tint = MaterialTheme.colorScheme.primary)
                 }else if (selected == false){
                     Icon(imageVector = Icons.Default.CheckBoxOutlineBlank,
-                        contentDescription = "selected",
+                        contentDescription = stringResource(Res.string.not_selected),
                         tint = MaterialTheme.colorScheme.primary)
                 }
 
@@ -326,14 +332,14 @@ fun UserButton(
                         if (chat.friendRequestState(ownId) == FriendRequestState.SENT) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.CallMade,
-                                contentDescription = "outgoing friend request",
+                                contentDescription = stringResource(Res.string.member_friend_request_sent),
                                 modifier = Modifier
                                     .fillMaxSize()
                             )
                         } else {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.CallReceived,
-                                contentDescription = "incomming friend request",
+                                contentDescription = stringResource(Res.string.unknown_user_request_received),
                                 modifier = Modifier
                                     .fillMaxSize()
                             )

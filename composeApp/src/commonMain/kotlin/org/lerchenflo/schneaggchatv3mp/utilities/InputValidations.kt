@@ -1,7 +1,15 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
+import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.name_bad_start_or_end
+import schneaggchatv3mp.composeapp.generated.resources.name_invalid_characters
+import schneaggchatv3mp.composeapp.generated.resources.name_reserved
+import schneaggchatv3mp.composeapp.generated.resources.name_too_long
+import schneaggchatv3mp.composeapp.generated.resources.name_too_short
 import schneaggchatv3mp.composeapp.generated.resources.requirement_digit
 import schneaggchatv3mp.composeapp.generated.resources.requirement_forbidden
 import schneaggchatv3mp.composeapp.generated.resources.requirement_length
@@ -145,4 +153,52 @@ suspend fun getMissingPasswordRequirements(password: String): List<String> {
     }
 
     return missing
+}
+
+/** Why a user or group name is refused, see [validateName] and [validateUsername]. */
+enum class NameError {
+    TOO_SHORT,
+    TOO_LONG,
+    BAD_START_OR_END,
+    INVALID_CHARACTERS,
+    RESERVED,
+}
+
+// Same list as the server's ValidationUtils (schneaggchatv3server), compared in lowercase.
+private val RESERVED_NAMES = setOf(
+    "admin", "administrator", "root", "system", "api",
+    "www", "mail", "ftp", "localhost", "test", "demo"
+)
+
+private val NAME_SYMBOLS = setOf('_', '-', '.', ' ')
+
+/**
+ * Null when [name] can be used as a group name. Mirrors the server's
+ * ValidationUtils.validateUsername (schneaggchatv3server), which checks group names and
+ * usernames; keep both in sync. The length limits are the group name ones, which the server
+ * uses for usernames as well.
+ */
+fun validateName(name: String): NameError? = when {
+    name.length < MIN_GROUPNAME_LENGTH -> NameError.TOO_SHORT
+    name.length > MAX_GROUPNAME_LENGTH -> NameError.TOO_LONG
+    !name.first().isLetterOrDigit() || !name.last().isLetterOrDigit() -> NameError.BAD_START_OR_END
+    !name.all { it.isLetterOrDigit() || it in NAME_SYMBOLS } -> NameError.INVALID_CHARACTERS
+    name.lowercase() in RESERVED_NAMES -> NameError.RESERVED
+    else -> null
+}
+
+/**
+ * Null when [name] can be used as a username: the [validateName] rules, and no "admin" anywhere
+ * (any case). The server has this extra rule for usernames only (2026-11-18).
+ */
+fun validateUsername(name: String): NameError? =
+    validateName(name) ?: NameError.RESERVED.takeIf { "admin" in name.lowercase() }
+
+/** The text shown under a user or group name field for this error. */
+fun NameError.toStringResource(): StringResource = when (this) {
+    NameError.TOO_SHORT -> Res.string.name_too_short
+    NameError.TOO_LONG -> Res.string.name_too_long
+    NameError.BAD_START_OR_END -> Res.string.name_bad_start_or_end
+    NameError.INVALID_CHARACTERS -> Res.string.name_invalid_characters
+    NameError.RESERVED -> Res.string.name_reserved
 }

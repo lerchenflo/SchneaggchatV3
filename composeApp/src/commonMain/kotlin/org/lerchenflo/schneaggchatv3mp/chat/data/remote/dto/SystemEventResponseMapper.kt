@@ -17,6 +17,7 @@ fun SystemEventResponse.toSystemEventMessage(): SystemEventMessage {
         text = this.text,
         previousText = this.previousText,
         timestamp = this.timestamp,
+        leadMinutes = this.leadMinutes,
     )
 }
 

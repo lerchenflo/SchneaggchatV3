@@ -1,7 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor
 
 import androidx.compose.runtime.Stable
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.SplitMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitMemberUi
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 
@@ -9,8 +10,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 data class SplitExpenseEditorState(
     val isLoading: Boolean = true,
     val isNew: Boolean = true,
-    /** Item creator, extension creator or group admin */
-    val canDelete: Boolean = false,
     /** Money transfer between two people instead of a shared expense */
     val isTransfer: Boolean = false,
 
@@ -26,8 +25,8 @@ data class SplitExpenseEditorState(
     val amountError: UiText? = null,
     val currencySymbol: String = "",
 
-    val date: LocalDate? = null,
-    val dateText: String = "",
+    val dateTime: LocalDateTime? = null,
+    val dateTimeText: String = "",
 
     val members: List<SplitMemberUi> = emptyList(),
     val paidByUserId: String? = null,
@@ -45,12 +44,9 @@ data class SplitExpenseEditorState(
     val amountsStatus: UiText? = null,
 
     val openMemberPicker: MemberPickerTarget? = null,
-    val isDatePickerVisible: Boolean = false,
-    val isDeleteDialogVisible: Boolean = false,
+    val isDateTimePickerVisible: Boolean = false,
     val isSaving: Boolean = false,
 )
-
-enum class SplitMode { EQUALLY, BY_SHARES, BY_AMOUNT }
 
 enum class MemberPickerTarget { PAID_BY, RECEIVER }
 
@@ -84,9 +80,9 @@ sealed interface SplitExpenseEditorAction {
     data object OnMemberPickerDismiss : SplitExpenseEditorAction
     data class OnMemberPicked(val target: MemberPickerTarget, val userId: String) : SplitExpenseEditorAction
 
-    data object OnDateClick : SplitExpenseEditorAction
-    data class OnDateSelected(val date: LocalDate) : SplitExpenseEditorAction
-    data object OnDatePickerDismiss : SplitExpenseEditorAction
+    data object OnDateTimeClick : SplitExpenseEditorAction
+    data class OnDateTimeSelected(val dateTime: LocalDateTime) : SplitExpenseEditorAction
+    data object OnDateTimePickerDismiss : SplitExpenseEditorAction
 
     data class OnSplitModeChange(val mode: SplitMode) : SplitExpenseEditorAction
     data class OnParticipantToggle(val userId: String) : SplitExpenseEditorAction
@@ -94,7 +90,4 @@ sealed interface SplitExpenseEditorAction {
     data class OnParticipantAmountChange(val userId: String, val amount: String) : SplitExpenseEditorAction
 
     data object OnSaveClick : SplitExpenseEditorAction
-    data object OnDeleteClick : SplitExpenseEditorAction
-    data object OnDeleteConfirm : SplitExpenseEditorAction
-    data object OnDeleteDismiss : SplitExpenseEditorAction
 }

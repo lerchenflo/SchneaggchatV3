@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network.socket
 
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.coroutineScope
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.userIdentityNameText
 import kotlinx.coroutines.flow.first
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventFallbackNotificationContent
@@ -49,7 +48,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NOTIFICATION_FALL
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationContent
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventNotificationId
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationKind
-import org.lerchenflo.schneaggchatv3mp.utilities.notifications.ensureProfilePictureForNotification
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.reactionNotificationContent
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.new_event_noti_title
@@ -270,12 +268,15 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 // SYSTEM messages are server-authored event lines (group renamed, member added,
                 // wake sent, ...) - never worth a notification banner.
                 if (socketMessage.newMessage && message.msgType != MessageType.SYSTEM) {
+                    // Outside the try, so the plain fallback below still has the name if it was resolved
+                    var senderName = ""
                     // A failure here must not skip the ack below: the server would then push the
                     // message, and the push path drops it as already stored - nothing would show.
                     try {
                         // resolve sender name and, for group messages, the group name shown alongside it
                         val group = if (message.groupMessage) groupLocalDataSource.getGroupById(message.receiverId) else null
-                        message.senderAsString = notificationNameOf(message.senderId)
+                        senderName = notificationNameOf(message.senderId)
+                        val shownSenderName = senderName
 
                         // Group messages live under the receiver (the group), single messages under the
                         // sender - the same id ChatScreen registers with OpenChatTracker (and that
@@ -290,23 +291,23 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                             KoinPlatform.getKoin().get<ApplicationScope>().launch {
                                 try {
                                     if (!OpenChatTracker.isSeenAfterConfirmDelay(chatId = chatId, isGroup = message.groupMessage)) {
-                                        NotificationManager.showNotification(message, fallbackGroupName = group?.name)
+                                        NotificationManager.showNotification(message, shownSenderName, fallbackGroupName = group?.name)
                                     }
                                 } catch (e: CancellationException) {
                                     throw e
                                 } catch (e: Exception) {
                                     logSocketError("Delayed notification for message ${message.id} failed, showing a plain one", e)
-                                    showFallbackMessageNotification(message)
+                                    showFallbackMessageNotification(message, shownSenderName)
                                 }
                             }
                         } else {
-                            NotificationManager.showNotification(message, fallbackGroupName = group?.name)
+                            NotificationManager.showNotification(message, shownSenderName, fallbackGroupName = group?.name)
                         }
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
                         logSocketError("Notification for message ${socketMessage.message.messageId} failed, showing a plain one", e)
-                        showFallbackMessageNotification(message)
+                        showFallbackMessageNotification(message, senderName)
                     }
                 }
 
@@ -376,7 +377,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
             //Friend request was sent
             is SocketConnectionMessage.FriendRequest -> {
                 //Notify before the sync: it can be slow or fail, and the notification must not wait for it
-                val requesterName = loadNotificationSender(socketMessage.requestingUser)
+                val requesterName = notificationNameOf(socketMessage.requestingUser)
                 if (socketMessage.accepted) {
                     NotificationManager.showNotification(
                         titletext = getString(Res.string.new_friend_accepted_noti),
@@ -425,7 +426,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     // The creator's own devices get the new event too, but no "X created an event" notification
                     if (socketMessage.newEntry && socketMessage.event.creatorId != ownId) {
                         val content = try {
-                            val creatorName = loadNotificationSender(socketMessage.event.creatorId)
+                            val creatorName = notificationNameOf(socketMessage.event.creatorId)
                             NotificationContent(
                                 id = eventNotificationId(socketMessage.event.id),
                                 title = getString(Res.string.new_event_noti_title, creatorName),
@@ -569,7 +570,7 @@ private suspend fun notifyNewReactions(
 }
 
 /** Plain last-resort notification for a socket message whose normal notification failed. Never throws. */
-private suspend fun showFallbackMessageNotification(message: Message) {
+private suspend fun showFallbackMessageNotification(message: Message, senderName: String) {
     try {
         val chatId = if (message.groupMessage) message.receiverId else message.senderId
         val body = message.content.takeIf { message.msgType == MessageType.TEXT && it.isNotBlank() }
@@ -577,7 +578,7 @@ private suspend fun showFallbackMessageNotification(message: Message) {
         NotificationManager.showNotification(
             NotificationContent(
                 id = chatId.hashCode().absoluteValue,
-                title = message.senderAsString.ifBlank { NOTIFICATION_FALLBACK_TITLE },
+                title = senderName.ifBlank { NOTIFICATION_FALLBACK_TITLE },
                 body = body,
                 chatId = chatId.ifBlank { null },
                 groupChat = message.groupMessage,
@@ -611,12 +612,3 @@ private suspend fun notificationNameOf(userId: String): String =
     userIdentityNameText()(
         KoinPlatform.getKoin().get<UserIdentityRepository>().getUser(userId, maxWait = NOTIFICATION_NAME_TIMEOUT).name
     )
-
-/**
- * Name and profile picture of the user a notification is about, loaded at the same time so the
- * notification waits for one timeout (3 s), not for both one after another. Returns the name.
- */
-private suspend fun loadNotificationSender(userId: String): String = coroutineScope {
-    launch { ensureProfilePictureForNotification(userId) }
-    notificationNameOf(userId)
-}

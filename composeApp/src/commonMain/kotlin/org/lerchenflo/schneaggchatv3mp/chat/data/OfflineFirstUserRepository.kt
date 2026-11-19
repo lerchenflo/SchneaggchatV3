@@ -25,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeResult
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toAvailableUser
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toWakeResult
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
@@ -42,6 +43,7 @@ class OfflineFirstUserRepository(
     private val userRemoteDataSource: UserRemoteDataSource,
     private val pictureManager: PictureManager,
     private val loggingRepository: Logger,
+    private val mediaDownloadThrottle: MediaDownloadThrottle,
 ) : UserRepository {
 
     // ─── Reads ────────────────────────────────────────────────────────────────
@@ -132,7 +134,7 @@ class OfflineFirstUserRepository(
     override suspend fun getProfilePicturesForUserIds(userIds: List<String>){
         userIds.forEach { userId ->
             val savefilename = userId + USERPROFILEPICTURE_FILE_NAME
-            when (val picture = userRemoteDataSource.getProfilePicForUserId(userId).trackConnectivity()) {
+            when (val picture = mediaDownloadThrottle.download { userRemoteDataSource.getProfilePicForUserId(userId) }.trackConnectivity()) {
                 is DataResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for userid $userId")}
                 is DataResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)

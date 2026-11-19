@@ -7,8 +7,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
@@ -23,7 +21,9 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionItemData.
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.SplitShare
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.SplitMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.consumedCents
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.splitMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.DEFAULT_SPLIT_CURRENCY
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.MAX_SPLIT_AMOUNT_CENTS
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitMemberUi
@@ -34,9 +34,11 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.isVali
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.parseAmountToCents
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.resolveSplitMembers
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToLocalDate
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToLocalDateTime
+import org.lerchenflo.schneaggchatv3mp.utilities.nowToTheMinute
+import org.lerchenflo.schneaggchatv3mp.utilities.toEpochMillis
 import org.lerchenflo.schneaggchatv3mp.utilities.toFormattedString
-import org.lerchenflo.schneaggchatv3mp.utilities.today
+import org.lerchenflo.schneaggchatv3mp.utilities.toTheMinute
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.split_amounts_complete
 import schneaggchatv3mp.composeapp.generated.resources.split_amounts_left
@@ -50,7 +52,6 @@ import schneaggchatv3mp.composeapp.generated.resources.split_error_same_person
 import schneaggchatv3mp.composeapp.generated.resources.split_error_title_required
 import schneaggchatv3mp.composeapp.generated.resources.split_error_title_too_long
 import schneaggchatv3mp.composeapp.generated.resources.split_item_not_found
-import kotlin.time.ExperimentalTime
 
 private const val MAX_TITLE_LENGTH = 100
 private const val MAX_WEIGHT = 99
@@ -58,7 +59,8 @@ private const val MAX_EMOJI_LENGTH = 10
 
 /**
  * Creates or edits one split entry: a shared expense, or a money transfer between two people
- * (opened from an existing transfer or prefilled from a settle-up suggestion).
+ * (opened from an existing transfer or prefilled from a settle-up suggestion). Deleting happens in
+ * the detail popup of the split screen.
  */
 class SplitExpenseEditorViewModel(
     private val errorChannel: ErrorChannel,
@@ -121,34 +123,25 @@ class SplitExpenseEditorViewModel(
             ?: members.firstOrNull()?.userId
         val receiver = if (isTransfer) existing?.participants?.firstOrNull() ?: transfer?.toUserId else null
         val amountCents = existing?.amountCents ?: transfer?.amountCents
-        val date = existing?.let { millisToLocalDate(it.date) } ?: today()
+        // New entries start at the current minute
+        val dateTime = existing?.let { millisToLocalDateTime(it.date).toTheMinute() } ?: nowToTheMinute()
 
-        // The editor offers three plain modes. A mix of weights and fixed amounts (from another
-        // client) opens as fixed amounts with what everyone owes, so the total stays the same
-        val existingShares = existing?.shares?.values.orEmpty()
-        val splitMode = when {
-            existing == null || isTransfer -> SplitMode.EQUALLY
-            existingShares.any { it.fixedCents > 0L } -> SplitMode.BY_AMOUNT
-            existingShares.any { it.weight != 1 } -> SplitMode.BY_SHARES
-            else -> SplitMode.EQUALLY
-        }
+        // A mix of weights and fixed amounts (from another client) opens as fixed amounts with
+        // what everyone owes, so the total stays the same
+        val splitMode = existing?.splitMode ?: SplitMode.EQUALLY
         val existingAmounts = if (splitMode == SplitMode.BY_AMOUNT) existing?.consumedCents() else null
 
         _state.update {
             it.copy(
                 isLoading = false,
                 isNew = existing == null,
-                canDelete = ownId != null && (
-                    existingItem?.createdBy == ownId || extension.createdBy == ownId ||
-                        groupMembers.any { member -> member.userId == ownId && member.admin }
-                    ),
                 isTransfer = isTransfer,
                 emoji = existing?.emoji?.takeIf { e -> e.isNotBlank() },
                 title = existing?.title.orEmpty(),
                 amount = amountCents?.let { cents -> formatAmountNumber(cents, decimalSeparator) }.orEmpty(),
                 currencySymbol = currencySymbol(currency),
-                date = date,
-                dateText = date.toFormattedString(),
+                dateTime = dateTime,
+                dateTimeText = dateTime.toFormattedString(),
                 members = members,
                 paidByUserId = paidBy,
                 paidByName = members.nameOf(paidBy),
@@ -254,17 +247,17 @@ class SplitExpenseEditorViewModel(
                 )
             }
 
-            SplitExpenseEditorAction.OnDateClick -> _state.update { it.copy(isDatePickerVisible = true) }
+            SplitExpenseEditorAction.OnDateTimeClick -> _state.update { it.copy(isDateTimePickerVisible = true) }
 
-            is SplitExpenseEditorAction.OnDateSelected -> _state.update {
+            is SplitExpenseEditorAction.OnDateTimeSelected -> _state.update {
                 it.copy(
-                    date = action.date,
-                    dateText = action.date.toFormattedString(),
-                    isDatePickerVisible = false,
+                    dateTime = action.dateTime,
+                    dateTimeText = action.dateTime.toFormattedString(),
+                    isDateTimePickerVisible = false,
                 )
             }
 
-            SplitExpenseEditorAction.OnDatePickerDismiss -> _state.update { it.copy(isDatePickerVisible = false) }
+            SplitExpenseEditorAction.OnDateTimePickerDismiss -> _state.update { it.copy(isDateTimePickerVisible = false) }
 
             is SplitExpenseEditorAction.OnSplitModeChange -> _state.update {
                 val prefilled = if (action.mode == SplitMode.BY_AMOUNT) it.withAmountsPrefilled() else it
@@ -313,12 +306,6 @@ class SplitExpenseEditorViewModel(
             }
 
             SplitExpenseEditorAction.OnSaveClick -> save()
-
-            SplitExpenseEditorAction.OnDeleteClick -> _state.update { it.copy(isDeleteDialogVisible = true) }
-
-            SplitExpenseEditorAction.OnDeleteDismiss -> _state.update { it.copy(isDeleteDialogVisible = false) }
-
-            SplitExpenseEditorAction.OnDeleteConfirm -> delete()
         }
     }
 
@@ -358,17 +345,6 @@ class SplitExpenseEditorViewModel(
         }
     }
 
-    private fun delete() {
-        val itemId = route.itemId ?: return
-        _state.update { it.copy(isDeleteDialogVisible = false) }
-
-        viewModelScope.launch {
-            if (groupExtensionRepository.deleteItem(extensionId = route.extensionId, itemId = itemId).reportErrorTo(errorChannel).isSuccess) {
-                navigator.navigateBack()
-            }
-        }
-    }
-
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private fun SplitExpenseEditorState.toExpense(dateMillis: Long): SplitExpense {
@@ -392,13 +368,15 @@ class SplitExpenseEditorViewModel(
         )
     }
 
-    /** Keeps the original timestamp while the day is unchanged, so editing never moves an expense within its day. */
-    @OptIn(ExperimentalTime::class)
+    /**
+     * The picked minute as a timestamp. Keeps the original timestamp while the minute is unchanged,
+     * so saving without touching the time never moves an expense among others of the same minute.
+     */
     private fun SplitExpenseEditorState.dateMillis(): Long {
-        val pickedDate = date ?: today()
+        val picked = dateTime ?: nowToTheMinute()
         val original = existingExpense?.date
-        if (original != null && millisToLocalDate(original) == pickedDate) return original
-        return pickedDate.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+        if (original != null && millisToLocalDateTime(original).toTheMinute() == picked) return original
+        return picked.toEpochMillis()
     }
 
     /** Fills in every participant's part of the current amount and, in [SplitMode.BY_AMOUNT], the unassigned rest. */
@@ -435,11 +413,14 @@ class SplitExpenseEditorViewModel(
                 participants.filter { it.isIncluded }.sumOf { parseAmountToCents(it.amountInput) ?: 0L }
 
     /**
-     * Entering [SplitMode.BY_AMOUNT] with nothing typed yet starts from the current split, so the
-     * amounts already add up and the user only adjusts them.
+     * Entering [SplitMode.BY_AMOUNT] with no amount typed yet (blank or 0) starts from the current
+     * split, so the amounts already add up and the user only adjusts them. Without a total there is
+     * nothing to split, so the fields stay as they are instead of filling up with zeros.
      */
     private fun SplitExpenseEditorState.withAmountsPrefilled(): SplitExpenseEditorState {
-        if (participants.any { it.isIncluded && it.amountInput.isNotBlank() }) return this
+        val total = parseAmountToCents(amount) ?: 0L
+        val anyAmountTyped = participants.any { it.isIncluded && (parseAmountToCents(it.amountInput) ?: 0L) > 0L }
+        if (total <= 0L || anyAmountTyped) return this
 
         val shares = toExpense(dateMillis = 0L).consumedCents()
         return copy(

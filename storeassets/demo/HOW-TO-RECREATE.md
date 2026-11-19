@@ -18,8 +18,11 @@ real people or an empty app.
    It runs every step below by itself, without any check in between, and writes the 7 raw
    captures to `storeassets/shots/` (clean status bar: 09:41, full battery). `--web-out` also writes
    the 600 px WebP copies the website shows; leave it out if you only need the raw shots.
-3. When done: run it once more with `--restore`, or switch the server URL back to the test server
-   in the developer settings. The next sync then replaces the demo data.
+3. When done: run it once more with `--restore` (test server, demo mode off), or do both by hand in
+   the developer settings. The next sync then replaces the demo data.
+
+With a phone connected next to the emulator, add `ANDROID_SERIAL=emulator-5554` in front of each
+command, otherwise `adb` refuses to pick a device.
 
 Takes about 3 minutes. Needs `adb`, `sqlite3`, `python3`, ImageMagick 7 (`magick`) and, for
 `--web-out`, `cwebp` (`brew install imagemagick webp`).
@@ -32,7 +35,9 @@ Limits:
 
 ## What the script does (manual steps, if you need them)
 
-1. Developer settings → turn on **Demo-Modus**. This hides the offline and test-server bars.
+1. Developer settings → turn on **Demo-Modus**. This hides the offline and test-server bars, the sync
+   indicator in the chat list and the "Entwickler" entry in the settings. Once unlocked, one tap on the
+   version text at the bottom of the settings opens the developer settings (the only way in demo mode).
 2. Developer settings → change the server URL to the unreachable `http://10.0.2.2:1`. Internet stays
    on, so the map tiles load, but no sync can overwrite the demo data. (Alternative: airplane mode,
    then run `apply_demo_data.sh` without `ONLINE_OK=1`.)
@@ -55,7 +60,12 @@ The seeding backs up the untouched database to `.last-backup-database.db` (gitig
 Logging out or syncing with the real server removes the demo data again.
 
 The store images (captions, phone frame, zoomed boxes) are rendered from these raw shots by
-`render_store_images.sh`. Its callout regions are still measured for the older 1080x2400 captures.
+`render_store_images.sh`. Its callout regions are measured for the 1280x2856 Pixel 10 Pro captures.
+The captions use Noto Sans ExtraBold; the default path is the Linux one, so on macOS pass the font
+file: `FONT=/path/to/NotoSans-ExtraBold.ttf bash storeassets/demo/render_store_images.sh`.
+
+All store PNGs (raw shots, rendered store images, icons, feature graphic) are gitignored and live only
+on the machine that made them; rerun the capture and render steps to get them on another device.
 
 ## Files
 
@@ -63,7 +73,7 @@ The store images (captions, phone frame, zoomed boxes) are rendered from these r
 |---|---|
 | `capture_store_shots.py` | Runs all steps above unattended and captures the raw shots (optionally website copies) |
 | `apply_demo_data.sh` | Pulls the DB, seeds it, pushes the DB and the profile/group pictures back, then restarts the app |
-| `seed_demo_data.py` | All demo content: names, positions, messages, poll, events. Times are relative to "now". Written for Room schema v87; if the schema changed, update the inserts |
+| `seed_demo_data.py` | All demo content: names, positions, messages, poll, events. Times are relative to "now"; the three events fit the current month (no barbecue at the lake in November) and have no location, because event markers would lie on top of the friends cluster the script taps on the map. Written for Room schema v97; if the schema changed, update the inserts |
 | `render_store_images.sh` | Renders the store images from `storeassets/shots/` |
 | `avatars/` | AI-generated faces (not real people), one per demo user, named like the user |
 | `../shots/` | The raw captures (1280x2856), kept in git for reuse |

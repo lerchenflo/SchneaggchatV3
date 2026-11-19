@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -18,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.feedback.data.local.FeedbackLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.FeedbackRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentRequest
 import org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto.FeedbackCommentEditRequest
@@ -118,21 +120,30 @@ class OfflineFirstFeedbackRepository(
     // ─── Badge ────────────────────────────────────────────────────────────────
 
     override fun getUnseenCountFlow(): Flow<Int> =
+        getTabUnseenCountsFlow().map { counts -> counts.values.sum() }.distinctUntilChanged()
+
+    override fun getTabUnseenCountsFlow(): Flow<Map<FeedbackTab, Int>> =
         combine(
             feedbackLocalDataSource.getAllFeedbackEntriesFlow(),
-            preferencemanager.getFeedbackLastSeenFlow(),
+            tabsLastSeenFlow(),
         ) { entries, lastSeen ->
-            entries.count { it.markSince(lastSeen) != null }
+            // Every entry is in exactly one tab, so the sum counts each entry once
+            FeedbackTab.entries.associateWith { tab ->
+                entries.count { tab.contains(it) && it.markSince(lastSeen.getValue(tab)) != null }
+            }
         }.distinctUntilChanged()
 
-    override suspend fun getLastSeen(): Long =
-        preferencemanager.getFeedbackLastSeenFlow().first()
+    override suspend fun getTabsLastSeen(): Map<FeedbackTab, Long> = tabsLastSeenFlow().first()
 
-    override suspend fun markAllSeen() {
+    private fun tabsLastSeenFlow(): Flow<Map<FeedbackTab, Long>> =
+        preferencemanager.getFeedbackTabsLastSeenFlow(FeedbackTab.entries.map { it.name })
+            .map { byName -> FeedbackTab.entries.associateWith { byName[it.name] ?: 0L } }
+
+    override suspend fun markTabSeen(tab: FeedbackTab) {
         // Server time, never the device clock: the marks compare server times
         val lastSyncServerTime = preferencemanager.getFeedbackLastSyncServerTime() ?: return
-        if (lastSyncServerTime > getLastSeen()) {
-            preferencemanager.saveFeedbackLastSeen(lastSyncServerTime)
+        if (lastSyncServerTime > getTabsLastSeen().getValue(tab)) {
+            preferencemanager.saveFeedbackTabLastSeen(tab.name, lastSyncServerTime)
         }
     }
 

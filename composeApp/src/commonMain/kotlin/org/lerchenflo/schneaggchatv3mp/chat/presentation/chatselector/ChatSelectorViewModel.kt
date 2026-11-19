@@ -75,7 +75,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
 
 /** How long the contribute popup stays away between two appearances. */
-private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
+private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 90.days.inWholeMilliseconds // about 3 months (user, 2026-11-18)
 
 class ChatSelectorViewModel(
     private val errorChannel: ErrorChannel,
@@ -157,6 +157,10 @@ class ChatSelectorViewModel(
     /** The server URL as saved right now; the website and donation links open this one. */
     val serverUrl: StateFlow<String> = settingsRepository.getServerUrlFlow()
         .stateIn(viewModelScope, SharingStarted.Eagerly, BASE_SERVER_URL)
+
+    /** Demo mode (store screenshots) points the app at a server that never answers, so the sync indicator stays hidden. */
+    val demoMode: StateFlow<Boolean> = settingsRepository.getDemoModeFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     init {
         checkNotificationPermission()

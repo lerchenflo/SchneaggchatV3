@@ -45,6 +45,8 @@ data class FeedbackEntryResponse(
     /** Viewer is the creator or an admin and the entry is not seeded. Missing on older servers: then false. */
     val canEdit: Boolean = false,
     val isSeeded: Boolean,
+    /** Key of a seeded entry, null for user entries. Missing on servers before the seed key: then null. */
+    val seedKey: String? = null,
     /** Missing on servers before the premium mark: then false. */
     val isPremium: Boolean = false,
     val createdAt: Long,

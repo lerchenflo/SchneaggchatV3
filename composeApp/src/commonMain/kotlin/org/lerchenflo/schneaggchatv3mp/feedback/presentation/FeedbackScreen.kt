@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -66,6 +68,9 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_filter_tag
 import schneaggchatv3mp.composeapp.generated.resources.feedback_load_error
 import schneaggchatv3mp.composeapp.generated.resources.feedback_retry
 import schneaggchatv3mp.composeapp.generated.resources.feedback_title
+import androidx.compose.material.icons.filled.Psychology
+import io.github.lerchenflo.taptarget.tapTarget
+import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title
 
 @Composable
 fun FeedbackScreenRoot() {
@@ -97,9 +102,13 @@ fun FeedbackScreen(
                 selected = state.selectedTab,
                 label = { stringResource(it.labelRes()) },
                 count = { tab -> if (state.isLoading) null else state.tabCounts[tab] ?: 0 },
+                badge = { tab -> state.tabBadges[tab]?.takeIf { it > 0 } },
                 onSelect = { onAction(FeedbackAction.OnTabSelected(it)) },
                 // Four labels with counts: the check icon would not fit on a phone
                 showLeadingIcon = false,
+                optionModifier = { tab ->
+                    if (tab == FeedbackTab.REQUESTS) Modifier.tapTarget("feedback_requests_tab") else Modifier
+                },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
@@ -145,15 +154,31 @@ fun FeedbackScreen(
             }
         }
 
-        if (!state.isLoading && !state.loadFailed) {
+        Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            // Always shown: the quiz plays from the stored board, and the tour points at it
             ExtendedFloatingActionButton(
-                onClick = { onAction(FeedbackAction.OnCreateClick) },
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text(stringResource(Res.string.feedback_create)) },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
+                onClick = { onAction(FeedbackAction.OnFeatureQuizClick) },
+                icon = { Icon(Icons.Default.Psychology, contentDescription = null) },
+                text = { Text(stringResource(Res.string.featurequiz_title)) },
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.tapTarget("feedback_feature_quiz_button")
             )
+
+            if (!state.isLoading && !state.loadFailed) {
+                ExtendedFloatingActionButton(
+                    onClick = { onAction(FeedbackAction.OnCreateClick) },
+                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    text = { Text(stringResource(Res.string.feedback_create)) },
+                    modifier = Modifier.tapTarget("feedback_create_button")
+                )
+            }
         }
     }
 
@@ -193,7 +218,7 @@ fun FeedbackScreen(
  * (pinned on top in the Top sort) count as new too.
  */
 private fun FeedbackEntry.boardMark(state: FeedbackState): FeedbackMark? =
-    state.lastSeenBeforeVisit?.let { markSince(it) }
+    state.tabLastSeenBeforeVisit?.let { lastSeen -> markSince(lastSeen.getValue(FeedbackTab.of(this))) }
         ?: FeedbackMark.NEW.takeIf { state.sort == FeedbackSort.TOP && isPinned(state.nowMillis) }
 
 /** Order of the chips on the Games tab. */
@@ -368,6 +393,7 @@ private fun FeedbackScreenPreview() {
             notNeededCount = 2,
             latestDevComment = null,
             isSeeded = true,
+            seedKey = null,
             isPremium = true,
         ),
     )
@@ -377,7 +403,7 @@ private fun FeedbackScreenPreview() {
                 entries = entries,
                 visibleEntries = entries,
                 isLoading = false,
-                lastSeenBeforeVisit = 0L,
+                tabLastSeenBeforeVisit = FeedbackTab.entries.associateWith { 0L },
             ),
             onAction = {}
         )

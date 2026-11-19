@@ -12,8 +12,12 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.leadTimeText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.system_event_reminder
+import schneaggchatv3mp.composeapp.generated.resources.system_event_reminder_at
+import schneaggchatv3mp.composeapp.generated.resources.system_event_reminder_generic
 import schneaggchatv3mp.composeapp.generated.resources.system_admin_granted
 import schneaggchatv3mp.composeapp.generated.resources.system_admin_revoked
 import schneaggchatv3mp.composeapp.generated.resources.system_event_changed
@@ -60,6 +64,7 @@ fun systemEventText(event: SystemEventMessage, names: Map<String, UserIdentityNa
         } ?: stringResource(Res.string.system_event_changed, actorName)
         SystemEventType.EVENT_LOCATION_CHANGED -> stringResource(Res.string.system_event_location_changed, actorName)
         SystemEventType.EVENT_CANCELLED -> stringResource(Res.string.system_event_cancelled, actorName)
+        SystemEventType.EVENT_REMINDER -> eventReminderText(event)
         SystemEventType.GROUP_EXTENSION_CREATED -> stringResource(Res.string.system_group_extension_created, actorName, event.text.orEmpty())
         SystemEventType.GROUP_EXTENSION_RENAMED -> stringResource(Res.string.system_group_extension_renamed, actorName, event.previousText.orEmpty(), event.text.orEmpty())
         SystemEventType.GROUP_EXTENSION_DELETED -> stringResource(Res.string.system_group_extension_deleted, actorName, event.text.orEmpty())
@@ -70,5 +75,17 @@ fun systemEventText(event: SystemEventMessage, names: Map<String, UserIdentityNa
             stringResource(Res.string.system_wake_sent_reason, actorName, event.text)
         }
         SystemEventType.UNKNOWN -> stringResource(Res.string.system_unknown_event)
+    }
+}
+
+/** Same wording as the reminder push: the lead time, else the start, else a plain "Event reminder". */
+@Composable
+private fun eventReminderText(event: SystemEventMessage): String {
+    val leadMinutes = event.leadMinutes ?: 0
+    val start = event.timestamp ?: 0
+    return when {
+        leadMinutes > 0 -> stringResource(Res.string.system_event_reminder, leadTimeText(leadMinutes))
+        start > 0 -> stringResource(Res.string.system_event_reminder_at, millisToString(start, "dd.MM.yyyy HH:mm"))
+        else -> stringResource(Res.string.system_event_reminder_generic)
     }
 }

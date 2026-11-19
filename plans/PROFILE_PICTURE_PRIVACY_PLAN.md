@@ -77,7 +77,7 @@ Move it into one repository function used by both paths, for the users table onl
 - In the function from step 0: a hidden row deletes the stored file and clears `profilePictureUrl`, and is never added to the download list. A visible row is downloaded when it is new, was hidden before, or has a newer timestamp.
 - Deleting a user row (sync `deletedUsers`, socket `deleted`) also deletes the stored picture file. Today the file stays behind, which would break D9 after an unfriend.
 - `fetchMissingProfilePictures` (`OfflineFirstUserRepository.kt:272`) skips hidden users.
-- Notification pictures (`C/utilities/notifications/NotificationPictures.kt`) skip users whose row is hidden.
+- Notification pictures (`C/utilities/notifications/NotificationPictures.kt`) skip users whose row is hidden. (2026-11-18: file deleted, notifications download no pictures anymore.)
 
 ### Step 3 — the option in the privacy settings
 

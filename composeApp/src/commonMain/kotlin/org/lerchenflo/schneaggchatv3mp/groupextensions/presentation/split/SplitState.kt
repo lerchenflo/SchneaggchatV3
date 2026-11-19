@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split
 
 import androidx.compose.runtime.Stable
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.detail.SplitExpenseDetailUi
 
 @Stable
 data class SplitState(
@@ -15,6 +16,10 @@ data class SplitState(
     val balances: List<SplitBalanceUi> = emptyList(),
     /** Transfers that settle all balances */
     val settlements: List<SplitSettlementUi> = emptyList(),
+    /** Entry shown in the detail popup, null = popup closed */
+    val detail: SplitExpenseDetailUi? = null,
+    /** Confirmation before the entry in the popup is deleted */
+    val isDeleteDialogVisible: Boolean = false,
     val isLoading: Boolean = true,
     /** Loaded, but the extension is gone (deleted or never synced) */
     val extensionMissing: Boolean = false,
@@ -65,4 +70,10 @@ sealed interface SplitAction {
     data object OnAddExpenseClick : SplitAction
     data class OnExpenseClick(val itemId: String) : SplitAction
     data class OnMarkAsPaidClick(val settlement: SplitSettlementUi) : SplitAction
+
+    data object OnDetailDismiss : SplitAction
+    data object OnDetailEditClick : SplitAction
+    data object OnDetailDeleteClick : SplitAction
+    data object OnDeleteConfirm : SplitAction
+    data object OnDeleteDismiss : SplitAction
 }

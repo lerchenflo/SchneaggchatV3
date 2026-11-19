@@ -77,7 +77,7 @@ fun GroupExtensionScreenRoot(
             oldString = extension.title,
             maxLines = 1,
             placeholder = stringResource(Res.string.group_extension_title_label),
-            errorMessage = state.renameError,
+            errorMessage = state.renameError?.toUiText(),
             onDismiss = { onAction(GroupExtensionAction.OnDialogDismiss) },
             updateString = { title -> onAction(GroupExtensionAction.OnRenameConfirm(title)) }
         )

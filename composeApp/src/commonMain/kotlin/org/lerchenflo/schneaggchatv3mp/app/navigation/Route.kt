@@ -196,4 +196,7 @@ sealed interface Route : NavKey {
     @Serializable
     data object Wordle: Route
 
+    @Serializable
+    data object FeatureQuiz: Route
+
 }
