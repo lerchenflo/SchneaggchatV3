@@ -1894,6 +1894,9 @@
     <string name="group_extension_delete">Erweiterung löschen</string>
     <string name="group_extension_delete_confirm">„%1$s“ mit allen Einträgen für alle in dieser Gruppe löschen? Das kann nicht rückgängig gemacht werden.</string>
     <string name="group_extension_more_options">Weitere Optionen</string>
+    <string name="shared_text_placeholder">Schreibt gemeinsam etwas…</string>
+    <string name="shared_text_show_author_colors">Autorenfarben anzeigen</string>
+    <string name="shared_text_hide_author_colors">Autorenfarben ausblenden</string>
     <plurals name="feedback_new_comments">
         <item quantity="one">%1$d neuer Kommentar</item>
         <item quantity="other">%1$d neue Kommentare</item>

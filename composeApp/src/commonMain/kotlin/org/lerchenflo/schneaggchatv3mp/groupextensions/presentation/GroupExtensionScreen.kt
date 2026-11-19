@@ -22,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionOwnerType
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.sharedtext.SharedTextScreenRoot
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitScreenRoot
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
@@ -55,6 +56,10 @@ fun GroupExtensionScreenRoot(
     // Types with their own screen take over once the container is loaded
     when (state.extension?.type) {
         GroupExtensionType.SPLIT -> SplitScreenRoot(
+            extensionId = extensionId,
+            topBarActions = topBarActions
+        )
+        GroupExtensionType.SHARED_TEXT -> SharedTextScreenRoot(
             extensionId = extensionId,
             topBarActions = topBarActions
         )

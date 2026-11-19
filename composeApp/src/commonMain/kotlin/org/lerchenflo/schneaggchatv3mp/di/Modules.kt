@@ -117,6 +117,7 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.GroupExtensio
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.KtorGroupExtensionRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.GroupExtensionViewModel
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.sharedtext.SharedTextViewModel
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitViewModel
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor.SplitExpenseEditorViewModel
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
@@ -473,6 +474,19 @@ val sharedmodule = module{
             groupExtensionRepository = get(),
             groupRepository = get(),
             userIdentityRepository = get(),
+            navigator = get(),
+            extensionId = extensionId
+        )
+    }
+
+    // Explicit lambda because the runtime extensionId can't be resolved by viewModelOf
+    viewModel { (extensionId: String) ->
+        SharedTextViewModel(
+            errorChannel = get(),
+            groupExtensionRepository = get(),
+            groupRepository = get(),
+            userIdentityRepository = get(),
+            applicationScope = get(),
             navigator = get(),
             extensionId = extensionId
         )

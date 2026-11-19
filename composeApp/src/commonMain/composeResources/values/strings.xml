@@ -1894,6 +1894,9 @@
     <string name="group_extension_delete">Delete extension</string>
     <string name="group_extension_delete_confirm">Delete “%1$s” with all its entries for everyone in this group? This cannot be undone.</string>
     <string name="group_extension_more_options">More options</string>
+    <string name="shared_text_placeholder">Write something together…</string>
+    <string name="shared_text_show_author_colors">Show author colors</string>
+    <string name="shared_text_hide_author_colors">Hide author colors</string>
     <plurals name="feedback_new_comments">
         <item quantity="one">%1$d new comment</item>
         <item quantity="other">%1$d new comments</item>
