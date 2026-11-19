@@ -201,6 +201,8 @@ When the user says "pick next todo", never start on your own: interview the user
 
 ## P4: docs, plans, cosmetics, games, optional
 
+- [ ] **S** Desktop icon has almost no border: the logo fills 976 of 1024 px in `C/files/schneaggchat_logo.icns` (and likely `schneaggchat_logo_transparent.ico`), so a rounded macOS / Windows icon shape may clip the speech bubble and grass like it did on Android and iOS. Android launcher (back to the V3 scale) and iOS AppIcon (logo at 70%) were fixed on 2026-11-19; the local store icons in `storeassets/icon/` were left as they are (user). *(Android icon padding fix 2026-11-19)*
+
 - [ ] **S** Friend compass: name and distance labels of friends close together lie on top of each other (store shot `storeassets/shots/06-kompass.png`: Sophie/Alex at 1.6 km N, Tobias/Max/Paul near SO); the labels are drawn with no overlap check (`C/schneaggmap/presentation/friendcompass/FriendCompassScreen.kt:313-320`). Also visible in the store image. *(store screenshot rerun 2026-11-18)*
 
 - [ ] **L** **Group extension: draw together** (user, 2026-11-18, a small thing). A shared drawing canvas for a group, like the shared text editor (`GroupExtensionType.SHARED_TEXT`, `C/groupextensions/domain/GroupExtensionType.kt:11`), with simple tools: pencils in different colors (and probably eraser, stroke width, undo, clear). Needs a server part (new extension type, storing and syncing strokes). Open questions: live drawing for everyone at once or turn-based saves; which tools exactly; can the drawing be sent as an image into the chat; history / undo across users.
