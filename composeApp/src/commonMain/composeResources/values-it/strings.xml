@@ -1941,6 +1941,9 @@
     <string name="group_extension_delete">Elimina estensione</string>
     <string name="group_extension_delete_confirm">Eliminare «%1$s» con tutte le voci per tutti in questo gruppo? L\'operazione non può essere annullata.</string>
     <string name="group_extension_more_options">Altre opzioni</string>
+    <string name="shared_text_placeholder">Scrivete qualcosa insieme…</string>
+    <string name="shared_text_show_author_colors">Mostra i colori degli autori</string>
+    <string name="shared_text_hide_author_colors">Nascondi i colori degli autori</string>
     <plurals name="feedback_new_comments">
         <item quantity="one">%1$d nuovo commento</item>
         <item quantity="other">%1$d nuovi commenti</item>
