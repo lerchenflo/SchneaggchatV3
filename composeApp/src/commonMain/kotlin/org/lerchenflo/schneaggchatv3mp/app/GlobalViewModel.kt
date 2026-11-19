@@ -160,9 +160,6 @@ class GlobalViewModel(
                             messageRepository.sendOfflineMessages(ownId) { errorChannel.sendError(it) }
                             dataSyncCoordinator.dataSync(reason = "appResumed")
 
-                            //On resume clear all error notis
-                            notifier.cancelNotification(NotificationManager.NotiIdType.ERROR.baseId)
-
                             //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
                             if(IncomingDataManager.isNewDataAvailable()){
                                 navigator.navigate(Route.MessageChatSelector)

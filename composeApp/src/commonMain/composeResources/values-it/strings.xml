@@ -392,6 +392,10 @@
     <string name="event_closes_with_date">Chiusura: %1$s</string>
     <string name="event_group_delete_label">Elimina la chat di gruppo</string>
     <string name="event_group_marker">Gruppo dell'evento</string>
+    <string name="chat_pinned">Fissata</string>
+    <string name="birthday_today">Compleanno oggi</string>
+    <string name="selected">Selezionato</string>
+    <string name="not_selected">Non selezionato</string>
     <string name="group_delete_delay_never">Mai</string>
     <string name="group_delete_delay_one_hour">1 ora dopo l'evento</string>
     <string name="group_delete_delay_one_day">1 giorno dopo l'evento</string>

@@ -32,11 +32,8 @@ object NotificationManager {
     }
 
     enum class NotiIdType(val baseId: Int) {
-        ERROR(1),
         SERVERMESSAGE(2),
         FRIEND_REQUEST(3),
-        BIRTHDAY(4),
-        EVENT(5),
         GENERIC_MESSAGES(7), //6 is the Android chat summary (CHAT_SUMMARY_ID in AndroidNotifier)
     }
 
