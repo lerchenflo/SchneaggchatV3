@@ -39,12 +39,13 @@ fun ChatMessageItem(
     playbackProgress: StateFlow<PlaybackProgress>,
     onReplyPreviewClick: () -> Unit,
     onAction: (MessageAction) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val message = item.message
 
     var showMessageOptionPopup by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxWidth()){
+    Box(modifier = modifier.fillMaxWidth()){
         MessageViewWithActions(
             useMD = useMarkdown,
             selectedChatId = chatId,

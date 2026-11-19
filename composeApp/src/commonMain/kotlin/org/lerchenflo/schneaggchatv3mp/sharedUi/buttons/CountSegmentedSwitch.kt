@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
  * Full width single-choice switch between a few tabs, each label optionally followed by a count
  * ("Images (12)"). A null count leaves the label bare, e.g. while the count is still loading.
  * [badge] puts a small number badge on a tab (e.g. new entries since it was last opened); null = none.
+ * [optionModifier] is added to one tab's button, e.g. a tour target.
  */
 @Composable
 fun <T> CountSegmentedSwitch(
@@ -29,7 +30,8 @@ fun <T> CountSegmentedSwitch(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     showLeadingIcon: Boolean = true,
-    badge: (T) -> Int? = { null }
+    badge: (T) -> Int? = { null },
+    optionModifier: (T) -> Modifier = { Modifier },
 ) {
     SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
         options.forEachIndexed { index, option ->
@@ -40,7 +42,8 @@ fun <T> CountSegmentedSwitch(
                 selected = option == selected,
                 onClick = { onSelect(option) },
                 icon = { if (showLeadingIcon) SegmentedButtonDefaults.Icon(option == selected) },
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size)
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                modifier = optionModifier(option)
             ) {
                 BadgedBox(badge = { if (optionBadge != null) Badge { Text(optionBadge.toString()) } }) {
                     Text(

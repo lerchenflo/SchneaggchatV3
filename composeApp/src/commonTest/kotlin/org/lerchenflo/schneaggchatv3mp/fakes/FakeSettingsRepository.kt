@@ -44,6 +44,7 @@ class FakeSettingsRepository : SettingsRepository {
     val pinnedChats = MutableStateFlow<List<PinnedChat>>(emptyList())
     val demoMode = MutableStateFlow(false)
     val onboardingSeen = MutableStateFlow(true)
+    val seenTourTags = MutableStateFlow<Set<String>>(emptySet())
     val lastStartedVersion = MutableStateFlow("")
     val eventsViewMode = MutableStateFlow(EventsViewMode.LIST)
 
@@ -162,6 +163,14 @@ class FakeSettingsRepository : SettingsRepository {
     override fun getOnboardingSeenFlow(): Flow<Boolean> = onboardingSeen
     override suspend fun setOnboardingSeen(value: Boolean) {
         onboardingSeen.value = value
+    }
+
+    override fun getSeenTourTagsFlow(): Flow<Set<String>> = seenTourTags
+    override suspend fun addSeenTourTags(tags: Set<String>) {
+        seenTourTags.value += tags
+    }
+    override suspend fun clearSeenTourTags() {
+        seenTourTags.value = emptySet()
     }
 
     override suspend fun getLastStartedVersion(): String = lastStartedVersion.value

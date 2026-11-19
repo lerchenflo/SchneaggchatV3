@@ -1373,7 +1373,6 @@ Mealds, egal wie klenn.</string>
 
 
     <string name="ttt_initscreen">Schouama üs a paar Features a!</string>
-    <string name="ttt_initscreen_description">Wie immer: Wenn sich eapas komisch afühlt / ned funktioniert, du a neues Feature willsch oda irgendwas istella magsch, kannsch des gern in da Einstellunga afroga.</string>
 
     <string name="ttt_start_chatting">Neua Chat starta</string>
     <string name="ttt_start_chatting_description">Tipp do zum neue Freunde hinzufüga</string>
@@ -1421,11 +1420,9 @@ Mealds, egal wie klenn.</string>
 
     <string name="ttt_settings_misc">Sonstige Einstellunga</string>
 
-    <string name="ttt_settings_misc_bugreport">Do kannsch du Fehler mealda und Features requesten.</string>
 
     <string name="ttt_settings_misc_app_broken">App kaputt?</string>
     <string name="ttt_settings_misc_app_broken_description">Wenn eapas ned wie erwartet funktioniert, kannsch mit deam Knopf alle dine App - Daten löscha und neu vom Server abalada.</string>
-    <string name="ttt_misc_settings_go_back">Gomma zruck zu da Einstellunga</string>
 
 
 
@@ -1467,10 +1464,7 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_chatselector_feedback">Feedback-Board</string>
     <string name="ttt_chatselector_feedback_description">Wünsch dir Features, meald Fehler und stimm über d Idea vo da andra ab.</string>
     <string name="ttt_feedback_quiz">Feature-Quiz</string>
-    <string name="ttt_feedback_quiz_description">Test, wie guat du Schneaggchat kennsch, und säg üs, wella Features dir gfalland.</string>
 
-    <string name="ttt_thank_you">Danke dir!</string>
-    <string name="ttt_thank_you_description">Vielen Dank dass du die Tour abgschlossa hosch. Viel Spaß mit Schneaggchat.</string>
 
     <string name="ttt_hint_tap_highlighted">Druck uf die hervorghobene Fläche zum Wittamacha</string>
     <string name="ttt_hint_tap_anywhere">Druck irgendwo zum wittamacha</string>
@@ -2021,7 +2015,6 @@ Mealds, egal wie klenn.</string>
         <item quantity="one">%1$d Tag</item>
         <item quantity="other">%1$d Täg</item>
     </plurals>
-    <string name="featurequiz_description">Wie guat kennsch du Schneaggchat? Beantwort Froga und bewert d Features</string>
     <string name="games_random_game">Zufälliges Spiel starta</string>
     <string name="featurequiz_title">Feature-Quiz</string>
     <string name="featurequiz_progress">%1$d / %2$d</string>

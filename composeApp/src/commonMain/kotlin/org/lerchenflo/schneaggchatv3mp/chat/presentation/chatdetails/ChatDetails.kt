@@ -49,6 +49,7 @@ import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import io.github.lerchenflo.taptarget.tapTarget
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -297,7 +298,8 @@ fun ChatDetails(
                 onEditPictureClick = { showImagePickerDialog = true },
                 onNameClick = {
                     if (isGroup) showGroupRenameDialog = true else showNicknameDialog = true
-                }
+                },
+                nameModifier = if (isGroup) Modifier else Modifier.tapTarget("chat_details_nickname")
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -391,6 +393,7 @@ fun ChatDetails(
                     ?.replace("\\n", "\n")
                     ?: stringResource(Res.string.no_description),
                 onClick = { showDescriptionChangeDialog = true },
+                modifier = if (isGroup) Modifier else Modifier.tapTarget("chat_details_description"),
                 rightSideIcon = {
                     TooltipIconButton(
                         if (isGroup) stringResource(Res.string.description_info_group) else stringResource(
@@ -443,6 +446,7 @@ fun ChatDetails(
                         onClick = {
                             if (iAmAdmin) showExpiryPicker = true
                         },
+                        modifier = Modifier.tapTarget("chat_details_group_timer"),
                         rightSideIcon = {
                             if (iAmAdmin) {
                                 IconButton(onClick = { showDecoupleExpiryConfirmation = true }) {
@@ -461,7 +465,8 @@ fun ChatDetails(
                     SettingsOption(
                         icon = Icons.Default.Schedule,
                         text = stringResource(Res.string.set_group_timer),
-                        onClick = { showExpiryPicker = true }
+                        onClick = { showExpiryPicker = true },
+                        modifier = Modifier.tapTarget("chat_details_group_timer")
                     )
 
                     HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -571,7 +576,8 @@ fun ChatDetails(
                 (selectedChat as? ChatDetailsState.GroupDetails)?.let { groupDetails ->
                     SettingsDivider(
                         title = stringResource(Res.string.groupmembers, groupDetails.members.size),
-                        showTopDivider = false
+                        showTopDivider = false,
+                        modifier = Modifier.tapTarget("chat_details_group_members")
                     )
 
                     if (iAmAdmin) {
@@ -645,7 +651,8 @@ fun ChatDetails(
             SettingsOption(
                 icon = Icons.Default.Alarm,
                 text = stringResource(Res.string.wake_button),
-                onClick = { showWakeReasonDialog = true }
+                onClick = { showWakeReasonDialog = true },
+                modifier = if (isGroup) Modifier else Modifier.tapTarget("chat_details_wake")
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -867,6 +874,7 @@ private fun ChatDetailsHeader(
     onPictureClick: () -> Unit,
     onEditPictureClick: () -> Unit,
     onNameClick: () -> Unit,
+    nameModifier: Modifier = Modifier,
 ) {
     Column(
         modifier = Modifier
@@ -908,7 +916,7 @@ private fun ChatDetailsHeader(
         Spacer(modifier = Modifier.height(12.dp))
 
         Row(
-            modifier = Modifier
+            modifier = nameModifier
                 .clip(MaterialTheme.shapes.small)
                 .clickable { onNameClick() }
                 .padding(horizontal = 8.dp, vertical = 4.dp),

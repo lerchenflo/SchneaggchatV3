@@ -96,6 +96,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ChatSelectorDismissableInfo
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
+import org.lerchenflo.schneaggchatv3mp.chat.domain.firstFriendChatWithMessages
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberProfilePicturePlaceholder
@@ -746,6 +747,9 @@ fun Chatauswahlscreen(
                         }
                     }
 
+                    // The onboarding tour opens this chat to show the chat steps
+                    val tourChat = availablegegners.firstFriendChatWithMessages()
+
                     items(
                         items = availablegegners,
                         key = { "${it.id}_${it.isGroup}" }
@@ -767,8 +771,8 @@ fun Chatauswahlscreen(
                             showPin = true,
                             highlightTodaysTimestamp = highlightTodaysTimestamp,
                             ownId = ownId,
-                            profilePicturePlaceholder = profilePicturePlaceholder
-
+                            profilePicturePlaceholder = profilePicturePlaceholder,
+                            modifier = if (gegner == tourChat) Modifier.tapTarget("chatselector_friend_chat") else Modifier
                         )
                         HorizontalDivider(
                             thickness = 0.5.dp

@@ -106,6 +106,9 @@ fun FeedbackScreen(
                 onSelect = { onAction(FeedbackAction.OnTabSelected(it)) },
                 // Four labels with counts: the check icon would not fit on a phone
                 showLeadingIcon = false,
+                optionModifier = { tab ->
+                    if (tab == FeedbackTab.REQUESTS) Modifier.tapTarget("feedback_requests_tab") else Modifier
+                },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
@@ -173,6 +176,7 @@ fun FeedbackScreen(
                     onClick = { onAction(FeedbackAction.OnCreateClick) },
                     icon = { Icon(Icons.Default.Add, contentDescription = null) },
                     text = { Text(stringResource(Res.string.feedback_create)) },
+                    modifier = Modifier.tapTarget("feedback_create_button")
                 )
             }
         }

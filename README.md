@@ -27,6 +27,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Events: Erinnerungen im Gruppenchat
 - Datumsauswahl: Kalender statt Scrollrad
 - Dartcounter: Double In
+- Onboarding: Neue Tour-Schritte
 
 #### Bugfixes
 - Profilbild: Anzeige bei Nicht-Freunden behoben

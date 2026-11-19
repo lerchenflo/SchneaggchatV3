@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import io.github.lerchenflo.taptarget.tapTarget
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
@@ -94,6 +95,7 @@ fun ChatInputBar(
                     onClick = { addMediaDropdownExpanded = true },
                     modifier = Modifier
                         .padding(5.dp)
+                        .tapTarget("chat_add_media")
                 ) {
                     Icon(
                         imageVector = Icons.Default.AttachFile,

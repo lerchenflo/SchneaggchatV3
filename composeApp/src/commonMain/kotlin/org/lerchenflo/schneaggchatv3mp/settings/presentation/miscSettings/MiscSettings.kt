@@ -67,8 +67,7 @@ fun MiscSettings(
 
         ActivityTitle(
             title = stringResource(Res.string.misc_settings),
-            onBackClick = onBackClick,
-            backButtonModifier = Modifier.tapTarget("misc_settings_back_button")
+            onBackClick = onBackClick
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -88,8 +87,7 @@ fun MiscSettings(
                 icon = Icons.Outlined.ThumbsUpDown,
                 text = stringResource(Res.string.feedback_title),
                 subtext = stringResource(Res.string.feedback_info),
-                onClick = navigateFeedback,
-                modifier = Modifier.tapTarget("settings_misc_bugreport")
+                onClick = navigateFeedback
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -142,7 +140,8 @@ fun MiscSettings(
                 icon = Icons.Default.Replay,
                 text = stringResource(Res.string.misc_settings_reset_tour),
                 subtext = stringResource(Res.string.misc_settings_reset_tour_desc),
-                onClick = { showResetTourDialog = true }
+                onClick = { showResetTourDialog = true },
+                modifier = Modifier.tapTarget("settings_misc_reset_tour")
             )
             if (showResetTourDialog) {
                 ConfirmationDialog(

@@ -283,6 +283,18 @@ class DataStoreSettingsRepository(
         preferencemanager.setOnboardingSeen(value)
     }
 
+    override fun getSeenTourTagsFlow(): Flow<Set<String>> {
+        return preferencemanager.getSeenTourTagsFlow()
+    }
+
+    override suspend fun addSeenTourTags(tags: Set<String>) {
+        preferencemanager.addSeenTourTags(tags)
+    }
+
+    override suspend fun clearSeenTourTags() {
+        preferencemanager.clearSeenTourTags()
+    }
+
     override suspend fun getLastStartedVersion(): String {
         return preferencemanager.getLastStartedVersion()
     }

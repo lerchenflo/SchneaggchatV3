@@ -1380,7 +1380,7 @@
 
 
     <string name="ttt_initscreen">Esploriamo alcune funzionalità!</string>
-    <string name="ttt_initscreen_description">Come sempre, se qualcosa non ti convince / non funziona, vuoi una nuova funzione o qualcosa è cambiato, sentiti libero di richiederlo nelle impostazioni.</string>
+    <string name="ttt_initscreen_description">Se qualcosa non ti convince, non funziona o vuoi una nuova funzione, diccelo nella bacheca feedback. Il tour ti mostra dove si trova.</string>
 
     <string name="ttt_start_chatting">Inizia a chattare</string>
     <string name="ttt_start_chatting_description">Tocca qui per aggiungere amici.</string>
@@ -1399,6 +1399,7 @@
 
 
     <string name="ttt_settings">Ecco le impostazioni</string>
+    <string name="ttt_settings_again">Un ultimo sguardo alle impostazioni</string>
     <string name="ttt_settings_user">impostazioni utente</string>
     <string name="ttt_settings_user_description">Qui puoi modificare le informazioni sul tuo account.</string>
 
@@ -1428,11 +1429,11 @@
 
     <string name="ttt_settings_misc">impostazioni varie</string>
 
-    <string name="ttt_settings_misc_bugreport">Qui puoi votare le funzionalità e segnalare bug.</string>
 
     <string name="ttt_settings_misc_app_broken">App non funzionante?</string>
     <string name="ttt_settings_misc_app_broken_description">Se qualcosa non funziona come previsto, puoi premere questo pulsante. Eliminerà tutti i dati dell'app e li recupererà di nuovo dal server.</string>
-    <string name="ttt_misc_settings_go_back">Torniamo alle impostazioni</string>
+    <string name="ttt_settings_misc_reset_tour">Riavvia il tour</string>
+    <string name="ttt_settings_misc_reset_tour_description">Grazie per aver fatto il tour! Qui puoi riavviarlo quando vuoi. Goditi Schneaggchat.</string>
 
 
 
@@ -1474,16 +1475,48 @@
     <string name="ttt_chatselector_feedback">Bacheca feedback</string>
     <string name="ttt_chatselector_feedback_description">Proponi funzioni, segnala errori e vota le idee degli altri.</string>
     <string name="ttt_feedback_quiz">Quiz delle funzioni</string>
-    <string name="ttt_feedback_quiz_description">Scopri quanto conosci Schneaggchat e dicci quali funzioni ti piacciono.</string>
+    <string name="ttt_feedback_quiz_description">Il modo più veloce per dare un feedback: rispondi ad alcune domande sulle funzioni e valutale. Giocaci, ci aiuti a migliorare Schneaggchat.</string>
+    <string name="ttt_chat_message_long_press">Tieni premuto un messaggio</string>
+    <string name="ttt_chat_message_long_press_description">Rispondi, reagisci, copia, modifica o elimina il messaggio e vedi chi l'ha letto. Sul computer usa il clic destro.</string>
+    <string name="ttt_chat_message_swipe">Scorri per rispondere</string>
+    <string name="ttt_chat_message_swipe_description">Scorri un messaggio verso destra per rispondere direttamente.</string>
+    <string name="ttt_chat_polls">Sondaggi</string>
+    <string name="ttt_chat_polls_description">Tocca qui e scegli Sondaggio. I sondaggi fanno più di sì o no:\n• più risposte o risposte proprie per persona\n• un limite per opzione, ad es. 4 posti per auto\n• pubblico, privato o anonimo, con un orario di fine\n• senza caselle diventa una lista, ad es. chi porta cosa</string>
+    <string name="ttt_chat_details">Dettagli chat</string>
+    <string name="ttt_chat_details_description">Tocca il nome per i dettagli della chat: immagini e link condivisi, i membri di un gruppo e altro.</string>
+    <string name="ttt_chat_details_nickname">Soprannome</string>
+    <string name="ttt_chat_details_nickname_description">Tocca il nome per dare un soprannome al tuo amico. Appare al posto del suo nome nelle tue chat.</string>
+    <string name="ttt_chat_details_wake">Sveglia il tuo amico</string>
+    <string name="ttt_chat_details_wake_description">Fai squillare il telefono del tuo amico come una sveglia, anche in modalità silenziosa, ad es. se dorme troppo. Funziona se usa Android e l'ha consentito nelle sue impostazioni.</string>
+    <string name="ttt_group_members">Membri del gruppo</string>
+    <string name="ttt_group_members_description">Tocca un membro per aprire una chat o inviare una richiesta di amicizia, tocca l'immagine per vederla in grande. Gli admin aggiungono membri, nominano altri admin e rimuovono membri.</string>
+    <string name="ttt_group_timer">Timer di eliminazione</string>
+    <string name="ttt_group_timer_description">Allo scadere del timer, il gruppo e tutti i suoi messaggi vengono eliminati per tutti, ad es. dopo una gita nel weekend. Solo gli admin possono impostarlo.</string>
+    <string name="ttt_chat_details_about">Cosa dicono gli amici</string>
+    <string name="ttt_chat_details_about_description">Tutti gli amici di questa persona possono scrivere qui un breve testo su di lei. Può leggerlo ma non modificarlo. Tocca per scrivere qualcosa.</string>
+    <string name="ttt_feedback_requests">Richieste</string>
+    <string name="ttt_feedback_requests_description">I desideri di funzioni di tutti gli utenti. Vota quelli che vuoi, così vediamo cosa conta di più.</string>
+    <string name="ttt_feedback_create">Nuova voce</string>
+    <string name="ttt_feedback_create_description">Chiedi una funzione o segnala un bug. Gli altri possono votarla e vedi quando è pianificata o pronta.</string>
+    <string name="ttt_chatselector_friend_chat">Apri una chat</string>
+    <string name="ttt_chatselector_friend_chat_description">Tocca questa chat con un amico. Ti mostriamo cosa puoi fare in una chat.</string>
 
-    <string name="ttt_thank_you">Grazie!</string>
-    <string name="ttt_thank_you_description">Grazie per aver fatto il tour! Goditi Schneaggchat.</string>
 
     <string name="ttt_hint_tap_highlighted">Tocca l'area evidenziata per continuare</string>
     <string name="ttt_hint_tap_anywhere">Tocca ovunque per continuare</string>
     <string name="ttt_previous_step">Passo precedente</string>
     <string name="ttt_highlighted_element">Elemento evidenziato</string>
     <string name="ttt_got_it">Ho capito</string>
+    <string name="ttt_skip_section">Salta parte</string>
+    <string name="ttt_show_section">Mostra</string>
+    <string name="ttt_controls_skip_tour">Termina il tour</string>
+    <string name="ttt_controls_skip_tour_description">Tocca qui per terminare il tour in qualsiasi momento. Puoi riavviarlo nelle impostazioni Varie.</string>
+    <string name="ttt_controls_skip_section">Salta una parte</string>
+    <string name="ttt_controls_skip_section_description">Tocca qui per passare alla parte successiva del tour.</string>
+    <string name="ttt_games_question">Giochi</string>
+    <string name="ttt_games_question_description">Schneaggchat ha giochi con enigmi giornalieri e classifiche. Vuoi darci un'occhiata?</string>
+    <string name="ttt_games_show">Mostrami</string>
+    <string name="ttt_games_skip">Salta</string>
 
     <string name="navbar_chats">chat</string>
 
@@ -2037,7 +2070,7 @@
     </plurals>
 
     <!-- Games: feature quiz -->
-    <string name="featurequiz_description">Quanto conosci Schneaggchat? Rispondi alle domande e valuta le funzioni</string>
+    <string name="featurequiz_description">Dai un feedback veloce: rispondi alle domande e valuta le funzioni. Così sostieni Schneaggchat.</string>
     <string name="games_random_game">Avvia un gioco a caso</string>
     <string name="featurequiz_title">Quiz delle funzioni</string>
     <string name="featurequiz_progress">%1$d / %2$d</string>
