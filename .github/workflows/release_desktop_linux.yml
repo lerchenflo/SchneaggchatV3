@@ -106,6 +106,8 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
+          # A beta tag (e.g. v3.0.20_beta) becomes a pre-release, so clients reading the latest release skip it
+          prerelease: ${{ contains(github.ref_name, 'beta') }}
           files: |
             composeApp/build/compose/binaries/main-release/deb/*.deb
             composeApp/build/compose/binaries/main-release/rpm/*.rpm

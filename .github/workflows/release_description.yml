@@ -21,6 +21,8 @@ jobs:
         run: |
           # Remove the 'v' prefix from the tag name (e.g., 'v3.0.16' becomes '3.0.16')
           VERSION="${GITHUB_REF_NAME#v}"
+          # Drop a suffix like _beta or -arch_fix3, so a beta uses the changelog of its version
+          VERSION="${VERSION%%[-_]*}"
           echo "Extracting changelog for version: $VERSION"
           
           # Use awk to parse the README.md
@@ -44,4 +46,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
+          # A beta tag (e.g. v3.0.20_beta) becomes a pre-release, so clients reading the latest release skip it
+          prerelease: ${{ contains(github.ref_name, 'beta') }}
           body_path: release_notes.md
