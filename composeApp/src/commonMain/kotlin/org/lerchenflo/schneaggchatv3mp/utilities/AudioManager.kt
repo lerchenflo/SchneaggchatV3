@@ -1,46 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 /**
- * For all the platform specific Code for audio recording
+ * Platform beep tones (Morse game). Voice messages live in the kmp-voice-messages library
+ * (`VoiceMessageFiles`, `VoicePlaybackController`, `VoiceRecordingController`).
  */
 interface AudioManager {
-    /**
-     * initialize the Audio Player on Android (because Context is needed)
-     */
-    fun initializeAudio()
-    /**
-     * returns a valid Path (no JVM Impementation)
-     */
-    fun getRecordingPath(filename: String): String
-
-    /**
-     * saves an audio to storage
-     */
-    suspend fun saveAudioToStorage(audioBytes: ByteArray, filename: String) : String
-
-    /**
-     * deletes file from storage
-     */
-    suspend fun deleteAudio(filename: String) : Boolean
-
-    /**
-     * Deletes every voice message file this app stored (received, unsent and recordings), matched
-     * by [org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME] - the folder also holds other app
-     * files. Used on logout. @return the number of deleted files
-     */
-    suspend fun deleteAllStoredAudio(): Int
-
-    /**
-     * checks if file exists
-     */
-
-    fun checkAudioExists(filePath: String) : Boolean
-
-    /**
-     * returns audio duration
-     */
-    suspend fun getMediaDuration(path: String): Long
-
     /**
      * builds and buffers the beep tone up front so that the first [startBeep] starts without the
      * delay of setting up a platform player. Call it when a screen that beeps becomes visible.

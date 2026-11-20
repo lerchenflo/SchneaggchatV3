@@ -1,66 +1,15 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
-import io.github.lerchenflo.voicemessages.voiceMessageDurationMs
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 import javax.sound.sampled.FloatControl
-import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 
 class DesktopAudioManager : AudioManager {
 
     private var beepClip: Clip? = null
     private var beepClipGain: FloatControl? = null
     private var beepClipFrequencyHz = 0
-
-    private fun getPath(filename: String): String {
-        val os = System.getProperty("os.name").lowercase()
-        val userHome = System.getProperty("user.home")
-        val appDataDir = when {
-            os.contains("win") -> File(System.getenv("APPDATA"), "Schneaggchat")
-            os.contains("mac") -> File(userHome, "Library/Application Support/Schneaggchat")
-            else -> File(userHome, ".local/share/Schneaggchat")
-        }
-
-        if (!appDataDir.exists()) {
-            appDataDir.mkdirs()
-        }
-        return File(appDataDir, filename).absolutePath
-    }
-    override fun initializeAudio() {
-    }
-
-    override fun getRecordingPath(filename: String): String {
-        return getPath(filename)
-    }
-
-    override suspend fun saveAudioToStorage(audioBytes: ByteArray, filename: String): String {
-        return saveBytesToFile(audioBytes, filename)
-    }
-
-    override suspend fun deleteAudio(filename: String): Boolean {
-        return File(getPath(filename)).delete()
-    }
-
-    override suspend fun deleteAllStoredAudio(): Int = withContext(Dispatchers.IO) {
-        // getPath("") is the app data folder itself
-        File(getPath(""))
-            .listFiles { file -> file.isFile && file.name.endsWith(VOICEMSG_FILE_NAME) }
-            .orEmpty()
-            .count { it.delete() }
-    }
-
-    override fun checkAudioExists(filePath: String): Boolean {
-        return File(filePath).exists()
-    }
-
-    override suspend fun getMediaDuration(path: String): Long = withContext(Dispatchers.IO) {
-        // Reads both formats: AAC .m4a from phones and WAV recorded on desktop
-        voiceMessageDurationMs(path)
-    }
 
     override fun prepareBeep(frequencyHz: Int) {
         if (beepClip != null && beepClipFrequencyHz == frequencyHz) return
@@ -116,12 +65,5 @@ class DesktopAudioManager : AudioManager {
         beepClip = null
         beepClipGain = null
         beepClipFrequencyHz = 0
-    }
-
-    private fun saveBytesToFile(data: ByteArray, filename: String): String {
-        val file = File(getPath(filename))
-        file.parentFile?.mkdirs()
-        file.outputStream().use { it.write(data) }
-        return file.absolutePath
     }
 }

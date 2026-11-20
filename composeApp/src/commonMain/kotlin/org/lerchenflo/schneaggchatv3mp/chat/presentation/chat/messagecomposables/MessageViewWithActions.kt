@@ -36,7 +36,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
-import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 
 @Composable
@@ -57,7 +57,7 @@ fun MessageViewWithActions(
     onAction: (MessageAction) -> Unit = {},
     /** Reaction toggled by a double tap - the first quick reaction, null when the list is empty. */
     doubleTapReaction: String? = null,
-    playbackProgress: StateFlow<PlaybackProgress>? = null,
+    playbackProgress: StateFlow<VoicePlaybackState>? = null,
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ){

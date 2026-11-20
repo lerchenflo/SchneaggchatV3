@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.testutil
 
+import io.github.lerchenflo.voicemessages.VoiceMessageFiles
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -58,7 +59,8 @@ class SendPathFixture(testScope: TestScope, val ownUserId: String = OWN_USER_ID)
         messageLocalDataSource = messageLocalDataSource,
         messageRemoteDataSource = messageRemoteDataSource,
         pictureManager = unusedDependency(),
-        audioManager = unusedDependency(),
+        // A plain class, so no unusedDependency() stub; the text send path never touches it
+        voiceFiles = VoiceMessageFiles(directory = "unused-voice-files"),
         loggingRepository = logger,
         externalScope = testScope.backgroundScope,
         mediaDownloadThrottle = MediaDownloadThrottle(),

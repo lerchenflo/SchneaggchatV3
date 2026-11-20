@@ -12,15 +12,20 @@ data class SchneaggaHusMap(
     val houseList: List<Schneaggahus>,
 )
 
-/** Identity colors shared by houses and schneaggs; the theme has no eight distinguishable hues. */
+/**
+ * Identity colors shared by houses and schneaggs; the theme has no eight distinguishable hues.
+ * Ordered so each color differs as much as possible from the ones before it: a map with N houses
+ * uses the first N, so the look-alike pairs (blue / cyan, red / orange / pink) only meet on the
+ * biggest maps. The board also draws a shape per entry (same index, ColorMark in SchneaggaHusScreen.kt).
+ */
 internal val HOUSE_COLORS = listOf(
     Color(0xFFEF5350), // red
     Color(0xFF42A5F5), // blue
-    Color(0xFF66BB6A), // green
     Color(0xFFFFCA28), // yellow
     Color(0xFFAB47BC), // purple
-    Color(0xFFFF7043), // orange
+    Color(0xFF66BB6A), // green
     Color(0xFF26C6DA), // cyan
+    Color(0xFFFF7043), // orange
     Color(0xFFEC407A), // pink
 )
 
@@ -105,7 +110,8 @@ private class MapBuilder(
 
         carve(spawn, DIRECTION.SOUTH, houseCount, remainingSteps = random.nextInt(2, 4)) ?: return null
 
-        val colors = HOUSE_COLORS.shuffled(random)
+        // The most distinct colors for this house count, on random houses
+        val colors = HOUSE_COLORS.take(houseCount).shuffled(random)
         return SchneaggaHusMap(
             gridWidth = width,
             gridHeight = height,

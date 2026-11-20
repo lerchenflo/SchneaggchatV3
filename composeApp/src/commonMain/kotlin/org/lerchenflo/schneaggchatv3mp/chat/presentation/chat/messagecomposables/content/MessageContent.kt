@@ -31,7 +31,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.image.ImageMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.text.TextMessageContentView
-import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_edited
@@ -49,7 +49,7 @@ fun MessageContent(
     minimal: MessageMinimal = MessageMinimal.NONE,
     voters: Map<String, UserIdentity> = emptyMap(),
     onAction: (MessageAction) -> Unit = {},
-    playbackProgress: StateFlow<PlaybackProgress>? = null,
+    playbackProgress: StateFlow<VoicePlaybackState>? = null,
 ){
     //Farbiger kasten
     Box(

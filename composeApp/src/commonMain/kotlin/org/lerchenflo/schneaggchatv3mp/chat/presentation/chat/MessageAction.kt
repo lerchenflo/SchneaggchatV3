@@ -16,7 +16,7 @@ sealed interface MessageAction {
     data class PlayAudio(val messageId: String, val audioPath: String, ) : MessageAction
     data class PauseAudio(val dummy: Boolean = true) : MessageAction
 
-    data class SeekAudio(val position: Long) : MessageAction
+    data class SeekAudio(val messageId: String, val position: Long) : MessageAction
 
     // Image actions
     data class DownloadImage(val pictureUrl: String, val filename: String) : MessageAction

@@ -1,18 +1,21 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
+import io.github.lerchenflo.voicemessages.VoiceMessageFiles
+import io.github.lerchenflo.voicemessages.VoicePlaybackController
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
+import io.github.lerchenflo.voicemessages.VoiceRecordingController
+import io.github.lerchenflo.voicemessages.VoiceRecordingState
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.userIdentityNameText
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
-import io.github.lerchenflo.voicemessages.VoiceRecorder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -31,10 +34,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
@@ -65,18 +66,13 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
-import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_too_long
-import kotlin.time.TimeSource
 import schneaggchatv3mp.composeapp.generated.resources.poll_cannot_vote_on_unsent
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
@@ -94,7 +90,7 @@ class ChatViewModel(
     private val loggingRepository: Logger,
     private val pictureManager: PictureManager,
     private val permissionsManager: PermissionManager,
-    private val audioManager: AudioManager,
+    private val voiceFiles: VoiceMessageFiles,
 
     val chatId: String,
     val isGroup: Boolean,
@@ -109,9 +105,13 @@ class ChatViewModel(
         private const val WINDOW_MARGIN = 20
     }
 
-    private var voiceRecorder: VoiceRecorder? = null // Object for Audio Recording
-    private var recordingTickerJob: Job? = null // live elapsed-time updates + auto-stop while recording
-    private var audioPlayer: AudioPlayer = AudioPlayer()
+    // Voice messages: playback of one message at a time and the recording of the unsent draft
+    private val voicePlayback = VoicePlaybackController()
+    private val voiceRecording = VoiceRecordingController(
+        files = voiceFiles,
+        playback = voicePlayback,
+        maxDurationMs = MAX_VOICE_MSG_TIME
+    )
 
     private val _state = MutableStateFlow(
         ChatState(
@@ -127,7 +127,10 @@ class ChatViewModel(
      * while a voice message plays, and folding that into the state value would re-emit (and
      * recompose) the whole screen on every tick instead of just the audio player.
      */
-    val playbackProgress: StateFlow<PlaybackProgress> = audioPlayer.playbackProgress
+    val playbackProgress: StateFlow<VoicePlaybackState> = voicePlayback.state
+
+    /** Live microphone levels while recording, kept out of ChatState for the same reason. */
+    val recordingLevels: StateFlow<List<Float>> = voiceRecording.levels
 
     private var newMessagesBoundaryComputed = false
     private val newMessagesBoundaryId = MutableStateFlow<String?>(null)
@@ -262,8 +265,8 @@ class ChatViewModel(
                 }
             }
             is SendMessageContent.AudioContent -> {
-                require(message.audioPath.isNotEmpty()) {return}
-                require(!message.isRecording) {return}
+                // Still recording: the send button is the stop button then
+                if (message.recording !is VoiceRecordingState.Recorded) return
             }
 
         }
@@ -304,15 +307,18 @@ class ChatViewModel(
             }
 
             is SendMessageContent.AudioContent -> {
+                val recorded = message.recording as VoiceRecordingState.Recorded // checked above
                 applicationScope.launchOnMain {
                     messageRepository.sendVoiceMessage(
                         empfaenger = chatId,
                         gruppe = isGroup,
-                        recordingPath = audioManager.getRecordingPath(message.audioPath.substringAfterLast('/')),
+                        recordingPath = recorded.filePath,
                         answerid = replyTo?.id,
                         ownId = ownId
                     ).reportLastingErrorTo(errorChannel)
                 }
+                // The file stays for the send; the input bar goes back to text through observeVoiceRecording
+                viewModelScope.launch { voiceRecording.clear() }
             }
         }
 
@@ -441,23 +447,9 @@ class ChatViewModel(
                     errorChannel.sendError(UiText.StringResourceText(Res.string.poll_cannot_vote_on_unsent))
                 }
             }
-            is MessageAction.PlayAudio -> {
-                val filePath = action.audioPath
-                //val playPath = (if (filePath.startsWith("/")) "file:/$filePath" else filePath).trim()
-                //println("DEBUG: Checking file permissions for path (viewmodel)")
-                //val playPath = audioManager.copyToCache(filePath)
-                playAudio(
-                    messageId = action.messageId,
-                    path = filePath
-                )
-                //action.playbackProgress = audioPlayer.playbackProgress
-            }
-            is MessageAction.PauseAudio -> {
-                pauseAudio()
-            }
-            is MessageAction.SeekAudio -> {
-                seekAudio(action.position)
-            }
+            is MessageAction.PlayAudio -> playAudio(messageId = action.messageId, fileName = action.audioPath)
+            is MessageAction.PauseAudio -> voicePlayback.pause()
+            is MessageAction.SeekAudio -> voicePlayback.seekTo(action.messageId, action.position)
             is MessageAction.DownloadImage -> {
                 viewModelScope.launch {
                     val savePath = pictureManager.downloadImage(action.pictureUrl, action.filename + ".jpeg")
@@ -553,143 +545,58 @@ class ChatViewModel(
         }
     }
 
-    // Audio Recording / Playback
+    // Voice messages: the kmp-voice-messages controllers do the work, the ViewModel only wires them up
     private fun startRecording() {
         viewModelScope.launch {
-            try {
-                // Stop any playing audio before starting recording to avoid audio session conflicts
-                audioPlayer.stopAudio()
-                // Give the audio session a moment to fully release
-                delay(100)
-
-                val permission = permissionsManager.checkMicrophonePermission()
-                println("startRecording - Permission: $permission")
-                if (permission != PermissionState.GRANTED) {
-                    println("Microphone permission not granted; requesting now.")
-                    val result = permissionsManager.requestMicrophonePermission()
-                    if (result != PermissionState.GRANTED) {
-                        return@launch
-                    }
-                }
-
-                val filename = getCurrentTimeMillisString() + VOICEMSG_FILE_NAME
-                val path = audioManager.getRecordingPath(filename)
-
-                println("Starting recording at path: $path")
-                val recorder = VoiceRecorder()
-                voiceRecorder = recorder
-                recorder.start(path)
-                // Store the bare filename (not the absolute path) so it stays valid across app
-                // launches; it is resolved back to an absolute path at play/read time.
-                updateSendContent(SendMessageContent.AudioContent(
-                    audioPath = filename,
-                    duration =  0L,
-                    isRecording = true
-                ))
-
-                // Live elapsed-time updates + auto-stop, replacing the old push-based recording listener
-                val startMark = TimeSource.Monotonic.markNow()
-                recordingTickerJob = viewModelScope.launch {
-                    while (isActive) {
-                        delay(200)
-                        val elapsedMs = startMark.elapsedNow().inWholeMilliseconds
-                        (state.value.sendContent as? SendMessageContent.AudioContent)?.let { audio ->
-                            updateSendContent(audio.copy(duration = elapsedMs))
-                        }
-                        if (elapsedMs > MAX_VOICE_MSG_TIME) { // maximum of [2 min] for audio recordings
-                            stopRecording()
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                // log full details to help debugging
-                loggingRepository.logWarning("Failed to start recording: ${e.message}")
-                e.printStackTrace()
-            }
+            if (!hasMicrophonePermission()) return@launch
+            // Refused during a phone call (AudioBusy); nothing records then
+            voiceRecording.start().onFailure { logVoiceFailure("start the recording", it) }
         }
     }
 
-    private fun stopRecorder() {
-        recordingTickerJob?.cancel()
-        recordingTickerJob = null
-        voiceRecorder?.stop()
-        voiceRecorder = null
-    }
+    private suspend fun hasMicrophonePermission(): Boolean =
+        permissionsManager.checkMicrophonePermission() == PermissionState.GRANTED ||
+            permissionsManager.requestMicrophonePermission() == PermissionState.GRANTED
 
     private fun stopRecording() {
         viewModelScope.launch {
-            try {
-                stopRecorder()
-                (state.value.sendContent as? SendMessageContent.AudioContent)?.let { audio ->
-                    // Measure the actual recorded duration from the file instead of trusting the
-                    // ticker's elapsed time, which can drift slightly from the real audio length.
-                    val measuredDuration = try {
-                        getAudioDuration(audio.audioPath)
-                    } catch (e: Exception) {
-                        audio.duration
-                    }
-                    updateSendContent(audio.copy(isRecording = false, duration = measuredDuration))
-                }
-                println("Recording stopped")
-            } catch (e: Exception) {
-                loggingRepository.logWarning("Failed to stop recording: ${e.message}")
-                e.printStackTrace()
-            }
+            voiceRecording.stop().onFailure { logVoiceFailure("stop the recording", it) }
         }
     }
 
     private fun discardRecording() {
         viewModelScope.launch {
-            // Read the recording before clearing the input: stopRecording() must not be reused
-            // here, its duration measurement suspends and would restore the discarded bar.
-            val discarded = state.value.sendContent as? SendMessageContent.AudioContent
-            try {
-                stopRecorder()
-            } catch (e: Exception) {
-                loggingRepository.logWarning("Failed to stop recording: ${e.message}")
-                e.printStackTrace()
-            }
+            voiceRecording.discard().onFailure { logVoiceFailure("discard the recording", it) }
+        }
+    }
 
-            updateSendContent(TextContent(TextFieldValue("")))
+    /** [fileName] is the bare stored name (an old absolute path works too), [messageId] the playback id. */
+    private fun playAudio(messageId: String, fileName: String) {
+        if (fileName.isBlank()) return // not downloaded yet
+        voicePlayback.play(messageId, voiceFiles.path(fileName))
+            .onFailure { logVoiceFailure("play a voice message", it) }
+    }
 
-            discarded?.let { audio ->
-                try {
-                    audioManager.deleteAudio(audio.audioPath.substringAfterLast('/'))
-                } catch (e: Exception) {
-                    loggingRepository.logWarning("Failed to delete discarded recording: ${e.message}")
+    private fun logVoiceFailure(what: String, error: Throwable) {
+        viewModelScope.launch {
+            loggingRepository.logWarning("Voice message: could not $what (${error::class.simpleName}: ${error.message})")
+        }
+    }
+
+    /**
+     * Mirrors the recording into the input bar: a running or recorded draft shows the voice bar,
+     * and Idle (discarded or sent) switches back to an empty text field.
+     */
+    private fun observeVoiceRecording() {
+        viewModelScope.launch {
+            voiceRecording.state.collect { recording ->
+                if (recording != VoiceRecordingState.Idle) {
+                    updateSendContent(SendMessageContent.AudioContent(recording))
+                } else if (state.value.sendContent is SendMessageContent.AudioContent) {
+                    updateSendContent(TextContent(TextFieldValue("")))
                 }
             }
         }
-    }
-
-    private fun playAudio(messageId: String, path: String) {
-        viewModelScope.launch {
-            // Callers pass a bare filename; resolve it to the current absolute path here so
-            // playback is immune to iOS container-UUID changes (tolerant of legacy absolute
-            // paths via substringAfterLast).
-            audioPlayer.playAudio(
-                messageId = messageId,
-                path = audioManager.getRecordingPath(path.substringAfterLast('/'))
-            )
-        }
-    }
-
-    private fun pauseAudio() {
-        viewModelScope.launch {
-            audioPlayer.pauseAudio()
-        }
-    }
-
-    private fun seekAudio(position: Long) {
-        viewModelScope.launch {
-            audioPlayer.seekTo(position)
-        }
-    }
-
-    private suspend fun getAudioDuration(path: String): Long {
-        // Use the same path normalization as playAudio
-        val normalizedPath = audioManager.getRecordingPath(path.substringAfterLast('/'))
-        return audioManager.getMediaDuration(normalizedPath)
     }
 
 
@@ -934,10 +841,7 @@ class ChatViewModel(
                 }
             }
         }
-        // Initialize audio
-        viewModelScope.launch {
-            audioManager.initializeAudio()
-        }
+        observeVoiceRecording()
 
         //println("ChatViewModel Incoming Data: ${IncomingDataManager.sharedText.value}")
         if(IncomingDataManager.isNewDataAvailable()){
@@ -964,6 +868,8 @@ class ChatViewModel(
     override fun onCleared() {
         super.onCleared()
         saveDraft()
+        voiceRecording.release()
+        voicePlayback.release()
     }
 
 }

@@ -19,7 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.DeleteMessageAlert
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.MessageDetailsDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.MessageOptionPopup
-import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
 import org.lerchenflo.schneaggchatv3mp.utilities.copyToClipboard
 
 /**
@@ -36,7 +36,7 @@ fun ChatMessageItem(
     chatId: String,
     useMarkdown: Boolean,
     quickReactions: List<String>,
-    playbackProgress: StateFlow<PlaybackProgress>,
+    playbackProgress: StateFlow<VoicePlaybackState>,
     onReplyPreviewClick: () -> Unit,
     onAction: (MessageAction) -> Unit,
     modifier: Modifier = Modifier,

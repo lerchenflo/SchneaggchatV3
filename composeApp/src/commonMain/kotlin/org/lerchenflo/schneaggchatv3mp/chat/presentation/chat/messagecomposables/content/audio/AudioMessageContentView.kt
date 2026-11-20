@@ -1,37 +1,29 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.audio
 
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import io.github.lerchenflo.voicemessages.VoiceMessageFiles
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
+import io.github.lerchenflo.voicemessages.ui.VoiceMessagePlayer
+import io.github.lerchenflo.voicemessages.ui.VoiceMessagePlayerTexts
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
-import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
-import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.voice_message_pause
+import schneaggchatv3mp.composeapp.generated.resources.voice_message_play
+import schneaggchatv3mp.composeapp.generated.resources.voice_message_position
 
+/**
+ * A voice message bubble: the library's player row for the stored file. [playbackProgress] is
+ * null where nothing plays (previews, reply and option popups); the row then shows the length only.
+ */
 @Composable
 fun AudioMessageContentView(
     message: Message,
@@ -39,142 +31,33 @@ fun AudioMessageContentView(
     useMD: Boolean = false,
     myMessage: Boolean = false,
     onAction: (MessageAction) -> Unit = {},
-    playbackProgress: StateFlow<PlaybackProgress>? = null,
-    audioManager: AudioManager = koinInject()
+    playbackProgress: StateFlow<VoicePlaybackState>? = null,
+    voiceFiles: VoiceMessageFiles = koinInject()
 ) {
+    val messageId = message.id ?: ""
+    // Messages store the bare file name; empty until the file is downloaded
+    val fileName = message.audioPath.orEmpty()
+    val filePath = remember(fileName) { if (fileName.isBlank()) "" else voiceFiles.path(fileName) }
+    val playback = playbackProgress ?: remember { MutableStateFlow(VoicePlaybackState()) }
 
-    val progress by playbackProgress?.collectAsState() ?: remember { mutableStateOf(PlaybackProgress()) }
-
-    val isThisMessagePlaying = progress.messageId == message.id
-    val currentPosition = if (isThisMessagePlaying) progress.currentPosition else 0L
-
-    // Pre-fetch the audio duration when the composable is first displayed.
-    // audioPath is stored as a bare filename; resolve to the platform-specific absolute path
-    // so that MediaMetadataRetriever (Android) and AudioSystem (Desktop) can open it.
-    var prefetchedDuration by remember { mutableLongStateOf(0L) }
-    val rawPath = message.audioPath ?: ""
-    val filePath = remember(rawPath) {
-        val filename = rawPath.substringAfterLast('/')
-        if (filename.isNotEmpty()) audioManager.getRecordingPath(filename) else ""
-    }
-
-    LaunchedEffect(filePath) {
-        if (filePath.isNotEmpty()) {
-            try {
-                prefetchedDuration = audioManager.getMediaDuration(filePath)
-            } catch (e: Exception) {
-                // Silently fail - duration will remain 0
-            }
-        }
-    }
-
-    // Use pre-fetched duration when not playing, use progress.duration when playing
-    val duration = if (isThisMessagePlaying) progress.duration else prefetchedDuration
-    val isPlaying = isThisMessagePlaying && progress.isPlaying
-
-    val textColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-
-    AudioPlayerView(
-        isPlaying = isPlaying,
-        currentPosition = currentPosition,
-        duration = duration,
-        onPlay = {
-            onAction(
-                MessageAction.PlayAudio(
-                    messageId = message.id ?: "",
-                    audioPath = message.audioPath ?: ""
-                )
-            )
-        },
-        onPause = {
-            onAction(MessageAction.PauseAudio())
-        },
-        onSeek = {
-            onAction(MessageAction.SeekAudio(it))
-        },
-        textColor = textColor,
-        modifier = Modifier
-            .fillMaxWidth(),
-
+    VoiceMessagePlayer(
+        id = messageId,
+        filePath = filePath,
+        playback = playback,
+        texts = voiceMessagePlayerTexts(),
+        onPlay = { onAction(MessageAction.PlayAudio(messageId = messageId, audioPath = fileName)) },
+        onPause = { onAction(MessageAction.PauseAudio()) },
+        onSeek = { position -> onAction(MessageAction.SeekAudio(messageId = messageId, position = position)) },
+        color = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier.fillMaxWidth(),
     )
-
 }
 
+/** Screen reader texts of the voice message player, shared by the bubble and the draft in the input bar. */
 @Composable
-fun AudioPlayerView(
-    isPlaying: Boolean,
-    currentPosition: Long,
-    duration: Long,
-    onPlay: () -> Unit,
-    onPause: () -> Unit,
-    onSeek: (position: Long) -> Unit,
-    textColor: Color = MaterialTheme.colorScheme.onSurface,
-    modifier: Modifier = Modifier
-){
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(
-            onClick = {
-                if (isPlaying) {
-                    onPause()
-                } else {
-                    onPlay()
-                }
-            }
-        ) {
-            Icon(
-                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                contentDescription = if (isPlaying) "pause" else "play",
-                tint = textColor
-            )
-        }
-
-        Spacer(Modifier.width(4.dp))
-
-        // new variable so slider can be adjusted manually (seeking)
-        var sliderPosition by remember { mutableStateOf(currentPosition.toFloat()) }
-        var isUserDragging by remember { mutableStateOf(false) }
-        LaunchedEffect(currentPosition) {
-            if (!isUserDragging) {
-                sliderPosition = currentPosition.toFloat()
-            }
-        }
-
-        Slider(
-            modifier = Modifier.weight(1f),
-            value = sliderPosition,
-            valueRange = 0f..maxOf(1f, duration.toFloat()),
-            onValueChange = {
-                onPause()
-                isUserDragging = true
-                sliderPosition = it
-            },
-            onValueChangeFinished = {
-                isUserDragging = false
-                onSeek(sliderPosition.toLong())
-            },
-            colors = SliderDefaults.colors(
-                thumbColor = textColor,
-                activeTrackColor = textColor,
-                inactiveTrackColor = textColor.copy(alpha = 0.3f)
-            )
-        )
-
-        Spacer(Modifier.width(8.dp))
-
-        Text(
-            text = "${sliderPosition.toLong().toTimeString()}/\n${duration.toTimeString()}",
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor
-        )
-    }
-}
-
-private fun Long.toTimeString(): String {
-    val totalSeconds = this / 1000
-    val seconds = (totalSeconds % 60).toString().padStart(2, '0')
-    val minutes = ((totalSeconds / 60) % 60).toString()
-    return "$minutes:$seconds"
+fun voiceMessagePlayerTexts(): VoiceMessagePlayerTexts {
+    val play = stringResource(Res.string.voice_message_play)
+    val pause = stringResource(Res.string.voice_message_pause)
+    val position = stringResource(Res.string.voice_message_position)
+    return remember(play, pause, position) { VoiceMessagePlayerTexts(play = play, pause = pause, position = position) }
 }

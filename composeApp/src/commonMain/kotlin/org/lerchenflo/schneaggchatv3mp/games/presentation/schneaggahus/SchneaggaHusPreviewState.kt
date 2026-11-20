@@ -22,8 +22,8 @@ internal fun previewSchneaggaHusState(showBanner: Boolean = false): SchneaggaHus
 
     val red = HOUSE_COLORS[0]
     val blue = HOUSE_COLORS[1]
-    val green = HOUSE_COLORS[2]
-    val yellow = HOUSE_COLORS[3]
+    val yellow = HOUSE_COLORS[2]
+    val green = HOUSE_COLORS[4]
 
     val tracks = listOf(
         straight(3, 0), straight(3, 1), straight(3, 2),

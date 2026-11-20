@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.app.data
 
+import io.github.lerchenflo.voicemessages.VoiceMessageFiles
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -23,7 +24,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
-import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 /**
@@ -43,7 +43,7 @@ class LocalSessionTerminator(
     private val socketConnectionManager: SocketConnectionManager,
     private val loggingRepository: Logger,
     private val pictureManager: PictureManager,
-    private val audioManager: AudioManager,
+    private val voiceFiles: VoiceMessageFiles,
     private val externalScope: CoroutineScope,
 ) : SessionTerminator {
 
@@ -111,7 +111,7 @@ class LocalSessionTerminator(
     private suspend fun deleteStoredMedia() {
         try {
             val pictures = pictureManager.deleteAllStoredPictures()
-            val voiceMessages = audioManager.deleteAllStoredAudio()
+            val voiceMessages = voiceFiles.deleteAll()
             loggingRepository.logInfo("Logout: deleted $pictures pictures and $voiceMessages voice messages")
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()

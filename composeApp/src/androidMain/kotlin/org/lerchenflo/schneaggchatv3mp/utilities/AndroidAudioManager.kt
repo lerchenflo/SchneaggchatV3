@@ -4,12 +4,7 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
-import android.media.MediaMetadataRetriever
 import android.media.AudioManager as SystemAudioManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
-import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 
 class AndroidAudioManager(private val context: Context) : AudioManager {
 
@@ -20,62 +15,6 @@ class AndroidAudioManager(private val context: Context) : AudioManager {
         val systemAudioManager = context.getSystemService(Context.AUDIO_SERVICE) as SystemAudioManager
         systemAudioManager.getProperty(SystemAudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)?.toIntOrNull()
             ?: BEEP_SAMPLE_RATE_HZ
-    }
-
-    override fun initializeAudio() {
-        // No global init needed for MediaRecorder/MediaPlayer (matches iOS/JVM no-op actuals).
-    }
-
-    override fun getRecordingPath(filename: String): String {
-        // Use filesDir (the same persistent directory as saveAudioToStorage/deleteAudio) so that
-        // recording, saving, existence checks and playback all resolve to the same location.
-        // cacheDir can be evicted by the OS and diverged from where downloaded audio is stored.
-        return File(context.filesDir, filename).absolutePath
-    }
-
-    private fun saveAudioBytes(data: ByteArray, filename: String): String {
-        val file = File(context.filesDir, filename)
-        file.parentFile?.mkdirs()
-        file.outputStream().use { it.write(data) }
-        return file.absolutePath
-    }
-
-    override suspend fun saveAudioToStorage(audioBytes: ByteArray, filename: String): String =
-        withContext(Dispatchers.IO) {
-            saveAudioBytes(audioBytes, filename)
-        }
-
-    override suspend fun deleteAudio(filename: String): Boolean =
-        withContext(Dispatchers.IO) {
-            val file = File(context.filesDir, filename)
-            if (!file.exists()) return@withContext false
-            file.delete()
-        }
-
-    override suspend fun deleteAllStoredAudio(): Int =
-        withContext(Dispatchers.IO) {
-            context.filesDir
-                .listFiles { file -> file.isFile && file.name.endsWith(VOICEMSG_FILE_NAME) }
-                .orEmpty()
-                .count { it.delete() }
-        }
-
-    override fun checkAudioExists(filePath: String): Boolean {
-        val file = File(filePath)
-        return file.exists()
-    }
-
-    override suspend fun getMediaDuration(path: String): Long {
-        val retriever = MediaMetadataRetriever()
-        return try {
-            retriever.setDataSource(path)
-            val time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            time?.toLong() ?: 0L
-        } catch (e: Exception) {
-            0L
-        } finally {
-            retriever.release()
-        }
     }
 
     override fun prepareBeep(frequencyHz: Int) {

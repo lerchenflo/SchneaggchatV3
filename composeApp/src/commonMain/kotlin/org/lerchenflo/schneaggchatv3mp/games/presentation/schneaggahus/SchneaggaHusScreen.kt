@@ -288,9 +288,9 @@ private fun WaveProgressDots(
     total: Int,
     modifier: Modifier = Modifier,
 ) {
-    val done = MaterialTheme.colorScheme.primary
-    val onTrack = done.copy(alpha = 0.35f)
-    val remaining = MaterialTheme.colorScheme.outlineVariant
+    val colors = MaterialTheme.colorScheme
+    val accent = mostVisibleOn(colors.background, colors.primary, colors.primaryContainer)
+    val remaining = colors.outline
     val dot = 5.dp
     val gap = 2.dp
     Canvas(
@@ -300,13 +300,20 @@ private fun WaveProgressDots(
     ) {
         val d = dot.toPx()
         val g = gap.toPx()
+        val ringStroke = d * 0.28f
+        // The three states differ in shape too: delivered filled, on the track a ring, still to come a small dot
         repeat(total) { index ->
-            val color = when {
-                index < delivered -> done
-                index < delivered + inFlight -> onTrack
-                else -> remaining
+            val center = Offset(index * (d + g) + d / 2f, d / 2f)
+            when {
+                index < delivered -> drawCircle(accent, radius = d / 2f, center = center)
+                index < delivered + inFlight -> drawCircle(
+                    color = accent,
+                    radius = (d - ringStroke) / 2f,
+                    center = center,
+                    style = Stroke(width = ringStroke),
+                )
+                else -> drawCircle(remaining, radius = d * 0.22f, center = center)
             }
-            drawCircle(color, radius = d / 2f, center = Offset(index * (d + g) + d / 2f, d / 2f))
         }
     }
 }
@@ -334,25 +341,26 @@ private fun WaveBanner(
         else -> return
     }
 
+    val colors = MaterialTheme.colorScheme
     Surface(
         modifier = modifier.alpha(alpha),
         shape = RoundedCornerShape(50),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
+        color = colors.surfaceContainerHigh.copy(alpha = 0.92f),
         shadowElevation = 4.dp,
     ) {
         Text(
             text = stringResource(Res.string.games_schneaggahus_wave, wave),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
+            color = mostVisibleOn(colors.surfaceContainerHigh, colors.primary, colors.primaryContainer),
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 12.dp)
         )
     }
 }
 
 /**
- * Board palette derived from the theme's greens: a deep green field with darker
- * scenery and rails, bright switch discs, and theme surface for the sticker outlines.
+ * Board palette derived from the theme's primary container pair: a deep field with darker
+ * scenery and rails, vivid switch discs, and theme surface for the sticker outlines.
  */
 private class BoardStyle(
     val field: Color,
@@ -366,31 +374,49 @@ private class BoardStyle(
     val label: Color,
     val correct: Color,
     val wrong: Color,
+    /** Ink of the [ColorMark]s on houses, schneaggs and the next-up discs. */
+    val mark: Color,
 )
 
 @Composable
 private fun rememberBoardStyle(): BoardStyle {
     val colors = MaterialTheme.colorScheme
     return remember(colors) {
-        val field = lerp(colors.onPrimaryContainer, colors.primaryContainer, 0.15f)
+        // Most themes pair a vivid primaryContainer with a deep onPrimaryContainer, some the other
+        // way round (white text on a dark container); the field always takes the deep one
+        val (deep, vivid) = listOf(colors.onPrimaryContainer, colors.primaryContainer).sortedBy { it.luminance() }
+        val field = lerp(deep, vivid, 0.15f)
         val rail = lerp(field, colors.scrim, 0.5f)
-        // The field is the same deep green in every theme, so outlines and labels take
-        // whichever of surface / onSurface is the light one to stay readable in dark mode too
+        // The field is deep in every theme, so outlines and labels take whichever of
+        // surface / onSurface is the light one to stay readable in dark mode too
         val bright = if (colors.surface.luminance() >= colors.onSurface.luminance()) colors.surface else colors.onSurface
         BoardStyle(
             field = field,
             scenery = lerp(field, colors.scrim, 0.22f),
             rail = rail,
             railDim = rail.copy(alpha = 0.35f),
-            switchDisc = colors.primaryContainer,
-            switchLit = lerp(colors.primaryContainer, bright, 0.45f),
+            switchDisc = vivid,
+            switchLit = lerp(vivid, bright, 0.45f),
             outline = bright,
             mouth = colors.scrim.copy(alpha = 0.75f),
-            label = lerp(colors.primaryContainer, bright, 0.5f),
-            correct = colors.primaryContainer,
-            wrong = colors.error,
+            label = lerp(vivid, bright, 0.5f),
+            correct = vivid,
+            // The light theme's error red is as dark as the green field, its container is not
+            wrong = mostVisibleOn(field, colors.error, colors.errorContainer),
+            mark = colors.scrim,
         )
     }
+}
+
+/** Whichever of [preferred] and [fallback] has the higher contrast ratio against [background]; ties keep [preferred]. */
+private fun mostVisibleOn(background: Color, preferred: Color, fallback: Color): Color =
+    if (contrastRatio(preferred, background) >= contrastRatio(fallback, background)) preferred else fallback
+
+/** WCAG contrast ratio of two opaque colors, from 1 (same) to 21 (black on white). */
+private fun contrastRatio(first: Color, second: Color): Float {
+    val lighter = maxOf(first.luminance(), second.luminance())
+    val darker = minOf(first.luminance(), second.luminance())
+    return (lighter + 0.05f) / (darker + 0.05f)
 }
 
 private enum class RailKind { PLAIN, ACTIVE, INACTIVE }
@@ -645,6 +671,9 @@ private fun DrawScope.drawSchneaggaHus(
         )
     }
 
+    // The icon's center lies on the shell however the schneagg turns
+    val snailMarkRadius = snailSize * 0.15f
+
     fun drawSchneagg(point: TrackPoint, color: Color) {
         withTransform({
             translate(point.x * tile - snailSize / 2f, point.y * tile - snailSize / 2f)
@@ -666,6 +695,8 @@ private fun DrawScope.drawSchneaggaHus(
                 filterQuality = FilterQuality.Medium,
             )
         }
+        // Drawn upright, outside the turn, so a square never tilts into a diamond
+        colorMarkOf(color)?.let { drawColorMark(it, Offset(point.x * tile, point.y * tile), snailMarkRadius, style.mark) }
     }
 
     state.schneaggList.forEach { schneagg ->
@@ -692,6 +723,10 @@ private fun DrawScope.drawSchneaggaHus(
                 draw(Size(houseSize, houseSize), colorFilter = ColorFilter.tint(house.color))
             }
         }
+        // In the roof, above the shell cut-out (icon viewport 24: center y 7.8, room for a radius of 3.3)
+        colorMarkOf(house.color)?.let {
+            drawColorMark(it, at + Offset(0f, -houseSize * 0.175f), houseSize * 0.135f, style.mark)
+        }
     }
 
     // 6. Next-up preview beside the mountain (the top row is kept free for it)
@@ -714,6 +749,7 @@ private fun DrawScope.drawSchneaggaHus(
             val radius = if (index == 0) tile * 0.17f else tile * 0.13f
             drawCircle(color, radius = radius, center = Offset(centerX, midY))
             drawCircle(style.outline, radius = radius, center = Offset(centerX, midY), style = Stroke(width = thinStroke))
+            colorMarkOf(color)?.let { drawColorMark(it, Offset(centerX, midY), radius * 0.65f, style.mark) }
         }
     }
 
@@ -777,6 +813,67 @@ private fun DrawScope.drawPine(centerX: Float, baseY: Float, size: Float, color:
         close()
     }
     drawPath(pine, color)
+}
+
+/**
+ * Second cue beside each identity color, so look-alike colors and color blindness never decide
+ * alone. One entry per [HOUSE_COLORS] entry, same order: the colors that are easy to mix up
+ * (red / orange / pink and, for red-green color blindness, green; blue / cyan) get shapes that
+ * look nothing alike.
+ */
+private enum class ColorMark {
+    CIRCLE,   // red
+    STAR,     // blue
+    SQUARE,   // yellow
+    BAR,      // purple
+    PLUS,     // green
+    RING,     // cyan
+    TRIANGLE, // orange
+    DIAMOND,  // pink
+}
+
+private fun colorMarkOf(color: Color): ColorMark? = ColorMark.entries.getOrNull(HOUSE_COLORS.indexOf(color))
+
+/** [mark] upright inside a circle of [radius] around [center]. */
+private fun DrawScope.drawColorMark(mark: ColorMark, center: Offset, radius: Float, color: Color) {
+    when (mark) {
+        ColorMark.CIRCLE -> drawCircle(color, radius = radius * 0.75f, center = center)
+        ColorMark.RING -> drawCircle(color, radius = radius * 0.62f, center = center, style = Stroke(width = radius * 0.36f))
+        ColorMark.SQUARE -> {
+            val half = radius * 0.62f
+            drawRect(color, topLeft = center - Offset(half, half), size = Size(half * 2f, half * 2f))
+        }
+        ColorMark.DIAMOND -> drawPath(pointedPath(center, radius, corners = 4), color)
+        // Moved down so the triangle's box, not its corner circle, is centered
+        ColorMark.TRIANGLE -> drawPath(pointedPath(center + Offset(0f, radius * 0.25f), radius, corners = 3), color)
+        ColorMark.STAR -> drawPath(pointedPath(center, radius, corners = 5, innerRadius = radius * 0.45f), color)
+        ColorMark.PLUS -> {
+            val arm = radius * 0.85f
+            val width = radius * 0.5f
+            drawLine(color, center - Offset(arm, 0f), center + Offset(arm, 0f), width)
+            drawLine(color, center - Offset(0f, arm), center + Offset(0f, arm), width)
+        }
+        ColorMark.BAR -> {
+            val arm = radius * 0.65f
+            drawLine(color, center - Offset(arm, 0f), center + Offset(arm, 0f), radius * 0.55f, StrokeCap.Round)
+        }
+    }
+}
+
+/**
+ * Closed path through [corners] points on a circle of [radius], the first straight up.
+ * With [innerRadius], a point on that smaller circle sits between each two of them (a star).
+ */
+private fun pointedPath(center: Offset, radius: Float, corners: Int, innerRadius: Float? = null): Path = Path().apply {
+    val points = if (innerRadius == null) corners else corners * 2
+    for (index in 0 until points) {
+        val distance = if (innerRadius != null && index % 2 == 1) innerRadius else radius
+        val angle = (-90f + 360f * index / points) * DEG_TO_RAD
+        val x = center.x + cos(angle) * distance
+        val y = center.y + sin(angle) * distance
+        if (index == 0) moveTo(x, y) else lineTo(x, y)
+    }
+    close()
 }
 
 @Composable

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -28,6 +29,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.App
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.SingleInstance
 import org.maplibre.compose.desktop.ProvideMapPresentationHost
 import org.maplibre.compose.desktop.rememberAwtComposeMapPresentationHost
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -41,7 +43,13 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val TRAY_LOGO_PATH = "files/schneaggchat_logo_transparent.png"
 
-fun main() = application {
+fun main() {
+    // One process per data folder: a second start shows the running app's window and ends here
+    val singleInstance = SingleInstance.acquire() ?: return
+    runApp(singleInstance)
+}
+
+private fun runApp(singleInstance: SingleInstance) = application {
 
     onAppStart()
 
@@ -60,6 +68,16 @@ fun main() = application {
     // One size for every way the window appears (start, shown from the tray, hot reload) and the
     // size the user resized it to
     val windowState = rememberWindowState(size = DpSize(1600.dp, 1000.dp))
+
+    // A second start of the app: show this window, also when it is hidden in the tray or minimized
+    var raiseRequests by remember { mutableIntStateOf(0) }
+    LaunchedEffect(singleInstance) {
+        singleInstance.showRequests.collect {
+            windowVisible = true
+            windowState.isMinimized = false
+            raiseRequests++
+        }
+    }
 
     // The socket stays up while the window is hidden, so quitting is where it ends: close it first,
     // so the server gets a close frame and marks the user offline at once instead of waiting for
@@ -114,7 +132,7 @@ fun main() = application {
             window.minimumSize = Dimension(200, 400)
         }
 
-        BringToFrontWhenShown(visible = { windowVisible })
+        BringToFrontWhenShown(visible = { windowVisible }, raiseRequests = { raiseRequests })
 
         //Every AWT window owns its own GPU context, so the map needs this window's host to render
         ProvideMapPresentationHost(host = rememberAwtComposeMapPresentationHost(window)) {
@@ -124,14 +142,15 @@ fun main() = application {
 }
 
 /**
- * Brings the window in front of other windows when it is shown again from the tray. Its own
- * composable on purpose: [visible] is read here only, so showing or hiding the window doesn't
- * recompose the whole window content.
+ * Brings the window in front of other windows when it is shown again from the tray, and on every
+ * [raiseRequests] change (a second start of the app). Its own composable on purpose: both are read
+ * here only, so they don't recompose the whole window content.
  */
 @Composable
-private fun FrameWindowScope.BringToFrontWhenShown(visible: () -> Boolean) {
+private fun FrameWindowScope.BringToFrontWhenShown(visible: () -> Boolean, raiseRequests: () -> Int) {
     val shown = visible()
-    LaunchedEffect(shown) {
+    val raise = raiseRequests()
+    LaunchedEffect(shown, raise) {
         if (shown) window.toFront()
     }
 }

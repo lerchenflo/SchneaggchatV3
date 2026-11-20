@@ -43,7 +43,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.systemEventText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DATE_CHIP_FORMAT
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DateChip
-import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.new_messages
@@ -67,7 +67,7 @@ fun ChatMessageList(
     chatId: String,
     useMarkdown: Boolean,
     quickReactions: List<String>,
-    playbackProgress: StateFlow<PlaybackProgress>,
+    playbackProgress: StateFlow<VoicePlaybackState>,
     onAction: (MessageAction) -> Unit,
     onLoadOlderMessages: () -> Unit,
     onLoadMessagesUntil: (messageId: String) -> Unit,

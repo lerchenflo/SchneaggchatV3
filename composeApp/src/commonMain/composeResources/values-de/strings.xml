@@ -496,6 +496,10 @@
     <string name="chat_message_image">Nachrichtenbild</string>
     <string name="chat_remove_image">Bild entfernen</string>
     <string name="chat_discard_recording">Aufnahme verwerfen</string>
+    <string name="voice_message_play">Sprachnachricht abspielen</string>
+    <string name="voice_message_pause">Sprachnachricht pausieren</string>
+    <string name="voice_message_position">Position der Sprachnachricht</string>
+    <string name="voice_message_recording_level">Aufnahmepegel</string>
     <string name="open_chat">Chat öffnen</string>
     <string name="make_admin">Zum Admin machen</string>
     <string name="remove_admin_status">Adminstatus entfernen</string>

@@ -20,7 +20,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatInp
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatMessageList
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatTopBar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
-import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
 
 @Composable
 fun ChatScreenRoot(
@@ -34,6 +34,7 @@ fun ChatScreenRoot(
     ChatScreen(
         state = state,
         playbackProgress = viewModel.playbackProgress,
+        recordingLevels = viewModel.recordingLevels,
         highlightMessageId = highlightMessageId,
         onAction = viewModel::onAction
     )
@@ -43,7 +44,8 @@ fun ChatScreenRoot(
 @Composable
 fun ChatScreen(
     state: ChatState,
-    playbackProgress: StateFlow<PlaybackProgress>,
+    playbackProgress: StateFlow<VoicePlaybackState>,
+    recordingLevels: StateFlow<List<Float>>,
     highlightMessageId: String?,
     onAction: (ChatAction) -> Unit,
     modifier: Modifier = Modifier
@@ -110,6 +112,7 @@ fun ChatScreen(
                 ownId = ownId,
                 maxVoiceMsgTime = state.maxVoiceMsgTime,
                 playbackProgress = playbackProgress,
+                recordingLevels = recordingLevels,
                 onAction = onAction,
             )
         }

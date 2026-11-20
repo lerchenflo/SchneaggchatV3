@@ -25,7 +25,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReplyPreview
-import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
+import io.github.lerchenflo.voicemessages.VoiceRecordingState
 import kotlinx.coroutines.flow.StateFlow
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -33,7 +34,7 @@ import schneaggchatv3mp.composeapp.generated.resources.add
 /**
  * The chat screen's bottom input bar: reply preview, attach/poll menu, staged content editor and
  * trailing send/edit/record controls. Pure orchestration - actual content rendering lives in
- * SendContentInput / AudioRecordingBar / SendActionButtons.
+ * SendContentInput (with the voice recording bar) / SendActionButtons.
  */
 @Composable
 fun ChatInputBar(
@@ -47,7 +48,8 @@ fun ChatInputBar(
     chatId: String,
     ownId: String,
     maxVoiceMsgTime: Long,
-    playbackProgress: StateFlow<PlaybackProgress>,
+    playbackProgress: StateFlow<VoicePlaybackState>,
+    recordingLevels: StateFlow<List<Float>>,
     onAction: (ChatAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -88,7 +90,7 @@ fun ChatInputBar(
             // button zum züg addden
 
             val hasContent = sendContent !is SendMessageContent.TextContent || (sendContent).textMessage.text.isNotEmpty()
-            val isRecording = (sendContent as? SendMessageContent.AudioContent)?.isRecording ?: false
+            val isRecording = (sendContent as? SendMessageContent.AudioContent)?.recording is VoiceRecordingState.Recording
 
             if (!hasContent) {
                 IconButton(
@@ -136,6 +138,7 @@ fun ChatInputBar(
                 isEditing = editMessage != null,
                 maxVoiceMsgTime = maxVoiceMsgTime,
                 playbackProgress = playbackProgress,
+                recordingLevels = recordingLevels,
                 onAction = onAction,
             )
 

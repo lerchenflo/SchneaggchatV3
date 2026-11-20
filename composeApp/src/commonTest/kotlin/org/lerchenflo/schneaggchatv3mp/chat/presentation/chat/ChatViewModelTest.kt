@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
+import io.github.lerchenflo.voicemessages.VoiceMessageFiles
 import androidx.compose.ui.text.input.TextFieldValue
 import assertk.assertThat
 import assertk.assertions.containsExactly
@@ -18,7 +19,6 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
-import org.lerchenflo.schneaggchatv3mp.fakes.FakeAudioManager
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeErrorChannel
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeEventRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository
@@ -92,7 +92,8 @@ class ChatViewModelTest {
             loggingRepository = FakeLogger(),
             pictureManager = FakePictureManager(),
             permissionsManager = FakePermissionManager(),
-            audioManager = FakeAudioManager(),
+            // No test records or plays, so the folder is never touched
+            voiceFiles = VoiceMessageFiles(directory = "test-voice-files"),
             chatId = FRIEND_ID,
             isGroup = false,
         )

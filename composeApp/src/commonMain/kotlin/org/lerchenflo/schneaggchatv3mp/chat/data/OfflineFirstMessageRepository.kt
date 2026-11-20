@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.chat.data
 
+import io.github.lerchenflo.voicemessages.VoiceMessageFiles
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
@@ -53,9 +56,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toPollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotification
@@ -88,7 +89,7 @@ class OfflineFirstMessageRepository(
     private val messageLocalDataSource: MessageLocalDataSource,
     private val messageRemoteDataSource: MessageRemoteDataSource,
     private val pictureManager: PictureManager,
-    private val audioManager: AudioManager,
+    private val voiceFiles: VoiceMessageFiles,
     private val loggingRepository: Logger,
     private val externalScope: CoroutineScope,
     private val mediaDownloadThrottle: MediaDownloadThrottle,
@@ -149,8 +150,7 @@ class OfflineFirstMessageRepository(
             when (val audio = mediaDownloadThrottle.download { messageRemoteDataSource.getAudioForAudioMessage(messageId) }.trackConnectivity()) {
                 is DataResult.Error<*> -> {loggingRepository.logWarning("Audio error for messageid $messageId")}
                 is DataResult.Success<ByteArray> -> {
-                    val filepath = audioManager.saveAudioToStorage(audio.data, savefilename)
-                    //println("Audio saved to $filepath")
+                    voiceFiles.save(savefilename, audio.data)
                     // Persist the bare filename, not the absolute container path: on iOS the
                     // container UUID in an absolute path changes across reinstalls/updates and
                     // would go stale. The absolute path is re-derived at use-time.
@@ -184,12 +184,8 @@ class OfflineFirstMessageRepository(
             val messages = messageLocalDataSource.getAudioMessages()
             val missingAudioMessageIds = messages.filter { audio ->
                 if (audio.id == null) return@filter false
-                // Null/empty audioPath means the file was never downloaded — always treat as missing.
-                // Without this guard, getRecordingPath("") returns filesDir itself, which exists as a
-                // directory, so checkAudioExists would wrongly return true and skip the download.
-                val filename = audio.audioPath?.substringAfterLast('/')?.takeIf { it.isNotEmpty() }
-                    ?: return@filter true
-                !audioManager.checkAudioExists(audioManager.getRecordingPath(filename))
+                // A null or empty audioPath means the file was never downloaded; exists() is false for it
+                !voiceFiles.exists(audio.audioPath.orEmpty())
             }.map { it.id!! }
 
             //println("Missing audio ids: $missingAudioMessageIds -------------------------------------")
@@ -355,10 +351,20 @@ class OfflineFirstMessageRepository(
     override suspend fun sendVoiceMessage(ownId: String, empfaenger: String, gruppe: Boolean, recordingPath: String, answerid: String?): EmptyDataResult<DataError> {
         // externalScope (plan R2): the file read is part of the send, so it must not die with the caller either
         return externalScope.async {
-            val audio = withContext(ioDispatcher) { getAudioBytes(recordingPath) }
+            val audio = readVoiceFile(recordingPath)
             sendMessageForResult(ownId, null, empfaenger, gruppe, AudioContent(audio), answerid, 0L, null).toSendResult()
         }.await()
     }
+
+    /** The stored voice file's bytes, empty when it is missing or can't be read. */
+    private suspend fun readVoiceFile(fileName: String): ByteArray =
+        try {
+            voiceFiles.readBytes(fileName)
+        } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
+            loggingRepository.logWarning("Voice message file not readable: ${e.message}")
+            ByteArray(0)
+        }
 
     private fun DataError?.toSendResult(): EmptyDataResult<DataError> =
         if (this == null) DataResult.Success(Unit) else DataResult.Error(this)
@@ -540,11 +546,8 @@ class OfflineFirstMessageRepository(
                             }
 
                             is AudioContent -> {
-                                if (dropped) audioManager.deleteAudio("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
-                                else audioManager.saveAudioToStorage(
-                                    audioBytes = content.audio,
-                                    filename = "unsent_" + localpkintern + VOICEMSG_FILE_NAME
-                                )
+                                if (dropped) voiceFiles.delete("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
+                                else voiceFiles.save("unsent_" + localpkintern + VOICEMSG_FILE_NAME, content.audio)
                             }
 
                             else -> {}
@@ -601,7 +604,7 @@ class OfflineFirstMessageRepository(
                             } else if (serverrequest.data.msgType == MessageType.AUDIO) {
                                 getAudiosForMessageIds(listOf(serverrequest.data.messageId))
 
-                                audioManager.deleteAudio("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
+                                voiceFiles.delete("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
                             }
                         }
                         null
@@ -679,8 +682,8 @@ class OfflineFirstMessageRepository(
                     }
 
                     MessageType.AUDIO -> {
-                        //getAudioBytes returns an empty array when the file can't be read
-                        getAudioBytes(audioManager.getRecordingPath("unsent_" + m.localPK + VOICEMSG_FILE_NAME))
+                        //readVoiceFile returns an empty array when the file can't be read
+                        readVoiceFile("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
                             .takeIf { it.isNotEmpty() }
                             ?.let { audio -> AudioContent(audio = audio) }
                     }

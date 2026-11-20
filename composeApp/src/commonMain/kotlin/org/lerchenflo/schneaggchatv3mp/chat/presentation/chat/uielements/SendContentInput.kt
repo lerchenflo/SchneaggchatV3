@@ -13,10 +13,17 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.audio.voiceMessagePlayerTexts
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
-import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
+import io.github.lerchenflo.voicemessages.VoiceRecordingController
+import io.github.lerchenflo.voicemessages.VoiceRecordingState
+import io.github.lerchenflo.voicemessages.ui.VoiceMessageRecordingBar
+import io.github.lerchenflo.voicemessages.ui.VoiceMessageRecordingBarTexts
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.chat_discard_recording
 import schneaggchatv3mp.composeapp.generated.resources.message
+import schneaggchatv3mp.composeapp.generated.resources.voice_message_recording_level
 
 /**
  * The staged-content editor in the chat input row: a plain text field, an image caption field
@@ -28,7 +35,8 @@ fun RowScope.SendContentInput(
     content: SendMessageContent,
     isEditing: Boolean,
     maxVoiceMsgTime: Long,
-    playbackProgress: StateFlow<PlaybackProgress>,
+    playbackProgress: StateFlow<VoicePlaybackState>,
+    recordingLevels: StateFlow<List<Float>>,
     onAction: (ChatAction) -> Unit,
 ) {
     when (content) {
@@ -95,15 +103,23 @@ fun RowScope.SendContentInput(
         }
 
         is SendMessageContent.AudioContent -> {
-            AudioRecordingBar(
-                content = content,
-                maxVoiceMsgTime = maxVoiceMsgTime,
-                playbackProgress = playbackProgress,
-                onPlay = { messageId, path ->
-                    onAction(ChatAction.OnMessageAction(MessageAction.PlayAudio(messageId, path)))
+            val draftId = VoiceRecordingController.DRAFT_PLAYBACK_ID
+            val recorded = content.recording as? VoiceRecordingState.Recorded
+            VoiceMessageRecordingBar(
+                state = content.recording,
+                levels = recordingLevels,
+                playback = playbackProgress,
+                maxDurationMs = maxVoiceMsgTime,
+                texts = VoiceMessageRecordingBarTexts(
+                    recording = stringResource(Res.string.voice_message_recording_level),
+                    discard = stringResource(Res.string.chat_discard_recording),
+                    player = voiceMessagePlayerTexts(),
+                ),
+                onPlay = {
+                    recorded?.let { onAction(ChatAction.OnMessageAction(MessageAction.PlayAudio(draftId, it.fileName))) }
                 },
                 onPause = { onAction(ChatAction.OnMessageAction(MessageAction.PauseAudio())) },
-                onSeek = { position -> onAction(ChatAction.OnMessageAction(MessageAction.SeekAudio(position))) },
+                onSeek = { position -> onAction(ChatAction.OnMessageAction(MessageAction.SeekAudio(draftId, position))) },
                 onDiscard = { onAction(ChatAction.OnDiscardRecording) },
                 modifier = Modifier.weight(1f)
             )

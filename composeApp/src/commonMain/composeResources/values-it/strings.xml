@@ -495,6 +495,10 @@
     <string name="chat_message_image">immagine del messaggio</string>
     <string name="chat_remove_image">rimuovi immagine</string>
     <string name="chat_discard_recording">scarta registrazione</string>
+    <string name="voice_message_play">Riproduci messaggio vocale</string>
+    <string name="voice_message_pause">Metti in pausa il messaggio vocale</string>
+    <string name="voice_message_position">Posizione del messaggio vocale</string>
+    <string name="voice_message_recording_level">Livello di registrazione</string>
     <string name="open_chat">Apri chat</string>
     <string name="make_admin">Rendi Admin</string>
     <string name="remove_admin_status">rimuovi stato admin</string>

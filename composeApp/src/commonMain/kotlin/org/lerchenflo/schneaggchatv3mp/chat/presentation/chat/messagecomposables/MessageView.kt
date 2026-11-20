@@ -23,7 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReactionView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.RepliedMessagePreview
-import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 
 
@@ -45,7 +45,7 @@ fun MessageView(
     replyMessageOnClick: () -> Unit = {},
     isHighlighted: Boolean = false,
     onAction: (MessageAction) -> Unit = {},
-    playbackProgress: StateFlow<PlaybackProgress>? = null,
+    playbackProgress: StateFlow<VoicePlaybackState>? = null,
 )
 {
    val spaceAfterMessage = if(minimal == MessageMinimal.FIRST || minimal == MessageMinimal.MIDDLE) 1.dp else 6.dp

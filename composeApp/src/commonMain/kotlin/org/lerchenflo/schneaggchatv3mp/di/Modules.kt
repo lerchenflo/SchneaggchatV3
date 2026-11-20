@@ -3,12 +3,14 @@ package org.lerchenflo.schneaggchatv3mp.di
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.unknownuser.UnknownUserViewModel
 import org.lerchenflo.schneaggchatv3mp.events.presentation.detail.EventDetailViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import io.github.lerchenflo.voicemessages.VoiceMessageFiles
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboAnnotationNames
@@ -247,6 +249,8 @@ val sharedmodule = module{
     }
     // One shared queue for all picture and voice message downloads, so they stay under the server's rate limit
     single { MediaDownloadThrottle() }
+    // Stored voice message files (bare file names, same folders as before the library took them over)
+    single { VoiceMessageFiles.appStorage(desktopAppName = "Schneaggchat", fileNameSuffix = VOICEMSG_FILE_NAME) }
     singleOf(::RoomGroupDataSource) bind GroupLocalDataSource::class
     singleOf(::OfflineFirstGroupRepository) bind GroupRepository::class
     singleOf(::RoomUserDataSource) bind UserLocalDataSource::class
@@ -273,7 +277,7 @@ val sharedmodule = module{
             messageLocalDataSource = get(),
             messageRemoteDataSource = get(),
             pictureManager = get(),
-            audioManager = get(),
+            voiceFiles = get(),
             loggingRepository = get(),
             externalScope = get<ApplicationScope>(),
             mediaDownloadThrottle = get(),
@@ -311,7 +315,7 @@ val sharedmodule = module{
             socketConnectionManager = get(),
             loggingRepository = get(),
             pictureManager = get(),
-            audioManager = get(),
+            voiceFiles = get(),
             externalScope = get<ApplicationScope>(),
         )
     }
@@ -425,7 +429,7 @@ val sharedmodule = module{
             loggingRepository = get(),
             pictureManager = get(),
             permissionsManager = get(),
-            audioManager = get(),
+            voiceFiles = get(),
             chatId = chatId,
             isGroup = isGroup
         )
