@@ -56,7 +56,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.BigPictureHost
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberBigPictureState
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
@@ -125,12 +126,12 @@ fun GroupMembersView(
     openUnknownUser: (userId: String, name: String) -> Unit,
 ) {
     val iAmAdmin = members.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
+    val bigPicture = rememberBigPictureState()
 
     Column(
         modifier = Modifier.padding(vertical = 8.dp)
     ) {
         members.forEach { (groupMember, user, identity) ->
-            var profilePictureDialogShown by remember { mutableStateOf(false) }
             var userOptionPopupExpanded by remember { mutableStateOf(false) }
             var showRemoveMemberConfirmation by remember { mutableStateOf(false) }
             val me = groupMember.userId == ownId
@@ -151,9 +152,8 @@ fun GroupMembersView(
                     onClickText = {
                         if(!me) userOptionPopupExpanded = true // only show popup for others
                     },
-                    onClickImage = {
-                        profilePictureDialogShown = true
-                    },
+                    // Same source as the row: friends and looked-up users who are no friends
+                    onClickImage = { bigPicture.show(identity.profilePictureUrl) },
                     joindate = groupMember.joinDate
                 )
 
@@ -179,16 +179,6 @@ fun GroupMembersView(
                 )
             }
 
-            if (profilePictureDialogShown) {
-                ProfilePictureBigDialog(
-                    // Same source as the row: friends and looked-up users who are no friends
-                    filepath = identity.profilePictureUrl,
-                    onDismiss = {
-                        profilePictureDialogShown = false
-                    }
-                )
-            }
-
             // Confirmation dialog for removing member
             if (showRemoveMemberConfirmation) {
                 ConfirmationDialog(
@@ -203,6 +193,7 @@ fun GroupMembersView(
             }
         }
     }
+    BigPictureHost(state = bigPicture)
 }
 
 @Composable
@@ -210,33 +201,23 @@ fun CommonGroupsView(
     groups: List<Group>,
     viewmodel: ChatDetailsViewmodel
 ){
+    val bigPicture = rememberBigPictureState()
+
     Column(
         modifier = Modifier.padding(vertical = 8.dp)
     ) {
         groups.forEach { group ->
-
-            var profilePictureDialogShown by remember { mutableStateOf(false) }
             ChatButtonView(
                 profilePictureFilePath = group.profilePictureUrl,
                 name = group.name,
                 onClickText = {
                     viewmodel.navigateToChat(group.id, true)
                 },
-                onClickImage = {
-                    profilePictureDialogShown = true
-                }
+                onClickImage = { bigPicture.show(group.profilePictureUrl) }
             )
-
-            if (profilePictureDialogShown) {
-                ProfilePictureBigDialog(
-                    filepath =  group.profilePictureUrl,
-                    onDismiss = {
-                        profilePictureDialogShown = false
-                    }
-                )
-            }
         }
     }
+    BigPictureHost(state = bigPicture)
 }
 
 

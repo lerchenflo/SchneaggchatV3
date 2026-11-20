@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -30,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -47,8 +45,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.RecapAvailability
 import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
-import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ZoomableProfilePicture
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -119,24 +116,12 @@ fun SettingsScreen(
             verticalAlignment = Alignment.CenterVertically
         ){
 
-            var profilepicpopupShown by remember { mutableStateOf(false) }
-            ProfilePictureView(
+            ZoomableProfilePicture(
                 filepath = ownuser?.profilePictureUrl ?: "",
                 modifier = Modifier
                     .size(120.dp)
-                    .clickable {
-                        profilepicpopupShown = true
-                    }
                     .padding(8.dp)
             )
-            if (profilepicpopupShown) {
-                ProfilePictureBigDialog(
-                    filepath = ownuser?.profilePictureUrl ?: "",
-                    onDismiss = {
-                        profilepicpopupShown = false
-                    }
-                )
-            }
 
 
 

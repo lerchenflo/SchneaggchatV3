@@ -37,9 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,7 +53,8 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.BigPictureHost
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberBigPictureState
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -94,8 +92,7 @@ fun NewChat(
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
-    var profilePictureDialogShown by remember { mutableStateOf(false) }
-    var profilePictureFilePathTemp by remember { mutableStateOf("") }
+    val bigPicture = rememberBigPictureState()
 
     Scaffold {
         Column(
@@ -208,10 +205,7 @@ fun NewChat(
                         onClickText = {
                             viewModel.onPendingFriendRequestClick(friend)
                         },
-                        onClickImage = {
-                            profilePictureDialogShown = true
-                            profilePictureFilePathTemp = friend.profilePictureUrl
-                        },
+                        onClickImage = { bigPicture.show(friend.profilePictureUrl) },
                         ownId = ownId
                     )
                     HorizontalDivider(
@@ -245,15 +239,7 @@ fun NewChat(
 
         }
 
-        if (profilePictureDialogShown) {
-            ProfilePictureBigDialog(
-                filepath = profilePictureFilePathTemp,
-                onDismiss = {
-                    profilePictureDialogShown = false
-                    profilePictureFilePathTemp = ""
-                }
-            )
-        }
+        BigPictureHost(state = bigPicture)
 
         pendingFriendPopup?.let { selectedChat->
 

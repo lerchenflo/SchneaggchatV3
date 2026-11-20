@@ -97,7 +97,8 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.ChatSelectorDismissableInfo
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.chat.domain.firstFriendChatWithMessages
-import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.BigPictureHost
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberBigPictureState
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberProfilePicturePlaceholder
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
@@ -144,12 +145,11 @@ fun Chatauswahlscreen(
 
     val chatFilter by viewModel.filter.collectAsStateWithLifecycle()
 
-    var profilePictureDialogShown by remember { mutableStateOf(false) }
+    val bigPicture = rememberBigPictureState()
     val changelogPopup by viewModel.changelogPopup.collectAsStateWithLifecycle()
     val contributePopupShown by viewModel.contributePopupShown.collectAsStateWithLifecycle()
     val announcement by viewModel.announcement.collectAsStateWithLifecycle()
 
-    var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
@@ -764,10 +764,7 @@ fun Chatauswahlscreen(
                             onLongClickText = {
                                 userOptionDropdownExpanded = true
                             },
-                            onClickImage = {
-                                profilePictureDialogShown = true
-                                profilePictureFilePathTemp = gegner.profilePictureUrl
-                            },
+                            onClickImage = { bigPicture.show(gegner.profilePictureUrl) },
                             showPin = true,
                             highlightTodaysTimestamp = highlightTodaysTimestamp,
                             ownId = ownId,
@@ -843,15 +840,7 @@ fun Chatauswahlscreen(
         }
 
         //Popups
-        if (profilePictureDialogShown) {
-            ProfilePictureBigDialog(
-                filepath = profilePictureFilePathTemp,
-                onDismiss = {
-                    profilePictureDialogShown = false
-                    profilePictureFilePathTemp = ""
-                }
-            )
-        }
+        BigPictureHost(state = bigPicture)
 
 
         changelogPopup?.let {

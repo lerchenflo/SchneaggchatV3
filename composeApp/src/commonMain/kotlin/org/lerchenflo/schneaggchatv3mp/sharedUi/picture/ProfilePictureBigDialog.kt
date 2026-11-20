@@ -28,13 +28,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
+import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.rememberZoomState
 import org.lerchenflo.schneaggchatv3mp.sharedUi.zoomable
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.close
+import schneaggchatv3mp.composeapp.generated.resources.edit_profile_picture
+import schneaggchatv3mp.composeapp.generated.resources.profile_picture
 
 // Scale at which the circular clip has fully morphed into the square image
 private const val CIRCLE_TO_SQUARE_SCALE = 1.5f
 
-// Zoagt es Profilbild groß a
+/** The big, zoomable picture view. Screens open it through [BigPictureHost] or [ZoomableProfilePicture]. */
 @Composable
 fun ProfilePictureBigDialog(
     onDismiss: () -> Unit,
@@ -75,7 +80,7 @@ fun ProfilePictureBigDialog(
             ) {
                 AsyncImage(
                     model = filepath,
-                    contentDescription = "Profile picture big",
+                    contentDescription = stringResource(Res.string.profile_picture),
                     modifier = Modifier
                         .fillMaxWidth()
                         .zoomable(zoomState)
@@ -97,7 +102,7 @@ fun ProfilePictureBigDialog(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(Res.string.close),
                             modifier = Modifier.size(32.dp)
                         )
                     }
@@ -107,7 +112,7 @@ fun ProfilePictureBigDialog(
                         IconButton(onClick = onEdit) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit",
+                                contentDescription = stringResource(Res.string.edit_profile_picture),
                                 modifier = Modifier.size(32.dp)
                             )
                         }

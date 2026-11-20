@@ -34,7 +34,7 @@ import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
-import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ZoomableProfilePicture
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberInsetProfilePicturePlaceholder
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -80,19 +80,7 @@ fun UnknownUserPopup(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(start = 24.dp, top = 28.dp, end = 24.dp, bottom = 16.dp)
         ) {
-            Surface(
-                shape = CircleShape,
-                border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary),
-            ) {
-                // Most users here have no picture: keep the whole placeholder figure inside the ring
-                val placeholder = rememberInsetProfilePicturePlaceholder(insetFraction = PLACEHOLDER_INSET)
-                ProfilePictureView(
-                    filepath = state.profilePictureFilePath,
-                    contentDescription = null,
-                    placeholder = placeholder,
-                    modifier = Modifier.size(104.dp),
-                )
-            }
+            UnknownUserPicture(filePath = state.profilePictureFilePath)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -128,6 +116,23 @@ fun UnknownUserPopup(
 
             PopupActions(requestState = state.requestState, onAction = onAction)
         }
+    }
+}
+
+/** The ringed avatar; a tap opens the picture big. Most users here have no picture, only the placeholder. */
+@Composable
+private fun UnknownUserPicture(filePath: String) {
+    Surface(
+        shape = CircleShape,
+        border = BorderStroke(3.dp, MaterialTheme.colorScheme.primary),
+    ) {
+        // Keep the whole placeholder figure inside the ring
+        ZoomableProfilePicture(
+            filepath = filePath,
+            contentDescription = null,
+            placeholder = rememberInsetProfilePicturePlaceholder(insetFraction = PLACEHOLDER_INSET),
+            modifier = Modifier.size(104.dp),
+        )
     }
 }
 

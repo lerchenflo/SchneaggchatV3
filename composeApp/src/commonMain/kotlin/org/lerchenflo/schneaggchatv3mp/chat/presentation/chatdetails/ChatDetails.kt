@@ -70,8 +70,7 @@ import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
-import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ZoomableProfilePicture
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -170,7 +169,6 @@ fun ChatDetails(
     val iAmAdmin =
         (selectedChat as? ChatDetailsState.GroupDetails)?.members?.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
 
-    var profilePictureDialogShown by remember { mutableStateOf(false) }
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
     var showDeleteGroupConfirmation by remember { mutableStateOf(false) }
     var showDecoupleExpiryConfirmation by remember { mutableStateOf(false) }
@@ -183,20 +181,6 @@ fun ChatDetails(
     var showGroupRenameDialog by remember { mutableStateOf(false) }
     var showNicknameDialog by remember { mutableStateOf(false) }
     var showWakeReasonDialog by remember { mutableStateOf(false) }
-
-
-    // Profilbild größer azoaga
-    if (profilePictureDialogShown) {
-        ProfilePictureBigDialog(
-            onDismiss = { profilePictureDialogShown = false },
-            filepath = selectedChat.profilePictureUrl,
-            showEditButton = isGroup,
-            onEdit = {
-                profilePictureDialogShown = false
-                showImagePickerDialog = true
-            }
-        )
-    }
 
     if (showGroupRenameDialog) {
         var errorMessage by remember { mutableStateOf<UiText?>(null) }
@@ -294,7 +278,6 @@ fun ChatDetails(
                 profilePictureUrl = selectedChat.profilePictureUrl,
                 showEditPictureBadge = isGroup,
                 editNameDescription = if (isGroup) stringResource(Res.string.change_group_name) else stringResource(Res.string.change_nickname),
-                onPictureClick = { profilePictureDialogShown = true },
                 onEditPictureClick = { showImagePickerDialog = true },
                 onNameClick = {
                     if (isGroup) showGroupRenameDialog = true else showNicknameDialog = true
@@ -862,7 +845,7 @@ fun ChatDetails(
 /**
  * Centered profile picture with the chat name below it. The name opens the rename (group) or
  * nickname (user) dialog; [showEditPictureBadge] adds the same edit badge as the own profile in
- * the user settings.
+ * the user settings, and an edit button to the big picture a tap on the picture opens.
  */
 @Composable
 private fun ChatDetailsHeader(
@@ -871,7 +854,6 @@ private fun ChatDetailsHeader(
     profilePictureUrl: String,
     showEditPictureBadge: Boolean,
     editNameDescription: String,
-    onPictureClick: () -> Unit,
     onEditPictureClick: () -> Unit,
     onNameClick: () -> Unit,
     nameModifier: Modifier = Modifier,
@@ -885,12 +867,10 @@ private fun ChatDetailsHeader(
         Box(
             modifier = Modifier.size(160.dp)
         ) {
-            ProfilePictureView(
+            ZoomableProfilePicture(
                 filepath = profilePictureUrl,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
-                    .clickable { onPictureClick() }
+                modifier = Modifier.fillMaxSize(),
+                onEdit = if (showEditPictureBadge) onEditPictureClick else null,
             )
 
             if (showEditPictureBadge) {
