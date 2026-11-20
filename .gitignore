@@ -37,3 +37,6 @@ storeassets/demo/.last-backup-database.db*
 storeassets/preview/
 # Store images (raw shots, rendered store images, icons) stay local; rebuild them with storeassets/demo/
 storeassets/**/*.png
+# Except the ready-to-copy app icon sets (default, winter) for the manual season switch and the winter master
+!storeassets/icon/*/app/**/*.png
+!storeassets/icon/winter/schneaggchat_logo_winter_transparent.png

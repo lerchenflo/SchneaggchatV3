@@ -28,12 +28,15 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Datumsauswahl: Kalender statt Scrollrad
 - Dartcounter: Double In
 - Onboarding: Neue Tour-Schritte
+- App-Icon: Winter-Version mit Schnee auf Eis
+- iOS: App-Icon mit Dunkel- und Getönt-Variante
 
 #### Bugfixes
 - Profilbild: Anzeige bei Nicht-Freunden behoben
 - iOS: Badge und Teilen repariert
 - Anmeldung: Passwort-Abgleich aktualisiert
 - E-Mail-Warnung: Text verständlicher, weniger Fehlalarme
+- Android: Launcher-Icon wird nicht mehr abgeschnitten
 
 ### 3.0.19
 
