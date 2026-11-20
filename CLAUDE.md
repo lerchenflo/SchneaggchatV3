@@ -1,6 +1,6 @@
 # Schneaggchat V3
 
-Privacy-focused chat platform built with Kotlin Multiplatform and Compose Multiplatform. Targets Android, iOS, and Desktop from a shared codebase.
+Privacy-focused chat platform, Kotlin Multiplatform + Compose Multiplatform. Targets Android, iOS, Desktop from shared codebase.
 
 ## Tech Stack
 
@@ -26,7 +26,7 @@ Privacy-focused chat platform built with Kotlin Multiplatform and Compose Multip
 iosApp/            — iOS Xcode project wrapper
 ```
 
-Feature-based package organization under `composeApp/src/commonMain/kotlin/`:
+Feature-based packages under `composeApp/src/commonMain/kotlin/`:
 
 ```
 app/               — App setup, navigation, theme, logging
@@ -46,7 +46,7 @@ utilities/         — Shared helpers
 constants.kt       — App-wide constants
 ```
 
-Repository interfaces + their models live in the domain/ of the feature that holds the implementation (data/); features may import each other's domain/ only.
+Repository interfaces + their models live in domain/ of feature holding implementation (data/); features may import each other's domain/ only.
 
 Feature data layer: data/ (repositories), data/local/ (local data sources + entity/), data/remote/ (remote data sources + dto/).
 
@@ -60,27 +60,27 @@ Feature data layer: data/ (repositories), data/local/ (local data sources + enti
 
 ## Branch Workflow
 
-- Claude always works on the current checked-out branch in place — never create or switch to a new branch on your own
+- Work on current checked-out branch in place — never create or switch branch on your own
 - PRs merge into `main`
 
 ## Code Conventions
 
-- **Most important for every change: structure and readability over extended functionality.** If a change uses bad structure, everything else about it is useless. Put code in the layer and package it belongs to (domain logic in `domain/`, not in UI files), keep functions small and named for what they do, and follow the architecture skills. If a feature can only be added with bad structure, fix the structure first or ask the user. *(user, 2026-11-11)*
-- **All new code must be in English** — variable names, function names, comments, string keys. Do not rename existing German code unless you are actively modifying that file.
-- **Always use the version catalog** (`gradle/libs.versions.toml`) for all dependencies. No hardcoded versions in build files.
+- **Most important for every change: structure and readability over extended functionality.** Bad structure makes everything else about change useless. Put code in layer and package it belongs to (domain logic in `domain/`, not in UI files), keep functions small and named for what they do, follow architecture skills. Feature only possible with bad structure: fix structure first or ask user. *(user, 2026-11-11)*
+- **All new code in English** — variable names, function names, comments, string keys. Never rename existing German code unless actively modifying that file.
+- **Always use version catalog** (`gradle/libs.versions.toml`) for all dependencies. No hardcoded versions in build files.
 
 ## Wiring checklists
 
-Steps that are easy to miss and do not fail the compile. Whenever a missed step is found (in a review, a bug or a crash), add it here.
+Steps easy to miss that don't fail compile. Missed step found (review, bug, crash): add it here.
 
-- **New route**: `Route` subtype in `app/navigation/Route.kt`; `subclass(...)` in the `NavKey` polymorphic module in `app/navigation/NavigationState.kt` (otherwise saving the back stack crashes); `entry<Route.X>` in `app/App.kt`; decide whether it hides the nav bar (`hiddenNavBarRoutes` in `NavigationState.kt`); ViewModel in `di/Modules.kt`.
-- **New socket message**: `SocketConnectionMessage` subtype with `@SerialName`; `subclass(...)` in `datasource/network/AppJson.kt` (otherwise it is silently dropped); branch in `handleSocketConnectionMessage`; defaults on its fields so a missing field doesn't drop it.
-- **New push type (`_class`)**: `DecodedNotification` + `PayloadDecoder.decode`; both `resolveLocalizedContent` and `resolveFallbackContent`; never return null content for something the user must see (Android shows nothing then); iOS extension `NotificationPayload.swift` (`type`), `NotificationService.swift` and `NotificationStrings.swift` (en/de/it); tap target in `IosPushDelegateBridge.onNotificationTap` and the Android launch intent extras (`AndroidNotifier.launchIntent`, `MainActivity`).
-- **New stored field**: Room entity, both entity mappers, DTO mapper, a `TypeConverter` for new types, and a `Database.kt` version bump.
+- **New route**: `Route` subtype in `app/navigation/Route.kt`; `subclass(...)` in `NavKey` polymorphic module in `app/navigation/NavigationState.kt` (else saving back stack crashes); `entry<Route.X>` in `app/App.kt`; decide whether it hides nav bar (`hiddenNavBarRoutes` in `NavigationState.kt`); ViewModel in `di/Modules.kt`.
+- **New socket message**: `SocketConnectionMessage` subtype with `@SerialName`; `subclass(...)` in `datasource/network/AppJson.kt` (else silently dropped); branch in `handleSocketConnectionMessage`; defaults on its fields so missing field doesn't drop it.
+- **New push type (`_class`)**: `DecodedNotification` + `PayloadDecoder.decode`; both `resolveLocalizedContent` and `resolveFallbackContent`; never return null content for something user must see (Android shows nothing then); iOS extension `NotificationPayload.swift` (`type`), `NotificationService.swift` and `NotificationStrings.swift` (en/de/it); tap target in `IosPushDelegateBridge.onNotificationTap` and Android launch intent extras (`AndroidNotifier.launchIntent`, `MainActivity`).
+- **New stored field**: Room entity, both entity mappers, DTO mapper, `TypeConverter` for new types, `Database.kt` version bump.
 
 ## Architecture Skills
 
-Follow the architecture skills installed in `~/.claude/skills/`. These define the patterns for this project:
+Follow architecture skills in `~/.claude/skills/`. They define this project's patterns:
 
 | Skill | What it covers |
 |---|---|
@@ -94,24 +94,24 @@ Follow the architecture skills installed in `~/.claude/skills/`. These define th
 | `android-error-handling` | Result wrapper, DataError, safe call helpers, UiText mapping |
 | `android-testing` | JUnit5, Turbine, AssertK, fakes, Compose UI tests |
 
-When a task matches a skill, read and follow it.
+Task matches skill: read and follow it.
 
 ## Guardrails & Agent Rules
 
-- **Always respond in English**, no matter which language the user writes in (German, Vorarlbergerisch, etc.).
-- **Never hardcode colors**: Always use `MaterialTheme.colorScheme` colors (or `contentColorFor(...)`). If a specific non-theme color is needed, ask the user first.
-- **String resources**: Whenever a string is added OR its value is changed in default `strings.xml` (in `values/`), redo the translation in `values-de/strings.xml` (German) and `values-it/strings.xml` (Italian) to match. Never add or change strings in `values-de-rAT` (Austrian) — that locale is translated manually. The only allowed edits there are deletions: always delete keys that no longer exist in the default `values/strings.xml` (orphaned keys), whenever a key is removed, and always delete a key whose value was changed in `values/strings.xml`, so no outdated Austrian text stays behind (the key then shows up as missing for the `vori-translator` skill). Exception: when the user explicitly invokes the `vori-translator` skill, write its Vori translations straight into the file for the user to review with `git diff`, then follow the skill's learning loop. **iOS notification texts always go with it** (user, 2026-11-17): push texts also live in `iosApp/SchneaggchatNotificationServiceExtension/NotificationStrings.swift` (English, German, Italian and Austrian tables); every translation change updates them in the same change (the Austrian table under the same rule as `values-de-rAT`, so every `vori-translator` run fills it too), because a missing key there shows English on iOS.
-- **Gradle — compile tasks only, and only when not on a laptop**: You may run the compile tasks (`:composeApp:compileKotlinJvm`, `:composeApp:compileAndroidMain`, `:composeApp:compileKotlinIosSimulatorArm64`, `:composeApp:compileTestKotlinIosSimulatorArm64`) freely to check your changes, but only if the machine is not a laptop. Check first: macOS `pmset -g batt | grep -q InternalBattery` (match = laptop); Linux `ls /sys/class/power_supply/BAT*` (exists = laptop); Windows `Get-CimInstance Win32_Battery` (any result = laptop). On a laptop, and for every other Gradle task (tests, `assemble*`, `run*`, `install*`, `build`, publish), do not run `./gradlew` unless explicitly requested by the user.
-- **Do not assume anything**: If an instruction or requirement is ambiguous or unclear, ask the user for clarification before proceeding.
-- **Use available skills**: Always check and apply relevant skills from the skills directory when working on tasks.
-- After adding or changing dependencies: remind the user to verify versions are up to date and run a Gradle sync. Do not build or run the project yourself (compile checks per the Gradle rule above are fine).
-- Do not create documentation files (README, ARCHITECTURE, etc.) unless explicitly asked.
-- Do not refactor or restructure code you were not asked to touch.
-- Do not add tests unless explicitly asked.
-- **Server repo**: change code only in this repo, never in the server repo `SchneaggchatV3server` (usually `~/Desktop/SchneaggchatV3server`); reading it is fine. When a client change the user approved needs a server change: if a `SchneaggchatV3server` session is live (`ListAgents`), send it with `SendMessage`; otherwise add it to `SchneaggchatV3server/Todo.md`, the only server file agents may write to. Only exception: the `bump-version` skill sets the `version = "..."` line in the server's `build.gradle.kts`, nothing else. Describe the functionality and the exact field names the client sends or reads, not the server's structure; the server agent designs its side and replies with the contract it built. See "Client and server projects" in the global `~/.claude/CLAUDE.md`.
-- **Tour step for new features** *(user, 2026-11-19)*: when you build a new feature or a new button, interview the user (AskUserQuestion) whether it needs a tap target step in the onboarding tour (`app/onboarding/onboardingtour.kt`), so users see what is new. If yes, build the step and ask how it shows: only once to users who have not seen it yet (its own tag, launched the first time its screen opens) or only in this version. The full tour (retake) always shows every step. Tag-based steps need kmp-taptarget 1.0.5 (see the onboarding item in `plans/Todo.md`).
-- **Todo list — no thought gets lost**: Whenever you notice something worth doing that is outside the current task (bugs, tech debt, stale comments, deferred refactors, open questions, follow-ups from a plan), add it to `plans/Todo.md` with its source and file:line. Do not fix it unasked; the user reviews the list. When an item is finished, tick it and move it to the top of the `## Done` section in the same change, never leave it ticked in its priority section; an open device test of it goes into `## Device tests` *(user, 2026-11-20)*.
-- Run the readme-changelog-updater agent after every fix (Add even small fixes, the user will remove them again if unnecessary.)
-- Before implementing new functions, utils, repositories, or mappers, run the code-reuse-scout agent with the planned function list (name + one-line intent per item) so it can research existing code to reuse or extend first. It reports a REUSE/EXTEND/NEW verdict per item and maintains `.claude/code-index.md`; it never edits source code itself.
-- **Releases**: before creating or pushing a GitHub release tag (`v*`), run the `pre-release-check` skill; an open blocker stops the tag unless the user explicitly says to go ahead. *(user, 2026-11-17)*
-- **Never look at the `games/` folder for reference** (structure, functions, patterns, reuse candidates, etc.) when working on anything outside of `games/` — the code there is low quality and must not be copied or mirrored elsewhere. Only read it when the task is actually about the games feature.
+- **Always respond in English**, whatever language user writes (German, Vorarlbergerisch, etc.).
+- **Never hardcode colors**: always `MaterialTheme.colorScheme` colors (or `contentColorFor(...)`). Specific non-theme color needed: ask user first.
+- **String resources**: string added OR value changed in default `strings.xml` (in `values/`): redo translation in `values-de/strings.xml` (German) and `values-it/strings.xml` (Italian) to match. Never add or change strings in `values-de-rAT` (Austrian) — translated manually. Only allowed edits there = deletions: always delete keys no longer in default `values/strings.xml` (orphaned keys), whenever key removed, and always delete key whose value changed in `values/strings.xml`, so no outdated Austrian text stays (key then shows as missing for `vori-translator` skill). Exception: user explicitly invokes `vori-translator` skill: write its Vori translations straight into file for user to review with `git diff`, then follow skill's learning loop. **iOS notification texts always go with it** (user, 2026-11-17): push texts also live in `iosApp/SchneaggchatNotificationServiceExtension/NotificationStrings.swift` (English, German, Italian, Austrian tables); every translation change updates them in same change (Austrian table under same rule as `values-de-rAT`, so every `vori-translator` run fills it too), because missing key there shows English on iOS.
+- **Gradle — compile tasks only, only when not on laptop**: run compile tasks (`:composeApp:compileKotlinJvm`, `:composeApp:compileAndroidMain`, `:composeApp:compileKotlinIosSimulatorArm64`, `:composeApp:compileTestKotlinIosSimulatorArm64`) freely to check changes, only if machine not laptop (laptop check: global `~/.claude/CLAUDE.md` "Builds"). On laptop, and for every other Gradle task (tests, `assemble*`, `run*`, `install*`, `build`, publish), never run `./gradlew` unless user explicitly requests.
+- **Do not assume anything**: instruction or requirement ambiguous or unclear: ask user before proceeding.
+- **Use available skills**: always check and apply relevant skills from skills directory.
+- After adding or changing dependencies: remind user to verify versions up to date and run Gradle sync. Never build or run project yourself (compile checks per Gradle rule above fine).
+- No documentation files (README, ARCHITECTURE, etc.) unless explicitly asked.
+- No refactor or restructure of code you were not asked to touch.
+- No tests unless explicitly asked.
+- **Server repo**: change code only in this repo, never in server repo `SchneaggchatV3server` (usually `~/Desktop/SchneaggchatV3server`); reading fine. Approved client change needs server change: `SchneaggchatV3server` session live (`ListAgents`), send with `SendMessage`; else add to `SchneaggchatV3server/Todo.md`, only server file agents may write. Only exception: `bump-version` skill sets `version = "..."` line in server's `build.gradle.kts`, nothing else. Describe functionality and exact field names client sends or reads, not server's structure; server agent designs its side, replies with contract it built. See "Client and server projects" in global `~/.claude/CLAUDE.md`.
+- **Tour step for new features** *(user, 2026-11-19)*: building new feature or new button: interview user (AskUserQuestion) whether it needs tap target step in onboarding tour (`app/onboarding/onboardingtour.kt`), so users see what is new. Yes: build step, ask how it shows: only once to users who haven't seen it (own tag, launched first time its screen opens) or only in this version. Full tour (retake) always shows every step. Tag-based steps need kmp-taptarget 1.0.5 (see onboarding item in `plans/Todo.md`).
+- **Todo list — no thought gets lost**: noticed something worth doing outside current task (bugs, tech debt, stale comments, deferred refactors, open questions, follow-ups from plan): add to `plans/Todo.md` with source and file:line. Never fix unasked; user reviews list. Item finished: tick it, move to top of `## Done` section in same change, never leave ticked in its priority section; open device test of it goes into `## Device tests` *(user, 2026-11-20)*. `## Side quests`: done only when tokens left over, never picked as next todo unless user asks *(user, 2026-11-20)*.
+- Run readme-changelog-updater agent after every fix (add even small fixes, user removes unnecessary ones).
+- Before implementing new functions, utils, repositories or mappers: run code-reuse-scout agent with planned function list (name + one-line intent per item) to research existing code to reuse or extend first. Reports REUSE/EXTEND/NEW verdict per item, maintains `.claude/code-index.md`; never edits source code.
+- **Releases**: before creating or pushing GitHub release tag (`v*`), run `pre-release-check` skill; open blocker stops tag unless user explicitly says go ahead. *(user, 2026-11-17)*
+- **Never look at `games/` folder for reference** (structure, functions, patterns, reuse candidates, etc.) when working outside `games/` — code there low quality, must not be copied or mirrored elsewhere. Read it only when task is about games feature.
