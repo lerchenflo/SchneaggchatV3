@@ -24,6 +24,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ##### Highlights
 
 #### Features
+- Extensions: Gemeinsamer Text
 - Events: Erinnerungen im Gruppenchat
 - Datumsauswahl: Kalender statt Scrollrad
 - Dartcounter: Double In
@@ -38,7 +39,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Profilbild: Anzeige bei Nicht-Freunden behoben, leere Großansicht entfernt
 - iOS: Badge und Teilen repariert
 - Sprachnachrichten: Musik pausiert und läuft danach weiter
-- Desktop: App läuft nur noch einmal, ein zweiter Start zeigt das offene Fenster
+- Desktop: Doppelte Taskbar Tabs behoben
 
 ### 3.0.19
 
