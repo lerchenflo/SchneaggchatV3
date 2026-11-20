@@ -30,13 +30,17 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Onboarding: Neue Tour-Schritte
 - App-Icon: Winter-Version mit Schnee auf Eis
 - iOS: App-Icon mit Dunkel- und Getönt-Variante
+- Profilbild: Großansicht per Tipp
+- Benachrichtigungen: Kürzer wie bei WhatsApp
+- Vorarlbergerisch: Neue Texte übersetzt
 
 #### Bugfixes
-- Profilbild: Anzeige bei Nicht-Freunden behoben
+- Profilbild: Anzeige bei Nicht-Freunden behoben, leere Großansicht entfernt
 - iOS: Badge und Teilen repariert
 - Anmeldung: Passwort-Abgleich aktualisiert
 - E-Mail-Warnung: Text verständlicher, weniger Fehlalarme
 - Android: Launcher-Icon wird nicht mehr abgeschnitten
+- Sprachnachrichten: Musik pausiert und läuft danach weiter
 
 ### 3.0.19
 

@@ -6,7 +6,6 @@ enum NotificationStringKey: String {
     case poll
     case message
     case youHaveNewMessages
-    case newMessageSingleTitle
     case newMessageGroupTitle
     case newMessageReaction
     case newFriendRequestTitle
@@ -65,8 +64,7 @@ enum NotificationStrings {
         .poll: "poll",
         .message: "message",
         .youHaveNewMessages: "You have new messages",
-        .newMessageSingleTitle: "New chat from %1$@",
-        .newMessageGroupTitle: "New chat from %1$@ in %2$@",
+        .newMessageGroupTitle: "%1$@ @ %2$@",
         .newMessageReaction: "%1$@ reacted to your %2$@",
         .newFriendRequestTitle: "Friend request from %1$@",
         .newFriendRequestBody: "%1$@ wants to be your friend",
@@ -99,8 +97,7 @@ enum NotificationStrings {
         .poll: "Umfrage",
         .message: "Nachricht",
         .youHaveNewMessages: "Du hast neue Nachrichten",
-        .newMessageSingleTitle: "Neuer Chat von %1$@",
-        .newMessageGroupTitle: "Neuer Chat von %1$@ in %2$@",
+        .newMessageGroupTitle: "%1$@ @ %2$@",
         .newMessageReaction: "%1$@ hat auf deine %2$@ reagiert",
         .newFriendRequestTitle: "Freundschaftsanfrage von %1$@",
         .newFriendRequestBody: "%1$@ will dein Freund sein",
@@ -133,8 +130,7 @@ enum NotificationStrings {
         .poll: "Umfrog",
         .message: "Nochricht",
         .youHaveNewMessages: "Du hosch neue Nachrichta",
-        .newMessageSingleTitle: "Neuer Chat vo %1$@",
-        .newMessageGroupTitle: "Neuer Chat vo %1$@ in %2$@",
+        .newMessageGroupTitle: "%1$@ @ %2$@",
         .newMessageReaction: "%1$@ hot uf dine %2$@ reagiert",
         .newFriendRequestTitle: "Freundschaftsanfrog von %1$@",
         .newFriendRequestBody: "%1$@ will din Freund sei",
@@ -167,8 +163,7 @@ enum NotificationStrings {
         .poll: "sondaggio",
         .message: "messaggio",
         .youHaveNewMessages: "Hai nuovi messaggi",
-        .newMessageSingleTitle: "Nuova chat da %1$@",
-        .newMessageGroupTitle: "Nuova chat da %1$@ in %2$@",
+        .newMessageGroupTitle: "%1$@ @ %2$@",
         .newMessageReaction: "%1$@ ha reagito al tuo %2$@",
         .newFriendRequestTitle: "Richiesta di amicizia da %1$@",
         .newFriendRequestBody: "%1$@ vuole essere tuo amico",

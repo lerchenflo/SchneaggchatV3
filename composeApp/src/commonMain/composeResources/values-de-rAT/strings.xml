@@ -101,6 +101,7 @@
     <string name="no">na</string>
     <string name="ok">passt</string>
     <string name="cancel">abbreacha</string>
+    <string name="picker_back">Zruck</string>
     <string name="version">Version: %1$s</string>
     <string name="build_number">Buildnr: %1$s</string>
     <string name="app_broken">App isch kaputt</string>
@@ -340,8 +341,7 @@
     <string name="notification_channel_general">Allgemein</string>
     <string name="notification_channel_map_sightings">Polizei &amp; Radar</string>
     <string name="new_messages">Neue Nochrichta</string>
-    <string name="new_message_noti_single_title">Neuer Chat vo %1$s</string>
-    <string name="new_message_noti_group_title">Neuer Chat vo %1$s in %2$s</string>
+    <string name="new_message_noti_group_title">%1$s @ %2$s</string>
 
     <string name="new_message_reaction">%1$s hot uf dine %2$s reagiert</string>
 
@@ -392,6 +392,10 @@
     <string name="event_closes_with_date">Endet: %1$s</string>
     <string name="event_group_delete_label">Gruppenchat löscha</string>
     <string name="event_group_marker">Event-Gruppe</string>
+    <string name="chat_pinned">Apinnt</string>
+    <string name="birthday_today">Hot hüt Geburtstag</string>
+    <string name="selected">Usgwählt</string>
+    <string name="not_selected">Ned usgwählt</string>
     <string name="group_delete_delay_never">Nie</string>
     <string name="group_delete_delay_one_hour">1 Stund nocham Event</string>
     <string name="group_delete_delay_one_day">1 Tag nocham Event</string>
@@ -450,6 +454,9 @@
 
     <string name="name_too_long">Nama z lang</string>
     <string name="name_too_short">Nama z kurz</string>
+    <string name="name_bad_start_or_end">Muss mit nam Buchstaba oda na Zahl afanga und ufhöra</string>
+    <string name="name_invalid_characters">Nur Buchstaba, Zahla, Leerzeicha und _ - . sind erlaubt</string>
+    <string name="name_reserved">Da Nama isch ned erlaubt</string>
 
 
     <string name="copied_to_clipboard">Ind Zwischenablag kopiert</string>
@@ -473,6 +480,7 @@
     <string name="mark_as_read">als gleasa markiera</string>
     <string name="more_info">Mehr Informationa</string>
     <string name="edit_profile_picture">Profilbild bearbeita</string>
+    <string name="show_picture_big">Bild groß azoaga</string>
     <string name="profile_picture_add_photo">Foto hinzufüga</string>
 
 
@@ -584,6 +592,9 @@
     <string name="dartcounter_done">Fertig</string>
     <string name="dartcounter_game_configuration_title">Spiel Konfiguriera</string>
     <string name="dartcounter_countdown_label">Countdown:</string>
+    <string name="dartcounter_in_mode_label">In Mode:</string>
+    <string name="dartcounter_in_mode_single_in">Single In</string>
+    <string name="dartcounter_in_mode_double_in">Double In</string>
     <string name="dartcounter_out_mode_label">Out Mode:</string>
     <string name="dartcounter_out_mode_single_out">Single Out</string>
     <string name="dartcounter_out_mode_double_out">Double Out</string>
@@ -593,6 +604,7 @@
     <string name="dartcounter_stop_game_confirmation_message">Bisch da sicha?</string>
     <string name="dartcounter_checkout_title">Checkout</string>
     <string name="dartcounter_darts_left_format">%1$d Darts übrig</string>
+    <string name="dartcounter_double_in_hint">Triff a Double, denn zelland dine Punkte</string>
     <string name="dartcounter_checkout_alt_format">Alt.:</string>
     <string name="dartcounter_segment_double_format">D%1$d</string>
     <string name="dartcounter_segment_triple_format">T%1$d</string>
@@ -1071,6 +1083,7 @@
 Mealds, egal wie klenn.</string>
     <string name="contribute_feature_title">Fehlt dir a Feature?</string>
     <string name="contribute_feature_hint">Säg was du dir wünschas, viele Features hond als Wunsch agfanga oder sind us andra Apps kopiert worra.</string>
+    <string name="contribute_open_board">Feedback-Board öffna</string>
     <string name="contribute_donate_title">Mit Geald unterstütza</string>
     <string name="contribute_donate_text">Dia App isch gratis, hot kua Werbung und verkoft dine Daten ned. Trotzdem kostet se echtes Geald:</string>
     <string name="contribute_donate_mac">An Mac: Dia iOS-Version kann nur uf nam Mac bout und veröffentlicht werra.</string>
@@ -1373,6 +1386,7 @@ Mealds, egal wie klenn.</string>
 
 
     <string name="ttt_initscreen">Schouama üs a paar Features a!</string>
+    <string name="ttt_initscreen_description">Wenn sich eapas komisch afühlt, ned funktioniert oda du dir a neus Feature wünschesch, säg üs des ufam Feedback-Board. D Tour zoagt dir, wo s isch.</string>
 
     <string name="ttt_start_chatting">Neua Chat starta</string>
     <string name="ttt_start_chatting_description">Tipp do zum neue Freunde hinzufüga</string>
@@ -1391,6 +1405,7 @@ Mealds, egal wie klenn.</string>
 
 
     <string name="ttt_settings">Do sind die Einstellunga</string>
+    <string name="ttt_settings_again">No an letschta Blick ind Einstellunga</string>
     <string name="ttt_settings_user">Account-Einstellunga</string>
     <string name="ttt_settings_user_description">Do kannsch du Angaben zu dinam Account ändra.</string>
 
@@ -1423,6 +1438,8 @@ Mealds, egal wie klenn.</string>
 
     <string name="ttt_settings_misc_app_broken">App kaputt?</string>
     <string name="ttt_settings_misc_app_broken_description">Wenn eapas ned wie erwartet funktioniert, kannsch mit deam Knopf alle dine App - Daten löscha und neu vom Server abalada.</string>
+    <string name="ttt_settings_misc_reset_tour">Tour neu starta</string>
+    <string name="ttt_settings_misc_reset_tour_description">Danke, dass du d Tour gmacht hosch! Do kannsch se jederzit neu starta. Viel Spaß mit Schneaggchat.</string>
 
 
 
@@ -1464,6 +1481,31 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_chatselector_feedback">Feedback-Board</string>
     <string name="ttt_chatselector_feedback_description">Wünsch dir Features, meald Fehler und stimm über d Idea vo da andra ab.</string>
     <string name="ttt_feedback_quiz">Feature-Quiz</string>
+    <string name="ttt_feedback_quiz_description">Da schneallschte Weag zum Feedback gia: Beantwort a paar Froga zu da Features und bewert se. Bitte spiel s, damit hilfsch du, dass Schneaggchat besser wird.</string>
+    <string name="ttt_chat_message_long_press">Nochricht lang drucka</string>
+    <string name="ttt_chat_message_long_press_description">Antworta, reagiera, kopiera, bearbeita oda löscha und seaha, wer se gleasa hot. Am Computer mit Rechtsklick.</string>
+    <string name="ttt_chat_message_swipe">Wüscha zum Antworta</string>
+    <string name="ttt_chat_message_swipe_description">Wüsch a Nochricht nach rechts, zum direkt druf antworta.</string>
+    <string name="ttt_chat_polls">Umfroga</string>
+    <string name="ttt_chat_polls_description">Tipp do und wähl Umfrog. Umfroga künnand mehr als Jo oda Na:\n• mehrere oda eigene Antworta pro Person\n• a Limit pro Option, z. B. 4 Plätz pro Auto\n• öffentlich, privat oda anonym, mit Endzit\n• ohne Kästle wird se zur Liste, z. B. wer was mitbringt</string>
+    <string name="ttt_chat_details">Chat-Details</string>
+    <string name="ttt_chat_details_description">Tipp uf da Nama für d Chat-Details: teilte Bilder und Links, d Mitglieder vo na Gruppe und mehr.</string>
+    <string name="ttt_chat_details_nickname">Nickname</string>
+    <string name="ttt_chat_details_nickname_description">Tipp uf da Nama und gib dinam Freund an Nickname. Er wird in dina Chats statt sim Nama azoagt.</string>
+    <string name="ttt_chat_details_wake">Freund wecka</string>
+    <string name="ttt_chat_details_wake_description">Lass s Handy vo dinam Freund wie an Wecker klingla, o wenn s lautlos isch, z. B. wenn er verschloft. Goht, wenn er Android hot und des in sina Einstellunga erlaubt hot.</string>
+    <string name="ttt_group_members">Gruppenmitglieder</string>
+    <string name="ttt_group_members_description">Tipp uf a Mitglied, zum an Chat öffna oda a Freundschaftsafrog schicka; tipp ufs Bild, denn siahsch des groß. Admins tuand Mitglieder dazua, machand andre zu Admins und entfernand Mitglieder.</string>
+    <string name="ttt_group_timer">Löschtimer</string>
+    <string name="ttt_group_timer_description">Wenn da Timer ablouft, werrand d Gruppe und alle ihre Nochrichta für alle glöscht, z. B. nach nam Event. Nur Admins künnand ean festlega.</string>
+    <string name="ttt_chat_details_about">Was Freunde sägand</string>
+    <string name="ttt_chat_details_about_description">An kurza Text über dia Person, dean alle ihre Freunde zemma schrieband: Alle bearbeitand da glicha Text. D Person kann ean leasa, aber ned ändra. Tipp do zum bearbeita.</string>
+    <string name="ttt_feedback_requests">Wünsch</string>
+    <string name="ttt_feedback_requests_description">Feature-Wünsch vo allna User. Stimm für dia ab, dia du willsch, damit mir seahand, was am wichtigschta isch.</string>
+    <string name="ttt_feedback_create">Neuer Itrag</string>
+    <string name="ttt_feedback_create_description">Wünsch dir a Feature oda meald an Bug. Andre künnand dafür abstimma, und du siahsch, wenn s plant oda fertig isch.</string>
+    <string name="ttt_chatselector_friend_chat">Chat öffna</string>
+    <string name="ttt_chatselector_friend_chat_description">Tipp uf dean Chat mit nam Freund. Mir zoagand dir, was du in nam Chat macha kannsch.</string>
 
 
     <string name="ttt_hint_tap_highlighted">Druck uf die hervorghobene Fläche zum Wittamacha</string>
@@ -1471,6 +1513,16 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_previous_step">Schritt zruck</string>
     <string name="ttt_highlighted_element">Fürraghobenes Element</string>
     <string name="ttt_got_it">Passt</string>
+    <string name="ttt_skip_section">Teil überspringa</string>
+    <string name="ttt_show_section">Azoaga</string>
+    <string name="ttt_controls_skip_tour">Tour beenda</string>
+    <string name="ttt_controls_skip_tour_description">Tipp do, zum d Tour jederzit beenda. In da Miscellaneous-Einstellunga kannsch se neu starta.</string>
+    <string name="ttt_controls_skip_section">An Teil überspringa</string>
+    <string name="ttt_controls_skip_section_description">Tipp do, denn springsch zum nägschta Teil vo da Tour.</string>
+    <string name="ttt_games_question">Spiele</string>
+    <string name="ttt_games_question_description">Schneaggchat hot Spiele mit tägliche Rätsel und Highscores. Kurz aschoua?</string>
+    <string name="ttt_games_show">Zoag her</string>
+    <string name="ttt_games_skip">Überspringa</string>
 
     <string name="navbar_chats">Chats</string>
     
@@ -1560,6 +1612,9 @@ Mealds, egal wie klenn.</string>
     <string name="system_event_start_changed">%1$s hot da Start uf %2$s verschoba</string>
     <string name="system_event_location_changed">%1$s hot da Ort gändert</string>
     <string name="system_event_cancelled">%1$s hot s Event abgseit</string>
+    <string name="system_event_reminder">⏰ Erinnerung: beginnt in %1$s</string>
+    <string name="system_event_reminder_at">⏰ Erinnerung: beginnt am %1$s</string>
+    <string name="system_event_reminder_generic">⏰ Event-Erinnerung</string>
     <string name="system_group_extension_created">%1$s hot d Erweiterung %2$s erstellt</string>
     <string name="system_group_extension_renamed">%1$s hot d Erweiterung %2$s in %3$s umgnennt</string>
     <string name="system_group_extension_deleted">%1$s hot d Erweiterung %2$s glöscht</string>
@@ -1890,6 +1945,9 @@ Mealds, egal wie klenn.</string>
     <string name="group_extension_delete">Erweiterung löscha</string>
     <string name="group_extension_delete_confirm">"%1$s" mit allna Iträg für alle in dera Gruppe löscha? Des kann ned rückgängig gmacht werra.</string>
     <string name="group_extension_more_options">Mehr Optiona</string>
+    <string name="shared_text_placeholder">Schrieband zemma eapas…</string>
+    <string name="shared_text_show_author_colors">Autorenfarba azoaga</string>
+    <string name="shared_text_hide_author_colors">Autorenfarba usblenda</string>
     <plurals name="feedback_new_comments">
         <item quantity="one">%1$d neuer Kommentar</item>
         <item quantity="other">%1$d neue Kommentare</item>
@@ -2011,6 +2069,7 @@ Mealds, egal wie klenn.</string>
     <string name="tictactoe_cell_description">Zeile %1$d, Spalte %2$d</string>
     <string name="desktop_tray_open">Schneaggchat öffna</string>
     <string name="desktop_tray_quit">Beenda</string>
+    <string name="featurequiz_description">Schneall Feedback gia: Froga beantworta und Features bewerta. So unterstützsch du Schneaggchat.</string>
     <plurals name="event_lead_days">
         <item quantity="one">%1$d Tag</item>
         <item quantity="other">%1$d Täg</item>

@@ -340,8 +340,7 @@
     <string name="notification_channel_general">Generale</string>
     <string name="notification_channel_map_sightings">Polizia e autovelox</string>
     <string name="new_messages">Nuovi messaggi</string>
-    <string name="new_message_noti_single_title">Nuova chat da %1$s</string>
-    <string name="new_message_noti_group_title">Nuova chat da %1$s in %2$s</string>
+    <string name="new_message_noti_group_title">%1$s @ %2$s</string>
 
     <string name="new_message_reaction">%1$s ha reagito al tuo %2$s</string>
 
@@ -1494,7 +1493,7 @@
     <string name="ttt_group_timer">Timer di eliminazione</string>
     <string name="ttt_group_timer_description">Allo scadere del timer, il gruppo e tutti i suoi messaggi vengono eliminati per tutti, ad es. dopo una gita nel weekend. Solo gli admin possono impostarlo.</string>
     <string name="ttt_chat_details_about">Cosa dicono gli amici</string>
-    <string name="ttt_chat_details_about_description">Tutti gli amici di questa persona possono scrivere qui un breve testo su di lei. Può leggerlo ma non modificarlo. Tocca per scrivere qualcosa.</string>
+    <string name="ttt_chat_details_about_description">Un breve testo su questa persona che tutti i suoi amici scrivono insieme: tutti modificano lo stesso testo. Lei può leggerlo ma non modificarlo. Tocca per modificarlo.</string>
     <string name="ttt_feedback_requests">Richieste</string>
     <string name="ttt_feedback_requests_description">I desideri di funzioni di tutti gli utenti. Vota quelli che vuoi, così vediamo cosa conta di più.</string>
     <string name="ttt_feedback_create">Nuova voce</string>

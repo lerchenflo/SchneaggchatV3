@@ -341,8 +341,7 @@
     <string name="notification_channel_general">General</string>
     <string name="notification_channel_map_sightings">Police &amp; radar</string>
     <string name="new_messages">New messages</string>
-    <string name="new_message_noti_single_title">New chat from %1$s</string>
-    <string name="new_message_noti_group_title">New chat from %1$s in %2$s</string>
+    <string name="new_message_noti_group_title">%1$s @ %2$s</string>
 
     <string name="new_message_reaction">%1$s reacted to your %2$s</string>
 
@@ -1500,7 +1499,7 @@
     <string name="ttt_group_timer">Delete timer</string>
     <string name="ttt_group_timer_description">When the timer runs out, the group and all its messages are deleted for everyone, e.g. for a weekend trip. Only admins can set it.</string>
     <string name="ttt_chat_details_about">What friends say</string>
-    <string name="ttt_chat_details_about_description">All friends of this person can write a short text about them here. They can read it but not change it. Tap to write something.</string>
+    <string name="ttt_chat_details_about_description">A short text about this person that all their friends write together: everyone edits the same text. They can read it but not change it. Tap to edit it.</string>
     <string name="ttt_feedback_requests">Requests</string>
     <string name="ttt_feedback_requests_description">Feature wishes of all users. Vote for the ones you want, so we see what matters most.</string>
     <string name="ttt_feedback_create">New entry</string>

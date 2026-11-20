@@ -101,11 +101,12 @@ class NotificationService: UNNotificationServiceExtension {
                 return (reactionTitle, content)
             }
 
+            // WhatsApp style: the sender alone, in groups "Sender @ Group"; the message goes into the body
             let title: String
             if groupMessage && !groupName.isEmpty {
                 title = NotificationStrings.get(.newMessageGroupTitle, language: language, senderName, groupName)
             } else {
-                title = NotificationStrings.get(.newMessageSingleTitle, language: language, senderName)
+                title = senderName
             }
             let body: String
             switch messageType {

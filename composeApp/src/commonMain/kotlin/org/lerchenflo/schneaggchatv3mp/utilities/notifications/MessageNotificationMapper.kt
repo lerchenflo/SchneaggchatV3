@@ -7,17 +7,17 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_group_title
-import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_single_title
 import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
 import kotlin.math.absoluteValue
 
 /** [senderName]: the name the notification shows for the sender (resolved by the caller, e.g. from the push). */
 suspend fun Message.toNotificationContent(senderName: String, fallbackGroupName: String? = null): NotificationContent {
+    // WhatsApp style: the sender alone, in groups "Sender @ Group"; the message goes into the body
     val title = if (groupMessage && fallbackGroupName != null)
         getString(Res.string.new_message_noti_group_title, senderName, fallbackGroupName)
     else
-        getString(Res.string.new_message_noti_single_title, senderName)
+        senderName
     val body = when (msgType) {
         MessageType.TEXT  -> content.ifBlank { getString(Res.string.you_have_new_messages) }
         MessageType.IMAGE -> getString(Res.string.image)

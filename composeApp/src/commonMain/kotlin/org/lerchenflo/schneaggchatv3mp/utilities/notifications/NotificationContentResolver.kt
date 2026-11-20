@@ -254,7 +254,7 @@ suspend fun resolveFallbackContent(decoded: DecodedNotification): NotificationCo
             val chatId = decoded.chatTargetId
             val title = listOf(decoded.senderName, decoded.groupName)
                 .filter { it.isNotBlank() }
-                .joinToString(" - ")
+                .joinToString(" @ ") // Same WhatsApp style as the normal title: "Sender @ Group"
                 .ifBlank { NOTIFICATION_FALLBACK_TITLE }
             NotificationContent(
                 //Same id as the chat's conversation notification, so it doesn't stack a second one -

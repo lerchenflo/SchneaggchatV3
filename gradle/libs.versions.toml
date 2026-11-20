@@ -62,7 +62,7 @@ map = "0.20.0"
 swipeableKmp = "1.0.8"
 reorderable = "3.1.0"
 kmpTaptarget = "1.2.2" #Onboarding tour library, https://github.com/lerchenflo/kmp-taptarget (JitPack)
-kmpVoiceMessages = "1.0.1" #Voice message recording and playback, https://github.com/lerchenflo/kmp-voice-messages (JitPack)
+kmpVoiceMessages = "1.0.3" #Voice message recording and playback, https://github.com/lerchenflo/kmp-voice-messages (JitPack)
 
 
 [libraries]

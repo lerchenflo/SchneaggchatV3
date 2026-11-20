@@ -43,13 +43,9 @@ class AudioPlayer {
 
     suspend fun playAudio(messageId: String, path: String) {
         try {
-            // 1. If we are already playing this specific audio, just resume it
+            // 1. If this audio is paused (by the user or by another app taking the audio), resume it
             if (currentlyPlayingId == messageId && !isPlaying) {
-                voicePlayer.resume()
-                isPlaying = true
-                _playbackProgress.value = _playbackProgress.value.copy(isPlaying = true)
-                startPolling(messageId)
-                println("this audio is already playing")
+                resumeAudio(messageId)
                 return
             }
 
@@ -77,14 +73,33 @@ class AudioPlayer {
         }
     }
 
+    private suspend fun resumeAudio(messageId: String) {
+        try {
+            voicePlayer.resume()
+        } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
+            // Audio denied (e.g. during a phone call): the message stays paused at its position
+            println("Failed to resume audio: ${e.message}")
+            return
+        }
+        isPlaying = true
+        _playbackProgress.value = _playbackProgress.value.copy(isPlaying = true)
+        startPolling(messageId)
+    }
+
     private fun startPolling(messageId: String) {
         pollingJob?.cancel()
         pollingJob = CoroutineScope(Dispatchers.Default).launch {
             while (isActive) {
                 if (!voicePlayer.isPlaying) {
-                    // Finished or stopped externally
-                    resetPlaybackState()
-                    _playbackProgress.value = PlaybackProgress()
+                    if (voicePlayer.isPaused) {
+                        // Another app took the audio (call, video, music): keep the position
+                        markPaused()
+                    } else {
+                        // Finished or stopped externally
+                        resetPlaybackState()
+                        _playbackProgress.value = PlaybackProgress()
+                    }
                     break
                 }
                 _playbackProgress.value = PlaybackProgress(
@@ -102,8 +117,7 @@ class AudioPlayer {
         try {
             pollingJob?.cancel()
             voicePlayer.pause()
-            isPlaying = false
-            _playbackProgress.value = _playbackProgress.value.copy(isPlaying = false)
+            markPaused()
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
             //loggingRepository.logWarning("Failed to pause audio: ${e.message}")
@@ -130,6 +144,12 @@ class AudioPlayer {
             //loggingRepository.logWarning("Failed to stop audio: ${e.message}")
             println("Failed to stop audio: ${e.message}")
         }
+    }
+
+    /** Paused with the message still loaded, so the next play of it resumes at the same position. */
+    private fun markPaused() {
+        isPlaying = false
+        _playbackProgress.value = _playbackProgress.value.copy(isPlaying = false)
     }
 
     private fun resetPlaybackState() {
