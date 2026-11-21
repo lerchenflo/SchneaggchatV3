@@ -161,6 +161,7 @@ fun MiscSettings(
             )
 
             var showAppBrokenDialog by rememberSaveable { mutableStateOf(false) }
+
             SettingsOption(
                 Icons.Default.Delete,
                 stringResource(Res.string.app_broken),

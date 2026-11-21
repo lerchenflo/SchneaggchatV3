@@ -1,6 +1,7 @@
 package org.lerchenflo.androidApp
 
 import android.app.Application
+import org.lerchenflo.schneaggchatv3mp.app.logging.logAbnormalLastExit
 import org.lerchenflo.schneaggchatv3mp.di.logCrash
 import org.lerchenflo.schneaggchatv3mp.di.startKoinAndroid
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
@@ -23,5 +24,7 @@ class MainApp: Application() {
         }
 
         NotificationManager.initialize()
+
+        logAbnormalLastExit(this@MainApp)
     }
 }

@@ -44,7 +44,10 @@ class MiscSettingsViewModel(
         }
     }
 
+    private var localDataReset = false
     fun resetLocalData(){
+        if (localDataReset) return //Do not allow duplicate reset (only once per viewmodel lifetime)
+        localDataReset = true
         applicationScope.launchOnMain {
             sessionTerminator.resetLocalData()
             // Not awaited: the navigation below runs right away. Main.immediate starts the sync
