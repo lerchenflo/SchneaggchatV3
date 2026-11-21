@@ -85,15 +85,22 @@ private fun runApp(singleInstance: SingleInstance) = application {
     val socketConnectionManager = remember { KoinPlatform.getKoin().get<SocketConnectionManager>() }
     val quitScope = rememberCoroutineScope()
     var quitting by remember { mutableStateOf(false) }
-    fun quit() {
+    // exit: how the app ends after the socket closed; the system's quit request (Cmd+Q, logout,
+    // shutdown) passes its own, so the system goes on with it
+    fun quit(exit: () -> Unit = ::exitApplication) {
         if (quitting) return
         quitting = true
         windowVisible = false
         quitScope.launch {
             withTimeoutOrNull(2.seconds) { socketConnectionManager.close() }
-            exitApplication()
+            exit()
         }
     }
+
+    DesktopSystemEvents(
+        socketConnectionManager = socketConnectionManager,
+        onQuitRequest = { performQuit -> quit(exit = performQuit) }
+    )
 
     val logo = trayLogo
     if (isTraySupported && logo != null) {
@@ -105,7 +112,7 @@ private fun runApp(singleInstance: SingleInstance) = application {
             onAction = { windowVisible = true }, // click (Windows) / double click on the icon
             menu = {
                 Item(stringResource(Res.string.desktop_tray_open), onClick = { windowVisible = true })
-                Item(stringResource(Res.string.desktop_tray_quit), onClick = ::quit)
+                Item(stringResource(Res.string.desktop_tray_quit), onClick = { quit() })
             }
         )
     }

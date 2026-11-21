@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -67,6 +68,7 @@ class GlobalViewModel(
 
     /** Guards the app-resume handler so overlapping resume events are dropped instead of queued. */
     private var appResumeJob: Job? = null
+    private var systemWakeJob: Job? = null
 
     // Events fall out of the badge as they end, which no database write announces - so the count
     // is re-evaluated on a slow tick as well as on every data change. A minute is far below the
@@ -236,6 +238,23 @@ class GlobalViewModel(
             }
         }
 
+        viewModelScope.launch {
+            // Plain collect, like the background close: a close in progress must not be cancelled
+            AppLifecycleManager.systemSleepEvent.collect {
+                // Desktop: close before the system sleeps, so the server marks this user offline at
+                // once instead of after its keepalive sweep (up to 75 s)
+                systemWakeJob?.cancel()
+                socketConnectionManager.close()
+            }
+        }
+
+        viewModelScope.launch {
+            AppLifecycleManager.systemWakeEvent.collect {
+                systemWakeJob?.cancel()
+                systemWakeJob = viewModelScope.launch { reconnectAndSyncAfterWake() }
+            }
+        }
+
         // Handles a notification tap requesting a chat or map entry be opened. AppLifecycleManager holds the
         // request as a StateFlow (not a one-shot event) so a tap that arrives before this
         // collector exists - e.g. a cold app start - is not silently dropped, and only acted on
@@ -335,6 +354,18 @@ class GlobalViewModel(
                 )
             }
         }
+    }
+
+    /**
+     * Desktop after the system woke up: reconnect, then sync once the socket is back (the network
+     * often needs a few seconds; the manager's backoff keeps trying), so messages from the sleep
+     * show up even while the window stays hidden.
+     */
+    private suspend fun reconnectAndSyncAfterWake() {
+        if (!SessionCache.isLoggedIn()) return
+        startSocketConnection()
+        socketConnectionManager.isConnected.first { it }
+        dataSyncCoordinator.dataSync(reason = "systemWake")
     }
 
     private var permissionRequestJob: Job? = null

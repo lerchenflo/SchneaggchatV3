@@ -60,6 +60,28 @@ object AppLifecycleManager {
         _appBackgroundedEvent.tryEmit(Unit)
     }
 
+    // Desktop only: the system's sleep and wake (macOS, Windows; Java has no such event on Linux)
+    private val _isSystemAsleep = MutableStateFlow(false)
+    private val _systemSleepEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val _systemWakeEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    val systemSleepEvent: SharedFlow<Unit> = _systemSleepEvent.asSharedFlow()
+    val systemWakeEvent: SharedFlow<Unit> = _systemWakeEvent.asSharedFlow()
+
+    /** True between the system's sleep and wake events; no socket may connect meanwhile. */
+    val isSystemAsleep: Boolean
+        get() = _isSystemAsleep.value
+
+    internal fun notifySystemSleep() {
+        _isSystemAsleep.value = true
+        _systemSleepEvent.tryEmit(Unit)
+    }
+
+    internal fun notifySystemWake() {
+        _isSystemAsleep.value = false
+        _systemWakeEvent.tryEmit(Unit)
+    }
+
     data class NotificationOpenData(
         val chatId: String? = null,
         val isGroup: Boolean = false,
