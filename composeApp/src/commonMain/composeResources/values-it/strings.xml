@@ -1110,6 +1110,7 @@
     <string name="schneaggmap_entry_title">Nome</string>
     <string name="schneaggmap_entry_description">Descrizione</string>
     <string name="schneaggmap_entry_new">Nuova voce della mappa</string>
+    <string name="schneaggmap_entry_saved">Voce della mappa salvata</string>
     <string name="schneaggmap_entry_edit">Modifica voce della mappa</string>
     <string name="schneaggmap_secret_show">Mostra</string>
     <string name="schneaggmap_secret_hide">Nascondi</string>

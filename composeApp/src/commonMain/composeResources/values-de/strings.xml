@@ -1116,6 +1116,7 @@
     <string name="schneaggmap_entry_title">Name</string>
     <string name="schneaggmap_entry_description">Beschreibung</string>
     <string name="schneaggmap_entry_new">Neuer Karteneintrag</string>
+    <string name="schneaggmap_entry_saved">Karteneintrag gespeichert</string>
     <string name="schneaggmap_entry_edit">Karteneintrag bearbeiten</string>
     <string name="schneaggmap_secret_show">Anzeigen</string>
     <string name="schneaggmap_secret_hide">Verbergen</string>

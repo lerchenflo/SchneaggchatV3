@@ -45,8 +45,12 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.activeSightingTypes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
+import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_saved
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 
@@ -346,6 +350,9 @@ class SchneaggmapViewModel(
                         lon = entry.coordinates.long,
                         locationData = entry.locationData
                     ).reportErrorTo(errorChannel)
+                        // The popup already closed (or stays open on a quick change like the radar's
+                        // "Now"), so nothing else shows it worked: confirm once the server saved it
+                        .onSuccess { SnackbarManager.showMessage(getString(Res.string.schneaggmap_entry_saved)) }
                 }
             }
 
