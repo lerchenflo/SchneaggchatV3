@@ -33,6 +33,8 @@ sealed class MessageDisplayItem {
         // even when it lies outside the chat screen's loaded window.
         val replyMessage: Message? = null,
         val replySender: SenderInfo? = null,
+        /** Mentions me or answers one of my messages, in a group: the bubble keeps an accent. */
+        val isAboutMe: Boolean = false,
     ) : MessageDisplayItem()
 
     /**

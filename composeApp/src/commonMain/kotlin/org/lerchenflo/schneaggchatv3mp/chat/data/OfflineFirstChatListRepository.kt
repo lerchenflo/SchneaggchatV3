@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
@@ -85,8 +86,12 @@ class OfflineFirstChatListRepository(
         val lastMessagesFlow = messageLocalDataSource.getLastMessagePerChatFlow(userId)
             .withNames { messages -> messages.flatMapTo(mutableSetOf()) { it.previewUserIds() } }
         val usersFlow = userLocalDataSource.getAllUsersFlow()
-        val groupsFlow = groupLocalDataSource.getAllGroupswithMembersFlow()
-            .combine(eventRepository.getEventGroupIdsFlow()) { groups, eventGroupIds -> groups to eventGroupIds }
+        val groupsFlow = combine(
+            groupLocalDataSource.getAllGroupswithMembersFlow(),
+            eventRepository.getEventGroupIdsFlow(),
+            messageLocalDataSource.getGroupIdsWithUnreadMentionFlow(userId),
+            ::GroupListData
+        )
         val pinnedFlow = settingsRepository.getPinnedChatsFlow()
 
         return combine(
@@ -95,7 +100,7 @@ class OfflineFirstChatListRepository(
             usersFlow,
             groupsFlow,
             pinnedFlow
-        ) { aggregates, (lastMessages, previewNames), users, (groups, eventGroupIds), pinnedList ->
+        ) { aggregates, (lastMessages, previewNames), users, (groups, eventGroupIds, unreadMentionGroupIds), pinnedList ->
 
             val pinnedMap = pinnedList.associate { it.chatId to it.pinTimePoint }
             val aggregateMap = aggregates.associateBy { it.chatId to it.isGroup }
@@ -132,6 +137,7 @@ class OfflineFirstChatListRepository(
                         lastMessageNames = last?.previewNames(previewNames).orEmpty(),
                         pinned = pinnedMap[group.id] ?: 0L,
                         hasEvent = group.id in eventGroupIds,
+                        hasUnreadMention = group.id in unreadMentionGroupIds,
                     )
                 }
                 .toList()
@@ -306,3 +312,10 @@ private fun List<ChatListItem>.sortedForChatSelector(): List<ChatListItem> =
         .map { it.chat }
 
 private class ChatSortKey(val chat: ChatListItem, val birthdayToday: Boolean)
+
+/** The group side of the chat list: every group, the groups with an event, the groups with an unread mention of me. */
+private data class GroupListData(
+    val groups: List<Group>,
+    val eventGroupIds: Set<String>,
+    val unreadMentionGroupIds: Set<String>,
+)

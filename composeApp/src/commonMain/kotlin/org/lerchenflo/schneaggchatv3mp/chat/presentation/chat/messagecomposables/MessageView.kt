@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,6 +31,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 /** Opacity of the row band behind a fully highlighted message (the bubble gets the full tint). */
 private const val ROW_HIGHLIGHT_ALPHA = 0.3f
 
+/** Border of a bubble that mentions me or answers me: visible while scrolling, calmer than the jump highlight. */
+private val ABOUT_ME_BORDER_WIDTH = 2.5.dp
+
 @Composable
 fun MessageView(
     ownId: String,
@@ -44,6 +48,8 @@ fun MessageView(
     replyMessageSender: SenderInfo? = null,
     replyMessageOnClick: () -> Unit = {},
     isHighlighted: Boolean = false,
+    /** Mentions me or answers one of my messages (group): a permanent thin accent border. */
+    isAboutMe: Boolean = false,
     onAction: (MessageAction) -> Unit = {},
     playbackProgress: StateFlow<VoicePlaybackState>? = null,
 )
@@ -110,6 +116,13 @@ fun MessageView(
                     .background(
                         color = bubbleColor,
                         shape = RoundedCornerShape(15.dp)
+                    )
+                    .then(
+                        if (isAboutMe) Modifier.border(
+                            width = ABOUT_ME_BORDER_WIDTH,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(15.dp)
+                        ) else Modifier
                     )
                     .padding(6.dp),
                 message = message,

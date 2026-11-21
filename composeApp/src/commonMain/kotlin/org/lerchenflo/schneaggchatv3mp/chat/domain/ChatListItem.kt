@@ -18,6 +18,8 @@ data class ChatListItem(
 
     val unreadMessageCount: Int = 0,
     val unsentMessageCount: Int = 0,
+    /** A group with an unread message that mentions me or answers me: "@" badge in the chat selector. */
+    val hasUnreadMention: Boolean = false,
     val lastMessage: Message? = null,
     // Names of the users the last message preview names (see Message.previewUserIds)
     val lastMessageNames: Map<String, UserIdentityName> = emptyMap(),
@@ -85,9 +87,11 @@ fun Group.toChatListItem(
     lastMessageNames: Map<String, UserIdentityName> = emptyMap(),
     pinned: Long = 0L,
     hasEvent: Boolean = false,
+    hasUnreadMention: Boolean = false,
 ): ChatListItem = ChatListItem(
     id = this.id,
     isGroup = true,
+    hasUnreadMention = hasUnreadMention,
     name = this.name,
     profilePictureUrl = this.profilePictureUrl,
     description = this.description,

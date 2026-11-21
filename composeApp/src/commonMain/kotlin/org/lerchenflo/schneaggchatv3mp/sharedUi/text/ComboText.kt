@@ -49,6 +49,9 @@ private const val PLACEHOLDER_ALPHA = 0.6f
  * the source's placeholder name (e.g. "unknown user"), shown grey and italic; a tap on it goes to
  * [ComboAnnotationSource.onUnresolvedClick] (e.g. a short explanation), plain text without one -
  * the raw `@<key>/<id>` never reaches the reader.
+ *
+ * @param highlightUserId a mention of this user gets the filled own-name style (the own user in a
+ *   group); bold only in markdown, which has no per-link style.
  */
 @Composable
 fun ComboText(
@@ -59,13 +62,14 @@ fun ComboText(
     style: TextStyle = LocalTextStyle.current,
     maxLines: Int = Int.MAX_VALUE,
     overflow: TextOverflow = TextOverflow.Clip,
+    highlightUserId: String? = null,
     annotationSources: List<ComboAnnotationSource> = rememberComboAnnotationSources()
 ) {
     LookUpUnresolvedAnnotations(text, annotationSources)
 
     if (useMD) {
         // Rewrite annotations to markdown links with a per-type fake scheme and intercept their clicks
-        val markdownContent = remember(text, annotationSources) {
+        val markdownContent = remember(text, annotationSources, highlightUserId) {
             val matches = findComboAnnotations(text, annotationSources)
             if (matches.isEmpty()) text
             else buildString {
@@ -76,7 +80,11 @@ fun ComboText(
                         .replace("[", "\\[")
                         .replace("]", "\\]")
                     // A placeholder of an unknown id is italic, like the grey one of the plain text
-                    val display = if (match.resolved) name else "*$name*"
+                    val display = when {
+                        !match.resolved -> "*$name*"
+                        match.isUserMention(highlightUserId) -> "**$name**"
+                        else -> name
+                    }
                     if (match.isClickable) {
                         append("[").append(display).append("](")
                         append(match.source.type.linkScheme).append(match.id).append(")")
@@ -151,15 +159,22 @@ fun ComboText(
         }
     } else {
         val placeholderStyle = SpanStyle(color = textColor.copy(alpha = PLACEHOLDER_ALPHA), fontStyle = FontStyle.Italic)
-        val annotatedText = remember(text, annotationSources, placeholderStyle) {
+        val ownNameStyle = SpanStyle(
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onPrimary,
+            background = MaterialTheme.colorScheme.primary
+        )
+        val annotatedText = remember(text, annotationSources, placeholderStyle, ownNameStyle, highlightUserId) {
             buildAnnotatedString {
                 var last = 0
                 findComboAnnotations(text, annotationSources).forEach { match ->
                     append(text.substring(last, match.range.first))
                     val display = match.source.type.displayName(match.name)
-                    val style = if (match.resolved) {
-                        SpanStyle(fontWeight = FontWeight.Bold, textDecoration = TextDecoration.Underline)
-                    } else placeholderStyle
+                    val style = when {
+                        !match.resolved -> placeholderStyle
+                        match.isUserMention(highlightUserId) -> ownNameStyle
+                        else -> SpanStyle(fontWeight = FontWeight.Bold, textDecoration = TextDecoration.Underline)
+                    }
                     if (match.isClickable) {
                         withLink(
                             LinkAnnotation.Clickable(

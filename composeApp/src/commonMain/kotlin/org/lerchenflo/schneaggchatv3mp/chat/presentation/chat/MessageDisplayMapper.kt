@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.lerchenflo.schneaggchatv3mp.chat.domain.isAboutUser
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
@@ -40,6 +41,7 @@ class MessageDisplayMapper {
         users: Map<String, UserIdentity>,
         groupMembers: List<GroupMember>,
         newMessagesBoundaryId: String?,
+        ownId: String,
         /** Shown text of a resolved name (see `userIdentityNameText`). */
         nameText: (UserIdentityName?) -> String,
     ): List<MessageDisplayItem> {
@@ -185,6 +187,7 @@ class MessageDisplayMapper {
                     resolvedReactions = resolvedReactions,
                     replyMessage = replyMessage,
                     replySender = replyMessage?.let { senderInfoFor(it.senderId) },
+                    isAboutMe = message.isAboutUser(ownId, replyMessage),
                 )
             )
 

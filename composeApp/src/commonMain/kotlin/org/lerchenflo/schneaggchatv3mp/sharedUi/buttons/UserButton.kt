@@ -224,6 +224,17 @@ fun UserButton(
 
                     Spacer(modifier = Modifier.width(4.dp))
 
+                    // An unread message of this group mentions me or answers me
+                    if (chat.hasUnreadMention) {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ) {
+                            Text(text = "@")
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+
                     if (chat.unreadMessageCount != 0 && chat.unreadMessageCount - chat.unsentMessageCount != 0){
                         Badge(
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -295,6 +306,8 @@ fun UserButton(
                         },
                         useMD = false,
                         textColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), // 👈 lighter text
+                        // My name stands out in group messages of others only (user decision 2026-11-21)
+                        highlightUserId = ownId.takeIf { chat.isGroup && !lastMessage.myMessage },
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

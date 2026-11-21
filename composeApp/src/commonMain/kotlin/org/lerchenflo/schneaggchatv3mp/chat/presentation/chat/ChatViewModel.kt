@@ -706,6 +706,7 @@ class ChatViewModel(
                 users = users,
                 groupMembers = groupMembers,
                 newMessagesBoundaryId = newMessagesBoundaryId.value,
+                ownId = SessionCache.requireLoggedIn()?.userId.orEmpty(),
                 nameText = userIdentityNameText(),
             )
         }

@@ -52,6 +52,7 @@ fun MessageViewWithActions(
     replyMessageSender: SenderInfo? = null,
     replyMessageOnClick: () -> Unit = {},
     isHighlighted: Boolean = false,
+    isAboutMe: Boolean = false,
     onReplyCall: () -> Unit = {},
     onLongPress: () -> Unit = {},
     onAction: (MessageAction) -> Unit = {},
@@ -153,6 +154,7 @@ fun MessageViewWithActions(
                 replyMessageSender = replyMessageSender,
                 replyMessageOnClick = replyMessageOnClick,
                 isHighlighted = isHighlighted,
+                isAboutMe = isAboutMe,
                 onAction = onAction,
                 playbackProgress = playbackProgress,
                 ownId = ownId

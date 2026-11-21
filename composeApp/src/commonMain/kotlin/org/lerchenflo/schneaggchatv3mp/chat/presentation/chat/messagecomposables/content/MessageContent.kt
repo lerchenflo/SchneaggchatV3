@@ -81,7 +81,8 @@ fun MessageContent(
                     MessageType.TEXT -> TextMessageContentView(
                         useMD = useMD,
                         message = message,
-                        myMessage = mymessage
+                        myMessage = mymessage,
+                        ownId = ownId
                     )
 
                     MessageType.POLL -> PollMessageContentView(
@@ -95,6 +96,7 @@ fun MessageContent(
 
                     MessageType.IMAGE -> ImageMessageContentView(
                         message = message,
+                        ownId = ownId,
                         modifier = Modifier,
                         myMessage = mymessage,
                         useMD = useMD,

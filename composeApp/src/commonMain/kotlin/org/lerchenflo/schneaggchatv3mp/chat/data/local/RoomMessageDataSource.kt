@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
+import org.lerchenflo.schneaggchatv3mp.utilities.annotations.ComboAnnotationTypes
 
 /** Keeps `IN (:ids)` queries well under SQLite's bound-parameter limit. */
 private const val SQL_ID_CHUNK_SIZE = 500
@@ -204,6 +205,11 @@ class RoomMessageDataSource(
 
     override fun getChatAggregatesFlow(ownId: String): Flow<List<ChatAggregate>> =
         database.messageDao().getChatAggregatesFlow(ownId)
+
+    override fun getGroupIdsWithUnreadMentionFlow(ownId: String): Flow<Set<String>> =
+        database.messageDao()
+            .getGroupIdsWithUnreadMentionFlow(ownId, mentionPattern = "%" + ComboAnnotationTypes.USER.build(ownId) + "%")
+            .map { it.toSet() }
 
     override fun getLastMessagePerChatFlow(ownId: String): Flow<List<Message>> =
         database.messageDao().getLastMessagePerChatFlow(ownId).map { entities ->

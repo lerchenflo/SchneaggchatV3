@@ -29,6 +29,7 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 @Composable
 fun ImageMessageContentView(
     message: Message,
+    ownId: String,
     modifier: Modifier = Modifier,
     useMD: Boolean = false,
     myMessage: Boolean = false,
@@ -86,6 +87,7 @@ fun ImageMessageContentView(
                 useMD = useMD,
                 message = message,
                 myMessage = myMessage,
+                ownId = ownId,
                 modifier = Modifier
                     .padding(top = 4.dp)
             )

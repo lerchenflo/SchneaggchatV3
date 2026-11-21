@@ -82,6 +82,9 @@ interface MessageLocalDataSource {
     /** Per-chat unread/unsent counters, aggregated in SQL. */
     fun getChatAggregatesFlow(ownId: String): Flow<List<ChatAggregate>>
 
+    /** Groups with an unread message that mentions [ownId] or answers one of their messages. */
+    fun getGroupIdsWithUnreadMentionFlow(ownId: String): Flow<Set<String>>
+
     /** The newest message of every chat, one row per chat, without readers. */
     fun getLastMessagePerChatFlow(ownId: String): Flow<List<Message>>
 

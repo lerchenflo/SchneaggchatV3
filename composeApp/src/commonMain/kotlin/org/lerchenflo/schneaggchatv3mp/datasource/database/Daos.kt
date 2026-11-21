@@ -227,6 +227,32 @@ interface MessageDao {
     ): Flow<List<ChatAggregate>>
 
     /**
+     * Groups with an unread message about [ownId], for the "@" badge in the chat selector: the
+     * message mentions them in its text or poll ([mentionPattern] = `%@user/<ownId>%`) or answers
+     * one of their messages. Same unread rule as [getChatAggregatesFlow], same "about" rule as
+     * `Message.isAboutUser`. Only unread rows are read (readByMe leads the index), so the content
+     * and poll columns are never scanned for the whole table.
+     */
+    @Query("""
+        SELECT DISTINCT m.receiverId FROM messages m
+        WHERE m.readByMe = 0
+          AND m.groupMessage = 1
+          AND m.myMessage = 0
+          AND m.deleted = 0
+          AND m.msgType != :systemType
+          AND (
+            m.content LIKE :mentionPattern
+            OR m.poll LIKE :mentionPattern
+            OR EXISTS (SELECT 1 FROM messages r WHERE r.id = m.answerId AND r.senderId = :ownId)
+          )
+    """)
+    fun getGroupIdsWithUnreadMentionFlow(
+        ownId: String,
+        mentionPattern: String,
+        systemType: String = MessageType.SYSTEM.name,
+    ): Flow<List<String>>
+
+    /**
      * The newest message of every chat - one row per chat instead of the whole message table.
      * Readers are deliberately not joined: the chat selector preview never reads them.
      *

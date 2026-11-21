@@ -57,6 +57,7 @@ fun ChatMessageItem(
             replyMessageSender = replyMessageSender,
             replyMessageOnClick = onReplyPreviewClick,
             isHighlighted = isHighlighted,
+            isAboutMe = item.isAboutMe,
             onReplyCall = {
                 onAction(MessageAction.ReplyToMessage(message, item.sender))
             },

@@ -11,6 +11,7 @@ fun TextMessageContentView(
     useMD: Boolean = false,
     message: Message,
     myMessage: Boolean,
+    ownId: String,
     modifier: Modifier = Modifier
 ){
 
@@ -18,6 +19,8 @@ fun TextMessageContentView(
         text = message.content,
         useMD = useMD,
         textColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+        // My name stands out in group messages of others only (user decision 2026-11-21)
+        highlightUserId = ownId.takeIf { message.groupMessage && !myMessage },
         modifier = modifier
     )
 }
