@@ -111,6 +111,7 @@ fun ChatScreen(
                 chatId = state.chatId,
                 ownId = ownId,
                 maxVoiceMsgTime = state.maxVoiceMsgTime,
+                mentionContextIds = state.mentionContextIds,
                 playbackProgress = playbackProgress,
                 recordingLevels = recordingLevels,
                 onAction = onAction,

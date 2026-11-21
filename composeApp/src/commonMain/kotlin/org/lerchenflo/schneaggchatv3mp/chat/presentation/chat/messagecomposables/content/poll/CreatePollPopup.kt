@@ -344,6 +344,7 @@ fun PollDialog(
     initialDraft: PollDraft? = null, //Prefilled draft, used by previews
     editingPoll: PollMessage? = null, //Edits this poll instead of creating a new one
     isSaving: Boolean = false, //An edit is on its way to the server
+    mentionContextIds: Set<String> = emptySet(), //Suggested first when typing @, e.g. the chat members
 ) {
     val isEditing = editingPoll != null
     val maxTreeOptions = if (isEditing) POLL_EDIT_MAX_TREE_OPTIONS else POLL_MAX_TREE_OPTIONS
@@ -474,6 +475,7 @@ fun PollDialog(
                         canAddSubPolls = level.depth + 1 < POLL_MAX_DEPTH,
                         maxOptions = if (isEditing) POLL_EDIT_MAX_VOTE_OPTIONS else POLL_MAX_VOTE_OPTIONS,
                         onEditSubPoll = { option -> openSubPoll(option) },
+                        mentionContextIds = mentionContextIds,
                         extraMoreSettingsChanged = level.depth == 0 && (visibility != PollVisibility.PUBLIC || expiresAt != null),
                         extraMoreSettings = {
                             if (level.depth == 0) {
@@ -648,6 +650,7 @@ private fun PollDraftEditor(
     canAddSubPolls: Boolean,
     maxOptions: Int,
     onEditSubPoll: (PollOptionInput) -> Unit,
+    mentionContextIds: Set<String>,
     extraMoreSettingsChanged: Boolean = false,
     extraMoreSettings: @Composable () -> Unit = {},
 ) {
@@ -670,7 +673,8 @@ private fun PollDraftEditor(
             modifier = Modifier.fillMaxWidth(),
             placeholder = {Text(stringResource(Res.string.poll_create_title_placeholder))},
             label = {Text(stringResource(Res.string.poll_create_title))},
-            isError = draft.titleError
+            isError = draft.titleError,
+            contextIds = mentionContextIds,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -685,6 +689,7 @@ private fun PollDraftEditor(
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(stringResource(Res.string.poll_create_description_placeholder)) },
             shape = RoundedCornerShape(12.dp),
+            contextIds = mentionContextIds,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -721,7 +726,8 @@ private fun PollDraftEditor(
                             value = value.text,
                             onValueChange = { if (it.text.length <= POLL_OPTION_MAX_LENGTH) value.text = it },
                             placeholder = { Text(stringResource(Res.string.poll_options_placeholder)) },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            contextIds = mentionContextIds,
                         )
 
                         if (draft.limitVotersPerEntry && value.text.text.isNotEmpty()) {

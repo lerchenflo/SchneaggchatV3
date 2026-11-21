@@ -25,6 +25,8 @@ data class ChatState(
     val markdownEnabled: Boolean = false,
     val quickReactions: List<String> = DEFAULT_QUICK_REACTIONS,
     val maxVoiceMsgTime: Long = 0L,
+    /** Suggested first when typing `@` in this chat: the group members and event people, or the partner. */
+    val mentionContextIds: Set<String> = emptySet(),
 )
 
 sealed interface ChatAction {

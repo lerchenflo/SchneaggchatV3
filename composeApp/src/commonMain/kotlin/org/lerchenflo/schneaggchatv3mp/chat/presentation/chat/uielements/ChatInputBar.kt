@@ -48,6 +48,7 @@ fun ChatInputBar(
     chatId: String,
     ownId: String,
     maxVoiceMsgTime: Long,
+    mentionContextIds: Set<String>,
     playbackProgress: StateFlow<VoicePlaybackState>,
     recordingLevels: StateFlow<List<Float>>,
     onAction: (ChatAction) -> Unit,
@@ -119,7 +120,8 @@ fun ChatInputBar(
                     onSubmit = { poll ->
                         println("Poll created: $poll")
                         onAction(ChatAction.OnCreatePoll(poll))
-                    }
+                    },
+                    mentionContextIds = mentionContextIds,
                 )
             }
 
@@ -129,6 +131,7 @@ fun ChatInputBar(
                     onSubmit = { onAction(ChatAction.OnSaveEditedPoll(it)) },
                     editingPoll = poll,
                     isSaving = isSavingPollEdit,
+                    mentionContextIds = mentionContextIds,
                 )
             }
 
@@ -137,6 +140,7 @@ fun ChatInputBar(
                 content = sendContent,
                 isEditing = editMessage != null,
                 maxVoiceMsgTime = maxVoiceMsgTime,
+                mentionContextIds = mentionContextIds,
                 playbackProgress = playbackProgress,
                 recordingLevels = recordingLevels,
                 onAction = onAction,

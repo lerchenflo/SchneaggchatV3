@@ -13,7 +13,11 @@ import org.koin.mp.KoinPlatformTools
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.annotation_unknown_event_info
+import schneaggchatv3mp.composeapp.generated.resources.annotation_unknown_game_info
+import schneaggchatv3mp.composeapp.generated.resources.annotation_unknown_location_info
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
 import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_title
@@ -55,12 +59,16 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     val locationNames by annotationNames.locationNames.collectAsState()
     val userNames by annotationNames.userNames.collectAsState()
     val eventNames by annotationNames.eventNames.collectAsState()
+    val friendIds by annotationNames.friendIds.collectAsState()
 
     val userNameText = rememberUserIdentityNameText()
     val unknownUser = userNameText(null)
     val unknownLocation = stringResource(Res.string.unknown_location)
     val unknownEvent = stringResource(Res.string.unknown_event)
     val unknownGame = stringResource(Res.string.unknown_game)
+    val unknownLocationInfo = stringResource(Res.string.annotation_unknown_location_info)
+    val unknownEventInfo = stringResource(Res.string.annotation_unknown_event_info)
+    val unknownGameInfo = stringResource(Res.string.annotation_unknown_game_info)
 
     val gameTetrisTitle = stringResource(Res.string.games_tetris_title)
     val gameTowerstackTitle = stringResource(Res.string.games_stack_tower)
@@ -99,14 +107,28 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     }
 
     return remember(
-        locationNames, userNames, gameNames, eventNames,
-        userNameText, unknownLocation, unknownEvent, unknownGame
+        locationNames, userNames, gameNames, eventNames, friendIds, userNameText,
+        unknownLocation, unknownEvent, unknownGame, unknownLocationInfo, unknownEventInfo, unknownGameInfo
     ) {
+        // A friend opens the chat; anyone else (also a user not stored here) gets the
+        // unknown-user popup, which looks up what it can and offers a friend request
+        val openUser: (String) -> Unit = { userId ->
+            if (userId != SessionCache.requireLoggedIn()?.userId) { // never the own chat
+                scope.launch {
+                    val user = userRepository.getUserById(userId)
+                    navigator.navigate(
+                        if (user?.friendshipStatus == FriendshipStatus.ACCEPTED) Route.Chat(userId, false)
+                        else Route.UnknownUser(userId = userId, name = user?.displayName)
+                    )
+                }
+            }
+        }
         listOf(
             ComboAnnotationSource(
                 type = ComboAnnotationTypes.MAP_LOCATION,
                 names = locationNames,
                 unresolvedName = unknownLocation,
+                onUnresolvedClick = { SnackbarManager.showMessage(unknownLocationInfo) },
                 onClick = { entryId ->
                     scope.launch {
                         navigator.navigate(
@@ -122,26 +144,16 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                 type = ComboAnnotationTypes.USER,
                 names = userNames.mapValues { (_, name) -> userNameText(name) },
                 unresolvedName = unknownUser,
-                // A friend opens the chat; anyone else (also a user not stored here) gets the
-                // unknown-user popup, which looks up what it can and offers a friend request
-                onClick = { userId ->
-                    if (userId != SessionCache.requireLoggedIn()?.userId) { // never the own chat
-                        scope.launch {
-                            val user = userRepository.getUserById(userId)
-                            navigator.navigate(
-                                if (user?.friendshipStatus == FriendshipStatus.ACCEPTED) Route.Chat(userId, false)
-                                else Route.UnknownUser(userId = userId, name = user?.displayName)
-                            )
-                        }
-                    }
-                },
-                clickableWhenUnresolved = true,
+                onClick = openUser,
+                onUnresolvedClick = openUser,
+                preferredIds = friendIds,
                 onUnresolved = annotationNames::lookUpUsers,
             ),
             ComboAnnotationSource(
                 type = ComboAnnotationTypes.EVENT,
                 names = eventNames,
                 unresolvedName = unknownEvent,
+                onUnresolvedClick = { SnackbarManager.showMessage(unknownEventInfo) },
                 onClick = { eventId ->
                     scope.launch { navigator.navigate(Route.EventDetail(eventId = eventId)) }
                 }
@@ -150,6 +162,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                 type = ComboAnnotationTypes.GAME,
                 names = gameNames,
                 unresolvedName = unknownGame,
+                onUnresolvedClick = { SnackbarManager.showMessage(unknownGameInfo) },
                 onClick = { gameKey ->
                     val route = when (gameKey) {
                         "tetris" -> Route.Tetris

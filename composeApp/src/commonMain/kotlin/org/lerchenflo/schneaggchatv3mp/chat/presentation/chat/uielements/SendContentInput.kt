@@ -35,6 +35,7 @@ fun RowScope.SendContentInput(
     content: SendMessageContent,
     isEditing: Boolean,
     maxVoiceMsgTime: Long,
+    mentionContextIds: Set<String>,
     playbackProgress: StateFlow<VoicePlaybackState>,
     recordingLevels: StateFlow<List<Float>>,
     onAction: (ChatAction) -> Unit,
@@ -46,6 +47,7 @@ fun RowScope.SendContentInput(
                 onValueChange = { newValue ->
                     onAction(ChatAction.OnSendContentChange(SendMessageContent.TextContent(newValue)))
                 },
+                contextIds = mentionContextIds,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .weight(1f)
@@ -85,6 +87,7 @@ fun RowScope.SendContentInput(
                     onValueChange = { newValue ->
                         onAction(ChatAction.OnSendContentChange(content.copy(text = newValue)))
                     },
+                    contextIds = mentionContextIds,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()

@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -63,6 +64,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.shownUserIds
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
@@ -710,6 +712,21 @@ class ChatViewModel(
             .distinctUntilChanged()
             .flowOn(Dispatchers.Default)
 
+    /**
+     * The people of this chat, suggested first when typing `@`: the group members and everyone the
+     * group's event shows (creator, invited, answered), or the partner of a 1:1 chat. Never the own user.
+     */
+    private suspend fun loadMentionContextIds(): Set<String> {
+        val ids = if (isGroup) {
+            val memberIds = groupRepository.getGroupMembers(chatId).map { it.userId }
+            val eventUserIds = eventRepository.getEventFlowForGroup(chatId).first()?.shownUserIds().orEmpty()
+            (memberIds + eventUserIds).toSet()
+        } else {
+            setOf(chatId)
+        }
+        return ids - SessionCache.requireLoggedIn()?.userId.orEmpty()
+    }
+
     private fun captureNewMessagesBoundary(messages: List<Message>) {
         if (newMessagesBoundaryComputed || messages.isEmpty()) return
         newMessagesBoundaryComputed = true
@@ -748,6 +765,11 @@ class ChatViewModel(
             chatPartnerFlow.collectLatest { partner ->
                 _state.update { it.copy(chatPartner = partner) }
             }
+        }
+
+        viewModelScope.launch {
+            val contextIds = loadMentionContextIds()
+            _state.update { it.copy(mentionContextIds = contextIds) }
         }
 
         viewModelScope.launch {

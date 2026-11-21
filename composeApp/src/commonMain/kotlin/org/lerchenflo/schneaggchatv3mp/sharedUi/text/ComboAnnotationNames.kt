@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.stateIn
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 
@@ -24,6 +25,7 @@ private const val STOP_TIMEOUT_MILLIS = 5_000L
 class ComboAnnotationNames(
     mapRepository: MapRepository,
     private val userIdentityRepository: UserIdentityRepository,
+    userRepository: UserRepository,
     eventRepository: EventRepository,
     applicationScope: ApplicationScope,
 ) {
@@ -35,6 +37,12 @@ class ComboAnnotationNames(
     val userNames: StateFlow<Map<String, UserIdentityName>> = userIdentityRepository.observeKnownNames()
         .distinctUntilChanged()
         .stateIn(applicationScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), emptyMap())
+
+    /** Friends come right after the screen's own context in the `@` suggestions. */
+    val friendIds: StateFlow<Set<String>> = userRepository.getFriendsFlow(searchTerm = "")
+        .map { friends -> friends.mapTo(mutableSetOf()) { it.id } }
+        .distinctUntilChanged()
+        .stateIn(applicationScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), emptySet())
 
     /** Mentioned users this device has no name for: looked up in the background, then [userNames] has them. */
     fun lookUpUsers(userIds: Set<String>) = userIdentityRepository.prefetch(userIds)

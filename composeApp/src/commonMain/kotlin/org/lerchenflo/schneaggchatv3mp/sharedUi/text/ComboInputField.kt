@@ -21,8 +21,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
@@ -32,12 +32,15 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 
 /**
- * Text input that supports inline annotations (see [ComboAnnotationType]): typing a type's
- * trigger (e.g. `@map`) opens name autocomplete over the matching [annotationSources],
- * selecting a suggestion inserts the raw annotation (`@<key>/<id>`) into the text, while
- * the field visually renders it as the name.
+ * Text input that supports inline annotations (see [ComboAnnotationType]): typing `@` and a name
+ * suggests matching names of every type in [annotationSources] (a type's trigger, e.g. `@map`,
+ * narrows to that type, see [findAnnotationSuggestions]); selecting a suggestion inserts the raw
+ * annotation (`@<key>/<id>`) into the text, while the field renders it as the name and edits it as
+ * one token ([keepAnnotationsWhole]). A typed name that was not picked stays plain text.
  *
  * The raw annotated text is kept in [value] — callers send/store it unchanged.
+ *
+ * @param contextIds ids suggested first, e.g. the members of the chat the field is in.
  */
 @Composable
 fun ComboInputField(
@@ -45,14 +48,15 @@ fun ComboInputField(
     onValueChange: (TextFieldValue) -> Unit,
     modifier: Modifier = Modifier,
     annotationSources: List<ComboAnnotationSource> = rememberComboAnnotationSources(),
+    contextIds: Set<String> = emptySet(),
     placeholder: @Composable (() -> Unit)? = null,
     label: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
     singleLine: Boolean = false,
     shape: Shape = RoundedCornerShape(12.dp)
 ) {
-    val suggestionState = remember(value, annotationSources) {
-        findAnnotationSuggestions(value, annotationSources)
+    val suggestionState = remember(value, annotationSources, contextIds) {
+        findAnnotationSuggestions(value, annotationSources, contextIds)
     }
 
     Column(modifier = modifier) {
@@ -78,10 +82,7 @@ fun ComboInputField(
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = when (suggestion) {
-                                    is AnnotationSuggestion.Type -> suggestion.source.type.trigger
-                                    is AnnotationSuggestion.Name -> suggestion.name
-                                },
+                                text = suggestion.label,
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -91,13 +92,14 @@ fun ComboInputField(
         }
 
         val annotationColor = MaterialTheme.colorScheme.primary
-        val visualTransformation = remember(annotationSources, annotationColor) {
-            ComboAnnotationVisualTransformation(annotationSources, annotationColor)
+        val placeholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+        val visualTransformation = remember(annotationSources, annotationColor, placeholderColor) {
+            ComboAnnotationVisualTransformation(annotationSources, annotationColor, placeholderColor)
         }
 
         OutlinedTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { onValueChange(keepAnnotationsWhole(value, it, annotationSources)) },
             shape = shape,
             modifier = Modifier.fillMaxWidth(),
             placeholder = placeholder,
@@ -109,99 +111,15 @@ fun ComboInputField(
     }
 }
 
-private sealed interface AnnotationSuggestion {
-    /** An available annotation type ("@ function"), shown while only `@`/a partial trigger is typed. */
-    data class Type(val source: ComboAnnotationSource) : AnnotationSuggestion
-
-    /** A concrete entity of a type whose trigger is fully typed. */
-    data class Name(
-        val source: ComboAnnotationSource,
-        val id: String,
-        val name: String
-    ) : AnnotationSuggestion
-}
-
-private data class AnnotationSuggestionState(
-    /** Index of the `@` that started the token. */
-    val tokenStart: Int,
-    /** Cursor position; the query is the text between tokenStart+1 and cursor. */
-    val cursor: Int,
-    val suggestions: List<AnnotationSuggestion>
-)
-
-private const val MAX_SUGGESTIONS = 5
-private const val MAX_QUERY_LENGTH = 30
-
-private fun findAnnotationSuggestions(
-    value: TextFieldValue,
-    sources: List<ComboAnnotationSource>
-): AnnotationSuggestionState? {
-    if (sources.isEmpty()) return null
-    if (!value.selection.collapsed) return null
-    val cursor = value.selection.start
-    val textBefore = value.text.substring(0, cursor)
-    val atIndex = textBefore.lastIndexOf('@')
-    if (atIndex == -1) return null
-    // Token must start at the beginning or after whitespace (rules out email addresses etc.)
-    if (atIndex > 0 && !textBefore[atIndex - 1].isWhitespace()) return null
-    val token = textBefore.substring(atIndex)
-    if (token.contains('\n')) return null
-
-    // Name autocomplete only opens once a type's trigger (e.g. "@map") is fully typed;
-    // whatever follows the trigger filters the names
-    val triggeredSources = sources.filter { token.startsWith(it.type.trigger, ignoreCase = true) }
-
-    val suggestions = if (triggeredSources.isNotEmpty()) {
-        triggeredSources
-            .flatMap { source ->
-                val query = token
-                    .substring(source.type.trigger.length)
-                    .trimStart('/', ' ')
-                if (query.length > MAX_QUERY_LENGTH) return@flatMap emptyList()
-                source.names.entries
-                    .filter { it.value.contains(query, ignoreCase = true) }
-                    .map { AnnotationSuggestion.Name(source, it.key, it.value) }
-            }
-            .sortedBy { it.name.lowercase() }
-            .take(MAX_SUGGESTIONS)
-    } else {
-        // Only `@` or a partial trigger typed so far — offer the available @ functions
-        sources.filter { it.type.trigger.startsWith(token, ignoreCase = true) }
-            .map { AnnotationSuggestion.Type(it) }
-    }
-
-    return AnnotationSuggestionState(
-        tokenStart = atIndex,
-        cursor = cursor,
-        suggestions = suggestions
-    )
-}
-
-private fun applySuggestion(
-    value: TextFieldValue,
-    state: AnnotationSuggestionState,
-    suggestion: AnnotationSuggestion
-): TextFieldValue {
-    val insertion = when (suggestion) {
-        // Complete the trigger only — the name suggestions open right away
-        is AnnotationSuggestion.Type -> suggestion.source.type.trigger
-        is AnnotationSuggestion.Name -> suggestion.source.type.build(suggestion.id) + " "
-    }
-    val newText = value.text.replaceRange(state.tokenStart, state.cursor, insertion)
-    return TextFieldValue(
-        text = newText,
-        selection = TextRange(state.tokenStart + insertion.length)
-    )
-}
-
 /**
- * Renders every resolvable annotation in the field as its highlighted display name while the
- * underlying (raw) text keeps the annotation. Cursor positions inside an annotation snap to
- * its end so it behaves like a single token.
+ * Renders every annotation in the field as its highlighted display name (an unknown id as the
+ * grey placeholder, like [ComboText]) while the underlying (raw) text keeps the annotation.
+ * Cursor positions inside an annotation snap to its end so it behaves like a single token.
  */
 class ComboAnnotationVisualTransformation(
     private val sources: List<ComboAnnotationSource>,
-    private val annotationColor: Color
+    private val annotationColor: Color,
+    private val placeholderColor: Color
 ) : VisualTransformation {
 
     private data class Segment(
@@ -217,11 +135,14 @@ class ComboAnnotationVisualTransformation(
 
         val transformed = buildAnnotatedString {
             var last = 0
-            findComboAnnotations(original, sources, includeUnresolved = false).forEach { match ->
+            findComboAnnotations(original, sources).forEach { match ->
                 append(original.substring(last, match.range.first))
                 val display = match.source.type.displayName(match.name)
                 val transStart = length
-                withStyle(SpanStyle(color = annotationColor, fontWeight = FontWeight.Bold)) {
+                withStyle(
+                    if (match.resolved) SpanStyle(color = annotationColor, fontWeight = FontWeight.Bold)
+                    else SpanStyle(color = placeholderColor, fontStyle = FontStyle.Italic)
+                ) {
                     append(display)
                 }
                 segments += Segment(

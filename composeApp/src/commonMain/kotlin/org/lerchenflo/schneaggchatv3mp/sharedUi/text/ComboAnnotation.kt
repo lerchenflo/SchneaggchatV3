@@ -45,8 +45,13 @@ data class ComboAnnotationSource(
     /** Shown in place of the raw text when an id is unknown (deleted or not yet synced). */
     val unresolvedName: String,
     val onClick: (id: String) -> Unit = {},
-    /** Whether an unknown id is still clickable (users: the popup can show an unknown user). */
-    val clickableWhenUnresolved: Boolean = false,
+    /**
+     * Tap on the placeholder of an unknown id (users: the popup can show an unknown user; others:
+     * a short explanation). null = the placeholder is plain text.
+     */
+    val onUnresolvedClick: ((id: String) -> Unit)? = null,
+    /** Ids suggested right after the screen's own context while typing (users: friends). */
+    val preferredIds: Set<String> = emptySet(),
     /** Called once per shown text with the ids this source could not resolve, e.g. to look them up. */
     val onUnresolved: (ids: Set<String>) -> Unit = {},
 )
@@ -61,26 +66,35 @@ internal data class ComboAnnotationMatch(
     val resolved: Boolean
 ) {
     /** A dead target must not look or behave like a working link, unless the source can handle it. */
-    val isClickable: Boolean get() = resolved || source.clickableWhenUnresolved
+    val isClickable: Boolean get() = resolved || source.onUnresolvedClick != null
+
+    fun click() {
+        if (resolved) source.onClick(id) else source.onUnresolvedClick?.invoke(id)
+    }
+}
+
+/** Taps a link built from [ComboAnnotationType.linkScheme]; false when [uri] is no annotation link. */
+internal fun List<ComboAnnotationSource>.clickAnnotationLink(uri: String): Boolean {
+    val source = firstOrNull { uri.startsWith(it.type.linkScheme) } ?: return false
+    val id = uri.removePrefix(source.type.linkScheme)
+    if (id in source.names) source.onClick(id) else source.onUnresolvedClick?.invoke(id)
+    return true
 }
 
 /**
  * Finds all annotations of all [sources] in [text], ordered by position.
  *
  * An unknown id still yields a match carrying the source's placeholder name, so the raw
- * `@user/<id>` never reaches the reader. Pass [includeUnresolved] = false where the raw text
- * has to stay editable (the input field).
+ * `@user/<id>` never reaches the reader (the input field keeps it underneath as one token).
  */
 internal fun findComboAnnotations(
     text: String,
-    sources: List<ComboAnnotationSource>,
-    includeUnresolved: Boolean = true
+    sources: List<ComboAnnotationSource>
 ): List<ComboAnnotationMatch> =
     sources.flatMap { source ->
-        source.type.regex.findAll(text).mapNotNull { match ->
+        source.type.regex.findAll(text).map { match ->
             val id = match.groupValues[1]
             val name = source.names[id]
-            if (name == null && !includeUnresolved) return@mapNotNull null
             ComboAnnotationMatch(
                 range = match.range,
                 id = id,

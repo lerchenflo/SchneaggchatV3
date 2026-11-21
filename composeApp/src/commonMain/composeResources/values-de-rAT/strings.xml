@@ -12,9 +12,6 @@
     <string name="no_status">kuan Status</string>
     <string name="unknown_user">kennsch ned</string>
     <string name="deleted_user">glöschta Nutzer</string>
-    <string name="unknown_location">unbekannter Ort</string>
-    <string name="unknown_event">unbekanntes Event</string>
-    <string name="unknown_game">unbekanntes Spiel</string>
     <string name="chat_last_seen_status">letztes mol Online %1$s</string>
 
     <string name="usersync">Benutzerdata</string>

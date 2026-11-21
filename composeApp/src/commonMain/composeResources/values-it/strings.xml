@@ -13,9 +13,12 @@
     <string name="no_status">nessuno stato</string>
     <string name="unknown_user">utente sconosciuto</string>
     <string name="deleted_user">utente eliminato</string>
-    <string name="unknown_location">posizione sconosciuta</string>
-    <string name="unknown_event">evento sconosciuto</string>
-    <string name="unknown_game">gioco sconosciuto</string>
+    <string name="unknown_location">luogo non disponibile</string>
+    <string name="unknown_event">evento non disponibile</string>
+    <string name="unknown_game">gioco non disponibile</string>
+    <string name="annotation_unknown_location_info">Questo luogo è stato eliminato o non è condiviso con te.</string>
+    <string name="annotation_unknown_event_info">Questo evento è stato eliminato o non è condiviso con te.</string>
+    <string name="annotation_unknown_game_info">Questo gioco non è disponibile in questa versione dell'app.</string>
     <string name="chat_last_seen_status">ultimo accesso %1$s</string>
 
     <string name="usersync">dati utente</string>

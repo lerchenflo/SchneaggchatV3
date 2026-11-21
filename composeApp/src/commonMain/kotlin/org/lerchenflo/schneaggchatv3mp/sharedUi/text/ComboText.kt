@@ -17,11 +17,13 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeBlock
 import com.mikepenz.markdown.compose.elements.MarkdownHighlightedCodeFence
@@ -36,13 +38,16 @@ import com.mikepenz.markdown.model.markdownAnnotatorConfig
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.SyntaxThemes
 
+/** The grey of a placeholder for an unknown id, as a share of the text color. */
+private const val PLACEHOLDER_ALPHA = 0.6f
+
 /**
  * Displays text as plain text or markdown (merged into one composable) and resolves
  * inline annotations (`@<key>/<id>`, see [ComboAnnotationType]) into clickable names.
  *
  * Annotations whose id is not resolvable through [annotationSources] are still converted to
- * the source's placeholder name (e.g. "unknown user") and rendered as plain, non-clickable text,
- * unless the source can handle unknown ids ([ComboAnnotationSource.clickableWhenUnresolved]) -
+ * the source's placeholder name (e.g. "unknown user"), shown grey and italic; a tap on it goes to
+ * [ComboAnnotationSource.onUnresolvedClick] (e.g. a short explanation), plain text without one -
  * the raw `@<key>/<id>` never reaches the reader.
  */
 @Composable
@@ -67,9 +72,11 @@ fun ComboText(
                 var last = 0
                 matches.forEach { match ->
                     append(text, last, match.range.first)
-                    val display = match.source.type.displayName(match.name)
+                    val name = match.source.type.displayName(match.name)
                         .replace("[", "\\[")
                         .replace("]", "\\]")
+                    // A placeholder of an unknown id is italic, like the grey one of the plain text
+                    val display = if (match.resolved) name else "*$name*"
                     if (match.isClickable) {
                         append("[").append(display).append("](")
                         append(match.source.type.linkScheme).append(match.id).append(")")
@@ -87,12 +94,7 @@ fun ComboText(
         val uriHandler = remember(defaultUriHandler, annotationSources) {
             object : UriHandler {
                 override fun openUri(uri: String) {
-                    val source = annotationSources.firstOrNull { uri.startsWith(it.type.linkScheme) }
-                    if (source != null) {
-                        source.onClick(uri.removePrefix(source.type.linkScheme))
-                    } else {
-                        defaultUriHandler.openUri(uri)
-                    }
+                    if (!annotationSources.clickAnnotationLink(uri)) defaultUriHandler.openUri(uri)
                 }
             }
         }
@@ -148,30 +150,29 @@ fun ComboText(
             )
         }
     } else {
-        val annotatedText = remember(text, annotationSources) {
+        val placeholderStyle = SpanStyle(color = textColor.copy(alpha = PLACEHOLDER_ALPHA), fontStyle = FontStyle.Italic)
+        val annotatedText = remember(text, annotationSources, placeholderStyle) {
             buildAnnotatedString {
                 var last = 0
                 findComboAnnotations(text, annotationSources).forEach { match ->
                     append(text.substring(last, match.range.first))
                     val display = match.source.type.displayName(match.name)
+                    val style = if (match.resolved) {
+                        SpanStyle(fontWeight = FontWeight.Bold, textDecoration = TextDecoration.Underline)
+                    } else placeholderStyle
                     if (match.isClickable) {
                         withLink(
                             LinkAnnotation.Clickable(
                                 tag = match.source.type.linkScheme + match.id,
-                                styles = TextLinkStyles(
-                                    style = SpanStyle(
-                                        fontWeight = FontWeight.Bold,
-                                        textDecoration = TextDecoration.Underline
-                                    )
-                                ),
-                                linkInteractionListener = { match.source.onClick(match.id) }
+                                styles = TextLinkStyles(style = style),
+                                linkInteractionListener = { match.click() }
                             )
                         ) {
                             append(display)
                         }
                     } else {
                         // No link at all - a dead target must not look or behave like a working mention (see isClickable)
-                        append(display)
+                        withStyle(style) { append(display) }
                     }
                     last = match.range.last + 1
                 }

@@ -13,9 +13,12 @@
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
     <string name="deleted_user">deleted user</string>
-    <string name="unknown_location">unknown location</string>
-    <string name="unknown_event">unknown event</string>
-    <string name="unknown_game">unknown game</string>
+    <string name="unknown_location">unavailable place</string>
+    <string name="unknown_event">unavailable event</string>
+    <string name="unknown_game">unavailable game</string>
+    <string name="annotation_unknown_location_info">This place was deleted or isn't shared with you.</string>
+    <string name="annotation_unknown_event_info">This event was deleted or isn't shared with you.</string>
+    <string name="annotation_unknown_game_info">This game isn't available in this version of the app.</string>
     <string name="chat_last_seen_status">last seen %1$s</string>
 
     <string name="usersync">userdata</string>
