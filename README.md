@@ -36,12 +36,14 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Sprachnachrichten: Live-Pegel beim Aufnehmen
 - @Annotations fix
 - Erwähnungen: Nachrichten an mich hervorgehoben, @-Badge in der Chatliste
+- Feedback-Board: Sortierung Top mit Neu und Beliebteste
 
 #### Bugfixes
 - Profilbild: Anzeige bei Nicht-Freunden behoben, leere Großansicht entfernt
 - iOS: Badge und Teilen repariert
 - Sprachnachrichten: Musik pausiert und läuft danach weiter
 - Desktop: Doppelte Taskbar Tabs behoben
+- Feedback-Board: Neue Einträge sofort oben sichtbar
 
 ### 3.0.19
 

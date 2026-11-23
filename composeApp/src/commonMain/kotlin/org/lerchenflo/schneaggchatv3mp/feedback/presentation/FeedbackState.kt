@@ -33,6 +33,8 @@ data class FeedbackState(
 
     /** Sorted + filtered list of the selected tab, recomputed whenever an input changes. */
     val visibleEntries: List<FeedbackEntry> = emptyList(),
+    /** Leading entries of [visibleEntries] pinned as new (Top sort only); the rest follows by likes. */
+    val pinnedEntryCount: Int = 0,
     /** Unfiltered number of entries per tab, for the tab labels. */
     val tabCounts: Map<FeedbackTab, Int> = emptyMap(),
     /** Unfiltered number of GAMES entries per section, for the chips of the Games tab. */
@@ -53,6 +55,11 @@ data class FeedbackState(
     val userNames: Map<String, UserIdentityName> = emptyMap(),
     val isCreateDialogOpen: Boolean = false,
     val isCreating: Boolean = false,
+    /**
+     * Entry the list scrolls to once it is in [visibleEntries]: the one the user just created, which
+     * can land above the first visible row. Null when nothing is waiting.
+     */
+    val scrollToEntryId: String? = null,
 ) {
     /** Section of the shown list: the tab's own one, or on the Games tab the picked chip. */
     val section: FeedbackSection get() = selectedTab.section ?: gamesSection
@@ -109,4 +116,6 @@ sealed interface FeedbackAction {
     data object OnCreateClick : FeedbackAction
     data object OnCreateDismiss : FeedbackAction
     data class OnCreateSubmit(val entry: NewFeedbackEntry) : FeedbackAction
+    /** The list scrolled to [FeedbackState.scrollToEntryId]. */
+    data object OnScrolledToEntry : FeedbackAction
 }

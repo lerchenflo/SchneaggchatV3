@@ -1884,6 +1884,8 @@
     <string name="feedback_updated_badge">Updated</string>
     <string name="feedback_sort_updated">Recently updated</string>
     <string name="feedback_sort_discussed">Most discussed</string>
+    <string name="feedback_section_new">New</string>
+    <string name="feedback_section_most_liked">Most liked</string>
     <string name="feedback_filter_status">Status</string>
     <string name="feedback_filter_all_statuses">All statuses</string>
     <string name="feedback_premium">Premium</string>

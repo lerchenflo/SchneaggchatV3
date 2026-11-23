@@ -74,9 +74,13 @@ data class FeedbackEntry(
     /** Up and downvotes cancel out, "didn't know" is neutral. */
     val score: Int get() = upvotes - downvotes
 
-    /** User-created entries stay pinned (and highlighted) at the top for [NEW_ENTRY_PIN_MILLIS]. */
+    /**
+     * User-created entries stay pinned (and highlighted) at the top for [NEW_ENTRY_PIN_MILLIS].
+     * [createdAt] is server time and [nowMillis] device time: a device clock behind the server
+     * puts a fresh entry in the future, which still counts as new.
+     */
     fun isPinned(nowMillis: Long): Boolean =
-        !isSeeded && nowMillis - createdAt in 0 until NEW_ENTRY_PIN_MILLIS
+        !isSeeded && nowMillis - createdAt < NEW_ENTRY_PIN_MILLIS
 
     /**
      * What happened since [lastSeen] (a server time): an entry by someone else that is newer, or

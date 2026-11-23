@@ -1878,6 +1878,8 @@
     <string name="feedback_updated_badge">Aggiornato</string>
     <string name="feedback_sort_updated">Aggiornati di recente</string>
     <string name="feedback_sort_discussed">Più discussi</string>
+    <string name="feedback_section_new">Nuovi</string>
+    <string name="feedback_section_most_liked">Più apprezzati</string>
     <string name="feedback_filter_status">Stato</string>
     <string name="feedback_filter_all_statuses">Tutti gli stati</string>
     <string name="feedback_premium">Premium</string>

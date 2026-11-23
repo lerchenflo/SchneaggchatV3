@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -32,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
@@ -67,6 +72,8 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_filter_status
 import schneaggchatv3mp.composeapp.generated.resources.feedback_filter_tag
 import schneaggchatv3mp.composeapp.generated.resources.feedback_load_error
 import schneaggchatv3mp.composeapp.generated.resources.feedback_retry
+import schneaggchatv3mp.composeapp.generated.resources.feedback_section_most_liked
+import schneaggchatv3mp.composeapp.generated.resources.feedback_section_new
 import schneaggchatv3mp.composeapp.generated.resources.feedback_title
 import androidx.compose.material.icons.filled.Psychology
 import io.github.lerchenflo.taptarget.tapTarget
@@ -83,11 +90,105 @@ fun FeedbackScreenRoot() {
     )
 }
 
+/**
+ * Scrolls to [FeedbackState.scrollToEntryId] once the list shows it. Needed because the keyed list
+ * keeps its first visible row in place, so a new row above it stays off screen.
+ */
+@Composable
+private fun ScrollToEntryEffect(
+    state: FeedbackState,
+    listState: LazyListState,
+    onAction: (FeedbackAction) -> Unit,
+) {
+    val listIndex = state.scrollToEntryId
+        ?.let { id -> state.visibleEntries.indexOfFirst { it.id == id } }
+        ?.takeIf { it >= 0 }
+        // The first entry scrolls to the very top, so the "New" header above it shows too
+        ?.let { entryIndex -> if (entryIndex == 0) 0 else state.listIndexOf(entryIndex) }
+    LaunchedEffect(listIndex) {
+        if (listIndex == null) return@LaunchedEffect
+        listState.animateScrollToItem(listIndex)
+        onAction(FeedbackAction.OnScrolledToEntry)
+    }
+}
+
+/** Top sort with new and older entries: "New" above the pinned ones, "Most liked" above the rest. */
+private val FeedbackState.showsSectionHeaders: Boolean
+    get() = pinnedEntryCount in 1 until visibleEntries.size
+
+/** Position of the entry at [entryIndex] of [FeedbackState.visibleEntries] in the list, headers included. */
+private fun FeedbackState.listIndexOf(entryIndex: Int): Int = when {
+    !showsSectionHeaders -> entryIndex
+    entryIndex < pinnedEntryCount -> entryIndex + 1
+    else -> entryIndex + 2
+}
+
+@Composable
+private fun FeedbackEntryList(
+    state: FeedbackState,
+    listState: LazyListState,
+    onAction: (FeedbackAction) -> Unit,
+) {
+    LazyColumn(
+        state = listState,
+        // Bottom padding keeps the last row clear of the FAB
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 96.dp),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        if (state.showsSectionHeaders) {
+            val entries = state.visibleEntries
+            sectionHeader(key = "header_new", text = Res.string.feedback_section_new)
+            entryRows(entries.subList(0, state.pinnedEntryCount), state, onAction)
+            sectionHeader(key = "header_most_liked", text = Res.string.feedback_section_most_liked)
+            entryRows(entries.subList(state.pinnedEntryCount, entries.size), state, onAction)
+        } else {
+            entryRows(state.visibleEntries, state, onAction)
+        }
+    }
+}
+
+/** [key] must not look like an entry id, the rows use those as keys. */
+private fun LazyListScope.sectionHeader(key: String, text: StringResource) {
+    item(key = key, contentType = "header") {
+        Text(
+            text = stringResource(text),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .animateItem()
+                .fillMaxWidth()
+                .padding(start = 4.dp, top = 12.dp, bottom = 4.dp)
+        )
+    }
+}
+
+private fun LazyListScope.entryRows(
+    entries: List<FeedbackEntry>,
+    state: FeedbackState,
+    onAction: (FeedbackAction) -> Unit,
+) {
+    itemsIndexed(entries, key = { _, entry -> entry.id }, contentType = { _, _ -> "entry" }) { index, entry ->
+        Column(modifier = Modifier.animateItem()) {
+            if (index > 0) HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
+            FeedbackRow(
+                entry = entry,
+                mark = entry.boardMark(state),
+                userNames = state.userNames,
+                onClick = { onAction(FeedbackAction.OnEntryClick(entry)) },
+                onVoteClick = { vote -> onAction(FeedbackAction.OnVoteClick(entry.id, vote)) },
+            )
+        }
+    }
+}
+
 @Composable
 fun FeedbackScreen(
     state: FeedbackState,
     onAction: (FeedbackAction) -> Unit,
 ) {
+    val listState = rememberLazyListState()
+    ScrollToEntryEffect(state = state, listState = listState, onAction = onAction)
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             ActivityTitle(
@@ -132,24 +233,7 @@ fun FeedbackScreen(
 
                     state.visibleEntries.isEmpty() -> CenteredMessage(text = stringResource(Res.string.feedback_empty))
 
-                    else -> LazyColumn(
-                        // Bottom padding keeps the last row clear of the FAB
-                        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 96.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        itemsIndexed(state.visibleEntries, key = { _, entry -> entry.id }) { index, entry ->
-                            Column(modifier = Modifier.animateItem()) {
-                                if (index > 0) HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
-                                FeedbackRow(
-                                    entry = entry,
-                                    mark = entry.boardMark(state),
-                                    userNames = state.userNames,
-                                    onClick = { onAction(FeedbackAction.OnEntryClick(entry)) },
-                                    onVoteClick = { vote -> onAction(FeedbackAction.OnVoteClick(entry.id, vote)) },
-                                )
-                            }
-                        }
-                    }
+                    else -> FeedbackEntryList(state = state, listState = listState, onAction = onAction)
                 }
             }
         }
