@@ -39,7 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsViewmodel
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays.BirthdaysViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentViewModel
@@ -438,7 +438,7 @@ val sharedmodule = module{
 
     // Explicit lambda because the runtime chatId/isGroup can't be resolved by viewModelOf
     viewModel { (chatId: String, isGroup: Boolean) ->
-        ChatDetailsViewmodel(
+        ChatDetailsViewModel(
             errorChannel = get(),
             groupRepository = get(),
             navigator = get(),

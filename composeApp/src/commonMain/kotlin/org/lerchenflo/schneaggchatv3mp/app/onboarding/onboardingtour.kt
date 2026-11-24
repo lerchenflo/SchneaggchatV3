@@ -263,7 +263,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 )
 
                 highlightStep(
-                    id = "chat_details_nickname",
+                    id = "chat_details_menu", //The ⋮ of the chat details, nickname and wake are in it
                     title = Res.string.ttt_chat_details_nickname,
                     description = Res.string.ttt_chat_details_nickname_description,
                     tags = setOf(TourTags.USER_DETAILS),
@@ -280,7 +280,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 )
 
                 highlightStep(
-                    id = "chat_details_wake",
+                    id = "chat_details_menu", //The ⋮ of the chat details, nickname and wake are in it
                     title = Res.string.ttt_chat_details_wake,
                     description = Res.string.ttt_chat_details_wake_description,
                     tags = setOf(TourTags.USER_DETAILS),

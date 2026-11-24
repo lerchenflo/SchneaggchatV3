@@ -12,8 +12,6 @@ import assertk.assertions.isInstanceOf
 import assertk.assertions.isTrue
 import assertk.assertions.prop
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -51,7 +49,7 @@ private const val FRIEND_ID = "anna"
 
 /** Group edits (name, description, members, expiry) and friend actions of the chat details screen. */
 @OptIn(ExperimentalCoroutinesApi::class)
-class ChatDetailsViewmodelTest {
+class ChatDetailsViewModelTest {
 
     private val errorChannel = FakeErrorChannel()
 
@@ -87,7 +85,7 @@ class ChatDetailsViewmodelTest {
     }
 
     private fun createViewModel(chatId: String, isGroup: Boolean) = viewModels.add(
-        ChatDetailsViewmodel(
+        ChatDetailsViewModel(
             errorChannel = errorChannel,
             groupRepository = groupRepository,
             navigator = navigator,
@@ -110,10 +108,10 @@ class ChatDetailsViewmodelTest {
     fun `group details resolve each member to its stored user`() = runViewModelTest(viewModels) {
         val viewModel = createViewModel(GROUP_ID, isGroup = true)
 
-        val details = viewModel.chatDetails.awaitMatching { it is ChatDetailsState.GroupDetails }
+        val details = viewModel.state.awaitMatching { it.chat is ChatDetailsChat.GroupDetails }.chat
 
-        assertThat(details).isInstanceOf<ChatDetailsState.GroupDetails>()
-            .prop(ChatDetailsState.GroupDetails::members)
+        assertThat(details).isInstanceOf<ChatDetailsChat.GroupDetails>()
+            .prop(ChatDetailsChat.GroupDetails::members)
             .transform { members -> members.map { it.groupMember.userId to it.user?.id } }
             .containsExactly(OWN_ID to OWN_ID, FRIEND_ID to FRIEND_ID, "left-user" to null)
     }
@@ -122,11 +120,12 @@ class ChatDetailsViewmodelTest {
     fun `name and description and expiry changes go to the group`() = runViewModelTest(viewModels) {
         val viewModel = createViewModel(GROUP_ID, isGroup = true)
 
-        viewModel.updateGroupName("Hiking club")
-        viewModel.updateDescriptionText(TextFieldValue("Every Sunday"))
-        viewModel.updateDescription()
-        viewModel.setGroupExpiry(1_800_000_000_000L)
-        viewModel.setGroupExpiry(null)
+        viewModel.onAction(ChatDetailsAction.OnGroupNameConfirm("Hiking club"))
+        viewModel.onAction(ChatDetailsAction.OnEditDescriptionClick)
+        viewModel.onAction(ChatDetailsAction.OnDescriptionDraftChange(TextFieldValue("Every Sunday")))
+        viewModel.onAction(ChatDetailsAction.OnDescriptionConfirm)
+        viewModel.onAction(ChatDetailsAction.OnGroupTimerConfirm(1_800_000_000_000L))
+        viewModel.onAction(ChatDetailsAction.OnRemoveGroupTimerConfirm)
 
         assertThat(groupRepository.nameChanges.calls).containsExactly(GROUP_ID to "Hiking club")
         assertThat(groupRepository.descriptionChanges.calls).containsExactly(GROUP_ID to "Every Sunday")
@@ -139,10 +138,12 @@ class ChatDetailsViewmodelTest {
         val viewModel = createViewModel(GROUP_ID, isGroup = true)
         val (ownMember, annaMember) = hiking.members
 
-        viewModel.addMember("ben")
-        viewModel.removeMember(FRIEND_ID)
-        viewModel.changeAdminStatus(annaMember) // not admin yet
-        viewModel.changeAdminStatus(ownMember) // admin
+        viewModel.onAction(ChatDetailsAction.OnAddMembersClick)
+        viewModel.onAction(ChatDetailsAction.OnNewMemberSelected(ben.toChatListItem()))
+        viewModel.onAction(ChatDetailsAction.OnAddMembersConfirm)
+        viewModel.onAction(ChatDetailsAction.OnRemoveMember(FRIEND_ID))
+        viewModel.onAction(ChatDetailsAction.OnChangeAdminStatus(annaMember)) // not admin yet
+        viewModel.onAction(ChatDetailsAction.OnChangeAdminStatus(ownMember)) // admin
 
         assertThat(groupRepository.memberChanges.calls).containsExactly(
             MemberCall(GroupMemberAction.ADD_USER, "ben", GROUP_ID),
@@ -156,22 +157,20 @@ class ChatDetailsViewmodelTest {
     fun `member picker offers friends outside the group and other groups and a group adds its friends`() =
         runViewModelTest(viewModels) {
             val viewModel = createViewModel(GROUP_ID, isGroup = true)
-            // The screen collects the picker list while it is open
-            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.availableNewMembers.collect {} }
             val climbingItem = climbing.toChatListItem()
 
-            val available = viewModel.availableNewMembers.awaitMatching { it.isNotEmpty() }
+            val available = viewModel.state.awaitMatching { it.availableNewMembers.isNotEmpty() }.availableNewMembers
             assertThat(available.map { it.id }).containsExactly("climbing", "ben", "carla")
 
-            viewModel.onUserSelected(climbingItem)
+            viewModel.onAction(ChatDetailsAction.OnNewMemberSelected(climbingItem))
 
-            assertThat(viewModel.selectedNewMembers.map { it.id }).containsExactly("ben", "carla")
-            assertThat(viewModel.isItemSelected(climbingItem)).isTrue()
+            assertThat(viewModel.state.value.selectedNewMembers.map { it.id }).containsExactly("ben", "carla")
+            assertThat(viewModel.state.value.isNewMemberSelected(climbingItem)).isTrue()
 
-            viewModel.onUserDeSelected(climbingItem)
+            viewModel.onAction(ChatDetailsAction.OnNewMemberDeselected(climbingItem))
 
-            assertThat(viewModel.selectedNewMembers).isEmpty()
-            assertThat(viewModel.isItemSelected(climbingItem)).isFalse()
+            assertThat(viewModel.state.value.selectedNewMembers).isEmpty()
+            assertThat(viewModel.state.value.isNewMemberSelected(climbingItem)).isFalse()
         }
 
     // ─── Friends ──────────────────────────────────────────────────────────────
@@ -181,9 +180,9 @@ class ChatDetailsViewmodelTest {
         groupRepository.groups.value = listOf(hiking, climbing)
         val viewModel = createViewModel(FRIEND_ID, isGroup = false)
 
-        val details = viewModel.chatDetails.awaitMatching { it is ChatDetailsState.UserDetails }
+        val details = viewModel.state.awaitMatching { it.chat is ChatDetailsChat.UserDetails }.chat
 
-        assertThat(details).isInstanceOf<ChatDetailsState.UserDetails>()
+        assertThat(details).isInstanceOf<ChatDetailsChat.UserDetails>()
             .transform { it.commonGroups.map { group -> group.id } }
             .containsExactly(GROUP_ID)
     }
@@ -193,7 +192,7 @@ class ChatDetailsViewmodelTest {
         val viewModel = createViewModel(FRIEND_ID, isGroup = false)
 
         navigator.navigationActions.test {
-            viewModel.removeFriend()
+            viewModel.onAction(ChatDetailsAction.OnRemoveFriendConfirm)
 
             assertThat(awaitItem()).isEqualTo(
                 NavigationAction.Navigate(Route.ChatSelector, Navigator.NavigationOptions(exitAllPreviousScreens = true))
@@ -208,7 +207,7 @@ class ChatDetailsViewmodelTest {
         val viewModel = createViewModel(FRIEND_ID, isGroup = false)
 
         navigator.navigationActions.test {
-            viewModel.removeFriend()
+            viewModel.onAction(ChatDetailsAction.OnRemoveFriendConfirm)
 
             expectNoEvents()
         }
@@ -220,9 +219,10 @@ class ChatDetailsViewmodelTest {
     fun `nickname and description of a friend are saved as that friend's details`() = runViewModelTest(viewModels) {
         val viewModel = createViewModel(FRIEND_ID, isGroup = false)
 
-        viewModel.updateNickname("Annie")
-        viewModel.updateDescriptionText(TextFieldValue("Met at the lake"))
-        viewModel.updateDescription()
+        viewModel.onAction(ChatDetailsAction.OnNicknameConfirm("Annie"))
+        viewModel.onAction(ChatDetailsAction.OnEditDescriptionClick)
+        viewModel.onAction(ChatDetailsAction.OnDescriptionDraftChange(TextFieldValue("Met at the lake")))
+        viewModel.onAction(ChatDetailsAction.OnDescriptionConfirm)
 
         assertThat(userRepository.detailsChanges.calls).containsExactly(
             DetailsCall(FRIEND_ID, null, null, null, null, newNickName = "Annie", newPhoneNumber = null),
@@ -236,7 +236,7 @@ class ChatDetailsViewmodelTest {
         val viewModel = createViewModel(GROUP_ID, isGroup = true)
 
         navigator.navigationActions.test {
-            viewModel.openUnknownUser("left-user", "Lena")
+            viewModel.onAction(ChatDetailsAction.OnOpenUnknownUser("left-user", "Lena"))
 
             // The popup sends the friend request itself
             assertThat(awaitItem()).isEqualTo(
@@ -250,7 +250,7 @@ class ChatDetailsViewmodelTest {
     fun `wake targets this chat with the given reason`() = runViewModelTest(viewModels) {
         val viewModel = createViewModel(GROUP_ID, isGroup = true)
 
-        viewModel.sendWake("Lunch!")
+        viewModel.onAction(ChatDetailsAction.OnWakeConfirm("Lunch!"))
 
         assertThat(userRepository.wakeCalls.calls).containsExactly(WakeCall(GROUP_ID, isGroup = true, reason = "Lunch!"))
     }

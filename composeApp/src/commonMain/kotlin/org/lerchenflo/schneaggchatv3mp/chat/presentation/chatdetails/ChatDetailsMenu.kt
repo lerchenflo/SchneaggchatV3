@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.TimerOff
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.addExtensionMenuItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TitleMenuItem
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -26,19 +25,6 @@ import schneaggchatv3mp.composeapp.generated.resources.rename_group
 import schneaggchatv3mp.composeapp.generated.resources.set_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.wake_button
 
-/** What the ⋮ of the chat details can do. Each one opens its dialog in [ChatDetails]. */
-sealed interface ChatDetailsMenuAction {
-    data object Rename : ChatDetailsMenuAction
-    data class AddExtension(val type: GroupExtensionType) : ChatDetailsMenuAction
-    data object SetGroupTimer : ChatDetailsMenuAction
-    data object RemoveGroupTimer : ChatDetailsMenuAction
-    data object Wake : ChatDetailsMenuAction
-    data object LeaveGroup : ChatDetailsMenuAction
-    data object DeleteGroup : ChatDetailsMenuAction
-    data object DeleteEvent : ChatDetailsMenuAction
-    data object RemoveFriend : ChatDetailsMenuAction
-}
-
 /** Items of the ⋮ of the chat details, the leaving / deleting ones last. */
 @Composable
 fun chatDetailsMenuItems(
@@ -47,7 +33,7 @@ fun chatDetailsMenuItems(
     hasGroupTimer: Boolean,
     /** The group belongs to an event the user created. */
     isEventCreator: Boolean,
-    onAction: (ChatDetailsMenuAction) -> Unit,
+    onAction: (ChatDetailsAction) -> Unit,
 ): List<TitleMenuItem> = if (isGroup) {
     groupMenuItems(
         iAmAdmin = iAmAdmin,
@@ -64,44 +50,44 @@ private fun groupMenuItems(
     iAmAdmin: Boolean,
     hasGroupTimer: Boolean,
     isEventCreator: Boolean,
-    onAction: (ChatDetailsMenuAction) -> Unit,
+    onAction: (ChatDetailsAction) -> Unit,
 ): List<TitleMenuItem> {
     val rename = TitleMenuItem(
         text = stringResource(Res.string.rename_group),
         icon = Icons.Default.Edit,
-        onClick = { onAction(ChatDetailsMenuAction.Rename) }
+        onClick = { onAction(ChatDetailsAction.OnRenameClick) }
     )
-    val addExtension = addExtensionMenuItem(onTypeClick = { onAction(ChatDetailsMenuAction.AddExtension(it)) })
+    val addExtension = addExtensionMenuItem(onTypeClick = { onAction(ChatDetailsAction.OnAddExtensionClick(it)) })
     // Only admins can set, move or clear the delete timer - the server enforces the same rule on
     // /groups/setexpiry, so a non-admin must not get an item that can only fail
     val setTimer = TitleMenuItem(
         text = stringResource(if (hasGroupTimer) Res.string.change_group_timer else Res.string.set_group_timer),
         icon = Icons.Default.Schedule,
-        onClick = { onAction(ChatDetailsMenuAction.SetGroupTimer) }
+        onClick = { onAction(ChatDetailsAction.OnSetGroupTimerClick) }
     )
     val removeTimer = TitleMenuItem(
         text = stringResource(Res.string.delete_group_timer),
         icon = Icons.Default.TimerOff,
-        onClick = { onAction(ChatDetailsMenuAction.RemoveGroupTimer) }
+        onClick = { onAction(ChatDetailsAction.OnRemoveGroupTimerClick) }
     )
     val leave = TitleMenuItem(
         text = stringResource(Res.string.leave_group),
         icon = Icons.AutoMirrored.Filled.Logout,
-        onClick = { onAction(ChatDetailsMenuAction.LeaveGroup) },
+        onClick = { onAction(ChatDetailsAction.OnLeaveGroupClick) },
         isDestructive = true
     )
     // Deleting the whole group for everyone is for admins only, the server rejects anyone else
     val delete = TitleMenuItem(
         text = stringResource(Res.string.delete_group),
         icon = Icons.Default.DeleteForever,
-        onClick = { onAction(ChatDetailsMenuAction.DeleteGroup) },
+        onClick = { onAction(ChatDetailsAction.OnDeleteGroupClick) },
         isDestructive = true
     )
     // Only the event's creator can delete it or detach it from the group (the dialog offers both)
     val deleteEvent = TitleMenuItem(
         text = stringResource(Res.string.delete_event),
         icon = Icons.Default.EventBusy,
-        onClick = { onAction(ChatDetailsMenuAction.DeleteEvent) },
+        onClick = { onAction(ChatDetailsAction.OnDeleteEventClick) },
         isDestructive = true
     )
     val wake = wakeMenuItem(onAction)
@@ -119,25 +105,25 @@ private fun groupMenuItems(
 }
 
 @Composable
-private fun userMenuItems(onAction: (ChatDetailsMenuAction) -> Unit): List<TitleMenuItem> = listOf(
+private fun userMenuItems(onAction: (ChatDetailsAction) -> Unit): List<TitleMenuItem> = listOf(
     TitleMenuItem(
         text = stringResource(Res.string.change_nickname),
         icon = Icons.Default.Edit,
-        onClick = { onAction(ChatDetailsMenuAction.Rename) }
+        onClick = { onAction(ChatDetailsAction.OnRenameClick) }
     ),
     wakeMenuItem(onAction),
     TitleMenuItem(
         text = stringResource(Res.string.remove_friend),
         icon = Icons.Default.PersonRemove,
-        onClick = { onAction(ChatDetailsMenuAction.RemoveFriend) },
+        onClick = { onAction(ChatDetailsAction.OnRemoveFriendClick) },
         isDestructive = true
     ),
 )
 
 // Waking is Android only - the receiving alarm service has no iOS/Desktop counterpart. Everyone may wake
 @Composable
-private fun wakeMenuItem(onAction: (ChatDetailsMenuAction) -> Unit) = TitleMenuItem(
+private fun wakeMenuItem(onAction: (ChatDetailsAction) -> Unit) = TitleMenuItem(
     text = stringResource(Res.string.wake_button),
     icon = Icons.Default.Alarm,
-    onClick = { onAction(ChatDetailsMenuAction.Wake) }
+    onClick = { onAction(ChatDetailsAction.OnWakeClick) }
 )

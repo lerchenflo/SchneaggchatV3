@@ -23,8 +23,6 @@
     <string name="feedbacksync">Feedback</string>
     <string name="mediasync">Media</string>
 
-    <string name="status_infotext">Din Status dean alle dine Freunde leasa künnand. Aktuell ischa leer.</string>
-    <string name="currentstatus">Din aktuella Status: %1$s</string>
 
 
     <string name="go_back">zruck</string>
@@ -143,17 +141,14 @@
     <string name="select_profile_pic">Suach da a profilbild us</string>
 
     <string name="status">Status:</string>
-    <string name="status_nosemicolon">Status</string>
 
     <string name="app_broken_desc">Behebt die meista fehler mit da App</string>
     <string name="app_broken_are_you_sure">Löscht alle Appdaten vom handy und startet d App neu.\nBisch da sicha dassd des willsch?</string>
     <string name="please_restart_app">Bitte start dine App neu</string>
     <string name="press_back_again_to_exit">Nomml zruck drucka zum Beenda</string>
     <string name="verification_email_sent">Verifizierungs-E-Mail gschickt</string>
-    <string name="others_say_about">Freunde hond über %1$s gschrieba:</string>
     <string name="status_info">Der Text isch vo eam verfasst worra</string>
     <string name="description_info_user">Alle Freunde vo %1$s künnand dean Text bearbeita, aber %1$s kannan nur leasa.</string>
-    <string name="description_info_group">Beschreibung ändra</string>
 
     <string name="become_beta_tester">Werd Beta Tester</string>
     <string name="become_beta_tester_desc">Kriag Updates mit neua Features &amp; Bugfixes schnealla als alle andra</string>
@@ -166,7 +161,6 @@
     <string name="birthday_turns_age">wird %1$d</string>
     <string name="no_birthdays">Kuana vo dina Freunde hot a Geburtsdatum gsetzt</string>
 
-    <string name="no_description">Kua Beschreibung</string>
     <string name="save">Speichra</string>
     <string name="close">Schlüßa</string>
     <string name="you_sender">Du</string>
@@ -202,7 +196,6 @@
     <string name="create_group">Gruppe erstella</string>
 
     <string name="members">Mitglieder</string>
-    <string name="info">Info</string>
     <string name="at_least_members">Du bruchsch mindestens %1$s Mitglieder in da Gruppe</string>
     <string name="group_name_missing">Bitte gib an Gruppanama i</string>
 
@@ -240,7 +233,6 @@
     <string name="event_create_group_info">Da Gruppenchat machts möglich, dass igladene Persona mitanand chatten künnand. Du kannschan später no dazuatua fallsas da andersch überlegsch.</string>
     <string name="event_no_group">Des Event hot kuan Gruppenchat</string>
     <string name="user_description">Userbeschreibung</string>
-    <string name="add_users_to_group">Mitglied hinzufüga</string>
     <string name="member_since">Dabei sit %1$s</string>
     <string name="change_group_name">Änder da Gruppanama</string>
 
@@ -688,7 +680,6 @@
     <string name="undercover_sniff_confirm_yes">Jo, mi Wort azoaga</string>
     <string name="undercover_sniff_hide">Verstecka</string>
 
-    <string name="your_friends_wrote_this">~ Dine Freunde</string>
     <string name="show_logs">Logs aschoua</string>
 
     <!-- polls -->
@@ -1484,7 +1475,6 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_chat_details">Chat-Details</string>
     <string name="ttt_chat_details_description">Tipp uf da Nama für d Chat-Details: teilte Bilder und Links, d Mitglieder vo na Gruppe und mehr.</string>
     <string name="ttt_chat_details_nickname">Nickname</string>
-    <string name="ttt_chat_details_nickname_description">Tipp uf da Nama und gib dinam Freund an Nickname. Er wird in dina Chats statt sim Nama azoagt.</string>
     <string name="ttt_chat_details_wake">Freund wecka</string>
     <string name="ttt_group_members">Gruppenmitglieder</string>
     <string name="ttt_group_members_description">Tipp uf a Mitglied, zum an Chat öffna oda a Freundschaftsafrog schicka; tipp ufs Bild, denn siahsch des groß. Admins tuand Mitglieder dazua, machand andre zu Admins und entfernand Mitglieder.</string>

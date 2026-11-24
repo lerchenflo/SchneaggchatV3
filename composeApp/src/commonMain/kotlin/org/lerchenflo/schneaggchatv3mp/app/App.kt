@@ -70,7 +70,7 @@ import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tourHighlightColor
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreenRoot
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays.BirthdaysScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
@@ -676,7 +676,7 @@ fun App() {
                                     )
                                 }
                                 entry<Route.ChatDetails> { route ->
-                                    ChatDetails(
+                                    ChatDetailsScreenRoot(
                                         chatId = route.chatId,
                                         isGroup = route.isGroup
                                     )

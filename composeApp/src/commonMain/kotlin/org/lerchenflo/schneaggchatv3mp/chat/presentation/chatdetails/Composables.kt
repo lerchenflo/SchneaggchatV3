@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,6 +23,10 @@ import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -29,7 +34,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +66,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.group_add_member_short
 import schneaggchatv3mp.composeapp.generated.resources.add_description_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.admin
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -112,12 +117,13 @@ fun ConfirmationDialog(
 }
 
 /**
- * Member rows of a group. The section header (title + count) and the "add members" row live in
- * ChatDetails, so this is only the list itself.
+ * Member rows of a group. The section header (title, count and the add button) lives in
+ * ChatDetailsScreen, so this is only the list itself.
  */
 @Composable
 fun GroupMembersView(
     ownId: String,
+    iAmAdmin: Boolean,
     members: List<GroupMemberWithUser>,
     navigateToChat:(chatId: String, isGroup: Boolean)-> Unit,
     changeAdminStatus:(groupMember: GroupMember)-> Unit,
@@ -125,7 +131,6 @@ fun GroupMembersView(
     /** Opens the unknown-user popup for a member who is not a friend. */
     openUnknownUser: (userId: String, name: String) -> Unit,
 ) {
-    val iAmAdmin = members.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
     val bigPicture = rememberBigPictureState()
 
     Column(
@@ -199,7 +204,7 @@ fun GroupMembersView(
 @Composable
 fun CommonGroupsView(
     groups: List<Group>,
-    viewmodel: ChatDetailsViewmodel
+    onOpenGroup: (groupId: String) -> Unit,
 ){
     val bigPicture = rememberBigPictureState()
 
@@ -211,7 +216,7 @@ fun CommonGroupsView(
                 profilePictureFilePath = group.profilePictureUrl,
                 name = group.name,
                 onClickText = {
-                    viewmodel.navigateToChat(group.id, true)
+                    onOpenGroup(group.id)
                 },
                 onClickImage = { bigPicture.show(group.profilePictureUrl) }
             )
@@ -408,18 +413,13 @@ fun UserOptionPopup(
 @Composable
 fun ChangeDescription(
     onDismiss: () -> Unit,
-    descriptionText: TextFieldValue = TextFieldValue(""),
-    updateDescription:() -> Unit = {},
-    updateDescriptionText:(value: TextFieldValue) -> Unit = {},
-    currentDescription: String?,
+    descriptionText: TextFieldValue,
+    updateDescription: () -> Unit,
+    updateDescriptionText: (value: TextFieldValue) -> Unit,
     isGroup: Boolean
 ){
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
-
-    LaunchedEffect(currentDescription) {
-        updateDescriptionText(TextFieldValue(currentDescription ?: ""))
-    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -540,4 +540,24 @@ fun AddUserToGroupPopup(
             )
         }
     )
+}
+
+/**
+ * Small tonal "+ Hinzufügen" button at the end of the group members header, for admins. Drawn
+ * 28 dp high without reserving the 48 dp minimum size, so the header keeps its height; Compose
+ * still widens its touch area to 48 dp.
+ */
+@Composable
+fun AddMemberButton(onClick: () -> Unit) {
+    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+        FilledTonalButton(
+            onClick = onClick,
+            contentPadding = PaddingValues(start = 6.dp, end = 10.dp),
+            modifier = Modifier.height(28.dp)
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(text = stringResource(Res.string.group_add_member_short), style = MaterialTheme.typography.labelMedium)
+        }
+    }
 }

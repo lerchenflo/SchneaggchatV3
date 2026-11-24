@@ -37,6 +37,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - @Annotations fix
 - Erwähnungen: Nachrichten an mich hervorgehoben, @-Badge in der Chatliste
 - Chatdetails: Aktionen im ⋮-Menü oben rechts
+- Chatdetails: Neues Design (Name im Titel, Badges für Timer und Geburtstag, Über-Karte für Status und Beschreibung)
 
 #### Bugfixes
 - Profilbild: Anzeige bei Nicht-Freunden behoben, leere Großansicht entfernt

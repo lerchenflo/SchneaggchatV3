@@ -30,8 +30,6 @@
     <string name="feedbacksync">Feedback</string>
     <string name="mediasync">Medien</string>
 
-    <string name="status_infotext">Dieser Status ist für alle deine Freunde lesbar. Aktuell ist er leer.</string>
-    <string name="currentstatus">Dein aktueller Status: %1$s</string>
 
 
     <string name="go_back">zurück</string>
@@ -149,17 +147,30 @@
     <string name="select_profile_pic">Wähle dein Profilbild aus</string>
 
     <string name="status">Status:</string>
-    <string name="status_nosemicolon">Status</string>
 
     <string name="app_broken_desc">Behebt die meisten gängigen Fehler mit der App</string>
     <string name="app_broken_are_you_sure">Dies wird die Lokale Datenbank löschen und erneut alle Daten vom Server herunterladen.\nBist du sicher dass du fortfahren willst?</string>
     <string name="please_restart_app">Bitte starte die App neu</string>
     <string name="press_back_again_to_exit">Nochmal zurück drücken zum Beenden</string>
     <string name="verification_email_sent">Verifizierungsemail gesendet</string>
-    <string name="others_say_about">Andere User haben über %1$s geschrieben:</string>
     <string name="status_info">Dieser Text wurde vom User verfasst</string>
     <string name="description_info_user">Alle Freunde von %1$s können diesen Text bearbeiten und %1$s kann ihn nur sehen.</string>
-    <string name="description_info_group">Ändere die Gruppenbeschreibung</string>
+    <string name="about_quote">„%1$s“</string>
+    <string name="chat_details_about_title">Über %1$s</string>
+    <string name="chat_details_status_says">%1$s sagt</string>
+    <string name="about_friends_say">Freunde sagen</string>
+    <string name="group_add_member_short">Hinzufügen</string>
+    <string name="user_settings_about_title">Über dich</string>
+    <string name="user_settings_you_say">Du sagst</string>
+    <string name="user_settings_status_empty">Noch kein Status. Alle deine Freunde sehen ihn.</string>
+    <string name="user_settings_status_set">Status setzen</string>
+    <string name="user_settings_friends_empty">Deine Freunde haben noch nichts über dich geschrieben.</string>
+    <string name="user_settings_friends_hint">Nur deine Freunde können das schreiben, du kannst es nicht ändern.</string>
+    <string name="chat_details_friends_about_empty">Noch hat niemand etwas über %1$s geschrieben.</string>
+    <string name="chat_details_friends_about_write_first">Als Erste:r schreiben</string>
+    <string name="chat_details_group_about_title">Über die Gruppe</string>
+    <string name="chat_details_group_about_empty">Die Gruppe hat noch keine Beschreibung.</string>
+    <string name="chat_details_group_about_write">Beschreibung schreiben</string>
 
     <string name="become_beta_tester">Werde Beta Tester</string>
     <string name="become_beta_tester_desc">Bekomme Updates mit neuen Features &amp; Bugfixes früher als alle anderen</string>
@@ -172,7 +183,6 @@
     <string name="birthday_turns_age">wird %1$d</string>
     <string name="no_birthdays">Keiner deiner Freunde hat ein Geburtsdatum gesetzt</string>
 
-    <string name="no_description">Keine Beschreibung</string>
     <string name="remove_friend">Freund entfernen</string>
     <string name="save">Speichern</string>
     <string name="close">Schliessen</string>
@@ -209,7 +219,6 @@
     <string name="create_group">Gruppe erstellen</string>
 
     <string name="members">Mitglieder</string>
-    <string name="info">Info</string>
     <string name="at_least_members">Du benötigst mindestens %1$s Mitglieder in der Gruppe</string>
     <string name="group_name_missing">Bitte gib einen Gruppennamen ein</string>
 
@@ -224,6 +233,7 @@
     <string name="group_expires_at">Läuft ab: %1$s</string>
     <string name="group_expires_in">Läuft ab in: %1$s</string>
     <string name="group_expired">Abgelaufen</string>
+    <string name="group_timer_label">Löschtimer</string>
     <string name="delete_group_timer">Gruppentimer löschen</string>
     <string name="confirm_delete_group_timer">Ablaufdatum dieser Gruppe entfernen? Sie läuft dann nicht mehr automatisch ab.</string>
     <string name="set_group_timer">Löschtimer festlegen</string>
@@ -249,7 +259,6 @@
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Gruppe verlassen</string>
     <string name="delete_group">Gruppe löschen</string>
-    <string name="add_users_to_group">Mitglied hinzufügen</string>
     <string name="member_since">Mitglied seit %1$s</string>
     <string name="change_group_name">Änderen den Gruppennamen</string>
     <string name="rename_group">Gruppe umbenennen</string>
@@ -703,7 +712,6 @@
     <string name="undercover_sniff_confirm_yes">Ja, mein Wort zeigen</string>
     <string name="undercover_sniff_hide">Verstecken</string>
 
-    <string name="your_friends_wrote_this">~ Deine Freunde</string>
     <string name="show_logs">Logs anzeigen</string>
 
     <!-- polls -->
@@ -1500,7 +1508,7 @@
     <string name="ttt_chat_details">Chat-Details</string>
     <string name="ttt_chat_details_description">Tippe auf den Namen für die Chat-Details: geteilte Bilder und Links, die Mitglieder einer Gruppe und mehr.</string>
     <string name="ttt_chat_details_nickname">Nickname</string>
-    <string name="ttt_chat_details_nickname_description">Tippe auf den Namen, um deinem Freund einen Nickname zu geben. Er steht in deinen Chats statt seines Namens.</string>
+    <string name="ttt_chat_details_nickname_description">Gib deinem Freund in diesem Menü einen Nickname. Er steht in deinen Chats statt seines Namens.</string>
     <string name="ttt_chat_details_wake">Freund wecken</string>
     <string name="ttt_chat_details_wake_description">Lass das Handy deines Freundes wie ein Wecker klingeln, auch wenn es lautlos ist, z. B. wenn er verschläft. Geht, wenn er Android nutzt und es in seinen Einstellungen erlaubt hat. Du findest es in diesem Menü.</string>
     <string name="ttt_group_members">Gruppenmitglieder</string>
