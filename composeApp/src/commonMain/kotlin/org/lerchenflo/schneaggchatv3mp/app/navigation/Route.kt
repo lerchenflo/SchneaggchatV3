@@ -126,8 +126,9 @@ sealed interface Route : NavKey {
     @Serializable
     data object SchneaggmapSettings: Route
 
+    /** [openEntryId]: entry whose details open right away, e.g. from a tapped `@feedback` link in a chat. */
     @Serializable
-    data object Feedback: Route
+    data class Feedback(val openEntryId: String? = null): Route
 
 
 

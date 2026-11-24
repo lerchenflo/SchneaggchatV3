@@ -19,6 +19,10 @@
     <string name="annotation_unknown_location_info">Dieser Ort wurde gelöscht oder nicht mit dir geteilt.</string>
     <string name="annotation_unknown_event_info">Dieses Event wurde gelöscht oder nicht mit dir geteilt.</string>
     <string name="annotation_unknown_game_info">Dieses Spiel gibt es in dieser App-Version nicht.</string>
+    <string name="unknown_feedback">nicht verfügbares Feedback</string>
+    <string name="annotation_unknown_feedback_info">Dieser Feedback-Eintrag wurde gelöscht oder ist noch nicht geladen.</string>
+    <string name="unknown_settings_page">nicht verfügbare Einstellungsseite</string>
+    <string name="annotation_unknown_settings_info">Diese Einstellungsseite gibt es in dieser App-Version nicht.</string>
     <string name="chat_last_seen_status">zuletzt Online %1$s</string>
 
     <string name="usersync">Benutzerdaten</string>
@@ -2238,7 +2242,7 @@
     <string name="featurequiz_map_places_none">Die Karte hat keine Orte</string>
     <string name="featurequiz_map_places_explanation">Orte sind nach Typ gruppiert und durchsuchbar. Auch Polizei und mobile Radare kann man melden.</string>
     <string name="featurequiz_annotations_question">Was kannst du in einer Nachricht mit @ erwähnen?</string>
-    <string name="featurequiz_annotations_answer_1">User, Orte, Spiele und Events</string>
+    <string name="featurequiz_annotations_answer_1">User, Orte, Events und mehr</string>
     <string name="featurequiz_annotations_answer_2">Nur User</string>
     <string name="featurequiz_annotations_answer_3">Nur User und Gruppen</string>
     <string name="featurequiz_annotations_none">Nichts, es gibt keine @-Erwähnungen</string>

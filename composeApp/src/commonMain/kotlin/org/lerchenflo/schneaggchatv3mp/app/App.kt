@@ -808,7 +808,7 @@ fun App() {
                                         miscSettingsViewModel = koinViewModel(),
                                         sharedSettingsViewmodel = koinViewModel(),
                                         onBackClick = { scope.launch { navigator.navigateBack() } },
-                                        navigateFeedback = { scope.launch { navigator.navigate(Route.Feedback) } }
+                                        navigateFeedback = { scope.launch { navigator.navigate(Route.Feedback()) } }
                                     )
                                 }
 
@@ -820,8 +820,8 @@ fun App() {
                                     )
                                 }
 
-                                entry<Route.Feedback> {
-                                    FeedbackScreenRoot()
+                                entry<Route.Feedback> { route ->
+                                    FeedbackScreenRoot(openEntryId = route.openEntryId)
                                 }
 
                                 entry<Route.EventDetail> {

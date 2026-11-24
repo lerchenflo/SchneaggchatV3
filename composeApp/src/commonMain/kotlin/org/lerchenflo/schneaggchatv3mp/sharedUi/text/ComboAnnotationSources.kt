@@ -17,8 +17,10 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.annotations.ComboAnnotationTypes
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.annotation_unknown_event_info
+import schneaggchatv3mp.composeapp.generated.resources.annotation_unknown_feedback_info
 import schneaggchatv3mp.composeapp.generated.resources.annotation_unknown_game_info
 import schneaggchatv3mp.composeapp.generated.resources.annotation_unknown_location_info
+import schneaggchatv3mp.composeapp.generated.resources.annotation_unknown_settings_info
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
 import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_title
@@ -33,8 +35,10 @@ import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 import schneaggchatv3mp.composeapp.generated.resources.games_tictactoe_title
 import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
 import schneaggchatv3mp.composeapp.generated.resources.unknown_event
+import schneaggchatv3mp.composeapp.generated.resources.unknown_feedback
 import schneaggchatv3mp.composeapp.generated.resources.unknown_game
 import schneaggchatv3mp.composeapp.generated.resources.unknown_location
+import schneaggchatv3mp.composeapp.generated.resources.unknown_settings_page
 import kotlin.time.Clock
 
 /**
@@ -60,6 +64,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     val locationNames by annotationNames.locationNames.collectAsState()
     val userNames by annotationNames.userNames.collectAsState()
     val eventNames by annotationNames.eventNames.collectAsState()
+    val feedbackNames by annotationNames.feedbackNames.collectAsState()
     val friendIds by annotationNames.friendIds.collectAsState()
 
     val userNameText = rememberUserIdentityNameText()
@@ -70,6 +75,11 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     val unknownLocationInfo = stringResource(Res.string.annotation_unknown_location_info)
     val unknownEventInfo = stringResource(Res.string.annotation_unknown_event_info)
     val unknownGameInfo = stringResource(Res.string.annotation_unknown_game_info)
+    val unknownFeedback = stringResource(Res.string.unknown_feedback)
+    val unknownFeedbackInfo = stringResource(Res.string.annotation_unknown_feedback_info)
+    val unknownSettingsPage = stringResource(Res.string.unknown_settings_page)
+    val unknownSettingsInfo = stringResource(Res.string.annotation_unknown_settings_info)
+    val settingsNames = SettingsAnnotationPage.entries.associate { it.key to stringResource(it.title) }
 
     val gameTetrisTitle = stringResource(Res.string.games_tetris_title)
     val gameTowerstackTitle = stringResource(Res.string.games_stack_tower)
@@ -108,8 +118,9 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     }
 
     return remember(
-        locationNames, userNames, gameNames, eventNames, friendIds, userNameText,
-        unknownLocation, unknownEvent, unknownGame, unknownLocationInfo, unknownEventInfo, unknownGameInfo
+        locationNames, userNames, gameNames, eventNames, feedbackNames, settingsNames, friendIds, userNameText,
+        unknownLocation, unknownEvent, unknownGame, unknownLocationInfo, unknownEventInfo, unknownGameInfo,
+        unknownFeedback, unknownFeedbackInfo, unknownSettingsPage, unknownSettingsInfo
     ) {
         // A friend opens the chat; anyone else (also a user not stored here) gets the
         // unknown-user popup, which looks up what it can and offers a friend request
@@ -182,6 +193,25 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                         else -> Route.GamesSelector
                     }
                     scope.launch { navigator.navigate(route) }
+                }
+            ),
+            ComboAnnotationSource(
+                type = ComboAnnotationTypes.FEEDBACK,
+                names = feedbackNames,
+                unresolvedName = unknownFeedback,
+                onUnresolvedClick = { SnackbarManager.showMessage(unknownFeedbackInfo) },
+                onClick = { entryId ->
+                    scope.launch { navigator.navigate(Route.Feedback(openEntryId = entryId)) }
+                }
+            ),
+            ComboAnnotationSource(
+                type = ComboAnnotationTypes.SETTINGS,
+                names = settingsNames,
+                unresolvedName = unknownSettingsPage,
+                onUnresolvedClick = { SnackbarManager.showMessage(unknownSettingsInfo) },
+                onClick = { key ->
+                    val page = SettingsAnnotationPage.of(key) ?: return@ComboAnnotationSource
+                    scope.launch { navigator.navigate(page.route) }
                 }
             )
         )

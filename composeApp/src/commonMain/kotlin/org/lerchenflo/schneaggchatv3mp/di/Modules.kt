@@ -645,5 +645,14 @@ val sharedmodule = module{
 
     viewModelOf(::SchneaggmapSettingsViewModel)
 
-    viewModelOf(::FeedbackViewModel)
+    viewModel { (openEntryId: String?) ->
+        FeedbackViewModel(
+            openEntryId = openEntryId,
+            feedbackRepository = get(),
+            userIdentityRepository = get(),
+            navigator = get(),
+            applicationScope = get(),
+            errorChannel = get(),
+        )
+    }
 }

@@ -33,4 +33,8 @@ object ComboAnnotationTypes {
     val USER = ComboAnnotationType(key = "user", displayPrefix = "👤")
     val GAME = ComboAnnotationType(key = "game", displayPrefix = "🎮")
     val EVENT = ComboAnnotationType(key = "event", displayPrefix = "📅")
+    /** A feature request or bug report of the feedback board. */
+    val FEEDBACK = ComboAnnotationType(key = "feedback", displayPrefix = "💡")
+    /** A settings page; the id is a slug key like the games' (see SettingsAnnotationPage). */
+    val SETTINGS = ComboAnnotationType(key = "settings", displayPrefix = "⚙️")
 }

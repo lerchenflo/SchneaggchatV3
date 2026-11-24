@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackMark
@@ -74,8 +75,8 @@ import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title
 import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title_with_count
 
 @Composable
-fun FeedbackScreenRoot() {
-    val viewModel = koinViewModel<FeedbackViewModel>()
+fun FeedbackScreenRoot(openEntryId: String? = null) {
+    val viewModel = koinViewModel<FeedbackViewModel> { parametersOf(openEntryId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     FeedbackScreen(

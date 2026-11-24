@@ -19,6 +19,10 @@
     <string name="annotation_unknown_location_info">This place was deleted or isn't shared with you.</string>
     <string name="annotation_unknown_event_info">This event was deleted or isn't shared with you.</string>
     <string name="annotation_unknown_game_info">This game isn't available in this version of the app.</string>
+    <string name="unknown_feedback">unavailable feedback</string>
+    <string name="annotation_unknown_feedback_info">This feedback entry was deleted or isn't loaded yet.</string>
+    <string name="unknown_settings_page">unavailable settings page</string>
+    <string name="annotation_unknown_settings_info">This settings page isn't available in this version of the app.</string>
     <string name="chat_last_seen_status">last seen %1$s</string>
 
     <string name="usersync">userdata</string>
@@ -2238,7 +2242,7 @@
     <string name="featurequiz_map_places_none">The map has no places</string>
     <string name="featurequiz_map_places_explanation">Places are grouped by type and searchable. Police and mobile radars can be reported too.</string>
     <string name="featurequiz_annotations_question">What can you mention with @ in a message?</string>
-    <string name="featurequiz_annotations_answer_1">Users, places, games and events</string>
+    <string name="featurequiz_annotations_answer_1">Users, places, events and more</string>
     <string name="featurequiz_annotations_answer_2">Only users</string>
     <string name="featurequiz_annotations_answer_3">Only users and groups</string>
     <string name="featurequiz_annotations_none">Nothing, there are no @ mentions</string>

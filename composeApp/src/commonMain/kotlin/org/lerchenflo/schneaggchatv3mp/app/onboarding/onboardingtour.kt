@@ -301,7 +301,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     id = "feedback_requests_tab",
                     title = Res.string.ttt_feedback_requests,
                     description = Res.string.ttt_feedback_requests_description,
-                    route = Route.Feedback,
+                    route = Route.Feedback(),
                     tags = setOf(TourTags.FEEDBACK_REQUESTS),
                 )
 
@@ -310,7 +310,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     id = "feedback_create_button",
                     title = Res.string.ttt_feedback_create,
                     description = Res.string.ttt_feedback_create_description,
-                    route = Route.Feedback,
+                    route = Route.Feedback(),
                     tags = setOf(TourTags.FEEDBACK_CREATE),
                 )
 
@@ -318,7 +318,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     id = "feedback_feature_quiz_button",
                     title = Res.string.ttt_feedback_quiz,
                     description = Res.string.ttt_feedback_quiz_description,
-                    route = Route.Feedback
+                    route = Route.Feedback()
                 )
             }
 
