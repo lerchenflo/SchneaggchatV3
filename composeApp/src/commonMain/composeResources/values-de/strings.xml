@@ -841,9 +841,9 @@
 
     <!-- Bug Report Dialog -->
     <!-- Games: Yatzi -->
-    <string name="games_yahtzee_title">Yahtzee</string>
-    <string name="yatzi_setup_title">Yahtzee Einstellungen</string>
-    <string name="yatzi_game_title">Yahtzee Spiel</string>
+    <string name="games_yahtzee_title">Würfelpoker</string>
+    <string name="yatzi_setup_title">Würfelpoker Einstellungen</string>
+    <string name="yatzi_game_title">Würfelpoker Spiel</string>
     <string name="yatzi_add_manage_players">Spielerverwaltung</string>
     <string name="yatzi_players">Spieler:</string>
     <string name="yatzi_start_game">Spiel starten</string>
@@ -872,7 +872,7 @@
 
 
     <!-- Games: Tetris -->
-    <string name="games_tetris_title">Tetris</string>
+    <string name="games_tetris_title">Blockfall</string>
     <string name="games_tetris_score">Punkte: %1$d</string>
     <string name="games_tetris_pause_resume">Pause/Fortsetzen</string>
     <string name="games_tetris_restart">Neustart</string>
@@ -894,12 +894,10 @@
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Kreuzworträtsel</string>
-    <string name="games_crossword_instructions">Löse so viele Kreuzworträtsel, wie du willst! Tippe auf ein Feld, um es auszuwählen, tippe erneut, um zwischen waagrecht und senkrecht zu wechseln, und schreibe mit der Tastatur unten. Die englischen Rätsel werden zufällig aus dem öffentlichen NYT-Archiv gezogen, die deutschen werden jedes Mal neu generiert. Je größer das gelöste Gitter und je schneller du bist, desto besser dein Platz in der Rangliste.</string>
+    <string name="games_crossword_instructions">Löse so viele Kreuzworträtsel, wie du willst! Tippe auf ein Feld, um es auszuwählen, tippe erneut, um zwischen waagrecht und senkrecht zu wechseln, und schreibe mit der Tastatur unten. Jedes Rätsel wird neu generiert, auf Englisch und auf Deutsch. Je größer das gelöste Gitter und je schneller du bist, desto besser dein Platz in der Rangliste.</string>
     <string name="games_crossword_language_question">Wähle deine Rätselsprache</string>
-    <string name="games_crossword_language_english">Englisch (NYT-Archiv)</string>
+    <string name="games_crossword_language_english">Englisch</string>
     <string name="games_crossword_language_german">Deutsch</string>
-    <string name="games_crossword_load_failed">Das Rätsel konnte nicht geladen werden. Prüfe deine Internetverbindung und versuche es erneut.</string>
-    <string name="games_crossword_retry">Erneut versuchen</string>
     <string name="games_crossword_check">Antworten prüfen</string>
     <string name="games_crossword_restart">Neu starten</string>
     <string name="games_crossword_solved">Gelöst in %1$s!</string>
@@ -908,17 +906,14 @@
     <string name="games_crossword_new_puzzle">Neues Rätsel</string>
 
     <!-- Games: Wordle -->
-    <string name="games_wordle_title">Wordle</string>
-    <string name="games_wordle_instructions">Errate das Wort aus fünf Buchstaben in sechs Versuchen – so oft du willst! Sobald eine Reihe voll ist, wird sie automatisch geprüft: Grün heißt, der Buchstabe steht an der richtigen Stelle, Orange heißt, er kommt im Wort vor, aber woanders, und Grau heißt, er kommt gar nicht vor.\n\nDie englischen Wörter sind echte Lösungen der New York Times, zufällig gezogen, die deutschen kommen aus unserer eigenen Liste. Je weniger Buchstaben du brauchst und je schneller du bist, desto besser dein Platz in der Rangliste.</string>
+    <string name="games_wordle_title">Wörter raten</string>
+    <string name="games_wordle_instructions">Errate das Wort aus fünf Buchstaben in sechs Versuchen – so oft du willst! Sobald eine Reihe voll ist, wird sie automatisch geprüft: Grün heißt, der Buchstabe steht an der richtigen Stelle, Orange heißt, er kommt im Wort vor, aber woanders, und Grau heißt, er kommt gar nicht vor.\n\nDie englischen und deutschen Wörter kommen aus unseren eigenen Listen. Je weniger Buchstaben du brauchst und je schneller du bist, desto besser dein Platz in der Rangliste.</string>
     <string name="games_wordle_language_question">Wähle deine Wortsprache</string>
-    <string name="games_wordle_language_english">Englisch (NYT Wordle)</string>
+    <string name="games_wordle_language_english">Englisch</string>
     <string name="games_wordle_language_german">Deutsch</string>
-    <string name="games_wordle_load_failed">Das Wort konnte nicht geladen werden. Prüfe deine Internetverbindung und versuche es erneut.</string>
-    <string name="games_wordle_retry">Erneut versuchen</string>
     <string name="games_wordle_guess_counter">Versuche %1$d / %2$d</string>
     <string name="games_wordle_new_word">Neues Wort</string>
     <string name="games_wordle_too_short">Zu wenige Buchstaben</string>
-    <string name="games_wordle_unknown_word">%1$s steht nicht in der Wortliste</string>
     <string name="games_wordle_delete">Buchstabe löschen</string>
     <string name="games_wordle_solved">Gelöst in %1$d von %2$d Versuchen · %3$s</string>
     <string name="games_wordle_failed">Keine Versuche mehr! Das Wort war %1$s</string>
@@ -1214,7 +1209,7 @@
     <string name="game_restart">Neustart</string>
     <string name="show_highscores">Bestenliste anzeigen</string>
     <string name="global_ranking_title">Gesamtwertung</string>
-    <string name="global_ranking_explanation">Punkte über alle Spiele mit Bestenliste. Partyspiele auf einem Gerät (Yahtzee, Dartcounter, Undercover) zählen nicht.</string>
+    <string name="global_ranking_explanation">Punkte über alle Spiele mit Bestenliste. Partyspiele auf einem Gerät (Würfelpoker, Dartcounter, Undercover) zählen nicht.</string>
     <string name="global_ranking_error">Rangliste konnte nicht geladen werden</string>
     <string name="global_ranking_empty">Es hat noch niemand gespielt</string>
     <string name="global_ranking_points">%1$d Pkt.</string>
@@ -2169,11 +2164,11 @@
     <string name="featurequiz_event_title_answer_3">100 Zeichen</string>
     <string name="featurequiz_event_title_none">Es gibt keine Events in Schneaggchat</string>
     <string name="featurequiz_event_title_explanation">Ein Event kann einen eigenen Gruppenchat mit seinem Titel als Namen bekommen, darum gilt dasselbe Limit wie für Gruppennamen.</string>
-    <string name="featurequiz_wordle_question">Wie viele Versuche hast du bei Wordle?</string>
+    <string name="featurequiz_wordle_question">Wie viele Versuche hast du bei Wörter raten?</string>
     <string name="featurequiz_wordle_answer_1">6</string>
     <string name="featurequiz_wordle_answer_2">5</string>
     <string name="featurequiz_wordle_answer_3">8</string>
-    <string name="featurequiz_wordle_none">Es gibt kein Wordle in Schneaggchat</string>
+    <string name="featurequiz_wordle_none">Es gibt kein Wörter raten in Schneaggchat</string>
     <string name="featurequiz_wordle_explanation">Errate das Wort mit fünf Buchstaben in sechs Versuchen. Mit weniger Versuchen landest du weiter oben in der Bestenliste.</string>
     <string name="featurequiz_tictactoe_question">Wie viele Leute können auf einem Handy Tic Tac Toe spielen?</string>
     <string name="featurequiz_tictactoe_answer_1">Bis zu 4</string>
@@ -2276,18 +2271,18 @@
     <string name="featurequiz_crossword_answer_2">Jede Woche</string>
     <string name="featurequiz_crossword_answer_3">Jeden Monat</string>
     <string name="featurequiz_crossword_none">Es gibt kein Kreuzworträtsel</string>
-    <string name="featurequiz_crossword_explanation">Die englischen Rätsel kommen aus dem Archiv der New York Times, die deutschen werden jedes Mal neu erstellt.</string>
+    <string name="featurequiz_crossword_explanation">Die englischen und die deutschen Rätsel werden jedes Mal neu erstellt.</string>
     <string name="featurequiz_game_2048_question">Was passiert bei 2048, wenn sich zwei Felder mit derselben Zahl berühren?</string>
     <string name="featurequiz_game_2048_answer_1">Sie verschmelzen zu einem Feld</string>
     <string name="featurequiz_game_2048_answer_2">Beide verschwinden</string>
     <string name="featurequiz_game_2048_answer_3">Sie tauschen die Plätze</string>
     <string name="featurequiz_game_2048_none">Es gibt kein 2048</string>
     <string name="featurequiz_game_2048_explanation">Wische, um alle Felder zu verschieben, und erreiche das 2048-Feld. Auf höherer Schwierigkeit wird das Feld kleiner.</string>
-    <string name="featurequiz_tetris_question">Wie lässt du einen Tetris-Stein schnell fallen?</string>
+    <string name="featurequiz_tetris_question">Wie lässt du einen Blockfall-Stein schnell fallen?</string>
     <string name="featurequiz_tetris_answer_1">Nach unten wischen oder halten</string>
     <string name="featurequiz_tetris_answer_2">Doppelt tippen</string>
     <string name="featurequiz_tetris_answer_3">Das Handy schütteln</string>
-    <string name="featurequiz_tetris_none">Es gibt kein Tetris</string>
+    <string name="featurequiz_tetris_none">Es gibt kein Blockfall</string>
     <string name="featurequiz_tetris_explanation">Tippen dreht den Stein. Volle Reihen bringen Punkte, und das Spiel wird mit der Zeit schneller.</string>
     <string name="featurequiz_grid_rush_question">Wie räumst du Felder in Grid Rush ab?</string>
     <string name="featurequiz_grid_rush_answer_1">Eine Linie durch 2 oder mehr benachbarte Felder derselben Farbe ziehen</string>
@@ -2307,12 +2302,12 @@
     <string name="featurequiz_morse_answer_3">Mit einem Wischer</string>
     <string name="featurequiz_morse_none">Es gibt kein Morse-Spiel</string>
     <string name="featurequiz_morse_explanation">Ein kurzer Druck ist ein Punkt, ein langer ein Strich. Jeder richtige Buchstabe bringt Punkte.</string>
-    <string name="featurequiz_yahtzee_question">Was passiert mit den Punkten, wenn ein Yahtzee-Spiel auf einem Handy endet?</string>
+    <string name="featurequiz_yahtzee_question">Was passiert mit den Punkten, wenn ein Würfelpoker-Spiel auf einem Handy endet?</string>
     <string name="featurequiz_yahtzee_answer_1">Die Ergebnisse aller Spieler können in die Highscores</string>
     <string name="featurequiz_yahtzee_answer_2">Nur die Punkte des Gewinners werden gespeichert</string>
     <string name="featurequiz_yahtzee_answer_3">Nichts wird gespeichert</string>
-    <string name="featurequiz_yahtzee_none">Es gibt kein Yahtzee</string>
-    <string name="featurequiz_yahtzee_explanation">Yahtzee spielen mehrere Leute auf einem Handy, unter Spiele → Multiplayer.</string>
+    <string name="featurequiz_yahtzee_none">Es gibt kein Würfelpoker</string>
+    <string name="featurequiz_yahtzee_explanation">Würfelpoker spielen mehrere Leute auf einem Handy, unter Spiele → Multiplayer.</string>
     <string name="featurequiz_undercover_question">Was bekommen die Undercover-Spieler bei Undercover?</string>
     <string name="featurequiz_undercover_answer_1">Ein anderes Wort als die anderen</string>
     <string name="featurequiz_undercover_answer_2">Dasselbe Wort wie alle</string>

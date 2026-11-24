@@ -835,9 +835,9 @@
 
     <!-- Bug Report Dialog -->
     <!-- Games: Yatzi -->
-    <string name="games_yahtzee_title">Yahtzee</string>
-    <string name="yatzi_setup_title">Configurazione Yahtzee</string>
-    <string name="yatzi_game_title">Partita Yahtzee</string>
+    <string name="games_yahtzee_title">Poker di dadi</string>
+    <string name="yatzi_setup_title">Configurazione Poker di dadi</string>
+    <string name="yatzi_game_title">Partita a Poker di dadi</string>
     <string name="yatzi_add_manage_players">Aggiungi / Gestisci giocatori</string>
     <string name="yatzi_players">Giocatori:</string>
     <string name="yatzi_start_game">Inizia partita</string>
@@ -866,7 +866,7 @@
 
 
     <!-- Games: Tetris -->
-    <string name="games_tetris_title">Tetris</string>
+    <string name="games_tetris_title">Blockfall</string>
     <string name="games_tetris_score">Punteggio: %1$d</string>
     <string name="games_tetris_pause_resume">Pausa/Riprendi</string>
     <string name="games_tetris_restart">Ricomincia</string>
@@ -888,12 +888,10 @@
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Cruciverba</string>
-    <string name="games_crossword_instructions">Risolvi tutti i cruciverba che vuoi! Tocca una casella per selezionarla, tocca di nuovo per passare da orizzontale a verticale e scrivi con la tastiera qui sotto. I cruciverba inglesi vengono estratti a caso dall'archivio pubblico del NYT, quelli tedeschi vengono generati ogni volta. Più grande è la griglia che risolvi e più sei veloce, migliore è il tuo posto in classifica.</string>
+    <string name="games_crossword_instructions">Risolvi tutti i cruciverba che vuoi! Tocca una casella per selezionarla, tocca di nuovo per passare da orizzontale a verticale e scrivi con la tastiera qui sotto. Ogni cruciverba viene generato da zero, in inglese e in tedesco. Più grande è la griglia che risolvi e più sei veloce, migliore è il tuo posto in classifica.</string>
     <string name="games_crossword_language_question">Scegli la lingua del cruciverba</string>
-    <string name="games_crossword_language_english">Inglese (archivio NYT)</string>
+    <string name="games_crossword_language_english">Inglese</string>
     <string name="games_crossword_language_german">Tedesco</string>
-    <string name="games_crossword_load_failed">Impossibile caricare il cruciverba. Controlla la connessione a internet e riprova.</string>
-    <string name="games_crossword_retry">Riprova</string>
     <string name="games_crossword_check">Controlla risposte</string>
     <string name="games_crossword_restart">Ricomincia</string>
     <string name="games_crossword_solved">Risolto in %1$s!</string>
@@ -902,17 +900,14 @@
     <string name="games_crossword_new_puzzle">Nuovo cruciverba</string>
 
     <!-- Games: Wordle -->
-    <string name="games_wordle_title">Wordle</string>
-    <string name="games_wordle_instructions">Indovina la parola di cinque lettere in sei tentativi, quante volte vuoi! Appena una riga è piena viene controllata automaticamente: verde significa che la lettera è al posto giusto, arancione significa che è nella parola ma altrove, e grigio significa che non c\'è affatto.\n\nLe parole inglesi sono vere soluzioni del New York Times estratte a caso, quelle tedesche vengono dal nostro elenco. Meno lettere ti servono e più sei veloce, migliore è il tuo posto in classifica.</string>
+    <string name="games_wordle_title">Indovina la parola</string>
+    <string name="games_wordle_instructions">Indovina la parola di cinque lettere in sei tentativi, quante volte vuoi! Appena una riga è piena viene controllata automaticamente: verde significa che la lettera è al posto giusto, arancione significa che è nella parola ma altrove, e grigio significa che non c\'è affatto.\n\nLe parole inglesi e tedesche vengono dai nostri elenchi. Meno lettere ti servono e più sei veloce, migliore è il tuo posto in classifica.</string>
     <string name="games_wordle_language_question">Scegli la lingua della parola</string>
-    <string name="games_wordle_language_english">Inglese (NYT Wordle)</string>
+    <string name="games_wordle_language_english">Inglese</string>
     <string name="games_wordle_language_german">Tedesco</string>
-    <string name="games_wordle_load_failed">Impossibile caricare la parola. Controlla la connessione a internet e riprova.</string>
-    <string name="games_wordle_retry">Riprova</string>
     <string name="games_wordle_guess_counter">Tentativi %1$d / %2$d</string>
     <string name="games_wordle_new_word">Nuova parola</string>
     <string name="games_wordle_too_short">Lettere insufficienti</string>
-    <string name="games_wordle_unknown_word">%1$s non è nell\'elenco delle parole</string>
     <string name="games_wordle_delete">Cancella lettera</string>
     <string name="games_wordle_solved">Risolto in %1$d tentativi su %2$d · %3$s</string>
     <string name="games_wordle_failed">Tentativi esauriti! La parola era %1$s</string>
@@ -1208,7 +1203,7 @@
     <string name="game_restart">Ricomincia</string>
     <string name="show_highscores">Mostra classifiche</string>
     <string name="global_ranking_title">Classifica generale</string>
-    <string name="global_ranking_explanation">Punti su tutti i giochi con classifica. I giochi di gruppo su un solo dispositivo (Yahtzee, Dartcounter, Undercover) non contano.</string>
+    <string name="global_ranking_explanation">Punti su tutti i giochi con classifica. I giochi di gruppo su un solo dispositivo (Poker di dadi, Dartcounter, Undercover) non contano.</string>
     <string name="global_ranking_error">Impossibile caricare la classifica</string>
     <string name="global_ranking_empty">Nessuno ha ancora giocato</string>
     <string name="global_ranking_points">%1$d pt</string>
@@ -2163,11 +2158,11 @@
     <string name="featurequiz_event_title_answer_3">100 caratteri</string>
     <string name="featurequiz_event_title_none">In Schneaggchat non ci sono eventi</string>
     <string name="featurequiz_event_title_explanation">Un evento può avere una propria chat di gruppo con il suo titolo come nome, quindi il titolo ha lo stesso limite dei nomi dei gruppi.</string>
-    <string name="featurequiz_wordle_question">Quanti tentativi hai a Wordle?</string>
+    <string name="featurequiz_wordle_question">Quanti tentativi hai a Indovina la parola?</string>
     <string name="featurequiz_wordle_answer_1">6</string>
     <string name="featurequiz_wordle_answer_2">5</string>
     <string name="featurequiz_wordle_answer_3">8</string>
-    <string name="featurequiz_wordle_none">In Schneaggchat non c'è Wordle</string>
+    <string name="featurequiz_wordle_none">In Schneaggchat non c'è Indovina la parola</string>
     <string name="featurequiz_wordle_explanation">Indovina la parola di cinque lettere in sei tentativi. Con meno tentativi sali in classifica.</string>
     <string name="featurequiz_tictactoe_question">Quanti giocatori possono giocare a Tic Tac Toe su un solo telefono?</string>
     <string name="featurequiz_tictactoe_answer_1">Fino a 4</string>
@@ -2270,18 +2265,18 @@
     <string name="featurequiz_crossword_answer_2">Ogni settimana</string>
     <string name="featurequiz_crossword_answer_3">Ogni mese</string>
     <string name="featurequiz_crossword_none">Il cruciverba non esiste</string>
-    <string name="featurequiz_crossword_explanation">I cruciverba inglesi vengono dall'archivio del New York Times, quelli tedeschi vengono generati ogni volta.</string>
+    <string name="featurequiz_crossword_explanation">I cruciverba inglesi e tedeschi vengono generati ogni volta.</string>
     <string name="featurequiz_game_2048_question">Cosa succede in 2048 quando due tessere con lo stesso numero si toccano?</string>
     <string name="featurequiz_game_2048_answer_1">Si uniscono in una tessera</string>
     <string name="featurequiz_game_2048_answer_2">Spariscono entrambe</string>
     <string name="featurequiz_game_2048_answer_3">Si scambiano di posto</string>
     <string name="featurequiz_game_2048_none">2048 non esiste</string>
     <string name="featurequiz_game_2048_explanation">Scorri per spostare tutte le tessere e raggiungi la tessera 2048. Con difficoltà più alta il campo si rimpicciolisce.</string>
-    <string name="featurequiz_tetris_question">Come fai cadere velocemente un pezzo di Tetris?</string>
+    <string name="featurequiz_tetris_question">Come fai cadere velocemente un pezzo di Blockfall?</string>
     <string name="featurequiz_tetris_answer_1">Scorri verso il basso o tieni premuto</string>
     <string name="featurequiz_tetris_answer_2">Tocca due volte</string>
     <string name="featurequiz_tetris_answer_3">Scuoti il telefono</string>
-    <string name="featurequiz_tetris_none">Tetris non esiste</string>
+    <string name="featurequiz_tetris_none">Blockfall non esiste</string>
     <string name="featurequiz_tetris_explanation">Tocca per ruotare. Le righe complete danno punti e il gioco diventa più veloce col tempo.</string>
     <string name="featurequiz_grid_rush_question">Come elimini le tessere in Grid Rush?</string>
     <string name="featurequiz_grid_rush_answer_1">Trascina una linea su 2 o più tessere vicine dello stesso colore</string>
@@ -2301,12 +2296,12 @@
     <string name="featurequiz_morse_answer_3">Con uno scorrimento</string>
     <string name="featurequiz_morse_none">Il gioco Morse non esiste</string>
     <string name="featurequiz_morse_explanation">Una pressione breve è un punto, una lunga una linea. Ogni lettera giusta dà punti.</string>
-    <string name="featurequiz_yahtzee_question">Cosa succede ai punteggi quando finisce una partita a Yahtzee su un telefono?</string>
+    <string name="featurequiz_yahtzee_question">Cosa succede ai punteggi quando finisce una partita a Poker di dadi su un telefono?</string>
     <string name="featurequiz_yahtzee_answer_1">I risultati di tutti i giocatori possono andare in classifica</string>
     <string name="featurequiz_yahtzee_answer_2">Viene salvato solo il punteggio del vincitore</string>
     <string name="featurequiz_yahtzee_answer_3">Non viene salvato niente</string>
-    <string name="featurequiz_yahtzee_none">Yahtzee non esiste</string>
-    <string name="featurequiz_yahtzee_explanation">A Yahtzee giocano più persone su un solo telefono, in Giochi → Multiplayer.</string>
+    <string name="featurequiz_yahtzee_none">Poker di dadi non esiste</string>
+    <string name="featurequiz_yahtzee_explanation">A Poker di dadi giocano più persone su un solo telefono, in Giochi → Multiplayer.</string>
     <string name="featurequiz_undercover_question">Cosa ricevono gli impostori in Undercover?</string>
     <string name="featurequiz_undercover_answer_1">Una parola diversa dagli altri</string>
     <string name="featurequiz_undercover_answer_2">La stessa parola di tutti</string>

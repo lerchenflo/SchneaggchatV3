@@ -7,7 +7,6 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordPuzzle
 
 sealed interface CrosswordAction {
     data class SelectLanguage(val language: CrosswordLanguage) : CrosswordAction
-    data object RetryLoad : CrosswordAction
     /** Screen is leaving (back, rotation, tab switch): keep the progress for the next visit. */
     /** The screen became visible; the clock only runs while someone is looking at it. */
     data object EnterGame : CrosswordAction
@@ -27,8 +26,6 @@ sealed interface CrosswordAction {
 
 data class CrosswordState(
     val language: CrosswordLanguage? = null,
-    val isLoading: Boolean = false,
-    val loadFailed: Boolean = false,
     val puzzle: CrosswordPuzzle? = null,
     /** Row-major user letters; null = empty (and always null on block cells). */
     val entries: List<Char?> = emptyList(),

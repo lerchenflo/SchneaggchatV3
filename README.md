@@ -39,6 +39,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Chatdetails: Aktionen im ⋮-Menü oben rechts
 - Chatdetails: Neues Design (Name im Titel, Badges für Timer und Geburtstag, Über-Karte für Status und Beschreibung)
 - Chat: Verlinkungen zu Feedback-Einträgen und Einstellungsseiten (@feedback, @settings)
+- Spiele: Neue Namen (Blockfall, Würfelpoker, Wörter raten); englische Wörter und Kreuzworträtsel aus eigenen Listen statt von der NYT, mehr deutsche Wörter
 
 #### Bugfixes
 - Profilbild: Anzeige bei Nicht-Freunden behoben, leere Großansicht entfernt

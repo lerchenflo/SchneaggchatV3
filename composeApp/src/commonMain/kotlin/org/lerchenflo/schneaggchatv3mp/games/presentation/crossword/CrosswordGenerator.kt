@@ -13,8 +13,14 @@ private const val MAX_ATTEMPTS = 30
 private const val FLAG_ACROSS = 1
 private const val FLAG_DOWN = 2
 
+/** One answer word (A-Z only) with its clue, as the word lists hold them. */
+data class CrosswordEntry(
+    val word: String,
+    val clue: String,
+)
+
 private data class Placement(
-    val entry: GermanCrosswordEntry,
+    val entry: CrosswordEntry,
     val row: Int,
     val col: Int,
     val direction: CrosswordDirection,
@@ -30,17 +36,17 @@ private class Workspace {
 }
 
 /**
- * Generates a German crossword from [seed] — the same seed always reproduces the
+ * Generates a crossword from [words] and [seed] — the same seed always reproduces the
  * same puzzle, so a restart replays the grid the player is already on while a
  * fresh seed hands out a new one. Criss-cross style: words interlock on shared
  * letters, remaining cells are unused (rendered like blocks), built from the
  * local word/clue list.
  */
-fun generateGermanCrosswordPuzzle(seed: Long): CrosswordPuzzle {
+fun generateCrosswordPuzzle(words: List<CrosswordEntry>, seed: Long): CrosswordPuzzle {
     var best: List<Placement> = emptyList()
     repeat(MAX_ATTEMPTS) { attempt ->
         val random = SplitMix64(seed * 1_000_003L + attempt * 7_919L)
-        val placements = buildLayout(random)
+        val placements = buildLayout(words, random)
         if (placements.size >= TARGET_WORDS) return placementsToPuzzle(placements)
         if (placements.size > best.size) best = placements
     }
@@ -48,8 +54,8 @@ fun generateGermanCrosswordPuzzle(seed: Long): CrosswordPuzzle {
     return placementsToPuzzle(best)
 }
 
-private fun buildLayout(random: SplitMix64): List<Placement> {
-    val pool = germanCrosswordWords.toMutableList()
+private fun buildLayout(words: List<CrosswordEntry>, random: SplitMix64): List<Placement> {
+    val pool = words.toMutableList()
     random.shuffle(pool)
     val candidates = pool.take(CANDIDATE_POOL_SIZE)
 
@@ -75,7 +81,7 @@ private fun buildLayout(random: SplitMix64): List<Placement> {
     return placements
 }
 
-private fun findBestPlacement(workspace: Workspace, entry: GermanCrosswordEntry): Placement? {
+private fun findBestPlacement(workspace: Workspace, entry: CrosswordEntry): Placement? {
     var best: Placement? = null
     var bestCrossings = 0
     for (r in 0 until WORKSPACE_SIZE) {

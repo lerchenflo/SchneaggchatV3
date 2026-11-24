@@ -841,9 +841,9 @@
 
     <!-- Bug Report Dialog -->
     <!-- Games: Yatzi -->
-    <string name="games_yahtzee_title">Yahtzee</string>
-    <string name="yatzi_setup_title">Yahtzee Setup</string>
-    <string name="yatzi_game_title">Yahtzee Game</string>
+    <string name="games_yahtzee_title">Dice Poker</string>
+    <string name="yatzi_setup_title">Dice Poker Setup</string>
+    <string name="yatzi_game_title">Dice Poker Game</string>
     <string name="yatzi_add_manage_players">Add / Manage Players</string>
     <string name="yatzi_players">Players:</string>
     <string name="yatzi_start_game">Start Game</string>
@@ -872,7 +872,7 @@
 
 
     <!-- Games: Tetris -->
-    <string name="games_tetris_title">Tetris</string>
+    <string name="games_tetris_title">Blockfall</string>
     <string name="games_tetris_score">Score: %1$d</string>
     <string name="games_tetris_pause_resume">Pause/Resume</string>
     <string name="games_tetris_restart">Restart</string>
@@ -894,12 +894,10 @@
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Crossword</string>
-    <string name="games_crossword_instructions">Solve as many crosswords as you like! Tap a cell to select it, tap again to switch between across and down, then type with the keyboard below. The English puzzles are drawn at random from the public NYT archive, the German ones are generated fresh every time. The bigger the grid you solve and the faster you are, the better your place on the leaderboard.</string>
+    <string name="games_crossword_instructions">Solve as many crosswords as you like! Tap a cell to select it, tap again to switch between across and down, then type with the keyboard below. Every puzzle is generated fresh, in English and in German. The bigger the grid you solve and the faster you are, the better your place on the leaderboard.</string>
     <string name="games_crossword_language_question">Choose your puzzle language</string>
-    <string name="games_crossword_language_english">English (NYT archive)</string>
+    <string name="games_crossword_language_english">English</string>
     <string name="games_crossword_language_german">German</string>
-    <string name="games_crossword_load_failed">The puzzle could not be loaded. Check your internet connection and try again.</string>
-    <string name="games_crossword_retry">Retry</string>
     <string name="games_crossword_check">Check answers</string>
     <string name="games_crossword_restart">Restart</string>
     <string name="games_crossword_solved">Solved in %1$s!</string>
@@ -908,17 +906,14 @@
     <string name="games_crossword_new_puzzle">New puzzle</string>
 
     <!-- Games: Wordle -->
-    <string name="games_wordle_title">Wordle</string>
-    <string name="games_wordle_instructions">Guess the five-letter word in six tries, as often as you like! As soon as a row is full it is checked automatically: green means the letter is in the right spot, orange means it is in the word but somewhere else, and grey means it is not in the word at all.\n\nThe English words are real New York Times solutions drawn at random, the German ones come from our own list. The fewer letters you need and the faster you are, the better your place on the leaderboard.</string>
+    <string name="games_wordle_title">Word Guess</string>
+    <string name="games_wordle_instructions">Guess the five-letter word in six tries, as often as you like! As soon as a row is full it is checked automatically: green means the letter is in the right spot, orange means it is in the word but somewhere else, and grey means it is not in the word at all.\n\nThe English and German words come from our own lists. The fewer letters you need and the faster you are, the better your place on the leaderboard.</string>
     <string name="games_wordle_language_question">Choose your word language</string>
-    <string name="games_wordle_language_english">English (NYT Wordle)</string>
+    <string name="games_wordle_language_english">English</string>
     <string name="games_wordle_language_german">German</string>
-    <string name="games_wordle_load_failed">The word could not be loaded. Check your internet connection and try again.</string>
-    <string name="games_wordle_retry">Retry</string>
     <string name="games_wordle_guess_counter">Tries %1$d / %2$d</string>
     <string name="games_wordle_new_word">New word</string>
     <string name="games_wordle_too_short">Not enough letters</string>
-    <string name="games_wordle_unknown_word">%1$s is not in the word list</string>
     <string name="games_wordle_delete">Delete letter</string>
     <string name="games_wordle_solved">Solved in %1$d of %2$d tries · %3$s</string>
     <string name="games_wordle_failed">Out of tries! The word was %1$s</string>
@@ -1214,7 +1209,7 @@
     <string name="game_restart">Restart</string>
     <string name="show_highscores">Show highscores</string>
     <string name="global_ranking_title">Overall ranking</string>
-    <string name="global_ranking_explanation">Points over all games with a leaderboard. Party games played on one device (Yahtzee, Dart Counter, Undercover) do not count.</string>
+    <string name="global_ranking_explanation">Points over all games with a leaderboard. Party games played on one device (Dice Poker, Dart Counter, Undercover) do not count.</string>
     <string name="global_ranking_error">Could not load the ranking</string>
     <string name="global_ranking_empty">Nobody has played yet</string>
     <string name="global_ranking_points">%1$d pts</string>
@@ -2169,11 +2164,11 @@
     <string name="featurequiz_event_title_answer_3">100 characters</string>
     <string name="featurequiz_event_title_none">There are no events in Schneaggchat</string>
     <string name="featurequiz_event_title_explanation">An event can get its own group chat named after its title, so the title has the same limit as group names.</string>
-    <string name="featurequiz_wordle_question">How many tries do you get in Wordle?</string>
+    <string name="featurequiz_wordle_question">How many tries do you get in Word Guess?</string>
     <string name="featurequiz_wordle_answer_1">6</string>
     <string name="featurequiz_wordle_answer_2">5</string>
     <string name="featurequiz_wordle_answer_3">8</string>
-    <string name="featurequiz_wordle_none">There is no Wordle in Schneaggchat</string>
+    <string name="featurequiz_wordle_none">There is no Word Guess in Schneaggchat</string>
     <string name="featurequiz_wordle_explanation">Guess the five-letter word in six tries. Fewer tries rank you higher on the leaderboard.</string>
     <string name="featurequiz_tictactoe_question">How many players can play Tic Tac Toe on one phone?</string>
     <string name="featurequiz_tictactoe_answer_1">Up to 4</string>
@@ -2276,18 +2271,18 @@
     <string name="featurequiz_crossword_answer_2">Every week</string>
     <string name="featurequiz_crossword_answer_3">Every month</string>
     <string name="featurequiz_crossword_none">There is no crossword</string>
-    <string name="featurequiz_crossword_explanation">The English puzzles come from the New York Times archive, the German ones are generated new each time.</string>
+    <string name="featurequiz_crossword_explanation">The English and the German puzzles are generated new each time.</string>
     <string name="featurequiz_game_2048_question">What happens in 2048 when two tiles with the same number touch?</string>
     <string name="featurequiz_game_2048_answer_1">They merge into one tile</string>
     <string name="featurequiz_game_2048_answer_2">Both disappear</string>
     <string name="featurequiz_game_2048_answer_3">They swap places</string>
     <string name="featurequiz_game_2048_none">There is no 2048</string>
     <string name="featurequiz_game_2048_explanation">Swipe to move all tiles and reach the 2048 tile. The board gets smaller on a higher difficulty.</string>
-    <string name="featurequiz_tetris_question">How do you drop a Tetris piece fast?</string>
+    <string name="featurequiz_tetris_question">How do you drop a Blockfall piece fast?</string>
     <string name="featurequiz_tetris_answer_1">Swipe down or hold</string>
     <string name="featurequiz_tetris_answer_2">Double-tap</string>
     <string name="featurequiz_tetris_answer_3">Shake the phone</string>
-    <string name="featurequiz_tetris_none">There is no Tetris</string>
+    <string name="featurequiz_tetris_none">There is no Blockfall</string>
     <string name="featurequiz_tetris_explanation">Tap to rotate. Full rows give points, and the game gets faster over time.</string>
     <string name="featurequiz_grid_rush_question">How do you clear tiles in Grid Rush?</string>
     <string name="featurequiz_grid_rush_answer_1">Drag a line through 2 or more neighbouring tiles of the same colour</string>
@@ -2307,12 +2302,12 @@
     <string name="featurequiz_morse_answer_3">With a swipe</string>
     <string name="featurequiz_morse_none">There is no Morse game</string>
     <string name="featurequiz_morse_explanation">A short press is a dot, a long press a dash. Every correct letter gives points.</string>
-    <string name="featurequiz_yahtzee_question">What happens to the scores when a Yahtzee game on one phone ends?</string>
+    <string name="featurequiz_yahtzee_question">What happens to the scores when a Dice Poker game on one phone ends?</string>
     <string name="featurequiz_yahtzee_answer_1">Every player's result can go into the highscores</string>
     <string name="featurequiz_yahtzee_answer_2">Only the winner's score is saved</string>
     <string name="featurequiz_yahtzee_answer_3">Nothing is saved</string>
-    <string name="featurequiz_yahtzee_none">There is no Yahtzee</string>
-    <string name="featurequiz_yahtzee_explanation">Yahtzee is played by several people on one phone, under Games → Multiplayer.</string>
+    <string name="featurequiz_yahtzee_none">There is no Dice Poker</string>
+    <string name="featurequiz_yahtzee_explanation">Dice Poker is played by several people on one phone, under Games → Multiplayer.</string>
     <string name="featurequiz_undercover_question">What do the impostors get in Undercover?</string>
     <string name="featurequiz_undercover_answer_1">A different word than the others</string>
     <string name="featurequiz_undercover_answer_2">The same word as everyone</string>

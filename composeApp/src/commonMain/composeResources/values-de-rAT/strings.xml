@@ -804,9 +804,6 @@
 
     <!-- Bug Report Dialog -->
     <!-- Games: Yatzi -->
-    <string name="games_yahtzee_title">Yahtzee</string>
-    <string name="yatzi_setup_title">Yahtzee Einstellunga</string>
-    <string name="yatzi_game_title">Yahtzee Spiel</string>
     <string name="yatzi_add_manage_players">Spielerverwaltung</string>
     <string name="yatzi_players">Spieler:</string>
     <string name="yatzi_start_game">Spiel starta</string>
@@ -835,7 +832,6 @@
 
 
     <!-- Games: Tetris -->
-    <string name="games_tetris_title">Tetris</string>
     <string name="games_tetris_score">Punkte: %1$d</string>
     <string name="games_tetris_pause_resume">Pause/Witta</string>
     <string name="games_tetris_restart">Neustart</string>
@@ -857,12 +853,8 @@
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Krützworträtsel</string>
-    <string name="games_crossword_instructions">Lös so viel Kreuzworträtsel wie du willsch! Tipp uf a Feald zum uswähla, tipp nomml zum zwüscha waagrecht und senkrecht weachsla, und schrieb mit da Tastatur unta. D englischa Rätsel werrand zufällig us am öffentlicha NYT-Archiv zoga, d dütscha werrand jeds mol neu generiert. Je größer s glöste Gitter und je schnealla du bisch, desto besser din Platz in da Rangliste.</string>
     <string name="games_crossword_language_question">Wähl dine Rätselsproch</string>
-    <string name="games_crossword_language_english">Englisch (NYT-Archiv)</string>
     <string name="games_crossword_language_german">Dütsch</string>
-    <string name="games_crossword_load_failed">S Rätsel hot ned glada werra künna. Bitte prüf dine Internetverbindung und versuachs nomml.</string>
-    <string name="games_crossword_retry">Nomml versuacha</string>
     <string name="games_crossword_check">Antworta prüfa</string>
     <string name="games_crossword_restart">Neu starta</string>
     <string name="games_crossword_solved">Glöst in %1$s!</string>
@@ -871,17 +863,11 @@
     <string name="games_crossword_new_puzzle">Neus Rätsel</string>
 
     <!-- Games: Wordle -->
-    <string name="games_wordle_title">Wordle</string>
-    <string name="games_wordle_instructions">Errot s Wort us füf Buchstaba in sechs Versuach, so oft du willsch! Wenn a Reihe voll isch, wird se automatisch prüft: Grün hoast richtiger Buchstab an da richtiga Stell, Orange richtiger Buchstab an da falscha Stell, Grau kut gar ned vor.\n\nD englischa Wörter sind echte Lösunga vo da New York Times, zufällig zoga, d dütscha kummand us üsra eigna Liste. Je weniger Versuach du bruchsch und je schnealla du bisch, desto besser din Platz in da Rangliste.</string>
     <string name="games_wordle_language_question">Wähl a Sproch</string>
-    <string name="games_wordle_language_english">Englisch (NYT Wordle)</string>
     <string name="games_wordle_language_german">Dütsch</string>
-    <string name="games_wordle_load_failed">Des Wort hot ned glada werra künna. Prüf dine Internetverbindung und versuachs nomml.</string>
-    <string name="games_wordle_retry">Nomml versuacha</string>
     <string name="games_wordle_guess_counter">Versuche %1$d / %2$d</string>
     <string name="games_wordle_new_word">Neus Wort</string>
     <string name="games_wordle_too_short">Zwenig Buchstaba</string>
-    <string name="games_wordle_unknown_word">%1$s stoht ned in da Wortliste</string>
     <string name="games_wordle_delete">Buchstab löscha</string>
     <string name="games_wordle_solved">Glöst in %1$d vo %2$d Versuach · %3$s</string>
     <string name="games_wordle_failed">Kua Versuache mehr! S Wort war %1$s</string>
@@ -1177,7 +1163,6 @@ Mealds, egal wie klenn.</string>
     <string name="game_restart">Neustart</string>
     <string name="show_highscores">Bestenliste azoaga</string>
     <string name="global_ranking_title">Gesamtwertung</string>
-    <string name="global_ranking_explanation">Punkte über alle Spiele mit Highscores. Partyspiele uf uanam Handy (Yahtzee, Dartcounter, Undercover) zellan ned.</string>
     <string name="global_ranking_error">Rangliste hot ned glada werra künna</string>
     <string name="global_ranking_empty">Es hot noch niemand gspielt</string>
     <string name="global_ranking_points">%1$d Pkt.</string>
