@@ -300,7 +300,7 @@ class FeedbackViewModel(
         val entryId = detailState.entry.id
         updateDetail(entryId) { it.copy(isSavingEdit = true) }
         applicationScope.launchOnMain {
-            feedbackRepository.edit(entryId, changes)
+            feedbackRepository.edit(detailState.entry, changes)
                 .onSuccess { edited ->
                     updateDetail(entryId) { detailState ->
                         detailState.copy(

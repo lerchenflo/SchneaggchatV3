@@ -544,6 +544,8 @@
 
     <!-- Confirmation dialogs -->
     <string name="confirm_leave_group">Sei sicuro di voler abbandonare questo gruppo?</string>
+    <string name="confirm_leave_group_event">Non parteciperai più nemmeno all\'evento "%1$s".</string>
+    <string name="confirm_leave_group_own_event">L\'evento "%1$s" resta, come creatore risulti ancora partecipante.</string>
     <string name="confirm_delete_group">Eliminare questo gruppo per tutti i membri? La chat e tutti i messaggi andranno persi per tutti. L'operazione non può essere annullata.</string>
     <string name="confirm_remove_friend">Sei sicuro di voler rimuovere %1$s dagli amici?</string>
     <string name="confirm_remove_member">Sei sicuro di voler rimuovere %1$s dal gruppo?</string>
@@ -1855,7 +1857,7 @@
     <string name="feedback_duplicate_warning">Controlla prima se esiste già una voce simile. In tal caso vota o commenta lì.</string>
     <string name="feedback_field_title">Titolo</string>
     <string name="feedback_language_hint">Scrivi in tedesco (non in dialetto), così tutti possono leggerlo.</string>
-    <string name="feedback_field_description">Descrizione</string>
+    <string name="feedback_field_description">Descrizione (opzionale)</string>
     <string name="feedback_field_description_bug_hint">Cosa è successo e come si può riprodurre?</string>
     <string name="feedback_field_location">Dove trovarla (opzionale)</string>
     <string name="feedback_field_tags">Tag (1–3)</string>

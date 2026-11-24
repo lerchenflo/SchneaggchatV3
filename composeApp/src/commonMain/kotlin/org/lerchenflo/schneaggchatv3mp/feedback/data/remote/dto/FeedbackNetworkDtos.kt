@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.data.remote.dto
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 // Wire copies of the domain enums (same entry names), so renaming a domain entry never changes
@@ -115,6 +117,13 @@ data class FeedbackEditRequest(
     val description: String,
     val tags: List<NetworkFeedbackTag>,
     val location: String?,
+    /**
+     * Left out of the body when null: the server keeps the stored value. Only sent on a real change,
+     * since servers before the premium edit may reject the unknown field.
+     */
+    @OptIn(ExperimentalSerializationApi::class)
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val premium: Boolean? = null,
 )
 
 @Serializable

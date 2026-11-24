@@ -180,15 +180,16 @@ class OfflineFirstFeedbackRepository(
             .onSuccess { feedbackLocalDataSource.upsertFeedbackEntries(listOf(it)) }
     }
 
-    override suspend fun edit(entryId: String, changes: FeedbackEntryChanges): DataResult<FeedbackEntry, DataError> =
+    override suspend fun edit(entry: FeedbackEntry, changes: FeedbackEntryChanges): DataResult<FeedbackEntry, DataError> =
         feedbackRemoteDataSource.editFeedback(
             FeedbackEditRequest(
-                entryId = entryId,
+                entryId = entry.id,
                 type = changes.type.toNetworkFeedbackType(),
                 title = changes.title.trim(),
                 description = changes.description.trim(),
                 tags = changes.tags.map { it.toNetworkFeedbackTag() },
                 location = changes.storedLocation,
+                premium = changes.premiumChange(entry),
             )
         ).map { it.toFeedbackEntry() }
             .onSuccess { feedbackLocalDataSource.upsertFeedbackEntries(listOf(it)) }

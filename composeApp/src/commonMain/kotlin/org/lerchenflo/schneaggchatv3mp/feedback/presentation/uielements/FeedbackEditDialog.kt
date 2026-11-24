@@ -17,8 +17,8 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_type_change_to_b
 import schneaggchatv3mp.composeapp.generated.resources.feedback_type_change_to_feature
 
 /**
- * Edit form of an existing entry, filled with its current values. Premium can't be changed here.
- * Picking another type shows what the server resets; saving is possible once something changed.
+ * Edit form of an existing entry, filled with its current values. Picking another type shows what
+ * the server resets; saving is possible once something changed.
  */
 @Composable
 fun FeedbackEditDialog(
@@ -36,6 +36,7 @@ fun FeedbackEditDialog(
             description = detail.description,
             tags = entry.tags,
             location = detail.location,
+            isPremium = entry.isPremium,
         )
     }
 

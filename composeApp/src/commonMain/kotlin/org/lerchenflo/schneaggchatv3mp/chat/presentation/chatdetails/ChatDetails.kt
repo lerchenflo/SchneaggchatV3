@@ -90,6 +90,8 @@ import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
+import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group_event
+import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group_own_event
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.delete_event
 import schneaggchatv3mp.composeapp.generated.resources.delete_group
@@ -643,8 +645,13 @@ fun ChatDetails(
             if (isGroup) {
                 // Confirmation dialog for leaving group
                 if (showLeaveGroupConfirmation) {
+                    // Leaving an event's group takes back the own "going" (server), except for the creator
+                    val eventHint = connectedEvent?.let { event ->
+                        val hintRes = if (event.creatorId == ownId) Res.string.confirm_leave_group_own_event else Res.string.confirm_leave_group_event
+                        stringResource(hintRes, event.title)
+                    }
                     ConfirmationDialog(
-                        message = stringResource(Res.string.confirm_leave_group),
+                        message = listOfNotNull(stringResource(Res.string.confirm_leave_group), eventHint).joinToString("\n\n"),
                         onConfirm = {
                             chatdetailsViewmodel.removeMember(ownId)
                             chatdetailsViewmodel.navigateChatSelExitAllPrevious()

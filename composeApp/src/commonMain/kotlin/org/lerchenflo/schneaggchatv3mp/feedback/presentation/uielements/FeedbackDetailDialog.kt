@@ -145,10 +145,13 @@ fun FeedbackDetailDialog(
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Text(
-                            text = detail?.description ?: entry.description,
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
+                        // Optional: entries without one show no empty line
+                        (detail?.description ?: entry.description).takeIf { it.isNotBlank() }?.let { description ->
+                            Text(
+                                text = description,
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
                         detail?.location?.let { location ->
                             Text(
                                 text = stringResource(Res.string.feedback_where_to_find, location),
