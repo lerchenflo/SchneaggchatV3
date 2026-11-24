@@ -71,6 +71,7 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_title
 import androidx.compose.material.icons.filled.Psychology
 import io.github.lerchenflo.taptarget.tapTarget
 import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title
+import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title_with_count
 
 @Composable
 fun FeedbackScreenRoot() {
@@ -165,7 +166,15 @@ fun FeedbackScreen(
             ExtendedFloatingActionButton(
                 onClick = { onAction(FeedbackAction.OnFeatureQuizClick) },
                 icon = { Icon(Icons.Default.Psychology, contentDescription = null) },
-                text = { Text(stringResource(Res.string.featurequiz_title)) },
+                text = {
+                    Text(
+                        if (state.unvotedFeatureCount > 0) {
+                            stringResource(Res.string.featurequiz_title_with_count, state.unvotedFeatureCount)
+                        } else {
+                            stringResource(Res.string.featurequiz_title)
+                        }
+                    )
+                },
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.tapTarget("feedback_feature_quiz_button")

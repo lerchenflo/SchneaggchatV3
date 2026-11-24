@@ -29,7 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.formatMillis
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.featurequiz_progress
 
-/** Round progress bar plus the running time and the points so far. */
+/** Round progress plus the running time and the points so far. */
 @Composable
 fun FeatureQuizHeader(
     cardNumber: Int,
@@ -38,31 +38,11 @@ fun FeatureQuizHeader(
     points: Int,
     modifier: Modifier = Modifier,
 ) {
-    val progress by animateFloatAsState(
-        targetValue = cardNumber.toFloat() / cardCount.coerceAtLeast(1),
-        label = "featureQuizProgress",
-    )
-
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = modifier,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(8.dp)
-                    .clip(CircleShape),
-            )
-            Text(
-                text = stringResource(Res.string.featurequiz_progress, cardNumber, cardCount),
-                style = MaterialTheme.typography.labelLarge,
-            )
-        }
+        FeatureQuizProgress(cardNumber = cardNumber, cardCount = cardCount)
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth(),
@@ -70,6 +50,37 @@ fun FeatureQuizHeader(
             FeatureQuizStatChip(icon = Icons.Outlined.Timer, text = formatMillis(elapsedMillis))
             FeatureQuizStatChip(icon = Icons.Filled.Star, text = points.toString())
         }
+    }
+}
+
+/** Progress bar that fills up from card to card, with "3 / 10" next to it. */
+@Composable
+fun FeatureQuizProgress(
+    cardNumber: Int,
+    cardCount: Int,
+    modifier: Modifier = Modifier,
+) {
+    val progress by animateFloatAsState(
+        targetValue = cardNumber.toFloat() / cardCount.coerceAtLeast(1),
+        label = "featureQuizProgress",
+    )
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = modifier,
+    ) {
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier
+                .weight(1f)
+                .height(8.dp)
+                .clip(CircleShape),
+        )
+        Text(
+            text = stringResource(Res.string.featurequiz_progress, cardNumber, cardCount),
+            style = MaterialTheme.typography.labelLarge,
+        )
     }
 }
 

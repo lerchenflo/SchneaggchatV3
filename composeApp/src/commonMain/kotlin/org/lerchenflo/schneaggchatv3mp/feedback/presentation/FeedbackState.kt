@@ -37,6 +37,8 @@ data class FeedbackState(
     val tabCounts: Map<FeedbackTab, Int> = emptyMap(),
     /** Unfiltered number of GAMES entries per section, for the chips of the Games tab. */
     val gamesSectionCounts: Map<FeedbackSection, Int> = emptyMap(),
+    /** Features still waiting for the user's vote, shown on the feature quiz button. */
+    val unvotedFeatureCount: Int = 0,
     /** Reference time for the two day pin of new own entries, taken when the board opened. */
     val nowMillis: Long = 0L,
     /**

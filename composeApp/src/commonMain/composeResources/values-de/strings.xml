@@ -2090,6 +2090,7 @@
     <string name="featurequiz_description">Schnell Feedback geben: Fragen beantworten und Features bewerten. So unterstützt du Schneaggchat.</string>
     <string name="games_random_game">Zufälliges Spiel starten</string>
     <string name="featurequiz_title">Feature-Quiz</string>
+    <string name="featurequiz_title_with_count">Feature-Quiz (%1$d)</string>
     <string name="featurequiz_progress">%1$d / %2$d</string>
     <string name="featurequiz_correct">Richtig!</string>
     <string name="featurequiz_wrong">Falsch. Richtige Antwort: %1$s</string>
@@ -2107,6 +2108,24 @@
     <string name="featurequiz_time">Zeit: %1$s</string>
     <string name="featurequiz_play_again">Nochmal spielen</string>
     <string name="featurequiz_empty">Gerade keine Fragen. Öffne das Feedback-Board einmal mit Internet und versuch es dann nochmal.</string>
+    <string name="featurequiz_mode_title">Wie willst du spielen?</string>
+    <string name="featurequiz_mode_quiz_title">Quiz</string>
+    <string name="featurequiz_mode_quiz_description">Fragen zu den Features der App, danach bewertest du jedes. Deine Punkte kommen in die Bestenliste.</string>
+    <string name="featurequiz_mode_vote_title">Nur abstimmen</string>
+    <string name="featurequiz_mode_vote_description">Bewerte jedes Feature und jeden Wunsch, bei dem du noch nicht abgestimmt hast. Keine Fragen, kein Highscore.</string>
+    <string name="featurevoting_feature_title">Feature in der App</string>
+    <string name="featurevoting_skip">Überspringen</string>
+    <string name="featurevoting_finish">Fertig</string>
+    <string name="featurevoting_empty">Du hast schon bei jedem Feature und Wunsch abgestimmt. Danke!</string>
+    <string name="featurevoting_done_title">Alles erledigt</string>
+    <plurals name="featurevoting_done_voted">
+        <item quantity="one">Du hast %1$d Feature bewertet. Danke!</item>
+        <item quantity="other">Du hast %1$d Features bewertet. Danke!</item>
+    </plurals>
+    <plurals name="featurevoting_done_skipped">
+        <item quantity="one">%1$d übersprungen, es kommt nächstes Mal wieder.</item>
+        <item quantity="other">%1$d übersprungen, sie kommen nächstes Mal wieder.</item>
+    </plurals>
     <string name="featurequiz_polls_subpoll_question">Für wen ist die Unterumfrage einer Umfrage-Option?</string>
     <string name="featurequiz_polls_subpoll_answer_1">Nur für alle, die diese Option gewählt haben</string>
     <string name="featurequiz_polls_subpoll_answer_2">Für alle im Chat</string>

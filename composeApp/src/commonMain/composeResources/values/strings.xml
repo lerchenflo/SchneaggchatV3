@@ -2090,6 +2090,7 @@
     <string name="featurequiz_description">Give feedback fast: answer questions and rate the features. It helps support Schneaggchat.</string>
     <string name="games_random_game">Start a random game</string>
     <string name="featurequiz_title">Feature quiz</string>
+    <string name="featurequiz_title_with_count">Feature quiz (%1$d)</string>
     <string name="featurequiz_progress">%1$d / %2$d</string>
     <string name="featurequiz_correct">Correct!</string>
     <string name="featurequiz_wrong">Wrong. Right answer: %1$s</string>
@@ -2107,6 +2108,24 @@
     <string name="featurequiz_time">Time: %1$s</string>
     <string name="featurequiz_play_again">Play again</string>
     <string name="featurequiz_empty">No questions right now. Open the feedback board once while online, then try again.</string>
+    <string name="featurequiz_mode_title">How do you want to play?</string>
+    <string name="featurequiz_mode_quiz_title">Quiz</string>
+    <string name="featurequiz_mode_quiz_description">Questions about the app's features, then you rate each one. Your score goes on the leaderboard.</string>
+    <string name="featurequiz_mode_vote_title">Just vote</string>
+    <string name="featurequiz_mode_vote_description">Rate every feature and wish you haven't voted on yet. No questions, no highscore.</string>
+    <string name="featurevoting_feature_title">Feature in the app</string>
+    <string name="featurevoting_skip">Skip</string>
+    <string name="featurevoting_finish">Finish</string>
+    <string name="featurevoting_empty">You've already voted on every feature and wish. Thanks!</string>
+    <string name="featurevoting_done_title">All done</string>
+    <plurals name="featurevoting_done_voted">
+        <item quantity="one">You rated %1$d feature. Thanks!</item>
+        <item quantity="other">You rated %1$d features. Thanks!</item>
+    </plurals>
+    <plurals name="featurevoting_done_skipped">
+        <item quantity="one">%1$d skipped, it comes again next time.</item>
+        <item quantity="other">%1$d skipped, they come again next time.</item>
+    </plurals>
     <string name="featurequiz_polls_subpoll_question">Who is the sub-poll of a poll option for?</string>
     <string name="featurequiz_polls_subpoll_answer_1">Only for those who picked that option</string>
     <string name="featurequiz_polls_subpoll_answer_2">For everyone in the chat</string>

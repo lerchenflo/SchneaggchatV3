@@ -423,6 +423,7 @@ private fun FeedbackState.withVisibleEntries(): FeedbackState {
         visibleEntries = filtered.sortedForBoard(sort, nowMillis),
         tabCounts = FeedbackTab.entries.associateWith { tab -> entries.count { tab.contains(it) } },
         gamesSectionCounts = FeedbackSection.entries.associateWith { s -> gamesEntries.count { s.contains(it) } },
+        unvotedFeatureCount = entries.count { it.needsFeatureVote },
     )
 }
 

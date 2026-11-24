@@ -2084,6 +2084,7 @@
     <string name="featurequiz_description">Dai un feedback veloce: rispondi alle domande e valuta le funzioni. Così sostieni Schneaggchat.</string>
     <string name="games_random_game">Avvia un gioco a caso</string>
     <string name="featurequiz_title">Quiz delle funzioni</string>
+    <string name="featurequiz_title_with_count">Quiz delle funzioni (%1$d)</string>
     <string name="featurequiz_progress">%1$d / %2$d</string>
     <string name="featurequiz_correct">Giusto!</string>
     <string name="featurequiz_wrong">Sbagliato. Risposta giusta: %1$s</string>
@@ -2101,6 +2102,24 @@
     <string name="featurequiz_time">Tempo: %1$s</string>
     <string name="featurequiz_play_again">Gioca ancora</string>
     <string name="featurequiz_empty">Nessuna domanda al momento. Apri la bacheca feedback una volta con internet e riprova.</string>
+    <string name="featurequiz_mode_title">Come vuoi giocare?</string>
+    <string name="featurequiz_mode_quiz_title">Quiz</string>
+    <string name="featurequiz_mode_quiz_description">Domande sulle funzioni dell\'app, poi le valuti una per una. Il tuo punteggio va in classifica.</string>
+    <string name="featurequiz_mode_vote_title">Solo votare</string>
+    <string name="featurequiz_mode_vote_description">Valuta ogni funzione e ogni desiderio che non hai ancora votato. Niente domande, niente punteggio.</string>
+    <string name="featurevoting_feature_title">Funzione nell\'app</string>
+    <string name="featurevoting_skip">Salta</string>
+    <string name="featurevoting_finish">Fine</string>
+    <string name="featurevoting_empty">Hai già votato ogni funzione e ogni desiderio. Grazie!</string>
+    <string name="featurevoting_done_title">Tutto fatto</string>
+    <plurals name="featurevoting_done_voted">
+        <item quantity="one">Hai valutato %1$d funzione. Grazie!</item>
+        <item quantity="other">Hai valutato %1$d funzioni. Grazie!</item>
+    </plurals>
+    <plurals name="featurevoting_done_skipped">
+        <item quantity="one">%1$d saltata, tornerà la prossima volta.</item>
+        <item quantity="other">%1$d saltate, torneranno la prossima volta.</item>
+    </plurals>
     <string name="featurequiz_polls_subpoll_question">Per chi è il sottosondaggio di un'opzione del sondaggio?</string>
     <string name="featurequiz_polls_subpoll_answer_1">Solo per chi ha scelto quell'opzione</string>
     <string name="featurequiz_polls_subpoll_answer_2">Per tutti nella chat</string>

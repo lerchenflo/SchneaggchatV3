@@ -41,6 +41,9 @@ sealed interface FeatureQuizCard {
     /** Unscored: an open wish from the board, shown only so the player votes on it. */
     data class Wish(override val entry: FeedbackEntry) : FeatureQuizCard
 
+    /** Unscored: a feature the app has, shown in the vote-only round so the player rates it. */
+    data class Feature(override val entry: FeedbackEntry) : FeatureQuizCard
+
     /** An existing vote is never asked for or changed again, also not in a later round. */
     val needsVote: Boolean get() = entry.myVote == FeedbackVote.NONE
 }
@@ -77,6 +80,15 @@ object FeatureQuizRounds {
             .map { FeatureQuizCard.Wish(it) }
         return (questionCards + wishCards).shuffled(random)
     }
+
+    /**
+     * A vote-only round without questions: every feature on the board the player hasn't voted on
+     * yet, implemented ones and open wishes, in random order. Bugs and own entries are left out.
+     */
+    fun buildVoteOnly(entries: List<FeedbackEntry>, random: Random = Random): List<FeatureQuizCard> =
+        entries.filter { it.needsFeatureVote }
+            .shuffled(random)
+            .map { if (it.status == FeedbackStatus.IMPLEMENTED) FeatureQuizCard.Feature(it) else FeatureQuizCard.Wish(it) }
 
     private fun FeatureQuizQuestion.toCard(entry: FeedbackEntry, random: Random): FeatureQuizCard.Question {
         val answerOptions = answers.mapIndexed { index, text ->
