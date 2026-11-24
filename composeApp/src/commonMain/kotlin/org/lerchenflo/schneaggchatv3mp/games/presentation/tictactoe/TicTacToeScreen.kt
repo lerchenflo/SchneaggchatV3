@@ -35,7 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,7 +43,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -55,10 +53,13 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 import org.lerchenflo.schneaggchatv3mp.games.domain.tictactoe.TIC_TAC_TOE_MAX_PLAYERS
 import org.lerchenflo.schneaggchatv3mp.games.domain.tictactoe.TicTacToeRound
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOptionSwitchRow
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameResetButton
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadDialog
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadDoneText
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
+import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSymbol
+import org.lerchenflo.schneaggchatv3mp.games.presentation.playerColor
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
@@ -253,28 +254,28 @@ private fun ColumnScope.SetupContent(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                 )
-                TwistRow(
+                GameOptionSwitchRow(
                     icon = Icons.Default.HourglassBottom,
                     title = stringResource(Res.string.tictactoe_twist_vanishing),
                     description = stringResource(Res.string.tictactoe_twist_vanishing_description, config.marksKept),
                     checked = state.twists.vanishing,
                     onCheckedChange = { onAction(TicTacToeAction.OnTwistsChange(state.twists.copy(vanishing = it))) },
                 )
-                TwistRow(
+                GameOptionSwitchRow(
                     icon = Icons.Default.VerticalAlignBottom,
                     title = stringResource(Res.string.tictactoe_twist_gravity),
                     description = stringResource(Res.string.tictactoe_twist_gravity_description),
                     checked = state.twists.gravity,
                     onCheckedChange = { onAction(TicTacToeAction.OnTwistsChange(state.twists.copy(gravity = it))) },
                 )
-                TwistRow(
+                GameOptionSwitchRow(
                     icon = Icons.Default.LocalFireDepartment,
                     title = stringResource(Res.string.tictactoe_twist_bombs),
                     description = stringResource(Res.string.tictactoe_twist_bombs_description),
                     checked = state.twists.bombs,
                     onCheckedChange = { onAction(TicTacToeAction.OnTwistsChange(state.twists.copy(bombs = it))) },
                 )
-                TwistRow(
+                GameOptionSwitchRow(
                     icon = Icons.Default.Shuffle,
                     title = stringResource(Res.string.tictactoe_twist_chaos),
                     description = stringResource(Res.string.tictactoe_twist_chaos_description, config.turnsPerShift),
@@ -315,35 +316,6 @@ private fun SetupPlayerRow(index: Int, player: GamePlayer, onRemove: () -> Unit)
         IconButton(onClick = onRemove) {
             Icon(Icons.Default.Close, contentDescription = stringResource(Res.string.remove))
         }
-    }
-}
-
-@Composable
-private fun TwistRow(
-    icon: ImageVector,
-    title: String,
-    description: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-        Spacer(Modifier.width(16.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Spacer(Modifier.width(8.dp))
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 

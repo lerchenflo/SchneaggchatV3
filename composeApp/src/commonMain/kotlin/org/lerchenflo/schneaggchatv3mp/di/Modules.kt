@@ -103,6 +103,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tictactoe.TicTacToeViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.fourinarow.FourInARowViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.login.data.RemoteAuthRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerViewModel
@@ -599,6 +600,7 @@ val sharedmodule = module{
     viewModelOf(::TowerstackViewModel)
     viewModelOf(::UndercoverViewModel)
     viewModelOf(::TicTacToeViewModel)
+    viewModelOf(::FourInARowViewModel)
     viewModelOf(::YatziViewModel)
     viewModelOf(::TetrisViewModel)
     viewModelOf(::MorseViewModel)

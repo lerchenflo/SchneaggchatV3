@@ -150,6 +150,9 @@ sealed interface Route : NavKey {
     data object TicTacToe: Route
 
     @Serializable
+    data object FourInARow: Route
+
+    @Serializable
     data object TowerStack: Route
 
     @Serializable

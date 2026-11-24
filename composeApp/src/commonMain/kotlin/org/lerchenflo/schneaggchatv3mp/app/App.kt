@@ -107,6 +107,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tictactoe.TicTacToeRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.fourinarow.FourInARowRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerRoot
@@ -865,6 +866,12 @@ fun App() {
 
                                 entry<Route.TicTacToe> {
                                     TicTacToeRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.FourInARow> {
+                                    FourInARowRoot(
                                         onBackClick = { scope.launch { navigator.navigateBack() } }
                                     )
                                 }
