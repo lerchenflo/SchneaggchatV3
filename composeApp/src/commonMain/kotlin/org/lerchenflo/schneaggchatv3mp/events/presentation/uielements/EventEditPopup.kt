@@ -92,6 +92,7 @@ import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
 import schneaggchatv3mp.composeapp.generated.resources.event_invite_friends
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
 import schneaggchatv3mp.composeapp.generated.resources.event_location_label
+import schneaggchatv3mp.composeapp.generated.resources.event_type_label
 import schneaggchatv3mp.composeapp.generated.resources.event_max_users_hint
 import schneaggchatv3mp.composeapp.generated.resources.event_max_users_info
 import schneaggchatv3mp.composeapp.generated.resources.event_max_users_label
@@ -208,61 +209,9 @@ fun EventEditPopup(
                 .clearFocusOnTap()
         ) {
 
-            // Selectable Type label & icon
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                OutlinedButton(
-                    onClick = { typeDropdownExpanded = true }
-                ) {
-                    Icon(
-                        imageVector = currentEvent.type.icon(),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = stringResource(currentEvent.type.labelRes()))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = typeDropdownExpanded,
-                    onDismissRequest = { typeDropdownExpanded = false }
-                ) {
-                    EventType.entries.forEach { entry ->
-                        val isSelected = entry == currentEvent.type
-                        val tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        DropdownMenuItem(
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = entry.icon(),
-                                    contentDescription = null,
-                                    tint = tint
-                                )
-                            },
-                            text = {
-                                Text(
-                                    text = stringResource(entry.labelRes()),
-                                    color = tint,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            },
-                            onClick = {
-                                currentEvent = currentEvent.copy(type = entry)
-                                typeDropdownExpanded = false
-                            }
-                        )
-                    }
-                }
-
-                // Only an already-saved event can be deleted
-                if (!isNewEvent) {
+            // Only an already-saved event can be deleted
+            if (!isNewEvent) {
+                Box(modifier = Modifier.fillMaxWidth()) {
                     IconButton(
                         onClick = { showDeleteWarning = true },
                         modifier = Modifier.align(Alignment.CenterEnd)
@@ -274,9 +223,9 @@ fun EventEditPopup(
                         )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
             // Title
             OutlinedTextField(
@@ -316,6 +265,70 @@ fun EventEditPopup(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Type, labeled and full width like the location below, so it isn't missed
+            Text(
+                text = stringResource(Res.string.event_type_label),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(
+                    onClick = { typeDropdownExpanded = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = currentEvent.type.icon(),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(currentEvent.type.labelRes()),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = typeDropdownExpanded,
+                    onDismissRequest = { typeDropdownExpanded = false }
+                ) {
+                    EventType.entries.forEach { entry ->
+                        val isSelected = entry == currentEvent.type
+                        val tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = entry.icon(),
+                                    contentDescription = null,
+                                    tint = tint
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(entry.labelRes()),
+                                    color = tint,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            },
+                            onClick = {
+                                currentEvent = currentEvent.copy(type = entry)
+                                typeDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 

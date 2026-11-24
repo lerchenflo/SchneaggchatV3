@@ -210,7 +210,6 @@
 
     <string name="members">Mitglieder</string>
     <string name="info">Info</string>
-    <string name="chat_details_actions">Aktionen</string>
     <string name="at_least_members">Du benötigst mindestens %1$s Mitglieder in der Gruppe</string>
     <string name="group_name_missing">Bitte gib einen Gruppennamen ein</string>
 
@@ -253,6 +252,7 @@
     <string name="add_users_to_group">Mitglied hinzufügen</string>
     <string name="member_since">Mitglied seit %1$s</string>
     <string name="change_group_name">Änderen den Gruppennamen</string>
+    <string name="rename_group">Gruppe umbenennen</string>
 
     <string name="image">Bild</string>
     <string name="video">Video</string>
@@ -410,6 +410,7 @@
     <string name="event_invited_users">Eingeladen</string>
     <string name="event_invite_friends">Freunde einladen</string>
     <string name="event_location_label">Ort</string>
+    <string name="event_type_label">Art</string>
     <string name="event_no_location_selected">Kein Ort ausgewählt</string>
     <string name="event_pick_location_title">Ort auswählen</string>
     <string name="event_pick_location_hint">Karte verschieben, um die Position festzulegen</string>
@@ -1501,11 +1502,11 @@
     <string name="ttt_chat_details_nickname">Nickname</string>
     <string name="ttt_chat_details_nickname_description">Tippe auf den Namen, um deinem Freund einen Nickname zu geben. Er steht in deinen Chats statt seines Namens.</string>
     <string name="ttt_chat_details_wake">Freund wecken</string>
-    <string name="ttt_chat_details_wake_description">Lass das Handy deines Freundes wie ein Wecker klingeln, auch wenn es lautlos ist, z. B. wenn er verschläft. Geht, wenn er Android nutzt und es in seinen Einstellungen erlaubt hat.</string>
+    <string name="ttt_chat_details_wake_description">Lass das Handy deines Freundes wie ein Wecker klingeln, auch wenn es lautlos ist, z. B. wenn er verschläft. Geht, wenn er Android nutzt und es in seinen Einstellungen erlaubt hat. Du findest es in diesem Menü.</string>
     <string name="ttt_group_members">Gruppenmitglieder</string>
     <string name="ttt_group_members_description">Tippe auf ein Mitglied, um einen Chat zu öffnen oder eine Freundschaftsanfrage zu senden, tippe auf das Bild, um es groß zu sehen. Admins fügen Mitglieder hinzu, machen andere zu Admins und entfernen Mitglieder.</string>
     <string name="ttt_group_timer">Löschtimer</string>
-    <string name="ttt_group_timer_description">Läuft der Timer ab, werden die Gruppe und alle ihre Nachrichten für alle gelöscht, z. B. nach einem Wochenendausflug. Nur Admins können ihn festlegen.</string>
+    <string name="ttt_group_timer_description">Läuft der Timer ab, werden die Gruppe und alle ihre Nachrichten für alle gelöscht, z. B. nach einem Wochenendausflug. Nur Admins können ihn festlegen, im Menü oben rechts.</string>
     <string name="ttt_chat_details_about">Was Freunde sagen</string>
     <string name="ttt_chat_details_about_description">Ein kurzer Text über diese Person, den alle ihre Freunde gemeinsam schreiben: Alle bearbeiten denselben Text. Die Person kann ihn lesen, aber nicht ändern. Tippe, um ihn zu bearbeiten.</string>
     <string name="ttt_feedback_requests">Wünsche</string>
@@ -1954,7 +1955,7 @@
     <string name="group_extension_rename">Umbenennen</string>
     <string name="group_extension_delete">Erweiterung löschen</string>
     <string name="group_extension_delete_confirm">„%1$s“ mit allen Einträgen für alle in dieser Gruppe löschen? Das kann nicht rückgängig gemacht werden.</string>
-    <string name="group_extension_more_options">Weitere Optionen</string>
+    <string name="more_options">Weitere Optionen</string>
     <string name="shared_text_placeholder">Schreibt gemeinsam etwas…</string>
     <string name="shared_text_show_author_colors">Autorenfarben anzeigen</string>
     <string name="shared_text_hide_author_colors">Autorenfarben ausblenden</string>

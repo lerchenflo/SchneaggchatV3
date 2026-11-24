@@ -173,7 +173,7 @@
     <string name="no_birthdays">None of your friends has a birthdate set</string>
 
     <string name="no_description">No description</string>
-    <string name="remove_friend">remove friend</string>
+    <string name="remove_friend">Remove friend</string>
     <string name="save">save</string>
     <string name="close">close</string>
     <string name="you_sender">You</string>
@@ -210,7 +210,6 @@
 
     <string name="members">Members</string>
     <string name="info">Info</string>
-    <string name="chat_details_actions">Actions</string>
     <string name="at_least_members">you need at least %1$s members in your group</string>
     <string name="group_name_missing">Please Provide a group name</string>
 
@@ -248,11 +247,12 @@
     <string name="event_create_group_info">A group chat lets invited people chat and coordinate. You can add one later if you skip it now.</string>
     <string name="event_no_group">This event has no group chat</string>
     <string name="user_description">user description</string>
-    <string name="leave_group">leave group</string>
-    <string name="delete_group">delete group</string>
+    <string name="leave_group">Leave group</string>
+    <string name="delete_group">Delete group</string>
     <string name="add_users_to_group">add users</string>
     <string name="member_since">member since %1$s</string>
     <string name="change_group_name">Change the name of this Group</string>
+    <string name="rename_group">Rename group</string>
 
     <string name="image">image</string>
     <string name="video">video</string>
@@ -410,6 +410,7 @@
     <string name="event_invited_users">Invited</string>
     <string name="event_invite_friends">Invite friends</string>
     <string name="event_location_label">Location</string>
+    <string name="event_type_label">Type</string>
     <string name="event_no_location_selected">No location selected</string>
     <string name="event_pick_location_title">Pick a location</string>
     <string name="event_pick_location_hint">Move the map to position the pin</string>
@@ -1501,11 +1502,11 @@
     <string name="ttt_chat_details_nickname">Nickname</string>
     <string name="ttt_chat_details_nickname_description">Tap the name to give your friend a nickname. It shows instead of their name in your chats.</string>
     <string name="ttt_chat_details_wake">Wake your friend</string>
-    <string name="ttt_chat_details_wake_description">Ring your friend's phone like an alarm, even when it is on silent, e.g. when they oversleep. Works if they use Android and allowed it in their settings.</string>
+    <string name="ttt_chat_details_wake_description">Ring your friend's phone like an alarm, even when it is on silent, e.g. when they oversleep. Works if they use Android and allowed it in their settings. You find it in this menu.</string>
     <string name="ttt_group_members">Group members</string>
     <string name="ttt_group_members_description">Tap a member to open a chat or send a friend request, tap the picture to see it big. Admins add members, make others admins and remove members.</string>
     <string name="ttt_group_timer">Delete timer</string>
-    <string name="ttt_group_timer_description">When the timer runs out, the group and all its messages are deleted for everyone, e.g. for a weekend trip. Only admins can set it.</string>
+    <string name="ttt_group_timer_description">When the timer runs out, the group and all its messages are deleted for everyone, e.g. for a weekend trip. Only admins can set it, in the menu at the top right.</string>
     <string name="ttt_chat_details_about">What friends say</string>
     <string name="ttt_chat_details_about_description">A short text about this person that all their friends write together: everyone edits the same text. They can read it but not change it. Tap to edit it.</string>
     <string name="ttt_feedback_requests">Requests</string>
@@ -1954,7 +1955,7 @@
     <string name="group_extension_rename">Rename</string>
     <string name="group_extension_delete">Delete extension</string>
     <string name="group_extension_delete_confirm">Delete “%1$s” with all its entries for everyone in this group? This cannot be undone.</string>
-    <string name="group_extension_more_options">More options</string>
+    <string name="more_options">More options</string>
     <string name="shared_text_placeholder">Write something together…</string>
     <string name="shared_text_show_author_colors">Show author colors</string>
     <string name="shared_text_hide_author_colors">Hide author colors</string>

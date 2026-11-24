@@ -2,7 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.sharedtext.SharedTextScreenRoot
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitScreenRoot
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TitleMenuItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_not_found
@@ -42,31 +42,31 @@ fun GroupExtensionScreenRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val onAction = viewModel::onAction
 
-    // Rename / delete live in the top bar of every type's screen
-    val topBarActions: @Composable RowScope.() -> Unit = {
-        if (state.extension != null) {
-            ExtensionMenu(
-                canDelete = state.canDelete,
-                onRenameClick = { onAction(GroupExtensionAction.OnRenameClick) },
-                onDeleteClick = { onAction(GroupExtensionAction.OnDeleteClick) }
-            )
-        }
+    // Rename / delete live in the ⋮ of every type's screen
+    val topBarMenuItems = if (state.extension == null) {
+        emptyList()
+    } else {
+        extensionMenuItems(
+            canDelete = state.canDelete,
+            onRenameClick = { onAction(GroupExtensionAction.OnRenameClick) },
+            onDeleteClick = { onAction(GroupExtensionAction.OnDeleteClick) }
+        )
     }
 
     // Types with their own screen take over once the container is loaded
     when (state.extension?.type) {
         GroupExtensionType.SPLIT -> SplitScreenRoot(
             extensionId = extensionId,
-            topBarActions = topBarActions
+            topBarMenuItems = topBarMenuItems
         )
         GroupExtensionType.SHARED_TEXT -> SharedTextScreenRoot(
             extensionId = extensionId,
-            topBarActions = topBarActions
+            topBarMenuItems = topBarMenuItems
         )
         else -> GroupExtensionScreen(
             state = state,
             onAction = onAction,
-            topBarActions = topBarActions
+            topBarMenuItems = topBarMenuItems
         )
     }
 
@@ -94,13 +94,13 @@ fun GroupExtensionScreenRoot(
 fun GroupExtensionScreen(
     state: GroupExtensionState,
     onAction: (GroupExtensionAction) -> Unit,
-    topBarActions: @Composable RowScope.() -> Unit = {},
+    topBarMenuItems: List<TitleMenuItem> = emptyList(),
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         ActivityTitle(
             title = state.extension?.title.orEmpty(),
             onBackClick = { onAction(GroupExtensionAction.OnBackClick) },
-            actions = topBarActions
+            menuItems = topBarMenuItems
         )
 
         HorizontalDivider()

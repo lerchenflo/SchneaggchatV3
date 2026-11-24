@@ -167,7 +167,6 @@
     <string name="no_birthdays">Kuana vo dina Freunde hot a Geburtsdatum gsetzt</string>
 
     <string name="no_description">Kua Beschreibung</string>
-    <string name="remove_friend">Freund entferna</string>
     <string name="save">Speichra</string>
     <string name="close">Schlüßa</string>
     <string name="you_sender">Du</string>
@@ -204,7 +203,6 @@
 
     <string name="members">Mitglieder</string>
     <string name="info">Info</string>
-    <string name="chat_details_actions">Aktiona</string>
     <string name="at_least_members">Du bruchsch mindestens %1$s Mitglieder in da Gruppe</string>
     <string name="group_name_missing">Bitte gib an Gruppanama i</string>
 
@@ -242,8 +240,6 @@
     <string name="event_create_group_info">Da Gruppenchat machts möglich, dass igladene Persona mitanand chatten künnand. Du kannschan später no dazuatua fallsas da andersch überlegsch.</string>
     <string name="event_no_group">Des Event hot kuan Gruppenchat</string>
     <string name="user_description">Userbeschreibung</string>
-    <string name="leave_group">Abhaua</string>
-    <string name="delete_group">Gruppe löscha</string>
     <string name="add_users_to_group">Mitglied hinzufüga</string>
     <string name="member_since">Dabei sit %1$s</string>
     <string name="change_group_name">Änder da Gruppanama</string>
@@ -1490,11 +1486,9 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_chat_details_nickname">Nickname</string>
     <string name="ttt_chat_details_nickname_description">Tipp uf da Nama und gib dinam Freund an Nickname. Er wird in dina Chats statt sim Nama azoagt.</string>
     <string name="ttt_chat_details_wake">Freund wecka</string>
-    <string name="ttt_chat_details_wake_description">Lass s Handy vo dinam Freund wie an Wecker klingla, o wenn s lautlos isch, z. B. wenn er verschloft. Goht, wenn er Android hot und des in sina Einstellunga erlaubt hot.</string>
     <string name="ttt_group_members">Gruppenmitglieder</string>
     <string name="ttt_group_members_description">Tipp uf a Mitglied, zum an Chat öffna oda a Freundschaftsafrog schicka; tipp ufs Bild, denn siahsch des groß. Admins tuand Mitglieder dazua, machand andre zu Admins und entfernand Mitglieder.</string>
     <string name="ttt_group_timer">Löschtimer</string>
-    <string name="ttt_group_timer_description">Wenn da Timer ablouft, werrand d Gruppe und alle ihre Nochrichta für alle glöscht, z. B. nach nam Event. Nur Admins künnand ean festlega.</string>
     <string name="ttt_chat_details_about">Was Freunde sägand</string>
     <string name="ttt_chat_details_about_description">An kurza Text über dia Person, dean alle ihre Freunde zemma schrieband: Alle bearbeitand da glicha Text. D Person kann ean leasa, aber ned ändra. Tipp do zum bearbeita.</string>
     <string name="ttt_feedback_requests">Wünsch</string>
@@ -1941,7 +1935,6 @@ Mealds, egal wie klenn.</string>
     <string name="group_extension_rename">Umbenenna</string>
     <string name="group_extension_delete">Erweiterung löscha</string>
     <string name="group_extension_delete_confirm">"%1$s" mit allna Iträg für alle in dera Gruppe löscha? Des kann ned rückgängig gmacht werra.</string>
-    <string name="group_extension_more_options">Mehr Optiona</string>
     <string name="shared_text_placeholder">Schrieband zemma eapas…</string>
     <string name="shared_text_show_author_colors">Autorenfarba azoaga</string>
     <string name="shared_text_hide_author_colors">Autorenfarba usblenda</string>

@@ -36,6 +36,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Sprachnachrichten: Live-Pegel beim Aufnehmen
 - @Annotations fix
 - Erwähnungen: Nachrichten an mich hervorgehoben, @-Badge in der Chatliste
+- Chatdetails: Aktionen im ⋮-Menü oben rechts
 
 #### Bugfixes
 - Profilbild: Anzeige bei Nicht-Freunden behoben, leere Großansicht entfernt

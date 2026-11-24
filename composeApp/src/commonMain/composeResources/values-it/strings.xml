@@ -172,7 +172,7 @@
     <string name="no_birthdays">Nessuno dei tuoi amici ha impostato una data di nascita</string>
 
     <string name="no_description">Nessuna descrizione</string>
-    <string name="remove_friend">rimuovi amico</string>
+    <string name="remove_friend">Rimuovi amico</string>
     <string name="save">salva</string>
     <string name="close">chiudi</string>
     <string name="you_sender">Tu</string>
@@ -209,7 +209,6 @@
 
     <string name="members">Membri</string>
     <string name="info">Info</string>
-    <string name="chat_details_actions">Azioni</string>
     <string name="at_least_members">hai bisogno di almeno %1$s membri nel tuo gruppo</string>
     <string name="group_name_missing">Fornisci un nome per il gruppo</string>
 
@@ -247,11 +246,12 @@
     <string name="event_create_group_info">Una chat di gruppo permette alle persone invitate di chattare e organizzarsi. Puoi aggiungerne una in seguito se salti questo passaggio ora.</string>
     <string name="event_no_group">Questo evento non ha una chat di gruppo</string>
     <string name="user_description">descrizione utente</string>
-    <string name="leave_group">abbandona gruppo</string>
-    <string name="delete_group">elimina gruppo</string>
+    <string name="leave_group">Abbandona gruppo</string>
+    <string name="delete_group">Elimina gruppo</string>
     <string name="add_users_to_group">aggiungi utenti</string>
     <string name="member_since">membro dal %1$s</string>
     <string name="change_group_name">Modifica il nome di questo Gruppo</string>
+    <string name="rename_group">Rinomina gruppo</string>
 
     <string name="image">immagine</string>
     <string name="video">video</string>
@@ -409,6 +409,7 @@
     <string name="event_invited_users">Invitati</string>
     <string name="event_invite_friends">Invita amici</string>
     <string name="event_location_label">Posizione</string>
+    <string name="event_type_label">Tipo</string>
     <string name="event_no_location_selected">Nessuna posizione selezionata</string>
     <string name="event_pick_location_title">Scegli una posizione</string>
     <string name="event_pick_location_hint">Sposta la mappa per posizionare il pin</string>
@@ -1495,11 +1496,11 @@
     <string name="ttt_chat_details_nickname">Soprannome</string>
     <string name="ttt_chat_details_nickname_description">Tocca il nome per dare un soprannome al tuo amico. Appare al posto del suo nome nelle tue chat.</string>
     <string name="ttt_chat_details_wake">Sveglia il tuo amico</string>
-    <string name="ttt_chat_details_wake_description">Fai squillare il telefono del tuo amico come una sveglia, anche in modalità silenziosa, ad es. se dorme troppo. Funziona se usa Android e l'ha consentito nelle sue impostazioni.</string>
+    <string name="ttt_chat_details_wake_description">Fai squillare il telefono del tuo amico come una sveglia, anche in modalità silenziosa, ad es. se dorme troppo. Funziona se usa Android e l'ha consentito nelle sue impostazioni. Lo trovi in questo menu.</string>
     <string name="ttt_group_members">Membri del gruppo</string>
     <string name="ttt_group_members_description">Tocca un membro per aprire una chat o inviare una richiesta di amicizia, tocca l'immagine per vederla in grande. Gli admin aggiungono membri, nominano altri admin e rimuovono membri.</string>
     <string name="ttt_group_timer">Timer di eliminazione</string>
-    <string name="ttt_group_timer_description">Allo scadere del timer, il gruppo e tutti i suoi messaggi vengono eliminati per tutti, ad es. dopo una gita nel weekend. Solo gli admin possono impostarlo.</string>
+    <string name="ttt_group_timer_description">Allo scadere del timer, il gruppo e tutti i suoi messaggi vengono eliminati per tutti, ad es. dopo una gita nel weekend. Solo gli admin possono impostarlo, dal menu in alto a destra.</string>
     <string name="ttt_chat_details_about">Cosa dicono gli amici</string>
     <string name="ttt_chat_details_about_description">Un breve testo su questa persona che tutti i suoi amici scrivono insieme: tutti modificano lo stesso testo. Lei può leggerlo ma non modificarlo. Tocca per modificarlo.</string>
     <string name="ttt_feedback_requests">Richieste</string>
@@ -1948,7 +1949,7 @@
     <string name="group_extension_rename">Rinomina</string>
     <string name="group_extension_delete">Elimina estensione</string>
     <string name="group_extension_delete_confirm">Eliminare «%1$s» con tutte le voci per tutti in questo gruppo? L\'operazione non può essere annullata.</string>
-    <string name="group_extension_more_options">Altre opzioni</string>
+    <string name="more_options">Altre opzioni</string>
     <string name="shared_text_placeholder">Scrivete qualcosa insieme…</string>
     <string name="shared_text_show_author_colors">Mostra i colori degli autori</string>
     <string name="shared_text_hide_author_colors">Nascondi i colori degli autori</string>
