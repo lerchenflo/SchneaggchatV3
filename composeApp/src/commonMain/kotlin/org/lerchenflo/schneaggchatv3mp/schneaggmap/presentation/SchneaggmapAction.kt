@@ -5,20 +5,14 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayersAction
 
 sealed interface SchneaggmapAction {
     data object OnBackClicked : SchneaggmapAction
-    data object ToggleFilterDropdown : SchneaggmapAction
-    // Leading part of the places split button: hides all shown places, or shows every type when none are shown
-    data object ToggleAllPlaces : SchneaggmapAction
+    /** A filter chip or the place types dropdown changed what the shared layers show. */
+    data class OnLayersAction(val action: MapLayersAction) : SchneaggmapAction
 
-    data object ToggleShowUsers: SchneaggmapAction
-    data object ToggleShowEvents: SchneaggmapAction
-    data object ToggleShowActiveSightings: SchneaggmapAction
     data class OnEventPinClick(val eventId: String) : SchneaggmapAction
-    data class ToggleMainType(val key: LocationType) : SchneaggmapAction
-    data class ToggleGroup(val group: LocationGroup) : SchneaggmapAction
-    data class ToggleGroupExpanded(val group: LocationGroup) : SchneaggmapAction
     data class SelectEntry(val entry: MapEntry?) : SchneaggmapAction
 
     data class OnMapClick(val coordinates: LatLong, val longClick: Boolean) : SchneaggmapAction

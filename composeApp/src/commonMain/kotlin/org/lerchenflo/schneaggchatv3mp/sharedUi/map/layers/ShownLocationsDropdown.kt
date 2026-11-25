@@ -52,21 +52,21 @@ fun ShownLocationsDropdown(
     onAction: (SchneaggmapAction) -> Unit,
 ) {
     DropdownMenu(
-        expanded = state.isFilterDropdownVisible,
-        onDismissRequest = { onAction(SchneaggmapAction.ToggleFilterDropdown) },
+        expanded = state.layerDisplay.isPlacesDropdownVisible,
+        onDismissRequest = { onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.TogglePlacesDropdown)) },
     ) {
         LocationDropdownContent(
             onTypeClick = {
-                onAction(SchneaggmapAction.ToggleMainType(it))
+                onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleType(it)))
             },
             onGroupClick = {
-                onAction(SchneaggmapAction.ToggleGroup(it))
+                onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleGroup(it)))
             },
             onGroupExpandClick = {
-                onAction(SchneaggmapAction.ToggleGroupExpanded(it))
+                onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleGroupExpanded(it)))
             },
-            enabledTypes = state.enabledTypes,
-            expandedGroups = state.expandedFilterGroups,
+            enabledTypes = state.layerDisplay.enabledTypes,
+            expandedGroups = state.layerDisplay.expandedGroups,
         )
     }
 }

@@ -325,7 +325,7 @@ fun SchneaggmapLayers(
     //If no entry is loaded, dont render anything (Crash)
     if (state.layers.entries.isNotEmpty()) {
 
-        val enabledTypeKeysMap = state.enabledTypes
+        val enabledTypeKeysMap = state.layerDisplay.enabledTypes
 
         //Entries that match 2+ currently enabled types get a single merged-icon marker
         //(rendered further below) instead of one full icon per type stacked on the same
@@ -358,7 +358,7 @@ fun SchneaggmapLayers(
             //A type that is not enabled on the map still shows its active sightings
             val entriesForType = when {
                 enabledTypeKeysMap.contains(type) -> entriesOfType
-                state.showActiveSightings -> entriesOfType.filter { type in state.layers.activeSightings[it.id].orEmpty() }
+                state.layerDisplay.showActiveSightings -> entriesOfType.filter { type in state.layers.activeSightings[it.id].orEmpty() }
                 else -> emptyList()
             }
             if (entriesForType.isEmpty()) return@forEach
@@ -588,7 +588,7 @@ fun SchneaggmapLayers(
 
     //Show user locations - friends close enough together at the current zoom are merged into
     //a single "stacked avatars" marker (see userClusters) instead of overlapping pins.
-    if (allUsersWithLocation.isNotEmpty() && state.showUsers) {
+    if (allUsersWithLocation.isNotEmpty() && state.layerDisplay.showUsers) {
         userClusters.forEach { cluster ->
             if (cluster.users.size == 1) {
                 val user = cluster.users.first()
@@ -652,7 +652,7 @@ fun SchneaggmapLayers(
     //Show events with a location set, gated by the "Events" toggle in the filter dropdown.
     //Each pin uses the same icon as the event's type (see EventType.icon()).
     //Joined events are drawn in the primary color, all others in the error color.
-    if (state.layers.eventsWithLocation.isNotEmpty() && state.showEvents) {
+    if (state.layers.eventsWithLocation.isNotEmpty() && state.layerDisplay.showEvents) {
         state.layers.eventsWithLocation.forEach { event ->
             val location = event.location ?: return@forEach
             EventMarkerLayer(

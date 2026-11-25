@@ -69,8 +69,8 @@ fun MapFilterChipsRow(
     onAction: (SchneaggmapAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val enabledGroupCount = LocationGroup.entries.count { group -> group.types.any { it in state.enabledTypes } }
-    val placesVisible = state.enabledTypes.isNotEmpty()
+    val enabledGroupCount = LocationGroup.entries.count { group -> group.types.any { it in state.layerDisplay.enabledTypes } }
+    val placesVisible = state.layerDisplay.enabledTypes.isNotEmpty()
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -82,15 +82,15 @@ fun MapFilterChipsRow(
         MapFilterChip(
             label = stringResource(Res.string.schneaggmap_chip_active),
             icon = Icons.Outlined.LocalPolice,
-            selected = state.showActiveSightings,
-            onClick = { onAction(SchneaggmapAction.ToggleShowActiveSightings) },
+            selected = state.layerDisplay.showActiveSightings,
+            onClick = { onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleActiveSightings)) },
         )
 
         MapFilterChip(
             label = stringResource(Res.string.schneaggmap_chip_events),
             icon = Icons.Outlined.Event,
-            selected = state.showEvents,
-            onClick = { onAction(SchneaggmapAction.ToggleShowEvents) },
+            selected = state.layerDisplay.showEvents,
+            onClick = { onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleEvents)) },
         )
 
         //Box anchors the "Location types" dropdown below the split button
@@ -99,10 +99,10 @@ fun MapFilterChipsRow(
                 label = stringResource(Res.string.schneaggmap_chip_places, enabledGroupCount, LocationGroup.entries.size),
                 placesVisible = placesVisible,
                 isLoading = state.isLoading,
-                dropdownVisible = state.isFilterDropdownVisible,
-                onToggleAllClick = { onAction(SchneaggmapAction.ToggleAllPlaces) },
+                dropdownVisible = state.layerDisplay.isPlacesDropdownVisible,
+                onToggleAllClick = { onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleAllPlaces)) },
                 onDropdownClick = {
-                    if (!state.isFilterDropdownVisible) onAction(SchneaggmapAction.ToggleFilterDropdown)
+                    if (!state.layerDisplay.isPlacesDropdownVisible) onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.TogglePlacesDropdown))
                 },
             )
 
@@ -122,8 +122,8 @@ fun MapFilterChipsRow(
         MapFilterChip(
             label = stringResource(Res.string.location_type_user),
             icon = Icons.Outlined.Group,
-            selected = state.showUsers,
-            onClick = { onAction(SchneaggmapAction.ToggleShowUsers) },
+            selected = state.layerDisplay.showUsers,
+            onClick = { onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleUsers)) },
         )
     }
 }

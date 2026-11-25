@@ -9,19 +9,13 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapLayersData
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayersDisplay
 
 
 data class SchneaggmapState(
     // Places, friends and events, shared with every map screen
     val layers: MapLayersData = MapLayersData(),
-
-    val enabledTypes: Set<LocationType> = emptySet(),
-    val isFilterDropdownVisible: Boolean = false,
-    val expandedFilterGroups: Set<LocationGroup> = emptySet(),
-    // Police and mobile radars with a fresh sighting show even while their type is not enabled
-    val showActiveSightings: Boolean = true,
-    val showUsers: Boolean = true,
-    val showEvents: Boolean = true,
+    val layerDisplay: MapLayersDisplay = MapLayersDisplay(),
 
     // Friends to show first in the friends bar, empty while the setting is off
     val pinnedFriendIds: Set<String> = emptySet(),

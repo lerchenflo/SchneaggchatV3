@@ -34,10 +34,14 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapLayersSource
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayersAction
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayersDisplay
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.reduce
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.showingTypes
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.withPlacesDropdownClosed
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -71,7 +75,7 @@ class SchneaggmapViewModel(
     //Picking a coordinate hides the filter chips, so nothing could turn the sightings off again
     private val initialState = SchneaggmapState(
         pickLocationMode = pickLocationMode,
-        showActiveSightings = !pickLocationMode,
+        layerDisplay = MapLayersDisplay(showActiveSightings = !pickLocationMode),
     )
     private val _state = MutableStateFlow(initialState)
 
@@ -153,47 +157,15 @@ class SchneaggmapViewModel(
                     navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true)) }
 
             }
-            SchneaggmapAction.ToggleFilterDropdown -> _state.update {
+            is SchneaggmapAction.OnLayersAction -> _state.update {
                 it.copy(
-                    isFilterDropdownVisible = !it.isFilterDropdownVisible,
-                    selectedEntry = null,
+                    layerDisplay = it.layerDisplay.reduce(action.action),
+                    // Opening or closing the place types closes the open entry
+                    selectedEntry = if (action.action == MapLayersAction.TogglePlacesDropdown) null else it.selectedEntry,
                 )
             }
-            SchneaggmapAction.ToggleShowActiveSightings -> _state.update {
-                it.copy(showActiveSightings = !it.showActiveSightings)
-            }
-            SchneaggmapAction.ToggleAllPlaces -> {
-                val allPlaceTypes = LocationGroup.entries.flatMapTo(mutableSetOf()) { it.types }
-
-                // Anything shown (even only some types): hide all. Nothing shown: show every type
-                _state.update {
-                    it.copy(enabledTypes = if (it.enabledTypes.isNotEmpty()) emptySet() else allPlaceTypes)
-                }
-            }
-            is SchneaggmapAction.ToggleMainType -> {
-                val enabled = state.value.enabledTypes
-                val updated = if (action.key in enabled) enabled - action.key else enabled + action.key
-
-                _state.update { it.copy(enabledTypes = updated) }
-            }
-            is SchneaggmapAction.ToggleGroup -> {
-                val enabled = state.value.enabledTypes
-                val updated = if (enabled.containsAll(action.group.types)) {
-                    enabled - action.group.types.toSet()
-                } else {
-                    enabled + action.group.types
-                }
-
-                _state.update { it.copy(enabledTypes = updated) }
-            }
-            is SchneaggmapAction.ToggleGroupExpanded -> {
-                val expanded = state.value.expandedFilterGroups
-                val updated = if (action.group in expanded) expanded - action.group else expanded + action.group
-
-                _state.update { it.copy(expandedFilterGroups = updated) }
-            }
             is SchneaggmapAction.SelectEntry -> _state.update {
-                it.copy(selectedEntry = action.entry, isFilterDropdownVisible = false)
+                it.copy(selectedEntry = action.entry, layerDisplay = it.layerDisplay.withPlacesDropdownClosed())
             }
 
             is SchneaggmapAction.OnMapClick -> {
@@ -205,9 +177,9 @@ class SchneaggmapViewModel(
                 if (_state.value.pickLocationMode) return
 
                 //Dismiss filter dropdown on map click
-                if (_state.value.isFilterDropdownVisible) {
+                if (_state.value.layerDisplay.isPlacesDropdownVisible) {
                     _state.update {
-                        it.copy(isFilterDropdownVisible = false)
+                        it.copy(layerDisplay = it.layerDisplay.withPlacesDropdownClosed())
                     }
                 }
 
@@ -276,7 +248,7 @@ class SchneaggmapViewModel(
                 _state.update { currentState ->
                     currentState.copy(
                         selectedEntry = selectedEntry,
-                        isFilterDropdownVisible = false
+                        layerDisplay = currentState.layerDisplay.withPlacesDropdownClosed()
                     )
                 }
             }
@@ -304,7 +276,7 @@ class SchneaggmapViewModel(
                 _state.update { s ->
                     s.copy(
                         selectedEntry = if (action.keepPopupOpen) entry else null,
-                        enabledTypes = s.enabledTypes + entry.locationData.map { it.locationtype }
+                        layerDisplay = s.layerDisplay.showingTypes(entry.locationData.map { it.locationtype })
                     )
                 }
 
@@ -352,7 +324,7 @@ class SchneaggmapViewModel(
                 _state.update { currentState ->
                     currentState.copy(
                         selectedUser = selectedUser,
-                        isFilterDropdownVisible = false
+                        layerDisplay = currentState.layerDisplay.withPlacesDropdownClosed()
                     )
                 }
             }
@@ -361,7 +333,7 @@ class SchneaggmapViewModel(
                 _state.update { currentState ->
                     currentState.copy(
                         selectedUser = currentState.layers.ownUser,
-                        isFilterDropdownVisible = false
+                        layerDisplay = currentState.layerDisplay.withPlacesDropdownClosed()
                     )
                 }
             }
@@ -384,22 +356,6 @@ class SchneaggmapViewModel(
 
             SchneaggmapAction.ToggleSnailTrails -> _state.update {
                 it.copy(showSnailTrails = !it.showSnailTrails)
-            }
-
-            SchneaggmapAction.ToggleShowUsers -> {
-                _state.update {
-                    it.copy(
-                        showUsers = !it.showUsers
-                    )
-                }
-            }
-
-            SchneaggmapAction.ToggleShowEvents -> {
-                _state.update {
-                    it.copy(
-                        showEvents = !it.showEvents
-                    )
-                }
             }
 
             is SchneaggmapAction.OnEventPinClick -> {
@@ -454,7 +410,7 @@ class SchneaggmapViewModel(
                     it.copy(
                         selectedEntry = action.entry, //Show popup for this entry
                         focusEntryTarget = action.entry.coordinates, //Zoom to this entry
-                        enabledTypes = it.enabledTypes + action.entry.locationData.map { data -> data.locationtype } //Enable the entries types on the map
+                        layerDisplay = it.layerDisplay.showingTypes(action.entry.locationData.map { data -> data.locationtype }) //Enable the entries types on the map
                     )
                 }
 
@@ -476,8 +432,8 @@ class SchneaggmapViewModel(
 
         // Opened on positions (a map preview): one is centered, several are fitted into view
         when {
-            focusArea.size == 1 -> _state.update { it.copy(focusEntryTarget = focusArea.first(), isFilterDropdownVisible = false) }
-            focusArea.size > 1 -> _state.update { it.copy(focusAreaTarget = focusArea, isFilterDropdownVisible = false) }
+            focusArea.size == 1 -> _state.update { it.copy(focusEntryTarget = focusArea.first(), layerDisplay = it.layerDisplay.withPlacesDropdownClosed()) }
+            focusArea.size > 1 -> _state.update { it.copy(focusAreaTarget = focusArea, layerDisplay = it.layerDisplay.withPlacesDropdownClosed()) }
         }
 
         // Opened on a user (a chat's map preview): open their card and fly to them once they show
@@ -490,7 +446,7 @@ class SchneaggmapViewModel(
                     it.copy(
                         selectedUser = user,
                         focusEntryTarget = LatLong(lat = location.lat, long = location.long),
-                        isFilterDropdownVisible = false,
+                        layerDisplay = it.layerDisplay.withPlacesDropdownClosed(),
                     )
                 }
             }
@@ -508,9 +464,10 @@ class SchneaggmapViewModel(
                     it.copy(
                         selectedEntry = entry,
                         focusEntryTarget = entry.coordinates,
-                        isFilterDropdownVisible = false,
                         // Make sure the entry's marker is actually visible on the map
-                        enabledTypes = it.enabledTypes + entry.locationData.map { data -> data.locationtype }
+                        layerDisplay = it.layerDisplay
+                            .withPlacesDropdownClosed()
+                            .showingTypes(entry.locationData.map { data -> data.locationtype })
                     )
                 }
             }
