@@ -37,8 +37,6 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.sortedTypes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_location_types
 
@@ -48,25 +46,25 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_locati
  */
 @Composable
 fun ShownLocationsDropdown(
-    state: SchneaggmapState,
-    onAction: (SchneaggmapAction) -> Unit,
+    display: MapLayersDisplay,
+    onLayersAction: (MapLayersAction) -> Unit,
 ) {
     DropdownMenu(
-        expanded = state.layerDisplay.isPlacesDropdownVisible,
-        onDismissRequest = { onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.TogglePlacesDropdown)) },
+        expanded = display.isPlacesDropdownVisible,
+        onDismissRequest = { onLayersAction(MapLayersAction.TogglePlacesDropdown) },
     ) {
         LocationDropdownContent(
             onTypeClick = {
-                onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleType(it)))
+                onLayersAction(MapLayersAction.ToggleType(it))
             },
             onGroupClick = {
-                onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleGroup(it)))
+                onLayersAction(MapLayersAction.ToggleGroup(it))
             },
             onGroupExpandClick = {
-                onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleGroupExpanded(it)))
+                onLayersAction(MapLayersAction.ToggleGroupExpanded(it))
             },
-            enabledTypes = state.layerDisplay.enabledTypes,
-            expandedGroups = state.layerDisplay.expandedGroups,
+            enabledTypes = display.enabledTypes,
+            expandedGroups = display.expandedGroups,
         )
     }
 }

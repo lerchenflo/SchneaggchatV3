@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -20,7 +21,6 @@ import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.LocalPolice
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedFilterChip
@@ -42,11 +42,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.lerchenflo.taptarget.tapTarget
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import org.lerchenflo.schneaggchatv3mp.sharedUi.horizontalScrollWithMouseWheel
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.location_type_user
@@ -56,21 +53,25 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_chip_places
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_chip_state_off
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_chip_state_on
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_location_types
-import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_snail_trails
 
 /**
- * Quick filter chips below the map search bar. Every chip works on the same state as the matching
- * entry in the "Location types" dropdown, so both always stay in sync. Places use a split button:
- * its leading part shows or hides all places at once, its arrow opens that dropdown.
+ * Quick filter chips for the shared map layers (Schneaggmap, route planner). Every chip works on
+ * the same state as the matching entry in the "Location types" dropdown, so both always stay in
+ * sync. Places use a split button: its leading part shows or hides all places at once, its arrow
+ * opens that dropdown. [extraChips] (a screen's own layers) come between places and friends;
+ * [placesChipModifier] goes on the places split button and its dropdown (e.g. a tour target).
  */
 @Composable
 fun MapFilterChipsRow(
-    state: SchneaggmapState,
-    onAction: (SchneaggmapAction) -> Unit,
+    display: MapLayersDisplay,
+    onLayersAction: (MapLayersAction) -> Unit,
     modifier: Modifier = Modifier,
+    placesChipModifier: Modifier = Modifier,
+    isPlacesLoading: Boolean = false,
+    extraChips: @Composable RowScope.() -> Unit = {},
 ) {
-    val enabledGroupCount = LocationGroup.entries.count { group -> group.types.any { it in state.layerDisplay.enabledTypes } }
-    val placesVisible = state.layerDisplay.enabledTypes.isNotEmpty()
+    val enabledGroupCount = LocationGroup.entries.count { group -> group.types.any { it in display.enabledTypes } }
+    val placesVisible = display.enabledTypes.isNotEmpty()
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -82,48 +83,43 @@ fun MapFilterChipsRow(
         MapFilterChip(
             label = stringResource(Res.string.schneaggmap_chip_active),
             icon = Icons.Outlined.LocalPolice,
-            selected = state.layerDisplay.showActiveSightings,
-            onClick = { onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleActiveSightings)) },
+            selected = display.showActiveSightings,
+            onClick = { onLayersAction(MapLayersAction.ToggleActiveSightings) },
         )
 
         MapFilterChip(
             label = stringResource(Res.string.schneaggmap_chip_events),
             icon = Icons.Outlined.Event,
-            selected = state.layerDisplay.showEvents,
-            onClick = { onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleEvents)) },
+            selected = display.showEvents,
+            onClick = { onLayersAction(MapLayersAction.ToggleEvents) },
         )
 
         //Box anchors the "Location types" dropdown below the split button
-        Box(modifier = Modifier.tapTarget("schneaggmap_location_dropdown")) {
+        Box(modifier = placesChipModifier) {
             PlacesSplitButton(
                 label = stringResource(Res.string.schneaggmap_chip_places, enabledGroupCount, LocationGroup.entries.size),
                 placesVisible = placesVisible,
-                isLoading = state.isLoading,
-                dropdownVisible = state.layerDisplay.isPlacesDropdownVisible,
-                onToggleAllClick = { onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleAllPlaces)) },
+                isLoading = isPlacesLoading,
+                dropdownVisible = display.isPlacesDropdownVisible,
+                onToggleAllClick = { onLayersAction(MapLayersAction.ToggleAllPlaces) },
                 onDropdownClick = {
-                    if (!state.layerDisplay.isPlacesDropdownVisible) onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.TogglePlacesDropdown))
+                    if (!display.isPlacesDropdownVisible) onLayersAction(MapLayersAction.TogglePlacesDropdown)
                 },
             )
 
             ShownLocationsDropdown(
-                state = state,
-                onAction = onAction,
+                display = display,
+                onLayersAction = onLayersAction,
             )
         }
 
-        MapFilterChip(
-            label = stringResource(Res.string.schneaggmap_filter_snail_trails),
-            icon = Icons.Outlined.Route,
-            selected = state.showSnailTrails,
-            onClick = { onAction(SchneaggmapAction.ToggleSnailTrails) },
-        )
+        extraChips()
 
         MapFilterChip(
             label = stringResource(Res.string.location_type_user),
             icon = Icons.Outlined.Group,
-            selected = state.layerDisplay.showUsers,
-            onClick = { onAction(SchneaggmapAction.OnLayersAction(MapLayersAction.ToggleUsers)) },
+            selected = display.showUsers,
+            onClick = { onLayersAction(MapLayersAction.ToggleUsers) },
         )
     }
 }
@@ -246,8 +242,9 @@ private fun PlacesSplitButton(
     )
 }
 
+/** One on/off chip of [MapFilterChipsRow], public for a screen's [MapFilterChipsRow] `extraChips`. */
 @Composable
-private fun MapFilterChip(
+fun MapFilterChip(
     label: String,
     icon: ImageVector,
     selected: Boolean,

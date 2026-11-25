@@ -54,7 +54,16 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapSe
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.MapZoomSlider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.approximateDistanceMeters
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.metersPerDpAtTarget
-import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.SchneaggmapLayers
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapContentLayers
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapFilterChip
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayerClicks
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayersAction
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.SnailTrailLayers
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Route
+import io.github.lerchenflo.taptarget.tapTarget
+import org.jetbrains.compose.resources.stringResource
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_snail_trails
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.maplibre.compose.camera.CameraAnimation
@@ -121,8 +130,19 @@ fun SchneaggmapScreen(
     state: SchneaggmapState = SchneaggmapState(),
     onAction: (SchneaggmapAction) -> Unit = {},
 ) {
+    val onLayersAction: (MapLayersAction) -> Unit = remember(onAction) {
+        { action -> onAction(SchneaggmapAction.OnLayersAction(action)) }
+    }
+    val layerClicks = remember(onAction) {
+        MapLayerClicks(
+            onEntryClick = { onAction(SchneaggmapAction.OnEntryClick(it)) },
+            onUserClick = { onAction(SchneaggmapAction.OnUserClick(it)) },
+            onEventClick = { onAction(SchneaggmapAction.OnEventPinClick(it)) },
+            onOwnUserClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
+        )
+    }
 
-    //Own position, resolved once here (not in SchneaggmapLayers) so we don't open a second,
+    //Own position, resolved once here (not in MapContentLayers) so we don't open a second,
     //redundant GPS subscription just to also show the speed readout below.
     //The provider reads the platform permission when it is created and afterwards only on activity
     //resume, so it is recreated whenever our own permission state flips to pick the grant up.
@@ -153,7 +173,22 @@ fun SchneaggmapScreen(
             zoom = 7.0,
         )
     ) {
-        SchneaggmapLayers(state = state, mapState = mapState, ownLocation = ownLocation, onAction = onAction)
+        MapContentLayers(
+            data = state.layers,
+            display = state.layerDisplay,
+            mapState = mapState,
+            ownLocation = ownLocation,
+            clicks = layerClicks,
+            underPeople = {
+                if (state.showSnailTrails) {
+                    SnailTrailLayers(
+                        usersWithLocation = state.layers.usersWithLocation,
+                        snailTrails = state.snailTrails,
+                        ownLocation = ownLocation,
+                    )
+                }
+            },
+        )
     }
     val scope = rememberCoroutineScope()
 
@@ -467,8 +502,18 @@ fun SchneaggmapScreen(
                     //Spacer(modifier = Modifier.height(4.dp))
 
                     MapFilterChipsRow(
-                        state = state,
-                        onAction = onAction,
+                        display = state.layerDisplay,
+                        onLayersAction = onLayersAction,
+                        placesChipModifier = Modifier.tapTarget("schneaggmap_location_dropdown"),
+                        isPlacesLoading = state.isLoading,
+                        extraChips = {
+                            MapFilterChip(
+                                label = stringResource(Res.string.schneaggmap_filter_snail_trails),
+                                icon = Icons.Outlined.Route,
+                                selected = state.showSnailTrails,
+                                onClick = { onAction(SchneaggmapAction.ToggleSnailTrails) },
+                            )
+                        },
                     )
                 }
             }

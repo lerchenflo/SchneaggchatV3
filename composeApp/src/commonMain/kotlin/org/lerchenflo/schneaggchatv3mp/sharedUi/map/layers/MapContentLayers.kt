@@ -4,13 +4,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
@@ -37,14 +33,13 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
-import org.lerchenflo.schneaggchatv3mp.sharedUi.map.approximateDistanceMeters
-import org.lerchenflo.schneaggchatv3mp.sharedUi.map.metersPerDpAtTarget
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapLayersData
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.EventMarkerLayer
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.MarkerIcon
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.UserMarkerLayer
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.addMarkerBackground
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.approximateDistanceMeters
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.metersPerDpAtTarget
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.rememberUserMarkers
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.mergeClusterAvatarsIcon
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.mergeLocationTypeIcons
@@ -57,12 +52,9 @@ import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.feature
 import org.maplibre.compose.expressions.dsl.image
 import org.maplibre.compose.expressions.dsl.switch
-import org.maplibre.compose.expressions.value.LineCap
-import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.interaction.ClickResult
 import org.maplibre.compose.layers.FeaturesClickHandler
 import org.maplibre.compose.layers.CircleLayer
-import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.location.LocationMeasurement
 import org.maplibre.compose.map.MapState
@@ -72,7 +64,6 @@ import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.util.MaplibreComposable
 import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
-import org.maplibre.spatialk.geojson.LineString
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import org.maplibre.spatialk.units.Bearing
@@ -97,28 +88,6 @@ private const val RECENTLY_SEEN_PROPERTY = "recentlySeen"
 
 //Per-type icon size inside a merged multi-type place marker, half of mergeLocationTypeIcons' default.
 private val MERGED_PLACE_ICON_SIZE = 15.dp
-
-//Distinct, stable color per user for snail trails - picked by hashing the user id into a
-//small curated palette so colors stay visually distinguishable from each other.
-private val SNAIL_TRAIL_COLORS = listOf(
-    Color(0xFFE53935), Color(0xFF1E88E5), Color(0xFF43A047), Color(0xFFFB8C00),
-    Color(0xFF8E24AA), Color(0xFF00ACC1), Color(0xFFD81B60), Color(0xFF6D4C41),
-)
-
-private fun snailTrailColor(userId: String): Color =
-    SNAIL_TRAIL_COLORS[userId.hashCode().mod(SNAIL_TRAIL_COLORS.size)]
-
-//Extends the recorded trail with the user's live position so the line reaches all the way to
-//where they actually are right now, not just to the last synced trail point. Skipped if the
-//user is already sitting at that last point (no redundant zero-length segment).
-private fun appendLiveEndIfMoved(trailPositions: List<Position>, livePosition: Position?): List<Position> {
-    if (livePosition == null) return trailPositions
-    return if (trailPositions.isEmpty() || trailPositions.last() != livePosition) {
-        trailPositions + listOf(livePosition)
-    } else {
-        trailPositions
-    }
-}
 
 private data class UserCluster(val users: List<User>, val centroid: Position)
 
@@ -159,19 +128,29 @@ private fun clusterUsersByProximity(users: List<User>, radiusMeters: Double): Li
     return clusters
 }
 
+/** Taps on the shared layers, each with the id of the tapped entry, user or event. */
+data class MapLayerClicks(
+    val onEntryClick: (entryId: String) -> Unit = {},
+    val onUserClick: (userId: String) -> Unit = {},
+    val onEventClick: (eventId: String) -> Unit = {},
+    val onOwnUserClick: () -> Unit = {},
+)
+
 /**
- * Draws the Schneaggmap tiles, POI markers, friend/cluster markers, event pins, snail trails and
- * own-location puck as [mapState]'s declared style content. Contains no phone-only chrome (FABs,
- * search bar, dropdowns, info cards, dialogs); those live in
- * [org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreen].
+ * The layers every map screen shares (Schneaggmap, route planner): POI markers, friend/cluster
+ * markers, event pins and the own-location puck, as [mapState]'s declared style content, shown as
+ * [display] says. [underPeople] is drawn over the places and under friends, events and the own
+ * position (the Schneaggmap's snail trails). Contains no chrome (chips, cards, dialogs).
  */
 @Composable
 @MaplibreComposable
-fun SchneaggmapLayers(
-    state: SchneaggmapState,
+fun MapContentLayers(
+    data: MapLayersData,
+    display: MapLayersDisplay,
     mapState: MapState,
     ownLocation: LocationMeasurement?,
-    onAction: (SchneaggmapAction) -> Unit,
+    clicks: MapLayerClicks,
+    underPeople: @Composable @MaplibreComposable () -> Unit = {},
 ) {
 
     val ownId = SessionCache.requireLoggedIn()?.userId
@@ -205,8 +184,8 @@ fun SchneaggmapLayers(
     val defaultAvatarBitmap = imageResource(Res.drawable.icon_nutzer)
 
     val batteryService = koinInject<BatteryService>()
-    val ownUserWithLocation = remember(state.layers.ownUser, ownLocation, batteryService) {
-        state.layers.ownUser?.copy(
+    val ownUserWithLocation = remember(data.ownUser, ownLocation, batteryService) {
+        data.ownUser?.copy(
             location = ownLocation?.let { location ->
                 UserLocation(
                     lat = location.position.latitude,
@@ -221,18 +200,18 @@ fun SchneaggmapLayers(
         )
     }
 
-    val allUsersWithLocation = remember(state.layers.usersWithLocation, ownUserWithLocation) {
+    val allUsersWithLocation = remember(data.usersWithLocation, ownUserWithLocation) {
         if (ownUserWithLocation != null && ownUserWithLocation.location != null) {
-            listOf(ownUserWithLocation) + state.layers.usersWithLocation.filter { it.id != ownUserWithLocation.id }
+            listOf(ownUserWithLocation) + data.usersWithLocation.filter { it.id != ownUserWithLocation.id }
         } else {
-            state.layers.usersWithLocation
+            data.usersWithLocation
         }
     }
 
     //Live presence: a friend counts as "online" if the server currently has them connected,
     //otherwise we show their last-seen time instead.
     val userMarkers = rememberUserMarkers(allUsersWithLocation) { user ->
-        user.id == ownId || user.id in state.layers.onlineFriendIds
+        user.id == ownId || user.id in data.onlineFriendIds
     }
     val userIcons = userMarkers.mapValues { it.value.marker }
     //Raw, undecorated profile pictures (no status pill) so merged cluster icons can composite
@@ -244,8 +223,8 @@ fun SchneaggmapLayers(
     //so a continuous pinch/pan gesture doesn't re-cluster (and churn the GL layers) every frame.
     val rawClusterRadiusMeters = USER_CLUSTER_RADIUS_DP * mapState.metersPerDpAtTarget
     val clusterRadiusMeters = (rawClusterRadiusMeters / 5.0).roundToInt() * 5.0
-    val userClusters = remember(allUsersWithLocation, clusterRadiusMeters, state.layers.mergeUsers) {
-        if (state.layers.mergeUsers) {
+    val userClusters = remember(allUsersWithLocation, clusterRadiusMeters, data.mergeUsers) {
+        if (data.mergeUsers) {
             clusterUsersByProximity(allUsersWithLocation, clusterRadiusMeters)
         } else {
             allUsersWithLocation.filter { it.location != null }.map { user ->
@@ -319,19 +298,19 @@ fun SchneaggmapLayers(
         }
     }
 
-    //println("MapLocations: ${state.layers.entries}")
+    //println("MapLocations: ${data.entries}")
 
 
     //If no entry is loaded, dont render anything (Crash)
-    if (state.layers.entries.isNotEmpty()) {
+    if (data.entries.isNotEmpty()) {
 
-        val enabledTypeKeysMap = state.layerDisplay.enabledTypes
+        val enabledTypeKeysMap = display.enabledTypes
 
         //Entries that match 2+ currently enabled types get a single merged-icon marker
         //(rendered further below) instead of one full icon per type stacked on the same
         //coordinate, so they're excluded from the per-type layers here.
-        val multiTypeEntries = remember(state.layers.entries, enabledTypeKeysMap) {
-            state.layers.entries.filter { entry ->
+        val multiTypeEntries = remember(data.entries, enabledTypeKeysMap) {
+            data.entries.filter { entry ->
                 entry.locationData
                     .map { it.locationtype }
                     .distinct()
@@ -342,9 +321,9 @@ fun SchneaggmapLayers(
 
         //Precomputed once per entries/multi-type change instead of re-filtering all entries
         //for every one of the ~30 location types on every recomposition.
-        val entriesByType = remember(state.layers.entries, multiTypeEntryIds) {
+        val entriesByType = remember(data.entries, multiTypeEntryIds) {
             entries.associateWith { type ->
-                state.layers.entries.filter { entry ->
+                data.entries.filter { entry ->
                     entry.id !in multiTypeEntryIds &&
                         entry.locationData.any { it.locationtype == type }
                 }
@@ -358,7 +337,7 @@ fun SchneaggmapLayers(
             //A type that is not enabled on the map still shows its active sightings
             val entriesForType = when {
                 enabledTypeKeysMap.contains(type) -> entriesOfType
-                state.layerDisplay.showActiveSightings -> entriesOfType.filter { type in state.layers.activeSightings[it.id].orEmpty() }
+                display.showActiveSightings -> entriesOfType.filter { type in data.activeSightings[it.id].orEmpty() }
                 else -> emptyList()
             }
             if (entriesForType.isEmpty()) return@forEach
@@ -375,7 +354,7 @@ fun SchneaggmapLayers(
                 }
 
                 //Only built when a marker needs it, a second bitmap for every enabled type is wasted work
-                val iconImage = if (entriesForType.any { type in state.layers.activeSightings[it.id].orEmpty() }) {
+                val iconImage = if (entriesForType.any { type in data.activeSightings[it.id].orEmpty() }) {
                     val recentlySeenIcon = remember(markerIcon, recentlySeenBackgroundColor, density) {
                         addMarkerBackground(markerIcon, recentlySeenBackgroundColor, density, RECENTLY_SEEN_DISC_SIZE)
                     }
@@ -402,7 +381,7 @@ fun SchneaggmapLayers(
                                     ),
                                     properties = buildJsonObject {
                                         put("type", JsonPrimitive(type.name))
-                                        if (type in state.layers.activeSightings[entry.id].orEmpty()) {
+                                        if (type in data.activeSightings[entry.id].orEmpty()) {
                                             put(RECENTLY_SEEN_PROPERTY, JsonPrimitive(true))
                                         }
                                     },
@@ -415,7 +394,7 @@ fun SchneaggmapLayers(
                     from = GeoJsonOptions(
                         from = GeoJsonOptions.Standard
                     ) {
-                        cluster = state.layers.useClustering
+                        cluster = data.useClustering
                         clusterRadius = 12
                         clusterMinPoints = 6
                         synchronousTiling = false
@@ -429,12 +408,12 @@ fun SchneaggmapLayers(
                     source = mapLocationSource,
                     onClick = { clickedItems ->
                         if (clickedItems.isNotEmpty()) {
-                            onAction(SchneaggmapAction.OnEntryClick(clickedItems.first().id!!.content))
+                            clicks.onEntryClick(clickedItems.first().id!!.content)
                             ClickResult.Consume
                         } else ClickResult.Pass
                     },
                     iconImage = iconImage,
-                    iconAllowOverlap = const(!state.layers.useClustering)
+                    iconAllowOverlap = const(!data.useClustering)
                 )
             }
         }
@@ -445,7 +424,7 @@ fun SchneaggmapLayers(
         //single-type entries, so native per-type clustering above is left untouched.
         val entryMergedIcons: Map<String, MarkerIcon> = remember(
             multiTypeEntries, typeIconBitmaps, mergedLocationBackgroundColor,
-            recentlySeenBackgroundColor, state.layers.activeSightings, density
+            recentlySeenBackgroundColor, data.activeSightings, density
         ) {
             multiTypeEntries.associate { entry ->
                 val shownTypes = entry.locationData
@@ -454,7 +433,7 @@ fun SchneaggmapLayers(
                     .filter { it in enabledTypeKeysMap }
                     .sortedBy { it.ordinal }
                 val icons = shownTypes.mapNotNull { typeIconBitmaps[it] }
-                val recentlySeen = shownTypes.any { it in state.layers.activeSightings[entry.id].orEmpty() }
+                val recentlySeen = shownTypes.any { it in data.activeSightings[entry.id].orEmpty() }
                 val bitmap = mergeLocationTypeIcons(
                     icons = icons,
                     backgroundColor = if (recentlySeen) recentlySeenBackgroundColor else mergedLocationBackgroundColor,
@@ -495,7 +474,7 @@ fun SchneaggmapLayers(
                             source = mapLocationSource,
                             onClick = { clickedItems ->
                                 if (clickedItems.isNotEmpty()) {
-                                    onAction(SchneaggmapAction.OnEntryClick(clickedItems.first().id!!.content))
+                                    clicks.onEntryClick(clickedItems.first().id!!.content)
                                     ClickResult.Consume
                                 } else ClickResult.Pass
                             },
@@ -510,85 +489,12 @@ fun SchneaggmapLayers(
     }
 
 
-    //Show snail trails (drawn before the user markers so the avatars sit on top of the lines)
-    if (state.showSnailTrails) {
-        state.layers.usersWithLocation.forEach { user ->
-            key(user.id) {
-                val trail = state.snailTrails[user.id]
-                val trailPositions = trail?.map { point ->
-                    Position(longitude = point.long, latitude = point.lat)
-                } ?: emptyList()
-                val livePosition = user.location?.let { Position(longitude = it.long, latitude = it.lat) }
-                val fullTrailPositions = appendLiveEndIfMoved(trailPositions, livePosition)
-                if (fullTrailPositions.size >= 2) {
-                    safeAdd(layerId = "snailtrail-${user.id}") {
-                        val trailSource = rememberGeoJsonSource(
-                            data = GeoJsonData.Features(
-                                FeatureCollection(
-                                    Feature(
-                                        geometry = LineString(fullTrailPositions),
-                                        properties = buildJsonObject {},
-
-                                    )
-                                )
-                            )
-                        )
-
-                        LineLayer(
-                            id = "snailtrail-${user.id}",
-                            source = trailSource,
-                            color = const(snailTrailColor(user.id)),
-                            width = const(3.dp),
-                            cap = const(LineCap.Round),
-                            join = const(LineJoin.Round),
-                        )
-                    }
-                }
-            }
-        }
-
-        // Our own snail trail - drawn in the theme's primary color so it stands out from
-        // friends' hashed palette colors.
-        if (ownId != null) {
-            key(ownId) {
-                val ownTrail = state.snailTrails[ownId]
-                val ownTrailPositions = ownTrail?.map { point ->
-                    Position(longitude = point.long, latitude = point.lat)
-                } ?: emptyList()
-                val ownLivePosition = ownLocation?.position
-                val fullOwnTrailPositions = appendLiveEndIfMoved(ownTrailPositions, ownLivePosition)
-                if (fullOwnTrailPositions.size >= 2) {
-                    safeAdd(layerId = "snailtrail-$ownId") {
-                        val ownTrailColor = MaterialTheme.colorScheme.primary
-                        val ownTrailSource = rememberGeoJsonSource(
-                            data = GeoJsonData.Features(
-                                FeatureCollection(
-                                    Feature(
-                                        geometry = LineString(fullOwnTrailPositions),
-                                        properties = buildJsonObject {},
-
-                                    )
-                                )
-                            )
-                        )
-
-                        LineLayer(
-                            id = "snailtrail-$ownId",
-                            source = ownTrailSource,
-                            color = const(ownTrailColor),
-                            width = const(3.dp),
-                            cap = const(LineCap.Round),
-                            join = const(LineJoin.Round),
-                        )
-                    }
-                }
-            }
-        }
-    }
+    //Drawn before the user markers so the avatars sit on top (snail trails)
+    underPeople()
 
     //Show user locations - friends close enough together at the current zoom are merged into
     //a single "stacked avatars" marker (see userClusters) instead of overlapping pins.
-    if (allUsersWithLocation.isNotEmpty() && state.layerDisplay.showUsers) {
+    if (allUsersWithLocation.isNotEmpty() && display.showUsers) {
         userClusters.forEach { cluster ->
             if (cluster.users.size == 1) {
                 val user = cluster.users.first()
@@ -599,7 +505,7 @@ fun SchneaggmapLayers(
                         marker = userIcons[user.id],
                         onClick = { clickedItems ->
                             if (clickedItems.isNotEmpty()) {
-                                onAction(SchneaggmapAction.OnUserClick(clickedItems.first().id!!.content))
+                                clicks.onUserClick(clickedItems.first().id!!.content)
                                 ClickResult.Consume
                             } else ClickResult.Pass
                         },
@@ -652,17 +558,17 @@ fun SchneaggmapLayers(
     //Show events with a location set, gated by the "Events" toggle in the filter dropdown.
     //Each pin uses the same icon as the event's type (see EventType.icon()).
     //Joined events are drawn in the primary color, all others in the error color.
-    if (state.layers.eventsWithLocation.isNotEmpty() && state.layerDisplay.showEvents) {
-        state.layers.eventsWithLocation.forEach { event ->
+    if (data.eventsWithLocation.isNotEmpty() && display.showEvents) {
+        data.eventsWithLocation.forEach { event ->
             val location = event.location ?: return@forEach
             EventMarkerLayer(
                 eventId = event.id,
                 position = Position(longitude = location.long, latitude = location.lat),
                 icon = event.type.icon(),
-                isJoined = event.id in state.layers.joinedEventIds,
+                isJoined = event.id in data.joinedEventIds,
                 onClick = { clickedItems ->
                     if (clickedItems.isNotEmpty()) {
-                        onAction(SchneaggmapAction.OnEventPinClick(clickedItems.first().id!!.content))
+                        clicks.onEventClick(clickedItems.first().id!!.content)
                         ClickResult.Consume
                     } else ClickResult.Pass
                 },
@@ -695,7 +601,7 @@ fun SchneaggmapLayers(
         //Tapping the own position opens the own user info card
         val onOwnLocationClick: FeaturesClickHandler = { clickedItems ->
             if (clickedItems.isNotEmpty()) {
-                onAction(SchneaggmapAction.OnOwnUserClick)
+                clicks.onOwnUserClick()
                 ClickResult.Consume
             } else ClickResult.Pass
         }
