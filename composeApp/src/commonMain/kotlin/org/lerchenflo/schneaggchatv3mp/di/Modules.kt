@@ -4,6 +4,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.unknownuser.UnknownUser
 import org.lerchenflo.schneaggchatv3mp.events.presentation.detail.EventDetailViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import io.github.lerchenflo.voicemessages.VoiceMessageFiles
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -56,6 +57,7 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapLayersSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
@@ -299,6 +301,8 @@ val sharedmodule = module{
     singleOf(::RoomMapDataSource) bind MapLocalDataSource::class
     singleOf(::RoomEventDataSource) bind EventLocalDataSource::class
     singleOf(::OfflineFirstMapRepository) bind MapRepository::class
+    // One per map screen, every map shows the same places, friends and events
+    factoryOf(::MapLayersSource)
     singleOf(::OfflineFirstEventRepository) bind EventRepository::class
     singleOf(::RemoteAppInfoRepository) bind AppInfoRepository::class
     singleOf(::RoomFeedbackDataSource) bind FeedbackLocalDataSource::class
@@ -552,7 +556,7 @@ val sharedmodule = module{
             locationService = get(),
             userRepository = get(),
             userIdentityRepository = get(),
-            eventRepository = get(),
+            mapLayersSource = get(),
             initialEntryId = initialEntryId,
             currentlyEditedEvent = currentlyEditedEvent,
             focusArea = focusArea,

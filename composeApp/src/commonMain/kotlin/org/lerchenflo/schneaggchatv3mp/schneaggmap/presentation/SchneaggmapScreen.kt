@@ -160,10 +160,10 @@ fun SchneaggmapScreen(
 
 
     //Candidates for zoom-snapping: every friend with a known location plus our own live fix.
-    //Own location comes from GPS directly (not state.ownUser.location, which is never synced back).
-    val zoomSnapCandidates = remember(state.usersWithLocation, ownLocation) {
+    //Own location comes from GPS directly (not state.layers.ownUser.location, which is never synced back).
+    val zoomSnapCandidates = remember(state.layers.usersWithLocation, ownLocation) {
         buildList {
-            state.usersWithLocation.forEach { user ->
+            state.layers.usersWithLocation.forEach { user ->
                 user.location?.let { loc -> add(Position(longitude = loc.long, latitude = loc.lat)) }
             }
             ownLocation?.position?.let { add(it) }
@@ -375,13 +375,13 @@ fun SchneaggmapScreen(
                     )
                 }
 
-                if (state.usersWithLocation.isNotEmpty()) {
+                if (state.layers.usersWithLocation.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Box(modifier = Modifier.padding(horizontal = 8.dp)) {
                         FriendLocationsPreview(
-                            friends = state.usersWithLocation,
-                            onlineFriendIds = state.onlineFriendIds,
+                            friends = state.layers.usersWithLocation,
+                            onlineFriendIds = state.layers.onlineFriendIds,
                             pinnedFriendIds = state.pinnedFriendIds,
                             onUserClick = { user ->
                                 val loc = user.location ?: return@FriendLocationsPreview
@@ -530,7 +530,7 @@ fun SchneaggmapScreen(
 
                 UserInfoCard(
                     user = displayUser,
-                    isOnline = isOwnUser || user.id in state.onlineFriendIds,
+                    isOnline = isOwnUser || user.id in state.layers.onlineFriendIds,
                     ownLocation = ownLocation?.position?.let { position ->
                         LatLong(lat = position.latitude, long = position.longitude)
                     },

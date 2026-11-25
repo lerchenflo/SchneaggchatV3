@@ -8,21 +8,18 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
@@ -31,19 +28,16 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.Chat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
-import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.activeSightingTypes
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapLayersSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -52,7 +46,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_saved
 import kotlin.time.Clock
-import kotlin.time.Duration.Companion.minutes
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -65,7 +58,7 @@ class SchneaggmapViewModel(
     private val locationService: LocationService,
     private val userRepository: UserRepository,
     private val userIdentityRepository: UserIdentityRepository,
-    private val eventRepository: EventRepository,
+    private val mapLayersSource: MapLayersSource,
 
     private val initialEntryId: String?,
     private val currentlyEditedEvent: Event?,
@@ -76,20 +69,14 @@ class SchneaggmapViewModel(
     val pickLocationMode = currentlyEditedEvent != null
 
     //Picking a coordinate hides the filter chips, so nothing could turn the sightings off again
-    private val _state = MutableStateFlow(SchneaggmapState(pickLocationMode = pickLocationMode, showActiveSightings = !pickLocationMode))
+    private val initialState = SchneaggmapState(
+        pickLocationMode = pickLocationMode,
+        showActiveSightings = !pickLocationMode,
+    )
+    private val _state = MutableStateFlow(initialState)
 
-    // Driven off authState (not a one-shot read) so the event filter picks up the id once autologin finishes
-    private val ownUserIdFlow = SessionCache.authState.map {
-        (it as? SessionCache.AuthState.LoggedIn)?.userId
-    }
-
-    val state = combine(
-        _state,
-        mapRepository.getAllMapEntriesFlow(),
-        userRepository.onlineFriendIdsFlow,
-        eventRepository.getAllEventsFlow(),
-        ownUserIdFlow,
-    ) { state, entries, onlineFriendIds, events, ownUserId ->
+    val state = _state.map { state ->
+        val entries = state.layers.entries
 
         // Types the search is restricted to: explicitly picked types win within their group,
         // a selected group with no individual picks counts as the whole group.
@@ -122,28 +109,11 @@ class SchneaggmapViewModel(
 
         //println("Results: ${results.size}")
 
-        // Events the user marked as not interested are hidden from the map
-        val eventsWithLocation = events.filter { event ->
-            event.location != null &&
-                (ownUserId == null || event.statusOf(ownUserId) != EventParticipationStatus.DISMISSED)
-        }
-
-        state.copy(
-            entries = entries,
-            onlineFriendIds = onlineFriendIds,
-            eventsWithLocation = eventsWithLocation,
-            joinedEventIds = ownUserId?.let { id ->
-                eventsWithLocation
-                    .filter { it.statusOf(id) == EventParticipationStatus.ACCEPTED }
-                    .mapTo(mutableSetOf()) { it.id }
-            } ?: emptySet(),
-
-            searchResults = results
-        )
+        state.copy(searchResults = results)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = SchneaggmapState(pickLocationMode = pickLocationMode, showActiveSightings = !pickLocationMode),
+        initialValue = initialState,
     )
 
 
@@ -296,7 +266,7 @@ class SchneaggmapViewModel(
             is SchneaggmapAction.OnEntryClick -> {
                 println("On entry clicked: ${action.entryId}")
 
-                val selectedEntry = state.value.entries.firstOrNull { it.id == action.entryId}
+                val selectedEntry = state.value.layers.entries.firstOrNull { it.id == action.entryId}
 
                 if (selectedEntry == null) {
                     println("selected entry is null")
@@ -377,7 +347,7 @@ class SchneaggmapViewModel(
             }
 
             is SchneaggmapAction.OnUserClick -> {
-                val selectedUser = state.value.usersWithLocation.firstOrNull { it.id == action.userId }
+                val selectedUser = state.value.layers.usersWithLocation.firstOrNull { it.id == action.userId }
 
                 _state.update { currentState ->
                     currentState.copy(
@@ -390,7 +360,7 @@ class SchneaggmapViewModel(
             SchneaggmapAction.OnOwnUserClick -> {
                 _state.update { currentState ->
                     currentState.copy(
-                        selectedUser = currentState.ownUser,
+                        selectedUser = currentState.layers.ownUser,
                         isFilterDropdownVisible = false
                     )
                 }
@@ -514,7 +484,7 @@ class SchneaggmapViewModel(
         // up with a valid location
         if (focusUserId != null) {
             viewModelScope.launch {
-                val user = _state.mapNotNull { state -> state.usersWithLocation.firstOrNull { it.id == focusUserId } }.first()
+                val user = _state.mapNotNull { state -> state.layers.usersWithLocation.firstOrNull { it.id == focusUserId } }.first()
                 val location = user.location ?: return@launch
                 _state.update {
                     it.copy(
@@ -550,44 +520,9 @@ class SchneaggmapViewModel(
             dataSyncCoordinator.dataSync(reason = "mapInit")
         }
 
-        // Checked every minute too: a sighting runs out while the map stays open
+        // Places, friends and events, the same as on every other map
         viewModelScope.launch {
-            val everyMinute = flow {
-                while (true) {
-                    emit(Unit)
-                    delay(1.minutes)
-                }
-            }
-            combine(mapRepository.getAllMapEntriesFlow(), everyMinute) { entries, _ ->
-                val now = Clock.System.now()
-                val timeZone = TimeZone.currentSystemDefault()
-                entries.associate { it.id to it.activeSightingTypes(now, timeZone) }
-                    .filterValues { it.isNotEmpty() }
-            }
-                .distinctUntilChanged()
-                .collect { active -> _state.update { it.copy(activeSightings = active) } }
-        }
-
-        viewModelScope.launch {
-            settingsRepository.getMergeMapLocationsFlow()
-                .collectLatest { clustering ->
-                    _state.update {
-                        it.copy(
-                            useClustering = clustering
-                        )
-                    }
-                }
-        }
-
-        viewModelScope.launch {
-            settingsRepository.getMergeMapUsersFlow()
-                .collectLatest { mergeUsers ->
-                    _state.update {
-                        it.copy(
-                            mergeUsers = mergeUsers
-                        )
-                    }
-                }
+            mapLayersSource.observe().collect { layers -> _state.update { it.copy(layers = layers) } }
         }
 
         viewModelScope.launch {
@@ -618,36 +553,13 @@ class SchneaggmapViewModel(
             _state.update { it.copy(locationPermissionGranted = permission == PermissionState.GRANTED) }
         }
 
-        viewModelScope.launch {
-            val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
-            userRepository.getUserByIdFlow(ownId).collectLatest { ownUser ->
-                _state.update { it.copy(ownLocationShared = ownUser?.locationShared ?: false, ownUser = ownUser) }
-            }
-        }
-
-        viewModelScope.launch {
-            userRepository.getFriendsFlow("")
-                .collectLatest { userList ->
-                    userList.mapNotNull {
-                        if (it.isLocationValid()) {
-                            it
-                        } else null
-                    }.also {
-                        _state.update { state ->
-                            state.copy(
-                                usersWithLocation = it
-                            )
-                    } }
-                }
-        }
-
         // Only fetched while the toggle is on, and only for friends currently shown on the map
         // plus our own trail - re-subscribes whenever any of those changes.
         viewModelScope.launch {
             _state
                 .map { state ->
                     val ownId = SessionCache.requireLoggedIn()?.userId
-                    val userIds = (state.usersWithLocation.map { user -> user.id } + listOfNotNull(ownId)).distinct()
+                    val userIds = (state.layers.usersWithLocation.map { user -> user.id } + listOfNotNull(ownId)).distinct()
                     state.showSnailTrails to userIds
                 }
                 .distinctUntilChanged()

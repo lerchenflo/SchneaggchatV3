@@ -4,37 +4,34 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
-import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapLayersData
 
 
 data class SchneaggmapState(
-    val entries: List<MapEntry> = emptyList(),
+    // Places, friends and events, shared with every map screen
+    val layers: MapLayersData = MapLayersData(),
 
-    val usersWithLocation: List<User> = emptyList(),
-    val onlineFriendIds: Set<String> = emptySet(),
+    val enabledTypes: Set<LocationType> = emptySet(),
+    val isFilterDropdownVisible: Boolean = false,
+    val expandedFilterGroups: Set<LocationGroup> = emptySet(),
+    // Police and mobile radars with a fresh sighting show even while their type is not enabled
+    val showActiveSightings: Boolean = true,
+    val showUsers: Boolean = true,
+    val showEvents: Boolean = true,
+
     // Friends to show first in the friends bar, empty while the setting is off
     val pinnedFriendIds: Set<String> = emptySet(),
     val showSnailTrails: Boolean = false,
     val snailTrails: Map<String, List<SnailTrailPoint>> = emptyMap(),
 
-    val enabledTypes: Set<LocationType> = emptySet(),
-    val isFilterDropdownVisible: Boolean = false,
-    val expandedFilterGroups: Set<LocationGroup> = emptySet(),
-
-    // Police and mobile radars with a fresh sighting show even while their type is not enabled.
-    // Entry id to the types with an active sighting, only entries that have one
-    val showActiveSightings: Boolean = true,
-    val activeSightings: Map<String, Set<LocationType>> = emptyMap(),
-
     val selectedEntry: MapEntry? = null,
     // Name of the user who changed the selected entry last
     val selectedEntryEditorName: UserIdentityName? = null,
     val selectedUser: User? = null,
-    val ownUser: User? = null,
 
     // One-shot camera target for opening the map with a specific entry (deep link);
     // cleared again via OnFocusEntryHandled once the camera has moved there.
@@ -44,19 +41,9 @@ data class SchneaggmapState(
     val focusAreaTarget: List<LatLong>? = null,
 
     val locationPermissionGranted: Boolean = false,
-    val ownLocationShared: Boolean = false,
 
     val isLoading: Boolean = false,
     val error: String? = null,
-
-    val useClustering: Boolean = false,
-    val mergeUsers: Boolean = true,
-    val showUsers: Boolean = true,
-
-    val eventsWithLocation: List<Event> = emptyList(),
-    // Events the own user is going to (accepted, joined or created) - their pins use the primary color
-    val joinedEventIds: Set<String> = emptySet(),
-    val showEvents: Boolean = true,
 
     val mapStyle: MapStyleSetting = MapStyleSetting.LIBERTY,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
@@ -74,4 +61,6 @@ data class SchneaggmapState(
     val pickLocationMode: Boolean = false,
 
     val currentlySelectedLocation: LatLong? = null
-)
+) {
+    val ownLocationShared: Boolean get() = layers.ownUser?.locationShared ?: false
+}
