@@ -56,3 +56,32 @@ What stays in the features:
    exactly as before: chips, dropdown, clustering, hocks, sightings, follow mode, zoom snap, pick mode).
 
 Risk: steps 2-4 touch the Schneaggmap (biggest map); pure move/extract, no behaviour change.
+
+## State 2026-11-25 (committed as "shared base map 0/4" … "4/4", waiting for the user's review before step 5)
+
+Steps 1-4 built; JVM, Android, iOS and iOS tests compile; device test in `plans/Todo.md` "Device tests".
+Differences from the table above:
+- No `ShowTypes` action: the UI never sends it, so it is the helper `MapLayersDisplay.showingTypes(types)`
+  (plus `withPlacesDropdownClosed()`) the Schneaggmap VM calls.
+- `MapContentLayers` has an `underPeople` slot (over places, under friends / events / own position):
+  the Schneaggmap's `SnailTrailLayers` (`schneaggmap/presentation/uielements/`) go there, so the
+  draw order stays the same.
+- `MapGeoUtils.kt` (`metersPerDpAtTarget`, `approximateDistanceMeters`) moved to `sharedUi/map` (public).
+- `BaseMap(state, onMapClick, onMapLongClick, zoomSnapPositions /* the own position is added */,
+  centerOnOwnLocationOnce, pickLocation: MapPickRequest(title, onConfirm, onCancel) /* plain class, the screen remembers it */, bottomCenter,
+  bottomContent, content)`; `BaseMapState` has `mapState`, `ownLocation`, `startFollowing()`,
+  `stopFollowing()`, `skipAutoCenter()`. While picking, the bottom chrome (incl. attribution) is hidden,
+  as on the Schneaggmap before.
+- `MapLayersSource` reads the own id from `SessionCache.authState` (before: one-shot read for the own user).
+
+Notes for step 5 (route planner):
+- Route layers (line, points, new-point marker) are composed after `MapContentLayers`, so they lie on
+  top of places, friends and events; `RouteMapLayers` loses `MapPlaceLayers`, `OwnPositionLayer`,
+  `drawRouteMarker`'s place pins; `RouteMap` loses its location provider, locate button, attribution,
+  `DEFAULT_CAMERA` (→ `DEFAULT_MAP_CAMERA`).
+- Point cards / place card / empty hint go into `bottomContent` (locate row above them, like the friends bar).
+- The route's locate button asks for the permission when it is missing (`RouteAction.OnLocateClick`):
+  `BaseMap` needs that option. The empty route's start zoom becomes `BaseMap`'s 14 (was 12).
+- Moving a point uses `pickLocation`; route chips: `MapFilterChipsRow` (no extra chips) + day chips row;
+  "Orte" chip, `showMapPlaces`, `mapPlaces`, `route_map_places` string go away; `RouteState` gets
+  `layers` + `layerDisplay`, `RouteViewModel` collects `MapLayersSource`.
