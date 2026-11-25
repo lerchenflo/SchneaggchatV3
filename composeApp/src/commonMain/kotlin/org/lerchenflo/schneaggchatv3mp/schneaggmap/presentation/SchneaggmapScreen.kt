@@ -47,12 +47,14 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapCr
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.MapAttributionBar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.fitCameraTo
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapFilterChipsRow
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapFilterChipsRow
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.LocationPickOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.MapLocateButton
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapSearchBar
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapZoomSlider
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.SchneaggmapLayers
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.MapZoomSlider
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.approximateDistanceMeters
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.metersPerDpAtTarget
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.SchneaggmapLayers
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.maplibre.compose.camera.CameraAnimation

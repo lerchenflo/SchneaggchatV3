@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
+package org.lerchenflo.schneaggchatv3mp.sharedUi.map
 
 import org.maplibre.compose.map.MapState
 import kotlin.math.PI

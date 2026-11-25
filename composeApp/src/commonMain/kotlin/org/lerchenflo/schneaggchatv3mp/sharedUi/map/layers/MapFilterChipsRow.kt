@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
+package org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke

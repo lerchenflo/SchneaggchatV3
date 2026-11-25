@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
+package org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Navigation
@@ -39,8 +39,8 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.approximateDistanceMeters
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.metersPerDpAtTarget
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.approximateDistanceMeters
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.metersPerDpAtTarget
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.EventMarkerLayer
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.MarkerIcon
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.UserMarkerLayer
