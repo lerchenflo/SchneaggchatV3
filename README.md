@@ -42,6 +42,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Chat: Verlinkungen zu Feedback-Einträgen und Einstellungsseiten (@feedback, @settings)
 - Spiele: Neue Namen (Blockfall, Würfelpoker, Wörter raten); englische Wörter und Kreuzworträtsel aus eigenen Listen statt von der NYT, mehr deutsche Wörter
 - Spiele: Neues Spiel Vier in einer Reihe für 2-4 Spieler auf einem Handy (Teams 2 gegen 2, Power-Scheiben, Brett-Twists, Herausziehen, Zugtimer, Best of 3/5, Rückgängig, Bestenliste für Siege)
+- Spiele: Neue Spielerauswahl (Freunde mit Profilbild und Spieler auf diesem Gerät in einer Liste, Reihenfolge als Nummern sichtbar)
 
 #### Bugfixes
 - Profilbild: Anzeige bei Nicht-Freunden behoben, leere Großansicht entfernt

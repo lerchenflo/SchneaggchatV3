@@ -1178,6 +1178,8 @@
     <string name="player_selector_start_format">Start (%1$d)</string>
     <string name="player_selector_delete_player">Spieler löschen</string>
     <string name="player_selector_friend">Freund</string>
+    <string name="player_selector_order_hint">Tippe auf Spieler, um sie hinzuzufügen. Sie sind in dieser Reihenfolge dran.</string>
+    <string name="player_selector_you">Du</string>
 
     <!-- Game highscores -->
     <string name="highscores_board_german">Deutsch</string>

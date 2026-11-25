@@ -31,6 +31,8 @@ fun SelectablePlayer.toGamePlayer() = GamePlayer(
 data class PlayerSelectorState(
     val localPlayers: List<SelectablePlayer.Local> = emptyList(),
     val friends: List<SelectablePlayer.Friend> = emptyList(),
+    /** The logged-in user, listed first among the friends and marked as "You". */
+    val ownUserId: String? = null,
     /** Selection order matters - the players start the game in the order they were picked. */
     val selectedKeys: List<String> = emptyList(),
     val newPlayerName: String = "",
@@ -45,6 +47,10 @@ data class PlayerSelectorState(
     val selectedCount: Int get() = selectedKeys.size
 
     fun isSelected(player: SelectablePlayer): Boolean = player.key in selectedKeys
+
+    /** 1-based turn position of [player], null while not picked. */
+    fun turnPosition(player: SelectablePlayer): Int? =
+        selectedKeys.indexOf(player.key).takeIf { it >= 0 }?.plus(1)
 }
 
 sealed interface PlayerSelectorAction {

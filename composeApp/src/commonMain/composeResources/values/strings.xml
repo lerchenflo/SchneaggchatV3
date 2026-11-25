@@ -1178,6 +1178,8 @@
     <string name="player_selector_start_format">Start (%1$d)</string>
     <string name="player_selector_delete_player">Delete player</string>
     <string name="player_selector_friend">Friend</string>
+    <string name="player_selector_order_hint">Tap players to add them. They take turns in this order.</string>
+    <string name="player_selector_you">You</string>
 
     <!-- Game highscores -->
     <string name="highscores_board_german">Deutsch</string>

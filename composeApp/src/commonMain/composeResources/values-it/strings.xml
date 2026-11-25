@@ -1172,6 +1172,8 @@
     <string name="player_selector_start_format">Inizia (%1$d)</string>
     <string name="player_selector_delete_player">Elimina giocatore</string>
     <string name="player_selector_friend">Amico</string>
+    <string name="player_selector_order_hint">Tocca i giocatori per aggiungerli. Giocano a turno in questo ordine.</string>
+    <string name="player_selector_you">Tu</string>
 
     <!-- Game highscores -->
     <string name="highscores_board_german">Tedesco</string>
