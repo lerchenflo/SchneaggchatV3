@@ -103,6 +103,12 @@ sealed class ExtensionItemData {
         val plannedAt: Long? = null,
         /** Set when the point was picked from schneaggmap. Soft link: coordinates and name are copied, not referenced */
         val mapEntryId: String? = null,
+        /**
+         * How the group travels TO this point (the leg from the point before), a `RouteTransportMode`
+         * name. Null for the first point and for points saved before 2026-11-25: the route's default
+         * (`ExtensionSettings.Route.transportMode`) applies.
+         */
+        val transportMode: String? = null,
     ) : ExtensionItemData() {
         override val extensionType: GroupExtensionType get() = GroupExtensionType.ROUTE_PLANNER
     }

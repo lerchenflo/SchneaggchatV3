@@ -26,6 +26,7 @@ sealed class ExtensionSettings {
     @Serializable
     @SerialName("route")
     data class Route(
+        /** Default transport of the legs whose point has none of its own (`RoutePoint.transportMode`). */
         val transportMode: String? = null,
         val startDate: Long? = null,
     ) : ExtensionSettings()

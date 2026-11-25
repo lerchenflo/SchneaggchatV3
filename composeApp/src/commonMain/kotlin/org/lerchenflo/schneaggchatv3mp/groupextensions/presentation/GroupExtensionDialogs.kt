@@ -22,6 +22,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.RouteTransportMode
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.route.RouteTransportModePicker
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.DEFAULT_SPLIT_CURRENCY
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TitleMenuItem
@@ -36,6 +38,7 @@ import schneaggchatv3mp.composeapp.generated.resources.group_extension_delete
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_delete_confirm
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_rename
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_title_label
+import schneaggchatv3mp.composeapp.generated.resources.route_transport_default
 
 private const val CURRENCY_CODE_LENGTH = 3
 
@@ -51,6 +54,7 @@ fun AddExtensionDialog(
 ) {
     var title by rememberSaveable { mutableStateOf("") }
     var currency by rememberSaveable { mutableStateOf(DEFAULT_SPLIT_CURRENCY) }
+    var transportMode by rememberSaveable { mutableStateOf(RouteTransportMode.DEFAULT) }
 
     val isSplit = type == GroupExtensionType.SPLIT
     val isValid = validateExtensionTitle(title.trim()) == null &&
@@ -83,6 +87,14 @@ fun AddExtensionDialog(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+
+                if (type == GroupExtensionType.ROUTE_PLANNER) {
+                    RouteTransportModePicker(
+                        label = stringResource(Res.string.route_transport_default),
+                        selected = transportMode,
+                        onSelect = { transportMode = it },
+                    )
+                }
             }
         },
         confirmButton = {
@@ -91,7 +103,7 @@ fun AddExtensionDialog(
                 onClick = {
                     val settings = when (type) {
                         GroupExtensionType.SPLIT -> ExtensionSettings.Split(currency = currency)
-                        GroupExtensionType.ROUTE_PLANNER -> ExtensionSettings.Route()
+                        GroupExtensionType.ROUTE_PLANNER -> ExtensionSettings.Route(transportMode = transportMode.name)
                         GroupExtensionType.SHARED_TEXT,
                         GroupExtensionType.QUOTES -> ExtensionSettings.None
                     }

@@ -23,6 +23,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -107,6 +108,21 @@ fun SnackbarPopup(
                                 .weight(1f)
                                 .padding(vertical = 14.dp)
                         )
+
+                        snackbarEvent.action?.let { action ->
+                            TextButton(
+                                onClick = {
+                                    if (!dismissedCalled) action.onClick()
+                                    dismiss()
+                                }
+                            ) {
+                                Text(
+                                    text = action.label,
+                                    color = MaterialTheme.colorScheme.inversePrimary,
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                            }
+                        }
 
                         IconButton(
                             onClick = { dismiss() },

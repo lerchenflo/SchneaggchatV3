@@ -16,8 +16,8 @@ enum class GroupExtensionType {
     /** Whether users can create and see extensions of this type. */
     val isAvailable: Boolean
         get() = when (this) {
-            SPLIT, SHARED_TEXT -> true
+            SPLIT, SHARED_TEXT, ROUTE_PLANNER -> true
             // No screen yet ("under construction"): hidden until built (user, 2026-11-12)
-            QUOTES, ROUTE_PLANNER -> false
+            QUOTES -> false
         }
 }

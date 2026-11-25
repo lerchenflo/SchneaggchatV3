@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionOwnerType
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.route.RouteScreenRoot
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.sharedtext.SharedTextScreenRoot
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitScreenRoot
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -60,6 +61,10 @@ fun GroupExtensionScreenRoot(
             topBarMenuItems = topBarMenuItems
         )
         GroupExtensionType.SHARED_TEXT -> SharedTextScreenRoot(
+            extensionId = extensionId,
+            topBarMenuItems = topBarMenuItems
+        )
+        GroupExtensionType.ROUTE_PLANNER -> RouteScreenRoot(
             extensionId = extensionId,
             topBarMenuItems = topBarMenuItems
         )

@@ -12,6 +12,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Geburtstagsanzeige + Benachrichtigungen
 - Standort mit Verlauf teilen
 - Bearbeitbare Karte mit öffentlichen Orten
+- Tourenplaner für Gruppen (Karte, Etappen, Fahrzeit pro Verkehrsmittel)
 - @Annotations für User, Orte, Events und mehr
 - Weckerfeature (Wecker-ton bei Freunden abspielen, auch wenn das Gerät auf lautlos ist)
 - App kaputt Button
@@ -24,7 +25,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ##### Highlights
 
 #### Features
-- Extensions: Gemeinsamer Text
+- Extensions: Gemeinsamer Text, Tourenplaner für Gruppen
 - Events: Erinnerungen im Gruppenchat
 - Datumsauswahl: Kalender statt Scrollrad
 - Dartcounter: Double In

@@ -22,6 +22,14 @@ object SnackbarManager {
         val showTime: Long = 3000,
 
         val message: String,
+        /** Optional button next to the text, e.g. "Undo". */
+        val action: SnackbarAction? = null,
+    )
+
+    /** A button in the snackbar; [onClick] runs once, then the snackbar closes. */
+    data class SnackbarAction(
+        val label: String,
+        val onClick: () -> Unit,
     )
 
     private val _channel = Channel<SnackbarEvent>(capacity = Channel.BUFFERED)
@@ -29,11 +37,12 @@ object SnackbarManager {
 
 
 
-    fun showMessage(message: String, showTime: Long = 3000) {
+    fun showMessage(message: String, showTime: Long = 3000, action: SnackbarAction? = null) {
         scope?.launch {
             _channel.send(SnackbarEvent(
                 showTime = showTime,
-                message = message
+                message = message,
+                action = action,
             ))
         }
     }
