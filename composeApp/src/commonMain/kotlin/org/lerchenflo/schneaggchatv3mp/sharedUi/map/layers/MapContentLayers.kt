@@ -26,7 +26,6 @@ import kotlinx.serialization.json.buildJsonObject
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
@@ -128,6 +127,11 @@ private fun clusterUsersByProximity(users: List<User>, radiusMeters: Double): Li
     return clusters
 }
 
+/** Friends with a known location, e.g. the zoom snap targets of a [org.lerchenflo.schneaggchatv3mp.sharedUi.map.BaseMap]. */
+fun MapLayersData.friendPositions(): List<Position> = usersWithLocation.mapNotNull { user ->
+    user.location?.let { location -> Position(longitude = location.long, latitude = location.lat) }
+}
+
 /** Taps on the shared layers, each with the id of the tapped entry, user or event. */
 data class MapLayerClicks(
     val onEntryClick: (entryId: String) -> Unit = {},
@@ -153,7 +157,7 @@ fun MapContentLayers(
     underPeople: @Composable @MaplibreComposable () -> Unit = {},
 ) {
 
-    val ownId = SessionCache.requireLoggedIn()?.userId
+    val ownId = data.ownUserId
 
     //Decoded type icons, scaled into the per-type markers and composited into a merged marker for
     //entries that match 2+ location types (see multiTypeEntries below). imageResource() caches by

@@ -3,9 +3,12 @@ package org.lerchenflo.schneaggchatv3mp.app
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
@@ -40,6 +43,11 @@ object SessionCache {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.LoggedOut)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
+
+    // Own user id while logged in; follows autologin and logout (for classes that get it injected)
+    val ownUserIdFlow: Flow<String?> = authState
+        .map { (it as? AuthState.LoggedIn)?.userId }
+        .distinctUntilChanged()
 
     // Convenience for Compose
     var authStateValue: AuthState by mutableStateOf(AuthState.LoggedOut)

@@ -4,6 +4,9 @@ import kotlinx.datetime.LocalDate
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.RoutePointKind
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.RouteTransportMode
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapLayersData
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayersAction
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayersDisplay
 
 enum class RouteTab { MAP, LIST }
 
@@ -22,9 +25,9 @@ data class RouteState(
     val selectedDayIndex: Int? = null,
     /** Point whose card is shown on the map. */
     val selectedPointId: String? = null,
-    /** Schneaggmap places on the route map ("Orte" chip). */
-    val showMapPlaces: Boolean = false,
-    val mapPlaces: List<RouteMapPlaceUi> = emptyList(),
+    /** Places, friends and events of the shared map layers, and which of them are shown. */
+    val layers: MapLayersData = MapLayersData(),
+    val layerDisplay: MapLayersDisplay = MapLayersDisplay(),
     /** Place whose "add to route" card is open. */
     val selectedPlace: RouteMapPlaceUi? = null,
     val selectedPlaceInsertHint: RouteInsertHint? = null,
@@ -136,7 +139,7 @@ sealed interface RouteAction {
     data object OnBackClick : RouteAction
     data class OnTabSelect(val tab: RouteTab) : RouteAction
     data class OnDaySelect(val dayIndex: Int?) : RouteAction
-    data object OnToggleMapPlaces : RouteAction
+    data class OnLayersAction(val action: MapLayersAction) : RouteAction
     data object OnLocateClick : RouteAction
     data object OnCameraRequestHandled : RouteAction
     data object OnNavigateClick : RouteAction
@@ -151,6 +154,10 @@ sealed interface RouteAction {
     data class OnPlaceClick(val placeId: String) : RouteAction
     data object OnPlaceDismiss : RouteAction
     data object OnPlaceAddClick : RouteAction
+
+    // Shared map layers
+    data class OnFriendClick(val userId: String) : RouteAction
+    data class OnEventClick(val eventId: String) : RouteAction
 
     // Add/edit sheet
     data class OnDraftKindChange(val kind: RoutePointKind) : RouteAction

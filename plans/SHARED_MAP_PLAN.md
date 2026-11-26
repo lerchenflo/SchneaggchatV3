@@ -57,7 +57,7 @@ What stays in the features:
 
 Risk: steps 2-4 touch the Schneaggmap (biggest map); pure move/extract, no behaviour change.
 
-## State 2026-11-25 (committed as "shared base map 0/4" … "4/4", waiting for the user's review before step 5)
+## State 2026-11-25 (committed as "shared base map 0/4" … "4/4")
 
 Steps 1-4 built; JVM, Android, iOS and iOS tests compile; device test in `plans/Todo.md` "Device tests".
 Differences from the table above:
@@ -72,7 +72,29 @@ Differences from the table above:
   bottomContent, content)`; `BaseMapState` has `mapState`, `ownLocation`, `startFollowing()`,
   `stopFollowing()`, `skipAutoCenter()`. While picking, the bottom chrome (incl. attribution) is hidden,
   as on the Schneaggmap before.
-- `MapLayersSource` reads the own id from `SessionCache.authState` (before: one-shot read for the own user).
+- Own id (2026-11-26, user): `MapLayersSource` gets `ownUserIdFlow` injected (Koin passes the new
+  `SessionCache.ownUserIdFlow`, follows autologin) and puts it into `MapLayersData.ownUserId`;
+  `MapContentLayers` and `SnailTrailLayers` read it from there instead of `SessionCache`.
+
+## Step 5 built 2026-11-26 (committed as "shared base map 5/5")
+
+Route planner on the shared map; JVM, Android, iOS and iOS tests compile; device test in `plans/Todo.md`.
+- `RouteMap` = `rememberBaseMapState` + `MapContentLayers` + `RouteMapLayers` (composed after, on top)
+  + `BaseMap`; top: `MapFilterChipsRow` (no extra chips), day chips, summary pill; bottom (above the
+  locate row): place card / empty hint / point cards. Moving a point uses `pickLocation`.
+- `BaseMap(onLocateWithoutPermission)`: the locate button shows without the permission too and asks for it.
+- Shared helper `MapLayersData.friendPositions()` (zoom snap targets of both maps).
+- `RouteState.layers` + `layerDisplay` (`RouteAction.OnLayersAction`), `RouteViewModel` collects
+  `MapLayersSource`; taps: place → place card (now with "Ort öffnen", `route_open_place`), friend →
+  `OnFriendClick` (Schneaggmap on their card), event → `OnEventClick` (`Route.EventDetail`), own
+  position → nothing. Tapping a place closes the places dropdown (as on the Schneaggmap).
+- Removed: route place pins, `OwnPositionLayer`, own location provider / locate / attribution,
+  `DEFAULT_CAMERA`, "Orte" chip, `showMapPlaces`, `mapPlaces`, `RouteAction.OnToggleMapPlaces`,
+  string `route_map_places` (en/de/it; de-rAT had none). The tapped place gets a primary ring
+  (`SelectedPlaceRing`) instead of the grey pin with ring.
+- Behaviour changes: empty route starts at zoom 14 (was 12); a camera request skips the own-location
+  start jump; the locate button follows (as on the Schneaggmap) instead of a one-time jump; while a
+  point is moved the attribution strip is hidden (as in the Schneaggmap's pick mode, see Todo).
 
 Notes for step 5 (route planner):
 - Route layers (line, points, new-point marker) are composed after `MapContentLayers`, so they lie on

@@ -54,7 +54,7 @@ fun RouteDayList(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (state.showDayChips) {
-            item(key = "chips") { RouteDayChips(state = state, onAction = onAction, showPlacesChip = false) }
+            item(key = "chips") { RouteDayChips(state = state, onAction = onAction) }
         }
         item(key = "summary") { RouteListSummary(state = state, onAction = onAction) }
         if (state.points.isEmpty()) {

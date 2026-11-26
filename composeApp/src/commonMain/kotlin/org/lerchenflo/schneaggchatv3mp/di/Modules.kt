@@ -4,7 +4,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.unknownuser.UnknownUser
 import org.lerchenflo.schneaggchatv3mp.events.presentation.detail.EventDetailViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import io.github.lerchenflo.voicemessages.VoiceMessageFiles
-import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -302,7 +301,7 @@ val sharedmodule = module{
     singleOf(::RoomEventDataSource) bind EventLocalDataSource::class
     singleOf(::OfflineFirstMapRepository) bind MapRepository::class
     // One per map screen, every map shows the same places, friends and events
-    factoryOf(::MapLayersSource)
+    factory { MapLayersSource(get(), get(), get(), get(), ownUserIdFlow = SessionCache.ownUserIdFlow) }
     singleOf(::OfflineFirstEventRepository) bind EventRepository::class
     singleOf(::RemoteAppInfoRepository) bind AppInfoRepository::class
     singleOf(::RoomFeedbackDataSource) bind FeedbackLocalDataSource::class
@@ -501,6 +500,7 @@ val sharedmodule = module{
             userIdentityRepository = get(),
             mapRepository = get(),
             settingsRepository = get(),
+            mapLayersSource = get(),
             locationService = get(),
             applicationScope = get(),
             navigator = get(),

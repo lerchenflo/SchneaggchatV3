@@ -168,6 +168,8 @@ class MapPickRequest(
  * the scale bar and the locate button and [bottomContent] above the attribution strip (friends
  * bar). [pickLocation] swaps all of that for the crosshair overlay. With
  * [centerOnOwnLocationOnce] the camera flies to the own position once, when it is first known.
+ * With [onLocateWithoutPermission] the locate button shows without the location permission too,
+ * and a tap then calls it instead of following (e.g. to ask for the permission).
  */
 @Composable
 fun BaseMap(
@@ -177,6 +179,7 @@ fun BaseMap(
     onMapLongClick: (LatLong) -> Unit = {},
     zoomSnapPositions: List<Position> = emptyList(),
     centerOnOwnLocationOnce: Boolean = false,
+    onLocateWithoutPermission: (() -> Unit)? = null,
     pickLocation: MapPickRequest? = null,
     bottomCenter: @Composable BoxScope.() -> Unit = {},
     bottomContent: @Composable ColumnScope.() -> Unit = {},
@@ -234,12 +237,20 @@ fun BaseMap(
 
                             // Right: compass + center to own location button. Shown as soon as location is
                             // permitted (a tap before the first fix starts following and zooms in once the
-                            // fix arrives) or while the map is rotated.
+                            // fix arrives), while the map is rotated, or always when the screen can ask for
+                            // the permission.
+                            val hasLocation = state.locationPermissionGranted || ownLocation != null
                             MapLocateButton(
                                 mapState = mapState,
-                                isLocationAvailable = state.locationPermissionGranted || ownLocation != null,
+                                isLocationAvailable = hasLocation || onLocateWithoutPermission != null,
                                 isFollowingLocation = state.isFollowingLocation,
-                                onLocateClick = { state.startFollowing() },
+                                onLocateClick = {
+                                    if (!hasLocation && onLocateWithoutPermission != null) {
+                                        onLocateWithoutPermission()
+                                    } else {
+                                        state.startFollowing()
+                                    }
+                                },
                                 onResetRotationClick = {
                                     scope.launch {
                                         mapState.animateCamera(CameraUpdate(bearing = 0.0, pitch = 0.0))

@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -35,6 +36,8 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TitleMenuItem
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapFilterChipsRow
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayersAction
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_not_found
 import schneaggchatv3mp.composeapp.generated.resources.route_open_navigation
@@ -154,47 +157,57 @@ private fun RouteMapTab(
     state: RouteState,
     onAction: (RouteAction) -> Unit,
 ) {
-    RouteMap(state = state, onAction = onAction) {
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 8.dp)
-        ) {
-            RouteDayChips(state = state, onAction = onAction, showPlacesChip = true)
-            if (state.points.isNotEmpty()) {
-                RouteSummaryPill(
-                    meters = state.shownMeters,
-                    minutes = state.shownMinutes,
-                    modifier = Modifier.padding(start = 12.dp, top = 8.dp)
-                )
-            }
-        }
-
-        // Above the attribution strip, which must stay visible
-        val bottomModifier = Modifier
-            .align(Alignment.BottomCenter)
-            .padding(bottom = 28.dp)
-        val selectedPlace = state.selectedPlace
-        when {
-            selectedPlace != null -> RoutePlaceCard(
-                place = selectedPlace,
-                insertHint = state.selectedPlaceInsertHint,
-                onAddClick = { onAction(RouteAction.OnPlaceAddClick) },
-                onDismiss = { onAction(RouteAction.OnPlaceDismiss) },
-                modifier = bottomModifier.padding(horizontal = 12.dp)
-            )
-            state.points.isEmpty() -> RouteEmptyMapHint(modifier = bottomModifier.padding(horizontal = 24.dp))
-            // A new day shows its own cards from the first one
-            else -> key(state.selectedDayIndex) {
-                RoutePointCards(
-                    points = state.shownPoints,
-                    selectedPointId = state.selectedPointId,
-                    onAction = onAction,
-                    modifier = bottomModifier
-                )
-            }
-        }
+    val onLayersAction: (MapLayersAction) -> Unit = remember(onAction) {
+        { action -> onAction(RouteAction.OnLayersAction(action)) }
     }
+    RouteMap(
+        state = state,
+        onAction = onAction,
+        topContent = {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(top = 8.dp)
+            ) {
+                // The Schneaggmap's chips (sightings, events, places, friends), then the days
+                MapFilterChipsRow(display = state.layerDisplay, onLayersAction = onLayersAction)
+                RouteDayChips(state = state, onAction = onAction, modifier = Modifier.padding(top = 8.dp))
+                if (state.points.isNotEmpty()) {
+                    RouteSummaryPill(
+                        meters = state.shownMeters,
+                        minutes = state.shownMinutes,
+                        modifier = Modifier.padding(start = 12.dp, top = 8.dp)
+                    )
+                }
+            }
+        },
+        bottomContent = {
+            val selectedPlace = state.selectedPlace
+            when {
+                selectedPlace != null -> RoutePlaceCard(
+                    place = selectedPlace,
+                    insertHint = state.selectedPlaceInsertHint,
+                    onAddClick = { onAction(RouteAction.OnPlaceAddClick) },
+                    onOpenClick = { onAction(RouteAction.OnOpenMapEntryClick(selectedPlace.id)) },
+                    onDismiss = { onAction(RouteAction.OnPlaceDismiss) },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                state.points.isEmpty() -> RouteEmptyMapHint(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(horizontal = 24.dp)
+                )
+                // A new day shows its own cards from the first one
+                else -> key(state.selectedDayIndex) {
+                    RoutePointCards(
+                        points = state.shownPoints,
+                        selectedPointId = state.selectedPointId,
+                        onAction = onAction,
+                    )
+                }
+            }
+        },
+    )
 }
 
 @Composable

@@ -2,7 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.route
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
@@ -42,7 +41,6 @@ import org.maplibre.compose.expressions.value.LineCap
 import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.interaction.ClickResult
 import org.maplibre.compose.layers.CircleLayer
-import org.maplibre.compose.layers.FeaturesClickHandler
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.sources.GeoJsonData
@@ -52,31 +50,29 @@ import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.LineString
 import org.maplibre.spatialk.geojson.Point
-import org.maplibre.spatialk.geojson.Position
 import kotlin.math.roundToInt
 
 private val POINT_MARKER_SIZE = 28.dp
 private val WAYPOINT_MARKER_SIZE = 12.dp
-private val PLACE_MARKER_SIZE = 24.dp
+private val SELECTED_PLACE_RING_RADIUS = 20.dp
 private val NEW_POINT_MARKER_SIZE = 30.dp
 private val MARKER_BORDER = 2.dp
 private val SELECTED_RING = 4.dp
 
 /**
- * Everything the route planner draws on the map: the route line (the picked day bright, the
- * others grey), one marker per point, the Schneaggmap places while "Orte" is on, the marker of a
- * point being added, and the own position. Every source always exists (empty when there is
- * nothing to draw), so no source is removed and added again (CannotAddSourceException).
+ * What the route planner draws on top of the shared map layers: the route line (the picked day
+ * bright, the others grey), one marker per point, a ring around the tapped Schneaggmap place and
+ * the marker of a point being added. Every source always exists (empty when there is nothing to
+ * draw), so no source is removed and added again (CannotAddSourceException).
  */
 @Composable
 @MaplibreComposable
 fun RouteMapLayers(
     state: RouteState,
-    ownPosition: Position?,
     onAction: (RouteAction) -> Unit,
 ) {
     RouteLineLayers(state)
-    MapPlaceLayers(state, onAction)
+    SelectedPlaceRing(state.selectedPlace?.coordinates)
 
     // Drive-through dots first, so the bigger markers lie on top of them
     val (waypoints, others) = state.points.partition { it.kind == RoutePointKind.WAYPOINT }
@@ -93,7 +89,6 @@ fun RouteMapLayers(
 
     val newPoint = state.pointDraft?.takeIf { it.itemId == null && !state.isMovingPoint }?.coordinates
     NewPointMarker(newPoint)
-    OwnPositionLayer(ownPosition)
 }
 
 @Composable
@@ -157,51 +152,18 @@ private fun pointsData(points: List<Pair<String, LatLong>>) = GeoJsonData.Featur
     )
 )
 
+/** Ring around the tapped place (the shared layers draw its icon), so its card has a visible match. */
 @Composable
 @MaplibreComposable
-private fun MapPlaceLayers(state: RouteState, onAction: (RouteAction) -> Unit) {
+private fun SelectedPlaceRing(coordinates: LatLong?) {
     val scheme = MaterialTheme.colorScheme
-    val density = LocalDensity.current
-    val textMeasurer = rememberTextMeasurer()
-    val placePainter = rememberVectorPainter(Icons.Default.Place)
-    val placeIcon = remember(scheme, density) {
-        drawRouteMarker(
-            diameter = PLACE_MARKER_SIZE, fill = scheme.surfaceVariant, border = scheme.outline,
-            content = MarkerContent.Icon(placePainter, scheme.onSurfaceVariant),
-            textMeasurer = textMeasurer, density = density,
-        )
-    }
-    val selectedPlaceIcon = remember(scheme, density) {
-        drawRouteMarker(
-            diameter = PLACE_MARKER_SIZE, fill = scheme.surfaceVariant, border = scheme.outline, ring = scheme.primary,
-            content = MarkerContent.Icon(placePainter, scheme.onSurfaceVariant),
-            textMeasurer = textMeasurer, density = density,
-        )
-    }
-
-    val onPlaceClick: FeaturesClickHandler = { clicked ->
-        val id = clicked.firstOrNull()?.id?.content
-        if (id != null) {
-            onAction(RouteAction.OnPlaceClick(id))
-            ClickResult.Consume
-        } else ClickResult.Pass
-    }
-
-    val places = if (state.showMapPlaces) state.mapPlaces.map { it.id to it.coordinates } else emptyList()
-    SymbolLayer(
-        id = "route-places",
-        source = rememberGeoJsonSource(data = pointsData(places)),
-        onClick = onPlaceClick,
-        iconImage = image(placeIcon),
-        iconAllowOverlap = const(true),
-    )
-
-    val selected = state.selectedPlace?.let { listOf(it.id to it.coordinates) }.orEmpty()
-    SymbolLayer(
+    CircleLayer(
         id = "route-place-selected",
-        source = rememberGeoJsonSource(data = pointsData(selected)),
-        iconImage = image(selectedPlaceIcon),
-        iconAllowOverlap = const(true),
+        source = rememberGeoJsonSource(data = pointsData(listOfNotNull(coordinates?.let { "selected" to it }))),
+        opacity = const(0f),
+        radius = const(SELECTED_PLACE_RING_RADIUS),
+        strokeColor = const(scheme.primary),
+        strokeWidth = const(3.dp),
     )
 }
 
@@ -278,21 +240,6 @@ private fun NewPointMarker(coordinates: LatLong?) {
     )
 }
 
-@Composable
-@MaplibreComposable
-private fun OwnPositionLayer(position: Position?) {
-    val scheme = MaterialTheme.colorScheme
-    val features = listOfNotNull(position?.let { Feature(geometry = Point(it), properties = buildJsonObject {}) })
-    CircleLayer(
-        id = "route-own-position",
-        source = rememberGeoJsonSource(data = GeoJsonData.Features(FeatureCollection(features = features))),
-        color = const(scheme.secondary),
-        radius = const(7.dp),
-        strokeColor = const(scheme.surface),
-        strokeWidth = const(2.dp),
-    )
-}
-
 // ─── Marker bitmaps ───────────────────────────────────────────────────────────
 
 private sealed interface MarkerContent {
@@ -303,7 +250,7 @@ private sealed interface MarkerContent {
 
 /**
  * A round marker as a ready bitmap: maplibre renders a Painter on its render thread while the main
- * thread waits, which froze the Schneaggmap with many markers (see SchneaggmapLayers).
+ * thread waits, which froze the Schneaggmap with many markers (see MapContentLayers).
  */
 private fun drawRouteMarker(
     diameter: Dp,

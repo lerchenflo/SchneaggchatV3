@@ -43,8 +43,11 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.sortIndexUpd
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.timeOrderPosition
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapLayersSource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.reduce
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.withPlacesDropdownClosed
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.userIdentityNameText
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
@@ -76,6 +79,7 @@ class RouteViewModel(
     private val userIdentityRepository: UserIdentityRepository,
     private val mapRepository: MapRepository,
     private val settingsRepository: SettingsRepository,
+    private val mapLayersSource: MapLayersSource,
     private val locationService: LocationService,
     private val applicationScope: ApplicationScope,
     private val navigator: Navigator,
@@ -94,7 +98,6 @@ class RouteViewModel(
     /** The stored points in route order; every write is worked out from it. */
     private var route: List<PlannedRoutePoint> = emptyList()
     private var extension: GroupExtension? = null
-    private var mapEntries: List<MapEntry> = emptyList()
     /** Transport of legs whose point has none of its own, set when the route was created. */
     private var routeDefaultMode = RouteTransportMode.DEFAULT
 
@@ -112,6 +115,7 @@ class RouteViewModel(
     init {
         observeRoute()
         observeMapStyle()
+        observeMapLayers()
         viewModelScope.launch {
             val granted = locationService.checkLocationPermission() == PermissionState.GRANTED
             _state.update { it.copy(locationPermissionGranted = granted) }
@@ -148,7 +152,6 @@ class RouteViewModel(
     private fun applySource(source: RouteSource, authorName: (String) -> String) {
         extension = source.extension
         route = source.route
-        mapEntries = source.mapEntries
 
         routeDefaultMode = RouteTransportMode.fromStored((source.extension.settings as? ExtensionSettings.Route)?.transportMode)
         val isAdmin = source.members.any { it.userId == ownId && it.admin }
@@ -174,7 +177,6 @@ class RouteViewModel(
                 totalMinutes = content.totalMinutes,
                 selectedDayIndex = previous.selectedDayIndex?.takeIf { it < content.days.size && content.days.size > 1 },
                 selectedPointId = previous.selectedPointId?.takeIf { it in pointIds },
-                mapPlaces = if (previous.showMapPlaces) mapPlaces() else emptyList(),
                 // The edited point was deleted by someone else: its sheet closes
                 pointDraft = previous.pointDraft?.takeIf { draft -> draft.itemId == null || draft.itemId in pointIds },
             )
@@ -194,8 +196,12 @@ class RouteViewModel(
         }
     }
 
-    private fun mapPlaces(): List<RouteMapPlaceUi> =
-        mapEntries.map { entry -> RouteMapPlaceUi(id = entry.id, name = entry.name, coordinates = entry.coordinates) }
+    // Places, friends and events, the same as on the Schneaggmap
+    private fun observeMapLayers() {
+        viewModelScope.launch {
+            mapLayersSource.observe().collect { layers -> _state.update { it.copy(layers = layers) } }
+        }
+    }
 
     // ─── Actions ──────────────────────────────────────────────────────────────
 
@@ -204,7 +210,7 @@ class RouteViewModel(
             RouteAction.OnBackClick -> viewModelScope.launch { navigator.navigateBack() }
             is RouteAction.OnTabSelect -> _state.update { it.copy(selectedTab = action.tab) }
             is RouteAction.OnDaySelect -> selectDay(action.dayIndex)
-            RouteAction.OnToggleMapPlaces -> toggleMapPlaces()
+            is RouteAction.OnLayersAction -> _state.update { it.copy(layerDisplay = it.layerDisplay.reduce(action.action)) }
             RouteAction.OnLocateClick -> requestLocationPermission()
             RouteAction.OnCameraRequestHandled -> _state.update { it.copy(cameraRequest = null) }
             RouteAction.OnNavigateClick -> openNavigation()
@@ -222,6 +228,9 @@ class RouteViewModel(
                 val place = _state.value.selectedPlace ?: return
                 openNewDraft(place.coordinates, name = place.name.take(ROUTE_POINT_NAME_MAX_LENGTH), mapEntryId = place.id)
             }
+
+            is RouteAction.OnFriendClick -> openFriend(action.userId)
+            is RouteAction.OnEventClick -> viewModelScope.launch { navigator.navigate(Route.EventDetail(eventId = action.eventId)) }
 
             is RouteAction.OnDraftKindChange -> updateDraft { it.copy(kind = action.kind, showNameError = false) }
             is RouteAction.OnDraftNameChange -> updateDraft {
@@ -266,26 +275,16 @@ class RouteViewModel(
         requestCenter(point.coordinates)
     }
 
-    private fun toggleMapPlaces() {
-        _state.update { previous ->
-            val show = !previous.showMapPlaces
-            previous.copy(
-                showMapPlaces = show,
-                mapPlaces = if (show) mapPlaces() else emptyList(),
-                selectedPlace = previous.selectedPlace.takeIf { show },
-                selectedPlaceInsertHint = previous.selectedPlaceInsertHint.takeIf { show },
-            )
-        }
-    }
-
     private fun selectPlace(placeId: String) {
-        val place = _state.value.mapPlaces.find { it.id == placeId } ?: return
+        val entry = _state.value.layers.entries.find { it.id == placeId } ?: return
+        val place = RouteMapPlaceUi(id = entry.id, name = entry.name, coordinates = entry.coordinates)
         val position = nearestSegmentPosition(route.map { it.point.coordinates }, place.coordinates)
         _state.update {
             it.copy(
                 selectedPlace = place,
                 selectedPlaceInsertHint = insertHintFor(route, position, place.coordinates),
                 selectedPointId = null,
+                layerDisplay = it.layerDisplay.withPlacesDropdownClosed(),
             )
         }
     }
@@ -310,6 +309,15 @@ class RouteViewModel(
         viewModelScope.launch {
             navigator.navigate(
                 Route.Schneaggmap(initialEntryId = mapEntryId, openRequestId = Clock.System.now().toEpochMilliseconds())
+            )
+        }
+    }
+
+    // A friend on the route map: their card on the Schneaggmap
+    private fun openFriend(userId: String) {
+        viewModelScope.launch {
+            navigator.navigate(
+                Route.Schneaggmap(focusUserId = userId, openRequestId = Clock.System.now().toEpochMilliseconds())
             )
         }
     }

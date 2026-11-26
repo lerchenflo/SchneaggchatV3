@@ -15,6 +15,8 @@ data class MapLayersData(
     // Friends whose last location is recent enough to show
     val usersWithLocation: List<User> = emptyList(),
     val onlineFriendIds: Set<String> = emptySet(),
+    // Own user id while logged in (the own marker, hocks, own trail)
+    val ownUserId: String? = null,
     val ownUser: User? = null,
     // Events with a location, without the ones the own user marked as not interested
     val eventsWithLocation: List<Event> = emptyList(),

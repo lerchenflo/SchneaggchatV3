@@ -51,6 +51,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapFilterChip
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapFilterChipsRow
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayerClicks
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayersAction
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.friendPositions
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.rememberBaseMapState
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.maplibre.compose.camera.CameraUpdate
@@ -121,6 +122,7 @@ fun SchneaggmapScreen(
                 if (state.showSnailTrails) {
                     SnailTrailLayers(
                         usersWithLocation = state.layers.usersWithLocation,
+                        ownUserId = state.layers.ownUserId,
                         snailTrails = state.snailTrails,
                         ownLocation = ownLocation,
                     )
@@ -134,11 +136,7 @@ fun SchneaggmapScreen(
 
     //Zoom-snapping onto every friend with a known location (BaseMap adds our own live fix).
     //Own location comes from GPS directly (not ownUser.location, which is never synced back).
-    val friendPositions = remember(state.layers.usersWithLocation) {
-        state.layers.usersWithLocation.mapNotNull { user ->
-            user.location?.let { loc -> Position(longitude = loc.long, latitude = loc.lat) }
-        }
-    }
+    val friendPositions = remember(state.layers.usersWithLocation) { state.layers.friendPositions() }
 
     //Opened with a specific entry (deep link): fly to it once. Marks the own-location
     //auto-center as done so it can't yank the camera away from the entry afterwards.

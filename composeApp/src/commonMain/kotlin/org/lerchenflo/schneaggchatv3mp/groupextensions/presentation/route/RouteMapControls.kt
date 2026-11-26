@@ -26,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,21 +38,17 @@ import schneaggchatv3mp.composeapp.generated.resources.route_add_to_route
 import schneaggchatv3mp.composeapp.generated.resources.route_all_days
 import schneaggchatv3mp.composeapp.generated.resources.route_day_number
 import schneaggchatv3mp.composeapp.generated.resources.route_empty_hint
-import schneaggchatv3mp.composeapp.generated.resources.route_map_places
+import schneaggchatv3mp.composeapp.generated.resources.route_open_place
 import schneaggchatv3mp.composeapp.generated.resources.route_place_subtitle
 
-/**
- * Chips over the map: "All | Day 1 | Day 2 …" (only for a route over several days) and, with
- * [showPlacesChip], the "Places" toggle for the Schneaggmap entries.
- */
+/** "All | Day 1 | Day 2 …" over the map, only for a route over several days. */
 @Composable
 fun RouteDayChips(
     state: RouteState,
     onAction: (RouteAction) -> Unit,
-    showPlacesChip: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    if (!state.showDayChips && !showPlacesChip) return
+    if (!state.showDayChips) return
     val chipColors = FilterChipDefaults.filterChipColors(
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
     )
@@ -61,36 +58,21 @@ fun RouteDayChips(
         contentPadding = PaddingValues(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        if (state.showDayChips) {
-            item(key = "all") {
-                FilterChip(
-                    selected = state.selectedDayIndex == null,
-                    onClick = { onAction(RouteAction.OnDaySelect(null)) },
-                    label = { Text(stringResource(Res.string.route_all_days)) },
-                    colors = chipColors,
-                )
-            }
-            items(state.days, key = { "day-${it.index}" }) { day ->
-                FilterChip(
-                    selected = state.selectedDayIndex == day.index,
-                    onClick = { onAction(RouteAction.OnDaySelect(day.index)) },
-                    label = { Text(stringResource(Res.string.route_day_number, day.index + 1)) },
-                    colors = chipColors,
-                )
-            }
+        item(key = "all") {
+            FilterChip(
+                selected = state.selectedDayIndex == null,
+                onClick = { onAction(RouteAction.OnDaySelect(null)) },
+                label = { Text(stringResource(Res.string.route_all_days)) },
+                colors = chipColors,
+            )
         }
-        if (showPlacesChip) {
-            item(key = "places") {
-                FilterChip(
-                    selected = state.showMapPlaces,
-                    onClick = { onAction(RouteAction.OnToggleMapPlaces) },
-                    label = { Text(stringResource(Res.string.route_map_places)) },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Place, contentDescription = null, modifier = Modifier.size(18.dp))
-                    },
-                    colors = chipColors,
-                )
-            }
+        items(state.days, key = { "day-${it.index}" }) { day ->
+            FilterChip(
+                selected = state.selectedDayIndex == day.index,
+                onClick = { onAction(RouteAction.OnDaySelect(day.index)) },
+                label = { Text(stringResource(Res.string.route_day_number, day.index + 1)) },
+                colors = chipColors,
+            )
         }
     }
 }
@@ -136,12 +118,13 @@ fun RouteEmptyMapHint(modifier: Modifier = Modifier) {
     }
 }
 
-/** A Schneaggmap place tapped on the route map: where it would go and "Add to route". */
+/** A Schneaggmap place tapped on the route map: where it would go, "Open place" and "Add to route". */
 @Composable
 fun RoutePlaceCard(
     place: RouteMapPlaceUi,
     insertHint: RouteInsertHint?,
     onAddClick: () -> Unit,
+    onOpenClick: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -175,15 +158,23 @@ fun RoutePlaceCard(
                     modifier = Modifier.padding(top = 4.dp, end = 8.dp)
                 )
             }
-            Button(
-                onClick = onAddClick,
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 12.dp, end = 8.dp)
+                    .padding(top = 12.dp, end = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(stringResource(Res.string.route_add_to_route))
+                TextButton(onClick = onOpenClick) {
+                    Icon(imageVector = Icons.Default.Place, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(Res.string.route_open_place))
+                }
+                Button(onClick = onAddClick, modifier = Modifier.weight(1f)) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(Res.string.route_add_to_route))
+                }
             }
         }
     }

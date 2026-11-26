@@ -6,7 +6,6 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.serialization.json.buildJsonObject
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.safeAdd
@@ -55,10 +54,11 @@ private fun appendLiveEndIfMoved(trailPositions: List<Position>, livePosition: P
 @MaplibreComposable
 fun SnailTrailLayers(
     usersWithLocation: List<User>,
+    ownUserId: String?,
     snailTrails: Map<String, List<SnailTrailPoint>>,
     ownLocation: LocationMeasurement?,
 ) {
-    val ownId = SessionCache.requireLoggedIn()?.userId
+    val ownId = ownUserId
 
     usersWithLocation.forEach { user ->
         key(user.id) {

@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.TimeZone
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
@@ -25,20 +24,16 @@ import kotlin.time.Duration.Companion.minutes
 
 /**
  * Loads the shared map layers ([MapLayersData]) for every map screen (Schneaggmap, route planner),
- * so each map shows the same places, friends and events.
+ * so each map shows the same places, friends and events. [ownUserIdFlow] is the own user id while
+ * logged in (injected, it has to follow autologin).
  */
 class MapLayersSource(
     private val mapRepository: MapRepository,
     private val userRepository: UserRepository,
     private val eventRepository: EventRepository,
     private val settingsRepository: SettingsRepository,
+    private val ownUserIdFlow: Flow<String?>,
 ) {
-
-    // Driven off authState (not a one-shot read) so the own user and the event filter pick up the
-    // id once autologin finishes
-    private val ownUserIdFlow: Flow<String?> = SessionCache.authState
-        .map { (it as? SessionCache.AuthState.LoggedIn)?.userId }
-        .distinctUntilChanged()
 
     fun observe(): Flow<MapLayersData> {
         val entriesFlow = mapRepository.getAllMapEntriesFlow()
@@ -54,6 +49,7 @@ class MapLayersSource(
                 activeSightings = activeSightings,
                 usersWithLocation = people.usersWithLocation,
                 onlineFriendIds = people.onlineFriendIds,
+                ownUserId = people.ownUserId,
                 ownUser = people.ownUser,
                 eventsWithLocation = events.withLocation,
                 joinedEventIds = events.joinedIds,
@@ -82,6 +78,7 @@ class MapLayersSource(
     private data class People(
         val usersWithLocation: List<User>,
         val onlineFriendIds: Set<String>,
+        val ownUserId: String?,
         val ownUser: User?,
     )
 
@@ -89,10 +86,10 @@ class MapLayersSource(
         userRepository.getFriendsFlow("").map { friends -> friends.filter { it.isLocationValid() } },
         userRepository.onlineFriendIdsFlow,
         ownUserIdFlow.flatMapLatest { ownId ->
-            if (ownId == null) flowOf(null) else userRepository.getUserByIdFlow(ownId)
+            if (ownId == null) flowOf(null to null) else userRepository.getUserByIdFlow(ownId).map { ownId to it }
         },
-    ) { usersWithLocation, onlineFriendIds, ownUser ->
-        People(usersWithLocation, onlineFriendIds, ownUser)
+    ) { usersWithLocation, onlineFriendIds, (ownUserId, ownUser) ->
+        People(usersWithLocation, onlineFriendIds, ownUserId, ownUser)
     }
 
     private data class Events(val withLocation: List<Event>, val joinedIds: Set<String>)
