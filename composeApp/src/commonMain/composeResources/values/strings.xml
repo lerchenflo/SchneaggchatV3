@@ -170,7 +170,6 @@
     <string name="user_settings_status_set">Set status</string>
     <string name="user_settings_friends_empty">Your friends haven't written anything about you yet.</string>
     <string name="user_settings_friends_hint">Only your friends can write this, you can't change it.</string>
-    <string name="chat_details_friends_about_empty">Nobody has written anything about %1$s yet.</string>
     <string name="chat_details_friends_about_write_first">Be the first to write</string>
     <string name="chat_details_group_about_title">About the group</string>
     <string name="chat_details_group_about_empty">This group has no description yet.</string>

@@ -170,7 +170,6 @@
     <string name="user_settings_status_set">Status setzen</string>
     <string name="user_settings_friends_empty">Deine Freunde haben noch nichts über dich geschrieben.</string>
     <string name="user_settings_friends_hint">Nur deine Freunde können das schreiben, du kannst es nicht ändern.</string>
-    <string name="chat_details_friends_about_empty">Noch hat niemand etwas über %1$s geschrieben.</string>
     <string name="chat_details_friends_about_write_first">Als Erste:r schreiben</string>
     <string name="chat_details_group_about_title">Über die Gruppe</string>
     <string name="chat_details_group_about_empty">Die Gruppe hat noch keine Beschreibung.</string>

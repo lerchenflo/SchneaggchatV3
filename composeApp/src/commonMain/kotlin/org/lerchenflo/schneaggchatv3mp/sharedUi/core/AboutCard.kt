@@ -129,11 +129,7 @@ fun AboutCardPart(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (onEditClick != null && emptyActionText != null) {
-                    FilledTonalButton(onClick = onEditClick, modifier = Modifier.padding(top = 8.dp)) {
-                        Icon(imageVector = Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(text = emptyActionText)
-                    }
+                    AboutEditButton(text = emptyActionText, onClick = onEditClick, modifier = Modifier.padding(top = 8.dp))
                 }
             }
 
@@ -154,6 +150,16 @@ fun AboutCardPart(
                 }
             }
         }
+    }
+}
+
+/** Tonal button with an edit pencil that writes a text which is still empty, e.g. "Be the first to write". */
+@Composable
+fun AboutEditButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    FilledTonalButton(onClick = onClick, modifier = modifier) {
+        Icon(imageVector = Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(text = text)
     }
 }
 
