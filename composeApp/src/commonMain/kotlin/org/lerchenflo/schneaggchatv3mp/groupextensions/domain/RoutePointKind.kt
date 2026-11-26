@@ -8,5 +8,7 @@ enum class RoutePointKind {
     STOP,
     WAYPOINT,
     ACCOMMODATION,
-    POI
+    POI,
+    /** Switch vehicle, e.g. park the van, go on by motorbike (its "continue by" mode). */
+    TRANSFER,
 }

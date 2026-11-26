@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.SwapVert
@@ -29,11 +31,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.RoutePointKind
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.route_path_show_on_map
 import schneaggchatv3mp.composeapp.generated.resources.route_empty_hint
 import schneaggchatv3mp.composeapp.generated.resources.route_reorder
 import schneaggchatv3mp.composeapp.generated.resources.route_straight_line
@@ -71,6 +76,7 @@ fun RouteDayList(
             RouteDayCard(
                 day = day,
                 points = state.points.filter { it.dayIndex == day.index },
+                paths = state.paths.filter { it.dayIndex == day.index },
                 onAction = onAction,
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
@@ -115,7 +121,8 @@ private sealed interface RouteListRow {
     data class Via(val points: List<RoutePointUi>) : RouteListRow
 }
 
-private fun listRows(points: List<RoutePointUi>): List<RouteListRow> {
+/** [keepSingle]: drive-through points that must keep their own row, e.g. where a path starts. */
+private fun listRows(points: List<RoutePointUi>, keepSingle: (RoutePointUi) -> Boolean = { false }): List<RouteListRow> {
     val rows = mutableListOf<RouteListRow>()
     var waypoints = mutableListOf<RoutePointUi>()
     fun flushWaypoints() {
@@ -127,7 +134,7 @@ private fun listRows(points: List<RoutePointUi>): List<RouteListRow> {
         waypoints = mutableListOf()
     }
     points.forEach { point ->
-        if (point.kind == RoutePointKind.WAYPOINT) {
+        if (point.kind == RoutePointKind.WAYPOINT && !keepSingle(point)) {
             waypoints += point
         } else {
             flushWaypoints()
@@ -142,6 +149,7 @@ private fun listRows(points: List<RoutePointUi>): List<RouteListRow> {
 private fun RouteDayCard(
     day: RouteDayUi,
     points: List<RoutePointUi>,
+    paths: List<RoutePathUi>,
     onAction: (RouteAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -171,24 +179,158 @@ private fun RouteDayCard(
         }
 
         Column(modifier = Modifier.padding(bottom = 6.dp)) {
-            listRows(points).forEach { row ->
-                when (row) {
-                    is RouteListRow.Single -> RoutePointRow(
-                        point = row.point,
-                        onClick = { onAction(RouteAction.OnPointEditClick(row.point.itemId)) },
+            val pathsByStart = paths.groupBy { it.fromItemId }
+            PointRows(
+                points = points,
+                unfoldedKeys = unfoldedKeys,
+                onUnfold = { unfoldedKeys = unfoldedKeys + it },
+                onAction = onAction,
+                keepSingle = { it.itemId in pathsByStart },
+                after = { point ->
+                    pathsByStart[point.itemId]?.forEach { path ->
+                        RoutePathBranch(
+                            path = path,
+                            pathsByStart = pathsByStart,
+                            unfoldedKeys = unfoldedKeys,
+                            onUnfold = { unfoldedKeys = unfoldedKeys + it },
+                            onAction = onAction,
+                        )
+                    }
+                },
+            )
+            // A path whose start was deleted shows at the end, so it can be fixed or deleted
+            val shownIds = (points + paths.flatMap { it.points }).map { it.itemId }.toSet()
+            paths.filter { it.fromItemId !in shownIds }.forEach { path ->
+                RoutePathBranch(
+                    path = path,
+                    pathsByStart = pathsByStart,
+                    unfoldedKeys = unfoldedKeys,
+                    onUnfold = { unfoldedKeys = unfoldedKeys + it },
+                    onAction = onAction,
+                )
+            }
+        }
+    }
+}
+
+/** Point rows with folded drive-through runs; [after] adds content below a single point's row. */
+@Composable
+private fun PointRows(
+    points: List<RoutePointUi>,
+    unfoldedKeys: List<String>,
+    onUnfold: (String) -> Unit,
+    onAction: (RouteAction) -> Unit,
+    keepSingle: (RoutePointUi) -> Boolean = { false },
+    after: @Composable (RoutePointUi) -> Unit = {},
+) {
+    listRows(points, keepSingle).forEach { row ->
+        when (row) {
+            is RouteListRow.Single -> {
+                RoutePointRow(point = row.point, onClick = { onAction(RouteAction.OnPointEditClick(row.point.itemId)) })
+                after(row.point)
+            }
+            is RouteListRow.Via -> {
+                val key = row.points.first().itemId
+                if (key in unfoldedKeys) {
+                    row.points.forEach { point ->
+                        RoutePointRow(point = point, onClick = { onAction(RouteAction.OnPointEditClick(point.itemId)) })
+                    }
+                } else {
+                    ViaRow(points = row.points, onClick = { onUnfold(key) })
+                }
+            }
+        }
+    }
+}
+
+/**
+ * An alternative path under the point it leaves from: name, ends, distance and time, its points,
+ * and the paths branching off them (nested, from [pathsByStart]; [outerPathIds] stops paths that
+ * branch off each other from repeating).
+ */
+@Composable
+private fun RoutePathBranch(
+    path: RoutePathUi,
+    pathsByStart: Map<String, List<RoutePathUi>>,
+    unfoldedKeys: List<String>,
+    onUnfold: (String) -> Unit,
+    onAction: (RouteAction) -> Unit,
+    outerPathIds: Set<String> = emptySet(),
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 28.dp, end = 12.dp, top = 2.dp, bottom = 6.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onAction(RouteAction.OnPathEditClick(path.itemId)) }
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = path.mode.icon(),
+                    contentDescription = stringResource(path.mode.labelRes()),
+                    tint = path.mode.colors().container,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = path.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        text = routePathEndsText(path),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (path.isBroken) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    is RouteListRow.Via -> {
-                        val key = row.points.first().itemId
-                        if (key in unfoldedKeys) {
-                            row.points.forEach { point ->
-                                RoutePointRow(point = point, onClick = { onAction(RouteAction.OnPointEditClick(point.itemId)) })
-                            }
-                        } else {
-                            ViaRow(points = row.points, onClick = { unfoldedKeys = unfoldedKeys + key })
-                        }
+                }
+                if (!path.isBroken) {
+                    Text(
+                        text = formatDistanceAndTime(path.meters, path.minutes),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    // On the map, where long presses then add points to it
+                    IconButton(onClick = { onAction(RouteAction.OnPathSelect(path.itemId)) }) {
+                        Icon(imageVector = Icons.Default.Map, contentDescription = stringResource(Res.string.route_path_show_on_map))
                     }
                 }
             }
+            if (path.description.isNotBlank()) {
+                Text(
+                    text = path.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = 42.dp, end = 12.dp, bottom = 6.dp)
+                )
+            }
+            PointRows(
+                points = path.points,
+                unfoldedKeys = unfoldedKeys,
+                onUnfold = onUnfold,
+                onAction = onAction,
+                keepSingle = { it.itemId in pathsByStart },
+                after = { point ->
+                    val shownAbove = outerPathIds + path.itemId
+                    pathsByStart[point.itemId]?.filter { it.itemId !in shownAbove }?.forEach { nested ->
+                        RoutePathBranch(
+                            path = nested,
+                            pathsByStart = pathsByStart,
+                            unfoldedKeys = unfoldedKeys,
+                            onUnfold = onUnfold,
+                            onAction = onAction,
+                            outerPathIds = shownAbove,
+                        )
+                    }
+                },
+            )
         }
     }
 }

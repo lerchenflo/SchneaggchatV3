@@ -5,6 +5,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionItemData.RoutePoint
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionItem
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.RoutePointKind
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.distanceMeters
 import kotlin.math.roundToInt
@@ -37,15 +38,12 @@ fun routePointsOf(items: List<GroupExtensionItem>): List<PlannedRoutePoint> =
     }.sortedWith(compareBy({ it.point.sortIndex }, { it.createdAt }))
 
 /**
- * Where a point goes into [route] (which must not contain it): with a planned time in time order,
- * else into the nearest segment.
+ * Where a new point goes into [points] (which must not contain it): with a planned time in time
+ * order, else at the end, so a route is drawn in driving order, also back out on the road it came
+ * in on (user, 2026-11-26; before, it went into the nearest segment).
  */
-fun insertPosition(route: List<RoutePoint>, coordinates: LatLong, plannedAt: Long?): Int =
-    if (plannedAt != null) {
-        timeOrderPosition(route, plannedAt)
-    } else {
-        nearestSegmentPosition(route.map { it.coordinates }, coordinates)
-    }
+fun insertPosition(points: List<RoutePoint>, plannedAt: Long?): Int =
+    if (plannedAt != null) timeOrderPosition(points, plannedAt) else points.size
 
 /**
  * A timed point goes right before the first point with a later time, else to the end. Points
@@ -54,31 +52,6 @@ fun insertPosition(route: List<RoutePoint>, coordinates: LatLong, plannedAt: Lon
 fun timeOrderPosition(route: List<RoutePoint>, plannedAt: Long): Int {
     val firstLater = route.indexOfFirst { point -> point.plannedAt?.let { it > plannedAt } == true }
     return if (firstLater == -1) route.size else firstLater
-}
-
-/**
- * The position with the smallest detour: between two neighbours (how much longer that segment
- * gets), or before the first / after the last point (the new leg's length).
- */
-fun nearestSegmentPosition(route: List<LatLong>, coordinates: LatLong): Int {
-    if (route.isEmpty()) return 0
-
-    var bestPosition = route.size
-    var bestDetour = distanceMeters(route.last(), coordinates)
-
-    val beforeFirst = distanceMeters(coordinates, route.first())
-    if (beforeFirst < bestDetour) {
-        bestPosition = 0
-        bestDetour = beforeFirst
-    }
-    route.zipWithNext().forEachIndexed { index, (from, to) ->
-        val detour = distanceMeters(from, coordinates) + distanceMeters(coordinates, to) - distanceMeters(from, to)
-        if (detour < bestDetour) {
-            bestPosition = index + 1
-            bestDetour = detour
-        }
-    }
-    return bestPosition
 }
 
 /**
@@ -177,6 +150,12 @@ fun straightLineMeters(points: List<LatLong>): Double =
 fun RoutePoint.arrivalMode(routeDefault: RouteTransportMode): RouteTransportMode =
     transportMode?.takeIf { it.isNotBlank() }?.let(RouteTransportMode::fromStored) ?: routeDefault
 
+/** How the group leaves this point: a TRANSFER's "continue by", else the way it came. */
+fun RoutePoint.departureMode(routeDefault: RouteTransportMode): RouteTransportMode =
+    continueTransportMode?.takeIf { kind == RoutePointKind.TRANSFER && it.isNotBlank() }
+        ?.let(RouteTransportMode::fromStored)
+        ?: arrivalMode(routeDefault)
+
 /** Travel time of a straight-line distance by [mode]: × [ROUTE_DETOUR_FACTOR] ÷ the mode's average speed. */
 fun travelMinutes(straightLineMeters: Double, mode: RouteTransportMode): Double =
     straightLineMeters / 1000.0 * ROUTE_DETOUR_FACTOR / mode.averageSpeedKmh * 60.0
@@ -187,16 +166,18 @@ fun legsTravelMinutes(points: List<RoutePoint>, routeDefault: RouteTransportMode
         travelMinutes(distanceMeters(from.coordinates, to.coordinates), to.arrivalMode(routeDefault))
     }.sum()
 
+/** Travel time of the legs of [line], leg i at [modes] i. */
+fun legsTravelMinutes(line: List<RoutePoint>, modes: List<RouteTransportMode>): Double =
+    line.zipWithNext().mapIndexed { index, (from, to) ->
+        travelMinutes(distanceMeters(from.coordinates, to.coordinates), modes[index])
+    }.sum()
+
 /** [minutes] rounded to 5 minutes for display, at least 5 for any travel. */
 fun roundTravelMinutes(minutes: Double): Int {
     if (minutes <= 0.0) return 0
     val rounded = (minutes / TRAVEL_TIME_ROUNDING_MINUTES).roundToInt() * TRAVEL_TIME_ROUNDING_MINUTES
     return rounded.coerceAtLeast(TRAVEL_TIME_ROUNDING_MINUTES)
 }
-
-/** Rough travel time of one straight-line distance by [mode], rounded like [roundTravelMinutes]. */
-fun roughTravelMinutes(straightLineMeters: Double, mode: RouteTransportMode): Int =
-    roundTravelMinutes(travelMinutes(straightLineMeters, mode))
 
 /** The mode most legs use (ties: the earlier leg), else [routeDefault] for a route without legs. */
 fun mostUsedArrivalMode(points: List<RoutePoint>, routeDefault: RouteTransportMode): RouteTransportMode =

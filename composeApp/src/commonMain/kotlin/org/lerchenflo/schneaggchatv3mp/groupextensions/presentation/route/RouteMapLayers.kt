@@ -10,6 +10,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
+import org.maplibre.compose.expressions.value.SymbolPlacement
+import org.maplibre.compose.expressions.value.IconRotationAlignment
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ImageBitmapConfig
@@ -32,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.RoutePointKind
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.RouteTransportMode
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.safeAdd
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.toPosition
@@ -56,12 +63,18 @@ private val POINT_MARKER_SIZE = 28.dp
 private val WAYPOINT_MARKER_SIZE = 12.dp
 private val SELECTED_PLACE_RING_RADIUS = 20.dp
 private val NEW_POINT_MARKER_SIZE = 30.dp
+private val LEG_MODE_BADGE_SIZE = 24.dp
+private val DIRECTION_ARROW_SIZE = 12.dp
+// Room between two arrows along a line
+private val DIRECTION_ARROW_SPACING = 70.dp
 private val MARKER_BORDER = 2.dp
 private val SELECTED_RING = 4.dp
 
 /**
- * What the route planner draws on top of the shared map layers: the route line (the picked day
- * bright, the others grey), one marker per point, a ring around the tapped Schneaggmap place and
+ * What the route planner draws on top of the shared map layers: the route line (the picked day in
+ * the colors of its transport modes with a mode badge in the middle of each leg, the others grey;
+ * alternative paths dashed, a tap on one shows its points),
+ * one marker per point, a ring around the tapped Schneaggmap place and
  * the marker of a point being added. Every source always exists (empty when there is nothing to
  * draw), so no source is removed and added again (CannotAddSourceException).
  */
@@ -71,11 +84,21 @@ fun RouteMapLayers(
     state: RouteState,
     onAction: (RouteAction) -> Unit,
 ) {
-    RouteLineLayers(state)
+    val (activeLegs, dimmedLegs) = remember(state.points, state.paths, state.selectedDayIndex) {
+        routeMapLegs(state).partition { !it.isDimmed }
+    }
+    RouteLineLayers(
+        activeLegs = activeLegs,
+        dimmedLegs = dimmedLegs,
+        onPathClick = { onAction(RouteAction.OnPathSelect(it)) },
+    )
+    DirectionArrows(legs = activeLegs)
+    LegModeBadges(legs = activeLegs, onClick = { onAction(RouteAction.OnLegModeClick(it)) })
     SelectedPlaceRing(state.selectedPlace?.coordinates)
 
     // Drive-through dots first, so the bigger markers lie on top of them
-    val (waypoints, others) = state.points.partition { it.kind == RoutePointKind.WAYPOINT }
+    val allPoints = state.points + state.paths.flatMap { it.points }
+    val (waypoints, others) = allPoints.partition { it.kind == RoutePointKind.WAYPOINT }
     (waypoints + others).forEach { point ->
         key(point.itemId) {
             RoutePointMarker(
@@ -91,50 +114,200 @@ fun RouteMapLayers(
     NewPointMarker(newPoint)
 }
 
+/**
+ * One straight leg on the map. [modeItemId] owns its mode: the point it leads to, or the path for
+ * a path's way back. [pathId] is set for the legs of an alternative path.
+ */
+private class RouteMapLeg(
+    val from: LatLong,
+    val to: LatLong,
+    val mode: RouteTransportMode,
+    val modeItemId: String,
+    val pathId: String?,
+    val isDimmed: Boolean,
+)
+
+// A main leg belongs to the day of the point it leads to, a path to the day of its start
+private fun routeMapLegs(state: RouteState): List<RouteMapLeg> {
+    fun dimmed(dayIndex: Int) = state.selectedDayIndex != null && dayIndex != state.selectedDayIndex
+    val mainLegs = state.points.zipWithNext { from, to ->
+        RouteMapLeg(
+            from = from.coordinates,
+            to = to.coordinates,
+            mode = to.arrivalMode ?: RouteTransportMode.DEFAULT,
+            modeItemId = to.itemId,
+            pathId = null,
+            isDimmed = dimmed(to.dayIndex),
+        )
+    }
+    val pathLegs = state.paths.flatMap { path ->
+        path.line.zipWithNext().mapIndexed { index, (from, to) ->
+            RouteMapLeg(
+                from = from,
+                to = to,
+                mode = path.legModes[index],
+                modeItemId = path.legModeItemIds[index],
+                pathId = path.itemId,
+                isDimmed = dimmed(path.dayIndex),
+            )
+        }
+    }
+    return mainLegs + pathLegs
+}
+
 @Composable
 @MaplibreComposable
-private fun RouteLineLayers(state: RouteState) {
+private fun RouteLineLayers(
+    activeLegs: List<RouteMapLeg>,
+    dimmedLegs: List<RouteMapLeg>,
+    onPathClick: (pathItemId: String) -> Unit,
+) {
     val scheme = MaterialTheme.colorScheme
-    // A leg belongs to the day of the point it leads to
-    val (activeLegs, dimmedLegs) = state.points.zipWithNext()
-        .partition { (_, to) -> state.selectedDayIndex == null || to.dayIndex == state.selectedDayIndex }
-
-    val dimmedSource = rememberGeoJsonSource(data = legsData(dimmedLegs))
     LineLayer(
         id = "route-line-dimmed",
-        source = dimmedSource,
+        source = rememberGeoJsonSource(data = legsData(dimmedLegs)),
         color = const(scheme.outline),
         width = const(3.dp),
         cap = const(LineCap.Round),
         join = const(LineJoin.Round),
     )
 
-    val activeSource = rememberGeoJsonSource(data = legsData(activeLegs))
     // Casing under the line, so it stands out on every map color
     LineLayer(
         id = "route-line-casing",
-        source = activeSource,
+        source = rememberGeoJsonSource(data = legsData(activeLegs)),
         color = const(scheme.surface.copy(alpha = 0.8f)),
         width = const(7.dp),
         cap = const(LineCap.Round),
         join = const(LineJoin.Round),
     )
-    LineLayer(
-        id = "route-line",
-        source = activeSource,
-        color = const(scheme.primary),
-        width = const(4.dp),
-        cap = const(LineCap.Round),
-        join = const(LineJoin.Round),
+    // One layer per mode and part (always there, maybe empty), each in its mode's color; paths dashed
+    val (pathLegs, mainLegs) = activeLegs.partition { it.pathId != null }
+    RouteTransportMode.entries.forEach { mode ->
+        key(mode) {
+            LineLayer(
+                id = "route-line-${mode.name}",
+                source = rememberGeoJsonSource(data = legsData(mainLegs.filter { it.mode == mode })),
+                color = const(mode.colors().container),
+                width = const(4.dp),
+                cap = const(LineCap.Round),
+                join = const(LineJoin.Round),
+            )
+            LineLayer(
+                id = "route-path-line-${mode.name}",
+                source = rememberGeoJsonSource(data = legsData(pathLegs.filter { it.mode == mode })),
+                onClick = { clicked ->
+                    val pathId = clicked.firstOrNull()?.id?.content?.substringBefore(LEG_ID_SEPARATOR)
+                    if (pathId != null) {
+                        onPathClick(pathId)
+                        ClickResult.Consume
+                    } else ClickResult.Pass
+                },
+                color = const(mode.colors().container),
+                width = const(4.dp),
+                dasharray = const(listOf<Number>(2, 1.5)),
+                join = const(LineJoin.Round),
+            )
+        }
+    }
+}
+
+/**
+ * Small arrows along the shown legs in driving direction (each leg is drawn from its start to its
+ * end, and line placement turns the icon along it). They never hide markers or badges.
+ */
+@Composable
+@MaplibreComposable
+private fun DirectionArrows(legs: List<RouteMapLeg>) {
+    val scheme = MaterialTheme.colorScheme
+    val density = LocalDensity.current
+    val arrow = remember(scheme.surface, density) { drawDirectionArrow(scheme.surface, density) }
+    SymbolLayer(
+        id = "route-direction-arrows",
+        source = rememberGeoJsonSource(data = legsData(legs)),
+        placement = const(SymbolPlacement.Line),
+        spacing = const(DIRECTION_ARROW_SPACING),
+        iconImage = image(arrow),
+        iconRotationAlignment = const(IconRotationAlignment.Map),
+        iconAllowOverlap = const(true),
+        iconIgnorePlacement = const(true),
     )
 }
 
-private fun legsData(legs: List<Pair<RoutePointUi, RoutePointUi>>) = GeoJsonData.Features(
+/** A chevron pointing right (the line's direction), as a ready bitmap like the markers. */
+private fun drawDirectionArrow(color: Color, density: Density): ImageBitmap {
+    val sizePx = with(density) { DIRECTION_ARROW_SIZE.roundToPx() }.coerceAtLeast(1)
+    val strokePx = with(density) { 2.dp.toPx() }
+    val bitmap = ImageBitmap(width = sizePx, height = sizePx, config = ImageBitmapConfig.Argb8888, hasAlpha = true)
+    CanvasDrawScope().draw(
+        density = density,
+        layoutDirection = LayoutDirection.Ltr,
+        canvas = Canvas(bitmap),
+        size = Size(sizePx.toFloat(), sizePx.toFloat()),
+    ) {
+        val chevron = Path().apply {
+            moveTo(size.width * 0.3f, size.height * 0.2f)
+            lineTo(size.width * 0.7f, size.height * 0.5f)
+            lineTo(size.width * 0.3f, size.height * 0.8f)
+        }
+        drawPath(path = chevron, color = color, style = Stroke(width = strokePx, cap = StrokeCap.Round, join = StrokeJoin.Round))
+    }
+    return bitmap
+}
+
+/**
+ * The mode's icon in the middle of each leg; tapping it changes how the group gets to the point the
+ * leg leads to. Badges that would overlap each other or a marker are left out.
+ */
+@Composable
+@MaplibreComposable
+private fun LegModeBadges(legs: List<RouteMapLeg>, onClick: (toItemId: String) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
+    RouteTransportMode.entries.forEach { mode ->
+        key(mode) {
+            val colors = mode.colors()
+            val iconPainter = rememberVectorPainter(mode.icon())
+            val badge = remember(mode, colors, scheme.surface, density) {
+                drawRouteMarker(
+                    diameter = LEG_MODE_BADGE_SIZE,
+                    fill = colors.container,
+                    border = scheme.surface,
+                    content = MarkerContent.Icon(iconPainter, colors.content),
+                    textMeasurer = textMeasurer,
+                    density = density,
+                )
+            }
+            val midpoints = legs.filter { it.mode == mode }.map { leg ->
+                leg.modeItemId to LatLong(lat = (leg.from.lat + leg.to.lat) / 2, long = (leg.from.long + leg.to.long) / 2)
+            }
+            SymbolLayer(
+                id = "route-leg-mode-${mode.name}",
+                source = rememberGeoJsonSource(data = pointsData(midpoints)),
+                onClick = { clicked ->
+                    val itemId = clicked.firstOrNull()?.id?.content
+                    if (itemId != null) {
+                        onClick(itemId)
+                        ClickResult.Consume
+                    } else ClickResult.Pass
+                },
+                iconImage = image(badge),
+            )
+        }
+    }
+}
+
+// A path leg's feature id is "<path id>#<leg>", so a tap on the line finds its path
+private const val LEG_ID_SEPARATOR = "#"
+
+private fun legsData(legs: List<RouteMapLeg>) = GeoJsonData.Features(
     FeatureCollection(
-        features = legs.map { (from, to) ->
+        features = legs.mapIndexed { index, leg ->
             Feature(
-                geometry = LineString(listOf(from.coordinates.toPosition(), to.coordinates.toPosition())),
+                geometry = LineString(listOf(leg.from.toPosition(), leg.to.toPosition())),
                 properties = buildJsonObject {},
+                id = leg.pathId?.let { JsonPrimitive("$it$LEG_ID_SEPARATOR$index") },
             )
         }
     )

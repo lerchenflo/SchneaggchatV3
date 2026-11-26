@@ -140,7 +140,19 @@ fun RouteScreen(
 
     if (isReady) {
         state.pointDraft?.takeIf { !state.isMovingPoint }?.let { draft ->
-            RoutePointSheet(draft = draft, onAction = onAction)
+            RoutePointSheet(draft = draft, paths = state.paths, onAction = onAction)
+        }
+        state.pathDraft?.let { draft ->
+            RoutePathSheet(draft = draft, partPoints = state.partPointsOf(draft.fromItemId), onAction = onAction)
+        }
+        state.legModeEdit?.let { edit ->
+            RouteLegModeSheet(edit = edit, onAction = onAction)
+        }
+        state.loopOffer?.let { offer ->
+            RouteLoopDialog(offer = offer, onAction = onAction)
+        }
+        state.deleteConfirm?.let { confirm ->
+            RouteDeleteConfirmDialog(confirm = confirm, onAction = onAction)
         }
         if (state.isReorderVisible) {
             RouteReorderSheet(
@@ -197,10 +209,20 @@ private fun RouteMapTab(
                         .align(Alignment.CenterHorizontally)
                         .padding(horizontal = 24.dp)
                 )
-                // A new day shows its own cards from the first one
-                else -> key(state.selectedDayIndex) {
+                // Hidden by a tap on the empty map until a point is selected again
+                !state.isPointRowVisible -> Unit
+                // A new day or path shows its own cards from the first one
+                else -> key(state.selectedDayIndex, state.selectedPathId) {
+                    state.selectedPath?.let { path ->
+                        RoutePathHeader(
+                            path = path,
+                            onEditClick = { onAction(RouteAction.OnPathEditClick(path.itemId)) },
+                            onCloseClick = { onAction(RouteAction.OnPathClose) },
+                            modifier = Modifier.padding(horizontal = 12.dp)
+                        )
+                    }
                     RoutePointCards(
-                        points = state.shownPoints,
+                        points = state.rowPoints,
                         selectedPointId = state.selectedPointId,
                         onAction = onAction,
                     )
@@ -230,6 +252,7 @@ private fun RouteScreenListPreview() {
         kind = kind,
         stopNumber = number,
         name = name,
+        hasName = name.isNotBlank(),
         description = description,
         coordinates = LatLong(47.15, 9.82),
         plannedAt = null,

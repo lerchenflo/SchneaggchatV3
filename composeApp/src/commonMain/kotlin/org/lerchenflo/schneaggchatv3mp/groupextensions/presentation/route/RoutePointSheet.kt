@@ -13,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.AltRoute
+import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.OpenWith
@@ -58,6 +60,10 @@ import schneaggchatv3mp.composeapp.generated.resources.route_new_point
 import schneaggchatv3mp.composeapp.generated.resources.route_point_description
 import schneaggchatv3mp.composeapp.generated.resources.route_point_move
 import schneaggchatv3mp.composeapp.generated.resources.route_point_name
+import schneaggchatv3mp.composeapp.generated.resources.route_continue_mode
+import schneaggchatv3mp.composeapp.generated.resources.route_main_route
+import schneaggchatv3mp.composeapp.generated.resources.route_part_label
+import schneaggchatv3mp.composeapp.generated.resources.route_path_start
 import schneaggchatv3mp.composeapp.generated.resources.route_point_name_optional
 import schneaggchatv3mp.composeapp.generated.resources.route_point_name_required
 import schneaggchatv3mp.composeapp.generated.resources.route_point_time
@@ -73,6 +79,7 @@ import schneaggchatv3mp.composeapp.generated.resources.save
 @Composable
 fun RoutePointSheet(
     draft: RoutePointDraft,
+    paths: List<RoutePathUi>,
     onAction: (RouteAction) -> Unit,
 ) {
     var showTimePicker by remember { mutableStateOf(false) }
@@ -122,11 +129,28 @@ fun RoutePointSheet(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // Paths whose start and rejoin point exist can take points
+            val openPaths = paths.filter { !it.isBroken }
+            if (openPaths.isNotEmpty()) {
+                RoutePartPicker(
+                    selectedPathId = draft.pathId,
+                    paths = openPaths,
+                    onSelect = { onAction(RouteAction.OnDraftPathChange(it)) },
+                )
+            }
+
             if (!draft.isFirstPoint) {
                 RouteTransportModePicker(
                     label = stringResource(Res.string.route_arrival_mode),
                     selected = draft.transportMode,
                     onSelect = { onAction(RouteAction.OnDraftTransportModeChange(it)) },
+                )
+            }
+            if (draft.kind == RoutePointKind.TRANSFER) {
+                RouteTransportModePicker(
+                    label = stringResource(Res.string.route_continue_mode),
+                    selected = draft.continueTransportMode,
+                    onSelect = { onAction(RouteAction.OnDraftContinueModeChange(it)) },
                 )
             }
 
@@ -168,6 +192,15 @@ fun RoutePointSheet(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+            }
+
+            // Every saved point can start an alternative path, also one on a path (nested)
+            if (draft.itemId != null) {
+                OutlinedButton(onClick = { onAction(RouteAction.OnDraftStartPathClick) }, modifier = Modifier.fillMaxWidth()) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.AltRoute, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(Res.string.route_path_start))
                 }
             }
 
@@ -241,6 +274,59 @@ private fun KindPicker(
                         onClick = {
                             expanded = false
                             onSelect(kind)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** "Belongs to": the main route or one of the alternative paths. */
+@Composable
+private fun RoutePartPicker(
+    selectedPathId: String?,
+    paths: List<RoutePathUi>,
+    onSelect: (pathItemId: String?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val mainRoute = stringResource(Res.string.route_main_route)
+
+    Column {
+        Text(
+            text = stringResource(Res.string.route_part_label),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.size(4.dp))
+        Box {
+            OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+                val selected = paths.find { it.itemId == selectedPathId }
+                Icon(
+                    imageVector = if (selected == null) Icons.Default.Route else Icons.AutoMirrored.Filled.AltRoute,
+                    contentDescription = null,
+                    modifier = Modifier.size(22.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(text = selected?.name ?: mainRoute, modifier = Modifier.weight(1f))
+                Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null)
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenuItem(
+                    leadingIcon = { Icon(imageVector = Icons.Default.Route, contentDescription = null) },
+                    text = { Text(mainRoute) },
+                    onClick = {
+                        expanded = false
+                        onSelect(null)
+                    }
+                )
+                paths.forEach { path ->
+                    DropdownMenuItem(
+                        leadingIcon = { Icon(imageVector = Icons.AutoMirrored.Filled.AltRoute, contentDescription = null) },
+                        text = { Text(path.name) },
+                        onClick = {
+                            expanded = false
+                            onSelect(path.itemId)
                         }
                     )
                 }

@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material3.Button
@@ -30,10 +31,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.edit
+import schneaggchatv3mp.composeapp.generated.resources.route_path_add_hint
+import schneaggchatv3mp.composeapp.generated.resources.route_path_close
 import schneaggchatv3mp.composeapp.generated.resources.route_add_to_route
 import schneaggchatv3mp.composeapp.generated.resources.route_all_days
 import schneaggchatv3mp.composeapp.generated.resources.route_day_number
@@ -175,6 +180,63 @@ fun RoutePlaceCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(Res.string.route_add_to_route))
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Above the cards of a selected alternative path: its name, ends, distance and time, edit, back to
+ * the main route. While it is shown, long presses on the map add points to it.
+ */
+@Composable
+fun RoutePathHeader(
+    path: RoutePathUi,
+    onEditClick: () -> Unit,
+    onCloseClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shadowElevation = 3.dp,
+        onClick = onEditClick,
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 14.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = path.mode.icon(),
+                contentDescription = stringResource(path.mode.labelRes()),
+                tint = path.mode.colors().container,
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = path.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    text = listOf(routePathEndsText(path), formatDistanceAndTime(path.meters, path.minutes))
+                        .filter { it.isNotBlank() }
+                        .joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (path.points.isEmpty()) {
+                    Text(
+                        text = stringResource(Res.string.route_path_add_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            IconButton(onClick = onEditClick) {
+                Icon(imageVector = Icons.Default.Edit, contentDescription = stringResource(Res.string.edit))
+            }
+            IconButton(onClick = onCloseClick) {
+                Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(Res.string.route_path_close))
             }
         }
     }

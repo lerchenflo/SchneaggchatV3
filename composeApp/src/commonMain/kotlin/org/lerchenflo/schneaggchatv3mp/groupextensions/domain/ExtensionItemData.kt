@@ -90,12 +90,16 @@ sealed class ExtensionItemData {
         override val extensionType: GroupExtensionType get() = GroupExtensionType.QUOTES
     }
 
-    /** ROUTE_PLANNER: one item per point; the route is the items ordered by [sortIndex]. */
+    /**
+     * ROUTE_PLANNER: one item per point; the main route is the points without [pathId] ordered by
+     * [sortIndex], each [RoutePath] orders its own points the same way.
+     */
     @Serializable
     @SerialName("route_point")
     data class RoutePoint(
         val coordinates: LatLong,
-        val name: String,
+        /** Null only for an unnamed WAYPOINT (server: blank is stored as null, other kinds 1..100). */
+        val name: String? = null,
         val description: String = "",
         val sortIndex: Int,
         val kind: RoutePointKind = RoutePointKind.STOP,
@@ -109,6 +113,30 @@ sealed class ExtensionItemData {
          * (`ExtensionSettings.Route.transportMode`) applies.
          */
         val transportMode: String? = null,
+        /** TRANSFER only ("continue by"): the mode of the leg after it; the server clears it on other kinds. */
+        val continueTransportMode: String? = null,
+        /** Item id of the [RoutePath] this point lies on; null = main route. */
+        val pathId: String? = null,
+    ) : ExtensionItemData() {
+        override val extensionType: GroupExtensionType get() = GroupExtensionType.ROUTE_PLANNER
+    }
+
+    /**
+     * ROUTE_PLANNER: an alternative way that leaves the main route at [fromItemId] and rejoins it at
+     * [toItemId] (the same point for a side trip). Its points carry its id in [RoutePoint.pathId].
+     * Deleting it deletes nothing else on the server; the client deletes its points first.
+     */
+    @Serializable
+    @SerialName("route_path")
+    data class RoutePath(
+        val name: String,
+        val description: String = "",
+        /** Mode of its legs whose point has none, and of the leg back to the main route. */
+        val transportMode: String? = null,
+        val fromItemId: String,
+        val toItemId: String,
+        /** Group members taking this way (not picked in the app yet). */
+        val memberIds: List<String> = emptyList(),
     ) : ExtensionItemData() {
         override val extensionType: GroupExtensionType get() = GroupExtensionType.ROUTE_PLANNER
     }

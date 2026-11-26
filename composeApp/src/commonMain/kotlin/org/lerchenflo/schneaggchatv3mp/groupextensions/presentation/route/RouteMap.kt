@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.map.fitCameraTo
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapContentLayers
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.MapLayerClicks
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.friendPositions
+import org.lerchenflo.schneaggchatv3mp.sharedUi.map.metersPerDpAtTarget
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.needsFit
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.rememberBaseMapState
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.toPosition
@@ -26,6 +27,8 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.route_point_move_title
 
 private const val SINGLE_POINT_ZOOM = 13.0
+// A long press this close to a point counts as on it
+private const val POINT_HIT_RADIUS_DP = 24.0
 
 /**
  * The route map: the shared [BaseMap] with places, friends and events ([MapContentLayers]) and the
@@ -87,7 +90,10 @@ fun RouteMap(
     BaseMap(
         state = baseMapState,
         modifier = modifier,
-        onMapLongClick = { onAction(RouteAction.OnMapLongPress(it)) },
+        onMapClick = { onAction(RouteAction.OnMapClick) },
+        onMapLongClick = {
+            onAction(RouteAction.OnMapLongPress(it, POINT_HIT_RADIUS_DP * baseMapState.mapState.metersPerDpAtTarget))
+        },
         zoomSnapPositions = friendPositions,
         // An empty route starts on the own location (user, 2026-11-24)
         centerOnOwnLocationOnce = !state.isLoading && state.points.isEmpty(),
