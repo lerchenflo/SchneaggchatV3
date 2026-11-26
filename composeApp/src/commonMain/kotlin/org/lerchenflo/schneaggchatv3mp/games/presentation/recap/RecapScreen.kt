@@ -53,6 +53,12 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.DOWNTIME_RECAP_YEAR
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapBetaTesterPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapChatSpeedPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapChatStarterPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapChatEmojiPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapFeedbackReportsPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapFeedbackVotesPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapWakesPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapDowntimePage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapGamesPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapGroupsPage
@@ -216,11 +222,13 @@ private fun RecapScreenLoadingPreview() {
 
 // The recap story pages in display order. Pages without data are skipped when building the list.
 private enum class RecapPageKind {
-    INTRO, USAGE_TIME, SENT, RECEIVED, TYPING, RHYTHM, REACTIONS, TOP_CONTACTS,
-    SOCIAL, GROUPS, LEADERBOARD, MAP, MAP_LEADERBOARD, GAMES, BETA_TESTER, PASSWORD_RESET, DOWNTIME, OUTRO
+    INTRO, USAGE_TIME, SENT, RECEIVED, TYPING, RHYTHM, CHAT_SPEED, CHAT_STARTER, CHAT_EMOJI, REACTIONS, TOP_CONTACTS,
+    SOCIAL, GROUPS, WAKES, LEADERBOARD, MAP, MAP_LEADERBOARD, GAMES, FEEDBACK_REPORTS, FEEDBACK_VOTES,
+    BETA_TESTER, PASSWORD_RESET, DOWNTIME, OUTRO
 }
 
-// Story order: you -> your messages -> interactions -> your people -> community rankings -> extras.
+// Story order: you -> your messages and chat habits -> interactions -> your people -> community
+// rankings -> feedback and extras -> the overview to share.
 private fun buildPages(recap: RecapUi): List<RecapPageKind> = buildList {
     add(RecapPageKind.INTRO)
     if (recap.usageMillisThisYear > 0) add(RecapPageKind.USAGE_TIME)
@@ -228,18 +236,24 @@ private fun buildPages(recap: RecapUi): List<RecapPageKind> = buildList {
     add(RecapPageKind.RECEIVED)
     if (recap.charactersTyped > 0) add(RecapPageKind.TYPING)
     if (recap.messagesSent > 0) add(RecapPageKind.RHYTHM)
+    if (recap.chatHabits.hasSpeed) add(RecapPageKind.CHAT_SPEED)
+    if (recap.chatHabits.conversations > 0) add(RecapPageKind.CHAT_STARTER)
+    if (recap.chatHabits.topEmojiTyped.isNotEmpty()) add(RecapPageKind.CHAT_EMOJI)
     if (recap.reactionsGiven > 0 || recap.reactionsReceived > 0 || recap.pollsCreated > 0 || recap.pollVotesCast > 0) {
         add(RecapPageKind.REACTIONS)
     }
     if (recap.topPartners.isNotEmpty()) add(RecapPageKind.TOP_CONTACTS)
     add(RecapPageKind.SOCIAL)
     if (recap.groupsMemberOf > 0) add(RecapPageKind.GROUPS)
+    if (recap.wakes.hasThisYear) add(RecapPageKind.WAKES)
     if (recap.myRank != null || recap.leaderboardTop.isNotEmpty()) add(RecapPageKind.LEADERBOARD)
     if (recap.mapEntriesCreated > 0 || recap.mapEntriesEdited > 0 || recap.mapEntriesCreatedAllTime > 0) add(RecapPageKind.MAP)
     if (recap.myMapRank != null || recap.mapLeaderboardTop.isNotEmpty()) add(RecapPageKind.MAP_LEADERBOARD)
     if (recap.myGamesRank != null || recap.gamesLeaderboardTop.isNotEmpty()) add(RecapPageKind.GAMES)
+    if (recap.feedback.reportedAllTime > 0) add(RecapPageKind.FEEDBACK_REPORTS)
+    if (recap.feedback.hasVotesOrComments) add(RecapPageKind.FEEDBACK_VOTES)
     add(RecapPageKind.BETA_TESTER)
-    if (recap.passwordResetEmailsSentAllTime > 0) add(RecapPageKind.PASSWORD_RESET)
+    if (recap.passwordResetEmailsSentAllTime > 0 || recap.failedLoginsAllTime > 0) add(RecapPageKind.PASSWORD_RESET)
     // Downtime reasons are hardcoded for one year only
     if (recap.year == DOWNTIME_RECAP_YEAR) add(RecapPageKind.DOWNTIME)
     add(RecapPageKind.OUTRO)
@@ -338,6 +352,12 @@ private fun RecapStories(
                     RecapPageKind.SENT -> RecapMessagesSentPage(recap, visible)
                     RecapPageKind.TYPING -> RecapTypingPage(recap, visible)
                     RecapPageKind.RHYTHM -> RecapRhythmPage(recap, visible)
+                    RecapPageKind.CHAT_SPEED -> RecapChatSpeedPage(recap, visible)
+                    RecapPageKind.CHAT_STARTER -> RecapChatStarterPage(recap, visible)
+                    RecapPageKind.CHAT_EMOJI -> RecapChatEmojiPage(recap, visible)
+                    RecapPageKind.WAKES -> RecapWakesPage(recap, visible)
+                    RecapPageKind.FEEDBACK_REPORTS -> RecapFeedbackReportsPage(recap, visible)
+                    RecapPageKind.FEEDBACK_VOTES -> RecapFeedbackVotesPage(recap, visible)
                     RecapPageKind.USAGE_TIME -> RecapUsageTimePage(recap, visible)
                     RecapPageKind.RECEIVED -> RecapMessagesReceivedPage(recap, visible)
                     RecapPageKind.TOP_CONTACTS -> RecapTopContactsPage(recap, visible)

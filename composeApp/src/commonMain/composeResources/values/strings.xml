@@ -1079,12 +1079,9 @@
     <string name="recap_starter_partners_label">With your closest chats</string>
     <string name="recap_starter_partner">%1$s of %2$s by you</string>
     <string name="recap_starter_opener_label">Your go-to opener</string>
-    <string name="recap_words_title">Your words of the year.</string>
-    <string name="recap_words_of_the_year_label">Word of the year</string>
-    <string name="recap_words_used">used %1$s×</string>
-    <string name="recap_words_more_label">Also on repeat</string>
-    <string name="recap_words_emoji_typed_label">Emojis you typed</string>
-    <string name="recap_words_laughs">You laughed %1$s times in text (haha, lol, 😂 …).</string>
+    <string name="recap_emoji_title">Your emoji of the year.</string>
+    <string name="recap_emoji_typed">typed %1$s× in your messages</string>
+    <string name="recap_emoji_more_label">Also in heavy use</string>
     <string name="recap_wakes_title">Rise and shine!</string>
     <string name="recap_wakes_sent_label">wakes sent this year</string>
     <string name="recap_wakes_received_label">wakes received this year</string>
@@ -1117,7 +1114,6 @@
     <string name="recap_password_failed_label">wrong passwords entered for your account</string>
     <string name="recap_password_failed_logins">A wrong password was entered for your account %1$s times so far, %2$s of them this year.</string>
     <string name="recap_outro_rank_games">games rank</string>
-    <string name="recap_outro_word">word of the year</string>
     <string name="recap_outro_badges">Your badges</string>
     <string name="recap_badge_bug_hunter">🐞 Bug hunter</string>
     <string name="recap_badge_idea_machine">💡 Idea machine</string>
@@ -1130,7 +1126,6 @@
     <string name="recap_badge_icebreaker">🧊 Icebreaker</string>
     <string name="recap_badge_chatterbox">🗣️ Chatterbox</string>
     <string name="recap_badge_streak_master">🔥 Streak master</string>
-    <string name="recap_badge_laugh_attack">😂 Laugh attack</string>
     <string name="recap_badge_alarm_clock">⏰ Alarm clock</string>
     <string name="recap_badge_forgetful">🔑 Forgetful</string>
     <string name="recap_map_leaderboard_title">The map charts.</string>

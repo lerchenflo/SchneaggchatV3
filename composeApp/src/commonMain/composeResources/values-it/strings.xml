@@ -1073,12 +1073,9 @@
     <string name="recap_starter_partners_label">Con i tuoi contatti più stretti</string>
     <string name="recap_starter_partner">%1$s su %2$s da te</string>
     <string name="recap_starter_opener_label">Il tuo saluto preferito</string>
-    <string name="recap_words_title">Le tue parole dell\'anno.</string>
-    <string name="recap_words_of_the_year_label">Parola dell\'anno</string>
-    <string name="recap_words_used">usata %1$s volte</string>
-    <string name="recap_words_more_label">Anche molto usate</string>
-    <string name="recap_words_emoji_typed_label">Le emoji che hai scritto</string>
-    <string name="recap_words_laughs">Hai riso per iscritto %1$s volte (haha, lol, 😂 …).</string>
+    <string name="recap_emoji_title">La tua emoji dell\'anno.</string>
+    <string name="recap_emoji_typed">scritta %1$s volte nei tuoi messaggi</string>
+    <string name="recap_emoji_more_label">Anche molto usate</string>
     <string name="recap_wakes_title">Sveglia!</string>
     <string name="recap_wakes_sent_label">sveglie inviate quest\'anno</string>
     <string name="recap_wakes_received_label">sveglie ricevute quest\'anno</string>
@@ -1111,7 +1108,6 @@
     <string name="recap_password_failed_label">password sbagliate inserite per il tuo account</string>
     <string name="recap_password_failed_logins">Per il tuo account è stata inserita una password sbagliata %1$s volte finora, %2$s quest\'anno.</string>
     <string name="recap_outro_rank_games">classifica giochi</string>
-    <string name="recap_outro_word">parola dell\'anno</string>
     <string name="recap_outro_badges">I tuoi badge</string>
     <string name="recap_badge_bug_hunter">🐞 Cacciatore di bug</string>
     <string name="recap_badge_idea_machine">💡 Macchina di idee</string>
@@ -1124,7 +1120,6 @@
     <string name="recap_badge_icebreaker">🧊 Rompighiaccio</string>
     <string name="recap_badge_chatterbox">🗣️ Chiacchierone</string>
     <string name="recap_badge_streak_master">🔥 Maestro delle serie</string>
-    <string name="recap_badge_laugh_attack">😂 Attacco di risate</string>
     <string name="recap_badge_alarm_clock">⏰ Sveglia vivente</string>
     <string name="recap_badge_forgetful">🔑 Smemorato</string>
     <string name="recap_map_leaderboard_title">Migliori contributori della mappa</string>

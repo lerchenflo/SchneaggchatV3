@@ -26,7 +26,19 @@ data class RecapResponse(
     val betaTester: BetaTesterRecapDto = BetaTesterRecapDto(),
     val passwordResets: PasswordResetRecapDto = PasswordResetRecapDto(),
     val usageTime: UsageTimeRecapDto = UsageTimeRecapDto(),
+    // Defaulted so a recap from a server without these topics still deserializes
+    val feedback: FeedbackRecapDto = FeedbackRecapDto(),
+    val chatHabits: ChatHabitsRecapDto = ChatHabitsRecapDto(),
+    val wakes: WakeRecapDto = WakeRecapDto(),
 )
+
+/** A text with how often it came up: a word, an opener, a wake reason, an exception class. */
+@Serializable
+data class TextCountDto(val text: String, val count: Long)
+
+/** A user or group (resolved name) with a count. */
+@Serializable
+data class NamedCountDto(val id: String, val name: String, val group: Boolean, val count: Long)
 
 @Serializable
 data class AccountRecapDto(
@@ -198,17 +210,100 @@ data class BetaTesterRowDto(
     val exceptionCount: Long,
 )
 
+// Failed server-side push deliveries do not count as exceptions (the server moved them out).
+// Top exception / endpoint / first exception can be null even with exceptions: older rows lack them.
 @Serializable
 data class BetaTesterRecapDto(
     val all: List<BetaTesterRowDto> = emptyList(),
     val myRank: Int? = null,
     val myExceptionCount: Long = 0,
+    val myTopException: TextCountDto? = null,
+    val myTopEndpoint: TextCountDto? = null,
+    val myFirstExceptionAt: Long? = null,
+    val myPushFailuresThisYear: Long = 0,
+    val myPushFailuresAllTime: Long = 0,
 )
 
+// Failed logins = this username with a wrong password; anyone knowing the username can cause one.
 @Serializable
 data class PasswordResetRecapDto(
     val passwordResetEmailsSentThisYear: Long = 0,
     val passwordResetEmailsSentAllTime: Long = 0,
+    val failedLoginsThisYear: Long = 0,
+    val failedLoginsAllTime: Long = 0,
+)
+
+/**
+ * The requester on the feedback board. [myEntriesByStatus] holds REQUESTED / PLANNED / IMPLEMENTED
+ * (features) and OPEN / CONFIRMED / FIXED (bugs); the vote maps UP / DOWN / DIDNT_KNOW / NOT_NEEDED.
+ */
+@Serializable
+data class FeedbackRecapDto(
+    val bugsReportedThisYear: Long = 0,
+    val bugsReportedAllTime: Long = 0,
+    val featuresRequestedThisYear: Long = 0,
+    val featuresRequestedAllTime: Long = 0,
+    val myEntriesByStatus: Map<String, Long> = emptyMap(),
+    val votesCast: Map<String, Long> = emptyMap(),
+    val votesReceived: Map<String, Long> = emptyMap(),
+    val topEntry: FeedbackTopEntryDto? = null,
+    val commentsWrittenThisYear: Long = 0,
+    val commentsWrittenAllTime: Long = 0,
+    val devRepliesReceivedThisYear: Long = 0,
+    val devRepliesReceivedAllTime: Long = 0,
+)
+
+/** Own entry with the most upvotes from others; [type] is FEATURE or BUG. */
+@Serializable
+data class FeedbackTopEntryDto(
+    val id: String,
+    val type: String,
+    val title: String,
+    val status: String,
+    val upVotes: Long,
+)
+
+/**
+ * Direct chats only (no groups, no system messages), except [topEmojiTyped] (emoji typed in
+ * message text, all chats, at most 5). A conversation starts with a chat's first message or a
+ * message 6 h or more after the previous one.
+ */
+@Serializable
+data class ChatHabitsRecapDto(
+    val medianReadMillis: Long? = null,
+    val readSampleCount: Long = 0,
+    val fastestReader: FastestReaderDto? = null,
+    val medianReplyMillis: Long? = null,
+    val replySampleCount: Long = 0,
+    val conversations: Long = 0,
+    val conversationsStartedByMe: Long = 0,
+    val starterPerPartner: List<StarterPartnerDto> = emptyList(),
+    val topOpener: TextCountDto? = null,
+    val longestMonologue: MonologueDto? = null,
+    val topEmojiTyped: List<EmojiCountDto> = emptyList(),
+)
+
+@Serializable
+data class FastestReaderDto(val id: String, val name: String, val medianMillis: Long, val sampleCount: Long)
+
+@Serializable
+data class StarterPartnerDto(val id: String, val name: String, val conversations: Long, val startedByMe: Long)
+
+/** Longest run of own messages in one chat without a reply in between. */
+@Serializable
+data class MonologueDto(val messageCount: Int, val partnerId: String, val partnerName: String, val startedAt: Long)
+
+/** Wakes; [groupWakesThisYear] counts wakes others sent to the requester's groups (whether the phone rang is unknown). */
+@Serializable
+data class WakeRecapDto(
+    val wakesSentThisYear: Long = 0,
+    val wakesSentAllTime: Long = 0,
+    val mostWoken: NamedCountDto? = null,
+    val topReason: TextCountDto? = null,
+    val wakesReceivedThisYear: Long = 0,
+    val wakesReceivedAllTime: Long = 0,
+    val topWaker: NamedCountDto? = null,
+    val groupWakesThisYear: Long = 0,
 )
 
 @Serializable
@@ -297,9 +392,16 @@ data class RecapUi(
     val betaTesterRows: List<RankedRowUi>,
     val myBetaTesterRank: Int?,
     val myExceptionCount: Long,
+    val myTopException: TextCountUi?,
+    val myTopEndpoint: TextCountUi?,
+    val myFirstExceptionFormatted: String?,
+    val myPushFailuresThisYear: Long,
+    val myPushFailuresAllTime: Long,
 
     val passwordResetEmailsSentThisYear: Long,
     val passwordResetEmailsSentAllTime: Long,
+    val failedLoginsThisYear: Long,
+    val failedLoginsAllTime: Long,
 
     val usageMillisThisYear: Long,
     val usageSessionCount: Long,
@@ -313,6 +415,11 @@ data class RecapUi(
     val usagePeakMonth: MonthCountUi?,
     val usageTrackingSinceMonth: UiText?,
     val usageTrackingSinceYear: Int?,
+
+    val feedback: FeedbackRecapUi,
+    val chatHabits: ChatHabitsRecapUi,
+    val wakes: WakeRecapUi,
+    val badges: List<RecapBadge>,
 )
 
 data class MessageTypeCountUi(
@@ -363,3 +470,101 @@ data class GroupActivityUi(
     val name: String,
     val messageCount: Long,
 )
+
+data class TextCountUi(
+    val text: String,
+    val count: Long,
+)
+
+data class NamedCountUi(
+    val name: String,
+    val group: Boolean,
+    val count: Long,
+)
+
+data class FeedbackRecapUi(
+    val bugsThisYear: Long,
+    val bugsAllTime: Long,
+    val ideasThisYear: Long,
+    val ideasAllTime: Long,
+    val ideasPlanned: Long,
+    val ideasImplemented: Long,
+    val bugsConfirmed: Long,
+    val bugsFixed: Long,
+    val topEntry: FeedbackTopEntryUi?,
+    val votesCast: FeedbackVotesUi,
+    val votesReceived: FeedbackVotesUi,
+    val commentsThisYear: Long,
+    val commentsAllTime: Long,
+    val devRepliesThisYear: Long,
+    val devRepliesAllTime: Long,
+) {
+    val reportedThisYear: Long get() = bugsThisYear + ideasThisYear
+    val reportedAllTime: Long get() = bugsAllTime + ideasAllTime
+    val hasVotesOrComments: Boolean
+        get() = votesCast.total > 0 || votesReceived.total > 0 || commentsAllTime > 0 || devRepliesAllTime > 0
+}
+
+data class FeedbackTopEntryUi(
+    val title: String,
+    val isBug: Boolean,
+    // Server status name (REQUESTED, PLANNED, IMPLEMENTED, OPEN, CONFIRMED, FIXED)
+    val status: String,
+    val upVotes: Long,
+)
+
+data class FeedbackVotesUi(
+    val up: Long,
+    val down: Long,
+    val didntKnow: Long,
+    val notNeeded: Long,
+) {
+    val total: Long get() = up + down + didntKnow + notNeeded
+}
+
+data class ChatHabitsRecapUi(
+    val medianReadMillis: Long?,
+    val medianReplyMillis: Long?,
+    val fastestReader: FastestReaderUi?,
+    val longestMonologue: MonologueUi?,
+    val conversations: Long,
+    val conversationsStartedByMe: Long,
+    val starterPerPartner: List<StarterPartnerUi>,
+    val topOpener: TextCountUi?,
+    val topEmojiTyped: List<EmojiCountUi>,
+) {
+    val startedByMePercent: Int?
+        get() = if (conversations > 0) (conversationsStartedByMe * 100 / conversations).toInt() else null
+    val hasSpeed: Boolean
+        get() = medianReplyMillis != null || medianReadMillis != null || fastestReader != null || longestMonologue != null
+}
+
+data class FastestReaderUi(
+    val name: String,
+    val medianMillis: Long,
+)
+
+data class MonologueUi(
+    val messageCount: Int,
+    val partnerName: String,
+    val startedAtFormatted: String,
+)
+
+data class StarterPartnerUi(
+    val name: String,
+    val conversations: Long,
+    val startedByMe: Long,
+)
+
+data class WakeRecapUi(
+    val sentThisYear: Long,
+    val sentAllTime: Long,
+    val mostWoken: NamedCountUi?,
+    val topReason: TextCountUi?,
+    val receivedThisYear: Long,
+    val receivedAllTime: Long,
+    val topWaker: NamedCountUi?,
+    val groupWakesThisYear: Long,
+) {
+    val hasThisYear: Boolean get() = sentThisYear > 0 || receivedThisYear > 0 || groupWakesThisYear > 0
+}

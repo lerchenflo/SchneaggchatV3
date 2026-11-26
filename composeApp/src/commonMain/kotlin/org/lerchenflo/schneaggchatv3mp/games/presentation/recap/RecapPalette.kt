@@ -55,4 +55,12 @@ object RecapPageThemes {
     val Downtime = RecapPageTheme(Color(0xFF1B1F3B), Color(0xFF05060F), RecapPalette.Lemon, RecapPalette.Coral, RecapPalette.Paper, RecapPalette.Lemon)
     val Password = RecapPageTheme(Color(0xFF4A3B00), Color(0xFF1F1800), RecapPalette.Lemon, RecapPalette.Paper, RecapPalette.Paper, RecapPalette.Lemon)
     val Outro = RecapPageTheme(RecapPalette.Blue, RecapPalette.Violet, RecapPalette.Paper, RecapPalette.Lemon, RecapPalette.Paper, RecapPalette.Paper)
+
+    // Later pages reuse the background of a page far away in the story, with their own accent
+    val ChatSpeed = UsageTime.copy(accent = RecapPalette.Lemon, secondary = RecapPalette.Sky, decor = RecapPalette.Lemon)
+    val ChatStarter = Received.copy(accent = RecapPalette.Lilac, secondary = RecapPalette.Lemon, decor = RecapPalette.Lilac)
+    val ChatEmoji = Typing.copy(accent = RecapPalette.Lemon, secondary = RecapPalette.Aqua, decor = RecapPalette.Lemon)
+    val Wakes = Rhythm.copy(accent = RecapPalette.Coral, secondary = RecapPalette.Lemon, decor = RecapPalette.Coral)
+    val FeedbackReports = Social.copy(accent = RecapPalette.Lemon, secondary = RecapPalette.Green, decor = RecapPalette.Lemon)
+    val FeedbackVotes = Groups.copy(accent = RecapPalette.Green, secondary = RecapPalette.Lemon, decor = RecapPalette.Green)
 }

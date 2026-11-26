@@ -368,6 +368,30 @@ fun RecapCard(
     )
 }
 
+/** [RecapCard] with a small accent label above one sentence, e.g. "Fastest reader" over who it is. */
+@Composable
+fun RecapLabeledCard(
+    label: String,
+    text: String,
+    theme: RecapPageTheme,
+    modifier: Modifier = Modifier
+) {
+    RecapCard(theme = theme, modifier = modifier) {
+        Text(
+            text = label,
+            color = theme.accent,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = text,
+            color = theme.onBackground,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
 /** One row of a ranking: rank badge, name, metric. The requester's own row is accent-tinted. */
 @Composable
 fun RankRow(

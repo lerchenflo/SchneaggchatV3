@@ -1,23 +1,14 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
@@ -25,7 +16,6 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.RankedRowUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapPageTheme
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapPageThemes
-import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapPalette
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_clean_record
 import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_exception_count
@@ -46,24 +36,22 @@ import schneaggchatv3mp.composeapp.generated.resources.recap_map_leaderboard_tit
 import schneaggchatv3mp.composeapp.generated.resources.recap_map_not_ranked
 import schneaggchatv3mp.composeapp.generated.resources.recap_map_title
 import schneaggchatv3mp.composeapp.generated.resources.recap_map_your_rank
-import schneaggchatv3mp.composeapp.generated.resources.recap_outro_friends
-import schneaggchatv3mp.composeapp.generated.resources.recap_outro_messages
-import schneaggchatv3mp.composeapp.generated.resources.recap_outro_rank_errors
-import schneaggchatv3mp.composeapp.generated.resources.recap_outro_rank_map
-import schneaggchatv3mp.composeapp.generated.resources.recap_outro_rank_messages
-import schneaggchatv3mp.composeapp.generated.resources.recap_outro_reactions
-import schneaggchatv3mp.composeapp.generated.resources.recap_outro_streak
-import schneaggchatv3mp.composeapp.generated.resources.recap_outro_subtitle
-import schneaggchatv3mp.composeapp.generated.resources.recap_outro_title
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_first_exception
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_push_failures
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_top_endpoint_label
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_top_exception_label
+import schneaggchatv3mp.composeapp.generated.resources.recap_password_failed_label
+import schneaggchatv3mp.composeapp.generated.resources.recap_password_failed_logins
 import schneaggchatv3mp.composeapp.generated.resources.recap_password_reset_label
+import schneaggchatv3mp.composeapp.generated.resources.recap_text_count
 import schneaggchatv3mp.composeapp.generated.resources.recap_password_reset_subtitle
 import schneaggchatv3mp.composeapp.generated.resources.recap_password_reset_this_year
 import schneaggchatv3mp.composeapp.generated.resources.recap_password_title
 import schneaggchatv3mp.composeapp.generated.resources.recap_rank_number
 import schneaggchatv3mp.composeapp.generated.resources.recap_your_rank
 
-// Story pages built around a global ranking (messages, map, games, exceptions), the password
-// reset gag, and the shareable outro summary.
+// Story pages built around a global ranking (messages, map, games, exceptions) and the
+// forgetful page (password resets, wrong passwords).
 
 /** Ranked list shared by every leaderboard page - the own row is highlighted through the theme. */
 @Composable
@@ -301,13 +289,14 @@ fun RecapBetaTesterPage(recap: RecapUi, visible: Boolean) {
                 )
             }
         }
+        BetaTesterCrashFacts(recap = recap, visible = visible, theme = theme)
         if (recap.betaTesterRows.isNotEmpty()) {
             Spacer(Modifier.height(28.dp))
             // The full list can be long; the page scrolls, so cap the reveal stagger at row 5 -
             // otherwise the last rows would only fade in seconds after the page opened.
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 recap.betaTesterRows.forEachIndexed { index, row ->
-                    RevealItem(visible, 4 + index.coerceAtMost(5)) {
+                    RevealItem(visible, 5 + index.coerceAtMost(5)) {
                         RankRow(row = row, valueText = formatCount(row.count), theme = theme)
                     }
                 }
@@ -316,6 +305,48 @@ fun RecapBetaTesterPage(recap: RecapUi, visible: Boolean) {
     }
 }
 
+/**
+ * Your favourite crash, the most broken endpoint, your first crash and the pushes the server could
+ * not deliver to you (not your fault, so they are not counted as your exceptions).
+ */
+@Composable
+private fun BetaTesterCrashFacts(recap: RecapUi, visible: Boolean, theme: RecapPageTheme) {
+    val cards = buildList {
+        recap.myTopException?.let {
+            add(stringResource(Res.string.recap_betatester_top_exception_label) to stringResource(Res.string.recap_text_count, it.text, formatCount(it.count)))
+        }
+        recap.myTopEndpoint?.let {
+            add(stringResource(Res.string.recap_betatester_top_endpoint_label) to stringResource(Res.string.recap_text_count, it.text, formatCount(it.count)))
+        }
+    }
+    val notes = buildList {
+        recap.myFirstExceptionFormatted?.let { add(stringResource(Res.string.recap_betatester_first_exception, it)) }
+        if (recap.myPushFailuresAllTime > 0) {
+            add(
+                stringResource(
+                    Res.string.recap_betatester_push_failures,
+                    formatCount(recap.myPushFailuresThisYear),
+                    formatCount(recap.myPushFailuresAllTime)
+                )
+            )
+        }
+    }
+    if (cards.isEmpty() && notes.isEmpty()) return
+
+    Spacer(Modifier.height(24.dp))
+    RevealItem(visible, 4) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            cards.forEach { (label, text) ->
+                RecapLabeledCard(label = label, text = text, theme = theme)
+            }
+            notes.forEach { note ->
+                RecapBody(text = note, color = theme.onBackground.copy(alpha = 0.8f), fontSize = 16.sp)
+            }
+        }
+    }
+}
+
+/** The forgetful page: password reset emails and wrong passwords entered for your account. */
 @Composable
 fun RecapPasswordResetPage(recap: RecapUi, visible: Boolean) {
     val theme = RecapPageThemes.Password
@@ -323,124 +354,52 @@ fun RecapPasswordResetPage(recap: RecapUi, visible: Boolean) {
         RevealItem(visible, 0) {
             RecapHeadline(text = stringResource(Res.string.recap_password_title), color = theme.accent, maxFontSize = 36.sp)
         }
+        // Reset emails lead; wrong passwords take the big number only when there were no resets
+        val resetsLead = recap.passwordResetEmailsSentAllTime > 0
+        val heroAllTime = if (resetsLead) recap.passwordResetEmailsSentAllTime else recap.failedLoginsAllTime
+        val heroThisYear = if (resetsLead) recap.passwordResetEmailsSentThisYear else recap.failedLoginsThisYear
         Spacer(Modifier.height(24.dp))
-        RecapBigNumber(target = recap.passwordResetEmailsSentAllTime, running = visible, color = theme.onBackground)
+        RecapBigNumber(target = heroAllTime, running = visible, color = theme.onBackground)
         RevealItem(visible, 1) {
             RecapBody(
-                text = stringResource(Res.string.recap_password_reset_label),
+                text = stringResource(if (resetsLead) Res.string.recap_password_reset_label else Res.string.recap_password_failed_label),
                 color = theme.onBackground.copy(alpha = 0.8f),
                 fontSize = 20.sp
             )
         }
-        if (recap.passwordResetEmailsSentThisYear > 0) {
+        if (heroThisYear > 0) {
             Spacer(Modifier.height(12.dp))
             RevealItem(visible, 2) {
                 RecapBody(
-                    text = stringResource(Res.string.recap_password_reset_this_year, recap.passwordResetEmailsSentThisYear.toInt()),
+                    text = stringResource(Res.string.recap_password_reset_this_year, heroThisYear.toInt()),
                     color = theme.accent,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
         }
+        // Worded as "entered for your account": anyone who knows the username can cause one
+        if (resetsLead && recap.failedLoginsAllTime > 0) {
+            Spacer(Modifier.height(16.dp))
+            RevealItem(visible, 3) {
+                RecapBody(
+                    text = stringResource(
+                        Res.string.recap_password_failed_logins,
+                        formatCount(recap.failedLoginsAllTime),
+                        formatCount(recap.failedLoginsThisYear)
+                    ),
+                    color = theme.onBackground.copy(alpha = 0.8f),
+                    fontSize = 16.sp
+                )
+            }
+        }
         Spacer(Modifier.height(20.dp))
-        RevealItem(visible, 3) {
+        RevealItem(visible, 4) {
             RecapBody(
                 text = stringResource(Res.string.recap_password_reset_subtitle),
                 color = theme.onBackground.copy(alpha = 0.6f),
                 fontSize = 15.sp
             )
         }
-    }
-}
-
-// Value/label/color for one shareable summary tile - color echoes the accent of the page the
-// stat originally came from, so the recognizable palette carries over into the screenshot.
-private data class OutroTileData(val value: String, val label: String, val valueColor: Color)
-
-@Composable
-fun RecapOutroPage(recap: RecapUi, visible: Boolean) {
-    val theme = RecapPageThemes.Outro
-    RecapPage(theme = theme, visible = visible) {
-        RevealItem(visible, 0) {
-            RecapHeadline(text = stringResource(Res.string.recap_outro_title, recap.username), color = theme.onBackground, maxFontSize = 36.sp)
-        }
-        Spacer(Modifier.height(28.dp))
-
-        // Most important stats (streak, global ranks) first so they land in the top rows
-        // of the tile grid - this page is meant to be screenshotted, so priority order matters.
-        val tiles = buildList {
-            add(OutroTileData(recap.longestStreakDays.toString(), stringResource(Res.string.recap_outro_streak), RecapPalette.Pink))
-            recap.myRank?.let { rank ->
-                add(OutroTileData(stringResource(Res.string.recap_rank_number, rank), stringResource(Res.string.recap_outro_rank_messages), RecapPalette.Gold))
-            }
-            recap.myMapRank?.let { rank ->
-                add(OutroTileData(stringResource(Res.string.recap_rank_number, rank), stringResource(Res.string.recap_outro_rank_map), RecapPalette.Orange))
-            }
-            recap.myBetaTesterRank?.let { rank ->
-                add(OutroTileData(stringResource(Res.string.recap_rank_number, rank), stringResource(Res.string.recap_outro_rank_errors), RecapPalette.Coral))
-            }
-            add(OutroTileData(formatCount(recap.messagesSent), stringResource(Res.string.recap_outro_messages), RecapPalette.Green))
-            add(OutroTileData(formatCount(recap.friendsCount.toLong()), stringResource(Res.string.recap_outro_friends), RecapPalette.Lemon))
-            add(OutroTileData(formatCount(recap.reactionsGiven), stringResource(Res.string.recap_outro_reactions), RecapPalette.Lilac))
-        }
-
-        val rows = tiles.chunked(2)
-        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            rows.forEachIndexed { rowIndex, rowTiles ->
-                RevealItem(visible, rowIndex + 1) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                        rowTiles.forEach { tile ->
-                            OutroStat(tile.value, tile.label, tile.valueColor, theme, Modifier.weight(1f))
-                        }
-                        if (rowTiles.size < 2) {
-                            Spacer(Modifier.weight(1f))
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(36.dp))
-        RevealItem(visible, rows.size + 1) {
-            RecapBody(
-                text = stringResource(Res.string.recap_outro_subtitle),
-                color = theme.onBackground.copy(alpha = 0.9f),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-@Composable
-private fun OutroStat(
-    value: String,
-    label: String,
-    valueColor: Color,
-    theme: RecapPageTheme,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(18.dp))
-            .background(theme.onBackground.copy(alpha = 0.16f))
-            .padding(16.dp)
-    ) {
-        Text(
-            text = value,
-            color = valueColor,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Black,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        Text(
-            text = label,
-            color = theme.onBackground.copy(alpha = 0.8f),
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
-            maxLines = 2
-        )
     }
 }

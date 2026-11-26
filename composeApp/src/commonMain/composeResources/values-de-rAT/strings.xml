@@ -994,7 +994,7 @@
     <string name="recap_downtime_subtitle">Nach Chaos sortiert, s größte Chaos zersch.</string>
     <string name="recap_downtime_count">%1$d×</string>
     <string name="recap_downtime_lightning">Blitzischlag</string>
-    <string name="recap_downtime_lightning_detail">Manchmol muss ma uafach loslo</string>
+    <string name="recap_downtime_lightning_detail">Manchmol muss ma uafach loslo und an neua Server kofa</string>
     <string name="recap_downtime_isp_switch">Internetumstellung</string>
     <string name="recap_downtime_isp_switch_detail">A1 hot denkt sie wissand was mir bruchand.</string>
     <string name="recap_downtime_bad_internet">Schleachtes Internet</string>

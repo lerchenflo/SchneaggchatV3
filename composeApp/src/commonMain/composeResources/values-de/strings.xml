@@ -1079,12 +1079,9 @@
     <string name="recap_starter_partners_label">Mit deinen engsten Kontakten</string>
     <string name="recap_starter_partner">%1$s von %2$s von dir</string>
     <string name="recap_starter_opener_label">Dein Standard-Einstieg</string>
-    <string name="recap_words_title">Deine Wörter des Jahres.</string>
-    <string name="recap_words_of_the_year_label">Wort des Jahres</string>
-    <string name="recap_words_used">%1$s× verwendet</string>
-    <string name="recap_words_more_label">Auch oft dabei</string>
-    <string name="recap_words_emoji_typed_label">Deine getippten Emojis</string>
-    <string name="recap_words_laughs">Du hast %1$s Mal schriftlich gelacht (haha, lol, 😂 …).</string>
+    <string name="recap_emoji_title">Dein Emoji des Jahres.</string>
+    <string name="recap_emoji_typed">%1$s× in deinen Nachrichten getippt</string>
+    <string name="recap_emoji_more_label">Auch oft getippt</string>
     <string name="recap_wakes_title">Aufwachen!</string>
     <string name="recap_wakes_sent_label">Weckrufe dieses Jahr verschickt</string>
     <string name="recap_wakes_received_label">Weckrufe dieses Jahr bekommen</string>
@@ -1117,7 +1114,6 @@
     <string name="recap_password_failed_label">falsche Passwörter für dein Konto eingegeben</string>
     <string name="recap_password_failed_logins">Für dein Konto wurde bisher %1$s Mal ein falsches Passwort eingegeben, davon %2$s Mal dieses Jahr.</string>
     <string name="recap_outro_rank_games">Spiele-Rang</string>
-    <string name="recap_outro_word">Wort des Jahres</string>
     <string name="recap_outro_badges">Deine Abzeichen</string>
     <string name="recap_badge_bug_hunter">🐞 Bugjäger</string>
     <string name="recap_badge_idea_machine">💡 Ideenmaschine</string>
@@ -1130,7 +1126,6 @@
     <string name="recap_badge_icebreaker">🧊 Eisbrecher</string>
     <string name="recap_badge_chatterbox">🗣️ Plaudertasche</string>
     <string name="recap_badge_streak_master">🔥 Serienmeister</string>
-    <string name="recap_badge_laugh_attack">😂 Lachanfall</string>
     <string name="recap_badge_alarm_clock">⏰ Wecker</string>
     <string name="recap_badge_forgetful">🔑 Vergesslich</string>
     <string name="recap_map_leaderboard_title">Die Karten-Charts.</string>

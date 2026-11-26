@@ -23,6 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.RecapAvailability
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapPartnerUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
+import org.lerchenflo.schneaggchatv3mp.games.domain.earnedBadges
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
@@ -237,9 +238,16 @@ class RecapViewModel(
             },
             myBetaTesterRank = betaTester.myRank,
             myExceptionCount = betaTester.myExceptionCount,
+            myTopException = betaTester.myTopException?.toUi(),
+            myTopEndpoint = betaTester.myTopEndpoint?.toUi(),
+            myFirstExceptionFormatted = betaTester.myFirstExceptionAt?.let { recapDate(it) },
+            myPushFailuresThisYear = betaTester.myPushFailuresThisYear,
+            myPushFailuresAllTime = betaTester.myPushFailuresAllTime,
 
             passwordResetEmailsSentThisYear = passwordResets.passwordResetEmailsSentThisYear,
             passwordResetEmailsSentAllTime = passwordResets.passwordResetEmailsSentAllTime,
+            failedLoginsThisYear = passwordResets.failedLoginsThisYear,
+            failedLoginsAllTime = passwordResets.failedLoginsAllTime,
 
             usageMillisThisYear = usageTime.totalMillisThisYear,
             usageSessionCount = usageTime.sessionCountThisYear,
@@ -254,6 +262,11 @@ class RecapViewModel(
             usagePeakMonth = usageMonths.filter { it.count > 0 }.maxByOrNull { it.count },
             usageTrackingSinceMonth = usageTime.trackingSince?.let { monthName(millisToString(it, "MM").toInt()) },
             usageTrackingSinceYear = usageTime.trackingSince?.let { millisToString(it, "yyyy").toInt() },
+
+            feedback = feedback.toUi(),
+            chatHabits = chatHabits.toUi(),
+            wakes = wakes.toUi(),
+            badges = earnedBadges(),
         )
     }
 
