@@ -130,6 +130,9 @@ class FeedbackViewModel(
             is FeedbackAction.OnEntryClick -> openDetail(action.entry)
             FeedbackAction.OnDetailDismiss -> _state.update { it.copy(detail = null) }
             FeedbackAction.OnDetailRetryClick -> _state.value.detail?.let { openDetail(it.entry) }
+            FeedbackAction.OnWriteCommentClick -> _state.update {
+                it.copy(detail = it.detail?.copy(isCommentPopupOpen = true))
+            }
             is FeedbackAction.OnCommentDraftChange -> _state.update {
                 it.copy(detail = it.detail?.copy(commentDraft = action.text))
             }
@@ -149,7 +152,9 @@ class FeedbackViewModel(
             }
             is FeedbackAction.OnEditEntrySubmit -> editEntry(action.changes)
             is FeedbackAction.OnEditCommentClick -> startCommentEdit(action.commentId)
-            FeedbackAction.OnCancelCommentEdit -> _state.update { it.copy(detail = it.detail?.withCommentEditEnded()) }
+            FeedbackAction.OnCommentPopupDismiss -> _state.update {
+                it.copy(detail = it.detail?.withCommentEditEnded()?.copy(isCommentPopupOpen = false))
+            }
 
             FeedbackAction.OnCreateClick -> _state.update { it.copy(isCreateDialogOpen = true) }
             FeedbackAction.OnCreateDismiss -> _state.update { it.copy(isCreateDialogOpen = false) }
@@ -246,7 +251,7 @@ class FeedbackViewModel(
         }
 
         val entryId = detailState.entry.id
-        updateDetail(entryId) { it.copy(isSendingComment = true) }
+        updateDetail(entryId) { it.copy(isSendingComment = true, isCommentPopupOpen = false) }
         applicationScope.launchOnMain {
             feedbackRepository.comment(entryId, text, isBug = detailState.entry.type == FeedbackType.BUG)
                 .onSuccess { comment ->
@@ -261,7 +266,8 @@ class FeedbackViewModel(
                     loadDetail(entryId, showErrors = false)
                 }
                 .onError {
-                    updateDetail(entryId) { it.copy(isSendingComment = false) }
+                    // The popup comes back with the text, so nothing typed is lost
+                    updateDetail(entryId) { it.copy(isSendingComment = false, isCommentPopupOpen = true) }
                     errorChannel.sendError(it)
                 }
         }
@@ -278,6 +284,7 @@ class FeedbackViewModel(
                     // A second edit keeps the draft that was put aside by the first one
                     draftBeforeCommentEdit = if (detailState.editingCommentId == null) detailState.commentDraft else detailState.draftBeforeCommentEdit,
                     commentDraft = comment.text,
+                    isCommentPopupOpen = true,
                 )
             )
         }
@@ -288,11 +295,11 @@ class FeedbackViewModel(
         val entryId = detailState.entry.id
         // The same text again changes nothing on the server either
         if (detailState.detail?.comments?.firstOrNull { it.id == commentId }?.text?.trim() == text) {
-            updateDetail(entryId) { it.withCommentEditEnded() }
+            updateDetail(entryId) { it.withCommentEditEnded().copy(isCommentPopupOpen = false) }
             return
         }
 
-        updateDetail(entryId) { it.copy(isSendingComment = true) }
+        updateDetail(entryId) { it.copy(isSendingComment = true, isCommentPopupOpen = false) }
         applicationScope.launchOnMain {
             feedbackRepository.editComment(commentId, text)
                 .onSuccess { edited ->
@@ -308,7 +315,7 @@ class FeedbackViewModel(
                     loadDetail(entryId, showErrors = false)
                 }
                 .onError {
-                    updateDetail(entryId) { it.copy(isSendingComment = false) }
+                    updateDetail(entryId) { it.copy(isSendingComment = false, isCommentPopupOpen = true) }
                     errorChannel.sendError(it)
                 }
         }

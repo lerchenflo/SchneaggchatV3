@@ -24,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.evaluateWordleGuess
 import org.lerchenflo.schneaggchatv3mp.games.domain.wordleScoreFor
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 class WordleViewModel(
     private val gameHighscoreRepository: GameHighscoreRepository,
@@ -95,7 +96,7 @@ class WordleViewModel(
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
             while (isActive) {
-                delay(1000)
+                delay(1000.milliseconds)
                 if (!_state.value.isFinished) {
                     _state.update { it.copy(elapsedMillis = it.elapsedMillis + 1000) }
                 }

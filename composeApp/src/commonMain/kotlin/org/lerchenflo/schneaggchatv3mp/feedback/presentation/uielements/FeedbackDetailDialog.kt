@@ -11,14 +11,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Delete
@@ -31,7 +29,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -54,6 +51,8 @@ import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackAction
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackDetailState
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.labelRes
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutEditButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -74,6 +73,7 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_retry
 import schneaggchatv3mp.composeapp.generated.resources.feedback_seeded_author
 import schneaggchatv3mp.composeapp.generated.resources.feedback_send_comment
 import schneaggchatv3mp.composeapp.generated.resources.feedback_where_to_find
+import schneaggchatv3mp.composeapp.generated.resources.feedback_write_comment
 
 internal const val DATE_FORMAT = "dd.MM.yyyy"
 
@@ -107,7 +107,6 @@ fun FeedbackDetailDialog(
                 .heightIn(max = 720.dp)
                 .clip(RoundedCornerShape(28.dp))
                 .background(MaterialTheme.colorScheme.background)
-                .imePadding()
         ) {
             LazyColumn(
                 modifier = Modifier.weight(1f, fill = false),
@@ -210,16 +209,22 @@ fun FeedbackDetailDialog(
                 }
             }
 
-            CommentInput(
-                text = detailState.commentDraft,
-                isSending = detailState.isSendingComment,
-                enabled = detail != null,
-                isEditing = detailState.editingCommentId != null,
-                onTextChange = { onAction(FeedbackAction.OnCommentDraftChange(it)) },
-                onSend = { onAction(FeedbackAction.OnSendCommentClick) },
-                onCancelEdit = { onAction(FeedbackAction.OnCancelCommentEdit) },
-            )
+            // Comments can be written once the details are loaded
+            if (detail != null) {
+                WriteCommentBar(
+                    isSending = detailState.isSendingComment,
+                    onClick = { onAction(FeedbackAction.OnWriteCommentClick) },
+                )
+            }
         }
+    }
+
+    if (detailState.isCommentPopupOpen) {
+        CommentPopup(
+            draft = detailState.commentDraft,
+            isEditing = detailState.editingCommentId != null,
+            onAction = onAction,
+        )
     }
 
     if (confirmDeleteEntry) {
@@ -376,89 +381,51 @@ private fun CommentItem(
     }
 }
 
+/** Bar under the comments: opens the comment popup, a spinner while a comment is being sent. */
 @Composable
-private fun CommentInput(
-    text: String,
-    isSending: Boolean,
-    enabled: Boolean,
-    /** The text is an own comment being edited: sending saves it, the bar above can cancel. */
-    isEditing: Boolean,
-    onTextChange: (String) -> Unit,
-    onSend: () -> Unit,
-    onCancelEdit: () -> Unit,
-) {
-    Column(
+private fun WriteCommentBar(isSending: Boolean, onClick: () -> Unit) {
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        if (isEditing) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Outlined.Edit,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-                Text(
-                    text = stringResource(Res.string.feedback_edit_comment),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
-                )
-                IconButton(onClick = onCancelEdit, enabled = !isSending, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = stringResource(Res.string.cancel),
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-            }
+        if (isSending) {
+            CircularProgressIndicator(modifier = Modifier.padding(8.dp).size(24.dp), strokeWidth = 2.dp)
+        } else {
+            AboutEditButton(
+                text = stringResource(Res.string.feedback_write_comment),
+                onClick = onClick,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
-        CommentInputRow(
-            text = text,
-            isSending = isSending,
-            enabled = enabled,
-            onTextChange = onTextChange,
-            onSend = onSend,
-        )
     }
 }
 
+/**
+ * Popup above the detail dialog for a new comment or an edit of an own one. Its own small dialog
+ * stays above the keyboard; a text field inside the tall detail dialog made it wobble while typing.
+ * Every change goes to the draft, so a dismissed new comment is still there when it opens again.
+ */
 @Composable
-private fun CommentInputRow(
-    text: String,
-    isSending: Boolean,
-    enabled: Boolean,
-    onTextChange: (String) -> Unit,
-    onSend: () -> Unit,
+private fun CommentPopup(
+    draft: String,
+    isEditing: Boolean,
+    onAction: (FeedbackAction) -> Unit,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        OutlinedTextField(
-            value = text,
-            onValueChange = { if (it.length <= COMMENT_MAX_LENGTH) onTextChange(it) },
-            placeholder = { Text(stringResource(Res.string.feedback_comment_hint)) },
-            enabled = enabled,
-            maxLines = 4,
-            modifier = Modifier.weight(1f),
-        )
-        if (isSending) {
-            Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-            }
-        } else {
-            IconButton(onClick = onSend, enabled = enabled && text.isNotBlank()) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = stringResource(Res.string.feedback_send_comment),
-                )
-            }
-        }
-    }
+    ChangeStringDialog(
+        title = stringResource(if (isEditing) Res.string.feedback_edit_comment else Res.string.feedback_write_comment),
+        oldString = draft,
+        placeholder = stringResource(Res.string.feedback_comment_hint),
+        // An edit keeps the default "Change" label
+        confirmText = if (isEditing) null else stringResource(Res.string.feedback_send_comment),
+        maxLength = COMMENT_MAX_LENGTH,
+        onValueChange = { onAction(FeedbackAction.OnCommentDraftChange(it)) },
+        onDismiss = { onAction(FeedbackAction.OnCommentPopupDismiss) },
+        // The draft already holds the text (onValueChange), sending reads it from there
+        updateString = { onAction(FeedbackAction.OnSendCommentClick) },
+    )
 }
 
 @Composable

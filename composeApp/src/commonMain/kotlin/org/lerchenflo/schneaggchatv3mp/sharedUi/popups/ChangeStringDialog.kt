@@ -49,6 +49,10 @@ fun ChangeStringDialog(
     errorMessage: UiText? = null,
     /** Confirm button label. Defaults to "change" - override for dialogs that are not edits. */
     confirmText: String? = null,
+    /** Longer input is not taken; null = no limit. */
+    maxLength: Int? = null,
+    /** Every change of the text, e.g. to keep a draft when the dialog is dismissed. */
+    onValueChange: ((String) -> Unit)? = null,
     onDismiss: () -> Unit,
     updateString: (String) -> Unit,
     thirdButton: @Composable (() -> Unit)? = null
@@ -124,7 +128,10 @@ fun ChangeStringDialog(
                         ),
                         maxLines = maxLines,
                         onValueChange = { newValue ->
-                            stringValue = newValue
+                            if (maxLength == null || newValue.text.length <= maxLength) {
+                                stringValue = newValue
+                                onValueChange?.invoke(newValue.text)
+                            }
                         },
                         modifier = Modifier
                             .onPreviewKeyEvent { event ->

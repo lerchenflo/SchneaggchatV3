@@ -69,8 +69,10 @@ data class FeedbackDetailState(
     val commentDraft: String = "",
     /** Sending a new comment or saving a comment edit. */
     val isSendingComment: Boolean = false,
-    /** Own comment whose text is in the input for editing; null while writing a new comment. */
+    /** Own comment whose text is in the comment popup for editing; null while writing a new comment. */
     val editingCommentId: String? = null,
+    /** The popup for writing or editing a comment is open. */
+    val isCommentPopupOpen: Boolean = false,
     /** Draft of a new comment, put aside while a comment is edited and restored afterwards. */
     val draftBeforeCommentEdit: String = "",
     /** The edit form of the entry is open. Only possible once [detail] is loaded (it holds the location). */
@@ -95,6 +97,8 @@ sealed interface FeedbackAction {
     data class OnEntryClick(val entry: FeedbackEntry) : FeedbackAction
     data object OnDetailDismiss : FeedbackAction
     data object OnDetailRetryClick : FeedbackAction
+    /** Opens the comment popup with the new-comment draft. */
+    data object OnWriteCommentClick : FeedbackAction
     data class OnCommentDraftChange(val text: String) : FeedbackAction
     data object OnSendCommentClick : FeedbackAction
     data class OnDeleteComment(val commentId: String) : FeedbackAction
@@ -104,9 +108,10 @@ sealed interface FeedbackAction {
     data object OnEditEntryClick : FeedbackAction
     data object OnEditEntryDismiss : FeedbackAction
     data class OnEditEntrySubmit(val changes: FeedbackEntryChanges) : FeedbackAction
-    /** Puts the own comment's text into the comment input; sending saves the edit. */
+    /** Opens the comment popup with the own comment's text; sending saves the edit. */
     data class OnEditCommentClick(val commentId: String) : FeedbackAction
-    data object OnCancelCommentEdit : FeedbackAction
+    /** Closes the comment popup: a new comment's draft stays, an edit ends. */
+    data object OnCommentPopupDismiss : FeedbackAction
 
     data object OnCreateClick : FeedbackAction
     data object OnCreateDismiss : FeedbackAction
