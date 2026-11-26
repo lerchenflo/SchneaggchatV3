@@ -272,7 +272,7 @@ Save validation (mirrors server): `draftStars in 1..5` else inline error, text t
 | 2 | Client data | client | Domain, Room entity/DAO/version 85, wire DTOs + mappers, `MapRemoteDataSource`, `MapLocalDataSource`, `MapRepository` / `OfflineFirstMapRepository` sync/CRUD/lazy image loader, `DefaultDataSyncCoordinator` `MAP` job, `PictureManager` path fn (3 actuals), socket handler, logout clear |
 | 3 | Client UI | client | `StarRatingBar`, summary row in `MapEntryInfoCard`, ratings screen (state/action/VM/screen + 3 uielements), route + `App.kt` entry + Koin, strings en/de/it |
 | 4 | Optional follow-ups | both | "My ratings" list in map settings (V2 parity, `getOwnRatingsFlow` already planned); average badge on map markers; local image cache eviction; FCM for ratings on own entries |
-| post | Agents | client | `readme-changelog-updater`, then `string-resource-extractor` |
+| post | Skill + agent | client | `readme-changelog` skill, then `string-resource-extractor` |
 
 Phase 2 can start against the server contract before phase 1 is deployed (DTOs are fixed above); phase 3 depends on 2. Nothing in phases 1-3 touches `MapEntry`, `MapChange` or the existing map sync.
 

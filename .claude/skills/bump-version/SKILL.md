@@ -92,4 +92,4 @@ sed -i '' -E 's/(MARKETING_VERSION = )[0-9.]+;/\1<new>;/; s/(CURRENT_PROJECT_VER
 
 Grep every spot again and confirm each holds its new value (`grep -n "MARKETING_VERSION\|CURRENT_PROJECT_VERSION" iosApp/iosApp.xcodeproj/project.pbxproj`, and so on). Then end with a small table: file, spot, old value, new value (one row per spot, the
 server spot marked as the server repo). Do not run Gradle, do not run the
-`readme-changelog-updater` agent, do not commit.
+`readme-changelog` skill, do not commit.

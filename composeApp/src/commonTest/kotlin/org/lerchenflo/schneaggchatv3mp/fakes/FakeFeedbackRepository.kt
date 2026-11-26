@@ -51,7 +51,7 @@ class FakeFeedbackRepository : FeedbackRepository {
     override suspend fun create(entry: NewFeedbackEntry): DataResult<FeedbackEntry, DataError> =
         DataResult.Error(DataError.Unknown())
 
-    override suspend fun edit(entryId: String, changes: FeedbackEntryChanges): DataResult<FeedbackEntry, DataError> =
+    override suspend fun edit(entry: FeedbackEntry, changes: FeedbackEntryChanges): DataResult<FeedbackEntry, DataError> =
         DataResult.Error(DataError.Unknown())
 
     override suspend fun vote(entry: FeedbackEntry, vote: FeedbackVote): DataResult<FeedbackEntry, DataError> =

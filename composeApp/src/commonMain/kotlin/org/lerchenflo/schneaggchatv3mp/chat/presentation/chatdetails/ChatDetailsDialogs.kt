@@ -46,6 +46,8 @@ import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
+import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group_event
+import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group_own_event
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.enter_nickname
 import schneaggchatv3mp.composeapp.generated.resources.gallery
@@ -156,7 +158,8 @@ fun ChatDetailsDialogs(
         )
 
         ChatDetailsDialog.LeaveGroup -> ConfirmationDialog(
-            message = stringResource(Res.string.confirm_leave_group),
+            message = listOfNotNull(stringResource(Res.string.confirm_leave_group), leaveGroupEventHint(state))
+                .joinToString("\n\n"),
             onConfirm = { onAction(ChatDetailsAction.OnLeaveGroupConfirm) },
             onDismiss = dismiss
         )
@@ -300,4 +303,12 @@ private fun GroupPicturePickerDialog(
             }
         }
     }
+}
+
+/** Leaving an event's group takes back the own "going" (server), except for the event creator. */
+@Composable
+private fun leaveGroupEventHint(state: ChatDetailsState): String? {
+    val event = state.connectedEvent ?: return null
+    val hintRes = if (state.isEventCreator) Res.string.confirm_leave_group_own_event else Res.string.confirm_leave_group_event
+    return stringResource(hintRes, event.title)
 }

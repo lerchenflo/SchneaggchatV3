@@ -558,6 +558,8 @@
 
     <!-- Confirmation dialogs -->
     <string name="confirm_leave_group">Bist du sicher, dass du diese Gruppe verlassen willst?</string>
+    <string name="confirm_leave_group_event">Du nimmst dann auch nicht mehr am Event "%1$s" teil.</string>
+    <string name="confirm_leave_group_own_event">Das Event "%1$s" bleibt, als Ersteller nimmst du weiter daran teil.</string>
     <string name="confirm_delete_group">Diese Gruppe für alle Mitglieder löschen? Der Chat und alle Nachrichten sind dann für alle weg. Das kann nicht rückgängig gemacht werden.</string>
     <string name="confirm_remove_friend">Bist du sicher, dass du %1$s als Freund entfernen willst?</string>
     <string name="confirm_remove_member">Bist du sicher, dass du %1$s aus der Gruppe entfernen willst?</string>
@@ -1940,7 +1942,7 @@
     <string name="feedback_duplicate_warning">Bitte schau zuerst in der Liste nach, ob es den Eintrag schon gibt. Falls ja, stimme dort ab oder kommentiere.</string>
     <string name="feedback_field_title">Titel</string>
     <string name="feedback_language_hint">Bitte schreib auf Hochdeutsch (nicht im Dialekt), damit es alle lesen können.</string>
-    <string name="feedback_field_description">Beschreibung</string>
+    <string name="feedback_field_description">Beschreibung (optional)</string>
     <string name="feedback_field_description_bug_hint">Was ist passiert und wie kann man es nachstellen?</string>
     <string name="feedback_field_location">Wo zu finden (optional)</string>
     <string name="feedback_field_tags">Tags (1–3)</string>
@@ -1964,6 +1966,8 @@
     <string name="feedback_updated_badge">Aktualisiert</string>
     <string name="feedback_sort_updated">Zuletzt aktualisiert</string>
     <string name="feedback_sort_discussed">Meist diskutiert</string>
+    <string name="feedback_section_new">Neu</string>
+    <string name="feedback_section_most_liked">Beliebteste</string>
     <string name="feedback_filter_status">Status</string>
     <string name="feedback_filter_all_statuses">Alle Status</string>
     <string name="feedback_premium">Premium</string>

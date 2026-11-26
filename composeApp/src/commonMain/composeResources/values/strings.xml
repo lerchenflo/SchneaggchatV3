@@ -558,6 +558,8 @@
 
     <!-- Confirmation dialogs -->
     <string name="confirm_leave_group">Are you sure you want to leave this group?</string>
+    <string name="confirm_leave_group_event">You will also no longer take part in the event "%1$s".</string>
+    <string name="confirm_leave_group_own_event">The event "%1$s" stays, as its creator you still count as going.</string>
     <string name="confirm_delete_group">Delete this group for all members? The chat and all its messages will be gone for everyone. This cannot be undone.</string>
     <string name="confirm_remove_friend">Are you sure you want to remove %1$s as a friend?</string>
     <string name="confirm_remove_member">Are you sure you want to remove %1$s from the group?</string>
@@ -1940,7 +1942,7 @@
     <string name="feedback_duplicate_warning">Please check the list for duplicates first. If it already exists, vote or comment there instead.</string>
     <string name="feedback_field_title">Title</string>
     <string name="feedback_language_hint">Please write in German (not in dialect), so everyone can read it.</string>
-    <string name="feedback_field_description">Description</string>
+    <string name="feedback_field_description">Description (optional)</string>
     <string name="feedback_field_description_bug_hint">What happened, and how can it be reproduced?</string>
     <string name="feedback_field_location">Where to find it (optional)</string>
     <string name="feedback_field_tags">Tags (1–3)</string>
@@ -1964,6 +1966,8 @@
     <string name="feedback_updated_badge">Updated</string>
     <string name="feedback_sort_updated">Recently updated</string>
     <string name="feedback_sort_discussed">Most discussed</string>
+    <string name="feedback_section_new">New</string>
+    <string name="feedback_section_most_liked">Most liked</string>
     <string name="feedback_filter_status">Status</string>
     <string name="feedback_filter_all_statuses">All statuses</string>
     <string name="feedback_premium">Premium</string>

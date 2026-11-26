@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,11 +16,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -53,6 +54,7 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_field_location
 import schneaggchatv3mp.composeapp.generated.resources.feedback_field_tags
 import schneaggchatv3mp.composeapp.generated.resources.feedback_field_title
 import schneaggchatv3mp.composeapp.generated.resources.feedback_language_hint
+import schneaggchatv3mp.composeapp.generated.resources.feedback_premium
 
 // Same limits the server enforces
 private const val TITLE_MIN_LENGTH = 3
@@ -63,12 +65,11 @@ private const val MAX_TAGS = 3
 
 /**
  * The entry form shared by [FeedbackCreateDialog] and [FeedbackEditDialog]: type, title,
- * description, location (features only) and 1-3 tags, starting from [initial].
+ * description, location and premium (features only) and 1-3 tags, starting from [initial].
  *
  * @param heading title of the dialog for the picked type
  * @param canSubmit extra condition on the filled form, on top of the field limits
  * @param topHint shown under the heading, for the picked type
- * @param leadingChips shown in front of the tag chips, for the picked type
  * @param bottomHint shown under the tags, for the picked type
  */
 @OptIn(ExperimentalLayoutApi::class)
@@ -82,13 +83,13 @@ internal fun FeedbackEntryFormDialog(
     onDismiss: () -> Unit,
     canSubmit: (FeedbackEntryChanges) -> Boolean = { true },
     topHint: @Composable (FeedbackType) -> Unit = {},
-    leadingChips: @Composable FlowRowScope.(FeedbackType) -> Unit = {},
     bottomHint: @Composable (FeedbackType) -> Unit = {},
 ) {
     var type by rememberSaveable { mutableStateOf(initial.type) }
     var title by rememberSaveable { mutableStateOf(initial.title) }
     var description by rememberSaveable { mutableStateOf(initial.description) }
     var location by rememberSaveable { mutableStateOf(initial.location.orEmpty()) }
+    var isPremium by rememberSaveable { mutableStateOf(initial.isPremium) }
     var selectedTags by rememberSaveable { mutableStateOf(initial.tags) }
 
     val form = FeedbackEntryChanges(
@@ -97,9 +98,10 @@ internal fun FeedbackEntryFormDialog(
         description = description,
         tags = selectedTags,
         location = location.takeIf { type == FeedbackType.FEATURE },
+        isPremium = isPremium,
     )
+    // The description is optional
     val isValid = title.trim().length >= TITLE_MIN_LENGTH &&
-        description.isNotBlank() &&
         selectedTags.isNotEmpty() &&
         canSubmit(form)
 
@@ -176,7 +178,9 @@ internal fun FeedbackEntryFormDialog(
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                leadingChips(type)
+                if (type == FeedbackType.FEATURE) {
+                    PremiumChip(selected = isPremium, onClick = { isPremium = !isPremium })
+                }
                 FeedbackTag.entries.forEach { tag ->
                     val selected = tag in selectedTags
                     FilterChip(
@@ -214,6 +218,23 @@ internal fun FeedbackEntryFormDialog(
             }
         }
     }
+}
+
+/** Premium mark of a feature: next to the tags, but not one of the 1-3 (a separate flag on the server). */
+@Composable
+private fun PremiumChip(selected: Boolean, onClick: () -> Unit) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(stringResource(Res.string.feedback_premium)) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.AutoAwesome,
+                contentDescription = null,
+                modifier = Modifier.size(FilterChipDefaults.IconSize),
+            )
+        },
+    )
 }
 
 /** Info or warning box of the entry form. */

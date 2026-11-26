@@ -1819,7 +1819,6 @@ Mealds, egal wie klenn.</string>
     <string name="feedback_duplicate_warning">Bitte luag zersch in da Liste, obs dean Itrag scho git. Wenn jo, stimm döt ab oder kommentier.</string>
     <string name="feedback_field_title">Titel</string>
     <string name="feedback_language_hint">Bitte schrieb uf Hochdütsch (ned im Dialekt), dassas alle leasa künnand.</string>
-    <string name="feedback_field_description">Beschreibung</string>
     <string name="feedback_field_description_bug_hint">Was isch passiert und wie kann ma s nochstella</string>
     <string name="feedback_field_location">Wo zum finda (optional)</string>
     <string name="feedback_field_tags">Tags (1–3)</string>

@@ -159,6 +159,7 @@ class FeedbackViewModel(
             FeedbackAction.OnCreateClick -> _state.update { it.copy(isCreateDialogOpen = true) }
             FeedbackAction.OnCreateDismiss -> _state.update { it.copy(isCreateDialogOpen = false) }
             is FeedbackAction.OnCreateSubmit -> create(action.entry)
+            FeedbackAction.OnScrolledToEntry -> _state.update { it.copy(scrollToEntryId = null) }
         }
     }
 
@@ -328,7 +329,7 @@ class FeedbackViewModel(
         val entryId = detailState.entry.id
         updateDetail(entryId) { it.copy(isSavingEdit = true) }
         applicationScope.launchOnMain {
-            feedbackRepository.edit(entryId, changes)
+            feedbackRepository.edit(detailState.entry, changes)
                 .onSuccess { edited ->
                     updateDetail(entryId) { detailState ->
                         detailState.copy(
@@ -403,6 +404,7 @@ class FeedbackViewModel(
                             nowMillis = Clock.System.now().toEpochMilliseconds(),
                             isCreating = false,
                             isCreateDialogOpen = false,
+                            scrollToEntryId = created.id,
                         )
                     }
                     SnackbarManager.showMessage(getString(Res.string.feedback_created))
@@ -450,8 +452,11 @@ private fun FeedbackState.withVisibleEntries(): FeedbackState {
     val gamesEntries = entries.filter { it.isGamesEntry }
     return copy(
         visibleEntries = filtered.sortedForBoard(sort, nowMillis),
+        pinnedEntryCount = if (sort == FeedbackSort.TOP) filtered.count { it.isPinned(nowMillis) } else 0,
         tabCounts = FeedbackTab.entries.associateWith { tab -> entries.count { tab.contains(it) } },
         gamesSectionCounts = FeedbackSection.entries.associateWith { s -> gamesEntries.count { s.contains(it) } },
+        // Keeps waiting while the entry is not stored yet; dropped when a filter hides it
+        scrollToEntryId = scrollToEntryId?.takeIf { id -> entries.none { it.id == id } || filtered.any { it.id == id } },
         unvotedFeatureCount = entries.count { it.needsFeatureVote },
     )
 }

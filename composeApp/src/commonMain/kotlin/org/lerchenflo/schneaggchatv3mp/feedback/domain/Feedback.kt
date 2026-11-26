@@ -78,9 +78,13 @@ data class FeedbackEntry(
     val needsFeatureVote: Boolean
         get() = type == FeedbackType.FEATURE && !isOwn && myVote == FeedbackVote.NONE
 
-    /** User-created entries stay pinned (and highlighted) at the top for [NEW_ENTRY_PIN_MILLIS]. */
+    /**
+     * User-created entries stay pinned (and highlighted) at the top for [NEW_ENTRY_PIN_MILLIS].
+     * [createdAt] is server time and [nowMillis] device time: a device clock behind the server
+     * puts a fresh entry in the future, which still counts as new.
+     */
     fun isPinned(nowMillis: Long): Boolean =
-        !isSeeded && nowMillis - createdAt in 0 until NEW_ENTRY_PIN_MILLIS
+        !isSeeded && nowMillis - createdAt < NEW_ENTRY_PIN_MILLIS
 
     /**
      * What happened since [lastSeen] (a server time): an entry by someone else that is newer, or
@@ -150,7 +154,7 @@ data class NewFeedbackEntry(
 )
 
 /**
- * The editable fields of an existing entry. Premium is not editable. Changing [type] resets the
+ * The editable fields of an entry, also the filled create form. Changing [type] resets the
  * status on the server, see [FeedbackEntry.typeChangeEffect].
  */
 data class FeedbackEntryChanges(
@@ -159,10 +163,22 @@ data class FeedbackEntryChanges(
     val description: String,
     val tags: List<FeedbackTag>,
     val location: String?,
+    val isPremium: Boolean,
 ) {
     /** The location as the server stores it: trimmed, blank as null, and always null for a bug. */
     val storedLocation: String?
         get() = location?.trim()?.takeIf { type == FeedbackType.FEATURE && it.isNotEmpty() }
+
+    /** Premium as the server stores it: features only. */
+    val storedPremium: Boolean
+        get() = isPremium && type == FeedbackType.FEATURE
+
+    /**
+     * Premium to send with an edit of [entry]: null when it stays as stored, also for a bug (the
+     * server clears premium on bugs itself).
+     */
+    fun premiumChange(entry: FeedbackEntry): Boolean? =
+        storedPremium.takeIf { type == FeedbackType.FEATURE && it != entry.isPremium }
 
     /** False when saving would store the same entry again (texts compared trimmed, tags as a set). */
     fun differsFrom(other: FeedbackEntryChanges): Boolean =
@@ -170,7 +186,8 @@ data class FeedbackEntryChanges(
             title.trim() != other.title.trim() ||
             description.trim() != other.description.trim() ||
             tags.toSet() != other.tags.toSet() ||
-            storedLocation != other.storedLocation
+            storedLocation != other.storedLocation ||
+            storedPremium != other.storedPremium
 }
 
 /** What the server resets when an entry changes its type, so the edit form can warn first. */

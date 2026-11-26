@@ -495,7 +495,7 @@ Nothing else changes: no endpoint, no sync job, no socket message, no Room table
 | **5 - Route planner** | `filterMapEntries` extraction, maplibre screen, long-press add, `MapEntryPickerSheet`, reorder, distance, "open on map" | route renders as polyline on both devices; a point picked from the map carries `mapEntryId` | open |
 | **6 - Polish (optional)** | shared-text 409 conflict guard, push notification for new quotes/expenses, outbox integration, `FRIENDSHIP` owner type | - | open |
 
-Each phase ends with the `readme-changelog-updater` and `string-resource-extractor` agents.
+Each phase ends with the `readme-changelog` skill and the `string-resource-extractor` agent.
 
 ---
 
