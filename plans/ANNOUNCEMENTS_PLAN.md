@@ -124,7 +124,7 @@ New feature package `announcement/`, built like `feedback/`:
 
 ### C5 Finish
 - New UI strings in `values/`, `values-de/`, `values-it/` (not `values-de-rAT`). Done.
-- README changelog (readme-changelog-updater), string-resource-extractor.
+- README changelog (`readme-changelog` skill), string-resource-extractor.
 - `plans/Todo.md`: cleanup of expired announcements; optional foreground check.
 
 ## Order

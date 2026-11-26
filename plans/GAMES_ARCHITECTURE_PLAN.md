@@ -221,7 +221,7 @@ Load balance: A, B, F, I, K are the biggest; give them the strongest agents. If 
    - `grep -rn "GameDifficultySelection" C/`
 4. Compile all four compile tasks from CLAUDE.md (desktop: allowed).
 5. Write all WP findings into `plans/Todo.md`, tick the games P4 items, fill §7 below.
-6. Run `readme-changelog-updater`, then `string-resource-extractor` (new strings en/de/it only).
+6. Run the `readme-changelog` skill, then `string-resource-extractor` (new strings en/de/it only).
 7. Device smoke test list for the user: every game start / pause / background / kill-restore / game over / leaderboard upload.
 
 ---

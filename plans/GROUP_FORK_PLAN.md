@@ -257,4 +257,4 @@ When `GROUP_EXTENSIONS_PLAN.md` ships, a fork could copy extensions (shared text
 | 3 | Client UI: fork entry in group details, fork mode in `GroupCreator`, "Forked from" row, delete action, system event texts, strings (EN/DE/IT) | fork created from the details screen opens the new chat; reference row links to the parent or shows the snapshot |
 | 4 (optional) | Parent lists its forks (D7), history option C (D13) | as decided |
 
-Post-implementation per project rules: `readme-changelog-updater`, `string-resource-extractor`, and `flow-stability` over fork + delete (socket `GroupChange`, parallel `/groups/sync`, parent deleted while forking).
+Post-implementation per project rules: `readme-changelog` skill, `string-resource-extractor`, and `flow-stability` over fork + delete (socket `GroupChange`, parallel `/groups/sync`, parent deleted while forking).
