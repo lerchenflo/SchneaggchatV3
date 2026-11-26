@@ -19,6 +19,10 @@
     <string name="annotation_unknown_location_info">This place was deleted or isn't shared with you.</string>
     <string name="annotation_unknown_event_info">This event was deleted or isn't shared with you.</string>
     <string name="annotation_unknown_game_info">This game isn't available in this version of the app.</string>
+    <string name="unknown_feedback">unavailable feedback</string>
+    <string name="annotation_unknown_feedback_info">This feedback entry was deleted or isn't loaded yet.</string>
+    <string name="unknown_settings_page">unavailable settings page</string>
+    <string name="annotation_unknown_settings_info">This settings page isn't available in this version of the app.</string>
     <string name="chat_last_seen_status">last seen %1$s</string>
 
     <string name="usersync">userdata</string>
@@ -30,8 +34,6 @@
     <string name="feedbacksync">feedback</string>
     <string name="mediasync">media</string>
 
-    <string name="status_infotext">This status is available to all your friends. Currently, it is not set.</string>
-    <string name="currentstatus">Your current status: %1$s</string>
 
 
     <string name="go_back">go back</string>
@@ -149,17 +151,30 @@
     <string name="select_profile_pic">Select a profile picture</string>
 
     <string name="status">Status:</string>
-    <string name="status_nosemicolon">Status</string>
 
     <string name="app_broken_desc">Will fix most of the errors</string>
     <string name="app_broken_are_you_sure">This will delete the local database and fetch all data from the server again.\nAre you sure you want to continue?</string>
     <string name="please_restart_app">Please restart the app</string>
     <string name="press_back_again_to_exit">Press back again to exit</string>
     <string name="verification_email_sent">Verification email sent</string>
-    <string name="others_say_about">others wrote about %1$s:</string>
     <string name="status_info">This Text is written by the user himself</string>
     <string name="description_info_user">All friends of %1$s can edit this text, but %1$s cannot.</string>
-    <string name="description_info_group">Change the description of this Group</string>
+    <string name="about_quote">“%1$s”</string>
+    <string name="chat_details_about_title">About %1$s</string>
+    <string name="chat_details_status_says">%1$s says</string>
+    <string name="about_friends_say">Friends say</string>
+    <string name="group_add_member_short">Add</string>
+    <string name="user_settings_about_title">About you</string>
+    <string name="user_settings_you_say">You say</string>
+    <string name="user_settings_status_empty">No status yet. All your friends will see it.</string>
+    <string name="user_settings_status_set">Set status</string>
+    <string name="user_settings_friends_empty">Your friends haven't written anything about you yet.</string>
+    <string name="user_settings_friends_hint">Only your friends can write this, you can't change it.</string>
+    <string name="chat_details_friends_about_empty">Nobody has written anything about %1$s yet.</string>
+    <string name="chat_details_friends_about_write_first">Be the first to write</string>
+    <string name="chat_details_group_about_title">About the group</string>
+    <string name="chat_details_group_about_empty">This group has no description yet.</string>
+    <string name="chat_details_group_about_write">Write a description</string>
 
     <string name="become_beta_tester">Become a Beta Tester</string>
     <string name="become_beta_tester_desc">Get early access to new features/bugfixes before everyone else</string>
@@ -172,8 +187,7 @@
     <string name="birthday_turns_age">turns %1$d</string>
     <string name="no_birthdays">None of your friends has a birthdate set</string>
 
-    <string name="no_description">No description</string>
-    <string name="remove_friend">remove friend</string>
+    <string name="remove_friend">Remove friend</string>
     <string name="save">save</string>
     <string name="close">close</string>
     <string name="you_sender">You</string>
@@ -209,8 +223,6 @@
     <string name="create_group">Create Group</string>
 
     <string name="members">Members</string>
-    <string name="info">Info</string>
-    <string name="chat_details_actions">Actions</string>
     <string name="at_least_members">you need at least %1$s members in your group</string>
     <string name="group_name_missing">Please Provide a group name</string>
 
@@ -225,6 +237,7 @@
     <string name="group_expires_at">Expires: %1$s</string>
     <string name="group_expires_in">Expires in: %1$s</string>
     <string name="group_expired">Expired</string>
+    <string name="group_timer_label">Delete timer</string>
     <string name="delete_group_timer">Delete group timer</string>
     <string name="confirm_delete_group_timer">Remove this group's expiry date? It will no longer auto-expire.</string>
     <string name="set_group_timer">Set delete timer</string>
@@ -248,11 +261,11 @@
     <string name="event_create_group_info">A group chat lets invited people chat and coordinate. You can add one later if you skip it now.</string>
     <string name="event_no_group">This event has no group chat</string>
     <string name="user_description">user description</string>
-    <string name="leave_group">leave group</string>
-    <string name="delete_group">delete group</string>
-    <string name="add_users_to_group">add users</string>
+    <string name="leave_group">Leave group</string>
+    <string name="delete_group">Delete group</string>
     <string name="member_since">member since %1$s</string>
     <string name="change_group_name">Change the name of this Group</string>
+    <string name="rename_group">Rename group</string>
 
     <string name="image">image</string>
     <string name="video">video</string>
@@ -410,6 +423,7 @@
     <string name="event_invited_users">Invited</string>
     <string name="event_invite_friends">Invite friends</string>
     <string name="event_location_label">Location</string>
+    <string name="event_type_label">Type</string>
     <string name="event_no_location_selected">No location selected</string>
     <string name="event_pick_location_title">Pick a location</string>
     <string name="event_pick_location_hint">Move the map to position the pin</string>
@@ -704,7 +718,6 @@
     <string name="undercover_sniff_confirm_yes">Yes, show my word</string>
     <string name="undercover_sniff_hide">Hide</string>
 
-    <string name="your_friends_wrote_this">~ Your friends</string>
     <string name="show_logs">Show logs</string>
 
     <!-- polls -->
@@ -830,9 +843,9 @@
 
     <!-- Bug Report Dialog -->
     <!-- Games: Yatzi -->
-    <string name="games_yahtzee_title">Yahtzee</string>
-    <string name="yatzi_setup_title">Yahtzee Setup</string>
-    <string name="yatzi_game_title">Yahtzee Game</string>
+    <string name="games_yahtzee_title">Dice Poker</string>
+    <string name="yatzi_setup_title">Dice Poker Setup</string>
+    <string name="yatzi_game_title">Dice Poker Game</string>
     <string name="yatzi_add_manage_players">Add / Manage Players</string>
     <string name="yatzi_players">Players:</string>
     <string name="yatzi_start_game">Start Game</string>
@@ -861,7 +874,7 @@
 
 
     <!-- Games: Tetris -->
-    <string name="games_tetris_title">Tetris</string>
+    <string name="games_tetris_title">Blockfall</string>
     <string name="games_tetris_score">Score: %1$d</string>
     <string name="games_tetris_pause_resume">Pause/Resume</string>
     <string name="games_tetris_restart">Restart</string>
@@ -883,12 +896,10 @@
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Crossword</string>
-    <string name="games_crossword_instructions">Solve as many crosswords as you like! Tap a cell to select it, tap again to switch between across and down, then type with the keyboard below. The English puzzles are drawn at random from the public NYT archive, the German ones are generated fresh every time. The bigger the grid you solve and the faster you are, the better your place on the leaderboard.</string>
+    <string name="games_crossword_instructions">Solve as many crosswords as you like! Tap a cell to select it, tap again to switch between across and down, then type with the keyboard below. Every puzzle is generated fresh, in English and in German. The bigger the grid you solve and the faster you are, the better your place on the leaderboard.</string>
     <string name="games_crossword_language_question">Choose your puzzle language</string>
-    <string name="games_crossword_language_english">English (NYT archive)</string>
+    <string name="games_crossword_language_english">English</string>
     <string name="games_crossword_language_german">German</string>
-    <string name="games_crossword_load_failed">The puzzle could not be loaded. Check your internet connection and try again.</string>
-    <string name="games_crossword_retry">Retry</string>
     <string name="games_crossword_check">Check answers</string>
     <string name="games_crossword_restart">Restart</string>
     <string name="games_crossword_solved">Solved in %1$s!</string>
@@ -897,17 +908,14 @@
     <string name="games_crossword_new_puzzle">New puzzle</string>
 
     <!-- Games: Wordle -->
-    <string name="games_wordle_title">Wordle</string>
-    <string name="games_wordle_instructions">Guess the five-letter word in six tries, as often as you like! As soon as a row is full it is checked automatically: green means the letter is in the right spot, orange means it is in the word but somewhere else, and grey means it is not in the word at all.\n\nThe English words are real New York Times solutions drawn at random, the German ones come from our own list. The fewer letters you need and the faster you are, the better your place on the leaderboard.</string>
+    <string name="games_wordle_title">Word Guess</string>
+    <string name="games_wordle_instructions">Guess the five-letter word in six tries, as often as you like! As soon as a row is full it is checked automatically: green means the letter is in the right spot, orange means it is in the word but somewhere else, and grey means it is not in the word at all.\n\nThe English and German words come from our own lists. The fewer letters you need and the faster you are, the better your place on the leaderboard.</string>
     <string name="games_wordle_language_question">Choose your word language</string>
-    <string name="games_wordle_language_english">English (NYT Wordle)</string>
+    <string name="games_wordle_language_english">English</string>
     <string name="games_wordle_language_german">German</string>
-    <string name="games_wordle_load_failed">The word could not be loaded. Check your internet connection and try again.</string>
-    <string name="games_wordle_retry">Retry</string>
     <string name="games_wordle_guess_counter">Tries %1$d / %2$d</string>
     <string name="games_wordle_new_word">New word</string>
     <string name="games_wordle_too_short">Not enough letters</string>
-    <string name="games_wordle_unknown_word">%1$s is not in the word list</string>
     <string name="games_wordle_delete">Delete letter</string>
     <string name="games_wordle_solved">Solved in %1$d of %2$d tries · %3$s</string>
     <string name="games_wordle_failed">Out of tries! The word was %1$s</string>
@@ -1172,6 +1180,8 @@
     <string name="player_selector_start_format">Start (%1$d)</string>
     <string name="player_selector_delete_player">Delete player</string>
     <string name="player_selector_friend">Friend</string>
+    <string name="player_selector_order_hint">Tap players to add them. They take turns in this order.</string>
+    <string name="player_selector_you">You</string>
 
     <!-- Game highscores -->
     <string name="highscores_board_german">Deutsch</string>
@@ -1203,7 +1213,7 @@
     <string name="game_restart">Restart</string>
     <string name="show_highscores">Show highscores</string>
     <string name="global_ranking_title">Overall ranking</string>
-    <string name="global_ranking_explanation">Points over all games with a leaderboard. Party games played on one device (Yahtzee, Dart Counter, Undercover) do not count.</string>
+    <string name="global_ranking_explanation">Points over all games with a leaderboard. Party games played on one device (Dice Poker, Dart Counter, Undercover) do not count.</string>
     <string name="global_ranking_error">Could not load the ranking</string>
     <string name="global_ranking_empty">Nobody has played yet</string>
     <string name="global_ranking_points">%1$d pts</string>
@@ -1501,13 +1511,13 @@
     <string name="ttt_chat_details">Chat details</string>
     <string name="ttt_chat_details_description">Tap the name for the chat details: shared pictures and links, the members of a group and more.</string>
     <string name="ttt_chat_details_nickname">Nickname</string>
-    <string name="ttt_chat_details_nickname_description">Tap the name to give your friend a nickname. It shows instead of their name in your chats.</string>
+    <string name="ttt_chat_details_nickname_description">Give your friend a nickname in this menu. It shows instead of their name in your chats.</string>
     <string name="ttt_chat_details_wake">Wake your friend</string>
-    <string name="ttt_chat_details_wake_description">Ring your friend's phone like an alarm, even when it is on silent, e.g. when they oversleep. Works if they use Android and allowed it in their settings.</string>
+    <string name="ttt_chat_details_wake_description">Ring your friend's phone like an alarm, even when it is on silent, e.g. when they oversleep. Works if they use Android and allowed it in their settings. You find it in this menu.</string>
     <string name="ttt_group_members">Group members</string>
     <string name="ttt_group_members_description">Tap a member to open a chat or send a friend request, tap the picture to see it big. Admins add members, make others admins and remove members.</string>
     <string name="ttt_group_timer">Delete timer</string>
-    <string name="ttt_group_timer_description">When the timer runs out, the group and all its messages are deleted for everyone, e.g. for a weekend trip. Only admins can set it.</string>
+    <string name="ttt_group_timer_description">When the timer runs out, the group and all its messages are deleted for everyone, e.g. for a weekend trip. Only admins can set it, in the menu at the top right.</string>
     <string name="ttt_chat_details_about">What friends say</string>
     <string name="ttt_chat_details_about_description">A short text about this person that all their friends write together: everyone edits the same text. They can read it but not change it. Tap to edit it.</string>
     <string name="ttt_feedback_requests">Requests</string>
@@ -1958,7 +1968,7 @@
     <string name="group_extension_rename">Rename</string>
     <string name="group_extension_delete">Delete extension</string>
     <string name="group_extension_delete_confirm">Delete “%1$s” with all its entries for everyone in this group? This cannot be undone.</string>
-    <string name="group_extension_more_options">More options</string>
+    <string name="more_options">More options</string>
     <string name="shared_text_placeholder">Write something together…</string>
     <string name="shared_text_show_author_colors">Show author colors</string>
     <string name="shared_text_hide_author_colors">Hide author colors</string>
@@ -2083,6 +2093,55 @@
     <string name="tictactoe_rules_title">How to play</string>
     <string name="tictactoe_rules_text">Take turns placing your symbol. The first to get a line - across, down or diagonal - wins the round.\n\n2 players play on 3×3 and need 3 in a row. 3 players play on 5×5, 4 players on 6×6, and both need 4 in a row.\n\nA line completed by a fall or a shuffle counts too. If several players get one at once, the player whose turn it was wins, otherwise the next one in turn order.\n\nThe starting player changes every round. When you finish the match, everyone's wins can be added to the leaderboard at once.</string>
     <string name="tictactoe_cell_description">Row %1$d, column %2$d</string>
+    <string name="games_fourinarow_title">Four in a Row</string>
+    <string name="games_fourinarow_description">Drop discs and get four in a row: 2 to 4 players or 2 vs 2, with power discs, board twists and pop-out</string>
+    <string name="fourinarow_players_title">Players</string>
+    <string name="fourinarow_choose_players">Choose players</string>
+    <string name="fourinarow_players_hint">2 to 4 players share one phone</string>
+    <string name="fourinarow_too_many_players">At most %1$d players can play - remove the rest</string>
+    <string name="fourinarow_board_info">%1$d×%2$d board · 4 in a row</string>
+    <string name="fourinarow_twists_title">Twists</string>
+    <string name="fourinarow_teams">Teams 2 vs 2</string>
+    <string name="fourinarow_teams_description">1st and 3rd player against 2nd and 4th. A line may mix the discs of both team members.</string>
+    <string name="fourinarow_power_discs">Power discs</string>
+    <string name="fourinarow_power_discs_description">Once per round, everyone may drop a bomb, an anvil and a joker instead of a normal disc.</string>
+    <string name="fourinarow_board_twist">Board twist</string>
+    <string name="fourinarow_board_twist_description">Every %1$d turns the board flips upside down or a row slides sideways.</string>
+    <string name="fourinarow_pop_out">Pop-out</string>
+    <string name="fourinarow_pop_out_description">Instead of dropping, you may pull one of your own discs out of the bottom row.</string>
+    <string name="fourinarow_move_timer">Move timer</string>
+    <string name="fourinarow_move_timer_description">When the time runs out, the turn is skipped.</string>
+    <string name="fourinarow_seconds">%1$d s</string>
+    <string name="fourinarow_series_title">Match</string>
+    <string name="fourinarow_series_open">Open</string>
+    <string name="fourinarow_best_of">Best of %1$d</string>
+    <string name="fourinarow_start">Start game</string>
+    <string name="fourinarow_round">Round %1$d</string>
+    <string name="fourinarow_round_best_of">Round %1$d · best of %2$d</string>
+    <string name="fourinarow_turn">%1$s's turn</string>
+    <string name="fourinarow_winner">%1$s wins!</string>
+    <string name="fourinarow_series_winner">%1$s wins the match!</string>
+    <string name="fourinarow_team_name">%1$s + %2$s</string>
+    <string name="fourinarow_draw">Draw - nobody wins</string>
+    <string name="fourinarow_next_round">Next round</string>
+    <string name="fourinarow_finish_match">Finish match</string>
+    <string name="fourinarow_undo">Undo</string>
+    <string name="fourinarow_bomb">Bomb</string>
+    <string name="fourinarow_anvil">Anvil</string>
+    <string name="fourinarow_joker">Joker</string>
+    <string name="fourinarow_bomb_armed">Tap a column to drop the bomb</string>
+    <string name="fourinarow_anvil_armed">Tap a column to smash the anvil through it</string>
+    <string name="fourinarow_joker_armed">Tap a column to drop the joker</string>
+    <string name="fourinarow_pop_out_armed">Tap a column to pull out your bottom disc</string>
+    <string name="fourinarow_time_left">%1$d s left</string>
+    <string name="fourinarow_time_up">Time's up for %1$s - turn skipped</string>
+    <string name="fourinarow_twist_countdown">Next twist in: %1$d</string>
+    <string name="fourinarow_twist_flip">Twist! The board flipped</string>
+    <string name="fourinarow_twist_row">Twist! Row %1$d slid</string>
+    <string name="fourinarow_rules">Rules</string>
+    <string name="fourinarow_rules_title">How to play</string>
+    <string name="fourinarow_rules_text">Take turns dropping a disc into a column; it falls to the lowest free spot. The first to get four in a row - across, down or diagonal - wins the round.\n\n2 players play on 7×6, 3 players on 9×7, 4 players on 10×8. With teams, the 1st and 3rd player play against the 2nd and 4th, and a line may mix both team members' discs.\n\nPower discs: the bomb clears every disc around the spot where it lands, the anvil smashes through its column and stays at the bottom, the joker counts for everyone. Each can be used once per round.\n\nBoard twist: every few turns the board flips upside down or a row slides sideways. Pop-out: instead of dropping, pull one of your own discs out of the bottom row. A line made by a fall, a twist or a pop-out counts too. If several get one at once, the player whose turn it was wins, otherwise the next one in turn order.\n\nThe loser of a round starts the next one. Undo takes back the last move while the round is running. When you finish the match, everyone's wins can be added to the leaderboard at once.</string>
+    <string name="fourinarow_column_description">Column %1$d</string>
     <string name="desktop_tray_open">Open Schneaggchat</string>
     <string name="desktop_tray_quit">Quit</string>
     <plurals name="event_lead_days">
@@ -2094,6 +2153,7 @@
     <string name="featurequiz_description">Give feedback fast: answer questions and rate the features. It helps support Schneaggchat.</string>
     <string name="games_random_game">Start a random game</string>
     <string name="featurequiz_title">Feature quiz</string>
+    <string name="featurequiz_title_with_count">Feature quiz (%1$d)</string>
     <string name="featurequiz_progress">%1$d / %2$d</string>
     <string name="featurequiz_correct">Correct!</string>
     <string name="featurequiz_wrong">Wrong. Right answer: %1$s</string>
@@ -2111,6 +2171,24 @@
     <string name="featurequiz_time">Time: %1$s</string>
     <string name="featurequiz_play_again">Play again</string>
     <string name="featurequiz_empty">No questions right now. Open the feedback board once while online, then try again.</string>
+    <string name="featurequiz_mode_title">How do you want to play?</string>
+    <string name="featurequiz_mode_quiz_title">Quiz</string>
+    <string name="featurequiz_mode_quiz_description">Questions about the app's features, then you rate each one. Your score goes on the leaderboard.</string>
+    <string name="featurequiz_mode_vote_title">Just vote</string>
+    <string name="featurequiz_mode_vote_description">Rate every feature and wish you haven't voted on yet. No questions, no highscore.</string>
+    <string name="featurevoting_feature_title">Feature in the app</string>
+    <string name="featurevoting_skip">Skip</string>
+    <string name="featurevoting_finish">Finish</string>
+    <string name="featurevoting_empty">You've already voted on every feature and wish. Thanks!</string>
+    <string name="featurevoting_done_title">All done</string>
+    <plurals name="featurevoting_done_voted">
+        <item quantity="one">You rated %1$d feature. Thanks!</item>
+        <item quantity="other">You rated %1$d features. Thanks!</item>
+    </plurals>
+    <plurals name="featurevoting_done_skipped">
+        <item quantity="one">%1$d skipped, it comes again next time.</item>
+        <item quantity="other">%1$d skipped, they come again next time.</item>
+    </plurals>
     <string name="featurequiz_polls_subpoll_question">Who is the sub-poll of a poll option for?</string>
     <string name="featurequiz_polls_subpoll_answer_1">Only for those who picked that option</string>
     <string name="featurequiz_polls_subpoll_answer_2">For everyone in the chat</string>
@@ -2141,11 +2219,11 @@
     <string name="featurequiz_event_title_answer_3">100 characters</string>
     <string name="featurequiz_event_title_none">There are no events in Schneaggchat</string>
     <string name="featurequiz_event_title_explanation">An event can get its own group chat named after its title, so the title has the same limit as group names.</string>
-    <string name="featurequiz_wordle_question">How many tries do you get in Wordle?</string>
+    <string name="featurequiz_wordle_question">How many tries do you get in Word Guess?</string>
     <string name="featurequiz_wordle_answer_1">6</string>
     <string name="featurequiz_wordle_answer_2">5</string>
     <string name="featurequiz_wordle_answer_3">8</string>
-    <string name="featurequiz_wordle_none">There is no Wordle in Schneaggchat</string>
+    <string name="featurequiz_wordle_none">There is no Word Guess in Schneaggchat</string>
     <string name="featurequiz_wordle_explanation">Guess the five-letter word in six tries. Fewer tries rank you higher on the leaderboard.</string>
     <string name="featurequiz_tictactoe_question">How many players can play Tic Tac Toe on one phone?</string>
     <string name="featurequiz_tictactoe_answer_1">Up to 4</string>
@@ -2214,7 +2292,7 @@
     <string name="featurequiz_map_places_none">The map has no places</string>
     <string name="featurequiz_map_places_explanation">Places are grouped by type and searchable. Police and mobile radars can be reported too.</string>
     <string name="featurequiz_annotations_question">What can you mention with @ in a message?</string>
-    <string name="featurequiz_annotations_answer_1">Users, places, games and events</string>
+    <string name="featurequiz_annotations_answer_1">Users, places, events and more</string>
     <string name="featurequiz_annotations_answer_2">Only users</string>
     <string name="featurequiz_annotations_answer_3">Only users and groups</string>
     <string name="featurequiz_annotations_none">Nothing, there are no @ mentions</string>
@@ -2248,18 +2326,18 @@
     <string name="featurequiz_crossword_answer_2">Every week</string>
     <string name="featurequiz_crossword_answer_3">Every month</string>
     <string name="featurequiz_crossword_none">There is no crossword</string>
-    <string name="featurequiz_crossword_explanation">The English puzzles come from the New York Times archive, the German ones are generated new each time.</string>
+    <string name="featurequiz_crossword_explanation">The English and the German puzzles are generated new each time.</string>
     <string name="featurequiz_game_2048_question">What happens in 2048 when two tiles with the same number touch?</string>
     <string name="featurequiz_game_2048_answer_1">They merge into one tile</string>
     <string name="featurequiz_game_2048_answer_2">Both disappear</string>
     <string name="featurequiz_game_2048_answer_3">They swap places</string>
     <string name="featurequiz_game_2048_none">There is no 2048</string>
     <string name="featurequiz_game_2048_explanation">Swipe to move all tiles and reach the 2048 tile. The board gets smaller on a higher difficulty.</string>
-    <string name="featurequiz_tetris_question">How do you drop a Tetris piece fast?</string>
+    <string name="featurequiz_tetris_question">How do you drop a Blockfall piece fast?</string>
     <string name="featurequiz_tetris_answer_1">Swipe down or hold</string>
     <string name="featurequiz_tetris_answer_2">Double-tap</string>
     <string name="featurequiz_tetris_answer_3">Shake the phone</string>
-    <string name="featurequiz_tetris_none">There is no Tetris</string>
+    <string name="featurequiz_tetris_none">There is no Blockfall</string>
     <string name="featurequiz_tetris_explanation">Tap to rotate. Full rows give points, and the game gets faster over time.</string>
     <string name="featurequiz_grid_rush_question">How do you clear tiles in Grid Rush?</string>
     <string name="featurequiz_grid_rush_answer_1">Drag a line through 2 or more neighbouring tiles of the same colour</string>
@@ -2279,12 +2357,12 @@
     <string name="featurequiz_morse_answer_3">With a swipe</string>
     <string name="featurequiz_morse_none">There is no Morse game</string>
     <string name="featurequiz_morse_explanation">A short press is a dot, a long press a dash. Every correct letter gives points.</string>
-    <string name="featurequiz_yahtzee_question">What happens to the scores when a Yahtzee game on one phone ends?</string>
+    <string name="featurequiz_yahtzee_question">What happens to the scores when a Dice Poker game on one phone ends?</string>
     <string name="featurequiz_yahtzee_answer_1">Every player's result can go into the highscores</string>
     <string name="featurequiz_yahtzee_answer_2">Only the winner's score is saved</string>
     <string name="featurequiz_yahtzee_answer_3">Nothing is saved</string>
-    <string name="featurequiz_yahtzee_none">There is no Yahtzee</string>
-    <string name="featurequiz_yahtzee_explanation">Yahtzee is played by several people on one phone, under Games → Multiplayer.</string>
+    <string name="featurequiz_yahtzee_none">There is no Dice Poker</string>
+    <string name="featurequiz_yahtzee_explanation">Dice Poker is played by several people on one phone, under Games → Multiplayer.</string>
     <string name="featurequiz_undercover_question">What do the impostors get in Undercover?</string>
     <string name="featurequiz_undercover_answer_1">A different word than the others</string>
     <string name="featurequiz_undercover_answer_2">The same word as everyone</string>
@@ -2405,4 +2483,55 @@
     <string name="featurequiz_feedback_board_answer_3">Chat live with the developers</string>
     <string name="featurequiz_feedback_board_none">There is no feedback board</string>
     <string name="featurequiz_feedback_board_explanation">It works offline too, and you see what is planned or already done.</string>
+
+    <!-- Route planner (group extension) -->
+    <string name="route_tab_map">Map</string>
+    <string name="route_tab_list">List</string>
+    <string name="route_all_days">All</string>
+    <string name="route_day_number">Day %1$d</string>
+    <string name="route_whole_route">Route</string>
+    <string name="route_map_places">Places</string>
+    <string name="route_straight_line">straight line</string>
+    <string name="route_reorder">Order</string>
+    <string name="route_reorder_hint">Points with a planned time sort themselves by it.</string>
+    <string name="route_open_navigation">Open the route in Google Maps</string>
+    <string name="route_navigation_cut">Google Maps takes at most %1$d points, the link holds the first %1$d.</string>
+    <string name="route_transport_foot">On foot</string>
+    <string name="route_transport_bicycle">Bicycle</string>
+    <string name="route_transport_motorbike">Motorbike</string>
+    <string name="route_transport_car">Car</string>
+    <string name="route_arrival_mode">Getting there by</string>
+    <string name="route_transport_default">Usually by</string>
+    <string name="route_kind_label">Type</string>
+    <string name="route_kind_stop">Waypoint</string>
+    <string name="route_kind_waypoint">Drive-through</string>
+    <string name="route_kind_accommodation">Accommodation</string>
+    <string name="route_kind_poi">Sight</string>
+    <string name="route_kind_stop_use">A place we visit: start, meeting point, break, finish</string>
+    <string name="route_kind_waypoint_use">Only steers the route, no stop</string>
+    <string name="route_kind_accommodation_use">Overnight stay: hotel, hut, camping</string>
+    <string name="route_kind_poi_use">Viewpoint, photo stop</string>
+    <string name="route_new_point">New point</string>
+    <string name="route_edit_point">Edit point</string>
+    <string name="route_point_name">Name</string>
+    <string name="route_point_name_optional">Name (optional)</string>
+    <string name="route_point_name_required">Enter a name</string>
+    <string name="route_point_description">Description (optional)</string>
+    <string name="route_point_time">Planned time (optional)</string>
+    <string name="route_point_time_clear">Remove the planned time</string>
+    <string name="route_point_move">Move</string>
+    <string name="route_point_move_title">Move the point</string>
+    <string name="route_insert_between">Goes between %1$s and %2$s (%3$s)</string>
+    <string name="route_insert_start">Goes before %1$s (%2$s)</string>
+    <string name="route_insert_end">Goes after %1$s (%2$s)</string>
+    <string name="route_insert_first">First point of the route</string>
+    <string name="route_linked_place">Linked to a place on the Schneaggmap</string>
+    <string name="route_open_place">Open place</string>
+    <string name="route_add_to_route">Add to route</string>
+    <string name="route_place_subtitle">Place on the Schneaggmap</string>
+    <string name="route_point_deleted">“%1$s” deleted</string>
+    <string name="undo">Undo</string>
+    <string name="route_leg">%1$s to %2$s</string>
+    <string name="route_empty_hint">Long press the map to add the first point.</string>
+    <string name="route_via">via %1$s</string>
 </resources>

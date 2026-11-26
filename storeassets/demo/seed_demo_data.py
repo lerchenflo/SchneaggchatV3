@@ -54,6 +54,20 @@ for uid, (name, bday, lat, lng, bat, speed) in NEW.items():
         values (?,?,?,?,'','','',?,?,?,?,?,?,?,?,?, 'ACCEPTED', ?, 1, 1, 0, 0, 0, ?, ?, null, null, null, ?)""",
               (uid, now, now, name, f"{FILES}/{uid}.upb", lat, lng, now - 4 * MIN, speed, 90.0, 430.0, bat, 12_000.0,
                ME, now - 10 * MIN, bday, now - 300 * DAY))
+# Nickname (given by the logged-in user), own status and the text friends write about the person,
+# so the chat details show every field filled
+PROFILES = {  # id: (nickName, status, description)
+    EMMA: ("Emmi", "Immer auf der Suche nach dem besten Kaffee ☕",
+           "Kommt zu jeder Skitour, aber nie vor 11 😄 Backt den besten Apfelstrudel im Ländle."),
+    VANESSA: ("", "Gerade in Wien 🎓", "Hat immer einen Plan B, und einen Plan C."),
+    NOAH: ("", "Kletterhalle > alles 🧗", "Hilft bei jedem Umzug, wenn's danach Pizza gibt 🍕"),
+    JONAS: ("Joni", "Bödele, ich komme! ⛷️", "Organisiert jede Tour und hat immer Tee im Rucksack."),
+    SOPHIE: ("", "📚 Prüfungsphase", "Kennt jeden Wanderweg im Bregenzerwald."),
+    MAX: ("", "Unterwegs 🚴", ""),
+    MIA: ("", "", "Die beste WG-Köchin, solange niemand ans Putzen erinnert."),
+}
+for uid, (nick, status, description) in PROFILES.items():
+    c.execute("update users set nickName=?, status=?, description=? where id=?", (nick, status, description, uid))
 for uid, (lat, lng, bat) in EXISTING_LOC.items():
     c.execute("""update users set locationLat=?, locationLong=?, locationDate=?, locationSpeed=0, locationHeading=0,
         locationBattery=?, locationShared=1, shareSpeedHeading=1, lastSeen=? where id=?""",
@@ -152,6 +166,7 @@ msg(VANESSA, G_FB, "Bin dabei ⚽", DAY + 2 * HOUR, True, reactions=[(MAX, "💪
 msg(ME, G_FB, "Ich auch, bring den Ball mit", DAY + HOUR, True)
 
 # Direct chats
+msg(EMMA, ME, "Das neue Café am Marktplatz 😍 https://www.dornbirn.at", 2 * DAY, read=True)
 msg(EMMA, ME, "Hast du heute schon etwas vor?", 3 * HOUR, read=True)
 msg(ME, EMMA, "Noch nichts, warum? 😄", 2 * HOUR + 50 * MIN)
 msg(EMMA, ME, "Kaffee in der Stadt? ☕", 25 * MIN, read=False)

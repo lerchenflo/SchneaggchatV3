@@ -9,7 +9,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -576,69 +575,6 @@ fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit, showNameError:
     }
 }
 
-@Composable
-fun CoordinateView(
-    coordinates: LatLong,
-    modifier: Modifier = Modifier,
-    trailing: (@Composable () -> Unit)? = null,
-) {
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
-        if (trailing == null) {
-            Text(
-                text = stringResource(Res.string.latlong, coordinates.lat.toString().take(8), coordinates.long.toString().take(8)),
-                modifier = Modifier.clickable {
-                    copyToClipboard(text = coordinates.lat.toString().take(8) + ", " + coordinates.long.toString().take(8))
-                }
-            )
-        } else {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(Res.string.latlong, coordinates.lat.toString().take(8), coordinates.long.toString().take(8)),
-                    modifier = Modifier.clickable {
-                        copyToClipboard(text = coordinates.lat.toString().take(8) + ", " + coordinates.long.toString().take(8))
-                    }
-                )
-                trailing()
-            }
-        }
-    }
-
-    /*
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(horizontal = 12.dp)
-    ) {
-
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(Res.string.longitude),
-                modifier = Modifier.weight(1f)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            OutlinedTextField(
-                value = coordinates.long.toString().take(8),
-                onValueChange = {},
-                enabled = false,
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.weight(2f)
-            )
-        }
-    }
-
-     */
-}
 
 /** [showTypeError]: a save was tried, so an entry without a type shows why saving doesn't work. */
 @Composable

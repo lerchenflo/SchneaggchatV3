@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
-import org.lerchenflo.schneaggchatv3mp.games.data.CrosswordRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordDirection
@@ -24,7 +23,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import kotlin.random.Random
 
 class CrosswordViewmodel(
-    private val crosswordRepository: CrosswordRepository,
     private val gameHighscoreRepository: GameHighscoreRepository,
     gameSaveRepository: GameSaveRepository,
 ) : ViewModel() {
@@ -60,7 +58,6 @@ class CrosswordViewmodel(
     fun onAction(action: CrosswordAction) {
         when (action) {
             is CrosswordAction.SelectLanguage -> loadPuzzle(action.language)
-            CrosswordAction.RetryLoad -> _state.value.language?.let { loadPuzzle(it) }
             CrosswordAction.NewPuzzle -> _state.value.language?.let { loadPuzzle(it) }
             CrosswordAction.EnterGame -> {
                 screenVisible = true
@@ -81,24 +78,16 @@ class CrosswordViewmodel(
         }
     }
 
-    /** A fresh random puzzle — there is no limit on how many can be played. */
+    /** A fresh random puzzle from the local word list — there is no limit on how many can be played. */
     private fun loadPuzzle(language: CrosswordLanguage) {
         timerJob?.cancel()
         timerJob = null
         saveSession.clear()
-        _state.value = CrosswordState(language = language, isLoading = true)
-
-        viewModelScope.launch {
-            val puzzle = when (language) {
-                CrosswordLanguage.GERMAN -> generateGermanCrosswordPuzzle(Random.nextLong())
-                CrosswordLanguage.ENGLISH -> crosswordRepository.getRandomEnglishPuzzle()
-            }
-            if (puzzle == null) {
-                _state.update { it.copy(isLoading = false, loadFailed = true) }
-                return@launch
-            }
-            startWithPuzzle(language, puzzle)
+        val words = when (language) {
+            CrosswordLanguage.GERMAN -> germanCrosswordWords
+            CrosswordLanguage.ENGLISH -> englishCrosswordWords
         }
+        startWithPuzzle(language, generateCrosswordPuzzle(words, Random.nextLong()))
     }
 
     private fun startWithPuzzle(language: CrosswordLanguage, puzzle: CrosswordPuzzle) {

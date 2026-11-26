@@ -34,6 +34,8 @@ enum class GameId(
     UNDERCOVER(sharedDevice = true),
     // Every won round is one win (score = 1), like UNDERCOVER
     TIC_TAC_TOE(sharedDevice = true),
+    // Every won round is one win (score = 1), like TIC_TAC_TOE; with teams every team member gets the team's wins
+    FOUR_IN_A_ROW(sharedDevice = true),
     // Daily C puzzle without a difficulty: 100 / 60 / 30 points for solving on the first / second / third try
     C_CHALLENGE(daily = true),
     // Correct answers of a round, the answering time as tiebreaker; one board, no difficulty
@@ -153,7 +155,7 @@ val GameId.leaderboard: LeaderboardSpec
             boardAxis = BoardAxis.DART_COUNTDOWN,
             boards = listOf(GameDifficulty.LOW, GameDifficulty.HIGH),
         )
-        GameId.UNDERCOVER, GameId.TIC_TAC_TOE -> LeaderboardSpec(
+        GameId.UNDERCOVER, GameId.TIC_TAC_TOE, GameId.FOUR_IN_A_ROW -> LeaderboardSpec(
             scoreKind = ScoreKind.WIN_COUNT,
             boardAxis = BoardAxis.NONE,
             boards = listOf(GameDifficulty.MEDIUM),

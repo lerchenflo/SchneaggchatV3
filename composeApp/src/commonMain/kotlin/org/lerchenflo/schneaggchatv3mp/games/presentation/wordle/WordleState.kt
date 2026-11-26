@@ -7,7 +7,6 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.WordlePuzzle
 
 sealed interface WordleAction {
     data class SelectLanguage(val language: WordleLanguage) : WordleAction
-    data object RetryLoad : WordleAction
     /** Screen is leaving (back, rotation, tab switch): keep the progress for the next visit. */
     /** The screen became visible; the clock only runs while someone is looking at it. */
     data object EnterGame : WordleAction
@@ -23,13 +22,10 @@ sealed interface WordleAction {
 /** Why a submitted guess was rejected; shown above the board and shakes the row. */
 enum class WordleInputError {
     TOO_SHORT,
-    UNKNOWN_WORD,
 }
 
 data class WordleState(
     val language: WordleLanguage? = null,
-    val isLoading: Boolean = false,
-    val loadFailed: Boolean = false,
     val puzzle: WordlePuzzle? = null,
     /** Submitted guesses with their feedback, oldest first. */
     val guesses: List<WordleGuess> = emptyList(),
@@ -39,8 +35,6 @@ data class WordleState(
     val isFailed: Boolean = false,
     val elapsedMillis: Long = 0L,
     val inputError: WordleInputError? = null,
-    /** The word [inputError] refers to, for the "not in the word list" message. */
-    val rejectedWord: String = "",
     /** Bumped on every rejection so the same error can re-trigger the shake. */
     val errorNonce: Int = 0,
 ) {

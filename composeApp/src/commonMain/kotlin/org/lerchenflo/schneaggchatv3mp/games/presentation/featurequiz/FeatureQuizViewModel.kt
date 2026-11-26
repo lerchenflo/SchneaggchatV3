@@ -32,7 +32,8 @@ import kotlin.time.TimeSource
 /**
  * Feature quiz: questions about the app's features plus open wishes from the feedback board. After
  * every card the player votes on its board entry with the board's own votes. At the end of a round
- * the correct answers go on the leaderboard, the answering time breaks ties.
+ * the correct answers go on the leaderboard, the answering time breaks ties. It starts on a mode
+ * page; the vote-only mode plays every feature without a vote instead, no questions, no highscore.
  */
 class FeatureQuizViewModel(
     private val feedbackRepository: FeedbackRepository,
@@ -45,38 +46,47 @@ class FeatureQuizViewModel(
     private val _state = MutableStateFlow(FeatureQuizState())
     val state = _state.asStateFlow()
 
+    // Runs while the player picks a mode; offline the round is built from the stored board
+    private val boardSync = viewModelScope.launch { feedbackRepository.syncFeedback() }
+
     private var timerJob: Job? = null
     private var answeringSince: TimeSource.Monotonic.ValueTimeMark? = null
     private var elapsedBeforeAnswering = 0L
 
-    init {
-        viewModelScope.launch {
-            // Offline the round is built from the stored board
-            feedbackRepository.syncFeedback()
-            startRound()
-        }
-    }
-
     fun onAction(action: FeatureQuizAction) {
         when (action) {
             FeatureQuizAction.OnBackClick -> viewModelScope.launch { navigator.navigateBack() }
+            is FeatureQuizAction.OnModeClick -> startMode(action.mode)
             is FeatureQuizAction.OnOptionClick -> pickOption(action.option)
             is FeatureQuizAction.OnVoteClick -> _state.update {
                 // Tapping the chosen vote again clears it, like on the board
                 it.copy(pendingVote = if (it.pendingVote == action.vote) FeedbackVote.NONE else action.vote)
             }
             FeatureQuizAction.OnNextClick -> goToNextCard()
-            FeatureQuizAction.OnPlayAgainClick -> viewModelScope.launch { startRound() }
+            FeatureQuizAction.OnSkipClick -> skipCard()
+            FeatureQuizAction.OnPlayAgainClick -> _state.value.mode?.let { mode -> viewModelScope.launch { startRound(mode) } }
         }
     }
 
-    private suspend fun startRound() {
+    /** Leaves the mode page; the round starts once the board sync is through. */
+    private fun startMode(mode: FeatureQuizMode) {
+        if (!_state.value.isChoosingMode) return
+        _state.update { it.copy(mode = mode, isLoading = true) }
+        viewModelScope.launch {
+            boardSync.join()
+            startRound(mode)
+        }
+    }
+
+    /** The vote-only mode uses every feature without a vote instead of the questions. */
+    private suspend fun startRound(mode: FeatureQuizMode) {
         stopTimer()
         val entries = feedbackRepository.getEntriesFlow().first()
-        _state.value = FeatureQuizState(
-            isLoading = false,
-            cards = FeatureQuizRounds.build(entries, FeatureQuizQuestions.ALL),
-        )
+        val cards = when (mode) {
+            FeatureQuizMode.QUIZ -> FeatureQuizRounds.build(entries, FeatureQuizQuestions.ALL)
+            FeatureQuizMode.VOTE -> FeatureQuizRounds.buildVoteOnly(entries)
+        }
+        _state.value = FeatureQuizState(mode = mode, isLoading = false, cards = cards)
         showCard()
     }
 
@@ -99,8 +109,18 @@ class FeatureQuizViewModel(
         val card = current.currentCard ?: return
         if (!current.canContinue) return
         if (current.showsVoteRow) sendVote(card.entry, current.pendingVote)
+        advance()
+    }
 
-        val nextIndex = current.currentIndex + 1
+    /** Vote-only mode: the card stays without a vote and comes again next time. */
+    private fun skipCard() {
+        if (!_state.value.canSkip) return
+        _state.update { it.copy(skippedCount = it.skippedCount + 1) }
+        advance()
+    }
+
+    private fun advance() {
+        val nextIndex = _state.value.currentIndex + 1
         _state.update {
             it.copy(
                 currentIndex = nextIndex,
@@ -112,7 +132,7 @@ class FeatureQuizViewModel(
         if (_state.value.isFinished) submitScore() else showCard()
     }
 
-    /** A round of wishes only asked nothing, so it doesn't count. */
+    /** A round without questions (only wishes, or the vote-only mode) asked nothing, so it doesn't count. */
     private fun submitScore() {
         val finished = _state.value
         if (finished.questionCount == 0) return

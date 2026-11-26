@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
+package org.lerchenflo.schneaggchatv3mp.sharedUi.map
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size

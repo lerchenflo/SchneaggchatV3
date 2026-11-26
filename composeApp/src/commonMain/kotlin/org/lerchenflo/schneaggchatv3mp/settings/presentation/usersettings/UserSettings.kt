@@ -2,6 +2,18 @@
 
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings
 
+import schneaggchatv3mp.composeapp.generated.resources.user_settings_friends_hint
+import schneaggchatv3mp.composeapp.generated.resources.user_settings_friends_empty
+import schneaggchatv3mp.composeapp.generated.resources.about_friends_say
+import schneaggchatv3mp.composeapp.generated.resources.user_settings_status_set
+import schneaggchatv3mp.composeapp.generated.resources.user_settings_status_empty
+import schneaggchatv3mp.composeapp.generated.resources.user_settings_you_say
+import schneaggchatv3mp.composeapp.generated.resources.user_settings_about_title
+import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.filled.Groups
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutCardPart
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutCardDivider
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutCard
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,13 +68,11 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.utilities.NameError
 import org.lerchenflo.schneaggchatv3mp.utilities.toStringResource
 import org.lerchenflo.schneaggchatv3mp.utilities.validateUsername
-import org.jetbrains.compose.resources.vectorResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.BirthdatePickerPopup
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -78,7 +88,6 @@ import schneaggchatv3mp.composeapp.generated.resources.change_username_descripti
 import schneaggchatv3mp.composeapp.generated.resources.change_username_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.current_phone_number
-import schneaggchatv3mp.composeapp.generated.resources.currentstatus
 import schneaggchatv3mp.composeapp.generated.resources.change_phone_number
 import schneaggchatv3mp.composeapp.generated.resources.edit_profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
@@ -88,12 +97,8 @@ import schneaggchatv3mp.composeapp.generated.resources.image_picker_error
 import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.phone_number_infotext
 import schneaggchatv3mp.composeapp.generated.resources.phone_number_placeholder
-import schneaggchatv3mp.composeapp.generated.resources.status_infotext
-import schneaggchatv3mp.composeapp.generated.resources.status_nosemicolon
-import schneaggchatv3mp.composeapp.generated.resources.user_attributes_24px
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.user_settings_group_profile
-import schneaggchatv3mp.composeapp.generated.resources.your_friends_wrote_this
 
 @Composable
 fun UserSettings(
@@ -293,15 +298,45 @@ fun UserSettings(
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-            if (ownuser != null && !ownuser.description.isNullOrEmpty()) {
-                //Userdescription
-                QuotedText(
-                    text = ownuser.description,
-                    author = stringResource(Res.string.your_friends_wrote_this)
+            // What I say about myself (my status, I edit it) and what my friends write about me
+            // (only they can change it): the same card as in the chat details
+            AboutCard(
+                title = stringResource(Res.string.user_settings_about_title),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                AboutCardPart(
+                    label = stringResource(Res.string.user_settings_you_say),
+                    text = ownuser?.status,
+                    emptyText = stringResource(Res.string.user_settings_status_empty),
+                    isQuote = true,
+                    leading = {
+                        ProfilePictureView(
+                            filepath = ownuser?.profilePictureUrl ?: "",
+                            modifier = Modifier.size(22.dp).clip(CircleShape),
+                            contentDescription = null
+                        )
+                    },
+                    onEditClick = { showChangeStatusPopup = true },
+                    emptyActionText = stringResource(Res.string.user_settings_status_set)
                 )
-
-                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                AboutCardDivider()
+                AboutCardPart(
+                    label = stringResource(Res.string.about_friends_say),
+                    text = ownuser?.description,
+                    emptyText = stringResource(Res.string.user_settings_friends_empty),
+                    leading = {
+                        Icon(
+                            imageVector = Icons.Default.Groups,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    hint = stringResource(Res.string.user_settings_friends_hint)
+                )
             }
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             SettingsDivider(
                 title = stringResource(Res.string.user_settings_group_profile),
@@ -320,22 +355,6 @@ fun UserSettings(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-
-            //Status
-            SettingsOption(
-                icon = vectorResource(Res.drawable.user_attributes_24px),
-                text = stringResource(Res.string.status_nosemicolon),
-                subtext = if (ownuser?.status == null || ownuser.status.isEmpty()) {
-                    stringResource(Res.string.status_infotext)
-                } else {
-                    stringResource(Res.string.currentstatus, ownuser.status)
-                },
-                onClick = {
-                    showChangeStatusPopup = true
-                }
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             // Gebidate
             SettingsOption(

@@ -31,7 +31,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -79,12 +78,10 @@ import schneaggchatv3mp.composeapp.generated.resources.games_crossword_instructi
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_language_english
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_language_german
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_language_question
-import schneaggchatv3mp.composeapp.generated.resources.games_crossword_load_failed
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_new_puzzle
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_next_clue
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_previous_clue
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_restart
-import schneaggchatv3mp.composeapp.generated.resources.games_crossword_retry
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_solved
 import schneaggchatv3mp.composeapp.generated.resources.games_crossword_title
 
@@ -112,7 +109,7 @@ fun CrosswordScreenRoot(
 
         when {
             // Checked first so a restored puzzle is not preceded by a flash of the language chooser
-            !restoreChecked || state.isLoading -> Box(
+            !restoreChecked -> Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
@@ -121,11 +118,6 @@ fun CrosswordScreenRoot(
 
             state.language == null -> LanguageSelection(
                 onSelect = { viewmodel.onAction(CrosswordAction.SelectLanguage(it)) }
-            )
-
-            state.loadFailed -> LoadFailed(
-                onRetry = { viewmodel.onAction(CrosswordAction.RetryLoad) },
-                onPlayGerman = { viewmodel.onAction(CrosswordAction.SelectLanguage(CrosswordLanguage.GERMAN)) },
             )
 
             state.puzzle != null -> CrosswordContent(
@@ -204,39 +196,6 @@ private fun LanguageSelection(
             onClick = { onSelect(CrosswordLanguage.GERMAN) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = stringResource(Res.string.games_crossword_language_german))
-        }
-    }
-}
-
-@Composable
-private fun LoadFailed(
-    onRetry: () -> Unit,
-    onPlayGerman: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = stringResource(Res.string.games_crossword_load_failed),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(onClick = onRetry) {
-            Text(text = stringResource(Res.string.games_crossword_retry))
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // The German puzzle is generated locally and always available offline
-        OutlinedButton(onClick = onPlayGerman) {
             Text(text = stringResource(Res.string.games_crossword_language_german))
         }
     }

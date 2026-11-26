@@ -12,7 +12,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Geburtstagsanzeige + Benachrichtigungen
 - Standort mit Verlauf teilen
 - Bearbeitbare Karte mit öffentlichen Orten
-- @Annotations für Standorte + User + Spiele + Events
+- Tourenplaner für Gruppen (Karte, Etappen, Fahrzeit pro Verkehrsmittel)
+- @Annotations für User, Orte, Events und mehr
 - Weckerfeature (Wecker-ton bei Freunden abspielen, auch wenn das Gerät auf lautlos ist)
 - App kaputt Button
 
@@ -24,7 +25,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ##### Highlights
 
 #### Features
-- Extensions: Gemeinsamer Text
+- Extensions: Gemeinsamer Text, Tourenplaner für Gruppen
 - Events: Erinnerungen im Gruppenchat
 - Datumsauswahl: Kalender statt Scrollrad
 - Dartcounter: Double In
@@ -37,6 +38,12 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - @Annotations fix
 - Erwähnungen: Nachrichten an mich hervorgehoben, @-Badge in der Chatliste
 - Feedback-Board: Sortierung Top mit Neu und Beliebteste, Beschreibung optional
+- Chatdetails: Aktionen im ⋮-Menü oben rechts
+- Chatdetails: Neues Design (Name im Titel, Badges für Timer und Geburtstag, Über-Karte für Status und Beschreibung)
+- Chat: Verlinkungen zu Feedback-Einträgen und Einstellungsseiten (@feedback, @settings)
+- Spiele: Neue Namen (Blockfall, Würfelpoker, Wörter raten); englische Wörter und Kreuzworträtsel aus eigenen Listen statt von der NYT, mehr deutsche Wörter
+- Spiele: Neues Spiel Vier in einer Reihe für 2-4 Spieler auf einem Handy (Teams 2 gegen 2, Power-Scheiben, Brett-Twists, Herausziehen, Zugtimer, Best of 3/5, Rückgängig, Bestenliste für Siege)
+- Spiele: Neue Spielerauswahl (Freunde mit Profilbild und Spieler auf diesem Gerät in einer Liste, Reihenfolge als Nummern sichtbar)
 
 #### Bugfixes
 - Profilbild: Anzeige bei Nicht-Freunden behoben, leere Großansicht entfernt

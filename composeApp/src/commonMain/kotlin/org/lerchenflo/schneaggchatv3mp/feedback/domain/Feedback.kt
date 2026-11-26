@@ -74,6 +74,10 @@ data class FeedbackEntry(
     /** Up and downvotes cancel out, "didn't know" is neutral. */
     val score: Int get() = upvotes - downvotes
 
+    /** Someone else's feature (implemented or wished) the user hasn't voted on yet. */
+    val needsFeatureVote: Boolean
+        get() = type == FeedbackType.FEATURE && !isOwn && myVote == FeedbackVote.NONE
+
     /**
      * User-created entries stay pinned (and highlighted) at the top for [NEW_ENTRY_PIN_MILLIS].
      * [createdAt] is server time and [nowMillis] device time: a device clock behind the server

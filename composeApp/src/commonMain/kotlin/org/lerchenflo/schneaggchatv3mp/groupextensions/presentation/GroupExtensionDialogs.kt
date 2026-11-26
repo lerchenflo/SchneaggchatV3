@@ -1,19 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -21,7 +15,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -29,8 +22,11 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.RouteTransportMode
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.route.RouteTransportModePicker
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.DEFAULT_SPLIT_CURRENCY
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TitleMenuItem
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.delete
@@ -40,9 +36,9 @@ import schneaggchatv3mp.composeapp.generated.resources.group_extension_currency
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_currency_hint
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_delete
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_delete_confirm
-import schneaggchatv3mp.composeapp.generated.resources.group_extension_more_options
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_rename
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_title_label
+import schneaggchatv3mp.composeapp.generated.resources.route_transport_default
 
 private const val CURRENCY_CODE_LENGTH = 3
 
@@ -58,6 +54,7 @@ fun AddExtensionDialog(
 ) {
     var title by rememberSaveable { mutableStateOf("") }
     var currency by rememberSaveable { mutableStateOf(DEFAULT_SPLIT_CURRENCY) }
+    var transportMode by rememberSaveable { mutableStateOf(RouteTransportMode.DEFAULT) }
 
     val isSplit = type == GroupExtensionType.SPLIT
     val isValid = validateExtensionTitle(title.trim()) == null &&
@@ -90,6 +87,14 @@ fun AddExtensionDialog(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+
+                if (type == GroupExtensionType.ROUTE_PLANNER) {
+                    RouteTransportModePicker(
+                        label = stringResource(Res.string.route_transport_default),
+                        selected = transportMode,
+                        onSelect = { transportMode = it },
+                    )
+                }
             }
         },
         confirmButton = {
@@ -98,7 +103,7 @@ fun AddExtensionDialog(
                 onClick = {
                     val settings = when (type) {
                         GroupExtensionType.SPLIT -> ExtensionSettings.Split(currency = currency)
-                        GroupExtensionType.ROUTE_PLANNER -> ExtensionSettings.Route()
+                        GroupExtensionType.ROUTE_PLANNER -> ExtensionSettings.Route(transportMode = transportMode.name)
                         GroupExtensionType.SHARED_TEXT,
                         GroupExtensionType.QUOTES -> ExtensionSettings.None
                     }
@@ -143,56 +148,27 @@ fun DeleteExtensionDialog(
     )
 }
 
-/** Top bar menu of an extension screen: rename for every member, delete only when [canDelete]. */
+/** Items of the ⋮ of an extension screen: rename for every member, delete only when [canDelete]. */
 @Composable
-fun ExtensionMenu(
+fun extensionMenuItems(
     canDelete: Boolean,
     onRenameClick: () -> Unit,
     onDeleteClick: () -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
+): List<TitleMenuItem> {
+    val rename = TitleMenuItem(
+        text = stringResource(Res.string.group_extension_rename),
+        icon = Icons.Default.Edit,
+        onClick = onRenameClick
+    )
+    if (!canDelete) return listOf(rename)
 
-    Box {
-        IconButton(onClick = { expanded = true }) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = stringResource(Res.string.group_extension_more_options)
-            )
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.group_extension_rename)) },
-                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
-                onClick = {
-                    expanded = false
-                    onRenameClick()
-                }
-            )
-            if (canDelete) {
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = stringResource(Res.string.group_extension_delete),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    },
-                    onClick = {
-                        expanded = false
-                        onDeleteClick()
-                    }
-                )
-            }
-        }
-    }
+    return listOf(
+        rename,
+        TitleMenuItem(
+            text = stringResource(Res.string.group_extension_delete),
+            icon = Icons.Default.Delete,
+            onClick = onDeleteClick,
+            isDestructive = true
+        )
+    )
 }

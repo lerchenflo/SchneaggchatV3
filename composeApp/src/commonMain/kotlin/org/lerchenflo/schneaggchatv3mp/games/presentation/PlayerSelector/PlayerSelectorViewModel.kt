@@ -34,6 +34,7 @@ class PlayerSelectorViewModel(
         viewModelScope.launch {
             // Yourself first, then the friends you can pick from
             val ownId = SessionCache.requireLoggedIn()?.userId
+            _state.update { it.copy(ownUserId = ownId) }
             val ownUserFlow = if (ownId != null) userRepository.getUserByIdFlow(ownId) else flowOf(null)
             val friendsFlow = userRepository.getFriendsFlow("")
 

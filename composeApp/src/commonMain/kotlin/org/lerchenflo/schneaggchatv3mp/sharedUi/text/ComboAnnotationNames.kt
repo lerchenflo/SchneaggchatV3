@@ -11,6 +11,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 
 /** How long the tables stay collected after the last text using them is gone (e.g. rotation). */
@@ -27,6 +28,7 @@ class ComboAnnotationNames(
     private val userIdentityRepository: UserIdentityRepository,
     userRepository: UserRepository,
     eventRepository: EventRepository,
+    feedbackRepository: FeedbackRepository,
     applicationScope: ApplicationScope,
 ) {
     val locationNames: StateFlow<Map<String, String>> = mapRepository.getAllMapEntriesFlow()
@@ -49,6 +51,11 @@ class ComboAnnotationNames(
 
     val eventNames: StateFlow<Map<String, String>> = eventRepository.getAllEventsFlow()
         .map { events -> events.associate { it.id to it.title } }
+        .shareNames(applicationScope)
+
+    /** Features and bugs of the feedback board (the global sync keeps the whole board stored). */
+    val feedbackNames: StateFlow<Map<String, String>> = feedbackRepository.getEntriesFlow()
+        .map { entries -> entries.associate { it.id to it.title } }
         .shareNames(applicationScope)
 
     private fun Flow<Map<String, String>>.shareNames(scope: ApplicationScope): StateFlow<Map<String, String>> =

@@ -23,7 +23,7 @@ enum class YatziCategory(val displayName: String, val isUpper: Boolean) {
     LARGE_STRAIGHT("Large Straight", false),
     FULL_HOUSE("Full House", false),
     CHANCE("Chance", false),
-    YAHTZEE("Yahtzee", false);
+    YAHTZEE("Five of a Kind", false);
 
     companion object {
         val selectable = entries

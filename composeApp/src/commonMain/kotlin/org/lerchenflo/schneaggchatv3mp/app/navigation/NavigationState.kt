@@ -172,6 +172,7 @@ private val gameRoutes: Set<KClass<out NavKey>> = setOf(
     Route.DartCounter::class,
     Route.Undercover::class,
     Route.TicTacToe::class,
+    Route.FourInARow::class,
     Route.TowerStack::class,
     Route.Yatzi::class,
     Route.Tetris::class,
@@ -248,6 +249,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.DartCounter::class, Route.DartCounter.serializer())
             subclass(Route.Undercover::class, Route.Undercover.serializer())
             subclass(Route.TicTacToe::class, Route.TicTacToe.serializer())
+            subclass(Route.FourInARow::class, Route.FourInARow.serializer())
             subclass(Route.TowerStack::class, Route.TowerStack.serializer())
             subclass(Route.Yatzi::class, Route.Yatzi.serializer())
             subclass(Route.Tetris::class, Route.Tetris.serializer())

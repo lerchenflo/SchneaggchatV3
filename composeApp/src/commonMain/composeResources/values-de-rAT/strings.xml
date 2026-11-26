@@ -23,8 +23,6 @@
     <string name="feedbacksync">Feedback</string>
     <string name="mediasync">Media</string>
 
-    <string name="status_infotext">Din Status dean alle dine Freunde leasa künnand. Aktuell ischa leer.</string>
-    <string name="currentstatus">Din aktuella Status: %1$s</string>
 
 
     <string name="go_back">zruck</string>
@@ -143,17 +141,14 @@
     <string name="select_profile_pic">Suach da a profilbild us</string>
 
     <string name="status">Status:</string>
-    <string name="status_nosemicolon">Status</string>
 
     <string name="app_broken_desc">Behebt die meista fehler mit da App</string>
     <string name="app_broken_are_you_sure">Löscht alle Appdaten vom handy und startet d App neu.\nBisch da sicha dassd des willsch?</string>
     <string name="please_restart_app">Bitte start dine App neu</string>
     <string name="press_back_again_to_exit">Nomml zruck drucka zum Beenda</string>
     <string name="verification_email_sent">Verifizierungs-E-Mail gschickt</string>
-    <string name="others_say_about">Freunde hond über %1$s gschrieba:</string>
     <string name="status_info">Der Text isch vo eam verfasst worra</string>
     <string name="description_info_user">Alle Freunde vo %1$s künnand dean Text bearbeita, aber %1$s kannan nur leasa.</string>
-    <string name="description_info_group">Beschreibung ändra</string>
 
     <string name="become_beta_tester">Werd Beta Tester</string>
     <string name="become_beta_tester_desc">Kriag Updates mit neua Features &amp; Bugfixes schnealla als alle andra</string>
@@ -166,8 +161,6 @@
     <string name="birthday_turns_age">wird %1$d</string>
     <string name="no_birthdays">Kuana vo dina Freunde hot a Geburtsdatum gsetzt</string>
 
-    <string name="no_description">Kua Beschreibung</string>
-    <string name="remove_friend">Freund entferna</string>
     <string name="save">Speichra</string>
     <string name="close">Schlüßa</string>
     <string name="you_sender">Du</string>
@@ -203,8 +196,6 @@
     <string name="create_group">Gruppe erstella</string>
 
     <string name="members">Mitglieder</string>
-    <string name="info">Info</string>
-    <string name="chat_details_actions">Aktiona</string>
     <string name="at_least_members">Du bruchsch mindestens %1$s Mitglieder in da Gruppe</string>
     <string name="group_name_missing">Bitte gib an Gruppanama i</string>
 
@@ -242,9 +233,6 @@
     <string name="event_create_group_info">Da Gruppenchat machts möglich, dass igladene Persona mitanand chatten künnand. Du kannschan später no dazuatua fallsas da andersch überlegsch.</string>
     <string name="event_no_group">Des Event hot kuan Gruppenchat</string>
     <string name="user_description">Userbeschreibung</string>
-    <string name="leave_group">Abhaua</string>
-    <string name="delete_group">Gruppe löscha</string>
-    <string name="add_users_to_group">Mitglied hinzufüga</string>
     <string name="member_since">Dabei sit %1$s</string>
     <string name="change_group_name">Änder da Gruppanama</string>
 
@@ -692,7 +680,6 @@
     <string name="undercover_sniff_confirm_yes">Jo, mi Wort azoaga</string>
     <string name="undercover_sniff_hide">Verstecka</string>
 
-    <string name="your_friends_wrote_this">~ Dine Freunde</string>
     <string name="show_logs">Logs aschoua</string>
 
     <!-- polls -->
@@ -817,9 +804,6 @@
 
     <!-- Bug Report Dialog -->
     <!-- Games: Yatzi -->
-    <string name="games_yahtzee_title">Yahtzee</string>
-    <string name="yatzi_setup_title">Yahtzee Einstellunga</string>
-    <string name="yatzi_game_title">Yahtzee Spiel</string>
     <string name="yatzi_add_manage_players">Spielerverwaltung</string>
     <string name="yatzi_players">Spieler:</string>
     <string name="yatzi_start_game">Spiel starta</string>
@@ -848,7 +832,6 @@
 
 
     <!-- Games: Tetris -->
-    <string name="games_tetris_title">Tetris</string>
     <string name="games_tetris_score">Punkte: %1$d</string>
     <string name="games_tetris_pause_resume">Pause/Witta</string>
     <string name="games_tetris_restart">Neustart</string>
@@ -870,12 +853,8 @@
 
     <!-- Games: Crossword -->
     <string name="games_crossword_title">Krützworträtsel</string>
-    <string name="games_crossword_instructions">Lös so viel Kreuzworträtsel wie du willsch! Tipp uf a Feald zum uswähla, tipp nomml zum zwüscha waagrecht und senkrecht weachsla, und schrieb mit da Tastatur unta. D englischa Rätsel werrand zufällig us am öffentlicha NYT-Archiv zoga, d dütscha werrand jeds mol neu generiert. Je größer s glöste Gitter und je schnealla du bisch, desto besser din Platz in da Rangliste.</string>
     <string name="games_crossword_language_question">Wähl dine Rätselsproch</string>
-    <string name="games_crossword_language_english">Englisch (NYT-Archiv)</string>
     <string name="games_crossword_language_german">Dütsch</string>
-    <string name="games_crossword_load_failed">S Rätsel hot ned glada werra künna. Bitte prüf dine Internetverbindung und versuachs nomml.</string>
-    <string name="games_crossword_retry">Nomml versuacha</string>
     <string name="games_crossword_check">Antworta prüfa</string>
     <string name="games_crossword_restart">Neu starta</string>
     <string name="games_crossword_solved">Glöst in %1$s!</string>
@@ -884,17 +863,11 @@
     <string name="games_crossword_new_puzzle">Neus Rätsel</string>
 
     <!-- Games: Wordle -->
-    <string name="games_wordle_title">Wordle</string>
-    <string name="games_wordle_instructions">Errot s Wort us füf Buchstaba in sechs Versuach, so oft du willsch! Wenn a Reihe voll isch, wird se automatisch prüft: Grün hoast richtiger Buchstab an da richtiga Stell, Orange richtiger Buchstab an da falscha Stell, Grau kut gar ned vor.\n\nD englischa Wörter sind echte Lösunga vo da New York Times, zufällig zoga, d dütscha kummand us üsra eigna Liste. Je weniger Versuach du bruchsch und je schnealla du bisch, desto besser din Platz in da Rangliste.</string>
     <string name="games_wordle_language_question">Wähl a Sproch</string>
-    <string name="games_wordle_language_english">Englisch (NYT Wordle)</string>
     <string name="games_wordle_language_german">Dütsch</string>
-    <string name="games_wordle_load_failed">Des Wort hot ned glada werra künna. Prüf dine Internetverbindung und versuachs nomml.</string>
-    <string name="games_wordle_retry">Nomml versuacha</string>
     <string name="games_wordle_guess_counter">Versuche %1$d / %2$d</string>
     <string name="games_wordle_new_word">Neus Wort</string>
     <string name="games_wordle_too_short">Zwenig Buchstaba</string>
-    <string name="games_wordle_unknown_word">%1$s stoht ned in da Wortliste</string>
     <string name="games_wordle_delete">Buchstab löscha</string>
     <string name="games_wordle_solved">Glöst in %1$d vo %2$d Versuach · %3$s</string>
     <string name="games_wordle_failed">Kua Versuache mehr! S Wort war %1$s</string>
@@ -1190,7 +1163,6 @@ Mealds, egal wie klenn.</string>
     <string name="game_restart">Neustart</string>
     <string name="show_highscores">Bestenliste azoaga</string>
     <string name="global_ranking_title">Gesamtwertung</string>
-    <string name="global_ranking_explanation">Punkte über alle Spiele mit Highscores. Partyspiele uf uanam Handy (Yahtzee, Dartcounter, Undercover) zellan ned.</string>
     <string name="global_ranking_error">Rangliste hot ned glada werra künna</string>
     <string name="global_ranking_empty">Es hot noch niemand gspielt</string>
     <string name="global_ranking_points">%1$d Pkt.</string>
@@ -1488,13 +1460,10 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_chat_details">Chat-Details</string>
     <string name="ttt_chat_details_description">Tipp uf da Nama für d Chat-Details: teilte Bilder und Links, d Mitglieder vo na Gruppe und mehr.</string>
     <string name="ttt_chat_details_nickname">Nickname</string>
-    <string name="ttt_chat_details_nickname_description">Tipp uf da Nama und gib dinam Freund an Nickname. Er wird in dina Chats statt sim Nama azoagt.</string>
     <string name="ttt_chat_details_wake">Freund wecka</string>
-    <string name="ttt_chat_details_wake_description">Lass s Handy vo dinam Freund wie an Wecker klingla, o wenn s lautlos isch, z. B. wenn er verschloft. Goht, wenn er Android hot und des in sina Einstellunga erlaubt hot.</string>
     <string name="ttt_group_members">Gruppenmitglieder</string>
     <string name="ttt_group_members_description">Tipp uf a Mitglied, zum an Chat öffna oda a Freundschaftsafrog schicka; tipp ufs Bild, denn siahsch des groß. Admins tuand Mitglieder dazua, machand andre zu Admins und entfernand Mitglieder.</string>
     <string name="ttt_group_timer">Löschtimer</string>
-    <string name="ttt_group_timer_description">Wenn da Timer ablouft, werrand d Gruppe und alle ihre Nochrichta für alle glöscht, z. B. nach nam Event. Nur Admins künnand ean festlega.</string>
     <string name="ttt_chat_details_about">Was Freunde sägand</string>
     <string name="ttt_chat_details_about_description">An kurza Text über dia Person, dean alle ihre Freunde zemma schrieband: Alle bearbeitand da glicha Text. D Person kann ean leasa, aber ned ändra. Tipp do zum bearbeita.</string>
     <string name="ttt_feedback_requests">Wünsch</string>
@@ -1940,7 +1909,6 @@ Mealds, egal wie klenn.</string>
     <string name="group_extension_rename">Umbenenna</string>
     <string name="group_extension_delete">Erweiterung löscha</string>
     <string name="group_extension_delete_confirm">"%1$s" mit allna Iträg für alle in dera Gruppe löscha? Des kann ned rückgängig gmacht werra.</string>
-    <string name="group_extension_more_options">Mehr Optiona</string>
     <string name="shared_text_placeholder">Schrieband zemma eapas…</string>
     <string name="shared_text_show_author_colors">Autorenfarba azoaga</string>
     <string name="shared_text_hide_author_colors">Autorenfarba usblenda</string>

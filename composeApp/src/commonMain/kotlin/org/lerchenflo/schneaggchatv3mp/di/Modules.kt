@@ -39,7 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsViewmodel
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays.BirthdaysViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentViewModel
@@ -77,12 +77,10 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.PreferenceAuthSes
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.SystemAuthClock
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.games.data.CrosswordRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresViewModel
-import org.lerchenflo.schneaggchatv3mp.games.data.WordleRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.tools.presentation.coinflip.CoinFlipViewModel
@@ -105,6 +103,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tictactoe.TicTacToeViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.fourinarow.FourInARowViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.login.data.RemoteAuthRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerViewModel
@@ -121,6 +120,7 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.GroupExtensio
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.remote.KtorGroupExtensionRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.GroupExtensionViewModel
+import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.route.RouteViewModel
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.sharedtext.SharedTextViewModel
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitViewModel
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor.SplitExpenseEditorViewModel
@@ -342,8 +342,6 @@ val sharedmodule = module{
     singleOf(::GameSaveRepository)
     singleOf(::CChallengeStreakRepository)
     // External puzzle archive fetch — no app auth, plain client
-    single { CrosswordRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))) }
-    single { WordleRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))) }
 
 
     // Socket Connection Manager
@@ -438,7 +436,7 @@ val sharedmodule = module{
 
     // Explicit lambda because the runtime chatId/isGroup can't be resolved by viewModelOf
     viewModel { (chatId: String, isGroup: Boolean) ->
-        ChatDetailsViewmodel(
+        ChatDetailsViewModel(
             errorChannel = get(),
             groupRepository = get(),
             navigator = get(),
@@ -485,6 +483,22 @@ val sharedmodule = module{
             groupExtensionRepository = get(),
             groupRepository = get(),
             userIdentityRepository = get(),
+            navigator = get(),
+            extensionId = extensionId
+        )
+    }
+
+    // Explicit lambda because the runtime extensionId can't be resolved by viewModelOf
+    viewModel { (extensionId: String) ->
+        RouteViewModel(
+            errorChannel = get(),
+            groupExtensionRepository = get(),
+            groupRepository = get(),
+            userIdentityRepository = get(),
+            mapRepository = get(),
+            settingsRepository = get(),
+            locationService = get(),
+            applicationScope = get(),
             navigator = get(),
             extensionId = extensionId
         )
@@ -603,6 +617,7 @@ val sharedmodule = module{
     viewModelOf(::TowerstackViewModel)
     viewModelOf(::UndercoverViewModel)
     viewModelOf(::TicTacToeViewModel)
+    viewModelOf(::FourInARowViewModel)
     viewModelOf(::YatziViewModel)
     viewModelOf(::TetrisViewModel)
     viewModelOf(::MorseViewModel)
@@ -645,5 +660,14 @@ val sharedmodule = module{
 
     viewModelOf(::SchneaggmapSettingsViewModel)
 
-    viewModelOf(::FeedbackViewModel)
+    viewModel { (openEntryId: String?) ->
+        FeedbackViewModel(
+            openEntryId = openEntryId,
+            feedbackRepository = get(),
+            userIdentityRepository = get(),
+            navigator = get(),
+            applicationScope = get(),
+            errorChannel = get(),
+        )
+    }
 }

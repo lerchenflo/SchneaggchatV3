@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -39,6 +38,7 @@ import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.TextWriterRun
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TitleMenuItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.memberNameColor
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_not_found
@@ -49,7 +49,7 @@ import schneaggchatv3mp.composeapp.generated.resources.shared_text_show_author_c
 @Composable
 fun SharedTextScreenRoot(
     extensionId: String,
-    topBarActions: @Composable RowScope.() -> Unit = {},
+    topBarMenuItems: List<TitleMenuItem> = emptyList(),
 ) {
     val viewModel = koinViewModel<SharedTextViewModel> {
         parametersOf(extensionId)
@@ -59,7 +59,7 @@ fun SharedTextScreenRoot(
     SharedTextScreen(
         state = state,
         onAction = viewModel::onAction,
-        topBarActions = topBarActions
+        topBarMenuItems = topBarMenuItems
     )
 }
 
@@ -68,7 +68,7 @@ fun SharedTextScreenRoot(
 fun SharedTextScreen(
     state: SharedTextState,
     onAction: (SharedTextAction) -> Unit,
-    topBarActions: @Composable RowScope.() -> Unit = {},
+    topBarMenuItems: List<TitleMenuItem> = emptyList(),
 ) {
     val isReady = !state.isLoading && !state.extensionMissing
 
@@ -83,8 +83,8 @@ fun SharedTextScreen(
                         onClick = { onAction(SharedTextAction.OnToggleAuthorColors) }
                     )
                 }
-                topBarActions()
-            }
+            },
+            menuItems = topBarMenuItems
         )
 
         HorizontalDivider()

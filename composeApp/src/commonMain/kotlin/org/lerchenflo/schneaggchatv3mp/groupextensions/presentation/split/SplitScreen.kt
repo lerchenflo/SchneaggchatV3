@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -55,6 +54,7 @@ import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.detail.SplitExpenseDetailDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TitleMenuItem
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.delete
@@ -79,7 +79,7 @@ import schneaggchatv3mp.composeapp.generated.resources.split_transfer_title
 @Composable
 fun SplitScreenRoot(
     extensionId: String,
-    topBarActions: @Composable RowScope.() -> Unit = {},
+    topBarMenuItems: List<TitleMenuItem> = emptyList(),
 ) {
     val viewModel = koinViewModel<SplitViewModel> {
         parametersOf(extensionId)
@@ -89,7 +89,7 @@ fun SplitScreenRoot(
     SplitScreen(
         state = state,
         onAction = viewModel::onAction,
-        topBarActions = topBarActions
+        topBarMenuItems = topBarMenuItems
     )
 }
 
@@ -98,7 +98,7 @@ fun SplitScreenRoot(
 fun SplitScreen(
     state: SplitState,
     onAction: (SplitAction) -> Unit,
-    topBarActions: @Composable RowScope.() -> Unit = {},
+    topBarMenuItems: List<TitleMenuItem> = emptyList(),
 ) {
     val showExpenses = state.selectedTab == SplitTab.EXPENSES && !state.isLoading && !state.extensionMissing
 
@@ -111,7 +111,7 @@ fun SplitScreen(
                 ActivityTitle(
                     title = state.title,
                     onBackClick = { onAction(SplitAction.OnBackClick) },
-                    actions = topBarActions
+                    menuItems = topBarMenuItems
                 )
                 if (!state.isLoading && !state.extensionMissing) {
                     CountSegmentedSwitch(

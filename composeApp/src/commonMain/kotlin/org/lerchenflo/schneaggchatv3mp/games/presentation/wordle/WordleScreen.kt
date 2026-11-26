@@ -34,7 +34,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -83,12 +82,9 @@ import schneaggchatv3mp.composeapp.generated.resources.games_wordle_new_word
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_language_english
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_language_german
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_language_question
-import schneaggchatv3mp.composeapp.generated.resources.games_wordle_load_failed
-import schneaggchatv3mp.composeapp.generated.resources.games_wordle_retry
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_solved
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_title
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_too_short
-import schneaggchatv3mp.composeapp.generated.resources.games_wordle_unknown_word
 import kotlin.math.roundToInt
 
 @Composable
@@ -115,7 +111,7 @@ fun WordleScreenRoot(
 
         when {
             // Checked first so a restored game is not preceded by a flash of the language chooser
-            !restoreChecked || state.isLoading -> Box(
+            !restoreChecked -> Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
@@ -124,11 +120,6 @@ fun WordleScreenRoot(
 
             state.language == null -> LanguageSelection(
                 onSelect = { viewmodel.onAction(WordleAction.SelectLanguage(it)) }
-            )
-
-            state.loadFailed -> LoadFailed(
-                onRetry = { viewmodel.onAction(WordleAction.RetryLoad) },
-                onPlayGerman = { viewmodel.onAction(WordleAction.SelectLanguage(WordleLanguage.GERMAN)) },
             )
 
             state.puzzle != null -> WordleContent(
@@ -207,39 +198,6 @@ private fun LanguageSelection(
             onClick = { onSelect(WordleLanguage.GERMAN) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = stringResource(Res.string.games_wordle_language_german))
-        }
-    }
-}
-
-@Composable
-private fun LoadFailed(
-    onRetry: () -> Unit,
-    onPlayGerman: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = stringResource(Res.string.games_wordle_load_failed),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(onClick = onRetry) {
-            Text(text = stringResource(Res.string.games_wordle_retry))
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // The German word comes from the local list and is always available offline
-        OutlinedButton(onClick = onPlayGerman) {
             Text(text = stringResource(Res.string.games_wordle_language_german))
         }
     }
@@ -348,8 +306,6 @@ private fun WordleContent(
                 Text(
                     text = when (error) {
                         WordleInputError.TOO_SHORT -> stringResource(Res.string.games_wordle_too_short)
-                        WordleInputError.UNKNOWN_WORD ->
-                            stringResource(Res.string.games_wordle_unknown_word, state.rejectedWord)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,

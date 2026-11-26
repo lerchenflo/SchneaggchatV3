@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameSaveRepository
-import org.lerchenflo.schneaggchatv3mp.games.data.WordleRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
@@ -27,7 +26,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSaveSession
 import kotlin.random.Random
 
 class WordleViewModel(
-    private val wordleRepository: WordleRepository,
     private val gameHighscoreRepository: GameHighscoreRepository,
     gameSaveRepository: GameSaveRepository,
 ) : ViewModel() {
@@ -52,8 +50,6 @@ class WordleViewModel(
      * otherwise restart the clock for a game nobody can see.
      */
     private var screenVisible = false
-    /** Accepted English guesses; null means "not available", then any five letters pass. */
-    private var englishGuessList: Set<String>? = null
 
     init {
         saveSession.start(onRestore = ::restore, onAppBackgrounded = ::onAppBackgrounded)
@@ -65,7 +61,6 @@ class WordleViewModel(
     fun onAction(action: WordleAction) {
         when (action) {
             is WordleAction.SelectLanguage -> loadPuzzle(action.language)
-            WordleAction.RetryLoad -> _state.value.language?.let { loadPuzzle(it) }
             WordleAction.NewWord -> _state.value.language?.let { loadPuzzle(it) }
             WordleAction.EnterGame -> {
                 screenVisible = true
@@ -82,43 +77,18 @@ class WordleViewModel(
         }
     }
 
-    /** A fresh random word — there is no limit on how many can be played. */
+    /** A fresh random word from the local lists — there is no limit on how many can be played. */
     private fun loadPuzzle(language: WordleLanguage) {
         timerJob?.cancel()
         timerJob = null
         saveSession.clear()
-        _state.value = WordleState(language = language, isLoading = true)
-
-        viewModelScope.launch {
-            val puzzle = when (language) {
-                WordleLanguage.GERMAN -> randomGermanPuzzle()
-                WordleLanguage.ENGLISH -> wordleRepository.getRandomEnglishPuzzle()
-            }
-            if (puzzle == null) {
-                _state.update { it.copy(isLoading = false, loadFailed = true) }
-                return@launch
-            }
-            startWithPuzzle(puzzle)
+        val words = when (language) {
+            WordleLanguage.GERMAN -> germanWordleWords
+            WordleLanguage.ENGLISH -> englishWordleWords
         }
-    }
-
-    private fun randomGermanPuzzle(): WordlePuzzle = WordlePuzzle(
-        language = WordleLanguage.GERMAN,
-        solution = germanWordleWords[Random.nextInt(germanWordleWords.size)],
-    )
-
-    private fun startWithPuzzle(puzzle: WordlePuzzle) {
-        _state.value = WordleState(language = puzzle.language, puzzle = puzzle)
+        val puzzle = WordlePuzzle(language = language, solution = words[Random.nextInt(words.size)])
+        _state.value = WordleState(language = language, puzzle = puzzle)
         startTimer()
-        if (puzzle.language == WordleLanguage.ENGLISH) loadEnglishGuessList()
-    }
-
-    /** Fetched alongside the game so a typo can be rejected instead of costing a try. */
-    private fun loadEnglishGuessList() {
-        if (englishGuessList != null) return
-        viewModelScope.launch {
-            englishGuessList = wordleRepository.getEnglishGuessList()
-        }
     }
 
     private fun startTimer() {
@@ -178,10 +148,7 @@ class WordleViewModel(
             isFailed = data.isFailed,
             elapsedMillis = data.elapsedMillis,
         )
-        if (!data.isSolved && !data.isFailed) {
-            startTimer()
-            if (data.puzzle.language == WordleLanguage.ENGLISH) loadEnglishGuessList()
-        }
+        if (!data.isSolved && !data.isFailed) startTimer()
     }
 
     /** The leaderboard difficulty encodes the word language (LOW = German, HIGH = English). */
@@ -217,22 +184,10 @@ class WordleViewModel(
 
         val guess = current.currentInput
         if (guess.length != WORDLE_WORD_LENGTH) {
-            rejectGuess(guess, WordleInputError.TOO_SHORT)
+            rejectGuess(WordleInputError.TOO_SHORT)
             return
         }
-        // German has no dictionary (the local list is a solution pool, not a word list),
-        // so only English guesses are checked — and only when the list was fetched.
-        // The solution always passes: the public list predates newer NYT words, and a
-        // solution missing from it would otherwise be impossible to enter.
-        val allowed = englishGuessList
-        if (puzzle.language == WordleLanguage.ENGLISH &&
-            allowed != null &&
-            guess !in allowed &&
-            guess != puzzle.solution
-        ) {
-            rejectGuess(guess, WordleInputError.UNKNOWN_WORD)
-            return
-        }
+        // No dictionary: the local lists are solution pools, so any five letters count as a guess
 
         val evaluated = WordleGuess(
             word = guess,
@@ -261,9 +216,9 @@ class WordleViewModel(
         }
     }
 
-    private fun rejectGuess(word: String, error: WordleInputError) {
+    private fun rejectGuess(error: WordleInputError) {
         _state.update {
-            it.copy(inputError = error, rejectedWord = word, errorNonce = it.errorNonce + 1)
+            it.copy(inputError = error, errorNonce = it.errorNonce + 1)
         }
     }
 

@@ -6,6 +6,7 @@ import org.lerchenflo.schneaggchatv3mp.feedback.domain.isGamesEntry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import androidx.lifecycle.ViewModel
@@ -44,6 +45,8 @@ import kotlin.time.Clock
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class FeedbackViewModel(
+    /** Entry whose details open right away (a tapped `@feedback` link), null for the plain board. */
+    openEntryId: String?,
     private val feedbackRepository: FeedbackRepository,
     private val userIdentityRepository: UserIdentityRepository,
     private val navigator: Navigator,
@@ -84,6 +87,15 @@ class FeedbackViewModel(
             val lastSeen = feedbackRepository.getTabsLastSeen()
             _state.update { it.copy(tabLastSeenBeforeVisit = lastSeen) }
             refresh()
+        }
+        if (openEntryId != null) {
+            // A link only opens the board for a stored entry, so the first emission has it,
+            // unless it was deleted in between: then the board shows as usual
+            viewModelScope.launch {
+                feedbackRepository.getEntriesFlow().first()
+                    .firstOrNull { it.id == openEntryId }
+                    ?.let { showEntry(it) }
+            }
         }
     }
 
@@ -191,6 +203,16 @@ class FeedbackViewModel(
             feedbackRepository.vote(entry, newVote)
                 .onError { errorChannel.sendError(it) }
         }
+    }
+
+    /** Jumps to the tab (and on Games the chip) [entry] is in and opens its details. */
+    private fun showEntry(entry: FeedbackEntry) {
+        val tab = FeedbackTab.of(entry)
+        markTabSeen(tab)
+        updateBoard {
+            it.copy(selectedTab = tab, gamesSection = FeedbackSection.of(entry), statusFilter = null)
+        }
+        openDetail(entry)
     }
 
     private fun openDetail(entry: FeedbackEntry) {
@@ -428,6 +450,7 @@ private fun FeedbackState.withVisibleEntries(): FeedbackState {
         gamesSectionCounts = FeedbackSection.entries.associateWith { s -> gamesEntries.count { s.contains(it) } },
         // Keeps waiting while the entry is not stored yet; dropped when a filter hides it
         scrollToEntryId = scrollToEntryId?.takeIf { id -> entries.none { it.id == id } || filtered.any { it.id == id } },
+        unvotedFeatureCount = entries.count { it.needsFeatureVote },
     )
 }
 

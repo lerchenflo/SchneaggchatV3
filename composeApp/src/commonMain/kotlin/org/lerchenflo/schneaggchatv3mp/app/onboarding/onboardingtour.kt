@@ -263,7 +263,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 )
 
                 highlightStep(
-                    id = "chat_details_nickname",
+                    id = "chat_details_menu", //The ⋮ of the chat details, nickname and wake are in it
                     title = Res.string.ttt_chat_details_nickname,
                     description = Res.string.ttt_chat_details_nickname_description,
                     tags = setOf(TourTags.USER_DETAILS),
@@ -280,7 +280,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 )
 
                 highlightStep(
-                    id = "chat_details_wake",
+                    id = "chat_details_menu", //The ⋮ of the chat details, nickname and wake are in it
                     title = Res.string.ttt_chat_details_wake,
                     description = Res.string.ttt_chat_details_wake_description,
                     tags = setOf(TourTags.USER_DETAILS),
@@ -301,7 +301,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     id = "feedback_requests_tab",
                     title = Res.string.ttt_feedback_requests,
                     description = Res.string.ttt_feedback_requests_description,
-                    route = Route.Feedback,
+                    route = Route.Feedback(),
                     tags = setOf(TourTags.FEEDBACK_REQUESTS),
                 )
 
@@ -310,7 +310,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     id = "feedback_create_button",
                     title = Res.string.ttt_feedback_create,
                     description = Res.string.ttt_feedback_create_description,
-                    route = Route.Feedback,
+                    route = Route.Feedback(),
                     tags = setOf(TourTags.FEEDBACK_CREATE),
                 )
 
@@ -318,7 +318,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     id = "feedback_feature_quiz_button",
                     title = Res.string.ttt_feedback_quiz,
                     description = Res.string.ttt_feedback_quiz_description,
-                    route = Route.Feedback
+                    route = Route.Feedback()
                 )
             }
 

@@ -19,6 +19,8 @@ import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.filled.ViewColumn
+import androidx.compose.material.icons.filled.ViewQuilt
 import androidx.lifecycle.ViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
@@ -52,6 +54,8 @@ import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
 import schneaggchatv3mp.composeapp.generated.resources.games_tictactoe_description
 import schneaggchatv3mp.composeapp.generated.resources.games_tictactoe_title
+import schneaggchatv3mp.composeapp.generated.resources.games_fourinarow_description
+import schneaggchatv3mp.composeapp.generated.resources.games_fourinarow_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 import schneaggchatv3mp.composeapp.generated.resources.games_wordle_title
 import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
@@ -124,7 +128,7 @@ class GameSelectorViewModel : ViewModel() {
         GameScreenElement(
             title = Res.string.games_tetris_title,
             description = Res.string.games_tetris_description,
-            icon = Icons.Default.GridOn,
+            icon = Icons.Default.ViewQuilt,
             route = Route.Tetris,
             inDev = GameId.TETRIS.indev,
             gameId = GameId.TETRIS
@@ -196,6 +200,14 @@ class GameSelectorViewModel : ViewModel() {
             route = Route.TicTacToe,
             inDev = GameId.TIC_TAC_TOE.indev,
             gameId = GameId.TIC_TAC_TOE
+        ),
+        GameScreenElement(
+            title = Res.string.games_fourinarow_title,
+            description = Res.string.games_fourinarow_description,
+            icon = Icons.Default.ViewColumn,
+            route = Route.FourInARow,
+            inDev = GameId.FOUR_IN_A_ROW.indev,
+            gameId = GameId.FOUR_IN_A_ROW
         ),
         GameScreenElement(
             title = Res.string.games_yahtzee_title,

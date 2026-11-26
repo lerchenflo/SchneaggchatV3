@@ -70,7 +70,7 @@ import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tourHighlightColor
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreenRoot
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays.BirthdaysScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
@@ -107,6 +107,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tictactoe.TicTacToeRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.fourinarow.FourInARowRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.wordle.WordleScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerRoot
@@ -676,7 +677,7 @@ fun App() {
                                     )
                                 }
                                 entry<Route.ChatDetails> { route ->
-                                    ChatDetails(
+                                    ChatDetailsScreenRoot(
                                         chatId = route.chatId,
                                         isGroup = route.isGroup
                                     )
@@ -808,7 +809,7 @@ fun App() {
                                         miscSettingsViewModel = koinViewModel(),
                                         sharedSettingsViewmodel = koinViewModel(),
                                         onBackClick = { scope.launch { navigator.navigateBack() } },
-                                        navigateFeedback = { scope.launch { navigator.navigate(Route.Feedback) } }
+                                        navigateFeedback = { scope.launch { navigator.navigate(Route.Feedback()) } }
                                     )
                                 }
 
@@ -820,8 +821,8 @@ fun App() {
                                     )
                                 }
 
-                                entry<Route.Feedback> {
-                                    FeedbackScreenRoot()
+                                entry<Route.Feedback> { route ->
+                                    FeedbackScreenRoot(openEntryId = route.openEntryId)
                                 }
 
                                 entry<Route.EventDetail> {
@@ -865,6 +866,12 @@ fun App() {
 
                                 entry<Route.TicTacToe> {
                                     TicTacToeRoot(
+                                        onBackClick = { scope.launch { navigator.navigateBack() } }
+                                    )
+                                }
+
+                                entry<Route.FourInARow> {
+                                    FourInARowRoot(
                                         onBackClick = { scope.launch { navigator.navigateBack() } }
                                     )
                                 }

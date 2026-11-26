@@ -8,8 +8,8 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.CrosswordPuzzle
 const val CROSSWORD_SNAPSHOT_VERSION = 1
 
 /**
- * Persisted crossword progress. The puzzle itself is stored too, so the English
- * one (downloaded) is not fetched again after leaving the screen. Solved puzzles
+ * Persisted crossword progress. The puzzle itself is stored too, so a generated
+ * grid survives leaving the screen. Solved puzzles
  * are kept so the result stays visible until a new one is started.
  */
 @Serializable

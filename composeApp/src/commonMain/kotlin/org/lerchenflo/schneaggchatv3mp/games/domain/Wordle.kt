@@ -27,17 +27,13 @@ data class WordleGuess(
     val states: List<WordleLetterState>,
 )
 
-/**
- * Language-independent puzzle word. English words are real NYT solutions pulled
- * from the public Wordle endpoint for a random past date, German ones are picked
- * at random from a local list so the game also works offline.
- */
+/** Language-independent puzzle word, picked at random from the local list of its language. */
 @Serializable
 data class WordlePuzzle(
     val language: WordleLanguage,
     /** Uppercase A-Z solution, [WORDLE_WORD_LENGTH] letters. */
     val solution: String,
-    /** e.g. "Wordle #1920 · Tracy Bennett" — shown as attribution under the board. */
+    /** Attribution under the board; only games saved before the own word lists have one. */
     val sourceInfo: String? = null,
 )
 
