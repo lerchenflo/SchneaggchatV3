@@ -16,7 +16,7 @@ Privacy-focused chat platform, Kotlin Multiplatform + Compose Multiplatform. Tar
 | Annotation Processing | KSP                   | 2.3.5        |
 | JVM                   | 21                    |              |
 | Android Target SDK    | 37                    |              |
-| Android Min SDK       | 26                    |              |
+| Android Min SDK       | 29                    |              |
 
 ## Project Structure
 

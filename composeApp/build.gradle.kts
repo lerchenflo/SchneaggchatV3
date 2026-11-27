@@ -54,7 +54,7 @@ kotlin {
 
     android {
         compileSdk = 37
-        minSdk = 28
+        minSdk = 29
         namespace = "org.lerchenflo.schneaggchatv3mp.androidApp"
         androidResources { enable = true }
 
