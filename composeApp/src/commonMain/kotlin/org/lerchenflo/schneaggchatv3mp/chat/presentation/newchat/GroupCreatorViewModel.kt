@@ -47,6 +47,8 @@ data class GroupCreatorState(
 
     val creationPermitted : Boolean,
 
+    val membersCanAdd: Boolean = false,
+
     val isLoading: Boolean = false
 
 ) {
@@ -64,6 +66,7 @@ data class GroupCreatorState(
 
         if (creationPermitted != other.creationPermitted) return false
         if (isLoading != other.isLoading) return false
+        if (membersCanAdd != other.membersCanAdd) return false
         if (searchterm != other.searchterm) return false
         if (groupname != other.groupname) return false
         if (groupdescription != other.groupdescription) return false
@@ -77,6 +80,7 @@ data class GroupCreatorState(
     override fun hashCode(): Int {
         var result = creationPermitted.hashCode()
         result = 31 * result + isLoading.hashCode()
+        result = 31 * result + membersCanAdd.hashCode()
         result = 31 * result + searchterm.hashCode()
         result = 31 * result + groupname.hashCode()
         result = 31 * result + groupdescription.hashCode()
@@ -93,6 +97,7 @@ sealed interface GroupCreatorAction {
     data class updateGroupname(val newValue: String) : GroupCreatorAction
     data class updateGroupdescription(val newValue: String) : GroupCreatorAction
     data class updateProfilePic(val profilePicUri: GalleryPhotoResult) : GroupCreatorAction
+    data class updateMembersCanAdd(val membersCanAdd: Boolean) : GroupCreatorAction
 
     data class addGroupMember(val member: ChatListItem) : GroupCreatorAction
     data class removeGroupMember(val member: ChatListItem) : GroupCreatorAction
@@ -209,6 +214,10 @@ class GroupCreatorViewModel (
                 }
             }
 
+            is GroupCreatorAction.updateMembersCanAdd -> {
+                state = state.copy(membersCanAdd = action.membersCanAdd)
+            }
+
             is GroupCreatorAction.addGroupMember -> {
                 state = state.copy(
                     selectedUsers = state.selectedUsers + action.member
@@ -256,7 +265,8 @@ class GroupCreatorViewModel (
                     memberIds = state.selectedUsers.map { member ->
                         member.id
                     },
-                    profilePic = state.profilepic!!
+                    profilePic = state.profilepic!!,
+                    membersCanAdd = state.membersCanAdd,
                 ).reportErrorTo(errorChannel).onSuccess { groupId ->
                     println("Group created: groupid: $groupId")
 

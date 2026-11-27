@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.TimerOff
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
@@ -19,9 +20,9 @@ import schneaggchatv3mp.composeapp.generated.resources.change_nickname
 import schneaggchatv3mp.composeapp.generated.resources.delete_event
 import schneaggchatv3mp.composeapp.generated.resources.delete_group
 import schneaggchatv3mp.composeapp.generated.resources.delete_group_timer
+import schneaggchatv3mp.composeapp.generated.resources.group_settings_title
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
-import schneaggchatv3mp.composeapp.generated.resources.rename_group
 import schneaggchatv3mp.composeapp.generated.resources.set_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.wake_button
 
@@ -52,10 +53,11 @@ private fun groupMenuItems(
     isEventCreator: Boolean,
     onAction: (ChatDetailsAction) -> Unit,
 ): List<TitleMenuItem> {
-    val rename = TitleMenuItem(
-        text = stringResource(Res.string.rename_group),
-        icon = Icons.Default.Edit,
-        onClick = { onAction(ChatDetailsAction.OnRenameClick) }
+    // Name, description and (admins) whether members may add people
+    val groupSettings = TitleMenuItem(
+        text = stringResource(Res.string.group_settings_title),
+        icon = Icons.Default.Settings,
+        onClick = { onAction(ChatDetailsAction.OnGroupSettingsClick) }
     )
     val addExtension = addExtensionMenuItem(onTypeClick = { onAction(ChatDetailsAction.OnAddExtensionClick(it)) })
     // Only admins can set, move or clear the delete timer - the server enforces the same rule on
@@ -93,7 +95,7 @@ private fun groupMenuItems(
     val wake = wakeMenuItem(onAction)
 
     return buildList {
-        add(rename)
+        add(groupSettings)
         add(addExtension)
         if (iAmAdmin) add(setTimer)
         if (iAmAdmin && hasGroupTimer) add(removeTimer)
@@ -109,7 +111,7 @@ private fun userMenuItems(onAction: (ChatDetailsAction) -> Unit): List<TitleMenu
     TitleMenuItem(
         text = stringResource(Res.string.change_nickname),
         icon = Icons.Default.Edit,
-        onClick = { onAction(ChatDetailsAction.OnRenameClick) }
+        onClick = { onAction(ChatDetailsAction.OnNicknameClick) }
     ),
     wakeMenuItem(onAction),
     TitleMenuItem(

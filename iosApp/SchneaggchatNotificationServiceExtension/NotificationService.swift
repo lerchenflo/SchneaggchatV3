@@ -149,11 +149,12 @@ class NotificationService: UNNotificationServiceExtension {
                 NotificationStrings.get(.friendBirthdayBody, language: language)
             )
 
-        case let .event(eventTitle, creatorName):
-            return (
-                NotificationStrings.get(.newEventTitle, language: language, creatorName),
-                eventTitle
-            )
+        case let .event(eventTitle, creatorName, inviterName):
+            // A member's invite names the member, not the creator
+            let title = inviterName.isEmpty
+                ? NotificationStrings.get(.newEventTitle, language: language, creatorName)
+                : NotificationStrings.get(.eventInviteTitle, language: language, inviterName)
+            return (title, eventTitle)
 
         case let .mapSighting(entryName, sightingType):
             let titleKey: NotificationStringKey = sightingType == .POLICE ? .mapSightingPoliceTitle : .mapSightingRadarTitle

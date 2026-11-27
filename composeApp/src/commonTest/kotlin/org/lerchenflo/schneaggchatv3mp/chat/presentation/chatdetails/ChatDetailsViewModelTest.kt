@@ -120,7 +120,7 @@ class ChatDetailsViewModelTest {
     fun `name and description and expiry changes go to the group`() = runViewModelTest(viewModels) {
         val viewModel = createViewModel(GROUP_ID, isGroup = true)
 
-        viewModel.onAction(ChatDetailsAction.OnGroupNameConfirm("Hiking club"))
+        viewModel.onAction(ChatDetailsAction.OnGroupSettingsConfirm(name = "Hiking club", description = hiking.description, membersCanAdd = hiking.membersCanAdd))
         viewModel.onAction(ChatDetailsAction.OnEditDescriptionClick)
         viewModel.onAction(ChatDetailsAction.OnDescriptionDraftChange(TextFieldValue("Every Sunday")))
         viewModel.onAction(ChatDetailsAction.OnDescriptionConfirm)

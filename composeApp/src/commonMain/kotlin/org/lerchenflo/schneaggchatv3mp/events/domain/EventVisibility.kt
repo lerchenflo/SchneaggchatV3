@@ -19,6 +19,9 @@ enum class EventVisibility {
     INVITED_FRIENDS_ONLY, // Only explicitly invited users can see and join
 }
 
+/** Whether members of the event's group may invite their friends, before the creator changes it: only public events. */
+fun EventVisibility.defaultMembersCanAdd(): Boolean = this == EventVisibility.PUBLIC
+
 fun EventVisibility.icon(): ImageVector = when (this) {
     EventVisibility.PUBLIC -> Icons.Default.Public
     EventVisibility.FRIENDS_ONLY -> Icons.Default.Groups

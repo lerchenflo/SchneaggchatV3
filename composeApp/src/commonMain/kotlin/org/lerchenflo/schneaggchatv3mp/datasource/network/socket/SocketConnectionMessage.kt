@@ -50,6 +50,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.eventNotification
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationKind
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.reactionNotificationContent
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.event_invite_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.new_event_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
@@ -110,6 +111,8 @@ sealed interface SocketConnectionMessage {
         val event: EventResponse,
         val newEntry: Boolean,
         val deleted: Boolean,
+        /** The group member who invited this user (only on that user's newEntry frame), else null. */
+        val inviterId: String? = null,
     ) : SocketConnectionMessage
 
     /** A reminder before an event the user is going to. The event data itself comes with [EventChange]. */
@@ -426,12 +429,19 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     // The creator's own devices get the new event too, but no "X created an event" notification
                     if (socketMessage.newEntry && socketMessage.event.creatorId != ownId) {
                         val content = try {
-                            val creatorName = notificationNameOf(socketMessage.event.creatorId)
+                            // A member's invite names the member, like the offline push
+                            val inviterId = socketMessage.inviterId?.takeIf { it.isNotBlank() }
+                            val namedUserId = inviterId ?: socketMessage.event.creatorId
+                            val name = notificationNameOf(namedUserId)
                             NotificationContent(
                                 id = eventNotificationId(socketMessage.event.id),
-                                title = getString(Res.string.new_event_noti_title, creatorName),
+                                title = if (inviterId != null) {
+                                    getString(Res.string.event_invite_noti_title, name)
+                                } else {
+                                    getString(Res.string.new_event_noti_title, name)
+                                },
                                 body = socketMessage.event.title,
-                                avatarUserId = socketMessage.event.creatorId,
+                                avatarUserId = namedUserId,
                                 eventId = socketMessage.event.id,
                                 kind = NotificationKind.SOCIAL,
                             )

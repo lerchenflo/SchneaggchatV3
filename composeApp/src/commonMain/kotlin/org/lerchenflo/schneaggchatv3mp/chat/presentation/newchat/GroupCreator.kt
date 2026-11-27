@@ -58,11 +58,14 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.group_description
+import schneaggchatv3mp.composeapp.generated.resources.group_members_can_add_info
+import schneaggchatv3mp.composeapp.generated.resources.group_members_can_add_label
 import schneaggchatv3mp.composeapp.generated.resources.group_name
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.image_picker_error
@@ -162,6 +165,16 @@ private fun GroupCreatorScreen(
                         label = stringResource(Res.string.group_description),
                         hint = stringResource(Res.string.group_description),
                         tooltip = stringResource(Res.string.tooltip_group_description),
+                    )
+
+                    SettingsSwitch(
+                        modifier = Modifier.fillMaxWidth(),
+                        titletext = stringResource(Res.string.group_members_can_add_label),
+                        infotext = stringResource(Res.string.group_members_can_add_info),
+                        switchchecked = state.membersCanAdd,
+                        onSwitchChange = { onAction(GroupCreatorAction.updateMembersCanAdd(it)) },
+                        icon = null,
+                        titleMaxLines = 2
                     )
 
                 }

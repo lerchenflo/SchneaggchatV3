@@ -23,8 +23,13 @@ data class GroupActionRequest(
     val groupId: String
 )
 
+/** `/groups/settings`: partial update, null = unchanged. expiresAt, clearExpiresAt and membersCanAdd are admin-only. */
 @Serializable
-data class SetGroupExpiryRequest(
+data class GroupSettingsRequest(
     val groupId: String,
-    val expiresAt: Long?
+    val name: String? = null,
+    val description: String? = null,
+    val expiresAt: Long? = null,
+    val clearExpiresAt: Boolean? = null,
+    val membersCanAdd: Boolean? = null,
 )

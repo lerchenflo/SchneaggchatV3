@@ -21,5 +21,7 @@ data class GroupEntity(
 
     val expiresAt: Long? = null,
 
+    val membersCanAdd: Boolean = false,
+
     val notisMuted: Boolean = false
 )

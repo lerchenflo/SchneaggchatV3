@@ -40,7 +40,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.camera
-import schneaggchatv3mp.composeapp.generated.resources.change_group_name
 import schneaggchatv3mp.composeapp.generated.resources.change_nickname
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group
@@ -76,15 +75,17 @@ fun ChatDetailsDialogs(
     when (val dialog = state.dialog) {
         null -> Unit
 
-        ChatDetailsDialog.RenameGroup -> ChangeStringDialog(
-            title = stringResource(Res.string.change_group_name),
-            oldString = state.chat.name,
-            maxLines = 1,
-            placeholder = stringResource(Res.string.group_name),
-            errorMessage = state.groupNameError,
-            onDismiss = dismiss,
-            updateString = { onAction(ChatDetailsAction.OnGroupNameConfirm(it)) },
-        )
+        ChatDetailsDialog.GroupSettings -> state.groupDetails?.group?.let { group ->
+            GroupSettingsDialog(
+                group = group,
+                iAmAdmin = state.iAmAdmin,
+                nameError = state.groupNameError,
+                onConfirm = { name, description, membersCanAdd ->
+                    onAction(ChatDetailsAction.OnGroupSettingsConfirm(name, description, membersCanAdd))
+                },
+                onDismiss = dismiss,
+            )
+        }
 
         ChatDetailsDialog.Nickname -> ChangeStringDialog(
             title = stringResource(Res.string.change_nickname),

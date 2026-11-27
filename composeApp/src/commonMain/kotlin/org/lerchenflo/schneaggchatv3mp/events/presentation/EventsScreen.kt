@@ -233,7 +233,9 @@ fun EventsScreen(
             if (selectedEvent.creatorId == ownId) {
                 EventEditPopup(
                     event = selectedEvent,
-                    onSave = { event, typeIcon, createGroup -> onAction(EventsAction.OnSaveEvent(event, typeIcon, createGroup)) },
+                    onSave = { event, typeIcon, createGroup, membersCanAdd ->
+                        onAction(EventsAction.OnSaveEvent(event, typeIcon, createGroup, membersCanAdd))
+                    },
                     onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
                     friendsById = state.friendsById,
                     usersById = state.usersById,

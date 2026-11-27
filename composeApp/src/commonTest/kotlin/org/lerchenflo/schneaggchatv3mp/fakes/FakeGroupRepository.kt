@@ -45,6 +45,7 @@ class FakeGroupRepository : GroupRepository {
     val profilePicChanges = CallLog<Pair<String, ByteArray>>()
     val descriptionChanges = CallLog<Pair<String, String>>()
     val nameChanges = CallLog<Pair<String, String>>()
+    val membersCanAddChanges = CallLog<Pair<String, Boolean>>()
     val memberChanges = CallLog<MemberCall>()
     val expiryChanges = CallLog<Pair<String, Long?>>()
     val deleteCalls = CallLog<String>()
@@ -87,6 +88,7 @@ class FakeGroupRepository : GroupRepository {
         description: String,
         memberIds: List<String>,
         profilePic: ByteArray,
+        membersCanAdd: Boolean,
     ): DataResult<String, DataError> {
         createCalls.record(CreateCall(name, description, memberIds, profilePic))
         return createdGroupId.toFakeDataResult()
@@ -97,13 +99,15 @@ class FakeGroupRepository : GroupRepository {
         return writeResult.toFakeResult()
     }
 
-    override suspend fun changeGroupDescription(groupId: String, newDescription: String): EmptyDataResult<DataError> {
-        descriptionChanges.record(groupId to newDescription)
-        return writeResult.toFakeResult()
-    }
-
-    override suspend fun changeGroupName(groupId: String, newName: String): EmptyDataResult<DataError> {
-        nameChanges.record(groupId to newName)
+    override suspend fun changeGroupSettings(
+        groupId: String,
+        name: String?,
+        description: String?,
+        membersCanAdd: Boolean?,
+    ): EmptyDataResult<DataError> {
+        name?.let { nameChanges.record(groupId to it) }
+        description?.let { descriptionChanges.record(groupId to it) }
+        membersCanAdd?.let { membersCanAddChanges.record(groupId to it) }
         return writeResult.toFakeResult()
     }
 

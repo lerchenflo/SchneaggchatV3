@@ -46,5 +46,8 @@ val STORED_PICTURE_FILE_ENDINGS: List<String>
 val MIN_GROUPNAME_LENGTH = 3
 val MAX_GROUPNAME_LENGTH = 25
 
+/** Longest group description; the server answers 400 "Description invalid" above it. */
+val MAX_GROUP_DESCRIPTION_LENGTH = 200
+
 
 

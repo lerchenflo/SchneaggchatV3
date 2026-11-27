@@ -49,10 +49,20 @@ interface GroupRepository {
         description: String,
         memberIds: List<String>,
         profilePic: ByteArray,
+        membersCanAdd: Boolean,
     ): DataResult<String, DataError>
     suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray): EmptyDataResult<DataError>
-    suspend fun changeGroupDescription(groupId: String, newDescription: String): EmptyDataResult<DataError>
-    suspend fun changeGroupName(groupId: String, newName: String): EmptyDataResult<DataError>
+
+    /**
+     * One save of the group settings; null = unchanged, so pass only what changed. Name and
+     * description: any member. [membersCanAdd]: admins only (see [Group.membersCanAdd]).
+     */
+    suspend fun changeGroupSettings(
+        groupId: String,
+        name: String? = null,
+        description: String? = null,
+        membersCanAdd: Boolean? = null,
+    ): EmptyDataResult<DataError>
 
     /** Adds or removes a member, or changes their admin flag. */
     suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): EmptyDataResult<DataError>

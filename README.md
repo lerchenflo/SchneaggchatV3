@@ -26,7 +26,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Extensions: Gemeinsamer Text, Tourenplaner für Gruppen, Tourenplaner-Karte wie Schneaggmap
-- Events: Erinnerungen im Gruppenchat, Eintrittspreis
+- Events: Erinnerungen im Gruppenchat, Eintrittspreis, Alle dürfen einladen
 - Datumsauswahl: Kalender statt Scrollrad
 - Dartcounter: Double In
 - Onboarding: Neue Tour-Schritte
@@ -38,7 +38,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - @Annotations fix
 - Erwähnungen: Nachrichten an mich hervorgehoben, @-Badge in der Chatliste
 - Feedback-Board: Sortierung Top mit Neu und Beliebteste, Beschreibung optional
-- Chatdetails: Aktionen im ⋮-Menü oben rechts
+- Chatdetails: Aktionen im ⋮-Menü oben rechts, Mitglieder dürfen Leute hinzufügen, Gruppeneinstellungen
 - Chatdetails: Neues Design (Name im Titel, Badges für Timer und Geburtstag, Über-Karte für Status und Beschreibung)
 - Chat: Verlinkungen zu Feedback-Einträgen und Einstellungsseiten (@feedback, @settings)
 - Spiele: Neue Namen (Blockfall, Würfelpoker, Wörter raten); englische Wörter und Kreuzworträtsel aus eigenen Listen statt von der NYT, mehr deutsche Wörter

@@ -60,6 +60,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.extractLinks
 import org.lerchenflo.schneaggchatv3mp.utilities.toStringResource
 import org.lerchenflo.schneaggchatv3mp.utilities.validateName
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.event_friends_invited
 import schneaggchatv3mp.composeapp.generated.resources.network_error_no_internet
 import schneaggchatv3mp.composeapp.generated.resources.network_error_timeout
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
@@ -115,8 +116,8 @@ class ChatDetailsViewModel(
             ChatDetailsAction.OnBackClick -> navigate { navigator.navigateBack() }
             ChatDetailsAction.OnDialogDismiss -> closeDialog()
 
-            ChatDetailsAction.OnRenameClick ->
-                openDialog(if (isGroup) ChatDetailsDialog.RenameGroup else ChatDetailsDialog.Nickname)
+            ChatDetailsAction.OnGroupSettingsClick -> openDialog(ChatDetailsDialog.GroupSettings)
+            ChatDetailsAction.OnNicknameClick -> openDialog(ChatDetailsDialog.Nickname)
             is ChatDetailsAction.OnAddExtensionClick -> openDialog(ChatDetailsDialog.AddExtension(action.type))
             ChatDetailsAction.OnSetGroupTimerClick -> openDialog(ChatDetailsDialog.ExpiryPicker)
             ChatDetailsAction.OnRemoveGroupTimerClick -> openDialog(ChatDetailsDialog.RemoveExpiry)
@@ -164,13 +165,9 @@ class ChatDetailsViewModel(
             is ChatDetailsAction.OnNewMemberSearchChange -> _state.update { it.copy(newMemberSearchTerm = action.term) }
             is ChatDetailsAction.OnNewMemberSelected -> selectNewMember(action.item)
             is ChatDetailsAction.OnNewMemberDeselected -> deselectNewMember(action.item)
-            ChatDetailsAction.OnAddMembersConfirm -> {
-                val selected = _state.value.selectedNewMembers
-                closeDialog()
-                selected.forEach { changeMember(GroupMemberAction.ADD_USER, it.id) }
-            }
+            ChatDetailsAction.OnAddMembersConfirm -> addSelectedMembers()
 
-            is ChatDetailsAction.OnGroupNameConfirm -> renameGroup(action.name)
+            is ChatDetailsAction.OnGroupSettingsConfirm -> saveGroupSettings(action.name, action.description, action.membersCanAdd)
             is ChatDetailsAction.OnNicknameConfirm -> {
                 closeDialog()
                 runOnServer { userRepository.changeUserDetails(userId = chatId, newNickName = action.nickname) }
@@ -354,19 +351,36 @@ class ChatDetailsViewModel(
         state.copy(selectedNewMembers = state.selectedNewMembers.filterNot { it.id in removedIds })
     }
 
-    private fun renameGroup(name: String) {
+    /**
+     * One request with only what differs from the stored group (the server rejects admin fields
+     * from a non-admin, even unchanged ones). A rejected name keeps the popup open with its error.
+     */
+    private fun saveGroupSettings(name: String, description: String, membersCanAdd: Boolean) {
         val error = validateName(name)?.let { UiText.StringResourceText(it.toStringResource()) }
         if (error != null) {
             _state.update { it.copy(groupNameError = error) }
             return
         }
         closeDialog()
-        runOnServer { groupRepository.changeGroupName(chatId, name) }
+        applicationScope.launchOnMain {
+            val group = groupRepository.getGroupById(chatId) ?: return@launchOnMain
+            val changedName = name.takeIf { it != group.name }
+            val changedDescription = description.takeIf { it != group.description }
+            val changedMembersCanAdd = membersCanAdd.takeIf { it != group.membersCanAdd }
+            if (changedName == null && changedDescription == null && changedMembersCanAdd == null) return@launchOnMain
+
+            groupRepository.changeGroupSettings(
+                groupId = chatId,
+                name = changedName,
+                description = changedDescription,
+                membersCanAdd = changedMembersCanAdd,
+            ).reportErrorTo(errorChannel)
+        }
     }
 
     private fun updateDescription(description: String) = runOnServer {
         if (isGroup) {
-            groupRepository.changeGroupDescription(chatId, description)
+            groupRepository.changeGroupSettings(groupId = chatId, description = description)
         } else {
             userRepository.changeUserDetails(newStatus = null, newDescription = description, userId = chatId)
         }
@@ -378,6 +392,21 @@ class ChatDetailsViewModel(
             memberId = member.userId,
             groupId = member.groupId
         )
+    }
+
+    /** Adds the picked friends; a non-admin's add in an event group only invites them, so that gets its own confirmation. */
+    private fun addSelectedMembers() {
+        val selected = _state.value.selectedNewMembers
+        val invitesOnly = _state.value.addInvitesToEvent
+        closeDialog()
+        applicationScope.launchOnMain {
+            val allSent = selected.map { member ->
+                groupRepository.changeGroupMembers(action = GroupMemberAction.ADD_USER, memberId = member.id, groupId = chatId)
+                    .reportErrorTo(errorChannel)
+                    .isSuccess
+            }.all { it }
+            if (invitesOnly && allSent) SnackbarManager.showMessage(getString(Res.string.event_friends_invited))
+        }
     }
 
     private fun changeMember(action: GroupMemberAction, memberId: String) = runOnServer {

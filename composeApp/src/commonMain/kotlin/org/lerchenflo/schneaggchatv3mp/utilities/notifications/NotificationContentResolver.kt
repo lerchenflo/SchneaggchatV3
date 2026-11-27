@@ -19,6 +19,7 @@ import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_message_reaction
+import schneaggchatv3mp.composeapp.generated.resources.event_invite_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.new_event_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.notification_fallback_body
 import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_body
@@ -197,12 +198,19 @@ private suspend fun resolveBirthday(
 private suspend fun resolveEvent(
     decoded: DecodedNotification.Event,
 ): NotificationContent {
-    val title = getString(Res.string.new_event_noti_title, decoded.creatorName)
+    // A member's invite names the member, not the creator
+    val invited = decoded.inviterName.isNotBlank()
+    val title = if (invited) {
+        getString(Res.string.event_invite_noti_title, decoded.inviterName)
+    } else {
+        getString(Res.string.new_event_noti_title, decoded.creatorName)
+    }
+    val avatarUserId = if (invited) decoded.inviterId else decoded.creatorId
     return NotificationContent(
         id = eventNotificationId(decoded.eventId),
         title = title,
         body = decoded.eventTitle,
-        avatarUserId = decoded.creatorId.ifBlank { null },
+        avatarUserId = avatarUserId.ifBlank { null },
         eventId = decoded.eventId,
         kind = NotificationKind.SOCIAL,
     )
@@ -289,7 +297,7 @@ suspend fun resolveFallbackContent(decoded: DecodedNotification): NotificationCo
         is DecodedNotification.Wake -> null
         is DecodedNotification.Event -> NotificationContent(
             id = eventNotificationId(decoded.eventId),
-            title = decoded.creatorName.ifBlank { NOTIFICATION_FALLBACK_TITLE },
+            title = decoded.inviterName.ifBlank { decoded.creatorName }.ifBlank { NOTIFICATION_FALLBACK_TITLE },
             body = decoded.eventTitle.ifBlank { fallbackBody },
             eventId = decoded.eventId,
             kind = NotificationKind.SOCIAL,

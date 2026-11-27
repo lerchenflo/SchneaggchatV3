@@ -14,6 +14,7 @@ data class GroupResponse(
     val createdAt: Long,
     val creatorId: String,
     val expiresAt: Long?,
+    val membersCanAdd: Boolean = false, //default keeps decoding working against a server without the field
     val members: List<GroupMemberResponse>
 )
 

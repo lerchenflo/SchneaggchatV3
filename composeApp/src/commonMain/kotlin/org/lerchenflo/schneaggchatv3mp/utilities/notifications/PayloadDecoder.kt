@@ -67,6 +67,9 @@ sealed interface DecodedNotification {
         val eventTitle: String,
         val creatorId: String,
         val creatorName: String,
+        /** Set when a group member invited the user to this event; "" for a normal new-event push. */
+        val inviterId: String = "",
+        val inviterName: String = "",
     ) : DecodedNotification
 
     /** Reminder before an event the user is going to; [leadMinutes] is the configured lead time. */
@@ -140,6 +143,8 @@ object PayloadDecoder {
                 eventTitle = data["eventTitle"] ?: "",
                 creatorId = data["creatorId"] ?: "",
                 creatorName = data["creatorName"] ?: "",
+                inviterId = data["inviterId"] ?: "",
+                inviterName = data["inviterName"] ?: "",
             )
             "event_reminder" -> DecodedNotification.EventReminder(
                 eventId = data["eventId"] ?: return null,

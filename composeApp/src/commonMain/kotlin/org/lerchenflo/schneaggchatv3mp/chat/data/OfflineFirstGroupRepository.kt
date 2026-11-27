@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data
 
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSettingsRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -68,13 +69,15 @@ class OfflineFirstGroupRepository(
         name: String,
         description: String,
         memberIds: List<String>,
-        profilePic: ByteArray
+        profilePic: ByteArray,
+        membersCanAdd: Boolean,
     ): DataResult<String, DataError> =
         groupRemoteDataSource.createGroup(
             name = name,
             description = description,
             memberIds = memberIds,
-            profilePicBytes = profilePic
+            profilePicBytes = profilePic,
+            membersCanAdd = membersCanAdd,
         ).trackConnectivity()
             .onSuccess { groupLocalDataSource.upsertGroup(it.toGroup()) }
             .map { it.id }
@@ -198,22 +201,6 @@ class OfflineFirstGroupRepository(
             }
             .asEmptyDataResult()
 
-    override suspend fun changeGroupDescription(groupId: String, newDescription: String): EmptyDataResult<DataError> =
-        groupRemoteDataSource.changeGroupDescription(newDescription, groupId).trackConnectivity()
-            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
-            .onSuccess {
-                syncGroups()
-            }
-            .asEmptyDataResult()
-
-    override suspend fun changeGroupName(groupId: String, newName: String): EmptyDataResult<DataError> =
-        groupRemoteDataSource.changeGroupName(newName, groupId).trackConnectivity()
-            // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
-            .onSuccess {
-                syncGroups()
-            }
-            .asEmptyDataResult()
-
     override suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): EmptyDataResult<DataError> =
         groupRemoteDataSource.changeGroupMembers(
             action = action.toNetworkGroupMemberAction(),
@@ -226,9 +213,22 @@ class OfflineFirstGroupRepository(
             }
             .asEmptyDataResult()
 
+    override suspend fun changeGroupSettings(
+        groupId: String,
+        name: String?,
+        description: String?,
+        membersCanAdd: Boolean?,
+    ): EmptyDataResult<DataError> = updateGroupSettings(
+        GroupSettingsRequest(groupId = groupId, name = name, description = description, membersCanAdd = membersCanAdd)
+    )
+
     /** Pass null for [expiresAt] to clear the expiry (group never auto-expires). */
-    override suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): EmptyDataResult<DataError> =
-        groupRemoteDataSource.changeGroupExpiry(groupId, expiresAt).trackConnectivity()
+    override suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): EmptyDataResult<DataError> = updateGroupSettings(
+        GroupSettingsRequest(groupId = groupId, expiresAt = expiresAt, clearExpiresAt = if (expiresAt == null) true else null)
+    )
+
+    private suspend fun updateGroupSettings(request: GroupSettingsRequest): EmptyDataResult<DataError> =
+        groupRemoteDataSource.updateGroupSettings(request).trackConnectivity()
             // D16/R1: own sync instead of the full dataSync; can go once SchneaggchatV3server/Todo.md confirms the socket push.
             .onSuccess {
                 syncGroups()

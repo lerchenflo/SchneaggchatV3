@@ -5,7 +5,8 @@ enum DecodedNotification {
     case friendRequest(requesterName: String, accepted: Bool)
     case system(title: String, message: String)
     case birthday(birthdayUserName: String, ownBirthday: Bool)
-    case event(eventTitle: String, creatorName: String)
+    /// inviterName: the group member who invited the user, "" for a normal new-event push
+    case event(eventTitle: String, creatorName: String, inviterName: String)
     case mapSighting(entryName: String, sightingType: MapSightingType)
     case eventReminder(eventTitle: String, startDate: Int64, leadMinutes: Int)
     /// `changes`: START, LOCATION, CANCELLED (unknown names are ignored by the text builder)
@@ -62,7 +63,8 @@ enum NotificationPayloadDecoder {
         case "event":
             return .event(
                 eventTitle: payload["eventTitle"] ?? "",
-                creatorName: payload["creatorName"] ?? ""
+                creatorName: payload["creatorName"] ?? "",
+                inviterName: payload["inviterName"] ?? ""
             )
         case "map_sighting":
             guard let sightingType = MapSightingType(rawValue: payload["sightingType"] ?? "") else { return nil }

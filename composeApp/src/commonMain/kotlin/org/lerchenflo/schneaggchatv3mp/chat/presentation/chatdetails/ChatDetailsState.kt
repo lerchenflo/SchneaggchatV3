@@ -5,6 +5,7 @@ import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import org.lerchenflo.schneaggchatv3mp.chat.domain.canAddMembers
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
@@ -58,7 +59,7 @@ sealed interface ChatDetailsChat {
 
 /** The one dialog the screen shows at a time. */
 sealed interface ChatDetailsDialog {
-    data object RenameGroup : ChatDetailsDialog
+    data object GroupSettings : ChatDetailsDialog
     data object Nickname : ChatDetailsDialog
     data object Description : ChatDetailsDialog
     data object WakeReason : ChatDetailsDialog
@@ -104,6 +105,11 @@ data class ChatDetailsState(
 
     val groupExpiresAt: Long? get() = groupDetails?.group?.expiresAt
 
+    val canAddMembers: Boolean get() = ownId != null && groupDetails?.group?.canAddMembers(ownId) == true
+
+    /** A non-admin's add in an event group only invites the friend to the event; they join the group on accept. */
+    val addInvitesToEvent: Boolean get() = !iAmAdmin && connectedEvent != null
+
     val isEventCreator: Boolean get() = ownId != null && connectedEvent?.creatorId == ownId
 
     /** True for a picked friend, or a group whose member friends are all picked. */
@@ -120,7 +126,8 @@ sealed interface ChatDetailsAction {
     data object OnDialogDismiss : ChatDetailsAction
 
     // ⋮ menu
-    data object OnRenameClick : ChatDetailsAction
+    data object OnGroupSettingsClick : ChatDetailsAction
+    data object OnNicknameClick : ChatDetailsAction
     data class OnAddExtensionClick(val type: GroupExtensionType) : ChatDetailsAction
     data object OnSetGroupTimerClick : ChatDetailsAction
     data object OnRemoveGroupTimerClick : ChatDetailsAction
@@ -152,7 +159,8 @@ sealed interface ChatDetailsAction {
     data object OnAddMembersConfirm : ChatDetailsAction
 
     // Dialog confirmations
-    data class OnGroupNameConfirm(val name: String) : ChatDetailsAction
+    /** Name, description and members-can-add of the group settings popup; only changed values go to the server. */
+    data class OnGroupSettingsConfirm(val name: String, val description: String, val membersCanAdd: Boolean) : ChatDetailsAction
     /** An empty nickname removes it. */
     data class OnNicknameConfirm(val nickname: String) : ChatDetailsAction
     data class OnDescriptionDraftChange(val value: TextFieldValue) : ChatDetailsAction

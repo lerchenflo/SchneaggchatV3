@@ -24,7 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.MapEntryEnt
 @Database(
     entities = [UserEntity::class, MessageEntity::class, MessageReaderEntity::class, GroupEntity::class, GroupMemberEntity::class, LogEntry::class, PlayerEntity::class, MapEntryEntity::class, SnailTrailPointEntity::class, EventEntity::class, GroupExtensionEntity::class, FeedbackEntryEntity::class, FeedbackCommentSeenEntity::class, LookedUpUserEntity::class],
     exportSchema = true,
-    version = 98
+    version = 99
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)

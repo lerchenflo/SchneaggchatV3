@@ -29,6 +29,7 @@ fun GroupResponse.toGroup(existing: Group? = null): Group = Group(
     updatedAt = updatedAt,
     profilePicUpdatedAt = profilePicUpdatedAt,
     expiresAt = expiresAt,
+    membersCanAdd = membersCanAdd,
     notisMuted = existing?.notisMuted ?: false,
     members = members.map { groupMemberresp ->
         GroupMember(

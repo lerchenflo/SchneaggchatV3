@@ -20,7 +20,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.ViewColumn
-import androidx.compose.material.icons.filled.ViewQuilt
+import androidx.compose.material.icons.automirrored.filled.ViewQuilt
 import androidx.lifecycle.ViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
@@ -128,7 +128,7 @@ class GameSelectorViewModel : ViewModel() {
         GameScreenElement(
             title = Res.string.games_tetris_title,
             description = Res.string.games_tetris_description,
-            icon = Icons.Default.ViewQuilt,
+            icon = Icons.AutoMirrored.Filled.ViewQuilt,
             route = Route.Tetris,
             inDev = GameId.TETRIS.indev,
             gameId = GameId.TETRIS

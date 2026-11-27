@@ -17,6 +17,7 @@ enum NotificationStringKey: String {
     case friendBirthdayTitle
     case friendBirthdayBody
     case newEventTitle
+    case eventInviteTitle
     case mapSightingPoliceTitle
     case mapSightingRadarTitle
     case eventReminderTitle
@@ -75,6 +76,7 @@ enum NotificationStrings {
         .friendBirthdayTitle: "%1$@ has birthday today! 🎂",
         .friendBirthdayBody: "Don't forget to congratulate them!",
         .newEventTitle: "%1$@ created a new event",
+        .eventInviteTitle: "%1$@ invited you to an event",
         .mapSightingPoliceTitle: "Police seen",
         .mapSightingRadarTitle: "Mobile radar seen",
         .eventReminderTitle: "Reminder: %1$@",
@@ -108,6 +110,7 @@ enum NotificationStrings {
         .friendBirthdayTitle: "%1$@ hat heute Geburtstag! 🎂",
         .friendBirthdayBody: "Vergiss nicht zu gratulieren!",
         .newEventTitle: "%1$@ hat ein neues Event erstellt",
+        .eventInviteTitle: "%1$@ hat dich zu einem Event eingeladen",
         .mapSightingPoliceTitle: "Polizei gesichtet",
         .mapSightingRadarTitle: "Mobiles Radar gesichtet",
         .eventReminderTitle: "Erinnerung: %1$@",
@@ -174,6 +177,7 @@ enum NotificationStrings {
         .friendBirthdayTitle: "%1$@ oggi compie gli anni! 🎂",
         .friendBirthdayBody: "Non dimenticare di fargli gli auguri!",
         .newEventTitle: "%1$@ ha creato un nuovo evento",
+        .eventInviteTitle: "%1$@ ti ha invitato a un evento",
         .mapSightingPoliceTitle: "Polizia avvistata",
         .mapSightingRadarTitle: "Autovelox mobile avvistato",
         .eventReminderTitle: "Promemoria: %1$@",

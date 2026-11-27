@@ -11,7 +11,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NetworkGroupMemberAction
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.SetGroupExpiryRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 /** [GroupRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */
@@ -34,6 +34,7 @@ class KtorGroupRemoteDataSource(
         description: String,
         memberIds: List<String>, //Userids
         profilePicBytes: ByteArray,
+        membersCanAdd: Boolean,
     ): DataResult<GroupResponse, DataError> {
         return server.safePostMultipart(
             endpoint = "/groups/create",
@@ -41,6 +42,7 @@ class KtorGroupRemoteDataSource(
                 append("name", name)
                 append("description", description)
                 append("memberlist", memberIds.joinToString(","))
+                append("membersCanAdd", membersCanAdd.toString())
                 appendProfilePic(profilePicBytes, fileName = "image.png")
             }
         )
@@ -60,20 +62,6 @@ class KtorGroupRemoteDataSource(
         )
     }
 
-    override suspend fun changeGroupDescription(newDescription: String, groupId: String) : DataResult<Any, DataError> {
-        return server.safePost(
-            endpoint = "/groups/setdescription?groupid=$groupId",
-            body = newDescription
-        )
-    }
-
-    override suspend fun changeGroupName(newName: String, groupId: String) : DataResult<Any, DataError> {
-        return server.safePost(
-            endpoint = "/groups/setGroupName?groupid=$groupId",
-            body = newName
-        )
-    }
-
     override suspend fun changeGroupMembers(action: NetworkGroupMemberAction, memberId: String, groupId: String): DataResult<Any, DataError> {
         return server.safePost(
             endpoint = "/groups/changemembers",
@@ -85,13 +73,10 @@ class KtorGroupRemoteDataSource(
         )
     }
 
-    override suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): DataResult<Any, DataError> {
+    override suspend fun updateGroupSettings(request: GroupSettingsRequest): DataResult<Any, DataError> {
         return server.safePost(
-            endpoint = "/groups/setexpiry",
-            body = SetGroupExpiryRequest(
-                groupId = groupId,
-                expiresAt = expiresAt
-            )
+            endpoint = "/groups/settings",
+            body = request
         )
     }
 

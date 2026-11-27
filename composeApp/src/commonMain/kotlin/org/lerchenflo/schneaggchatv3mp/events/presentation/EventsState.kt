@@ -57,7 +57,7 @@ sealed interface EventsAction {
 
     data object OnEventPopupDismiss: EventsAction
 
-    data class OnSaveEvent(val event: Event, val typeIcon: ImageBitmap?, val createGroup: Boolean): EventsAction
+    data class OnSaveEvent(val event: Event, val typeIcon: ImageBitmap?, val createGroup: Boolean, val membersCanAdd: Boolean): EventsAction
 
     data class OnPickLocationClick(val currentEventState: Event): EventsAction
 

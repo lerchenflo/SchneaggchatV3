@@ -70,6 +70,7 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventTitleError
 import org.lerchenflo.schneaggchatv3mp.events.domain.validateEventTitle
 import org.lerchenflo.schneaggchatv3mp.events.domain.isFree
 import org.lerchenflo.schneaggchatv3mp.events.domain.isValidEntryFee
+import org.lerchenflo.schneaggchatv3mp.events.domain.defaultMembersCanAdd
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
@@ -93,6 +94,8 @@ import schneaggchatv3mp.composeapp.generated.resources.error_event_title_too_lon
 import schneaggchatv3mp.composeapp.generated.resources.event_create_group_info
 import schneaggchatv3mp.composeapp.generated.resources.event_create_group_label
 import schneaggchatv3mp.composeapp.generated.resources.event_description_label
+import schneaggchatv3mp.composeapp.generated.resources.event_everyone_can_invite_info
+import schneaggchatv3mp.composeapp.generated.resources.event_everyone_can_invite_label
 import schneaggchatv3mp.composeapp.generated.resources.event_group_delete_label
 import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
 import schneaggchatv3mp.composeapp.generated.resources.event_invite_friends
@@ -121,7 +124,7 @@ private const val EVENT_MAX_USERS_LIMIT = 1000
 @Composable
 fun EventEditPopup(
     event: Event,
-    onSave: (Event, ImageBitmap?, createGroup: Boolean) -> Unit,
+    onSave: (Event, ImageBitmap?, createGroup: Boolean, membersCanAdd: Boolean) -> Unit,
     onDismiss: () -> Unit,
     friendsById: Map<String, User> = emptyMap(), // invitable users
     usersById: Map<String, UserIdentity> = emptyMap(),   // avatar/name lookup, includes the own user
@@ -155,6 +158,15 @@ fun EventEditPopup(
     // the previous always-create-a-group behavior) and off for an existing event that was
     // detached from its group - re-adding one is then an explicit choice.
     var createGroup by remember(draftKey) { mutableStateOf(isNewEvent) }
+
+    // "Everyone can invite" lives on the event's group and every save writes it. A new event starts
+    // with the visibility's preset; an existing one shows its group's value (the preset only while
+    // that group isn't stored here yet).
+    var membersCanAdd by remember(draftKey) {
+        mutableStateOf(
+            groups.firstOrNull { it.id == event.groupId }?.membersCanAdd ?: event.visibility.defaultMembersCanAdd()
+        )
+    }
 
     // Separate toggle state so we can flip "has end date" off without losing the picker's
     // last-set value if the user re-enables it (avoids re-deriving a default every toggle)
@@ -570,6 +582,18 @@ fun EventEditPopup(
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
+
+                SettingsSwitch(
+                    modifier = Modifier.fillMaxWidth(),
+                    titletext = stringResource(Res.string.event_everyone_can_invite_label),
+                    infotext = stringResource(Res.string.event_everyone_can_invite_info),
+                    switchchecked = membersCanAdd,
+                    onSwitchChange = { membersCanAdd = it },
+                    icon = null,
+                    titleMaxLines = 2
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
             // Max participants (optional cap on how many people can join)
@@ -676,6 +700,7 @@ fun EventEditPopup(
                             },
                             onClick = {
                                 currentEvent = currentEvent.copy(visibility = entry)
+                                if (currentEvent.groupId == null) membersCanAdd = entry.defaultMembersCanAdd()
                                 visibilityDropdownExpanded = false
                             }
                         )
@@ -748,7 +773,7 @@ fun EventEditPopup(
                         entryFeeError = entryFeeInvalid
 
                         if (titleError == null && !maxUsersInvalid && !entryFeeInvalid) {
-                            onSave(currentEvent, typeIconBitmap, createGroup)
+                            onSave(currentEvent, typeIconBitmap, createGroup, membersCanAdd)
                         }
                     },
                     isLoading = isSaving,
@@ -933,7 +958,7 @@ private fun EventEditPopupPreview() {
                 updatedAt = Clock.System.now().toEpochMilliseconds(),
                 updatedBy = "awdawd",
             ),
-            onSave = { _, _, _ -> },
+            onSave = { _, _, _, _ -> },
             onDismiss = { }
         )
     }

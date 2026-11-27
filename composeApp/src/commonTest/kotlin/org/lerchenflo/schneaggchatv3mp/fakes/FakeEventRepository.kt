@@ -63,6 +63,7 @@ class FakeEventRepository : EventRepository {
         visibility: EventVisibility,
         maxUsers: Int?,
         entryFeeCents: Long,
+        membersCanAdd: Boolean,
         groupDeleteDelay: GroupDeleteDelay,
         reminderMinutes: List<Int>,
         profilePic: ByteArray?,

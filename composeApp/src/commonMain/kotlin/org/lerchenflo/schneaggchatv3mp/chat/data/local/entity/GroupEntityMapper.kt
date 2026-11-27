@@ -14,6 +14,7 @@ fun GroupWithMembers.toGroup(): Group = Group(
     notisMuted = this.group.notisMuted,
     profilePicUpdatedAt = this.group.profilePicUpdatedAt,
     expiresAt = this.group.expiresAt,
+    membersCanAdd = this.group.membersCanAdd,
     members = this.members.map { groupMemberEntity ->
         groupMemberEntity.toGroupMember()
     }
@@ -30,6 +31,7 @@ fun Group.toEntity(): GroupWithMembers = GroupWithMembers(
         updatedAt = this.updatedAt,
         profilePicUpdatedAt = this.profilePicUpdatedAt,
         expiresAt = this.expiresAt,
+        membersCanAdd = this.membersCanAdd,
         notisMuted = this.notisMuted
     ),
     members = this.members.map { member ->

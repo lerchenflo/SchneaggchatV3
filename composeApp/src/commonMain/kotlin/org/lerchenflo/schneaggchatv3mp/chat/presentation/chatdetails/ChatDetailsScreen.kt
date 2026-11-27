@@ -187,7 +187,7 @@ private fun ConnectedEventSection(
     HorizontalDivider()
 }
 
-/** The group's members; admins add new ones with the button in the header. */
+/** The group's members; admins (and every member while the group allows it) add new ones with the button in the header. */
 @Composable
 private fun GroupMembersSection(
     state: ChatDetailsState,
@@ -200,7 +200,7 @@ private fun GroupMembersSection(
         title = stringResource(Res.string.groupmembers, group.members.size),
         showTopDivider = false,
         modifier = Modifier.tapTarget("chat_details_group_members"),
-        action = if (state.iAmAdmin) {
+        action = if (state.canAddMembers) {
             { AddMemberButton(onClick = { onAction(ChatDetailsAction.OnAddMembersClick) }) }
         } else {
             null

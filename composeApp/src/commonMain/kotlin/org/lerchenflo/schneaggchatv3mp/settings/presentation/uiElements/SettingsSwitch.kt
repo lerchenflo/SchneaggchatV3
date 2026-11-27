@@ -38,7 +38,9 @@ fun SettingsSwitch(
     switchchecked: Boolean,
     onSwitchChange : (Boolean) -> Unit,
     icon: ImageVector?,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    /** Longer titles (e.g. inside a dialog) can wrap instead of being cut. */
+    titleMaxLines: Int = 1,
     ){
     val contentAlpha = if (enabled) 1f else 0.38f
 
@@ -68,7 +70,7 @@ fun SettingsSwitch(
         ) {
             Text(
                 text = titletext,
-                maxLines = 1,
+                maxLines = titleMaxLines,
                 style = MaterialTheme.typography.titleMedium,
                 color = LocalContentColor.current.copy(alpha = contentAlpha)
             )

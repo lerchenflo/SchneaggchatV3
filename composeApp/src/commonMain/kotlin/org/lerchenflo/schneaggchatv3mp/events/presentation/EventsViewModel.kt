@@ -219,6 +219,7 @@ class EventsViewModel(
                             visibility = event.visibility,
                             maxUsers = event.maxUsers,
                             entryFeeCents = event.entryFeeCents,
+                            membersCanAdd = action.membersCanAdd,
                             groupDeleteDelay = event.groupDeleteDelay,
                             reminderMinutes = EventReminders.upcoming(event.reminderMinutes, event.startDate, Clock.System.now().toEpochMilliseconds()),
                             profilePic = profilePic,
