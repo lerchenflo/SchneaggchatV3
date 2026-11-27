@@ -68,6 +68,8 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EVENT_TITLE_MAX_LENGTH
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventTitleError
 import org.lerchenflo.schneaggchatv3mp.events.domain.validateEventTitle
+import org.lerchenflo.schneaggchatv3mp.events.domain.isFree
+import org.lerchenflo.schneaggchatv3mp.events.domain.isValidEntryFee
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
@@ -77,9 +79,13 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.Settings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
+import org.lerchenflo.schneaggchatv3mp.utilities.formatAmountNumber
+import org.lerchenflo.schneaggchatv3mp.utilities.isValidAmountInput
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.parseAmountToCents
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.decimal_separator
 import schneaggchatv3mp.composeapp.generated.resources.delete_event
 import schneaggchatv3mp.composeapp.generated.resources.error_event_max_users_invalid
 import schneaggchatv3mp.composeapp.generated.resources.error_event_title_must_not_be_empty
@@ -184,6 +190,21 @@ fun EventEditPopup(
         val enteredValue = maxUsersText.toIntOrNull()
         if (maxUsersError && (!limitParticipants || (enteredValue != null && enteredValue in 1..EVENT_MAX_USERS_LIMIT))) {
             maxUsersError = false
+        }
+    }
+
+    // Same split as the participant limit: the toggle and the raw text survive an invalid or
+    // half-typed amount, currentEvent.entryFeeCents always holds the parsed value (0 = free).
+    val decimalSeparator = stringResource(Res.string.decimal_separator)
+    var entryFeeError by remember { mutableStateOf(false) }
+    var chargeEntryFee by remember(draftKey) { mutableStateOf(!event.isFree()) }
+    var entryFeeText by remember(draftKey) {
+        mutableStateOf(if (event.isFree()) "" else formatAmountNumber(event.entryFeeCents, decimalSeparator))
+    }
+
+    LaunchedEffect(currentEvent.entryFeeCents, chargeEntryFee) {
+        if (entryFeeError && (!chargeEntryFee || isValidEntryFee(currentEvent.entryFeeCents))) {
+            entryFeeError = false
         }
     }
 
@@ -588,6 +609,26 @@ fun EventEditPopup(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            EventEntryFeeSection(
+                chargeEntryFee = chargeEntryFee,
+                amountText = entryFeeText,
+                isError = entryFeeError,
+                onChargeEntryFeeChange = { checked ->
+                    chargeEntryFee = checked
+                    val enteredCents = parseAmountToCents(entryFeeText) ?: 0L
+                    currentEvent = currentEvent.copy(entryFeeCents = if (checked) enteredCents else 0L)
+                },
+                onAmountTextChange = { input ->
+                    if (isValidAmountInput(input)) {
+                        entryFeeText = input
+                        currentEvent = currentEvent.copy(entryFeeCents = parseAmountToCents(input) ?: 0L)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             // Event visibility
             Box {
                 OutlinedButton(
@@ -700,10 +741,13 @@ fun EventEditPopup(
                         val enteredMaxUsers = maxUsersText.toIntOrNull()
                         val maxUsersInvalid = limitParticipants && (enteredMaxUsers == null || enteredMaxUsers !in 1..EVENT_MAX_USERS_LIMIT)
 
+                        val entryFeeInvalid = chargeEntryFee && !isValidEntryFee(currentEvent.entryFeeCents)
+
                         titleError = validateEventTitle(currentEvent.title)
                         maxUsersError = maxUsersInvalid
+                        entryFeeError = entryFeeInvalid
 
-                        if (titleError == null && !maxUsersInvalid) {
+                        if (titleError == null && !maxUsersInvalid && !entryFeeInvalid) {
                             onSave(currentEvent, typeIconBitmap, createGroup)
                         }
                     },

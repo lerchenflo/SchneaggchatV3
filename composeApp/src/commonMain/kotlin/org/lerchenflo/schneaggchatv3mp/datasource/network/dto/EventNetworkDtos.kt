@@ -23,6 +23,7 @@ data class EventResponse(
     val participations: List<EventParticipation> = emptyList(), //default keeps decoding working against a server without the feature
     val visibility: EventVisibility,
     val maxUsers: Int? = null,
+    val entryFeeCents: Long = 0L, //default keeps decoding working against a server without the field
     val groupDeleteDelay: GroupDeleteDelay,
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,

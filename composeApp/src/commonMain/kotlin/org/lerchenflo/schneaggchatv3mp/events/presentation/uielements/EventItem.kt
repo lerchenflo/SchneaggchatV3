@@ -37,6 +37,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
+import org.lerchenflo.schneaggchatv3mp.events.domain.isFree
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
@@ -188,6 +189,16 @@ fun EventItem(
                             } else {
                                 stringResource(Res.string.event_going_count, goingCount)
                             },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = secondaryTextColor,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
+                    if (!event.isFree()) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = event.entryFeeText(),
                             style = MaterialTheme.typography.bodySmall,
                             color = secondaryTextColor,
                             maxLines = 1,

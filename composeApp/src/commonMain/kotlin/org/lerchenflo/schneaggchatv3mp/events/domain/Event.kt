@@ -32,6 +32,9 @@ data class Event(
 
     val maxUsers: Int? = null, //Optional cap on how many people can join, null = unlimited
 
+    /** Entry fee in euro cents ([EVENT_ENTRY_FEE_CURRENCY]), 0 = free. */
+    val entryFeeCents: Long = 0L,
+
     val groupDeleteDelay: GroupDeleteDelay = GroupDeleteDelay.ONE_DAY,
 
     val createdAt: Long,
@@ -52,6 +55,19 @@ data class Event(
  * without this a single never-opened old event would keep the badge lit for good.
  */
 fun Event.hasEnded(nowMillis: Long): Boolean = (closeDate ?: startDate) <= nowMillis
+
+/** Entry fees are always in euro. */
+const val EVENT_ENTRY_FEE_CURRENCY: String = "EUR"
+
+/**
+ * Highest entry fee: 10 000 €. Keep in sync with the server-side limit (schneaggchatv3server).
+ */
+const val EVENT_ENTRY_FEE_MAX_CENTS: Long = 1_000_000L
+
+fun Event.isFree(): Boolean = entryFeeCents <= 0L
+
+/** Whether [cents] can be saved as a paid entry fee: more than 0 and at most [EVENT_ENTRY_FEE_MAX_CENTS]. */
+fun isValidEntryFee(cents: Long?): Boolean = cents != null && cents in 1..EVENT_ENTRY_FEE_MAX_CENTS
 
 /** Ids of the groups connected to one of these events. */
 fun List<Event>.groupIds(): Set<String> = mapNotNullTo(mutableSetOf()) { it.groupId }

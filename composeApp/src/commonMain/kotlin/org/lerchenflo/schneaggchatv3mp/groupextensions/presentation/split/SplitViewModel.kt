@@ -33,9 +33,10 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.totalExpense
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.detail.toExpenseDetailUi
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor.SplitTransferDraft
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DATE_CHIP_FORMAT
+import org.lerchenflo.schneaggchatv3mp.utilities.formatMoney
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.split_decimal_separator
+import schneaggchatv3mp.composeapp.generated.resources.decimal_separator
 import kotlin.math.absoluteValue
 
 /** Backs the money split screen: expense list, totals, balances, settle-up suggestions and the detail popup. */
@@ -68,7 +69,7 @@ class SplitViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeSplit() {
         viewModelScope.launch {
-            val decimalSeparator = getString(Res.string.split_decimal_separator)
+            val decimalSeparator = getString(Res.string.decimal_separator)
             val ownId = SessionCache.requireLoggedIn()?.userId
 
             val sourceFlow = groupExtensionRepository.getExtensionFlow(extensionId)

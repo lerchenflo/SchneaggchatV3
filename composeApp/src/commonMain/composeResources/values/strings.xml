@@ -254,6 +254,11 @@
     <string name="event_max_users_info">Set how many people can join this event. Leave off for no limit.</string>
     <string name="event_max_users_hint">e.g. 20</string>
     <string name="error_event_max_users_invalid">Enter a number between 1 and 1000</string>
+    <string name="event_entry_fee_label">Entry fee</string>
+    <string name="event_entry_fee_info">Set what it costs to take part. Leave off for a free event.</string>
+    <string name="event_entry_fee_amount_label">Amount</string>
+    <string name="error_event_entry_fee_invalid">Enter an amount between 0.01 and 10,000 €</string>
+    <string name="event_entry_fee_value">Entry fee: %1$s</string>
     <string name="event_and_group_created">Event and group created!</string>
     <string name="event_created">Event created!</string>
     <string name="event_create_group_label">Create group chat</string>
@@ -2066,7 +2071,7 @@
     <string name="split_owes">%1$s owes %2$s</string>
     <string name="split_mark_as_paid">Mark as paid</string>
     <string name="split_member_me">%1$s (you)</string>
-    <string name="split_decimal_separator">.</string>
+    <string name="decimal_separator">.</string>
     <string name="split_new_expense">New expense</string>
     <string name="split_edit_expense">Edit expense</string>
     <string name="split_new_transfer">New money transfer</string>

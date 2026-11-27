@@ -20,6 +20,7 @@ fun EventResponse.toEvent(): Event = Event(
     participations = participations,
     visibility = visibility,
     maxUsers = maxUsers,
+    entryFeeCents = entryFeeCents,
     groupDeleteDelay = groupDeleteDelay,
     createdAt = createdAt,
     updatedAt = updatedAt,

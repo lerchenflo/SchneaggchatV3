@@ -253,6 +253,11 @@
     <string name="event_max_users_info">Imposta quante persone possono partecipare a questo evento. Lascia vuoto per nessun limite.</string>
     <string name="event_max_users_hint">es. 20</string>
     <string name="error_event_max_users_invalid">Inserisci un numero tra 1 e 1000</string>
+    <string name="event_entry_fee_label">Prezzo d'ingresso</string>
+    <string name="event_entry_fee_info">Imposta quanto costa partecipare. Lascia disattivato per un evento gratuito.</string>
+    <string name="event_entry_fee_amount_label">Importo</string>
+    <string name="error_event_entry_fee_invalid">Inserisci un importo tra 0,01 e 10.000 €</string>
+    <string name="event_entry_fee_value">Prezzo d'ingresso: %1$s</string>
     <string name="event_and_group_created">Evento e gruppo creati!</string>
     <string name="event_created">Evento creato!</string>
     <string name="event_create_group_label">Crea chat di gruppo</string>
@@ -2060,7 +2065,7 @@
     <string name="split_owes">%1$s deve a %2$s</string>
     <string name="split_mark_as_paid">Segna come pagato</string>
     <string name="split_member_me">%1$s (tu)</string>
-    <string name="split_decimal_separator">,</string>
+    <string name="decimal_separator">,</string>
     <string name="split_new_expense">Nuova spesa</string>
     <string name="split_edit_expense">Modifica spesa</string>
     <string name="split_new_transfer">Nuovo rimborso</string>

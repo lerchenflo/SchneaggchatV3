@@ -36,6 +36,7 @@ interface EventRepository {
         invitedUsers: List<String>,
         visibility: EventVisibility,
         maxUsers: Int?,
+        entryFeeCents: Long,
         groupDeleteDelay: GroupDeleteDelay,
         reminderMinutes: List<Int>,
         profilePic: ByteArray? = null,

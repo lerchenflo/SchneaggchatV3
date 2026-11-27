@@ -27,11 +27,11 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.splitMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.DEFAULT_SPLIT_CURRENCY
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.MAX_SPLIT_AMOUNT_CENTS
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitMemberUi
-import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.currencySymbol
-import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.formatAmountNumber
-import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.formatMoney
-import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.isValidAmountInput
-import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.parseAmountToCents
+import org.lerchenflo.schneaggchatv3mp.utilities.currencySymbol
+import org.lerchenflo.schneaggchatv3mp.utilities.formatAmountNumber
+import org.lerchenflo.schneaggchatv3mp.utilities.formatMoney
+import org.lerchenflo.schneaggchatv3mp.utilities.isValidAmountInput
+import org.lerchenflo.schneaggchatv3mp.utilities.parseAmountToCents
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.resolveSplitMembers
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToLocalDateTime
@@ -43,7 +43,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.split_amounts_complete
 import schneaggchatv3mp.composeapp.generated.resources.split_amounts_left
 import schneaggchatv3mp.composeapp.generated.resources.split_amounts_too_much
-import schneaggchatv3mp.composeapp.generated.resources.split_decimal_separator
+import schneaggchatv3mp.composeapp.generated.resources.decimal_separator
 import schneaggchatv3mp.composeapp.generated.resources.split_error_amount_required
 import schneaggchatv3mp.composeapp.generated.resources.split_error_amount_too_large
 import schneaggchatv3mp.composeapp.generated.resources.split_error_amounts_mismatch
@@ -88,7 +88,7 @@ class SplitExpenseEditorViewModel(
     }
 
     private suspend fun load() {
-        decimalSeparator = getString(Res.string.split_decimal_separator)
+        decimalSeparator = getString(Res.string.decimal_separator)
         val ownId = SessionCache.requireLoggedIn()?.userId
 
         val extension = groupExtensionRepository.getExtensionFlow(route.extensionId).first()

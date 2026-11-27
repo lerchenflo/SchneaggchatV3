@@ -32,6 +32,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Euro
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AssistChip
@@ -60,7 +61,9 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
 import org.lerchenflo.schneaggchatv3mp.events.domain.isFullFor
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
+import org.lerchenflo.schneaggchatv3mp.events.domain.isFree
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.entryFeeText
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventParticipationOverview
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventUserAvatar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
@@ -77,6 +80,7 @@ import schneaggchatv3mp.composeapp.generated.resources.event_closes_with_date
 import schneaggchatv3mp.composeapp.generated.resources.event_created_by
 import schneaggchatv3mp.composeapp.generated.resources.event_join
 import schneaggchatv3mp.composeapp.generated.resources.event_full
+import schneaggchatv3mp.composeapp.generated.resources.event_entry_fee_value
 import schneaggchatv3mp.composeapp.generated.resources.event_going_count_of_max
 import schneaggchatv3mp.composeapp.generated.resources.event_no_group
 import schneaggchatv3mp.composeapp.generated.resources.event_not_available
@@ -200,6 +204,13 @@ private fun EventDetailContent(
         EventInfoRow(
             icon = Icons.Default.Group,
             text = stringResource(Res.string.event_going_count_of_max, event.goingUserIds().size, maxUsers),
+        )
+    }
+    if (!event.isFree()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        EventInfoRow(
+            icon = Icons.Default.Euro,
+            text = stringResource(Res.string.event_entry_fee_value, event.entryFeeText()),
         )
     }
 

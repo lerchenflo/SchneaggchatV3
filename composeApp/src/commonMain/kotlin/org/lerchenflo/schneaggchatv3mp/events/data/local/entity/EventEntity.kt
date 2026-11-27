@@ -28,6 +28,7 @@ data class EventEntity(
     val participations: List<EventParticipation>,
     val visibility: EventVisibility,
     val maxUsers: Int? = null,
+    val entryFeeCents: Long = 0L,
     val groupDeleteDelay: GroupDeleteDelay,
     val createdAt: Long,
     val updatedAt: Long,

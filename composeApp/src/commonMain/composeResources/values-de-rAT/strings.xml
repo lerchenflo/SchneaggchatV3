@@ -1934,7 +1934,6 @@ Mealds, egal wie klenn.</string>
     <string name="split_owes">%1$s schuldat %2$s</string>
     <string name="split_mark_as_paid">Als zahlt markiera</string>
     <string name="split_member_me">%1$s (du)</string>
-    <string name="split_decimal_separator">,</string>
     <string name="split_new_expense">Neue Usgab</string>
     <string name="split_edit_expense">Usgab bearbeita</string>
     <string name="split_new_transfer">Neue Rückzahlung</string>

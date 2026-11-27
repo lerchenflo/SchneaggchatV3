@@ -45,6 +45,8 @@ data class EventRequest(
     val invitedUsers: List<String>,
     val visibility: EventVisibility,
     val maxUsers: Int? = null,
+    /** Euro cents, 0 = free. Always sent; the server keeps the stored fee only when an older client leaves it out. */
+    val entryFeeCents: Long,
     val groupDeleteDelay: GroupDeleteDelay,
     val createGroup: Boolean = true,
     /** Lead times in minutes before the start; null keeps the stored ones, empty clears them. */
