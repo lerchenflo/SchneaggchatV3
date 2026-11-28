@@ -32,4 +32,6 @@ sealed interface EventDetailAction {
     data object OnNotInterestedClick : EventDetailAction
     data object OnShowOnMapClick : EventDetailAction
     data object OnAddToCalendarClick : EventDetailAction
+    /** Opens the event location in the device's map app. */
+    data object OnOpenInMapsClick : EventDetailAction
 }

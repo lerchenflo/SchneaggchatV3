@@ -181,6 +181,11 @@ class EventDetailViewModel(
                     endDateMillis = event.closeDate
                 )
             }
+
+            EventDetailAction.OnOpenInMapsClick -> {
+                val location = event?.location ?: return
+                shareUtils.openLocationInMaps(location.lat, location.long, event.title)
+            }
         }
     }
 }

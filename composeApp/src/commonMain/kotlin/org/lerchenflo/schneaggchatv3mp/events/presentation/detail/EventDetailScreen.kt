@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Euro
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
@@ -75,6 +76,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.edit
 import schneaggchatv3mp.composeapp.generated.resources.event_accept
 import schneaggchatv3mp.composeapp.generated.resources.event_add_to_calendar
+import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.event_closes_with_date
 import schneaggchatv3mp.composeapp.generated.resources.event_created_by
 import schneaggchatv3mp.composeapp.generated.resources.event_entry_fee_value
@@ -192,7 +194,11 @@ private fun EventDetailContent(
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    EventDateRow(event = event, onAddToCalendar = { onAction(EventDetailAction.OnAddToCalendarClick) })
+    EventDateRow(
+        event = event,
+        onAddToCalendar = { onAction(EventDetailAction.OnAddToCalendarClick) },
+        onOpenInMaps = event.location?.let { { onAction(EventDetailAction.OnOpenInMapsClick) } },
+    )
 
     Spacer(modifier = Modifier.height(12.dp))
     EventInfoRow(icon = event.type.icon(), text = stringResource(event.type.labelRes()))
@@ -305,12 +311,16 @@ private fun EventDetailHeaderText(event: Event, usersById: Map<String, UserIdent
     )
 }
 
-/** Start and end date, with "Add to calendar" right next to them (below them when there is no room). */
+/**
+ * Start and end date, with "Add to calendar" and "Open in Maps" right next to them (below them when
+ * there is no room). [onOpenInMaps] is null for an event without a location, which hides that chip.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun EventDateRow(
     event: Event,
     onAddToCalendar: () -> Unit,
+    onOpenInMaps: (() -> Unit)?,
 ) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -352,6 +362,19 @@ private fun EventDateRow(
                 )
             }
         )
+        if (onOpenInMaps != null) {
+            AssistChip(
+                onClick = onOpenInMaps,
+                label = { Text(stringResource(Res.string.open_location_in_maps)) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Map,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            )
+        }
     }
 }
 
