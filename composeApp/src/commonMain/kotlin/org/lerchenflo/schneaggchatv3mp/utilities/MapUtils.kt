@@ -60,10 +60,6 @@ fun bearing(from: LatLong, to: LatLong): Double {
     return (atan2(y, x).toDegrees() + 360.0) % 360.0
 }
 
-/** Returns true if [a] and [b] are within [radiusMeters] of each other. */
-fun isWithinRadius(a: LatLong, b: LatLong, radiusMeters: Double): Boolean =
-    distanceMeters(a, b) <= radiusMeters
-
 /** Great-circle midpoint between two coordinates. */
 fun midpoint(a: LatLong, b: LatLong): LatLong {
     val lat1 = a.lat.toRadians()
