@@ -1,34 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import io.github.ismoy.imagepickerkmp.config.CropConfig
-import io.github.ismoy.imagepickerkmp.config.GalleryConfig
-import io.github.ismoy.imagepickerkmp.picker.CompressionLevel
-import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
-import io.github.ismoy.imagepickerkmp.picker.ImagePickerKMPConfig
-import io.github.ismoy.imagepickerkmp.picker.ImagePickerResult
-import io.github.ismoy.imagepickerkmp.picker.MimeType
-import io.github.ismoy.imagepickerkmp.picker.rememberImagePickerKMP
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
@@ -39,9 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.ExtensionLis
 import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.change_nickname
-import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
@@ -49,13 +22,9 @@ import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group_event
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group_own_event
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.enter_nickname
-import schneaggchatv3mp.composeapp.generated.resources.gallery
-import schneaggchatv3mp.composeapp.generated.resources.group_name
 import schneaggchatv3mp.composeapp.generated.resources.group_timer_picker_info
 import schneaggchatv3mp.composeapp.generated.resources.group_timer_picker_title
-import schneaggchatv3mp.composeapp.generated.resources.image_picker_error
 import schneaggchatv3mp.composeapp.generated.resources.remove
-import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.wake_button
 import schneaggchatv3mp.composeapp.generated.resources.wake_reason_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.wake_reason_title
@@ -63,6 +32,8 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImagePickPurpose
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImageSourcePickerDialog
 
 /** The dialog [ChatDetailsState.dialog] names, if any. */
 @Composable
@@ -119,8 +90,10 @@ fun ChatDetailsDialogs(
             updateString = { onAction(ChatDetailsAction.OnWakeConfirm(it)) },
         )
 
-        ChatDetailsDialog.PicturePicker -> GroupPicturePickerDialog(
-            onPicked = { onAction(ChatDetailsAction.OnPicturePicked(it)) },
+        ChatDetailsDialog.PicturePicker -> ImageSourcePickerDialog(
+            visible = true,
+            purpose = ImagePickPurpose.ROUND_PICTURE,
+            onImagesPicked = { photos, _ -> photos.firstOrNull()?.let { onAction(ChatDetailsAction.OnPicturePicked(it)) } },
             onDismiss = dismiss
         )
 
@@ -216,94 +189,6 @@ private fun GroupExpiryPickerDialog(
         onConfirm = { onConfirm(it.toInstant(timeZone).toEpochMilliseconds()) },
         onDismiss = onDismiss,
     )
-}
-
-/** Camera or gallery for a new group picture, cropped to a circle. */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun GroupPicturePickerDialog(
-    onPicked: (GalleryPhotoResult) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val picker = rememberImagePickerKMP(
-        config = ImagePickerKMPConfig(
-            cropConfig = CropConfig(
-                enabled = true,
-                aspectRatioLocked = true,
-                circularCrop = true,
-                squareCrop = false,
-                freeformCrop = false
-            ),
-            galleryConfig = GalleryConfig(
-                allowMultiple = false,
-                mimeTypes = listOf(MimeType.IMAGE_ALL),
-                includeExif = false,
-                // Makes the picker apply the EXIF orientation to the pixels, otherwise
-                // rotated photos are cropped and uploaded sideways.
-                compressionLevel = CompressionLevel.LOW
-            )
-        )
-    )
-    val result = picker.result
-
-    LaunchedEffect(result) {
-        when (result) {
-            is ImagePickerResult.Success -> {
-                picker.reset()
-                onPicked(result.photos.first())
-            }
-            is ImagePickerResult.Dismissed -> {
-                picker.reset()
-                onDismiss()
-            }
-            else -> Unit
-        }
-    }
-
-    BasicAlertDialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .width(IntrinsicSize.Min),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                when (result) {
-                    is ImagePickerResult.Loading -> CircularProgressIndicator()
-
-                    is ImagePickerResult.Error -> Text(
-                        text = stringResource(
-                            Res.string.image_picker_error,
-                            result.exception.message ?: stringResource(Res.string.unknown_error)
-                        ),
-                        color = MaterialTheme.colorScheme.error
-                    )
-
-                    is ImagePickerResult.Idle -> {
-                        Text(stringResource(Res.string.choose_image_source))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Button(onClick = { picker.launchCamera() }, modifier = Modifier.weight(1f)) {
-                                Text(stringResource(Res.string.camera))
-                            }
-                            Button(onClick = { picker.launchGallery() }, modifier = Modifier.weight(1f)) {
-                                Text(stringResource(Res.string.gallery))
-                            }
-                        }
-                    }
-
-                    // Handled in the LaunchedEffect above
-                    is ImagePickerResult.Success, is ImagePickerResult.Dismissed -> Unit
-                }
-            }
-        }
-    }
 }
 
 /** Leaving an event's group takes back the own "going" (server), except for the event creator. */

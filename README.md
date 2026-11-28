@@ -49,7 +49,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Bugfixes
 - Profilbild: Anzeige bei Nicht-Freunden behoben, leere Großansicht entfernt
 - iOS: Badge und Teilen repariert
-- Sprachnachrichten: Musik pausiert und läuft danach weiter, nicht mehr bei jedem Sync neu geladen
+- Sprachnachrichten: Musik pausiert und läuft danach weiter
 - Desktop: Doppelte Taskbar Tabs behoben
 - Feedback-Board: Neue Einträge sofort oben sichtbar
 
