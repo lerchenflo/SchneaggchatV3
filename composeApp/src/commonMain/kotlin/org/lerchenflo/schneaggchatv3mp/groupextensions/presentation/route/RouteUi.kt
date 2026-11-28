@@ -22,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.RoutePointKind
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.RouteTransportMode
 import org.lerchenflo.schneaggchatv3mp.utilities.formatDistance
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToLocalDateTime
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import org.lerchenflo.schneaggchatv3mp.utilities.weekdayShortResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.route_day_number
@@ -133,10 +134,7 @@ fun formatDistanceAndTime(meters: Double, minutes: Int): String =
     "${formatDistance(meters)} · ${formatRoughDuration(minutes)}"
 
 /** Clock time of a planned point, e.g. "09:30". */
-fun formatPlannedTime(millis: Long): String {
-    val dateTime = millisToLocalDateTime(millis)
-    return "${dateTime.hour.toString().padStart(2, '0')}:${dateTime.minute.toString().padStart(2, '0')}"
-}
+fun formatPlannedTime(millis: Long): String = millisToString(millis, "HH:mm")
 
 /** Short date with weekday, e.g. "Sa 12.6." */
 @Composable

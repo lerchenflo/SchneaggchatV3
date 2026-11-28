@@ -178,14 +178,7 @@ class AndroidPictureManager(private val context: Context) : PictureManager {
     override suspend fun downloadImage(
         filePath: String,
         fileName: String
-    ): String = withContext(Dispatchers.IO) {
-        val mimeType = when {
-            fileName.endsWith(".png", true) -> "image/png"
-            fileName.endsWith(".webp", true) -> "image/webp"
-            else -> "image/jpeg"
-        }
-        insertIntoGallery(File(filePath), fileName, mimeType)
-    }
+    ): String = saveToGallery(filePath, baseName = fileName.substringBeforeLast('.'))
 
     override suspend fun saveToGallery(filePath: String, baseName: String): String =
         withContext(Dispatchers.IO) {

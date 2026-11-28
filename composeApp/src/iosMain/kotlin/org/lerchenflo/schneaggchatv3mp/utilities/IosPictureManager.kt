@@ -275,13 +275,7 @@ class IosPictureManager : PictureManager {
     override suspend fun downloadImage(
         filePath: String,
         fileName: String
-    ): String {
-        val data = readFile(filePath) ?: run {
-            println("iOS Download: Source file not found: $filePath")
-            return ""
-        }
-        return if (addToPhotos(data, fileName)) "Saved to Photos" else ""
-    }
+    ): String = saveToGallery(filePath, baseName = fileName.substringBeforeLast('.'))
 
     override suspend fun saveToGallery(filePath: String, baseName: String): String {
         val data = readFile(filePath) ?: run {
