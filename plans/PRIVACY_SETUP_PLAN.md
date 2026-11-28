@@ -18,7 +18,7 @@ Sign-up stays as small as it is today (username, email, birthday, profile pictur
 
 | # | Decision |
 |---|---|
-| D1 | Cards: location sharing (map), police/radar alerts, profile picture visibility, notifications + wake. More cards are added later; notification areas are next, once that feature exists. |
+| D1 | Cards: location sharing (map), police/radar alerts, profile picture visibility, notifications + wake, save received images to the gallery (added 2026-11-28). More cards are added later; notification areas are next, once that feature exists. |
 | D2 | Optional only: never started on its own (not after sign-up), only from the settings screen. |
 | D3 | Each change is saved right away, like in the normal settings. Leaving halfway keeps what was set. |
 | D4 | Highlight: a hardcoded list of app versions that added cards. The settings card is highlighted while the user has not opened the setup since the newest listed version. Opening the setup clears it. |
@@ -33,7 +33,7 @@ Sign-up stays as small as it is today (username, email, birthday, profile pictur
 
 ### 3.1 Domain (`C/settings/domain/`)
 
-- `PrivacySetupCard` enum: `INTRO`, `LOCATION_SHARING`, `MAP_SIGHTING_PUSH`, `PROFILE_PIC_VISIBILITY`, `NOTIFICATIONS`, `FINISH` (later `NOTIFICATION_AREAS` as the first step). The order of the enum is the order of the cards.
+- `PrivacySetupCard` enum: `INTRO`, `LOCATION_SHARING`, `MAP_SIGHTING_PUSH`, `PROFILE_PIC_VISIBILITY`, `NOTIFICATIONS`, `SAVE_RECEIVED_IMAGES`, `FINISH` (later `NOTIFICATION_AREAS` as the first step). The order of the enum is the order of the cards.
 - `PrivacySetupRevision(version: String, addedCards: Set<PrivacySetupCard>)` and the hardcoded list `PRIVACY_SETUP_REVISIONS` (first entry: the version this ships in, all setting cards). Adding a card later = append an entry with the new version.
 - `isPrivacySetupHighlighted(seenVersion: String?): Boolean` = `seenVersion != PRIVACY_SETUP_REVISIONS.last().version`. Plain string equality, no version compare needed (no compare helper exists in the code), because the list only holds versions up to the running build. Never opened (`null`) = highlighted.
 - Optional: `newCardsSince(seenVersion)` so the setup can mark cards added since the last visit with a "New" chip (see open question Q3).
@@ -52,6 +52,7 @@ The setup must not copy the settings screens. Before the setup is built:
   - `LocationSharingDialog` (`C/settings/presentation/schneaggmapsettings/LocationSharingDialog.kt:49`) -> `LocationSharingContent` (global switch, advanced per-friend sharing).
   - `ProfilePicVisibilityDialog` (`C/settings/presentation/privacyandsecurity/ProfilePicVisibilityDialog.kt:47`) -> `ProfilePicVisibilityOptions`.
   - Notifications on/off + permission and wake (`C/settings/presentation/notificationsettings/NotificationSettings.kt`) -> content composable(s).
+  - Save received images to the gallery: the `SettingsSwitch` in `C/settings/presentation/miscSettings/MiscSettings.kt:92` with its title / info strings (`save_received_images_to_gallery`, `save_received_images_to_gallery_info`), saved over `SettingsRepository.setSaveReceivedImagesToGallery` (no ViewModel logic to move; the card reads `getSaveReceivedImagesToGalleryFlow`). Per device, default on; the gallery start time is not touched by the card.
 - Move the save logic that sits in the ViewModels today into the domain, so both ViewModels call the same function: location sharing writes (`SchneaggmapSettingsViewModel.kt:175`, global + per-friend drafts over `userRepository`), wake writes (`NotificationSettingsViewModel.kt:122`), permission request (`NotificationSettingsViewModel.kt:102`). Run code-reuse-scout (or Explore, the agent is missing) with this list first.
 
 ### 3.4 Presentation (`C/settings/presentation/privacysetup/`)
@@ -99,3 +100,4 @@ The setup must not copy the settings screens. Before the setup is built:
 - **Q4** Location sharing per-friend toggles with "save right away": one server call per toggle, or save when the user leaves the card?
 - **Q5** Notifications card on desktop (no permission, no wake): hide the card there?
 - **Q6** Profile picture itself (change picture) as a card too, or only its visibility?
+- **Q7** Gallery card on desktop (copies go to `~/Pictures/Schneaggchat`): show it there too, or mobile only? And does the card need the photo permission flow on Android / iOS (saving to the gallery), or is that asked on the first save?
