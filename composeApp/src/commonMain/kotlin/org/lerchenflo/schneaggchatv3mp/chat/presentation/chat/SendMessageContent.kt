@@ -11,7 +11,13 @@ import io.github.lerchenflo.voicemessages.VoiceRecordingState
  */
 sealed class SendMessageContent {
     data class TextContent(val textMessage: TextFieldValue) : SendMessageContent()
-    data class ImageContent(val images: List<ByteArray>, var text: TextFieldValue) : SendMessageContent()
+    data class ImageContent(val images: List<StagedImage>, var text: TextFieldValue) : SendMessageContent()
     /** A running ([VoiceRecordingState.Recording]) or finished ([VoiceRecordingState.Recorded]) voice message, never Idle. */
     data class AudioContent(val recording: VoiceRecordingState) : SendMessageContent()
 }
+
+/**
+ * One image staged for sending: [original] as it was picked or shared (full quality, metadata
+ * kept) and [compressed], the small copy that is sent by default and shown in the preview.
+ */
+class StagedImage(val original: ByteArray, val compressed: ByteArray)

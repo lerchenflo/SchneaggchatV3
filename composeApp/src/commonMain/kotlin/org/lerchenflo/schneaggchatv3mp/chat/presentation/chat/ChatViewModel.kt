@@ -297,7 +297,7 @@ class ChatViewModel(
                             empfaenger = chatId,
                             gruppe = isGroup,
                             content = MessageContent.ImageContent(
-                                image = image,
+                                image = image.compressed,
                                 text = if (index == 0) message.text.text else ""
                             ),
                             answerid = replyTo?.id,
@@ -332,17 +332,33 @@ class ChatViewModel(
         if (fromCamera) saveCameraPhotosToGallery(results)
 
         viewModelScope.launch {
-            val byteArrays = results.map { it.loadBytes() }
-            val downscaledImages = byteArrays.map {
-                pictureManager.downscaleImage(it)
+            // The file as picked, not loadBytes(): that re-encodes and drops the metadata
+            val originals = results.mapNotNull { photo ->
+                val bytes = pictureManager.readPickedImage(photo.uri)
+                if (bytes == null) loggingRepository.logWarning("Picked image could not be read")
+                bytes
             }
-
-            updateSendContent(SendMessageContent.ImageContent(
-                images = downscaledImages,
-                text = (state.value.sendContent as? TextContent)?.textMessage ?: TextFieldValue("")
-            ))
+            stageImages(originals, text = (state.value.sendContent as? TextContent)?.textMessage ?: TextFieldValue(""))
         }
 
+    }
+
+    /**
+     * Stages [originals] in the input bar, each with its small copy ([CHAT_IMAGE_TARGET_BYTES]).
+     * An image that can't be decoded is left out.
+     */
+    private suspend fun stageImages(originals: List<ByteArray>, text: TextFieldValue) {
+        val staged = originals.mapNotNull { original ->
+            try {
+                StagedImage(original = original, compressed = pictureManager.downscaleImage(original, CHAT_IMAGE_TARGET_BYTES))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                loggingRepository.logWarning("Picked image could not be decoded: ${e.message}")
+                null
+            }
+        }
+        if (staged.isNotEmpty()) updateSendContent(SendMessageContent.ImageContent(images = staged, text = text))
     }
 
     /**
@@ -886,13 +902,7 @@ class ChatViewModel(
             if (IncomingDataManager.isNewImageDataAvailable()) {
                 val sharedImages = IncomingDataManager.sharedImages.value ?: emptyList()
                 viewModelScope.launch {
-                    val downscaledImages = sharedImages.map { imageBytes ->
-                        pictureManager.downscaleImage(imageBytes)
-                    }
-                    updateSendContent(SendMessageContent.ImageContent(
-                        images = downscaledImages,
-                        text = TextFieldValue(IncomingDataManager.sharedText.value ?: "")
-                    ))
+                    stageImages(sharedImages, text = TextFieldValue(IncomingDataManager.sharedText.value ?: ""))
                     IncomingDataManager.clearAllData()
                 }
             } else {
@@ -911,3 +921,6 @@ class ChatViewModel(
     }
 
 }
+
+/** Size of the copy a chat image is sent as by default (without full quality). */
+private const val CHAT_IMAGE_TARGET_BYTES = 700_000

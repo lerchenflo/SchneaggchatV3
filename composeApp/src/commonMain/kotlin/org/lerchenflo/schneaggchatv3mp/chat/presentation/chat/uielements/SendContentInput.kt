@@ -70,9 +70,9 @@ fun RowScope.SendContentInput(
             ) {
                 // Multi-image preview row
                 ImageAttachmentRow(
-                    images = content.images,
+                    images = content.images.map { it.compressed },
                     onRemoveImage = { imageBytes ->
-                        val remaining = content.images - imageBytes
+                        val remaining = content.images.filterNot { it.compressed === imageBytes }
                         onAction(ChatAction.OnSendContentChange(
                             if (remaining.isEmpty())
                                 SendMessageContent.TextContent(content.text)

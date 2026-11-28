@@ -164,11 +164,12 @@ private fun ImagePickPurpose.pickerConfig(): ImagePickerKMPConfig {
             allowMultiple = !roundPicture,
             mimeTypes = listOf(MimeType.IMAGE_ALL),
             includeExif = !roundPicture,
-            // Without a compression level the picker hands back the raw gallery uri and
-            // loadBytes() re-encodes it without ever applying the EXIF orientation, so rotated
-            // photos arrive (or get cropped) sideways. Setting one makes the picker bake the
-            // orientation into the pixels first.
-            compressionLevel = CompressionLevel.LOW
+            // Round pictures: without a compression level the picker hands back the raw gallery
+            // uri and loadBytes() re-encodes it without ever applying the EXIF orientation, so
+            // rotated photos get cropped sideways; a level makes the picker bake it in first.
+            // Message images stay the untouched original (metadata kept for full quality):
+            // ChatViewModel reads the file itself and downscaleImage turns it upright.
+            compressionLevel = if (roundPicture) CompressionLevel.LOW else null
         )
     )
 }
