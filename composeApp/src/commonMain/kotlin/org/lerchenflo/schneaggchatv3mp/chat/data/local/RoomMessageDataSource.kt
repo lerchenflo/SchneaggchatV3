@@ -182,6 +182,17 @@ class RoomMessageDataSource(
         }
     }
 
+    override suspend fun markMediaExpired(messageId: String) {
+        val dbMessage = database.messageDao().getMessageById(messageId)
+        if (dbMessage != null) {
+            database.messageDao().upsertMessageEntity(
+                dbMessage.messageEntity.copy(
+                    mediaExpired = true
+                )
+            )
+        }
+    }
+
     override suspend fun updateAudioPath(messageId: String, newPath: String) {
         val dbMessage = database.messageDao().getMessageById(messageId)
         if (dbMessage != null) {

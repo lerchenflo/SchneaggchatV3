@@ -74,6 +74,9 @@ interface MessageLocalDataSource {
 
     suspend fun updateAudioPath(messageId: String, newPath: String)
 
+    /** The server deleted the message's media file: it is never downloaded again. */
+    suspend fun markMediaExpired(messageId: String)
+
     /** Chats with at least one unread message, counted in SQL for the nav bar badge. */
     fun getUnreadChatCountFlow(): Flow<Int>
 

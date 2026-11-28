@@ -132,7 +132,7 @@ class OfflineFirstMessageRepository(
             val savefilename = messageId + PICTURE_FILE_NAME
 
             when (val picture = mediaDownloadThrottle.download { messageRemoteDataSource.getImageForImageMessage(messageId) }.trackConnectivity()) {
-                is DataResult.Error<*> -> {loggingRepository.logWarning("Picture error for messageid $messageId")}
+                is DataResult.Error<*> -> onMediaDownloadError(messageId, picture.error, "Picture")
                 is DataResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
@@ -148,7 +148,7 @@ class OfflineFirstMessageRepository(
             //println("Fetching Audio for messageid $messageId")
 
             when (val audio = mediaDownloadThrottle.download { messageRemoteDataSource.getAudioForAudioMessage(messageId) }.trackConnectivity()) {
-                is DataResult.Error<*> -> {loggingRepository.logWarning("Audio error for messageid $messageId")}
+                is DataResult.Error<*> -> onMediaDownloadError(messageId, audio.error, "Audio")
                 is DataResult.Success<ByteArray> -> {
                     voiceFiles.save(savefilename, audio.data)
                     // Persist the bare filename, not the absolute container path: on iOS the
@@ -193,6 +193,20 @@ class OfflineFirstMessageRepository(
             if (missingAudioMessageIds.isNotEmpty()) {
                 launch { getAudiosForMessageIds(missingAudioMessageIds) }
             }
+        }
+    }
+
+    /**
+     * A 410 (no own DataError type, it reaches us as Unknown) means the server deleted the file
+     * (media older than 60 days) before the sync told us:
+     * the message is marked expired so it is never requested again. Anything else is retried by
+     * the next missing-media check.
+     */
+    private suspend fun onMediaDownloadError(messageId: String, error: DataError, mediaKind: String) {
+        if (error.errorCode == HTTP_GONE) {
+            messageLocalDataSource.markMediaExpired(messageId)
+        } else {
+            loggingRepository.logWarning("$mediaKind error for messageid $messageId")
         }
     }
 
@@ -991,6 +1005,9 @@ class OfflineFirstMessageRepository(
         }
     }
 }
+
+/** Status of a media download whose file the server deleted (media retention, 60 days). */
+private const val HTTP_GONE = 410
 
 /** The server turned the message down for good: it can never be sent, so it is dropped. */
 private fun DataError.rejectsMessageForGood(): Boolean = when (this) {
