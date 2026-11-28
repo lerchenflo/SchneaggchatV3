@@ -50,6 +50,17 @@ interface SettingsRepository {
     fun getMapSightingPushFlow(): Flow<Boolean>
     suspend fun setMapSightingPush(value: Boolean)
 
+    /** Received images of others go into the gallery too. This device only, default on. */
+    fun getSaveReceivedImagesToGalleryFlow(): Flow<Boolean>
+    suspend fun setSaveReceivedImagesToGallery(value: Boolean)
+
+    /**
+     * Epoch millis from which received images are copied into the gallery: older ones (the sync
+     * after a login, old chats) never are. Set to now on the first call, and again by a logout,
+     * which clears all preferences.
+     */
+    suspend fun getReceivedImagesGalleryStart(): Long
+
     fun getMapStyleSettingFlow(): Flow<MapStyleSetting>
     fun getMapStyleUrlFlow(): Flow<String>
     suspend fun setMapStyleSetting(style: MapStyleSetting)

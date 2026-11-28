@@ -22,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
 import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.device.LanguageService
+import kotlin.time.Clock
 
 /** [SettingsRepository] on top of the DataStore wrapper [Preferencemanager], pushing synced settings via [SettingsRemoteDataSource]. */
 class DataStoreSettingsRepository(
@@ -171,6 +172,20 @@ class DataStoreSettingsRepository(
             settingsRemoteDataSource.updateSettings(UserSettingsRequest(mapSightingPush = value)).trackConnectivity()
         }
     }
+
+    override fun getSaveReceivedImagesToGalleryFlow(): Flow<Boolean> {
+        return preferencemanager.getSaveReceivedImagesToGalleryFlow()
+    }
+
+    override suspend fun setSaveReceivedImagesToGallery(value: Boolean) {
+        outliveCaller {
+            preferencemanager.saveSaveReceivedImagesToGallery(value)
+        }
+    }
+
+    override suspend fun getReceivedImagesGalleryStart(): Long =
+        preferencemanager.getReceivedImagesGalleryStart()
+            ?: Clock.System.now().toEpochMilliseconds().also { preferencemanager.saveReceivedImagesGalleryStart(it) }
 
     override fun getMapStyleSettingFlow(): Flow<MapStyleSetting> {
         return preferencemanager.getMapStyleSettingFlow()

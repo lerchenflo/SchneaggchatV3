@@ -128,6 +128,8 @@ class Preferencemanager(
         val MERGE_MAP_USERS = booleanPreferencesKey("merge_map_users")
         val SORT_MAP_USERS_BY_PINNED = booleanPreferencesKey("sort_map_users_by_pinned")
         val MAP_SIGHTING_PUSH = booleanPreferencesKey("map_sighting_push")
+        val SAVE_RECEIVED_IMAGES_TO_GALLERY = booleanPreferencesKey("save_received_images_to_gallery")
+        val RECEIVED_IMAGES_GALLERY_START = longPreferencesKey("received_images_gallery_start")
         val MAP_STYLE = intPreferencesKey("map_style")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
         val QUICK_REACTIONS = stringPreferencesKey("quick_reactions")
@@ -256,6 +258,23 @@ class Preferencemanager(
     fun getMergeMapUsersFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.MERGE_MAP_USERS] ?: true //Default to true
     }
+
+    // Received images of others are copied into the gallery (this device only, not synced)
+    suspend fun saveSaveReceivedImagesToGallery(value: Boolean) {
+        prefs.edit { it[PrefsKeys.SAVE_RECEIVED_IMAGES_TO_GALLERY] = value }
+    }
+
+    fun getSaveReceivedImagesToGalleryFlow(): Flow<Boolean> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.SAVE_RECEIVED_IMAGES_TO_GALLERY] ?: true //Default on
+    }
+
+    // Images sent before this moment are never copied into the gallery, null until first set
+    suspend fun saveReceivedImagesGalleryStart(epochMillis: Long) {
+        prefs.edit { it[PrefsKeys.RECEIVED_IMAGES_GALLERY_START] = epochMillis }
+    }
+
+    suspend fun getReceivedImagesGalleryStart(): Long? =
+        prefs.data.first()[PrefsKeys.RECEIVED_IMAGES_GALLERY_START]
 
     // Pinned friends first in the map's friends bar
     suspend fun saveSortMapUsersByPinned(value: Boolean) {

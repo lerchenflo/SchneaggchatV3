@@ -109,6 +109,14 @@ class FakeSettingsRepository : SettingsRepository {
         mapSightingPush.value = value
     }
 
+    val saveReceivedImagesToGallery = MutableStateFlow(true)
+    var receivedImagesGalleryStart = 0L
+    override fun getSaveReceivedImagesToGalleryFlow(): Flow<Boolean> = saveReceivedImagesToGallery
+    override suspend fun setSaveReceivedImagesToGallery(value: Boolean) {
+        saveReceivedImagesToGallery.value = value
+    }
+    override suspend fun getReceivedImagesGalleryStart(): Long = receivedImagesGalleryStart
+
     override fun getMapStyleSettingFlow(): Flow<MapStyleSetting> = mapStyle
     override fun getMapStyleUrlFlow(): Flow<String> = mapStyleUrl
     override suspend fun setMapStyleSetting(style: MapStyleSetting) {
