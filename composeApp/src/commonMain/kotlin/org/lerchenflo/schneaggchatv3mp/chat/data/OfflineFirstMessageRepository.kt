@@ -93,6 +93,7 @@ class OfflineFirstMessageRepository(
     private val loggingRepository: Logger,
     private val externalScope: CoroutineScope,
     private val mediaDownloadThrottle: MediaDownloadThrottle,
+    private val receivedImageGallerySaver: ReceivedImageGallerySaver,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : MessageRepository {
 
@@ -134,9 +135,13 @@ class OfflineFirstMessageRepository(
             when (val picture = mediaDownloadThrottle.download { messageRemoteDataSource.getImageForImageMessage(messageId) }.trackConnectivity()) {
                 is DataResult.Error<*> -> onMediaDownloadError(messageId, picture.error, "Picture")
                 is DataResult.Success<ByteArray> -> {
+                    // Read before the path is stored, so the saver sees whether this is the first download
+                    val storedMessage = messageLocalDataSource.getMessageById(messageId)
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
                     messageLocalDataSource.updatePictureUrl(messageId, filepath)
+                    // Own scope: the iOS photo permission prompt must not hold up the next downloads
+                    storedMessage?.let { externalScope.launch { receivedImageGallerySaver.saveIfWanted(it, filepath) } }
                 }
             }
         }
@@ -763,6 +768,7 @@ class OfflineFirstMessageRepository(
     override suspend fun syncMessages(fetchMedia: Boolean) {
 
         val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+        receivedImageGallerySaver.ensureStartSet()
 
         val imagesToGet = mutableListOf<String>()
         val audiosToGet = mutableListOf<String>()

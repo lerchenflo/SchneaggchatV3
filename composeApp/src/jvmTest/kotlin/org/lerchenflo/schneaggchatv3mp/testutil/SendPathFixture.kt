@@ -6,6 +6,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstMessageRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.ReceivedImageGallerySaver
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomMessageDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.KtorMessageRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.MessageRemoteDataSource
@@ -14,7 +15,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeAppVersion
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeSettingsRepository
 
 /** The logged-in user of the send-path tests. */
 const val OWN_USER_ID = "me"
@@ -64,6 +67,12 @@ class SendPathFixture(testScope: TestScope, val ownUserId: String = OWN_USER_ID)
         loggingRepository = logger,
         externalScope = testScope.backgroundScope,
         mediaDownloadThrottle = MediaDownloadThrottle(),
+        receivedImageGallerySaver = ReceivedImageGallerySaver(
+            pictureManager = unusedDependency(),
+            settingsRepository = FakeSettingsRepository(),
+            appVersion = FakeAppVersion(),
+            logger = logger,
+        ),
         ioDispatcher = StandardTestDispatcher(testScope.testScheduler),
     )
 

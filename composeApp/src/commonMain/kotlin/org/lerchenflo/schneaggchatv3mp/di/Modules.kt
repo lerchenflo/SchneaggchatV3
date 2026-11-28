@@ -35,6 +35,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstChatListRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstGroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstMessageRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.ReceivedImageGallerySaver
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstUserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.OfflineFirstUserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserResponseWriter
@@ -270,6 +271,7 @@ val sharedmodule = module{
         )
     }
     singleOf(::RoomMessageDataSource) bind MessageLocalDataSource::class
+    singleOf(::ReceivedImageGallerySaver)
     // Explicit lambda so the dispatcher keeps its default (Dispatchers.IO); tests pass their own (plan R4).
     // Sends and mark-read run in the app-wide scope, so they outlive the screen that started them (plan R2).
     single<MessageRepository> {
@@ -282,6 +284,7 @@ val sharedmodule = module{
             loggingRepository = get(),
             externalScope = get<ApplicationScope>(),
             mediaDownloadThrottle = get(),
+            receivedImageGallerySaver = get(),
         )
     }
     // Explicit lambda so the dispatcher keeps its default (Dispatchers.Default); tests pass their own (plan R4)
