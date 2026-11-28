@@ -27,6 +27,9 @@ data class MessageResponse(
     // Only non-null when this response is about our own sent message - lets sync/socket
     // reconciliation find a still-pending local row before the send's own response arrives.
     val clientMessageId: String? = null,
+    // The server deleted the image / voice file (older than 60 days); the message itself stays.
+    // Default for an older server that doesn't send it yet.
+    val mediaExpired: Boolean = false,
 )
 
 @Serializable

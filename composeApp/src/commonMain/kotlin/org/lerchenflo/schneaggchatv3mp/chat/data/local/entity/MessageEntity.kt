@@ -84,6 +84,9 @@ data class MessageEntity(
     // instead of creating a second message. Never set on a message we received.
     var clientMessageId: String? = null,
 
+    // Server deleted the media file (older than 60 days), see Message.mediaExpired
+    var mediaExpired: Boolean = false,
+
     ) {
     @Ignore
     var minimizeMessage: MessageMinimal = MessageMinimal.NONE

@@ -40,6 +40,7 @@ fun MessageEntity.toMessage(readers: List<MessageReader> = emptyList()): Message
     reactions = this.reactions,
     version = this.version,
     clientMessageId = this.clientMessageId,
+    mediaExpired = this.mediaExpired,
 )
 
 /** Domain -> entity */
@@ -67,6 +68,7 @@ fun Message.toEntity(): MessageWithReaders = MessageWithReaders(
         reactions = this.reactions,
         version = this.version,
         clientMessageId = this.clientMessageId,
+        mediaExpired = this.mediaExpired,
     ),
     readers = this.readers.map { reader ->
         reader.toEntity()

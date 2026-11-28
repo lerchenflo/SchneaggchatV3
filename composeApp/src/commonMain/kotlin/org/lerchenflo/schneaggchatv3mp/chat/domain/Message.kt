@@ -57,6 +57,8 @@ data class Message(
     var reactions: List<Reaction> = emptyList(),
     var version: Long = 0L,
     var clientMessageId: String? = null,
+    /** The server deleted the image / voice file (older than 60 days): never download it again. */
+    var mediaExpired: Boolean = false,
 ) {
     fun isPicture(): Boolean = msgType == MessageType.IMAGE
     fun isAudio(): Boolean = msgType == MessageType.AUDIO
