@@ -248,6 +248,10 @@ class DesktopPictureManager : PictureManager {
         }
     }
 
+    /** ImageIO can't carry EXIF from PNG / HEIC into a JPEG, so Desktop sends the upright copy without metadata. */
+    override suspend fun encodeJpegKeepingMetadata(imageBytes: ByteArray, maxBytes: Int): ByteArray =
+        downscaleImage(imageBytes, maxBytes)
+
     /** The Desktop picker reports `file:/...` uris (java.net.URI), not `file://`. */
     override suspend fun readPickedImage(uri: String): ByteArray? = withContext(Dispatchers.IO) {
         runCatching {

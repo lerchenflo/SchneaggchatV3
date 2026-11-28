@@ -70,6 +70,13 @@ interface PictureManager {
     suspend fun readPickedImage(uri: String): ByteArray?
 
     /**
+     * Re-encodes [imageBytes] as a JPEG of at most [maxBytes] (lower quality first, then smaller),
+     * keeping its metadata: EXIF incl. GPS and the orientation tag, so the pixels are not turned.
+     * Desktop can't keep metadata and falls back to [downscaleImage]. Throws when it can't decode.
+     */
+    suspend fun encodeJpegKeepingMetadata(imageBytes: ByteArray, maxBytes: Int): ByteArray
+
+    /**
      * Saves a ByteArray image to the device's external storage / photo gallery.
      * @return The path or URI string where the file was saved.
      */
@@ -92,3 +99,21 @@ interface PictureManager {
      */
     suspend fun encodeImageBitmap(bitmap: ImageBitmap): ByteArray
 }
+
+/** The server's cap for a message image (413 above 6 MiB), a bit lower for the multipart overhead. */
+const val MAX_FULL_QUALITY_IMAGE_BYTES = 6_000_000
+
+/** JPEG qualities (percent) a full-quality image is tried with before it gets smaller. */
+internal val FULL_QUALITY_JPEG_QUALITIES = listOf(90, 80, 70)
+
+/** Per step the long side shrinks by this factor, at most [FULL_QUALITY_SCALE_STEPS] times. */
+internal const val FULL_QUALITY_SCALE_FACTOR = 0.8
+internal const val FULL_QUALITY_SCALE_STEPS = 8
+
+/**
+ * A picked image as it is sent with full quality: [original] untouched when the server takes it
+ * as it is (JPEG, PNG or GIF of at most [maxBytes]), else re-encoded with its metadata kept.
+ */
+suspend fun PictureManager.fullQualityImage(original: ByteArray, maxBytes: Int = MAX_FULL_QUALITY_IMAGE_BYTES): ByteArray =
+    if (isUploadableImage(original) && original.size <= maxBytes) original
+    else encodeJpegKeepingMetadata(original, maxBytes)

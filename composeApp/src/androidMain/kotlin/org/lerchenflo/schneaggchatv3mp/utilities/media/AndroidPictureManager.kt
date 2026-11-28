@@ -23,6 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 
 class AndroidPictureManager(private val context: Context) : PictureManager {
 
@@ -192,6 +193,37 @@ class AndroidPictureManager(private val context: Context) : PictureManager {
         }.onFailure { Log.w("Android picked image", "Could not read $uri", it) }.getOrNull()
     }
 
+    override suspend fun encodeJpegKeepingMetadata(imageBytes: ByteArray, maxBytes: Int): ByteArray =
+        withContext(Dispatchers.IO) {
+            val bitmap = decodeSampledBitmap(imageBytes, FULL_QUALITY_MAX_DECODE_DIMENSION_PX)
+                ?: throw IllegalArgumentException("Invalid image data")
+            val jpeg = try {
+                compressJpegToFit(bitmap, maxBytes)
+            } finally {
+                bitmap.recycle()
+            }
+            copyExifInto(jpeg, from = imageBytes)
+        }
+
+    /** [jpeg] with the metadata of [from]; ExifInterface only writes files, hence the temp file. */
+    private fun copyExifInto(jpeg: ByteArray, from: ByteArray): ByteArray {
+        val source = runCatching { ExifInterface(ByteArrayInputStream(from)) }.getOrNull() ?: return jpeg
+        val tempFile = File.createTempFile("full_quality", ".jpg", context.cacheDir)
+        return try {
+            tempFile.writeBytes(jpeg)
+            ExifInterface(tempFile).apply {
+                COPIED_EXIF_TAGS.forEach { tag -> source.getAttribute(tag)?.let { setAttribute(tag, it) } }
+                saveAttributes()
+            }
+            tempFile.readBytes()
+        } catch (e: IOException) {
+            Log.w("Android full quality", "Metadata could not be copied, sending without it", e)
+            jpeg
+        } finally {
+            tempFile.delete()
+        }
+    }
+
     override suspend fun saveToGallery(filePath: String, baseName: String): String =
         withContext(Dispatchers.IO) {
             val sourceFile = File(filePath)
@@ -260,19 +292,19 @@ class AndroidPictureManager(private val context: Context) : PictureManager {
 
 private const val MAX_DECODE_DIMENSION_PX = 2048
 
-private fun decodeSampledBitmap(imageBytes: ByteArray): Bitmap? {
+private fun decodeSampledBitmap(imageBytes: ByteArray, maxDimension: Int = MAX_DECODE_DIMENSION_PX): Bitmap? {
     val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, boundsOptions)
 
     val decodeOptions = BitmapFactory.Options().apply {
-        inSampleSize = calculateInSampleSize(boundsOptions.outWidth, boundsOptions.outHeight)
+        inSampleSize = calculateInSampleSize(boundsOptions.outWidth, boundsOptions.outHeight, maxDimension)
     }
     return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, decodeOptions)
 }
 
-private fun calculateInSampleSize(width: Int, height: Int): Int {
+private fun calculateInSampleSize(width: Int, height: Int, maxDimension: Int): Int {
     var sampleSize = 1
-    while (width / sampleSize > MAX_DECODE_DIMENSION_PX || height / sampleSize > MAX_DECODE_DIMENSION_PX) {
+    while (width / sampleSize > maxDimension || height / sampleSize > maxDimension) {
         sampleSize *= 2
     }
     return sampleSize
@@ -308,3 +340,77 @@ private fun applyExifOrientation(bitmap: Bitmap, orientation: Int): Bitmap {
 }
 
 private const val CONTENT_URI_SCHEME = "content://"
+
+/** Full quality decodes up to this long side (about 24 MP); bigger photos are sampled down once. */
+private const val FULL_QUALITY_MAX_DECODE_DIMENSION_PX = 6000
+
+/** [bitmap] as a JPEG of at most [maxBytes]: lower quality first, then smaller. */
+private fun compressJpegToFit(bitmap: Bitmap, maxBytes: Int): ByteArray {
+    var current = bitmap
+    try {
+        repeat(FULL_QUALITY_SCALE_STEPS) {
+            FULL_QUALITY_JPEG_QUALITIES.forEach { quality ->
+                val jpeg = current.toJpeg(quality)
+                if (jpeg.size <= maxBytes) return jpeg
+            }
+            val smaller = current.scale(
+                (current.width * FULL_QUALITY_SCALE_FACTOR).toInt(),
+                (current.height * FULL_QUALITY_SCALE_FACTOR).toInt()
+            )
+            if (current !== bitmap) current.recycle()
+            current = smaller
+        }
+    } finally {
+        if (current !== bitmap) current.recycle()
+    }
+    throw IllegalStateException("Image does not fit into $maxBytes bytes")
+}
+
+private fun Bitmap.toJpeg(quality: Int): ByteArray =
+    ByteArrayOutputStream().also { compress(Bitmap.CompressFormat.JPEG, quality, it) }.toByteArray()
+
+/** Metadata a re-encoded full-quality image keeps (capture, camera, place); sizes are left out. */
+private val COPIED_EXIF_TAGS = listOf(
+    ExifInterface.TAG_ORIENTATION,
+    ExifInterface.TAG_DATETIME,
+    ExifInterface.TAG_DATETIME_ORIGINAL,
+    ExifInterface.TAG_DATETIME_DIGITIZED,
+    ExifInterface.TAG_OFFSET_TIME,
+    ExifInterface.TAG_OFFSET_TIME_ORIGINAL,
+    ExifInterface.TAG_OFFSET_TIME_DIGITIZED,
+    ExifInterface.TAG_SUBSEC_TIME,
+    ExifInterface.TAG_SUBSEC_TIME_ORIGINAL,
+    ExifInterface.TAG_SUBSEC_TIME_DIGITIZED,
+    ExifInterface.TAG_MAKE,
+    ExifInterface.TAG_MODEL,
+    ExifInterface.TAG_SOFTWARE,
+    ExifInterface.TAG_ARTIST,
+    ExifInterface.TAG_COPYRIGHT,
+    ExifInterface.TAG_IMAGE_DESCRIPTION,
+    ExifInterface.TAG_USER_COMMENT,
+    ExifInterface.TAG_LENS_MAKE,
+    ExifInterface.TAG_LENS_MODEL,
+    ExifInterface.TAG_EXPOSURE_TIME,
+    ExifInterface.TAG_EXPOSURE_PROGRAM,
+    ExifInterface.TAG_EXPOSURE_BIAS_VALUE,
+    ExifInterface.TAG_F_NUMBER,
+    ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY,
+    ExifInterface.TAG_FOCAL_LENGTH,
+    ExifInterface.TAG_FOCAL_LENGTH_IN_35MM_FILM,
+    ExifInterface.TAG_FLASH,
+    ExifInterface.TAG_WHITE_BALANCE,
+    ExifInterface.TAG_METERING_MODE,
+    ExifInterface.TAG_GPS_LATITUDE,
+    ExifInterface.TAG_GPS_LATITUDE_REF,
+    ExifInterface.TAG_GPS_LONGITUDE,
+    ExifInterface.TAG_GPS_LONGITUDE_REF,
+    ExifInterface.TAG_GPS_ALTITUDE,
+    ExifInterface.TAG_GPS_ALTITUDE_REF,
+    ExifInterface.TAG_GPS_TIMESTAMP,
+    ExifInterface.TAG_GPS_DATESTAMP,
+    ExifInterface.TAG_GPS_IMG_DIRECTION,
+    ExifInterface.TAG_GPS_IMG_DIRECTION_REF,
+    ExifInterface.TAG_GPS_SPEED,
+    ExifInterface.TAG_GPS_SPEED_REF,
+    ExifInterface.TAG_GPS_PROCESSING_METHOD,
+)

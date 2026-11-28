@@ -12,6 +12,29 @@ import kotlinx.cinterop.allocArrayOf
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.useContents
 import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.reinterpret
+import platform.CoreFoundation.CFDataRef
+import platform.CoreFoundation.CFDictionaryRef
+import platform.CoreFoundation.CFMutableDataRef
+import platform.CoreFoundation.CFRelease
+import platform.CoreFoundation.CFRetain
+import platform.CoreFoundation.CFStringRef
+import platform.Foundation.CFBridgingRelease
+import platform.Foundation.CFBridgingRetain
+import platform.Foundation.NSMutableData
+import platform.Foundation.NSMutableDictionary
+import platform.Foundation.NSNumber
+import platform.Foundation.setValue
+import platform.ImageIO.CGImageDestinationAddImageFromSource
+import platform.ImageIO.CGImageDestinationCreateWithData
+import platform.ImageIO.CGImageDestinationFinalize
+import platform.ImageIO.CGImageSourceCopyPropertiesAtIndex
+import platform.ImageIO.CGImageSourceCreateWithData
+import platform.ImageIO.CGImageSourceRef
+import platform.ImageIO.kCGImageDestinationImageMaxPixelSize
+import platform.ImageIO.kCGImageDestinationLossyCompressionQuality
+import platform.ImageIO.kCGImagePropertyPixelHeight
+import platform.ImageIO.kCGImagePropertyPixelWidth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -278,6 +301,12 @@ class IosPictureManager : PictureManager {
         fileName: String
     ): String = saveToGallery(filePath, baseName = fileName.substringBeforeLast('.'))
 
+    override suspend fun encodeJpegKeepingMetadata(imageBytes: ByteArray, maxBytes: Int): ByteArray =
+        withContext(Dispatchers.Default) {
+            jpegKeepingMetadata(imageBytes.toNSData(), maxBytes)?.toByteArray()
+                ?: throw IllegalArgumentException("Image could not be re-encoded into $maxBytes bytes")
+        }
+
     override suspend fun readPickedImage(uri: String): ByteArray? =
         readFile(fileUriToPath(uri))?.toByteArray()
 
@@ -351,3 +380,73 @@ private fun redrawUpright(image: UIImage): UIImage {
 
     return uprightImage ?: image
 }
+
+private const val JPEG_TYPE_IDENTIFIER = "public.jpeg"
+private const val PERCENT = 100.0
+
+/**
+ * [imageData] (any format ImageIO reads, HEIC too) as a JPEG of at most [maxBytes], written
+ * straight from the image source: ImageIO carries all metadata over (EXIF, GPS, TIFF, the
+ * orientation tag, pixels not turned). Lower quality first, then a smaller long side. Null if it
+ * can't be decoded or never fits.
+ */
+@OptIn(ExperimentalForeignApi::class)
+private fun jpegKeepingMetadata(imageData: NSData, maxBytes: Int): NSData? {
+    val cfData: CFDataRef? = CFBridgingRetain(imageData)?.reinterpret()
+    val source = CGImageSourceCreateWithData(cfData, null)
+    try {
+        if (source == null) return null
+        var longSide = longSideOf(source) ?: return null
+        var maxPixelSize: Double? = null // null: full size
+        repeat(FULL_QUALITY_SCALE_STEPS) {
+            FULL_QUALITY_JPEG_QUALITIES.forEach { quality ->
+                val jpeg = writeJpegFromSource(source, quality / PERCENT, maxPixelSize)
+                if (jpeg != null && jpeg.length.toInt() <= maxBytes) return jpeg
+            }
+            longSide *= FULL_QUALITY_SCALE_FACTOR
+            maxPixelSize = longSide
+        }
+        return null
+    } finally {
+        source?.let { CFRelease(it) }
+        cfData?.let { CFRelease(it) }
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun longSideOf(source: CGImageSourceRef): Double? {
+    val cfProperties = CGImageSourceCopyPropertiesAtIndex(source, 0u, null) ?: return null
+    val properties = CFBridgingRelease(cfProperties) as? Map<*, *> ?: return null
+    val width = properties[kCGImagePropertyPixelWidth.asKey()].asDouble() ?: return null
+    val height = properties[kCGImagePropertyPixelHeight.asKey()].asDouble() ?: return null
+    return maxOf(width, height)
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun writeJpegFromSource(source: CGImageSourceRef, quality: Double, maxPixelSize: Double?): NSData? {
+    val options = NSMutableDictionary().apply {
+        setValue(quality, forKey = kCGImageDestinationLossyCompressionQuality.asKey())
+        maxPixelSize?.let { setValue(it, forKey = kCGImageDestinationImageMaxPixelSize.asKey()) }
+    }
+    val data = NSMutableData()
+    val cfData: CFMutableDataRef? = CFBridgingRetain(data)?.reinterpret()
+    val cfType: CFStringRef? = CFBridgingRetain(JPEG_TYPE_IDENTIFIER)?.reinterpret()
+    val cfOptions: CFDictionaryRef? = CFBridgingRetain(options)?.reinterpret()
+    val destination = CGImageDestinationCreateWithData(cfData, cfType, 1u, null)
+
+    val written = destination != null && run {
+        CGImageDestinationAddImageFromSource(destination, source, 0u, cfOptions)
+        CGImageDestinationFinalize(destination)
+    }
+
+    destination?.let { CFRelease(it) }
+    cfOptions?.let { CFRelease(it) }
+    cfType?.let { CFRelease(it) }
+    cfData?.let { CFRelease(it) }
+    return data.takeIf { written }
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun CFStringRef?.asKey(): String = CFBridgingRelease(CFRetain(this)) as String
+
+private fun Any?.asDouble(): Double? = (this as? NSNumber)?.doubleValue ?: (this as? Number)?.toDouble()

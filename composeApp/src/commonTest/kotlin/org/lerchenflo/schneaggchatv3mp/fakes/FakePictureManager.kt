@@ -46,6 +46,12 @@ class FakePictureManager : PictureManager {
     val pickedImages = mutableMapOf<String, ByteArray>()
     override suspend fun readPickedImage(uri: String): ByteArray? = pickedImages[uri]
 
+    val reencodeRequests = CallLog<ByteArray>()
+    override suspend fun encodeJpegKeepingMetadata(imageBytes: ByteArray, maxBytes: Int): ByteArray {
+        reencodeRequests.record(imageBytes)
+        return imageBytes
+    }
+
     override suspend fun downloadImage(filePath: String, fileName: String): String {
         downloadedImages.record(filePath to fileName)
         return path(fileName)
