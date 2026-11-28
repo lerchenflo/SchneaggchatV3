@@ -4,15 +4,10 @@ import io.ktor.client.HttpClient
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
-import org.lerchenflo.schneaggchatv3mp.datasource.network.appendFile
-import org.lerchenflo.schneaggchatv3mp.datasource.network.appendJsonPart
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.AudioMessageRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.EditMessageRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.ImageMessageRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageSyncResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollEditRequest
@@ -20,6 +15,11 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollMessageRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.ReactionRequest
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
+import org.lerchenflo.schneaggchatv3mp.datasource.network.appendFile
+import org.lerchenflo.schneaggchatv3mp.datasource.network.appendJsonPart
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 /** [MessageRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */

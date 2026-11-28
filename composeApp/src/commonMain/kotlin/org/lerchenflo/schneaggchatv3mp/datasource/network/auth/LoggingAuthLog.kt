@@ -3,8 +3,8 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.auth
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
 
 /**
  * [AuthLog] on top of [Logger]. Persisting a line is three Room calls and the manager

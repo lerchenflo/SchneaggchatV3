@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.fakes
 
 import androidx.compose.ui.graphics.ImageBitmap
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.media.PictureManager
 
 /**
  * In-memory [PictureManager]: "files" live in [storedPictures], paths are `pictures/<name>`.

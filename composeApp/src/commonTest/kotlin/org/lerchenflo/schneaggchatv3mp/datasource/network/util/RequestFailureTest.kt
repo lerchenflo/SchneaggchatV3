@@ -7,13 +7,13 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNull
 import assertk.assertions.single
-import kotlin.test.Test
 import kotlinx.coroutines.test.runTest
 import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
+import kotlin.test.Test
 
 private const val SEARCH_REQUEST = "GET /users/availableusers?searchterm=secret"
 

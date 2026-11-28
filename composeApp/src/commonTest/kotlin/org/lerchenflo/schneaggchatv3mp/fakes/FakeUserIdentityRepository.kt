@@ -1,12 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.fakes
 
-import kotlin.time.Duration
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
+import kotlin.time.Duration
 
 /** In-memory [UserIdentityRepository]. Serves [identities]; ids without an entry are unknown. */
 class FakeUserIdentityRepository : UserIdentityRepository {

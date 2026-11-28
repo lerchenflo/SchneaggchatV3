@@ -8,6 +8,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
+import io.github.lerchenflo.voicemessages.VoiceRecordingController
+import io.github.lerchenflo.voicemessages.VoiceRecordingState
+import io.github.lerchenflo.voicemessages.ui.VoiceMessageRecordingBar
+import io.github.lerchenflo.voicemessages.ui.VoiceMessageRecordingBarTexts
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatAction
@@ -15,11 +20,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.audio.voiceMessagePlayerTexts
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
-import io.github.lerchenflo.voicemessages.VoicePlaybackState
-import io.github.lerchenflo.voicemessages.VoiceRecordingController
-import io.github.lerchenflo.voicemessages.VoiceRecordingState
-import io.github.lerchenflo.voicemessages.ui.VoiceMessageRecordingBar
-import io.github.lerchenflo.voicemessages.ui.VoiceMessageRecordingBarTexts
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.chat_discard_recording
 import schneaggchatv3mp.composeapp.generated.resources.message

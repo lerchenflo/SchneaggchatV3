@@ -1,8 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
-import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserIdentityRepository
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.containsExactlyInAnyOrder
@@ -27,16 +24,20 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomMessageDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.RoomUserDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
-import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeEventRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeSettingsRepository
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.testutil.createInMemoryAppDatabase
 import org.lerchenflo.schneaggchatv3mp.testutil.createTestSettingsRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.testutil.resetGlobalState
@@ -47,7 +48,6 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
 
 private const val OWN_ID = "me"
 

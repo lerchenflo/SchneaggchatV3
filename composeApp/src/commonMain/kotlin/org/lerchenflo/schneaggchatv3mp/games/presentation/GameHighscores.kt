@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -30,16 +30,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.games.domain.BoardAxis
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
-import org.lerchenflo.schneaggchatv3mp.games.domain.BoardAxis
 import org.lerchenflo.schneaggchatv3mp.games.domain.dartCounterCountdown
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
@@ -47,11 +47,11 @@ import schneaggchatv3mp.composeapp.generated.resources.highscores_board_english
 import schneaggchatv3mp.composeapp.generated.resources.highscores_board_german
 import schneaggchatv3mp.composeapp.generated.resources.highscores_empty
 import schneaggchatv3mp.composeapp.generated.resources.highscores_error
-import schneaggchatv3mp.composeapp.generated.resources.highscores_retry
 import schneaggchatv3mp.composeapp.generated.resources.highscores_period_all_time
 import schneaggchatv3mp.composeapp.generated.resources.highscores_period_daily
 import schneaggchatv3mp.composeapp.generated.resources.highscores_period_weekly
 import schneaggchatv3mp.composeapp.generated.resources.highscores_period_yearly
+import schneaggchatv3mp.composeapp.generated.resources.highscores_retry
 import schneaggchatv3mp.composeapp.generated.resources.highscores_title
 
 /**

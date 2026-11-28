@@ -9,12 +9,12 @@ import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.safeNetworkCall
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
-import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
+import org.lerchenflo.schneaggchatv3mp.utilities.device.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.device.DEVICETYPE
 
 /**
  * `POST /auth/refresh` through the client **without** the Auth plugin. Deliberately not routed

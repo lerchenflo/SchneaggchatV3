@@ -29,8 +29,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.utilities.toFormattedString
-import org.lerchenflo.schneaggchatv3mp.utilities.weekdayShortResource
+import org.lerchenflo.schneaggchatv3mp.utilities.format.toFormattedString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.weekdayShortResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.ok

@@ -6,7 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -49,9 +48,9 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.utilities.bearing
-import org.lerchenflo.schneaggchatv3mp.utilities.distanceMeters
-import org.lerchenflo.schneaggchatv3mp.utilities.formatDistance
+import org.lerchenflo.schneaggchatv3mp.utilities.geo.bearing
+import org.lerchenflo.schneaggchatv3mp.utilities.geo.distanceMeters
+import org.lerchenflo.schneaggchatv3mp.utilities.geo.formatDistance
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.direction_e
 import schneaggchatv3mp.composeapp.generated.resources.direction_n

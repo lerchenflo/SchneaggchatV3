@@ -6,7 +6,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toUserEntity
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.toSyncedSettings
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.media.PictureManager
 
 /**
  * Writes the user rows the server sends (`/users/sync` and the socket `UserChange`) into the local

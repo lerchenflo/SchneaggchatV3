@@ -2,11 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.events.data.remote
 
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventJoinResponse
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 
 /** Server calls for events: sync, upsert, join, participation and detach/delete. */

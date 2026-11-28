@@ -33,10 +33,10 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.formatCountdown
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.rememberCountdownMillis
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
-import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.isBirthdayToday
+import org.lerchenflo.schneaggchatv3mp.utilities.format.iso8601DateFormatter
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.birthday_label
 import schneaggchatv3mp.composeapp.generated.resources.group_expired

@@ -40,11 +40,11 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.RouteInsert
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.RouteTransportMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.arrivalMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.departureMode
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.googleMapsRouteLink
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.insertInto
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.mode
-import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.plannedRouteOf
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.mostUsedArrivalMode
-import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.googleMapsRouteLink
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.plannedRouteOf
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.sortIndexUpdates
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.timeOrderPosition
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
@@ -55,10 +55,10 @@ import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.reduce
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.layers.withPlacesDropdownClosed
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.userIdentityNameText
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.distanceMeters
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.geo.distanceMeters
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.route_kind_waypoint
 import schneaggchatv3mp.composeapp.generated.resources.route_navigation_cut

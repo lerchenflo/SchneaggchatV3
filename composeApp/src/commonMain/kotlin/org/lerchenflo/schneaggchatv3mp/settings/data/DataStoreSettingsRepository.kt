@@ -4,24 +4,24 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
-import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
-import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Draft
-import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
-import org.lerchenflo.schneaggchatv3mp.settings.domain.ProfilePicVisibility
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Draft
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.settings.data.remote.SettingsRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ProfilePicVisibility
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SyncedSettings
+import org.lerchenflo.schneaggchatv3mp.settings.domain.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.device.LanguageService
 
 /** [SettingsRepository] on top of the DataStore wrapper [Preferencemanager], pushing synced settings via [SettingsRemoteDataSource]. */
 class DataStoreSettingsRepository(

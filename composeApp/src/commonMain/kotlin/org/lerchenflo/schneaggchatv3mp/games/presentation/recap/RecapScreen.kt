@@ -50,16 +50,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.DOWNTIME_RECAP_YEAR
+import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapBetaTesterPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapChatEmojiPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapChatSpeedPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapChatStarterPage
-import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapChatEmojiPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapDowntimePage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapFeedbackReportsPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapFeedbackVotesPage
-import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapWakesPage
-import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapDowntimePage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapGamesPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapGroupsPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapIntroPage
@@ -76,6 +75,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapSocia
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapTopContactsPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapTypingPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapUsageTimePage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapWakesPage
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.recap_close
 import schneaggchatv3mp.composeapp.generated.resources.recap_hold_hint

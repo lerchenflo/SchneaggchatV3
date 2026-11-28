@@ -15,13 +15,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobStatus
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.EVENTS
@@ -31,8 +24,15 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.MAP
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.MESSAGES
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType.USERS
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 
 /**
  * [DataSyncCoordinator] running the repositories' own syncs. Moved verbatim from AppRepository

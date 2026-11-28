@@ -6,7 +6,7 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.toLocalDateTime
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
 
 @OptIn(FormatStringsInDatetimeFormats::class)
 fun formatAllLogs(logs: List<LogEntry>): String {

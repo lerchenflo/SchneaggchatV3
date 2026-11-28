@@ -20,11 +20,11 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutCardDivider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutCardPart
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutEditButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.about_friends_say
 import schneaggchatv3mp.composeapp.generated.resources.chat_details_about_title
 import schneaggchatv3mp.composeapp.generated.resources.chat_details_friends_about_write_first
-import schneaggchatv3mp.composeapp.generated.resources.about_friends_say
 import schneaggchatv3mp.composeapp.generated.resources.chat_details_group_about_empty
 import schneaggchatv3mp.composeapp.generated.resources.chat_details_group_about_title
 import schneaggchatv3mp.composeapp.generated.resources.chat_details_group_about_write

@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_anonym
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_private

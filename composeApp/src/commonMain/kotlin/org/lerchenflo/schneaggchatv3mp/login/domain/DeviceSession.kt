@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.login.domain
 
-import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
+import org.lerchenflo.schneaggchatv3mp.utilities.device.DEVICETYPE
 
 /**
  * One logged-in device (server session) of the own account, as returned by

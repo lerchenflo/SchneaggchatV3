@@ -1,17 +1,17 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
-import schneaggchatv3mp.composeapp.generated.resources.system_event_changed
-import schneaggchatv3mp.composeapp.generated.resources.notification_fallback_body
-import schneaggchatv3mp.composeapp.generated.resources.event_reminder_noti_body_at
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventUpdateChange
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.leadTimeTextOf
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_reminder_noti_body
+import schneaggchatv3mp.composeapp.generated.resources.event_reminder_noti_body_at
 import schneaggchatv3mp.composeapp.generated.resources.event_reminder_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.event_update_start_and_location
+import schneaggchatv3mp.composeapp.generated.resources.notification_fallback_body
 import schneaggchatv3mp.composeapp.generated.resources.system_event_cancelled
+import schneaggchatv3mp.composeapp.generated.resources.system_event_changed
 import schneaggchatv3mp.composeapp.generated.resources.system_event_location_changed
 import schneaggchatv3mp.composeapp.generated.resources.system_event_start_changed
 

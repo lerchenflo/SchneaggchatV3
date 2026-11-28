@@ -4,8 +4,8 @@ import android.app.Application
 import org.lerchenflo.schneaggchatv3mp.app.logging.logAbnormalLastExit
 import org.lerchenflo.schneaggchatv3mp.di.logCrash
 import org.lerchenflo.schneaggchatv3mp.di.startKoinAndroid
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationConfig
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationManager
 
 class MainApp: Application() {
 

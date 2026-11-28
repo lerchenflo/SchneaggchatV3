@@ -2,12 +2,12 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.remote
 
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageSyncResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollEditRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.PollVoteRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
 
 /** Server calls for messages: send, sync, read state, edit/delete/react, polls and media. */
 interface MessageRemoteDataSource {

@@ -22,7 +22,9 @@ import androidx.core.app.RemoteInput
 import androidx.core.content.LocusIdCompat
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.IconCompat
+import androidx.core.graphics.scale
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -35,10 +37,9 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
-import java.io.File
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.media.PictureManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.mark_as_read
 import schneaggchatv3mp.composeapp.generated.resources.notification_channel_general
@@ -49,11 +50,10 @@ import schneaggchatv3mp.composeapp.generated.resources.notification_channel_soci
 import schneaggchatv3mp.composeapp.generated.resources.reply
 import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
 import schneaggchatv3mp.composeapp.generated.resources.you_sender
+import java.io.File
 import kotlin.coroutines.resume
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.scale
 
 //One channel per NotificationKind, so users can tune each kind in the system settings. The
 //messages channel keeps its old id, so existing settings for it stay.

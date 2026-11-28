@@ -49,9 +49,9 @@ import androidx.compose.ui.window.DialogProperties
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
-import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
+import org.lerchenflo.schneaggchatv3mp.utilities.device.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
 
 @Composable
 fun LogsDialog(

@@ -8,16 +8,16 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.MapLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.MapRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.MapEntryRequest
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.MapEntryRequest
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.toMapEntry
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.MapRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapRepository
 
 /** [MapRepository] on top of the local [MapLocalDataSource] and the server via [MapRemoteDataSource]. */
 class OfflineFirstMapRepository(

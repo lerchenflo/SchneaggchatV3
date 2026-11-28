@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.fakes
 
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
-import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
+import org.lerchenflo.schneaggchatv3mp.utilities.device.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.device.DEVICETYPE
 
 /** [AppVersion] of the given [device] (default Android). */
 class FakeAppVersion(

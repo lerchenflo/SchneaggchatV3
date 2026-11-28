@@ -34,12 +34,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
-import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
+import org.lerchenflo.schneaggchatv3mp.utilities.device.DEVICETYPE
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_last_active

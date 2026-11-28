@@ -11,11 +11,10 @@ import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.domain.onError
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
-import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.getCurrentTimeMillisString
 
 const val ACTION_REPLY = "org.lerchenflo.schneaggchatv3mp.REPLY"
 const val KEY_REPLY_TEXT = "reply_text"

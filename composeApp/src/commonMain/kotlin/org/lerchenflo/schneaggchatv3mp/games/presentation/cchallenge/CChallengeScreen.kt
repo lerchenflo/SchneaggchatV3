@@ -40,7 +40,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresDialog
 import org.lerchenflo.schneaggchatv3mp.games.presentation.formatGameTime
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.utilities.rememberToday
+import org.lerchenflo.schneaggchatv3mp.utilities.format.rememberToday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.game_exit
 import schneaggchatv3mp.composeapp.generated.resources.games_cchallenge_bug_keyword_typo

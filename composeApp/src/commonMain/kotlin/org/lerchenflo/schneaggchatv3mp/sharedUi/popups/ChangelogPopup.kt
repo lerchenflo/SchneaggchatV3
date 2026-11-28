@@ -44,14 +44,14 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.app.data.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.changelog_announcements
 import schneaggchatv3mp.composeapp.generated.resources.changelog_bug_fixes
 import schneaggchatv3mp.composeapp.generated.resources.changelog_features
-import schneaggchatv3mp.composeapp.generated.resources.changelog_highlights
 import schneaggchatv3mp.composeapp.generated.resources.changelog_got_it
+import schneaggchatv3mp.composeapp.generated.resources.changelog_highlights
 import schneaggchatv3mp.composeapp.generated.resources.changelog_no_details
 import schneaggchatv3mp.composeapp.generated.resources.changelog_version
 import schneaggchatv3mp.composeapp.generated.resources.changelog_whats_new

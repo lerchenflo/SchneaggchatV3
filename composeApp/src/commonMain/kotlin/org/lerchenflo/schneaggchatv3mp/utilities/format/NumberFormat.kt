@@ -1,0 +1,64 @@
+package org.lerchenflo.schneaggchatv3mp.utilities.format
+
+import kotlin.math.abs
+import kotlin.math.absoluteValue
+import kotlin.math.roundToLong
+
+// Up to 9 digits, optionally followed by "." or "," and up to 2 decimals. Also allows the
+// in-between states while typing ("12," / ",5").
+private val AMOUNT_INPUT_REGEX = Regex("^\\d{0,9}([.,]\\d{0,2})?$")
+
+fun currencySymbol(currency: String): String = when (currency) {
+    "EUR" -> "€"
+    "USD" -> "$"
+    "GBP" -> "£"
+    else -> currency
+}
+
+/**
+ * "1234,50 €" for 123450 cents. [decimalSeparator] comes from the current language
+ * (`Res.string.decimal_separator`). With [signed] a positive amount gets a leading "+", a negative
+ * one always gets "-".
+ */
+fun formatMoney(cents: Long, currency: String, decimalSeparator: String, signed: Boolean = false): String {
+    val sign = when {
+        cents < 0L -> "-"
+        signed && cents > 0L -> "+"
+        else -> ""
+    }
+    return "$sign${formatAmountNumber(cents.absoluteValue, decimalSeparator)} ${currencySymbol(currency)}"
+}
+
+/** "1234,50" - the number only, also used to prefill an amount field. */
+fun formatAmountNumber(cents: Long, decimalSeparator: String): String {
+    val whole = cents / 100
+    val fraction = (cents % 100).toString().padStart(2, '0')
+    return "$whole$decimalSeparator$fraction"
+}
+
+/** Whether [text] may stand in an amount field (also while typing). */
+fun isValidAmountInput(text: String): Boolean = AMOUNT_INPUT_REGEX.matches(text)
+
+/** "12" / "12.5" / "12,50" to cents; null when blank or not an amount. */
+fun parseAmountToCents(text: String): Long? {
+    if (text.isBlank() || !isValidAmountInput(text)) return null
+
+    val parts = text.split('.', ',')
+    val whole = parts[0].ifEmpty { "0" }.toLong()
+    val fraction = parts.getOrNull(1).orEmpty().padEnd(2, '0').toLong()
+    return whole * 100 + fraction
+}
+
+/**
+ * Fixed-decimal formatting, because kotlin common has no printf and toString() would fall back to
+ * scientific notation on the extremes.
+ */
+fun Double.toFixed(decimals: Int): String {
+    var factor = 1L
+    repeat(decimals) { factor *= 10 }
+    val scaled = (abs(this) * factor).roundToLong()
+    val sign = if (this < 0) "-" else ""
+    val whole = scaled / factor
+    if (decimals == 0) return "$sign$whole"
+    return "$sign$whole.${(scaled % factor).toString().padStart(decimals, '0')}"
+}

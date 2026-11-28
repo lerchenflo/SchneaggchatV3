@@ -25,7 +25,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -44,6 +43,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -56,6 +56,8 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButto
 import org.lerchenflo.schneaggchatv3mp.sharedUi.EmailInputField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImagePickPurpose
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImageSourcePickerDialog
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt1
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt2
@@ -77,8 +79,6 @@ import schneaggchatv3mp.composeapp.generated.resources.tooltip_password_repeat
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_terms
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_username
 import schneaggchatv3mp.composeapp.generated.resources.username
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImagePickPurpose
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImageSourcePickerDialog
 
 
 @Composable

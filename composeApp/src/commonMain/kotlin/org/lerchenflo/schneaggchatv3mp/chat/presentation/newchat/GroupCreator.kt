@@ -37,12 +37,14 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.utilities.validateName
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImagePickPurpose
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImageSourcePickerDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
+import org.lerchenflo.schneaggchatv3mp.utilities.format.validateName
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.group_members_can_add_info
@@ -53,8 +55,6 @@ import schneaggchatv3mp.composeapp.generated.resources.new_group
 import schneaggchatv3mp.composeapp.generated.resources.profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_group_description
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_group_name
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImagePickPurpose
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImageSourcePickerDialog
 
 @Composable
 fun GroupCreatorScreenRoot(

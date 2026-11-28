@@ -26,8 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.SPEEDOMETER_FILL
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.SPEEDOMETER_RING
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.SPEEDOMETER_TEXT
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_horse_restless
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_map_cave
@@ -35,12 +41,6 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_map_f
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_map_rainbow
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_map_sea
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_map_welcome
-import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.SPEEDOMETER_FILL
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.SPEEDOMETER_RING
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.SPEEDOMETER_TEXT
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.RodeoVehicleKind
 
 /** Pops up over the track when the rider boards a vehicle. */
 @Composable

@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ReaderUi
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.read_at_time
 

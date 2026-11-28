@@ -1,20 +1,18 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data
 
-import kotlin.time.Duration
-import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 import org.lerchenflo.schneaggchatv3mp.LOOKEDUPUSERPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
@@ -23,8 +21,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.LookedUpUserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toUserIdentity
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.UserRemoteDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserLookupResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.USER_LOOKUP_MAX_IDS
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserLookupResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toLookedUpUserEntities
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
@@ -32,8 +30,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
+import org.lerchenflo.schneaggchatv3mp.utilities.format.getCurrentTimeMillisLong
+import org.lerchenflo.schneaggchatv3mp.utilities.media.PictureManager
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes

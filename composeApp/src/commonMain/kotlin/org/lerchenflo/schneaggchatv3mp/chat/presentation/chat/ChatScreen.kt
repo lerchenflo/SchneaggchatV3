@@ -11,6 +11,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -20,7 +21,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatInp
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatMessageList
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatTopBar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
-import io.github.lerchenflo.voicemessages.VoicePlaybackState
 
 @Composable
 fun ChatScreenRoot(

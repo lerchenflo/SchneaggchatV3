@@ -1,9 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toFriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNetworkFriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 
 fun UserEntity.toUser(): User = User(
     id = this.id,

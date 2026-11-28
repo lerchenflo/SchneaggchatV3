@@ -6,7 +6,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.context.startKoin
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.setupImageLoader
-import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.device.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.SharedNotificationDefaults
 
 fun initKoin(){

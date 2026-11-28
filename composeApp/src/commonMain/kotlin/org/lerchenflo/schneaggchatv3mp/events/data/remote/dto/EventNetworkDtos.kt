@@ -1,13 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.events.data.remote.dto
 
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
 
 @Serializable
 data class EventSyncResponse(

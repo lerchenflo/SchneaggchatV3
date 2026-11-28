@@ -12,6 +12,8 @@ import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventDelet
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.AddExtensionDialog
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.ExtensionListAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImagePickPurpose
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImageSourcePickerDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change_nickname
@@ -32,8 +34,6 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImagePickPurpose
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImageSourcePickerDialog
 
 /** The dialog [ChatDetailsState.dialog] names, if any. */
 @Composable

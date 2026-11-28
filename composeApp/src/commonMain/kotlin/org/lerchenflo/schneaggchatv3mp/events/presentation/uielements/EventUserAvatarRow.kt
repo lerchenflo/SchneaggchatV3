@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 
 /** Labelled horizontal strip of user avatars - the invited users, and each participation bucket. */
 @Composable

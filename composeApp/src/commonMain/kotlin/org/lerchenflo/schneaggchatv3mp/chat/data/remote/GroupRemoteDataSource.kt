@@ -1,12 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data.remote
 
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NetworkGroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 
 /** Server calls for groups: sync, creation, profile and members. */
 interface GroupRemoteDataSource {

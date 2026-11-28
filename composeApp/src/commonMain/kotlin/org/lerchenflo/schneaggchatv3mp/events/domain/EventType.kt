@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.events.domain
 
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.DirectionsCar
@@ -20,10 +21,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.*
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.BEER
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.DRIVING
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.FOOD
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.GAMING
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.HORSE_RIDING
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.MEETUP
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.MOVIE
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.OTHER
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.OUTDOOR
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.PARTY
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.SPORT
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.TRIP
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.WORK
 import schneaggchatv3mp.composeapp.generated.resources.Res
-
-
 import schneaggchatv3mp.composeapp.generated.resources.event_type_beer
 import schneaggchatv3mp.composeapp.generated.resources.event_type_driving
 import schneaggchatv3mp.composeapp.generated.resources.event_type_food

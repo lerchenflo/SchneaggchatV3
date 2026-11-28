@@ -11,26 +11,26 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.map
 import org.lerchenflo.schneaggchatv3mp.app.domain.onError
 import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
-import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
-import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.login.domain.DeviceSession
-import org.lerchenflo.schneaggchatv3mp.login.domain.SavedCredsResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.SessionCheck
-import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.toDeviceSession
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
-import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
+import org.lerchenflo.schneaggchatv3mp.login.data.remote.AuthRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.toDeviceSession
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.login.domain.DeviceSession
+import org.lerchenflo.schneaggchatv3mp.login.domain.SavedCredsResult
+import org.lerchenflo.schneaggchatv3mp.utilities.device.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import kotlin.time.Duration.Companion.seconds
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
-import org.lerchenflo.schneaggchatv3mp.login.data.remote.AuthRemoteDataSource
 
 //How long a logout waits for the server to drop the session before continuing to log out locally.
 private val LOGOUT_SERVER_CALL_TIMEOUT = 5.seconds

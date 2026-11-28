@@ -28,8 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import io.github.lerchenflo.taptarget.tapTarget
 import androidx.compose.ui.unit.dp
+import io.github.lerchenflo.taptarget.tapTarget
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -43,8 +44,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.systemEventText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DATE_CHIP_FORMAT
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DateChip
-import io.github.lerchenflo.voicemessages.VoicePlaybackState
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.new_messages
 import kotlin.time.Duration.Companion.milliseconds

@@ -7,23 +7,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
+import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
 import org.lerchenflo.schneaggchatv3mp.app.domain.onError
 import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
+import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
-import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
 import org.lerchenflo.schneaggchatv3mp.login.domain.DeviceSession
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
-import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.device.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.device.DEVICETYPE
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.logged_in_devices_logged_out
-import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
-import org.lerchenflo.schneaggchatv3mp.app.launchOnMain
 
 /**
  * One logged-in device of the own account, ready for display.

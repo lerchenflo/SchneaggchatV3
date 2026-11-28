@@ -1,18 +1,18 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenu
@@ -33,6 +33,8 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.Settings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.map_sighting_push
+import schneaggchatv3mp.composeapp.generated.resources.map_sighting_push_info
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_locations
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_locations_info
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_users
@@ -43,8 +45,6 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_map_style
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
-import schneaggchatv3mp.composeapp.generated.resources.map_sighting_push
-import schneaggchatv3mp.composeapp.generated.resources.map_sighting_push_info
 import schneaggchatv3mp.composeapp.generated.resources.sort_map_users_by_pinned
 import schneaggchatv3mp.composeapp.generated.resources.sort_map_users_by_pinned_info
 

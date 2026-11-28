@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi.text
 
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName

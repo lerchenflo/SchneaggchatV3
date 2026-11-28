@@ -4,14 +4,14 @@ import io.ktor.client.HttpClient
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupActionRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSyncResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NetworkGroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.appendProfilePic
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupActionRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.GroupResponse
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NetworkGroupMemberAction
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 /** [GroupRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */

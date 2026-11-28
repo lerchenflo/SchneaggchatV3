@@ -4,9 +4,6 @@ import io.ktor.client.HttpClient
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
-import org.lerchenflo.schneaggchatv3mp.datasource.network.appendProfilePic
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.LocationShareRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NewFriendsUserResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserLookupRequest
@@ -17,6 +14,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.WakeGlobalRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.WakePermissionRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.WakeRequest
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.WakeResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
+import org.lerchenflo.schneaggchatv3mp.datasource.network.appendProfilePic
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 /** [UserRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */

@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.domain
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 
 // All recap data classes live in this single file on purpose:
 // network DTOs (mirroring the server /recap response) first, UI models below.

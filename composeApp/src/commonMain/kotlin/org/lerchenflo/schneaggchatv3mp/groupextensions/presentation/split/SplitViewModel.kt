@@ -6,9 +6,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
@@ -18,9 +18,9 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.isSuccess
 import org.lerchenflo.schneaggchatv3mp.app.domain.reportErrorTo
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionItemData.SplitExpense
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtension
@@ -33,8 +33,8 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.totalExpense
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.detail.toExpenseDetailUi
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor.SplitTransferDraft
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DATE_CHIP_FORMAT
-import org.lerchenflo.schneaggchatv3mp.utilities.formatMoney
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.formatMoney
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.decimal_separator
 import kotlin.math.absoluteValue

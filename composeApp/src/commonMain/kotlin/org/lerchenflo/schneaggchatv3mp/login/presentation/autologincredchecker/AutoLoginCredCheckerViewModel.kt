@@ -13,7 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.sessionExpiredErrorEvent
-import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
+import org.lerchenflo.schneaggchatv3mp.utilities.device.IncomingDataManager
 
 class AutoLoginCredCheckerViewModel(
     private val errorChannel: ErrorChannel,

@@ -4,9 +4,9 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,9 +42,9 @@ import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.featurequiz.FeatureQuizAnswerResult
-import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresDialog
 import org.lerchenflo.schneaggchatv3mp.games.domain.featurequiz.FeatureQuizCard
 import org.lerchenflo.schneaggchatv3mp.games.domain.featurequiz.FeatureQuizOption
+import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoresDialog
 import org.lerchenflo.schneaggchatv3mp.games.presentation.featurequiz.uielements.FeatureQuizFeatureCard
 import org.lerchenflo.schneaggchatv3mp.games.presentation.featurequiz.uielements.FeatureQuizHeader
 import org.lerchenflo.schneaggchatv3mp.games.presentation.featurequiz.uielements.FeatureQuizModePicker

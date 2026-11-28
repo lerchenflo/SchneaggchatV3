@@ -1,12 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.announcements
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.Announcement
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementDraft
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementLimits
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementText
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 import kotlin.time.Duration.Companion.days
 
 /** Languages of the form, in the order they are shown. German is the only required one. */

@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.undercover
 
 import org.lerchenflo.schneaggchatv3mp.games.domain.GamePlayer
 import org.lerchenflo.schneaggchatv3mp.games.presentation.HighscoreUploadState
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 
 data class UndercoverState(
     val phase: UndercoverPhase = UndercoverPhase.SETUP,

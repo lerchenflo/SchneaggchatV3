@@ -3,9 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -19,7 +17,11 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapPageThemes
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_clean_record
 import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_exception_count
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_first_exception
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_push_failures
 import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_title
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_top_endpoint_label
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_top_exception_label
 import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_your_rank
 import schneaggchatv3mp.composeapp.generated.resources.recap_games_not_ranked
 import schneaggchatv3mp.composeapp.generated.resources.recap_games_points
@@ -36,18 +38,14 @@ import schneaggchatv3mp.composeapp.generated.resources.recap_map_leaderboard_tit
 import schneaggchatv3mp.composeapp.generated.resources.recap_map_not_ranked
 import schneaggchatv3mp.composeapp.generated.resources.recap_map_title
 import schneaggchatv3mp.composeapp.generated.resources.recap_map_your_rank
-import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_first_exception
-import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_push_failures
-import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_top_endpoint_label
-import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_top_exception_label
 import schneaggchatv3mp.composeapp.generated.resources.recap_password_failed_label
 import schneaggchatv3mp.composeapp.generated.resources.recap_password_failed_logins
 import schneaggchatv3mp.composeapp.generated.resources.recap_password_reset_label
-import schneaggchatv3mp.composeapp.generated.resources.recap_text_count
 import schneaggchatv3mp.composeapp.generated.resources.recap_password_reset_subtitle
 import schneaggchatv3mp.composeapp.generated.resources.recap_password_reset_this_year
 import schneaggchatv3mp.composeapp.generated.resources.recap_password_title
 import schneaggchatv3mp.composeapp.generated.resources.recap_rank_number
+import schneaggchatv3mp.composeapp.generated.resources.recap_text_count
 import schneaggchatv3mp.composeapp.generated.resources.recap_your_rank
 
 // Story pages built around a global ranking (messages, map, games, exceptions) and the

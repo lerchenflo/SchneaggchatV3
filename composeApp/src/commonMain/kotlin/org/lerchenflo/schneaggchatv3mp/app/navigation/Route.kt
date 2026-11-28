@@ -1,11 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.app.navigation
 
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.sharedcontent.SharedContentTab
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.editor.SplitTransferDraft
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
 sealed interface Route : NavKey {
 

@@ -41,12 +41,12 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.global_ranking_boards
-import schneaggchatv3mp.composeapp.generated.resources.highscores_retry
 import schneaggchatv3mp.composeapp.generated.resources.global_ranking_empty
 import schneaggchatv3mp.composeapp.generated.resources.global_ranking_error
 import schneaggchatv3mp.composeapp.generated.resources.global_ranking_explanation
 import schneaggchatv3mp.composeapp.generated.resources.global_ranking_points
 import schneaggchatv3mp.composeapp.generated.resources.global_ranking_title
+import schneaggchatv3mp.composeapp.generated.resources.highscores_retry
 
 /**
  * UI state for the cross-game leaderboard.

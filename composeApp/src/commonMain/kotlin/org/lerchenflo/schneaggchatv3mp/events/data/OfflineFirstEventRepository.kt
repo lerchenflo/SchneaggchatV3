@@ -7,26 +7,26 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.map
 import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toGroup
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.events.data.local.EventLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
-import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.EventRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventRequest
+import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.toEvent
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
-import org.lerchenflo.schneaggchatv3mp.events.domain.groupIds
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
+import org.lerchenflo.schneaggchatv3mp.events.domain.groupIds
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventRequest
-import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.toEvent
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.events.data.remote.EventRemoteDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toGroup
 
 /**
  * [EventRepository] on top of the local [EventLocalDataSource] and the server via [EventRemoteDataSource].

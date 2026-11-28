@@ -10,27 +10,27 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.map
 import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toEntity
-import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.UserRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserSyncResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toAvailableUser
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toWakeResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.AvailableUser
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.WakeResult
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toAvailableUser
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toWakeResult
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserSyncResponse
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.UserRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.utilities.media.PictureManager
 
 /**
  * [UserRepository] on top of the local [UserLocalDataSource] and the server via [UserRemoteDataSource].

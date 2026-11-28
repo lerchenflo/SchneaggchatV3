@@ -6,8 +6,8 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.SplitMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.consumedCents
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.splitMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitMemberUi
-import org.lerchenflo.schneaggchatv3mp.utilities.DATE_TIME_FORMAT
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.DATE_TIME_FORMAT
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
 
 /**
  * The detail popup content of this item, which holds [expense]. [members] must contain everyone

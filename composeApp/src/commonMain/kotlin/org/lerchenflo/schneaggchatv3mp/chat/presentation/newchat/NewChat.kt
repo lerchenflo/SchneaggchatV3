@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.friendRequestState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,29 +35,29 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.runtime.LaunchedEffect
-import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.lerchenflo.taptarget.tapTarget
 import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import io.github.lerchenflo.taptarget.tapTarget
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
+import org.lerchenflo.schneaggchatv3mp.chat.domain.friendRequestState
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.BigPictureHost
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberBigPictureState
-import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
-import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.common_friends
 import schneaggchatv3mp.composeapp.generated.resources.enter_username
@@ -73,7 +72,6 @@ import schneaggchatv3mp.composeapp.generated.resources.new_group
 import schneaggchatv3mp.composeapp.generated.resources.pending_friend_requests
 import schneaggchatv3mp.composeapp.generated.resources.search_results
 import schneaggchatv3mp.composeapp.generated.resources.search_user
-import schneaggchatv3mp.composeapp.generated.resources.send_friend_request
 
 @OptIn(InternalResourceApi::class, ExperimentalFoundationApi::class)
 @Composable

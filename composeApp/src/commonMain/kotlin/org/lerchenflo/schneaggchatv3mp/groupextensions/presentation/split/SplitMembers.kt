@@ -1,9 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.text.userIdentityNameText
-import org.jetbrains.compose.resources.getString
 import kotlinx.coroutines.flow.first
+import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.userIdentityNameText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.split_member_me
 

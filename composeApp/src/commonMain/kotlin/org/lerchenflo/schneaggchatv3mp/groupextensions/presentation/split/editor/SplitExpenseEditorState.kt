@@ -4,7 +4,7 @@ import androidx.compose.runtime.Stable
 import kotlinx.datetime.LocalDateTime
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.split.SplitMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.SplitMemberUi
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 
 @Stable
 data class SplitExpenseEditorState(

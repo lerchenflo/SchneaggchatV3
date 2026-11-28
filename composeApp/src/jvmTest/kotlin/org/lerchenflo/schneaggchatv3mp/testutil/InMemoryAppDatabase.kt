@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.testutil
 import androidx.room.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import kotlin.coroutines.CoroutineContext
 

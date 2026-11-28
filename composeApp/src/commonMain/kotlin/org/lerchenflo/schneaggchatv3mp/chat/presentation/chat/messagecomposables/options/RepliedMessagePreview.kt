@@ -22,9 +22,9 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
-import schneaggchatv3mp.composeapp.generated.resources.Res
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboPlainText
+import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.you_sender
 
 /**

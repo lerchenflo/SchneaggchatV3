@@ -12,11 +12,11 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorEvent
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.domain.SessionTerminator
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.error_server_unreachable
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 /**
  * The app's [AuthEventSink]: keeps `SessionCache` in step with the session manager, wipes the

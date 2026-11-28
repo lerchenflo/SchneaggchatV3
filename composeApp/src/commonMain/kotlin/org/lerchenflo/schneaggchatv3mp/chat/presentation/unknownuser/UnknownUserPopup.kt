@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.unknownuser
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
-import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,8 +32,10 @@ import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ZoomableProfilePicture
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberInsetProfilePicturePlaceholder
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.close

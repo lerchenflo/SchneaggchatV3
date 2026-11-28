@@ -7,7 +7,7 @@ import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_type_quotes
 import schneaggchatv3mp.composeapp.generated.resources.group_extension_type_route_planner

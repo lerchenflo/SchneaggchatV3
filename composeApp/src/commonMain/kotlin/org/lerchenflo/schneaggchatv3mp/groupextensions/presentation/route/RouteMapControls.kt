@@ -37,13 +37,13 @@ import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.edit
-import schneaggchatv3mp.composeapp.generated.resources.route_path_add_hint
-import schneaggchatv3mp.composeapp.generated.resources.route_path_close
 import schneaggchatv3mp.composeapp.generated.resources.route_add_to_route
 import schneaggchatv3mp.composeapp.generated.resources.route_all_days
 import schneaggchatv3mp.composeapp.generated.resources.route_day_number
 import schneaggchatv3mp.composeapp.generated.resources.route_empty_hint
 import schneaggchatv3mp.composeapp.generated.resources.route_open_place
+import schneaggchatv3mp.composeapp.generated.resources.route_path_add_hint
+import schneaggchatv3mp.composeapp.generated.resources.route_path_close
 import schneaggchatv3mp.composeapp.generated.resources.route_place_subtitle
 
 /** "All | Day 1 | Day 2 …" over the map, only for a route over several days. */

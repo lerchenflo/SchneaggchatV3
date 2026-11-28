@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.events.presentation.CalendarBirthday
-import org.lerchenflo.schneaggchatv3mp.utilities.ageOnDate
+import org.lerchenflo.schneaggchatv3mp.utilities.format.ageOnDate
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.birthday_label
 import schneaggchatv3mp.composeapp.generated.resources.birthday_turns_age

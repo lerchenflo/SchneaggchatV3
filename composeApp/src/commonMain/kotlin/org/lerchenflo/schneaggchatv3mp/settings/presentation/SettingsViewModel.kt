@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation
 
 import androidx.lifecycle.ViewModel
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.device.AppVersion
 
 class SettingsViewModel(
     appVersion: AppVersion,

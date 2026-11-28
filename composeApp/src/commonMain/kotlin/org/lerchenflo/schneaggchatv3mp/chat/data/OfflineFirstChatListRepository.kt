@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.MessageLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
@@ -22,15 +23,14 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.applySearchAndFilter
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
-import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
-import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
-import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.UserSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventRepository
 import org.lerchenflo.schneaggchatv3mp.settings.data.remote.SettingsRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.format.getCurrentTimeMillisString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.isBirthdayToday
 
 //Message search in the chat selector: how much the user has to type before the message table is
 //scanned, and how many hits are kept so a common word cannot build a list of thousands of rows.

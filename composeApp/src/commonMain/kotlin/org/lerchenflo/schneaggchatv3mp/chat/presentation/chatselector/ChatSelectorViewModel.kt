@@ -2,8 +2,6 @@
 
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
-import org.lerchenflo.schneaggchatv3mp.chat.domain.friendRequestState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterNone
 import androidx.compose.material.icons.filled.Groups
@@ -40,7 +38,11 @@ import org.lerchenflo.schneaggchatv3mp.announcement.domain.Announcement
 import org.lerchenflo.schneaggchatv3mp.announcement.domain.AnnouncementRepository
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.data.ChangelogEntry
+import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
 import org.lerchenflo.schneaggchatv3mp.app.domain.ErrorChannel
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.domain.isNetworkerror
@@ -49,22 +51,20 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.applySearchAndFilter
-import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncCoordinator
-import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
-import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.friendRequestState
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.login.domain.AuthRepository
 import org.lerchenflo.schneaggchatv3mp.settings.domain.SettingsRepository
-import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
-import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
-import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.device.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.device.IncomingDataManager
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
 import schneaggchatv3mp.composeapp.generated.resources.none

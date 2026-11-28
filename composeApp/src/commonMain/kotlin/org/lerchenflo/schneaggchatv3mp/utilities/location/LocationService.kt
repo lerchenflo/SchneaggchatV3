@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.location
 
 import kotlinx.coroutines.flow.Flow
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionState
 
 /**
  * Platform-agnostic location provider.

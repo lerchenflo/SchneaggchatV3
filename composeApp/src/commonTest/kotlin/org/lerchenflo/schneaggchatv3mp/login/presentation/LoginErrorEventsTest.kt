@@ -2,14 +2,14 @@ package org.lerchenflo.schneaggchatv3mp.login.presentation
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import kotlin.test.Test
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
 import schneaggchatv3mp.composeapp.generated.resources.error_login_server_error
 import schneaggchatv3mp.composeapp.generated.resources.error_login_too_many_requests
 import schneaggchatv3mp.composeapp.generated.resources.offline
+import kotlin.test.Test
 
 /** Only wrong credentials may read as the user's fault. */
 class LoginErrorEventsTest {

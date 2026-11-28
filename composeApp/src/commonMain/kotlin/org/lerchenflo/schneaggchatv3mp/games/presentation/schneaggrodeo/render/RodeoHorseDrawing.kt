@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyUi
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoLostPartUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoHorsePose
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoLostPartUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.FRONT_SUPPORT_PHASE
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HAND_Y

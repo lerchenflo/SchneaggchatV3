@@ -4,9 +4,9 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNull
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
-import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 
 /** What ends up in the popup ([DataError.message]) and what only in the logs ([DataError.debugInfo]). */
 class MapHttpStatusToErrorTest {

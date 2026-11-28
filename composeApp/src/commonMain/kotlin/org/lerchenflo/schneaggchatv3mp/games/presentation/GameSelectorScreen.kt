@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import io.github.lerchenflo.taptarget.tapTarget
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -57,7 +58,6 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import io.github.lerchenflo.taptarget.tapTarget
 import org.lerchenflo.schneaggchatv3mp.games.domain.BoardAxis
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
@@ -72,12 +72,12 @@ import schneaggchatv3mp.composeapp.generated.resources.games_difficulty_info_cou
 import schneaggchatv3mp.composeapp.generated.resources.games_difficulty_info_global
 import schneaggchatv3mp.composeapp.generated.resources.games_difficulty_info_hint
 import schneaggchatv3mp.composeapp.generated.resources.games_difficulty_info_language
+import schneaggchatv3mp.composeapp.generated.resources.games_random_game
 import schneaggchatv3mp.composeapp.generated.resources.games_tab_multiplayer
 import schneaggchatv3mp.composeapp.generated.resources.games_tab_solo
 import schneaggchatv3mp.composeapp.generated.resources.games_tab_tools
 import schneaggchatv3mp.composeapp.generated.resources.games_without_highscores
 import schneaggchatv3mp.composeapp.generated.resources.show_global_ranking
-import schneaggchatv3mp.composeapp.generated.resources.games_random_game
 import schneaggchatv3mp.composeapp.generated.resources.show_highscores
 import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 import kotlin.time.Clock

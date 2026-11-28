@@ -5,10 +5,11 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.map
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.GameRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.BatchScoreEntryRequest
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoresBatchRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GlobalRankingEntry
@@ -16,7 +17,6 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
 import org.lerchenflo.schneaggchatv3mp.games.domain.toGlobalRankingEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.toHighscoreEntry
-import org.lerchenflo.schneaggchatv3mp.games.data.remote.GameRemoteDataSource
 
 class GameHighscoreRepository(
     private val gameRemoteDataSource: GameRemoteDataSource,

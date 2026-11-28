@@ -18,22 +18,20 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
-import kotlin.math.PI
-import kotlin.math.atan
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoPeopleUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoSnailUi
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.SchneaggRodeoFrame
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.GROUND_OFFSET_UNITS
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HIGHEST_FENCE_CM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HOOVES_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HORSE_X
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MIN_FENCE_CM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.OVEN_MOUTH_X
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoMap
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoStopKind
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.RodeoWeather
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.HIGHEST_FENCE_CM
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.MIN_FENCE_CM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.SNAIL_SIZE
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.engine.WORLD_HEIGHT_UNITS
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -50,6 +48,8 @@ import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggrodeo_lasso_hint_stanislaus
 import schneaggchatv3mp.composeapp.generated.resources.icon_schneagg_alternative
 import schneaggchatv3mp.composeapp.generated.resources.rodeo_stanislaus
+import kotlin.math.PI
+import kotlin.math.atan
 
 /** Stands in for the amount in the money text, filled in while drawing. */
 private const val MONEY_PLACEHOLDER = "{amount}"

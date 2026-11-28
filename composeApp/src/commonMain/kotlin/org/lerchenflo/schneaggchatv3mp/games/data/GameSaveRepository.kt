@@ -16,7 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSave
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameSaveSlot
-import org.lerchenflo.schneaggchatv3mp.utilities.today
+import org.lerchenflo.schneaggchatv3mp.utilities.format.today
 import kotlin.time.Clock
 
 /**

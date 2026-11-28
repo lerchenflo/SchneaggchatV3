@@ -3,8 +3,8 @@ package org.lerchenflo.schneaggchatv3mp.testutil
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.device.IncomingDataManager
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.SnackbarManager
 
 /**
  * Puts the app-wide singletons `SessionCache`, `SnackbarManager`, `AppLifecycleManager`,

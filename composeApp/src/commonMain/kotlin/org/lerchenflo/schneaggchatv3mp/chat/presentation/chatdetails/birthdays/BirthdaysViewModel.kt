@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -14,10 +14,10 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.ageOnNextBirthday
-import org.lerchenflo.schneaggchatv3mp.utilities.daysUntilNextBirthday
-import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
-import org.lerchenflo.schneaggchatv3mp.utilities.nextBirthdayMonth
+import org.lerchenflo.schneaggchatv3mp.utilities.format.ageOnNextBirthday
+import org.lerchenflo.schneaggchatv3mp.utilities.format.daysUntilNextBirthday
+import org.lerchenflo.schneaggchatv3mp.utilities.format.isBirthdayToday
+import org.lerchenflo.schneaggchatv3mp.utilities.format.nextBirthdayMonth
 
 class BirthdaysViewModel(
     private val userRepository: UserRepository,

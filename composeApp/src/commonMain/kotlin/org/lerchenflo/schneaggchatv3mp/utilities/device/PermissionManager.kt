@@ -1,0 +1,65 @@
+package org.lerchenflo.schneaggchatv3mp.utilities.device
+
+// commonMain
+/**
+ * for checking and Requesting Permissions (todo JVM)
+ */
+interface PermissionManager {
+    /**
+     * returns the permissions state of the microphone permission
+     */
+    suspend fun checkMicrophonePermission(): PermissionState
+    /**
+     * requests the microphone permission
+     */
+    suspend fun requestMicrophonePermission(): PermissionState
+
+    /**
+     * Returns the current location permission state.
+     */
+    suspend fun checkLocationPermission(): PermissionState
+
+    /**
+     * Requests location permission if not yet granted.
+     * Returns the resulting [PermissionState].
+     */
+    suspend fun requestLocationPermission(): PermissionState
+
+    /**
+     * Returns the current notification permission state.
+     */
+    suspend fun checkNotificationPermission(): PermissionState
+
+    /**
+     * Requests notification permission if not yet granted.
+     * If [openSettings] is true, opens the system settings directly.
+     * Returns the resulting [PermissionState].
+     */
+    suspend fun requestNotificationPermission(openSettings: Boolean = false): PermissionState
+
+    /**
+     * Whether this platform may show a full screen UI over the lock screen (used by the wake
+     * alarm). Platforms without the concept report [PermissionState.GRANTED].
+     */
+    suspend fun checkFullScreenIntentPermission(): PermissionState
+
+    /**
+     * Sends the user to the OS screen where full screen intents can be granted. This is not a
+     * runtime permission dialog, so the returned state is simply the state as it was before
+     * leaving the app - re-check it once the user comes back.
+     */
+    suspend fun requestFullScreenIntentPermission(): PermissionState
+
+    /**
+     * Opens the app's settings screen in the system settings so the user can manually grant permissions.
+     */
+    fun openAppSettings()
+}
+
+// commonMain
+enum class PermissionState {
+    GRANTED,
+    DENIED,
+    PERMANENTLY_DENIED,
+    NOT_DETERMINED
+}

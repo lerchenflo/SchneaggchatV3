@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
 import kotlinx.serialization.json.Json
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventUpdateChange
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventUpdateChange
 
 /** What a map sighting push reports. The names are wire names and must match the server. */
 enum class MapSightingType { POLICE, RADAR }

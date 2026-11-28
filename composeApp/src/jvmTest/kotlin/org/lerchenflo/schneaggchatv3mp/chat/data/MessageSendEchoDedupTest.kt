@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.isTransient
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageRequest
 import org.lerchenflo.schneaggchatv3mp.testutil.FakeMessageServer.Reply
 import org.lerchenflo.schneaggchatv3mp.testutil.OWN_USER_ID
 import org.lerchenflo.schneaggchatv3mp.testutil.SendPathFixture
@@ -23,7 +24,6 @@ import org.lerchenflo.schneaggchatv3mp.testutil.resetGlobalState
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.MessageRequest
 
 /**
  * Characterization tests for the send echo (plan Phase 4.5, `MESSAGE_SEND_SYNC_REBUILD_PLAN.md`):

@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.app.errorCodeToUiText
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
+import org.lerchenflo.schneaggchatv3mp.games.data.remote.GameRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.games.domain.EmojiCountUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.GroupActivityUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.LongestMessageUi
@@ -24,9 +25,9 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.RecapPartnerUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.earnedBadges
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.iso8601DateFormatter
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.month_april
 import schneaggchatv3mp.composeapp.generated.resources.month_august
@@ -45,7 +46,6 @@ import schneaggchatv3mp.composeapp.generated.resources.recap_type_image
 import schneaggchatv3mp.composeapp.generated.resources.recap_type_poll
 import schneaggchatv3mp.composeapp.generated.resources.recap_type_text
 import kotlin.math.roundToInt
-import org.lerchenflo.schneaggchatv3mp.games.data.remote.GameRemoteDataSource
 
 data class RecapState(
     val isLoading: Boolean = true,

@@ -10,16 +10,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.SnailTrailPointEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toSnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.toUser
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.FriendLocationPayload
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.FriendLocationSnapshotEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SnailTrailPointPayload
-import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
+import org.lerchenflo.schneaggchatv3mp.utilities.format.getCurrentTimeMillisLong
 
 class RoomUserDataSource(
     private val database: AppDatabase,

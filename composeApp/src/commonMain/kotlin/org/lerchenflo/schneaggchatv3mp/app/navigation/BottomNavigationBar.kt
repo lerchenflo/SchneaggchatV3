@@ -12,8 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.NavKey
-import org.jetbrains.compose.resources.stringResource
 import io.github.lerchenflo.taptarget.tapTarget
+import org.jetbrains.compose.resources.stringResource
 
 fun getVisibleTopLevelDestinations(
     selectedKey: NavKey,

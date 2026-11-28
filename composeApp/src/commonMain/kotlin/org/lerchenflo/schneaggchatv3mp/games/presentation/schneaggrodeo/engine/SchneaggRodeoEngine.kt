@@ -17,7 +17,6 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
-import kotlin.random.Random
 
 // Schneagg Rodeo - how the game is put together
 //

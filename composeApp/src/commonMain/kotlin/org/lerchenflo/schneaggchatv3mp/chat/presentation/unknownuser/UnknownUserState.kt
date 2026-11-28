@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.unknownuser
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendRequestState
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 
 data class UnknownUserState(
     /** Resolved through the one name path; "Unknown user" until it is known. */

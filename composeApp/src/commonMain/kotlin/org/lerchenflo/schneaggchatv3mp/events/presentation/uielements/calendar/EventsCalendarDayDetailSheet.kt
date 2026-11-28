@@ -2,14 +2,13 @@
 
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -18,14 +17,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
-import org.lerchenflo.schneaggchatv3mp.events.presentation.CalendarBirthday
 import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
+import org.lerchenflo.schneaggchatv3mp.events.presentation.CalendarBirthday
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DateChip
-import org.lerchenflo.schneaggchatv3mp.utilities.toFormattedString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.toFormattedString
 
 /** Bottom sheet listing a single day's birthdays and events, opened from a tapped month-view day cell. */
 @Composable

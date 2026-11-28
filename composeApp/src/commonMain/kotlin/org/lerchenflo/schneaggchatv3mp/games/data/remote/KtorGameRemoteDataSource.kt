@@ -5,12 +5,12 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.GameScoreResponse
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.GlobalRankingResponse
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.HighscoresResponse
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.games.data.remote.dto.SubmitGameScoresBatchRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 
 /** [GameRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */

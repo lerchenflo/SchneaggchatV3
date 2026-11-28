@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.app.domain
 
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
-import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
+import org.lerchenflo.schneaggchatv3mp.app.data.ChangelogEntry
 
 /** Information about the app itself: installed version, changelog, server reachability. */
 interface AppInfoRepository {

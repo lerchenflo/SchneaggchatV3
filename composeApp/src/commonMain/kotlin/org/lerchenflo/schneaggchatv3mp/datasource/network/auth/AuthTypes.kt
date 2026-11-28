@@ -2,10 +2,10 @@
 
 package org.lerchenflo.schneaggchatv3mp.datasource.network.auth
 
+import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
-import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 
 /**
  * Outcome of one refresh attempt. Callers react very differently to each: `Retryable` and

@@ -54,12 +54,12 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.logging.formatAllLogs
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.getPasswordResetUrl
+import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.LogsDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
-import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
-import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.device.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.DeviceSizeConfiguration
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.build_number
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url

@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
@@ -24,8 +24,8 @@ import org.lerchenflo.schneaggchatv3mp.events.presentation.CalendarBirthday
 import org.lerchenflo.schneaggchatv3mp.events.presentation.birthdaysOn
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DateChip
-import org.lerchenflo.schneaggchatv3mp.utilities.toFormattedString
-import org.lerchenflo.schneaggchatv3mp.utilities.weekdayShortResource
+import org.lerchenflo.schneaggchatv3mp.utilities.format.toFormattedString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.weekdayShortResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.events_day_empty
 

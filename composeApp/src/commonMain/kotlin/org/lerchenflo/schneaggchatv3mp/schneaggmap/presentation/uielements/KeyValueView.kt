@@ -2,10 +2,9 @@
 
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,8 +26,8 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
@@ -43,12 +42,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
@@ -59,6 +58,8 @@ import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeDefinition
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeKey
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
@@ -69,12 +70,10 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.LongVal
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.StringValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
-import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
-import org.koin.compose.koinInject
-import org.koin.mp.KoinPlatform
-import kotlin.math.roundToInt
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
-import org.lerchenflo.schneaggchatv3mp.utilities.toFixed
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.DateTimePickerPopup
+import org.lerchenflo.schneaggchatv3mp.utilities.device.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.toFixed
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.copy
 import schneaggchatv3mp.composeapp.generated.resources.no
@@ -89,6 +88,7 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_datetime_pick
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_secret_hide
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_secret_show
 import schneaggchatv3mp.composeapp.generated.resources.yes
+import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.Instant
 

@@ -2,7 +2,20 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 
 import org.jetbrains.compose.resources.StringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.*
+import schneaggchatv3mp.composeapp.generated.resources.location_bicycle_underground_type_asphalt
+import schneaggchatv3mp.composeapp.generated.resources.location_bicycle_underground_type_dirt
+import schneaggchatv3mp.composeapp.generated.resources.location_bicycle_underground_type_gravel
+import schneaggchatv3mp.composeapp.generated.resources.location_bicycle_underground_type_other
+import schneaggchatv3mp.composeapp.generated.resources.location_bicycle_underground_type_trail
+import schneaggchatv3mp.composeapp.generated.resources.location_option_camping_kind_official_site
+import schneaggchatv3mp.composeapp.generated.resources.location_option_camping_kind_tolerated
+import schneaggchatv3mp.composeapp.generated.resources.location_option_camping_kind_wild_camping
+import schneaggchatv3mp.composeapp.generated.resources.location_option_offroad_discipline_both
+import schneaggchatv3mp.composeapp.generated.resources.location_option_offroad_discipline_enduro
+import schneaggchatv3mp.composeapp.generated.resources.location_option_offroad_discipline_motocross
+import schneaggchatv3mp.composeapp.generated.resources.location_option_venue_setting_both
+import schneaggchatv3mp.composeapp.generated.resources.location_option_venue_setting_indoor
+import schneaggchatv3mp.composeapp.generated.resources.location_option_venue_setting_outdoor
 
 /**
  * One selectable option of an [AttributeDefinition.EnumDef]. Implemented by enums - [name] is the

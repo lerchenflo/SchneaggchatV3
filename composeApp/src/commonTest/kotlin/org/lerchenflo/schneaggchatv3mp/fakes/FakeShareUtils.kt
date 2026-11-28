@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.fakes
 
-import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.device.ShareUtils
 
 /** [ShareUtils] that opens nothing and records what would have been shared or copied. */
 class FakeShareUtils : ShareUtils {

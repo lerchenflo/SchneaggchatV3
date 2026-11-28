@@ -7,14 +7,14 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.appendJsonPart
 import org.lerchenflo.schneaggchatv3mp.datasource.network.appendProfilePic
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventJoinRequest
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventJoinResponse
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventParticipationRequest
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.EventResponse
 import org.lerchenflo.schneaggchatv3mp.events.data.remote.dto.EventSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 
 /** [EventRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */

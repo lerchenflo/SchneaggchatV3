@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -30,6 +28,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
@@ -37,7 +36,8 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.events.domain.participationOf
 import org.lerchenflo.schneaggchatv3mp.events.domain.unansweredUserIds
 import org.lerchenflo.schneaggchatv3mp.events.domain.userIdsWithStatus
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_participation_count
 import schneaggchatv3mp.composeapp.generated.resources.event_participation_no_answer

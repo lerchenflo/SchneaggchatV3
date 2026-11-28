@@ -30,15 +30,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import io.github.lerchenflo.taptarget.tapTarget
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import io.github.lerchenflo.taptarget.tapTarget
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.WakeSettingsDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.device.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionState
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.notification_group_general
@@ -53,7 +54,6 @@ import schneaggchatv3mp.composeapp.generated.resources.wake_fullscreen_missing
 import schneaggchatv3mp.composeapp.generated.resources.wake_fullscreen_missing_info
 import schneaggchatv3mp.composeapp.generated.resources.wake_settings
 import schneaggchatv3mp.composeapp.generated.resources.wake_settings_info
-import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 
 @Composable
 fun NotificationSettings(

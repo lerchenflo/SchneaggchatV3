@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.login.data.remote.dto
 
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.utilities.DEVICETYPE
+import org.lerchenflo.schneaggchatv3mp.utilities.device.DEVICETYPE
 
 @Serializable
 data class LoginRequest(

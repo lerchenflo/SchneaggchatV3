@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import kotlin.time.Duration
 import kotlinx.coroutines.flow.Flow
+import kotlin.time.Duration
 
 /**
  * The one path from a user id to the shown name and picture: the users table first (the own

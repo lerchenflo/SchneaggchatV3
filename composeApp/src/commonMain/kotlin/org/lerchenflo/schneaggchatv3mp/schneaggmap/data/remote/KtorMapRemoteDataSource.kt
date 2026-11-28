@@ -6,10 +6,10 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MapEntryResponse
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.MapSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.MapEntryRequest
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.remote.dto.MapSyncResponse
 
 /** [MapRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */
 class KtorMapRemoteDataSource(

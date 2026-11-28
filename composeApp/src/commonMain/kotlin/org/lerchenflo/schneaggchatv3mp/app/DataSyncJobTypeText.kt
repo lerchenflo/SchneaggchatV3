@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.app
 
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobType
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.eventssync
 import schneaggchatv3mp.composeapp.generated.resources.feedbacksync

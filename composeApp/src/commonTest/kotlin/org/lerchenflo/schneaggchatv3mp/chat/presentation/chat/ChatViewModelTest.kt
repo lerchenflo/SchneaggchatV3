@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
-import io.github.lerchenflo.voicemessages.VoiceMessageFiles
 import androidx.compose.ui.text.input.TextFieldValue
 import assertk.assertThat
 import assertk.assertions.containsExactly
@@ -11,18 +10,18 @@ import assertk.assertions.isNull
 import assertk.assertions.isSameInstanceAs
 import assertk.assertions.prop
 import assertk.assertions.single
+import io.github.lerchenflo.voicemessages.VoiceMessageFiles
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageContent
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeErrorChannel
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeEventRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeGroupRepository
-import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeMessageRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeMessageRepository.SendCall
@@ -30,6 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.fakes.FakeNotifier
 import org.lerchenflo.schneaggchatv3mp.fakes.FakePermissionManager
 import org.lerchenflo.schneaggchatv3mp.fakes.FakePictureManager
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeSettingsRepository
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserRepository
 import org.lerchenflo.schneaggchatv3mp.testutil.MainDispatcherRule
 import org.lerchenflo.schneaggchatv3mp.testutil.TestViewModelStore

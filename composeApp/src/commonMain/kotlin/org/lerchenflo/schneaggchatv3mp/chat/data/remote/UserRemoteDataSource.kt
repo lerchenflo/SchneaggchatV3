@@ -2,11 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.remote
 
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.NewFriendsUserResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserLookupResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.WakeResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 
 /** Server calls for users: sync, profile, friendships, location sharing and wake. */
 interface UserRemoteDataSource {

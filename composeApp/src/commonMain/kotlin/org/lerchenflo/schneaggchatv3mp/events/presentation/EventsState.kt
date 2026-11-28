@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.datetime.LocalDate
@@ -9,9 +7,10 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.settings.domain.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.settings.domain.MapStyleSetting
 import kotlin.time.Clock
 
 @Stable

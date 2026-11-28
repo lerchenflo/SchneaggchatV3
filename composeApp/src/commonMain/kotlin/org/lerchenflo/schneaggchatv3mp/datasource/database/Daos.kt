@@ -21,13 +21,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.UserEntity
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.entity.relations.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.events.data.local.entity.EventEntity
 import org.lerchenflo.schneaggchatv3mp.feedback.data.local.entity.FeedbackCommentSeenEntity
 import org.lerchenflo.schneaggchatv3mp.feedback.data.local.entity.FeedbackEntryEntity
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.groupextensions.data.local.entity.GroupExtensionEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.local.entity.MapEntryEntity
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
 
 @Dao
 interface UserDao {

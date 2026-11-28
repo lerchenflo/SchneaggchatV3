@@ -2,14 +2,14 @@ package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionState
 import platform.UIKit.UIApplication
 import platform.UIKit.unregisterForRemoteNotifications
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNNotificationSound
 import platform.UserNotifications.UNUserNotificationCenter
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 
 class IosNotifier(private val permissionManager: PermissionManager) : Notifier {
 

@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.settings.domain
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.ui.graphics.vector.ImageVector
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.map_style_bright
 import schneaggchatv3mp.composeapp.generated.resources.map_style_dark

@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText.StringResourceText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText.StringResourceText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.accepted
 import schneaggchatv3mp.composeapp.generated.resources.blocked

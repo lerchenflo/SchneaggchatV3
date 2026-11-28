@@ -4,8 +4,8 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlin.time.ExperimentalTime
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.NetworkFriendshipStatus
+import kotlin.time.ExperimentalTime
 
 @Entity(tableName = "users")
 data class UserEntity(

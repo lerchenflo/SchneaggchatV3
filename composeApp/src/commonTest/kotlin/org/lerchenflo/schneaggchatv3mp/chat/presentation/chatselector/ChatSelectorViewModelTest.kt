@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
-import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.containsExactly
@@ -12,15 +10,17 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAnnouncementRepository
-import org.lerchenflo.schneaggchatv3mp.fakes.FakeFeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAppVersion
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeAuthRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeChatListRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeDataSyncCoordinator
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeErrorChannel
+import org.lerchenflo.schneaggchatv3mp.fakes.FakeFeedbackRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeLogger
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeMessageRepository
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeNotifier

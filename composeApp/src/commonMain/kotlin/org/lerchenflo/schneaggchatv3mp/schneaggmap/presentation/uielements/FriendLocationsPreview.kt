@@ -38,7 +38,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.sharedUi.horizontalScrollWithMouseWheel
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online

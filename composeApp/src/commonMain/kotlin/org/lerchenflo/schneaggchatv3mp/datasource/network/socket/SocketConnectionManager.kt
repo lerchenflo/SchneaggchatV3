@@ -37,10 +37,10 @@ import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.UserLocalDataSource
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshOutcome
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshReason
 import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.SocketAuthGuard
-import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import kotlin.concurrent.Volatile
 import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds

@@ -22,9 +22,9 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionSettings
+import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.RouteTransportMode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.route.RouteTransportModePicker
-import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionType
 import org.lerchenflo.schneaggchatv3mp.groupextensions.presentation.split.DEFAULT_SPLIT_CURRENCY
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.TitleMenuItem
 import schneaggchatv3mp.composeapp.generated.resources.Res

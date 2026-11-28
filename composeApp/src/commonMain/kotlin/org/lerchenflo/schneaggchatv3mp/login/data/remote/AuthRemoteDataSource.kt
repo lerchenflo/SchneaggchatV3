@@ -2,8 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.login.data.remote
 
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
-import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.SessionResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
+import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.SessionResponse
 
 /**
  * Server calls for the account session: login, registration, logout, device sessions, push token,

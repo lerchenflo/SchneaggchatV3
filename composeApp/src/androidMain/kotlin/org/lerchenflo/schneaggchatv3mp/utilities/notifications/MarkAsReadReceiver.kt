@@ -11,8 +11,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
-import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.getCurrentTimeMillisString
 
 const val ACTION_MARK_AS_READ = "org.lerchenflo.schneaggchatv3mp.MARK_AS_READ"
 const val EXTRA_CHAT_ID = "chat_id"

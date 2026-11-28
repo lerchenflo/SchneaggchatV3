@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.domain.featurequiz.FeatureQuizResultTier
-import org.lerchenflo.schneaggchatv3mp.utilities.formatMillis
+import org.lerchenflo.schneaggchatv3mp.utilities.format.formatMillis
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.featurequiz_done
 import schneaggchatv3mp.composeapp.generated.resources.featurequiz_play_again

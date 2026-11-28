@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackComment
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
@@ -53,7 +52,8 @@ import org.lerchenflo.schneaggchatv3mp.feedback.presentation.FeedbackDetailState
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutEditButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.close

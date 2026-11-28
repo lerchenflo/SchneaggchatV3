@@ -15,8 +15,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.events.domain.EVENT_ENTRY_FEE_CURRENCY
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
-import org.lerchenflo.schneaggchatv3mp.utilities.currencySymbol
-import org.lerchenflo.schneaggchatv3mp.utilities.formatMoney
+import org.lerchenflo.schneaggchatv3mp.utilities.format.currencySymbol
+import org.lerchenflo.schneaggchatv3mp.utilities.format.formatMoney
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.decimal_separator
 import schneaggchatv3mp.composeapp.generated.resources.error_event_entry_fee_invalid

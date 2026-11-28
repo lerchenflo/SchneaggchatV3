@@ -9,11 +9,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.BoardAxis
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
-import org.lerchenflo.schneaggchatv3mp.games.domain.BoardAxis
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardSpec
 import org.lerchenflo.schneaggchatv3mp.games.domain.ScoreKind
 import org.lerchenflo.schneaggchatv3mp.games.domain.defaultLeaderboardPeriod

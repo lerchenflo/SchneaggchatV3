@@ -1,12 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.StringResource
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTag
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
 import schneaggchatv3mp.composeapp.generated.resources.Res

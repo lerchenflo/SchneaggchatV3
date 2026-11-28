@@ -1,13 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.app.data
 
 import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
+import org.lerchenflo.schneaggchatv3mp.app.data.remote.AppInfoRemoteDataSource
 import org.lerchenflo.schneaggchatv3mp.app.domain.AppInfoRepository
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
-import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
-import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogParser
-import org.lerchenflo.schneaggchatv3mp.app.data.remote.AppInfoRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.utilities.device.AppVersion
 
 /** [AppInfoRepository] reading the installed version from [AppVersion] and everything else live via [AppInfoRemoteDataSource]. */
 class RemoteAppInfoRepository(

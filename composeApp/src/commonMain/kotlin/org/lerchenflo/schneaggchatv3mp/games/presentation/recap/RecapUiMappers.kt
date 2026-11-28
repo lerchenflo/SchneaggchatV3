@@ -16,7 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.TextCountDto
 import org.lerchenflo.schneaggchatv3mp.games.domain.TextCountUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.WakeRecapDto
 import org.lerchenflo.schneaggchatv3mp.games.domain.WakeRecapUi
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToString
 
 // Mappers from the /recap topics to their UI models (pure, no local data needed).
 

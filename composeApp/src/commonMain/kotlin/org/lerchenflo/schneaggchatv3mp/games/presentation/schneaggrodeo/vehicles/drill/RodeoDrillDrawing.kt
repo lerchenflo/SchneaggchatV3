@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.vehicles.drill
 
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -10,9 +9,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.scale
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.RodeoCowboyPart
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.EARTH_LIGHT
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.GOLD_NUGGET
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.GOLD_SHINE
-import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.EARTH_LIGHT
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.MINE_ROCK
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoDrawContext
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggrodeo.render.RodeoLayer

@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.desktopupdate.domain.AppRelease
 import org.lerchenflo.schneaggchatv3mp.desktopupdate.domain.DesktopUpdateRepository
 import org.lerchenflo.schneaggchatv3mp.desktopupdate.domain.findUpdateFor
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.device.AppVersion
 
 /** Checks GitHub once for a newer desktop release and holds the banner for it. */
 class DesktopUpdateViewModel(

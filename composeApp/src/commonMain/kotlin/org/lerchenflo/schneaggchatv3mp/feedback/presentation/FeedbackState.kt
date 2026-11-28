@@ -1,14 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryChanges
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntryDetail
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTag
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackType
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.NewFeedbackEntry
 

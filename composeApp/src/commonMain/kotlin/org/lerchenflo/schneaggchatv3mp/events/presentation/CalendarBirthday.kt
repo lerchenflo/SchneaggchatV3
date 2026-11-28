@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.events.presentation
 
 import androidx.compose.runtime.Stable
 import kotlinx.datetime.LocalDate
-import org.lerchenflo.schneaggchatv3mp.utilities.birthdayKeysFor
+import org.lerchenflo.schneaggchatv3mp.utilities.format.birthdayKeysFor
 
 /** A friend's (or the own user's) recurring birthday, shown on the events calendar. */
 @Stable

@@ -6,14 +6,14 @@ import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.datasource.network.ServerClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.appendProfilePic
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.LoginRequest
 import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.LogoutRequest
 import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.NotificationTokenRequest
 import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.PasswordChangeRequest
 import org.lerchenflo.schneaggchatv3mp.login.data.remote.dto.SessionResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.utilities.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.device.AppVersion
 
 /** [AuthRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */
 class KtorAuthRemoteDataSource(

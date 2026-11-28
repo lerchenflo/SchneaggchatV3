@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.TokenPair
 
 /**

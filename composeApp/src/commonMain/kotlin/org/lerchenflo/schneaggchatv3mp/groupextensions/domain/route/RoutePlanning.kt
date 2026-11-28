@@ -7,7 +7,7 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.ExtensionItemData.
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.GroupExtensionItem
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.RoutePointKind
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.utilities.distanceMeters
+import org.lerchenflo.schneaggchatv3mp.utilities.geo.distanceMeters
 import kotlin.math.roundToInt
 import kotlin.time.Instant
 

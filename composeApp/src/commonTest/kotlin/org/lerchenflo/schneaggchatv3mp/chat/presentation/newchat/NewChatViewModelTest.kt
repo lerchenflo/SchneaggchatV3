@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
-import org.lerchenflo.schneaggchatv3mp.testutil.awaitMatching
 import app.cash.turbine.test
 import assertk.assertThat
 import assertk.assertions.contains
@@ -27,13 +26,14 @@ import org.lerchenflo.schneaggchatv3mp.fakes.FakeShareUtils
 import org.lerchenflo.schneaggchatv3mp.fakes.FakeUserRepository
 import org.lerchenflo.schneaggchatv3mp.testutil.MainDispatcherRule
 import org.lerchenflo.schneaggchatv3mp.testutil.TestViewModelStore
+import org.lerchenflo.schneaggchatv3mp.testutil.awaitMatching
 import org.lerchenflo.schneaggchatv3mp.testutil.loginTestUser
 import org.lerchenflo.schneaggchatv3mp.testutil.resetGlobalState
 import org.lerchenflo.schneaggchatv3mp.testutil.runViewModelTest
 import org.lerchenflo.schneaggchatv3mp.testutil.startTestKoin
 import org.lerchenflo.schneaggchatv3mp.testutil.stopTestKoin
 import org.lerchenflo.schneaggchatv3mp.testutil.testChatListItem
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationManager
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

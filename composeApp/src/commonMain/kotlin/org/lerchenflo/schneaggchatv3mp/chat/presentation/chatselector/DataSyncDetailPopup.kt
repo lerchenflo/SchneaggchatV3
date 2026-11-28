@@ -30,9 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.app.toUiText
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncJobStatus
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataSyncState
+import org.lerchenflo.schneaggchatv3mp.app.toUiText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close

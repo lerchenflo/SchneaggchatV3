@@ -14,7 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.mode
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.roundTravelMinutes
 import org.lerchenflo.schneaggchatv3mp.groupextensions.domain.route.straightLineMeters
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.utilities.distanceMeters
+import org.lerchenflo.schneaggchatv3mp.utilities.geo.distanceMeters
 
 /** What the route screen shows, built from the stored points and paths. */
 data class RouteContent(

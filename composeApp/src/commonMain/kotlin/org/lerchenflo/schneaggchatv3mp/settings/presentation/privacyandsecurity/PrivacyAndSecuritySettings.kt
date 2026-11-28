@@ -2,11 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import schneaggchatv3mp.composeapp.generated.resources.yes
-import schneaggchatv3mp.composeapp.generated.resources.cancel
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,10 +19,13 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,9 +37,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import io.github.lerchenflo.taptarget.tapTarget
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import io.github.lerchenflo.taptarget.tapTarget
+import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.getDeleteAccountUrl
 import org.lerchenflo.schneaggchatv3mp.getPrivacyPolicyUrl
@@ -53,9 +52,10 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.Settings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.emailProviderWarning
-import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
+import org.lerchenflo.schneaggchatv3mp.utilities.format.isEmailValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
+import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.change_email
 import schneaggchatv3mp.composeapp.generated.resources.change_password
@@ -80,7 +80,7 @@ import schneaggchatv3mp.composeapp.generated.resources.privacy_policy_info
 import schneaggchatv3mp.composeapp.generated.resources.profile_pic_visibility
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
-import org.lerchenflo.schneaggchatv3mp.app.theme.warningColors
+import schneaggchatv3mp.composeapp.generated.resources.yes
 
 @Composable
 fun PrivacyAndSecuritySettings(

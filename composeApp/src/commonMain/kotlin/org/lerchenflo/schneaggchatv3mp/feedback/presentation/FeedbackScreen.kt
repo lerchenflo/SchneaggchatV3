@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.feedback.presentation
 
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
-import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,8 +8,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -23,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -46,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.lerchenflo.taptarget.tapTarget
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -53,17 +53,21 @@ import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackMark
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackSection
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackStatus
+import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTab
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackTag
 import org.lerchenflo.schneaggchatv3mp.feedback.domain.FeedbackVote
-import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackRow
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackCreateDialog
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackDetailDialog
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackEditDialog
+import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.FeedbackRow
 import org.lerchenflo.schneaggchatv3mp.feedback.presentation.uielements.previewFeedbackEntry
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.CountSegmentedSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title
+import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title_with_count
 import schneaggchatv3mp.composeapp.generated.resources.feedback_create
 import schneaggchatv3mp.composeapp.generated.resources.feedback_empty
 import schneaggchatv3mp.composeapp.generated.resources.feedback_filter_all_statuses
@@ -76,10 +80,6 @@ import schneaggchatv3mp.composeapp.generated.resources.feedback_retry
 import schneaggchatv3mp.composeapp.generated.resources.feedback_section_most_liked
 import schneaggchatv3mp.composeapp.generated.resources.feedback_section_new
 import schneaggchatv3mp.composeapp.generated.resources.feedback_title
-import androidx.compose.material.icons.filled.Psychology
-import io.github.lerchenflo.taptarget.tapTarget
-import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title
-import schneaggchatv3mp.composeapp.generated.resources.featurequiz_title_with_count
 
 @Composable
 fun FeedbackScreenRoot(openEntryId: String? = null) {

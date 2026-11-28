@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.data
 
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSettingsRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -9,24 +8,25 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
+import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
 import org.lerchenflo.schneaggchatv3mp.app.domain.asEmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.map
 import org.lerchenflo.schneaggchatv3mp.app.domain.onSuccess
 import org.lerchenflo.schneaggchatv3mp.chat.data.local.GroupLocalDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
-import org.lerchenflo.schneaggchatv3mp.app.domain.Logger
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.GroupRemoteDataSource
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSettingsRequest
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSyncResponse
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toGroup
+import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNetworkGroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toNetworkGroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.MediaDownloadThrottle
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.GroupSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.IdTimeStamp
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.GroupRemoteDataSource
-import org.lerchenflo.schneaggchatv3mp.chat.data.remote.dto.toGroup
+import org.lerchenflo.schneaggchatv3mp.utilities.media.PictureManager
 
 /**
  * [GroupRepository] on top of the local [GroupLocalDataSource] and the server via [GroupRemoteDataSource].

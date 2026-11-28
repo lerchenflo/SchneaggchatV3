@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.app.domain
 
 import kotlinx.coroutines.flow.Flow
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 
 /**
  * App-wide stream of error events. `App.kt` collects [errors] and shows each one as a popup on

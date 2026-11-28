@@ -6,10 +6,10 @@ import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataError
 import org.lerchenflo.schneaggchatv3mp.app.domain.DataResult
 import org.lerchenflo.schneaggchatv3mp.app.domain.EmptyDataResult
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupRepository
 
 /**
  * In-memory [GroupRepository]. The reads serve [groups]; the writes are recorded and answer with

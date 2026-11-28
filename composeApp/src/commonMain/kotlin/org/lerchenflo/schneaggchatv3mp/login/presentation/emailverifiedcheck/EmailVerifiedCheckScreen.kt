@@ -48,7 +48,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDi
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.emailProviderWarning
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
-import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
+import org.lerchenflo.schneaggchatv3mp.utilities.format.isEmailValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.change_email

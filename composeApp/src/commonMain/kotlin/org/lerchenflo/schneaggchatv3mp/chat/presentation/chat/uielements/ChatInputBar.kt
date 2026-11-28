@@ -8,15 +8,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import io.github.lerchenflo.taptarget.tapTarget
 import androidx.compose.ui.unit.dp
+import io.github.lerchenflo.taptarget.tapTarget
+import io.github.lerchenflo.voicemessages.VoicePlaybackState
+import io.github.lerchenflo.voicemessages.VoiceRecordingState
+import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
@@ -25,13 +28,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReplyPreview
-import io.github.lerchenflo.voicemessages.VoicePlaybackState
-import io.github.lerchenflo.voicemessages.VoiceRecordingState
-import kotlinx.coroutines.flow.StateFlow
-import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.add
 import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImagePickPurpose
 import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImageSourcePickerDialog
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.add
 
 /**
  * The chat screen's bottom input bar: reply preview, attach/poll menu, staged content editor and

@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.tools.domain
 
-import org.lerchenflo.schneaggchatv3mp.utilities.toFixed
+import org.lerchenflo.schneaggchatv3mp.utilities.format.toFixed
 
 const val MILLILITRES_PER_LITRE = 1000.0
 

@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.fakes
 
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionState
 
 /** [PermissionManager] whose checks and requests answer with the state set for each permission. */
 class FakePermissionManager(

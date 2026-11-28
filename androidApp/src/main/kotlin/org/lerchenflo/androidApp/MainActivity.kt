@@ -21,14 +21,14 @@ import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.App
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
-import org.lerchenflo.schneaggchatv3mp.utilities.ActivityHolder
-import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.device.ActivityHolder
+import org.lerchenflo.schneaggchatv3mp.utilities.device.IncomingDataManager
+import org.lerchenflo.schneaggchatv3mp.utilities.device.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_CHAT_ID
-import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_FROM_NOTIFICATION
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_EVENT_ID
-import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_MAP_ENTRY_ID
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_FROM_NOTIFICATION
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_GROUP_CHAT
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_MAP_ENTRY_ID
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.chatShortcutId
 
 class MainActivity : ComponentActivity() {

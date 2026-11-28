@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.undercover
 
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.settings.domain.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.device.LanguageService
 
 data class UndercoverWordPair(
     val civilianWord: String,
