@@ -15,38 +15,28 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutCardPart
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutCardDivider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AboutCard
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,13 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import io.github.ismoy.imagepickerkmp.config.CropConfig
-import io.github.ismoy.imagepickerkmp.config.GalleryConfig
-import io.github.ismoy.imagepickerkmp.picker.ImagePickerKMPConfig
-import io.github.ismoy.imagepickerkmp.picker.ImagePickerResult
-import io.github.ismoy.imagepickerkmp.picker.CompressionLevel
-import io.github.ismoy.imagepickerkmp.picker.MimeType
-import io.github.ismoy.imagepickerkmp.picker.rememberImagePickerKMP
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
@@ -79,26 +62,23 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.isPhoneNumberValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.change_gebi_date
 import schneaggchatv3mp.composeapp.generated.resources.change_status
 import schneaggchatv3mp.composeapp.generated.resources.change_username
 import schneaggchatv3mp.composeapp.generated.resources.change_username_description
 import schneaggchatv3mp.composeapp.generated.resources.change_username_placeholder
-import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.current_phone_number
 import schneaggchatv3mp.composeapp.generated.resources.change_phone_number
 import schneaggchatv3mp.composeapp.generated.resources.edit_profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
-import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.invalid_phone_number
-import schneaggchatv3mp.composeapp.generated.resources.image_picker_error
-import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.phone_number_infotext
 import schneaggchatv3mp.composeapp.generated.resources.phone_number_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.user_settings_group_profile
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImagePickPurpose
+import org.lerchenflo.schneaggchatv3mp.sharedUi.pickers.ImageSourcePickerDialog
 
 @Composable
 fun UserSettings(
@@ -123,123 +103,12 @@ fun UserSettings(
 
     var showImagePickerDialog by remember { mutableStateOf(false) }
 
-    val picker = rememberImagePickerKMP(
-        config = ImagePickerKMPConfig(
-            cropConfig = CropConfig(
-                enabled = true,
-                aspectRatioLocked = true,
-                circularCrop = true,
-                squareCrop = false,
-                freeformCrop = false
-            ),
-            galleryConfig = GalleryConfig(
-                allowMultiple = false,
-                mimeTypes = listOf(MimeType.IMAGE_ALL),
-                includeExif = false,
-                // Makes the picker apply the EXIF orientation to the pixels, otherwise
-                // rotated photos are cropped and uploaded sideways.
-                compressionLevel = CompressionLevel.LOW
-            )
-        )
+    ImageSourcePickerDialog(
+        visible = showImagePickerDialog,
+        purpose = ImagePickPurpose.ROUND_PICTURE,
+        onImagesPicked = { photos, _ -> photos.firstOrNull()?.let { userSettingsViewModel.changeProfilePicture(it) } },
+        onDismiss = { showImagePickerDialog = false }
     )
-    val result = picker.result
-
-
-    if (showImagePickerDialog) {
-
-        // Handle side effects safely
-        LaunchedEffect(result) {
-            when (result) {
-                is ImagePickerResult.Success -> {
-                    userSettingsViewModel.changeProfilePicture(result.photos.first())
-
-                    picker.reset()
-                    showImagePickerDialog = false
-                }
-
-                is ImagePickerResult.Dismissed -> {
-                    picker.reset()
-                    showImagePickerDialog = false
-                }
-
-                else -> {}
-            }
-        }
-
-        BasicAlertDialog(
-            onDismissRequest = {
-                showImagePickerDialog = false
-            }
-        ) {
-
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.padding(16.dp)
-            ) {
-
-                Column(
-                    modifier = Modifier
-                        .padding(24.dp)
-                        .width(IntrinsicSize.Min),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-
-                    when (result) {
-
-                        is ImagePickerResult.Loading -> {
-                            CircularProgressIndicator()
-                        }
-
-                        is ImagePickerResult.Error -> {
-                            Text(
-                                text = stringResource(
-                                    Res.string.image_picker_error,
-                                    result.exception.message ?: stringResource(Res.string.unknown_error)
-                                ),
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-
-                        is ImagePickerResult.Idle -> {
-
-                            Text(
-                                stringResource(Res.string.choose_image_source)
-                            )
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-
-                                Button(
-                                    onClick = {
-                                        picker.launchCamera()
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(stringResource(Res.string.camera))
-                                }
-
-                                Button(
-                                    onClick = {
-                                        picker.launchGallery()
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(stringResource(Res.string.gallery))
-                                }
-                            }
-                        }
-
-                        is ImagePickerResult.Success,
-                        is ImagePickerResult.Dismissed -> {
-                            // handled in LaunchedEffect
-                        }
-                    }
-                }
-            }
-        }
-    }
 
 
 
