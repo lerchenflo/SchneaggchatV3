@@ -83,22 +83,27 @@ fun MiscSettings(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            SettingsDivider(
-                title = stringResource(Res.string.misc_group_media),
-                showTopDivider = false
-            )
+            // Received images only go to a phone gallery (ReceivedImageGallerySaver skips Desktop)
+            val showMediaGroup = currentAppVersion.isMobile()
+            if (showMediaGroup) {
+                SettingsDivider(
+                    title = stringResource(Res.string.misc_group_media),
+                    showTopDivider = false
+                )
 
-            SettingsSwitch(
-                titletext = stringResource(Res.string.save_received_images_to_gallery),
-                infotext = stringResource(Res.string.save_received_images_to_gallery_info),
-                switchchecked = miscSettingsViewModel.saveReceivedImagesToGallery,
-                onSwitchChange = { miscSettingsViewModel.updateSaveReceivedImagesToGallery(it) },
-                icon = Icons.Outlined.PhotoLibrary,
-                titleMaxLines = 2
-            )
+                SettingsSwitch(
+                    titletext = stringResource(Res.string.save_received_images_to_gallery),
+                    infotext = stringResource(Res.string.save_received_images_to_gallery_info),
+                    switchchecked = miscSettingsViewModel.saveReceivedImagesToGallery,
+                    onSwitchChange = { miscSettingsViewModel.updateSaveReceivedImagesToGallery(it) },
+                    icon = Icons.Outlined.PhotoLibrary,
+                    titleMaxLines = 2
+                )
+            }
 
             SettingsDivider(
-                title = stringResource(Res.string.misc_group_feedback)
+                title = stringResource(Res.string.misc_group_feedback),
+                showTopDivider = showMediaGroup
             )
 
             SettingsOption(
