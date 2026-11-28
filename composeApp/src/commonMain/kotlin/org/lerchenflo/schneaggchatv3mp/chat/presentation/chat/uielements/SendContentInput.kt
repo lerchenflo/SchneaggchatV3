@@ -3,10 +3,16 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.lerchenflo.voicemessages.VoicePlaybackState
 import io.github.lerchenflo.voicemessages.VoiceRecordingController
@@ -23,6 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.chat_discard_recording
 import schneaggchatv3mp.composeapp.generated.resources.message
+import schneaggchatv3mp.composeapp.generated.resources.send_image_full_quality
 import schneaggchatv3mp.composeapp.generated.resources.voice_message_recording_level
 
 /**
@@ -81,6 +88,24 @@ fun RowScope.SendContentInput(
                         ))
                     }
                 )
+
+                // Off for every new pick; on sends the originals with all their metadata
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.toggleable(
+                        value = content.fullQuality,
+                        role = Role.Checkbox,
+                        onValueChange = { checked ->
+                            onAction(ChatAction.OnSendContentChange(content.copy(fullQuality = checked)))
+                        }
+                    )
+                ) {
+                    Checkbox(checked = content.fullQuality, onCheckedChange = null)
+                    Text(
+                        text = stringResource(Res.string.send_image_full_quality),
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                    )
+                }
 
                 ComboInputField(
                     value = content.text,

@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.appendFile
 import org.lerchenflo.schneaggchatv3mp.datasource.network.appendJsonPart
 import org.lerchenflo.schneaggchatv3mp.datasource.network.dto.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.media.ImageFileFormat
 
 /** [MessageRemoteDataSource] over Ktor, against the server URL from [Preferencemanager]. */
 class KtorMessageRemoteDataSource(
@@ -90,10 +91,12 @@ class KtorMessageRemoteDataSource(
             clientMessageId = clientMessageId,
         )
 
+        // The real format: a full-quality original can be PNG or GIF too
+        val format = ImageFileFormat.detect(image) ?: ImageFileFormat.JPEG
         return server.safePostMultipart(
             endpoint = "/messages/send/image",
             parts = {
-                appendFile(key = "image", bytes = image, fileName = "image.jpg", contentType = "image/jpeg")
+                appendFile(key = "image", bytes = image, fileName = "image.${format.extension}", contentType = format.mimeType)
                 appendJsonPart(key = "request", serializer = ImageMessageRequest.serializer(), value = messageRequest)
             }
         )
