@@ -20,14 +20,15 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityName
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.device.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.ui.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 
 /**
- * The popup for one user the own user is not friends with ([Route.UnknownUser]): shows what is
- * known about them and sends or accepts a friend request. A friend gets their chat instead, and a
- * blocked user or the own user closes it again. Opened from anywhere by navigating to the route.
+ * The popup for one user ([Route.UnknownUser]), like WhatsApp's: a friend gets Message, Call (with
+ * a shared phone number) and Info; anyone else sends or accepts a friend request. A blocked user
+ * or the own user closes it again. Opened from anywhere by navigating to the route.
  */
 class UnknownUserViewModel(
     private val route: Route.UnknownUser,
@@ -36,6 +37,7 @@ class UnknownUserViewModel(
     private val navigator: Navigator,
     private val errorChannel: ErrorChannel,
     private val applicationScope: ApplicationScope,
+    private val shareUtils: ShareUtils,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -65,6 +67,9 @@ class UnknownUserViewModel(
     fun onAction(action: UnknownUserAction) {
         when (action) {
             UnknownUserAction.OnSendRequestClick -> sendRequest()
+            UnknownUserAction.OnMessageClick -> openInsteadOfPopup(Route.Chat(chatId = route.userId, isGroup = false))
+            UnknownUserAction.OnInfoClick -> openInsteadOfPopup(Route.ChatDetails(chatId = route.userId, isGroup = false))
+            UnknownUserAction.OnCallClick -> state.value.phoneNumber?.let { shareUtils.openPhoneDialer(it) }
             UnknownUserAction.OnDismissClick -> viewModelScope.launch { navigator.navigateBack() }
         }
     }
@@ -81,13 +86,22 @@ class UnknownUserViewModel(
         when {
             requestState != null -> _state.update { it.copy(requestState = requestState) }
 
-            user?.friendshipStatus == FriendshipStatus.ACCEPTED -> navigator.navigate(
-                Route.Chat(chatId = route.userId, isGroup = false),
-                Navigator.NavigationOptions(removeAllScreensByClass = listOf(Route.UnknownUser::class))
-            )
+            user?.friendshipStatus == FriendshipStatus.ACCEPTED -> _state.update {
+                it.copy(isFriend = true, phoneNumber = user.phoneNumber?.takeIf { number -> number.isNotBlank() })
+            }
 
             // Blocked: nothing to offer
             else -> navigator.navigateBack()
+        }
+    }
+
+    /** Replaces the popup with [destination], so back goes to where the popup was opened. */
+    private fun openInsteadOfPopup(destination: Route) {
+        viewModelScope.launch {
+            navigator.navigate(
+                destination,
+                Navigator.NavigationOptions(removeAllScreensByClass = listOf(Route.UnknownUser::class))
+            )
         }
     }
 

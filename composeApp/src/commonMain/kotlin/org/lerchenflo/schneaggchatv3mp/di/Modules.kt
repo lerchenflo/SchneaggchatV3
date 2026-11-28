@@ -468,6 +468,7 @@ val sharedmodule = module{
             navigator = get(),
             errorChannel = get(),
             applicationScope = get(),
+            shareUtils = get(),
         )
     }
 
