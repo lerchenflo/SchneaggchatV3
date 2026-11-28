@@ -53,6 +53,7 @@ fun Message.toEntity(): MessageWithReaders = MessageWithReaders(
         poll = this.poll,
         systemEvent = this.systemEvent,
         pictureUrl = this.pictureUrl,
+        audioPath = this.audioPath,
         senderId = this.senderId,
         receiverId = this.receiverId,
         // Empty or malformed becomes 0, the same value the old CAST(sendDate AS INTEGER) gave it.
