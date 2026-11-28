@@ -246,6 +246,27 @@ class DesktopPictureManager : PictureManager {
         }
     }
 
+    /** Into ~/Pictures/Schneaggchat; a picture saved there before under the same name stays. */
+    override suspend fun saveToGallery(filePath: String, baseName: String): String =
+        withContext(Dispatchers.IO) {
+            val sourceFile = File(filePath)
+            if (!sourceFile.exists()) {
+                println("Desktop gallery copy: source file not found: $filePath")
+                return@withContext ""
+            }
+            try {
+                val header = sourceFile.inputStream().use { it.readNBytes(ImageFileFormat.HEADER_SIZE) }
+                val format = ImageFileFormat.detect(header) ?: ImageFileFormat.JPEG
+                val galleryDir = File(System.getProperty("user.home"), "Pictures/Schneaggchat").apply { mkdirs() }
+                val destinationFile = File(galleryDir, "$baseName.${format.extension}")
+                if (!destinationFile.exists()) sourceFile.copyTo(destinationFile)
+                destinationFile.absolutePath
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ""
+            }
+        }
+
     override suspend fun encodeImageBitmap(bitmap: ImageBitmap): ByteArray {
         return Image.makeFromBitmap(bitmap.asSkiaBitmap())
             .encodeToData(EncodedImageFormat.PNG)

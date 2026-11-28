@@ -179,61 +179,67 @@ class AndroidPictureManager(private val context: Context) : PictureManager {
         filePath: String,
         fileName: String
     ): String = withContext(Dispatchers.IO) {
-        val sourceFile = File(filePath)
-        if (!sourceFile.exists()) {
-            Log.e("PictureManager", "Source file not found: $filePath")
-            return@withContext ""
-        }
-
         val mimeType = when {
             fileName.endsWith(".png", true) -> "image/png"
             fileName.endsWith(".webp", true) -> "image/webp"
             else -> "image/jpeg"
         }
+        insertIntoGallery(File(filePath), fileName, mimeType)
+    }
+
+    override suspend fun saveToGallery(filePath: String, baseName: String): String =
+        withContext(Dispatchers.IO) {
+            val sourceFile = File(filePath)
+            if (!sourceFile.exists()) {
+                Log.e("PictureManager", "Gallery copy: source file not found: $filePath")
+                return@withContext ""
+            }
+            val header = sourceFile.inputStream().use { input ->
+                ByteArray(ImageFileFormat.HEADER_SIZE).also { input.read(it) }
+            }
+            val format = ImageFileFormat.detect(header) ?: ImageFileFormat.JPEG
+            insertIntoGallery(sourceFile, "$baseName.${format.extension}", format.mimeType)
+        }
+
+    /**
+     * Copies [sourceFile] byte for byte into the album Pictures/Schneaggchat. Own MediaStore
+     * entries need no permission (minSdk 29). @return the content uri, "" on failure
+     */
+    private fun insertIntoGallery(sourceFile: File, displayName: String, mimeType: String): String {
+        if (!sourceFile.exists()) {
+            Log.e("PictureManager", "Source file not found: ${sourceFile.path}")
+            return ""
+        }
 
         val contentResolver = context.contentResolver
-
-        // Prepare metadata for the MediaStore
         val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-            put(MediaStore.MediaColumns.MIME_TYPE, mimeType) // Adjust if you support PNG/WebP
-            // On Android 10 (API 29) and above, we use the Relative Path
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Schneaggchat")
-                put(MediaStore.MediaColumns.IS_PENDING, 1)
-            }
+            put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Schneaggchat")
+            // Hidden from other apps until the bytes are written
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
         }
 
-        // Insert the record into MediaStore
         val imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-
         if (imageUri == null) {
             Log.e("PictureManager", "Failed to create MediaStore entry")
-            return@withContext ""
+            return ""
         }
 
-        try {
-            // Copy bytes from internal storage to the public MediaStore URI
+        return try {
             contentResolver.openOutputStream(imageUri).use { outputStream ->
                 if (outputStream == null) throw Exception("Could not open output stream")
-
-                sourceFile.inputStream().use { inputStream ->
-                    inputStream.copyTo(outputStream)
-                }
+                sourceFile.inputStream().use { inputStream -> inputStream.copyTo(outputStream) }
             }
 
-            // Reveal the file to the system once writing is complete (API 29+)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                contentValues.clear()
-                contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
-                contentResolver.update(imageUri, contentValues, null, null)
-            }
+            contentValues.clear()
+            contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            contentResolver.update(imageUri, contentValues, null, null)
 
             Log.d("PictureManager", "Image exported successfully to Gallery: $imageUri")
             imageUri.toString()
         } catch (e: Exception) {
-            Log.e("PictureManager", "Error downloading image", e)
-            // Clean up the failed entry
+            Log.e("PictureManager", "Error saving image to the gallery", e)
             contentResolver.delete(imageUri, null, null)
             ""
         }

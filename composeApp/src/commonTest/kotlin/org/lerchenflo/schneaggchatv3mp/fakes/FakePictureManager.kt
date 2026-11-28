@@ -15,6 +15,7 @@ class FakePictureManager : PictureManager {
 
     val downscaleRequests = CallLog<ByteArray>()
     val downloadedImages = CallLog<Pair<String, String>>()
+    val galleryCopies = CallLog<Pair<String, String>>()
 
     override suspend fun savePictureToStorage(base64Pic: String, filename: String): String =
         savePictureToStorage(base64Pic.encodeToByteArray(), filename)
@@ -44,6 +45,11 @@ class FakePictureManager : PictureManager {
     override suspend fun downloadImage(filePath: String, fileName: String): String {
         downloadedImages.record(filePath to fileName)
         return path(fileName)
+    }
+
+    override suspend fun saveToGallery(filePath: String, baseName: String): String {
+        galleryCopies.record(filePath to baseName)
+        return path(baseName)
     }
 
     override suspend fun encodeImageBitmap(bitmap: ImageBitmap): ByteArray = ByteArray(0)

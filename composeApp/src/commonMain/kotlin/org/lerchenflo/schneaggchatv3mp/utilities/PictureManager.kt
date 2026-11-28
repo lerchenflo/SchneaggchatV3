@@ -70,6 +70,15 @@ interface PictureManager {
     ): String
 
     /**
+     * Copies the picture file at [filePath] into the device's gallery as it is: full quality, all
+     * metadata. Android: album Pictures/Schneaggchat, iOS: Photos (add-only permission, asked on
+     * the first save), desktop: ~/Pictures/Schneaggchat. [baseName] gets the extension of the
+     * file's real format ([ImageFileFormat]).
+     * @return where the copy landed, "" when it failed or the permission was denied
+     */
+    suspend fun saveToGallery(filePath: String, baseName: String): String
+
+    /**
      * Encode a Compose [ImageBitmap] to PNG bytes.
      */
     suspend fun encodeImageBitmap(bitmap: ImageBitmap): ByteArray

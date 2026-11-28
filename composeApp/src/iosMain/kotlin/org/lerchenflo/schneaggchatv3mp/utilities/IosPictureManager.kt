@@ -22,6 +22,8 @@ import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSData
+import platform.Foundation.NSMakeRange
+import platform.Foundation.subdataWithRange
 import platform.Foundation.NSDataBase64DecodingIgnoreUnknownCharacters
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
@@ -36,9 +38,17 @@ import platform.UIKit.UIGraphicsGetImageFromCurrentImageContext
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIImageOrientation
-import platform.UIKit.UIImageWriteToSavedPhotosAlbum
 import platform.posix.memcpy
 import org.lerchenflo.schneaggchatv3mp.STORED_PICTURE_FILE_ENDINGS
+import kotlinx.coroutines.suspendCancellableCoroutine
+import platform.Photos.PHAccessLevelAddOnly
+import platform.Photos.PHAssetCreationRequest
+import platform.Photos.PHAssetResourceCreationOptions
+import platform.Photos.PHAssetResourceTypePhoto
+import platform.Photos.PHAuthorizationStatusAuthorized
+import platform.Photos.PHAuthorizationStatusLimited
+import platform.Photos.PHPhotoLibrary
+import kotlin.coroutines.resume
 
 @OptIn(BetaInteropApi::class)
 class IosPictureManager : PictureManager {
@@ -265,33 +275,57 @@ class IosPictureManager : PictureManager {
     override suspend fun downloadImage(
         filePath: String,
         fileName: String
-    ): String = withContext(Dispatchers.Default) {
-        // 1. Check if the file exists at the provided path
-        val fileManager = NSFileManager.defaultManager
-        if (!fileManager.fileExistsAtPath(filePath)) {
+    ): String {
+        val data = readFile(filePath) ?: run {
             println("iOS Download: Source file not found: $filePath")
-            return@withContext ""
+            return ""
         }
+        return if (addToPhotos(data, fileName)) "Saved to Photos" else ""
+    }
 
-        // 2. Load the data from the internal storage path
-        val data = NSData.dataWithContentsOfFile(filePath)
-            ?: return@withContext ""
+    override suspend fun saveToGallery(filePath: String, baseName: String): String {
+        val data = readFile(filePath) ?: run {
+            println("iOS gallery copy: source file not found: $filePath")
+            return ""
+        }
+        val headerLength = minOf(ImageFileFormat.HEADER_SIZE.toULong(), data.length)
+        val header = data.subdataWithRange(NSMakeRange(0u, headerLength)).toByteArray()
+        val format = ImageFileFormat.detect(header) ?: ImageFileFormat.JPEG
+        return if (addToPhotos(data, "$baseName.${format.extension}")) "Saved to Photos" else ""
+    }
 
-        // 3. Convert data to UIImage
-        val image = UIImage.imageWithData(data)
-            ?: return@withContext ""
+    /**
+     * Adds the file bytes as they are as a new Photos asset, so EXIF / GPS stay (a UIImage would
+     * only carry the pixels). Needs the add-only permission (NSPhotoLibraryAddUsageDescription),
+     * asked on the first save.
+     */
+    private suspend fun addToPhotos(data: NSData, fileName: String): Boolean {
+        if (!requestAddToPhotosAccess()) {
+            println("iOS Photos: add permission denied")
+            return false
+        }
+        return suspendCancellableCoroutine { continuation ->
+            PHPhotoLibrary.sharedPhotoLibrary().performChanges(
+                changeBlock = {
+                    val options = PHAssetResourceCreationOptions().apply { originalFilename = fileName }
+                    PHAssetCreationRequest.creationRequestForAsset()
+                        .addResourceWithType(PHAssetResourceTypePhoto, data = data, options = options)
+                },
+                completionHandler = { success, error ->
+                    if (!success) println("iOS Photos: save failed: ${error?.localizedDescription}")
+                    continuation.resume(success)
+                }
+            )
+        }
+    }
 
-        // 4. Save to the iOS Photos Album
-        // Note: This requires 'NSPhotoLibraryAddUsageDescription' in your Info.plist
-        try {
-            UIImageWriteToSavedPhotosAlbum(image, null, null, null)
-            println("iOS Download: Successfully exported $fileName to Photos")
+    /** Off the main thread: callers come from a ViewModel, the file can be several MB. */
+    private suspend fun readFile(filePath: String): NSData? =
+        withContext(Dispatchers.Default) { NSData.dataWithContentsOfFile(filePath) }
 
-            // Return a success string or the original path as an identifier
-            "Saved to Photos"
-        } catch (e: Exception) {
-            println("iOS Download: Error saving to photos: ${e.message}")
-            ""
+    private suspend fun requestAddToPhotosAccess(): Boolean = suspendCancellableCoroutine { continuation ->
+        PHPhotoLibrary.requestAuthorizationForAccessLevel(PHAccessLevelAddOnly) { status ->
+            continuation.resume(status == PHAuthorizationStatusAuthorized || status == PHAuthorizationStatusLimited)
         }
     }
 
