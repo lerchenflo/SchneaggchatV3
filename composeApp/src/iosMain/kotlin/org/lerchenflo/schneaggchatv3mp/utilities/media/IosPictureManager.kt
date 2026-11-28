@@ -277,6 +277,9 @@ class IosPictureManager : PictureManager {
         fileName: String
     ): String = saveToGallery(filePath, baseName = fileName.substringBeforeLast('.'))
 
+    override suspend fun readPickedImage(uri: String): ByteArray? =
+        readFile(fileUriToPath(uri))?.toByteArray()
+
     override suspend fun saveToGallery(filePath: String, baseName: String): String {
         val data = readFile(filePath) ?: run {
             println("iOS gallery copy: source file not found: $filePath")

@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.core.graphics.scale
+import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -180,6 +181,16 @@ class AndroidPictureManager(private val context: Context) : PictureManager {
         fileName: String
     ): String = saveToGallery(filePath, baseName = fileName.substringBeforeLast('.'))
 
+    override suspend fun readPickedImage(uri: String): ByteArray? = withContext(Dispatchers.IO) {
+        runCatching {
+            if (uri.startsWith(CONTENT_URI_SCHEME)) {
+                context.contentResolver.openInputStream(uri.toUri())?.use { it.readBytes() }
+            } else {
+                File(fileUriToPath(uri)).readBytes()
+            }
+        }.onFailure { Log.w("Android picked image", "Could not read $uri", it) }.getOrNull()
+    }
+
     override suspend fun saveToGallery(filePath: String, baseName: String): String =
         withContext(Dispatchers.IO) {
             val sourceFile = File(filePath)
@@ -294,3 +305,5 @@ private fun applyExifOrientation(bitmap: Bitmap, orientation: Int): Bitmap {
     return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
         .also { if (it != bitmap) bitmap.recycle() }
 }
+
+private const val CONTENT_URI_SCHEME = "content://"

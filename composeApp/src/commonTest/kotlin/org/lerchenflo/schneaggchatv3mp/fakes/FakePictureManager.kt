@@ -42,6 +42,10 @@ class FakePictureManager : PictureManager {
         return downscaledImage ?: imageBytes
     }
 
+    /** Picked images by uri; a uri missing here reads as null. */
+    val pickedImages = mutableMapOf<String, ByteArray>()
+    override suspend fun readPickedImage(uri: String): ByteArray? = pickedImages[uri]
+
     override suspend fun downloadImage(filePath: String, fileName: String): String {
         downloadedImages.record(filePath to fileName)
         return path(fileName)

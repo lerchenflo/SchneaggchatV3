@@ -61,6 +61,13 @@ interface PictureManager {
     suspend fun downscaleImage(imageBytes: ByteArray, targetSizeBytes: Int = 500_000): ByteArray
 
     /**
+     * The picked image behind [uri] exactly as it is stored, metadata included, without the
+     * re-encode of the picker's `loadBytes()`: a gallery `content://` uri on Android, the
+     * `file:` uri of a camera photo or of the iOS / Desktop picker. Null if it can't be read.
+     */
+    suspend fun readPickedImage(uri: String): ByteArray?
+
+    /**
      * Saves a ByteArray image to the device's external storage / photo gallery.
      * @return The path or URI string where the file was saved.
      */

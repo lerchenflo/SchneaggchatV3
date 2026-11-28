@@ -15,6 +15,7 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.net.URI
 import javax.imageio.IIOImage
 import javax.imageio.ImageIO
 import javax.imageio.ImageWriteParam
@@ -244,6 +245,14 @@ class DesktopPictureManager : PictureManager {
             e.printStackTrace()
             ""
         }
+    }
+
+    /** The Desktop picker reports `file:/...` uris (java.net.URI), not `file://`. */
+    override suspend fun readPickedImage(uri: String): ByteArray? = withContext(Dispatchers.IO) {
+        runCatching {
+            val file = if (uri.startsWith("file:")) File(URI(uri)) else File(uri)
+            file.readBytes()
+        }.onFailure { println("Desktop picked image: could not read $uri: ${it.message}") }.getOrNull()
     }
 
     /** Into ~/Pictures/Schneaggchat; a picture saved there before under the same name stays. */
