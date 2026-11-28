@@ -50,6 +50,11 @@ import schneaggchatv3mp.composeapp.generated.resources.misc_settings_logs
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings_reset_tour
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings_reset_tour_desc
 import schneaggchatv3mp.composeapp.generated.resources.show_logs
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
+import schneaggchatv3mp.composeapp.generated.resources.misc_group_media
+import schneaggchatv3mp.composeapp.generated.resources.save_received_images_to_gallery
+import schneaggchatv3mp.composeapp.generated.resources.save_received_images_to_gallery_info
 
 @Composable
 fun MiscSettings(
@@ -79,8 +84,21 @@ fun MiscSettings(
         ) {
 
             SettingsDivider(
-                title = stringResource(Res.string.misc_group_feedback),
+                title = stringResource(Res.string.misc_group_media),
                 showTopDivider = false
+            )
+
+            SettingsSwitch(
+                titletext = stringResource(Res.string.save_received_images_to_gallery),
+                infotext = stringResource(Res.string.save_received_images_to_gallery_info),
+                switchchecked = miscSettingsViewModel.saveReceivedImagesToGallery,
+                onSwitchChange = { miscSettingsViewModel.updateSaveReceivedImagesToGallery(it) },
+                icon = Icons.Outlined.PhotoLibrary,
+                titleMaxLines = 2
+            )
+
+            SettingsDivider(
+                title = stringResource(Res.string.misc_group_feedback)
             )
 
             SettingsOption(

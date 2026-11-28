@@ -1655,6 +1655,9 @@
     <string name="user_settings_group_danger_zone">Konto-Aktionen</string>
 
     <string name="misc_group_feedback">Feedback</string>
+    <string name="misc_group_media">Bilder &amp; Medien</string>
+    <string name="save_received_images_to_gallery">Empfangene Bilder in der Galerie speichern</string>
+    <string name="save_received_images_to_gallery_info">Neue Bilder von anderen werden zusätzlich in der Galerie dieses Geräts gespeichert, in der besten verfügbaren Qualität. Ältere Bilder und der Sync nach einer Anmeldung bleiben draußen.</string>
     <string name="misc_group_diagnostics">Diagnose &amp; Fehlerbehebung</string>
     <string name="misc_group_data_reset">Zurücksetzen &amp; Reparieren</string>
 

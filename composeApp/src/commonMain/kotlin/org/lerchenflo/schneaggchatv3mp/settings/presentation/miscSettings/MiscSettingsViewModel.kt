@@ -28,12 +28,24 @@ class MiscSettingsViewModel(
     var logs by mutableStateOf<List<LogEntry>>(emptyList())
         private set
 
+    var saveReceivedImagesToGallery by mutableStateOf(true)
+        private set
+
 
     init {
         viewModelScope.launch {
             loggingRepository.getLogs().collect { loglist ->
                 logs = loglist
             }
+        }
+        viewModelScope.launch {
+            settingsRepository.getSaveReceivedImagesToGalleryFlow().collect { saveReceivedImagesToGallery = it }
+        }
+    }
+
+    fun updateSaveReceivedImagesToGallery(value: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setSaveReceivedImagesToGallery(value)
         }
     }
 

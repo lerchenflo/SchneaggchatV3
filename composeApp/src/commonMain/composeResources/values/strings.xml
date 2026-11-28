@@ -1655,6 +1655,9 @@
     <string name="user_settings_group_danger_zone">Account Actions</string>
 
     <string name="misc_group_feedback">Feedback</string>
+    <string name="misc_group_media">Images &amp; media</string>
+    <string name="save_received_images_to_gallery">Save received images to the gallery</string>
+    <string name="save_received_images_to_gallery_info">New images from others are also saved to this device's gallery, in the best quality available. Older images and the sync after a login are left out.</string>
     <string name="misc_group_diagnostics">Diagnostics &amp; Troubleshooting</string>
     <string name="misc_group_data_reset">Reset &amp; Repair</string>
 
