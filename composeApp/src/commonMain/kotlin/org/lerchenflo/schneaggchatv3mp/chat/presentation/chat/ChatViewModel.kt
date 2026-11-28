@@ -551,13 +551,12 @@ class ChatViewModel(
     }
 
     /**
-     * Opens the unknown-user popup for a group sender who is not a friend. A tap on a friend's or a
-     * blocked user's name does nothing (user, 2026-11-11).
+     * Opens the user popup for a group sender, friends included (user, 2026-11-28); for a blocked
+     * user the popup closes itself again.
      */
     private fun openUnknownUserPopup(userId: String, name: String, ownId: String) {
         if (userId == ownId) return
         viewModelScope.launch {
-            if (FriendRequestState.of(userRepository.getUserById(userId), ownId) == null) return@launch
             navigator.navigate(Route.UnknownUser(userId = userId, name = name))
         }
     }

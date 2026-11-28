@@ -125,16 +125,13 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
         unknownLocation, unknownEvent, unknownGame, unknownLocationInfo, unknownEventInfo, unknownGameInfo,
         unknownFeedback, unknownFeedbackInfo, unknownSettingsPage, unknownSettingsInfo
     ) {
-        // A friend opens the chat; anyone else (also a user not stored here) gets the
-        // unknown-user popup, which looks up what it can and offers a friend request
+        // Every user (also one not stored here) gets the user popup: a friend Message / Call /
+        // Info, anyone else a friend request (user, 2026-11-28)
         val openUser: (String) -> Unit = { userId ->
             if (userId != SessionCache.requireLoggedIn()?.userId) { // never the own chat
                 scope.launch {
                     val user = userRepository.getUserById(userId)
-                    navigator.navigate(
-                        if (user?.friendshipStatus == FriendshipStatus.ACCEPTED) Route.Chat(userId, false)
-                        else Route.UnknownUser(userId = userId, name = user?.displayName)
-                    )
+                    navigator.navigate(Route.UnknownUser(userId = userId, name = user?.displayName))
                 }
             }
         }
