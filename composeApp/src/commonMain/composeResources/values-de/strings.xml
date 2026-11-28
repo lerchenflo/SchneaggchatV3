@@ -545,6 +545,8 @@
     <string name="change_username_placeholder">neuer Benutzername ...</string>
 
     <string name="call">Anrufen</string>
+    <string name="user_popup_message">Nachricht</string>
+    <string name="user_popup_info">Info</string>
     <string name="change_status">Status ändern</string>
     <string name="change_phone_number">Telefonnummer ändern</string>
     <string name="phone_number_infotext">Diese Telefonnummer ist für alle deine Freunde sichtbar. Aktuell ist sie nicht gesetzt.</string>
