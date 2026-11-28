@@ -523,6 +523,9 @@
     <string name="chat_remove_image">Bild entfernen</string>
     <string name="chat_discard_recording">Aufnahme verwerfen</string>
     <string name="voice_message_play">Sprachnachricht abspielen</string>
+    <string name="media_expired_image">Bild nicht mehr verfügbar</string>
+    <string name="media_expired_voice">Sprachnachricht nicht mehr verfügbar</string>
+    <string name="media_image_unavailable">Bild nicht verfügbar</string>
     <string name="voice_message_pause">Sprachnachricht pausieren</string>
     <string name="voice_message_position">Position der Sprachnachricht</string>
     <string name="voice_message_recording_level">Aufnahmepegel</string>

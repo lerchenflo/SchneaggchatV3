@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.image
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -8,6 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BrokenImage
+import androidx.compose.material.icons.outlined.HideImage
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,12 +23,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MediaPlaceholder
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.text.TextMessageContentView
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
+import schneaggchatv3mp.composeapp.generated.resources.media_expired_image
+import schneaggchatv3mp.composeapp.generated.resources.media_image_unavailable
 
 @Composable
 fun ImageMessageContentView(
@@ -63,8 +69,12 @@ fun ImageMessageContentView(
             .widthIn(max = 600.dp)
             .fillMaxWidth(0.67f)
     ) {
-        if (message.pictureUrl != null) {
-            AsyncImage(
+        // A stored path whose file is gone or broken: Coil reports it, the placeholder takes over
+        var loadFailed by remember(message.pictureUrl) { mutableStateOf(false) }
+        val placeholderColor = if (myMessage) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+
+        when {
+            message.pictureUrl != null && !loadFailed -> AsyncImage(
                 model = message.pictureUrl,
                 modifier = imageModifier,
                 contentDescription = "image",
@@ -73,12 +83,24 @@ fun ImageMessageContentView(
                     val image = state.result.image
                     if (image.width > 0 && image.height > 0) aspectRatio = image.width.toFloat() / image.height
                 },
+                onError = { loadFailed = true },
             )
-        }else {
-            Image(
-                painter = painterResource(Res.drawable.icon_nutzer),
-                contentDescription = "image loading error",
-                modifier = imageModifier
+            // Deleted on the server and not on this device: it will never come
+            message.mediaExpired -> MediaPlaceholder(
+                icon = Icons.Outlined.HideImage,
+                text = stringResource(Res.string.media_expired_image),
+                color = placeholderColor,
+            )
+            loadFailed -> MediaPlaceholder(
+                icon = Icons.Outlined.BrokenImage,
+                text = stringResource(Res.string.media_image_unavailable),
+                color = placeholderColor,
+            )
+            // Not downloaded yet
+            else -> MediaPlaceholder(
+                icon = Icons.Outlined.Image,
+                text = stringResource(Res.string.media_image_unavailable),
+                color = placeholderColor,
             )
         }
 

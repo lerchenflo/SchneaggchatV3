@@ -523,6 +523,9 @@
     <string name="chat_remove_image">remove image</string>
     <string name="chat_discard_recording">discard recording</string>
     <string name="voice_message_play">Play voice message</string>
+    <string name="media_expired_image">Image no longer available</string>
+    <string name="media_expired_voice">Voice message no longer available</string>
+    <string name="media_image_unavailable">Image not available</string>
     <string name="voice_message_pause">Pause voice message</string>
     <string name="voice_message_position">Voice message position</string>
     <string name="voice_message_recording_level">Recording level</string>
