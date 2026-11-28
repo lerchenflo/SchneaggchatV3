@@ -7,11 +7,11 @@ import io.ktor.http.decodeURLPart
  * file name: stored message pictures have no extension, and the picker library names files `.jpg`
  * whatever they hold.
  */
-enum class ImageFileFormat(val extension: String, val mimeType: String) {
-    JPEG("jpg", "image/jpeg"),
-    PNG("png", "image/png"),
-    GIF("gif", "image/gif"),
-    HEIC("heic", "image/heic");
+enum class ImageFileFormat(val extension: String, val mimeType: String, val uploadable: Boolean) {
+    JPEG("jpg", "image/jpeg", uploadable = true),
+    PNG("png", "image/png", uploadable = true),
+    GIF("gif", "image/gif", uploadable = true),
+    HEIC("heic", "image/heic", uploadable = false);
 
     companion object {
         /** Number of leading bytes [detect] needs. */
@@ -27,6 +27,12 @@ enum class ImageFileFormat(val extension: String, val mimeType: String) {
         }
     }
 }
+
+/**
+ * Whether the server takes these image bytes as they are: JPEG, PNG or GIF. Anything else (HEIC,
+ * WebP, ...) has to be re-encoded before an upload.
+ */
+fun isUploadableImage(imageBytes: ByteArray): Boolean = ImageFileFormat.detect(imageBytes)?.uploadable == true
 
 private fun ByteArray.startsWithBytes(vararg bytes: Int): Boolean =
     size >= bytes.size && bytes.indices.all { this[it] == bytes[it].toByte() }

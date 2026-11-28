@@ -171,8 +171,9 @@ class IosPictureManager : PictureManager {
 
         // A rotated image has to be re-encoded even when it is small enough already: the
         // orientation only lives in the metadata, and every later step (upload, server PNG
-        // conversion) drops it, leaving the picture sideways.
-        if (imageBytes.size <= targetSizeBytes && isUpright) {
+        // conversion) drops it, leaving the picture sideways. HEIC is re-encoded too: the server
+        // only takes JPEG, PNG and GIF.
+        if (imageBytes.size <= targetSizeBytes && isUpright && isUploadableImage(imageBytes)) {
             println("iOS: Image already under target (${imageBytes.size} <= $targetSizeBytes), returning original")
             return@withContext imageBytes
         }

@@ -53,7 +53,9 @@ interface PictureManager {
 
     /**
      * Downscale an image to approximately the target size in bytes.
-     * Uses iterative quality reduction to achieve target size.
+     * Uses iterative quality reduction to achieve target size. An image that is small enough
+     * already comes back unchanged only when it is upright and [isUploadableImage] (JPEG, PNG, GIF);
+     * HEIC, WebP and rotated images are always re-encoded.
      * @param imageBytes Original image bytes
      * @param targetSizeBytes Target maximum size (default ~500KB)
      * @return Downscaled image bytes as JPEG

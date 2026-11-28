@@ -104,8 +104,9 @@ class DesktopPictureManager : PictureManager {
 
         // A rotated image has to be re-encoded even when it is small enough already: the
         // orientation is only an EXIF tag, and every later step (upload, server PNG conversion)
-        // drops it, leaving the picture sideways.
-        if (imageBytes.size <= targetSizeBytes && orientation == EXIF_ORIENTATION_NORMAL) {
+        // drops it, leaving the picture sideways. Other formats than JPEG, PNG and GIF are
+        // re-encoded too: the server does not take them.
+        if (imageBytes.size <= targetSizeBytes && orientation == EXIF_ORIENTATION_NORMAL && isUploadableImage(imageBytes)) {
             println("Desktop: Image already under target (${imageBytes.size} <= $targetSizeBytes), returning original")
             return imageBytes
         }

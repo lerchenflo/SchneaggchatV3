@@ -105,8 +105,9 @@ class AndroidPictureManager(private val context: Context) : PictureManager {
 
         // A rotated image has to be re-encoded even when it is small enough already: the
         // orientation is only an EXIF tag, and every later step (upload, server PNG conversion)
-        // drops it, leaving the picture sideways.
-        if (imageBytes.size <= targetSizeBytes && orientation == ExifInterface.ORIENTATION_NORMAL) {
+        // drops it, leaving the picture sideways. HEIC / WebP are re-encoded too: the server only
+        // takes JPEG, PNG and GIF.
+        if (imageBytes.size <= targetSizeBytes && orientation == ExifInterface.ORIENTATION_NORMAL && isUploadableImage(imageBytes)) {
             Log.d("Android downscale", "Image already under target (${imageBytes.size} <= $targetSizeBytes), returning original")
             return@withContext imageBytes
         }
