@@ -92,13 +92,15 @@ fun RowScope.SendContentInput(
                 // Off for every new pick; on sends the originals with all their metadata
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.toggleable(
-                        value = content.fullQuality,
-                        role = Role.Checkbox,
-                        onValueChange = { checked ->
-                            onAction(ChatAction.OnSendContentChange(content.copy(fullQuality = checked)))
-                        }
-                    )
+                    modifier = Modifier
+                        .padding(top = 8.dp, bottom = 4.dp)
+                        .toggleable(
+                            value = content.fullQuality,
+                            role = Role.Checkbox,
+                            onValueChange = { checked ->
+                                onAction(ChatAction.OnSendContentChange(content.copy(fullQuality = checked)))
+                            }
+                        )
                 ) {
                     Checkbox(checked = content.fullQuality, onCheckedChange = null)
                     Text(
