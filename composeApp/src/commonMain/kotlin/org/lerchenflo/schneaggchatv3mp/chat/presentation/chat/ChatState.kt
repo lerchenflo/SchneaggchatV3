@@ -39,7 +39,8 @@ sealed interface ChatAction {
     data object OnConfirmEditClick : ChatAction
     data object OnCancelReply : ChatAction
 
-    data class OnImagesSelected(val results: List<GalleryPhotoResult>) : ChatAction
+    /** [fromCamera]: taken with the in-app camera, so the original also goes into the gallery. */
+    data class OnImagesSelected(val results: List<GalleryPhotoResult>, val fromCamera: Boolean = false) : ChatAction
     data class OnCreatePoll(val poll: NewPoll) : ChatAction
     data class OnSaveEditedPoll(val poll: NewPoll) : ChatAction
 

@@ -78,6 +78,8 @@ import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import schneaggchatv3mp.composeapp.generated.resources.poll_cannot_vote_on_unsent
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserIdentityRepository
+import kotlin.time.Clock
+import org.lerchenflo.schneaggchatv3mp.utilities.fileUriToPath
 
 class ChatViewModel(
     private val errorChannel: ErrorChannel,
@@ -157,7 +159,7 @@ class ChatViewModel(
             ChatAction.OnConfirmEditClick -> confirmEditMessage()
             ChatAction.OnCancelReply -> updateReplyMessage(null)
 
-            is ChatAction.OnImagesSelected -> onImagesSelected(action.results)
+            is ChatAction.OnImagesSelected -> onImagesSelected(action.results, action.fromCamera)
             is ChatAction.OnCreatePoll -> createPollMessage(action.poll)
             is ChatAction.OnSaveEditedPoll -> saveEditedPoll(action.poll)
 
@@ -328,7 +330,8 @@ class ChatViewModel(
         updateSendContent(TextContent(TextFieldValue("")))
     }
 
-    private fun onImagesSelected(results: List<GalleryPhotoResult>) {
+    private fun onImagesSelected(results: List<GalleryPhotoResult>, fromCamera: Boolean) {
+        if (fromCamera) saveCameraPhotosToGallery(results)
 
         viewModelScope.launch {
             val byteArrays = results.map { it.loadBytes() }
@@ -342,6 +345,20 @@ class ChatViewModel(
             ))
         }
 
+    }
+
+    /**
+     * An in-app camera photo goes into the gallery as the original file (full quality, all
+     * metadata) right away, whether it gets sent or not; the message itself sends a smaller copy.
+     */
+    private fun saveCameraPhotosToGallery(photos: List<GalleryPhotoResult>) {
+        val takenAt = Clock.System.now().toEpochMilliseconds()
+        applicationScope.launch {
+            photos.forEachIndexed { index, photo ->
+                val savedTo = pictureManager.saveToGallery(fileUriToPath(photo.uri), "Schneaggchat_${takenAt}_$index")
+                if (savedTo.isEmpty()) loggingRepository.logWarning("Camera photo: gallery copy failed")
+            }
+        }
     }
 
     private fun createPollMessage(poll: NewPoll) {

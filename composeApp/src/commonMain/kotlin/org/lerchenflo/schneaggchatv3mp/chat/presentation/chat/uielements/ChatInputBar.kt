@@ -63,7 +63,7 @@ fun ChatInputBar(
     ImageSourcePickerDialog(
         visible = showImagePickerDialog,
         purpose = ImagePickPurpose.MESSAGE_IMAGES,
-        onImagesPicked = { photos, _ -> onAction(ChatAction.OnImagesSelected(photos)) },
+        onImagesPicked = { photos, fromCamera -> onAction(ChatAction.OnImagesSelected(photos, fromCamera)) },
         onDismiss = { showImagePickerDialog = false }
     )
 
