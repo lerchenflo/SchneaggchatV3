@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -66,6 +67,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.text
 import org.lerchenflo.schneaggchatv3mp.utilities.format.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.view_profile
 import schneaggchatv3mp.composeapp.generated.resources.add_description_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.admin
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -125,7 +127,6 @@ fun GroupMembersView(
     ownId: String,
     iAmAdmin: Boolean,
     members: List<GroupMemberWithUser>,
-    navigateToChat:(chatId: String, isGroup: Boolean)-> Unit,
     changeAdminStatus:(groupMember: GroupMember)-> Unit,
     removeMember: (memberId: String)-> Unit,
     /** Opens the unknown-user popup for a member who is not a friend. */
@@ -166,19 +167,16 @@ fun GroupMembersView(
                     expanded = userOptionPopupExpanded,
                     iAmAdmin = iAmAdmin,
                     groupMember = groupMember,
-                    user = user,
+                    isFriend = user?.friendshipStatus == FriendshipStatus.ACCEPTED,
                     friendRequestState = friendRequestState,
                     onDismissRequest = { userOptionPopupExpanded = false },
-                    onOpenChat = {
-                        if(user != null) navigateToChat(user.id, false)
-                    },
                     onAdminStatusChange = {
                         changeAdminStatus(groupMember)
                     },
                     onRemoveUser = {
                         showRemoveMemberConfirmation = true  // Show confirmation instead of directly removing
                     },
-                    onSendFriendRequest = {
+                    onViewProfile = {
                         openUnknownUser(groupMember.userId, userName)
                     }
                 )
@@ -301,14 +299,13 @@ fun UserOptionPopup(
     expanded: Boolean,
     iAmAdmin: Boolean,
     groupMember: GroupMember,
-    user: User?,
-    /** Non-null: the menu offers the unknown-user popup (send, accept, or see the open request). */
+    isFriend: Boolean,
+    /** Non-null: a non-friend who can get a request (not blocked); the menu offers the user popup. */
     friendRequestState: FriendRequestState?,
     onDismissRequest: () -> Unit,
-    onOpenChat: () -> Unit,
     onAdminStatusChange: () -> Unit,
     onRemoveUser: () -> Unit,
-    onSendFriendRequest: () -> Unit,
+    onViewProfile: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -321,41 +318,18 @@ fun UserOptionPopup(
             modifier = modifier
         ) {
 
-            if(user != null && user.friendshipStatus == FriendshipStatus.ACCEPTED) {
+            // Friends and non-friends: the user popup (Message / Call / Info or the friend request)
+            if (isFriend || friendRequestState != null) {
                 DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.open_chat)) },
+                    text = { Text(stringResource(Res.string.view_profile)) },
                     onClick = {
-                        onOpenChat()
+                        onViewProfile()
                         onDismissRequest()
                     },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                            contentDescription = stringResource(Res.string.open_chat)
-                        )
-                    }
-                )
-            }else if (friendRequestState != null){
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            stringResource(
-                                when (friendRequestState) {
-                                    FriendRequestState.NONE -> Res.string.send_friend_request
-                                    FriendRequestState.SENT -> Res.string.member_friend_request_sent
-                                    FriendRequestState.RECEIVED -> Res.string.member_friend_request_received
-                                }
-                            )
-                        )
-                    },
-                    onClick = {
-                        onSendFriendRequest()
-                        onDismissRequest()
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                            contentDescription = stringResource(Res.string.open_chat)
+                            imageVector = Icons.Outlined.Person,
+                            contentDescription = null
                         )
                     }
                 )

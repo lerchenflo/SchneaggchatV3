@@ -211,7 +211,6 @@ private fun GroupMembersSection(
         members = group.members,
         ownId = ownId,
         iAmAdmin = state.iAmAdmin,
-        navigateToChat = { chatId, isGroup -> onAction(ChatDetailsAction.OnOpenChat(chatId, isGroup)) },
         changeAdminStatus = { onAction(ChatDetailsAction.OnChangeAdminStatus(it)) },
         removeMember = { onAction(ChatDetailsAction.OnRemoveMember(it)) },
         openUnknownUser = { userId, name -> onAction(ChatDetailsAction.OnOpenUnknownUser(userId, name)) },

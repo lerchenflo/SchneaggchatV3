@@ -547,6 +547,7 @@
     <string name="call">Call</string>
     <string name="user_popup_message">Message</string>
     <string name="user_popup_info">Info</string>
+    <string name="view_profile">View profile</string>
     <string name="change_status">Change status</string>
     <string name="change_phone_number">Change phone number</string>
     <string name="phone_number_infotext">This phone number is available to all your friends. Currently, it is not set.</string>

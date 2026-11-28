@@ -546,6 +546,7 @@
     <string name="call">Chiama</string>
     <string name="user_popup_message">Messaggio</string>
     <string name="user_popup_info">Info</string>
+    <string name="view_profile">Visualizza profilo</string>
     <string name="change_status">Cambia stato</string>
     <string name="change_phone_number">Cambia numero di telefono</string>
     <string name="phone_number_infotext">Questo numero di telefono è visibile a tutti i tuoi amici. Al momento non è impostato.</string>
