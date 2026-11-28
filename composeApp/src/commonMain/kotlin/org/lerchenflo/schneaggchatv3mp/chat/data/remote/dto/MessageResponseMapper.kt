@@ -43,5 +43,6 @@ fun MessageResponse.toDomainMessage(
     },
     reactions = reactions.map { Reaction(userId = it.userId, content = it.content, reactedAt = it.reactedAt) },
     version = version,
-    clientMessageId = existingClientMessageId
+    clientMessageId = existingClientMessageId,
+    mediaExpired = mediaExpired
 )

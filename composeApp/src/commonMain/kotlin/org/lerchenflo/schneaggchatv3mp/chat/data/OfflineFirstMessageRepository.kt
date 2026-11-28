@@ -170,8 +170,9 @@ class OfflineFirstMessageRepository(
         coroutineScope {
             // Check image messages
             val messages = messageLocalDataSource.getImageMessages()
+            // Expired media is gone on the server (410), so it is never requested again
             val missingImageMessageIds = messages.filter { image ->
-                image.id != null && !pictureManager.checkImageExists(image.pictureUrl ?: "")
+                image.id != null && !image.mediaExpired && !pictureManager.checkImageExists(image.pictureUrl ?: "")
             }.map { it.id!! }
 
             if (missingImageMessageIds.isNotEmpty()) {
@@ -183,7 +184,7 @@ class OfflineFirstMessageRepository(
             // Check audio messages
             val messages = messageLocalDataSource.getAudioMessages()
             val missingAudioMessageIds = messages.filter { audio ->
-                if (audio.id == null) return@filter false
+                if (audio.id == null || audio.mediaExpired) return@filter false
                 // A null or empty audioPath means the file was never downloaded; exists() is false for it
                 !voiceFiles.exists(audio.audioPath.orEmpty())
             }.map { it.id!! }
@@ -193,6 +194,13 @@ class OfflineFirstMessageRepository(
                 launch { getAudiosForMessageIds(missingAudioMessageIds) }
             }
         }
+    }
+
+    /** Whether the picture / voice file of this stored image or audio message is on this device. */
+    private fun MessageEntity.hasMediaFile(): Boolean = when (msgType) {
+        MessageType.IMAGE -> pictureManager.checkImageExists(pictureUrl.orEmpty())
+        MessageType.AUDIO -> voiceFiles.exists(audioPath.orEmpty())
+        else -> false
     }
 
     // ─── Cleanup ──────────────────────────────────────────────────────────────
@@ -790,10 +798,14 @@ class OfflineFirstMessageRepository(
                             .getMessageEntitiesByClientMessageIds(unmatchedClientMessageIds)
                             .associateBy { it.clientMessageId }
 
+                        val existingRows = sortedUpdates.associate { messageResponse ->
+                            messageResponse.messageId to (existingById[messageResponse.messageId]
+                                ?: messageResponse.clientMessageId?.let { existingByClientMessageId[it] })
+                        }
+
                         messageLocalDataSource.upsertMessages(
                             sortedUpdates.map { messageResponse ->
-                                val existing = existingById[messageResponse.messageId]
-                                    ?: messageResponse.clientMessageId?.let { existingByClientMessageId[it] }
+                                val existing = existingRows[messageResponse.messageId]
                                 messageResponse.toDomainMessage(
                                     ownId = ownId,
                                     existingLocalPK = existing?.localPK ?: 0L,
@@ -805,7 +817,12 @@ class OfflineFirstMessageRepository(
                             }
                         )
 
-                        sortedUpdates.forEach { messageResponse ->
+                        // Only media missing on this device: an update for a reaction or the read
+                        // state must not download the file again. Expired media is gone on the
+                        // server; a copy already on this device stays.
+                        sortedUpdates.filter { messageResponse ->
+                            !messageResponse.mediaExpired && existingRows[messageResponse.messageId]?.hasMediaFile() != true
+                        }.forEach { messageResponse ->
                             when (messageResponse.msgType) {
                                 MessageType.IMAGE -> imagesToGet += messageResponse.messageId
                                 MessageType.AUDIO -> audiosToGet += messageResponse.messageId
