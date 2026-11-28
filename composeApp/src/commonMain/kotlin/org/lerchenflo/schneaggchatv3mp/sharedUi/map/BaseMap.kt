@@ -52,6 +52,7 @@ import org.maplibre.compose.style.BaseStyle
 import org.maplibre.compose.util.MaplibreComposable
 import org.maplibre.spatialk.geojson.Position
 import kotlin.time.Duration.Companion.milliseconds
+import org.lerchenflo.schneaggchatv3mp.utilities.approximateDistanceMeters
 
 /** Start camera of every map: Vorarlberg and around. */
 val DEFAULT_MAP_CAMERA = CameraPosition(center = Position(longitude = 9.92, latitude = 47.32), zoom = 7.0)

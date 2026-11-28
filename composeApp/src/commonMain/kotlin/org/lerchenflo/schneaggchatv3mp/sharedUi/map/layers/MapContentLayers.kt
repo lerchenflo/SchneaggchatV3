@@ -37,7 +37,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.map.EventMarkerLayer
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.MarkerIcon
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.UserMarkerLayer
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.addMarkerBackground
-import org.lerchenflo.schneaggchatv3mp.sharedUi.map.approximateDistanceMeters
+import org.lerchenflo.schneaggchatv3mp.utilities.approximateDistanceMeters
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.metersPerDpAtTarget
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.rememberUserMarkers
 import org.lerchenflo.schneaggchatv3mp.sharedUi.map.mergeClusterAvatarsIcon

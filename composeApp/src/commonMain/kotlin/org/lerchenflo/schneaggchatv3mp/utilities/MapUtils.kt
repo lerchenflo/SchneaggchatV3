@@ -33,6 +33,17 @@ fun distanceMeters(from: LatLong, to: LatLong): Double {
 }
 
 /**
+ * Flat-earth approximation of [distanceMeters]: accurate enough for points at most a few
+ * kilometres apart (map marker clustering, zoom snapping, follow mode), without the cost of the
+ * full haversine on every frame.
+ */
+fun approximateDistanceMeters(lat1: Double, long1: Double, lat2: Double, long2: Double): Double {
+    val dx = (long2 - long1).toRadians() * cos(((lat1 + lat2) / 2.0).toRadians()) * EARTH_RADIUS_METERS
+    val dy = (lat2 - lat1).toRadians() * EARTH_RADIUS_METERS
+    return sqrt(dx * dx + dy * dy)
+}
+
+/**
  * Formats a distance in metres into a short human-readable string:
  * below 1 km as whole metres ("850 m"), otherwise kilometres with one decimal ("1.2 km").
  */
