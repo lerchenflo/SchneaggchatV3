@@ -11,7 +11,12 @@ import io.github.lerchenflo.voicemessages.VoiceRecordingState
  */
 sealed class SendMessageContent {
     data class TextContent(val textMessage: TextFieldValue) : SendMessageContent()
-    data class ImageContent(val images: List<StagedImage>, var text: TextFieldValue) : SendMessageContent()
+    /** [fullQuality]: send the originals instead of the small copies; off for every new pick. */
+    data class ImageContent(
+        val images: List<StagedImage>,
+        var text: TextFieldValue,
+        val fullQuality: Boolean = false,
+    ) : SendMessageContent()
     /** A running ([VoiceRecordingState.Recording]) or finished ([VoiceRecordingState.Recorded]) voice message, never Idle. */
     data class AudioContent(val recording: VoiceRecordingState) : SendMessageContent()
 }

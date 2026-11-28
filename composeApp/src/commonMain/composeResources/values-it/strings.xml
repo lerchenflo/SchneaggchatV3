@@ -200,6 +200,9 @@
     <string name="gallery">Galleria</string>
     <string name="choose_image_source">Scegli la fonte dell'immagine</string>
     <string name="image_picker_error">Errore: %1$s</string>
+    <string name="send_image_full_quality">Qualità piena</string>
+    <string name="images_could_not_be_loaded">Impossibile caricare alcune immagini</string>
+    <string name="image_full_quality_failed">Non è stato possibile preparare un\'immagine in qualità piena, quindi non è stata inviata</string>
 
     <string name="new_chat">nuova chat</string>
     <string name="new_group">crea gruppo</string>

@@ -75,6 +75,9 @@ import org.lerchenflo.schneaggchatv3mp.utilities.media.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.media.fileUriToPath
 import org.lerchenflo.schneaggchatv3mp.utilities.ui.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import org.lerchenflo.schneaggchatv3mp.utilities.media.fullQualityImage
+import schneaggchatv3mp.composeapp.generated.resources.image_full_quality_failed
+import schneaggchatv3mp.composeapp.generated.resources.images_could_not_be_loaded
 import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import schneaggchatv3mp.composeapp.generated.resources.poll_cannot_vote_on_unsent
 import kotlin.time.Clock
@@ -291,19 +294,23 @@ class ChatViewModel(
             }
 
             is SendMessageContent.ImageContent -> {
-                message.images.forEachIndexed { index, image ->
-                    applicationScope.launchOnMain {
-                        messageRepository.sendMessage(
-                            empfaenger = chatId,
-                            gruppe = isGroup,
-                            content = MessageContent.ImageContent(
-                                image = image.compressed,
-                                text = if (index == 0) message.text.text else ""
-                            ),
-                            answerid = replyTo?.id,
-                            messageId = null,
-                            ownId = ownId
-                        ).reportLastingErrorTo(errorChannel)
+                applicationScope.launchOnMain {
+                    // All prepared first, so the images still go out in the order they were picked
+                    val imagesToSend = imagesToSend(message.images, message.fullQuality)
+                    imagesToSend.forEachIndexed { index, image ->
+                        launch {
+                            messageRepository.sendMessage(
+                                empfaenger = chatId,
+                                gruppe = isGroup,
+                                content = MessageContent.ImageContent(
+                                    image = image,
+                                    text = if (index == 0) message.text.text else ""
+                                ),
+                                answerid = replyTo?.id,
+                                messageId = null,
+                                ownId = ownId
+                            ).reportLastingErrorTo(errorChannel)
+                        }
                     }
                 }
             }
@@ -333,7 +340,7 @@ class ChatViewModel(
 
         viewModelScope.launch {
             // The file as picked, not loadBytes(): that re-encodes and drops the metadata
-            val originals = results.mapNotNull { photo ->
+            val originals = results.map { photo ->
                 val bytes = pictureManager.readPickedImage(photo.uri)
                 if (bytes == null) loggingRepository.logWarning("Picked image could not be read")
                 bytes
@@ -345,20 +352,47 @@ class ChatViewModel(
 
     /**
      * Stages [originals] in the input bar, each with its small copy ([CHAT_IMAGE_TARGET_BYTES]).
-     * An image that can't be decoded is left out.
+     * An image that couldn't be read (null) or decoded is left out, with one popup for all of them.
      */
-    private suspend fun stageImages(originals: List<ByteArray>, text: TextFieldValue) {
-        val staged = originals.mapNotNull { original ->
+    private suspend fun stageImages(originals: List<ByteArray?>, text: TextFieldValue) {
+        val staged = originals.mapNotNull { original -> original?.let { stagedImageOrNull(it) } }
+        if (staged.size < originals.size) {
+            errorChannel.sendError(UiText.StringResourceText(Res.string.images_could_not_be_loaded))
+        }
+        if (staged.isNotEmpty()) updateSendContent(SendMessageContent.ImageContent(images = staged, text = text))
+    }
+
+    private suspend fun stagedImageOrNull(original: ByteArray): StagedImage? =
+        try {
+            StagedImage(original = original, compressed = pictureManager.downscaleImage(original, CHAT_IMAGE_TARGET_BYTES))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            loggingRepository.logWarning("Picked image could not be decoded: ${e.message}")
+            null
+        }
+
+    /**
+     * The bytes [images] are sent as: the small copies, or with [fullQuality] the originals
+     * (re-encoded only where the server needs it). An image whose full-quality version fails is
+     * not sent, with one popup for all of them.
+     */
+    private suspend fun imagesToSend(images: List<StagedImage>, fullQuality: Boolean): List<ByteArray> {
+        if (!fullQuality) return images.map { it.compressed }
+        val prepared = images.mapNotNull { image ->
             try {
-                StagedImage(original = original, compressed = pictureManager.downscaleImage(original, CHAT_IMAGE_TARGET_BYTES))
+                pictureManager.fullQualityImage(image.original)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                loggingRepository.logWarning("Picked image could not be decoded: ${e.message}")
+                loggingRepository.logWarning("Full-quality image could not be prepared: ${e.message}")
                 null
             }
         }
-        if (staged.isNotEmpty()) updateSendContent(SendMessageContent.ImageContent(images = staged, text = text))
+        if (prepared.size < images.size) {
+            errorChannel.sendError(UiText.StringResourceText(Res.string.image_full_quality_failed))
+        }
+        return prepared
     }
 
     /**

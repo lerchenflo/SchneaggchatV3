@@ -201,6 +201,9 @@
     <string name="gallery">Galerie</string>
     <string name="choose_image_source">Bildquelle auswählen</string>
     <string name="image_picker_error">Fehler: %1$s</string>
+    <string name="send_image_full_quality">Volle Qualität</string>
+    <string name="images_could_not_be_loaded">Einige Bilder konnten nicht geladen werden</string>
+    <string name="image_full_quality_failed">Ein Bild konnte nicht in voller Qualität vorbereitet werden und wurde nicht gesendet</string>
 
     <string name="new_chat">Neuer Chat</string>
     <string name="new_group">Gruppe erstellen</string>
