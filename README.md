@@ -25,25 +25,20 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ##### Highlights
 
 #### Features
-- Extensions: Gemeinsamer Text, Tourenplaner für Gruppen, Tourenplaner-Karte wie Schneaggmap
-- Events: Erinnerungen im Gruppenchat, Eintrittspreis, Alle dürfen einladen, In Maps öffnen
-- Datumsauswahl: Kalender statt Scrollrad
-- Dartcounter: Double In
-- Onboarding: Neue Tour-Schritte
-- App-Icon: Winter-Version mit Schnee auf Eis
-- iOS: App-Icon mit Dunkel- und Getönt-Variante
-- Profilbild: Großansicht per Tipp
-- Benachrichtigungstext kürzer
+- Extensions: Gemeinsamer Text, Tourenplaner
+- Events: Erinnerungen im Gruppenchat, Eintrittspreis, Einladen für alle, In Maps öffnen
+- Chat: Links zu Feedback und Einstellungen, Platzhalter für fehlende Medien, Bilder in voller Qualität, Fotos in der Galerie
+- Chatdetails: Neues Design, ⋮-Menü, Gruppeneinstellungen, Mitglieder dürfen einladen
+- Erwähnungen: Hervorgehoben, @-Badge in der Chatliste, Fehler behoben
 - Sprachnachrichten: Live-Pegel beim Aufnehmen
-- @Annotations fix
-- Erwähnungen: Nachrichten an mich hervorgehoben, @-Badge in der Chatliste
-- Feedback-Board: Sortierung Top mit Neu und Beliebteste, Beschreibung optional
-- Chatdetails: Aktionen im ⋮-Menü oben rechts, Mitglieder dürfen Leute hinzufügen, Gruppeneinstellungen
-- Chatdetails: Neues Design (Name im Titel, Badges für Timer und Geburtstag, Über-Karte für Status und Beschreibung)
-- Chat: Verlinkungen zu Feedback-Einträgen und Einstellungsseiten (@feedback, @settings), Platzhalter für nicht verfügbare Bilder und Sprachnachrichten
-- Spiele: Neue Namen (Blockfall, Würfelpoker, Wörter raten); englische Wörter und Kreuzworträtsel aus eigenen Listen statt von der NYT, mehr deutsche Wörter
-- Spiele: Neues Spiel Vier in einer Reihe für 2-4 Spieler auf einem Handy (Teams 2 gegen 2, Power-Scheiben, Brett-Twists, Herausziehen, Zugtimer, Best of 3/5, Rückgängig, Bestenliste für Siege)
-- Spiele: Neue Spielerauswahl (Freunde mit Profilbild und Spieler auf diesem Gerät in einer Liste, Reihenfolge als Nummern sichtbar)
+- Profilbild: Großansicht per Tipp
+- Benachrichtigungen: Kürzerer Text
+- Feedback-Board: Neue Sortierung, Beschreibung optional
+- Spiele: Vier in einer Reihe, neue Spielerauswahl, neue Namen, eigene Wortlisten
+- Dartcounter: Double In
+- Datumsauswahl: Kalender statt Scrollrad
+- Onboarding: Neue Tour-Schritte
+- App-Icon: Winter-Version, auf iOS mit Dunkel- und Getönt-Variante
 - Android: Mindestens Android 10
 
 #### Bugfixes
